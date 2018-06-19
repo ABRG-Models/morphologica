@@ -1,6 +1,6 @@
 # Write out the pc file (in wherever the build directory is)
 file(WRITE ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "prefix=${CMAKE_INSTALL_PREFIX}\n")
-file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "libdir=\${prefix}/lib/morph\n")
+file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "libdir=\${prefix}/lib\n")
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "includedir=\${prefix}/include\n\n")
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Name: ${PROJECT_NAME}\n")
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Description: ${PROJECT_NAME} library from the Wilson lab\n")
