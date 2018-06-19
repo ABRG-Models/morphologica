@@ -93,7 +93,7 @@ namespace tools
     {
         // expects a n by 3 cloud as input
         arma::mat Cloud (3,static_cast<unsigned int>(cloud.size()));
-        for (int p=0; p<cloud.size(); p++){
+        for (unsigned int p=0; p<cloud.size(); p++){
             Cloud(0,p) = cloud[p][0];
             Cloud(1,p) = cloud[p][1];
             Cloud(2,p) = cloud[p][2];
@@ -108,7 +108,7 @@ namespace tools
         Cloud = RX*Cloud; Cloud = RY*Cloud; Cloud = RZ*Cloud;
 
         // copy back into vector
-        for (int p=0; p<cloud.size(); p++){
+        for (unsigned int p=0; p<cloud.size(); p++){
             cloud[p][0] = Cloud(0,p);
             cloud[p][1] = Cloud(1,p);
             cloud[p][2] = Cloud(2,p);

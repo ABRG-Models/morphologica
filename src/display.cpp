@@ -215,13 +215,9 @@ void Gdisplay::redrawDisplay()
 void Gdisplay::drawHex(double x,double y,double z,double r,double red,double green,double blue)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    GLfloat col[] = {red, green, blue, 1.f};
-    //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
+    GLfloat col[] = {(GLfloat)red, (GLfloat)green, (GLfloat)blue, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
-
-    //glColor3f(red,green,blue);
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
-    double hrx = r * 0.5;
     double hry = ry * 0.5;
     glBegin(GL_POLYGON);
     glVertex3f(x,y+ry,z);
@@ -237,7 +233,6 @@ void Gdisplay::drawHex(double x,double y,double z,double r,double red,double gre
 void Gdisplay::drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q)
 {
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
-    double hrx = r * 0.5;
     double hry = ry * 0.5;
 
     double ax, ay, bx, by;
@@ -268,7 +263,7 @@ void Gdisplay::drawHexSeg(double x,double y,double z,double r,double red,double 
     }break;
     }
 
-    GLfloat col[] = {red, green, blue, 1.f};
+    GLfloat col[] = {(GLfloat)red, (GLfloat)green, (GLfloat)blue, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
     glPointSize(5.);
     glBegin(GL_LINES);
@@ -292,7 +287,7 @@ void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vect
 void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    GLfloat col[] = {C[0], C[1], C[2], 1.f};
+    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 
@@ -310,7 +305,7 @@ void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vect
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    GLfloat col[] = {C[0], C[1], C[2], 1.f};
+    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 
@@ -327,7 +322,7 @@ void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vect
 void Gdisplay::drawTriFill(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    GLfloat col[] = {C[0], C[1], C[2], 1.f};
+    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 
@@ -345,7 +340,7 @@ void Gdisplay::drawSphere(double x,double y,double z,double r,std::vector<double
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     //glColor3f(red,green,blue);
-    GLfloat col[] = {C[0], C[1], C[2], 1.f};
+    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -394,7 +389,7 @@ void Gdisplay::drawCylinder(std::vector <double> A, std::vector <double> B, doub
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
 
-    GLfloat colr[] = {col[0], col[1], col[2], 1.f};
+    GLfloat colr[] = {(GLfloat)col[0], (GLfloat)col[1], (GLfloat)col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -516,7 +511,7 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
 
-    GLfloat colr[] = {col[0], col[1], col[2], 1.f};
+    GLfloat colr[] = {(GLfloat)col[0], (GLfloat)col[1], (GLfloat)col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -554,7 +549,7 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    GLfloat colr[] = {col[0], col[1], col[2], 1.f};
+    GLfloat colr[] = {(GLfloat)col[0], (GLfloat)col[1], (GLfloat)col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -593,7 +588,7 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    GLfloat colr[] = {col[0], col[1], col[2], 1.f};
+    GLfloat colr[] = {(GLfloat)col[0], (GLfloat)col[1], (GLfloat)col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -675,15 +670,10 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
 
 void Gdisplay::drawMesh(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
 {
-    //GLUquadricObj *quadric=gluNewQuadric();
-    //gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    //GLfloat colr[] = {col[0], col[1], col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
-    //glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
     glMaterialf(GL_FRONT, GL_SHININESS, 60.);
-
 
     // obviously this will come out!
     int iN = X.size();
@@ -691,7 +681,7 @@ void Gdisplay::drawMesh(std::vector< std::vector< std::vector <double> > > X, st
 
     for (int i=1;i<iN;i++){
         for (int j=1;j<jN;j++){
-            GLfloat colr[]={C[i][j][0],C[i][j][1],C[i][j][2],1.f};
+            GLfloat colr[]={(GLfloat)C[i][j][0],(GLfloat)C[i][j][1],(GLfloat)C[i][j][2],1.f};
             glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
             glBegin(GL_QUADS);
             double ax = X[i][j-1][0]-X[i-1][j-1][0];
@@ -713,7 +703,7 @@ void Gdisplay::drawMesh(std::vector< std::vector< std::vector <double> > > X, st
 
         }
 
-        GLfloat colr[]={C[i][0][0],C[i][0][1],C[i][0][2],1.f};
+        GLfloat colr[]={(GLfloat)C[i][0][0],(GLfloat)C[i][0][1],(GLfloat)C[i][0][2],1.f};
         glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
         glBegin(GL_QUADS);
         double ax = X[i][jN-1][0]-X[i-1][jN-1][0];
@@ -741,7 +731,7 @@ void Gdisplay::drawMesh2(std::vector< std::vector< std::vector <double> > > X, s
     //GLUquadricObj *quadric=gluNewQuadric();
     //gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    GLfloat colr[] = {col[0], col[1], col[2], 1.f};
+    GLfloat colr[] = {(GLfloat)col[0], (GLfloat)col[1], (GLfloat)col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
@@ -796,15 +786,10 @@ void Gdisplay::drawMesh2(std::vector< std::vector< std::vector <double> > > X, s
 #ifdef DRAWTORUS_ATTEMPT
 void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
 {
-    //GLUquadricObj *quadric=gluNewQuadric();
-    //gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    //GLfloat colr[] = {col[0], col[1], col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
-    //glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
     glMaterialf(GL_FRONT, GL_SHININESS, 60.);
-
 
     // obviously this will come out!
     int iN = X.size();
@@ -816,7 +801,7 @@ void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, s
         for (int j=1;j<=jN;j++){
             int J0 = j%jN;
             int J1 = (j-1)%jN;
-            GLfloat colr[]={C[I0][J0][0],C[I0][J0][1],C[I0][J0][2],1.f};
+            GLfloat colr[]={(GLfloat)C[I0][J0][0],(GLfloat)C[I0][J0][1],(GLfloat)C[I0][J0][2],1.f};
             glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
             glBegin(GL_QUADS);
 
@@ -848,15 +833,10 @@ void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, s
 
 void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
 {
-    //GLUquadricObj *quadric=gluNewQuadric();
-    //gluQuadricNormals(quadric, GLU_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    //GLfloat colr[] = {col[0], col[1], col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
-    //glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
     glMaterialf(GL_FRONT, GL_SHININESS, 60.);
-
 
     // obviously this will come out!
     int iN = X.size();
@@ -909,7 +889,6 @@ void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, s
 void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    //GLfloat colr[] = {col[0], col[1], col[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
     glMaterialf(GL_FRONT, GL_SHININESS, 60.);
@@ -1933,8 +1912,8 @@ void Gdisplay::drawSphereFromMesh(std::vector<std::vector<double> > X, std::vect
     int a, b, c, d;
     double ax, ay, az, bx, by, bz, nx, ny, nz, nl;
 
-    for(int i=0;i<X.size();i++){
-        GLfloat col[]={C[i][0],C[i][1],C[i][2],1.f};
+    for(unsigned int i=0;i<X.size();i++){
+        GLfloat col[]={(GLfloat)C[i][0],(GLfloat)C[i][1],(GLfloat)C[i][2],1.f};
         glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
         glBegin(GL_QUADS);
         a = i;
@@ -1958,8 +1937,8 @@ void Gdisplay::drawSphereFromMesh(std::vector<std::vector<double> > X, std::vect
         glVertex3d(X[d][0],X[d][1],X[d][2]);
         glEnd();
     }
-    for(int i=0;i<X.size();i++){
-        GLfloat col[]={C[i][0],C[i][1],C[i][2],1.f};
+    for(unsigned int i=0;i<X.size();i++){
+        GLfloat col[]={(GLfloat)C[i][0],(GLfloat)C[i][1],(GLfloat)C[i][2],1.f};
         glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
         glBegin(GL_QUADS);
         a = i;
@@ -2001,7 +1980,7 @@ void Gdisplay::drawFlatCube(std::vector< std::vector<int> > C, std::vector< std:
     xoff[4]= -1; yoff[4]= 0.5;
     xoff[5]= +1; yoff[5]= 0.5;
 
-    for(int i=0;i<C.size();i++){
+    for(unsigned int i=0;i<C.size();i++){
         int f = C[i][0];
         x = xoff[f]+((((double)C[i][1]+0.5)*dn1)-0.5)-dn2;
         xp = x+dn1;
@@ -2013,7 +1992,7 @@ void Gdisplay::drawFlatCube(std::vector< std::vector<int> > C, std::vector< std:
         y*=scale;
         yp*=scale;
 
-        GLfloat colr[]={Col[i][0],Col[i][1],Col[i][2],1.f};
+        GLfloat colr[]={(GLfloat)Col[i][0],(GLfloat)Col[i][1],(GLfloat)Col[i][2],1.f};
         glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
         glBegin(GL_QUADS);
         glNormal3d(0,0,1);
@@ -2055,7 +2034,7 @@ void Gdisplay::drawFlatCube(std::vector< std::vector <double> > C)
                 y*=scale;
                 yp*=scale;
 
-                GLfloat colr[]={C[k][0],C[k][1],C[k][2],1.f};
+                GLfloat colr[]={(GLfloat)C[k][0],(GLfloat)C[k][1],(GLfloat)C[k][2],1.f};
                 glMaterialfv(GL_FRONT, GL_DIFFUSE, colr);
                 glBegin(GL_QUADS);
                 glNormal3d(0,0,1);
@@ -2076,10 +2055,12 @@ void Gdisplay::addQuad(std::vector <double> p1, std::vector <double> p2, std::ve
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     glBegin(GL_POLYGON);
-    GLfloat col[] = {C[0], C[1], C[2], 1.f};
-    GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
+    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
-    //  glMaterialfv(GL_FRONT, GL_SPECULAR, wht); // uncomment for shiny!
+#ifdef WANT_SHINY
+    GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
+    glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
+#endif
     glMaterialf(GL_FRONT, GL_SHININESS, 60.);
     glNormal3d(N[0],N[1],N[2]);
     glVertex3d(p1[0],p1[1],p1[2]);
