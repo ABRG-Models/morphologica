@@ -13,7 +13,7 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
-#include <GLUT/glut.h>
+#include <GL/glut.h>
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -50,6 +50,7 @@ public:
     void redrawDisplay();
     void closeDisplay();
     void drawHex(double,double,double,double,double,double,double);
+    void drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q);
     // void drawTri(std::vector <double>,std::vector <double>,std::vector <double>,double,double,double);
     void drawTri(std::vector <double>,std::vector <double>,std::vector <double>,std::vector <double>);
     void drawTriFill(std::vector <double>,std::vector <double>,std::vector <double>,std::vector <double>);
