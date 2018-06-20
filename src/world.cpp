@@ -4,14 +4,21 @@
 
 #include "world.h"
 
-world::world(const char* processName,
-             const char* logfileLocation,
-             int seed,
-             int portID,
-             double dt)
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <vector>
+
+using namespace std;
+
+morph::world::world (const char* processName,
+                     const char* logfileLocation,
+                     int seed,
+                     int portID,
+                     double dt)
 {
     this->processName=processName; // process name
-    std::stringstream ss;          // logfile location
+    stringstream ss;          // logfile location
     ss<<logfileLocation;           // logfile location
     srand(seed);                   // random seed
     this->portID=portID;           // tcpip port ID
@@ -32,7 +39,8 @@ world::world(const char* processName,
     logfile<<"**********"<<endl<<flush;
 };
 
-vector<string> world::getCommand(vector<double*>msgOut)
+vector<string>
+morph::world::getCommand (vector<double*> msgOut)
 {
     stringstream out;
     out.clear();
@@ -54,16 +62,17 @@ vector<string> world::getCommand(vector<double*>msgOut)
     return command;
 };
 
-const char* world::timeStamp(void)
+const char*
+morph::world::timeStamp (void)
 {
     const char* TIMEcs;
-    std::stringstream TIMEss;
+    stringstream TIMEss;
     TIMEss<<setw(10)<<setfill('0')<<TIME;
     TIMEcs = TIMEss.str().c_str();
     return TIMEcs;
 }
 
-world::~world()
+morph::world::~world()
 {
     logfile<<"*********"<<endl;
     logfile<<"   FIN"<<endl;

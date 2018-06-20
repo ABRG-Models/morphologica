@@ -1,9 +1,13 @@
+/*
+ * Utility functions
+ */
+
 #include <vector>
 
-namespace tools
-{
-    using std::vector;
+using std::vector;
 
+namespace morph
+{
     vector<double> getJetColor(double gray);
     vector<double> getGrayScaleColor(double gray);
     vector <double> HSVtoRGB(double,double,double);

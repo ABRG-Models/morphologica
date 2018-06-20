@@ -6,36 +6,39 @@
 #define ____world__
 
 #include "sockserve.h"
-#include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
-#include <iomanip>
 
-using namespace std;
+using std::vector;
+using std::ofstream;
+using std::string;
 
-class world
+namespace morph
 {
-public:
-    world(const char*,
-          const char*,
-          int,
-          int,
-          double);
+    class world
+    {
+    public:
+        world(const char*,
+              const char*,
+              int,
+              int,
+              double);
 
-    virtual ~world();
-    vector<string> getCommand(vector<double*>);
-    const char* timeStamp(void);
-    void waitForConnected(void);
+        virtual ~world();
+        vector<string> getCommand(vector<double*>);
+        const char* timeStamp(void);
+        void waitForConnected(void);
 
-    const char* processName;    // process name
-    int seed;
-    int portID;                 // tcpip port ID
-    Client master;
-    std::vector<Client> ports;
-    std::ofstream logfile;
-    double TIME;
-    double dt;
-};
+        const char* processName;    // process name
+        int seed;
+        int portID;                 // tcpip port ID
+        Client master;
+        vector<Client> ports;
+        ofstream logfile;
+        double TIME;
+        double dt;
+    };
+
+} // namespace morph
 
 #endif /* defined(____world__) */
