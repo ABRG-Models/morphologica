@@ -35,7 +35,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 
-include_directories(${OPENCV_INCLUDE_DIR} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
+include_directories(${OPENCV_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
 
 # rapidxml is bundled in the source:
 #include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
@@ -51,7 +51,7 @@ add_subdirectory(tests)
 add_subdirectory(pc)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES OFF)
+set(DEBUG_VARIABLES ON)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})
