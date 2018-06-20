@@ -8,16 +8,22 @@ using std::vector;
 
 namespace morph
 {
-    vector<double> getJetColor(double gray);
-    vector<double> getGrayScaleColor(double gray);
-    vector <double> HSVtoRGB(double,double,double);
-    double randFloat(void);
-    double normalDistributionValue(void);
-    double wrapAngle(double);
-    vector <vector <float> > rotateCloud (vector <vector <float> >, double, double, double);
+    class Tools {
+        Tools() {}
+        ~Tools() {}
+
+    public:
+        static vector<double> getJetColor(double gray);
+        static vector<double> getGrayScaleColor(double gray);
+        static vector <double> HSVtoRGB(double,double,double);
+        static double randFloat(void);
+        static double normalDistributionValue(void);
+        static double wrapAngle(double);
+        static vector <vector <float> > rotateCloud (vector <vector <float> >, double, double, double);
 #ifdef SPHERE_ATTEMPT
-    vector <vector <float> > sphere(int, double);
+        static vector <vector <float> > sphere(int, double);
 #endif
-    vector<vector<int> > graph(vector<vector<int> >);
-    vector<int> sort(vector<double>);
+        static vector<vector<int> > graph(vector<vector<int> >);
+        static vector<int> sort(vector<double>);
+    };
 }

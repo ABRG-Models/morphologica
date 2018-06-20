@@ -10,7 +10,7 @@ using namespace arma;
 /// @param gray gray value from 0.0 to 1.0
 /// @returns RGB value in jet colormap
 vector<double>
-morph::getJetColor(double gray)
+morph::Tools::getJetColor(double gray)
 {
     double color_table[][3] = {
         {0.0, 0.0, 0.5}, // #00007F
@@ -41,7 +41,7 @@ morph::getJetColor(double gray)
 }
 
 vector<double>
-morph::getGrayScaleColor(double gray)
+morph::Tools::getGrayScaleColor(double gray)
 {
     vector<double> col;
     for (int i=0; i<3; i++) {
@@ -51,7 +51,7 @@ morph::getGrayScaleColor(double gray)
 }
 
 vector<double>
-morph::HSVtoRGB(double h,double s,double v) // all in range 0,1
+morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
 {
     double r, g, b;
     int i = floor(h * 6);
@@ -76,19 +76,19 @@ morph::HSVtoRGB(double h,double s,double v) // all in range 0,1
 }
 
 double
-morph::randFloat(void)
+morph::Tools::randFloat(void)
 {
     return ((double) rand())/(double)RAND_MAX;
 }
 
 double
-morph::normalDistributionValue(void)
+morph::Tools::normalDistributionValue(void)
 {
     return sqrt(-2. * log(randFloat())) * cos(2. * M_PI * randFloat());
 }
 
 double
-morph::wrapAngle(double a)
+morph::Tools::wrapAngle(double a)
 {
     return a-6.283185307179586*floor(a/6.283185307179586);
 }
@@ -122,7 +122,7 @@ vector < vector <double> > rotateCloud (vector < vector <double> > cloud, double
 
 #ifdef SPHERE_ATTEMPT
 vector<vector<float> >
-morph::sphere (int n, double rad)
+morph::Tools::sphere (int n, double rad)
 {
     vector <vector <float> > S (n);
     float golden_angle = acos(-1.0) * (3. - sqrt(5.));
@@ -140,7 +140,7 @@ morph::sphere (int n, double rad)
 
 // TAKES A LIST OF PAIRS AND NUMBER OF PAIRS AND RETURNS A VECTOR OF CLUSTERS SORTED BY CLUSTER SIZE
 vector<vector<int> >
-morph::graph (vector<vector<int> > agg)
+morph::Tools::graph (vector<vector<int> > agg)
 {
     int N = agg.size();
 
@@ -249,7 +249,7 @@ morph::graph (vector<vector<int> > agg)
   return indices of descending value in unsorted
 */
 vector<int>
-morph::sort (vector<double> unsorted)
+morph::Tools::sort (vector<double> unsorted)
 {
     vector<int> unsortID;
     for(int i=0;i<static_cast<int>(unsorted.size());i++){
@@ -277,7 +277,7 @@ morph::sort (vector<double> unsorted)
 
 #ifdef MATRIX_MULTIPLY_ATTEMPT
 vector<vector<double> >
-morph::matrixMultiply (vector < vector <double> > a, vector < vector <double> > b)
+morph::Tools::matrixMultiply (vector < vector <double> > a, vector < vector <double> > b)
 {
     // expects a n by 3 cloud as input
     arma::mat A (3,a.size());
