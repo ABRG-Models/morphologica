@@ -9,6 +9,25 @@ message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/
 
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
+# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
+# __WIN__ are required
+message(STATUS "Operating system: " ${CMAKE_SYSTEM})
+if(CMAKE_SYSTEM MATCHES Linux.*)
+  set(MORPH_HOST_DEFINITION "-D__GLN__")
+elseif(CMAKE_SYSTEM MATCHES BSD.*)
+  set(MORPH_HOST_DEFINITION "-D__NIX__")
+elseif(APPLE)
+  set(MORPH_HOST_DEFINITION "-D__OSX__")
+elseif(CMAKE_SYSTEM MATCHES Win.*)
+  set(MORPH_HOST_DEFINITION "-D__WIN__")
+else()
+  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
+endif()
+
+# Add the host definition to CFLAGS
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MORPH_HOST_DEFINITION}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORPH_HOST_DEFINITION}")
+
 # A section to ensure library linking works on Apple.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)

@@ -11,9 +11,15 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#include <GL/glx.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#ifdef __OSX__
+# include <glx.h>
+# include <glu.h>
+# include <glut.h>
+#else
+# include <GL/glx.h>
+# include <GL/glu.h>
+# include <GL/glut.h>
+#endif
 #include <iostream>
 #include <vector>
 #include <math.h>
