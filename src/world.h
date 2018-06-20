@@ -18,13 +18,13 @@ namespace morph
     class World
     {
     public:
-        world(const char*,
+        World(const char*,
               const char*,
               int,
               int,
               double);
 
-        virtual ~world();
+        virtual ~World();
         vector<string> getCommand(vector<double*>);
         const char* timeStamp(void);
         void waitForConnected(void);
