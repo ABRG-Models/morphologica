@@ -11,7 +11,7 @@
 
 using namespace std;
 
-morph::world::world (const char* processName,
+morph::World::World (const char* processName,
                      const char* logfileLocation,
                      int seed,
                      int portID,
@@ -40,7 +40,7 @@ morph::world::world (const char* processName,
 };
 
 vector<string>
-morph::world::getCommand (vector<double*> msgOut)
+morph::World::getCommand (vector<double*> msgOut)
 {
     stringstream out;
     out.clear();
@@ -63,7 +63,7 @@ morph::world::getCommand (vector<double*> msgOut)
 };
 
 const char*
-morph::world::timeStamp (void)
+morph::World::timeStamp (void)
 {
     const char* TIMEcs;
     stringstream TIMEss;
@@ -72,7 +72,7 @@ morph::world::timeStamp (void)
     return TIMEcs;
 }
 
-morph::world::~world()
+morph::World::~World()
 {
     logfile<<"*********"<<endl;
     logfile<<"   FIN"<<endl;

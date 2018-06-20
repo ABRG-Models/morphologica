@@ -31,7 +31,7 @@ namespace morph {
     /*!
      * A class for drawing objects on an OpenGL screen
      */
-    class Gdisplay // refactor to Display?
+    class Gdisplay
     {
     private:
         XSetWindowAttributes attributes;

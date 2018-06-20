@@ -15,7 +15,7 @@ using std::string;
 
 namespace morph
 {
-    class world
+    class World
     {
     public:
         world(const char*,
