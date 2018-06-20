@@ -2,6 +2,10 @@
 
 include_directories(../src)
 
+if(APPLE)
+  link_directories(/usr/X11R6/lib)
+endif(APPLE)
+
 # BezCurve class
 set(TARGETTEST1 testbez CACHE TYPE STRING)
 set(SOURCETEST1 testbez.cpp)
