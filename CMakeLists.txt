@@ -7,8 +7,6 @@ set(SOVERSION 1.0)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
-
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
 # __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
@@ -25,8 +23,14 @@ else()
 endif()
 
 # Add the host definition to CFLAGS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MORPH_HOST_DEFINITION}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORPH_HOST_DEFINITION}")
+set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION}")
+set(CMAKE_C_FLAGS "${MORPH_HOST_DEFINITION}")
+
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++11")
+endif()
 
 # A section to ensure library linking works on Apple.
 if(APPLE)
