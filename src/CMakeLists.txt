@@ -3,10 +3,17 @@ set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp)
 
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
+if(APPLE)
+target_link_libraries(
+  morphologica
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+  )
+else()
 target_link_libraries(
   morphologica
   armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
   )
+endif(APPLE)
 install(TARGETS morphologica
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   )
