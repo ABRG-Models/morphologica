@@ -1,10 +1,13 @@
 # Define which cpp files will be compiled
 set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp)
 
+if(APPLE)
+  link_directories(/usr/X11R6/lib)
+endif(APPLE)
+
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
 if(APPLE)
-  link_directories(/usr/X11R6/lib)
   target_link_libraries(
     morphologica
     armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
