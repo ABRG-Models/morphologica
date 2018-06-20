@@ -6,20 +6,20 @@ Server::Server(int portno)
 {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        error("ERROR opening socket");
+        error("Server::Server: Error opening socket");
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portno);
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        error("ERROR on binding");
+        error("Server::Server: Error on binding");
     }
     listen(sockfd,5);
     clilen = sizeof(cli_addr);
     newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
     if (newsockfd < 0) {
-        error("ERROR on accept");
+        error("Server::Server: Error on accept");
     }
 };
 
@@ -34,11 +34,11 @@ char* Server::exchange(void)
     bzero(buffer, strlen(buffer));
     n = read(newsockfd,buffer,strlen(buffer));
     if (n < 0) {
-        error("ERROR reading from socket");
+        error("Server::exchange: Error reading from socket");
     }
     n = write(newsockfd, "Received: ", strlen(buffer));
     if (n < 0) {
-        error("ERROR writing to socket");
+        error("Server::exchange: Error writing to socket");
     }
     return buffer;
 };
@@ -63,11 +63,11 @@ void Client::init(int portno)
 {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        error("ERROR opening socket");
+        error("Client::init: Error opening socket");
     }
     server = gethostbyname("localhost");
     if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
+        fprintf(stderr,"Client::init: Error, no such host\n");
         exit(0);
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -75,7 +75,7 @@ void Client::init(int portno)
     bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
     serv_addr.sin_port = htons(portno);
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
-        error("ERROR connecting");
+        error("Client::init: Error connecting");
     }
 }
 
@@ -95,12 +95,12 @@ char* Client::exchange(const char* message)
     memcpy(&buffer[0],message,strlen(message));
     n = write(sockfd,buffer,strlen(buffer));
     if (n < 0) {
-        error("ERROR writing to socket");
+        error("Client::exchange: Error writing to socket");
     }
     bzero(buffer,BUFFERSIZE);
     n = read(sockfd,buffer,BUFFERSIZE);
     if (n < 0) {
-        error("BUTHOLE ERROR reading from socket");
+        error("Client::exchange: Error reading from socket");
     }
     return buffer;
 };
