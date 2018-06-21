@@ -15,12 +15,12 @@ dependencies.
 
 To build, it's the usual CMake process:
 
-```bash
+```
 cd morphologica
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j4
 ctest
-make install
+sudo make install
 ```
