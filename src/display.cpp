@@ -1,7 +1,7 @@
 #include "display.h"
 #include <armadillo>
 
-Gdisplay::Gdisplay(int myWindowSize, const char* title, double rhoInit, double thetaInit, double phiInit)
+morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, double thetaInit, double phiInit)
 {
     GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
     disp = XOpenDisplay(NULL);
@@ -32,22 +32,24 @@ Gdisplay::Gdisplay(int myWindowSize, const char* title, double rhoInit, double t
     this->phi   = (phiInit + 0.00000001)*acos(-1.);
     alpha = 0.;
     Z = 1.;
-};
+}
 
-void Gdisplay::setTitle(char* title)
+void
+morph::Gdisplay::setTitle (char* title)
 {
-    XStoreName(disp, win, (char*) title);
-};
+    XStoreName (disp, win, (char*) title);
+}
 
-void Gdisplay::closeDisplay(void)
+void
+morph::Gdisplay::closeDisplay (void)
 {
     glXDestroyContext(disp, glc);
     XDestroyWindow(disp, win);
     XCloseDisplay(disp);
-};
+}
 
-
-void Gdisplay::resetDisplay(std::vector <double> fix, std::vector <double> eye, std::vector <double> rot)
+void
+morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye, std::vector<double> rot)
 {
     glXMakeCurrent(disp, win, glc);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -201,18 +203,20 @@ void Gdisplay::resetDisplay(std::vector <double> fix, std::vector <double> eye, 
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
     glMaterialfv(GL_FRONT, GL_SPECULAR, blk);
     glMaterialf(GL_FRONT, GL_SHININESS, 0.);
-};
+}
 
-void Gdisplay::redrawDisplay()
+void
+morph::Gdisplay::redrawDisplay()
 {
     glXMakeCurrent(disp, win, glc);
     XGetWindowAttributes(disp, win, &gwa);
     glViewport(0, 0, gwa.width, gwa.height);
     glXSwapBuffers(disp, win);
-};
+}
 
-
-void Gdisplay::drawHex(double x,double y,double z,double r,double red,double green,double blue)
+void
+morph::Gdisplay::drawHex (double x, double y, double z, double r,
+                          double red, double green, double blue)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GLfloat col[] = {(GLfloat)red, (GLfloat)green, (GLfloat)blue, 1.f};
@@ -228,9 +232,11 @@ void Gdisplay::drawHex(double x,double y,double z,double r,double red,double gre
     glVertex3f(x-r,y+hry,z);
     glVertex3f(x,y+ry,z);
     glEnd();
-};
+}
 
-void Gdisplay::drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q)
+void
+morph::Gdisplay::drawHexSeg (double x, double y, double z, double r,
+                             double red, double green, double blue, int q)
 {
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
     double hry = ry * 0.5;
@@ -270,10 +276,12 @@ void Gdisplay::drawHexSeg(double x,double y,double z,double r,double red,double 
     glVertex3d(ax,ay,z);
     glVertex3d(bx,by,z);
     glEnd();
-};
+}
 
 #ifdef DRAWTRI_ATTEMPTS
-void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,double red,double green,double blue)
+void
+morph::Gdisplay::drawTri (std::vector<double> p1, std::vector<double> p2, std::vector<double> p3,
+                          double red, double green, double blue)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     glBegin(GL_TRIANGLES);
@@ -284,7 +292,8 @@ void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vect
     glEnd();
 }
 
-void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,std::vector<double> C)
+void
+morph::Gdisplay::drawTri (std::vector<double> p1, std::vector<double> p2, std::vector<double> p3, std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
@@ -300,46 +309,38 @@ void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vect
 }
 #endif
 
-void Gdisplay::drawTri(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,std::vector<double> C)
+void
+morph::Gdisplay::drawTri (std::vector<double> p1,std::vector<double> p2,std::vector<double> p3,std::vector<double> C)
 {
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
     GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
-    //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 
     glBegin(GL_TRIANGLES);
-    //glColor3f(C[0],green,blue);
-    //glBegin(GL_LINES);
     glVertex3f(p1[0], p1[1], p1[2]);
     glVertex3f(p2[0], p2[1], p2[2]);
     glVertex3f(p3[0], p3[1], p3[2]);
-    //glVertex3f(p1[0], p1[1], p1[2]);
     glEnd();
 }
 
-void Gdisplay::drawTriFill(std::vector <double> p1,std::vector <double> p2,std::vector <double> p3,std::vector<double> C)
+void
+morph::Gdisplay::drawTriFill (std::vector<double> p1,std::vector<double> p2,std::vector<double> p3,std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
-    //GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
 
     glBegin(GL_TRIANGLES);
-    //glColor3f(C[0],green,blue);
-    //glBegin(GL_LINES);
     glVertex3f(p1[0], p1[1], p1[2]);
     glVertex3f(p2[0], p2[1], p2[2]);
     glVertex3f(p3[0], p3[1], p3[2]);
     glEnd();
 }
 
-
-void Gdisplay::drawSphere(double x,double y,double z,double r,std::vector<double> C,int res)
+void
+morph::Gdisplay::drawSphere (double x,double y,double z,double r,std::vector<double> C,int res)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
-    //glColor3f(red,green,blue);
     GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
@@ -352,7 +353,10 @@ void Gdisplay::drawSphere(double x,double y,double z,double r,std::vector<double
     glPopMatrix();
 };
 
-void Gdisplay::drawLine(double ax,double ay,double az,double bx,double by,double bz,double red,double green,double blue,double width)
+void
+morph::Gdisplay::drawLine (double ax, double ay, double az,
+                           double bx, double by, double bz,
+                           double red, double green, double blue, double width)
 {
     glColor3f(red,green,blue);
     glPointSize(width);
@@ -362,7 +366,8 @@ void Gdisplay::drawLine(double ax,double ay,double az,double bx,double by,double
     glEnd();
 };
 
-void Gdisplay::addFloor(double x, double y)
+void
+morph::Gdisplay::addFloor (double x, double y)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GLfloat col[] = {0.92,0.94,0.96, 1.f};
@@ -385,7 +390,10 @@ void Gdisplay::addFloor(double x, double y)
   keeping it in case its useful for future reference for drawing
   cylinders.
 */
-void Gdisplay::drawCylinder(std::vector <double> A, std::vector <double> B, double h, double rBase, double rEnd, std::vector <double> col, int res)
+void
+morph::Gdisplay::drawCylinder (std::vector<double> A, std::vector<double> B,
+                               double h, double rBase, double rEnd,
+                               std::vector<double> col, int res)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
 
@@ -447,7 +455,8 @@ void Gdisplay::drawCylinder(std::vector <double> A, std::vector <double> B, doub
     }
 }
 
-void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector <double> col)
+void
+morph::Gdisplay::drawCylinder (float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector<double> col)
 {
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -504,7 +513,8 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
     glPopMatrix();
 }
 
-void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector <double> col)
+void
+morph::Gdisplay::drawCylinder (float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector<double> col)
 {
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -544,7 +554,8 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
 }
 #endif
 
-void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector <double> col)
+void
+morph::Gdisplay::drawCylinder (float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector<double> col)
 {
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -579,11 +590,11 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
 
     }
     glPopMatrix();
-
 }
 
 #ifdef DRAWCYLINDER_ATTEMPTS
-void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector <double> col){
+void
+morph::Gdisplay::drawCylinder (float x1, float y1, float z1, float x2, float y2, float z2, float radA, float radB, int subdivisions, std::vector<double> col){
 
     GLUquadricObj *quadric=gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -668,7 +679,9 @@ void Gdisplay::drawCylinder(float x1, float y1, float z1, float x2, float y2, fl
 }
 #endif
 
-void Gdisplay::drawMesh(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
+void
+morph::Gdisplay::drawMesh (std::vector<std::vector<std::vector<double> > > X,
+                           std::vector<std::vector<std::vector<double> > > C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
@@ -726,7 +739,8 @@ void Gdisplay::drawMesh(std::vector< std::vector< std::vector <double> > > X, st
     }
 }
 
-void Gdisplay::drawMesh2(std::vector< std::vector< std::vector <double> > > X, std::vector <double> col)
+void
+morph::Gdisplay::drawMesh2 (std::vector<std::vector<std::vector<double> > > X, std::vector<double> col)
 {
     //GLUquadricObj *quadric=gluNewQuadric();
     //gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -784,7 +798,9 @@ void Gdisplay::drawMesh2(std::vector< std::vector< std::vector <double> > > X, s
 }
 
 #ifdef DRAWTORUS_ATTEMPT
-void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
+void
+morph::Gdisplay::drawTorus (std::vector<std::vector<std::vector<double> > > X,
+                            std::vector<std::vector<std::vector<double> > > C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
@@ -831,7 +847,9 @@ void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, s
 }
 #endif
 
-void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, std::vector<std::vector<std::vector<double> > > C)
+void
+morph::Gdisplay::drawTorus (std::vector<std::vector<std::vector<double> > > X,
+                            std::vector<std::vector<std::vector<double> > > C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
@@ -886,7 +904,8 @@ void Gdisplay::drawTorus(std::vector< std::vector< std::vector <double> > > X, s
 }
 
 #ifdef DRAWCUBESPHERE_ATTEMPTS
-void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
+void
+morph::Gdisplay::drawCubeSphere (std::vector<std::vector<double> > X)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
@@ -933,7 +952,8 @@ void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
     }
 }
 
-void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
+void
+morph::Gdisplay::drawCubeSphere (std::vector<std::vector<double> > X)
 {
     GLfloat colrZip[]={1.,1.,1.,1.f};
     GLfloat colrTri[]={1.,1.,1.,1.f};
@@ -1413,7 +1433,8 @@ void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
 }
 #endif
 
-void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
+void
+morph::Gdisplay::drawCubeSphere (std::vector<std::vector<double> > X)
 {
     GLfloat colrZip[]={1.,1.,1.,1.f};
     GLfloat colrTri[]={1.,1.,1.,1.f};
@@ -1902,7 +1923,10 @@ void Gdisplay::drawCubeSphere(std::vector< std::vector <double> > X)
     glEnd();
 }
 
-void Gdisplay::drawSphereFromMesh(std::vector<std::vector<double> > X, std::vector<std::vector<int> > M, std::vector<std::vector<double> > C)
+void
+morph::Gdisplay::drawSphereFromMesh (std::vector<std::vector<double> > X,
+                                     std::vector<std::vector<int> > M,
+                                     std::vector<std::vector<double> > C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
@@ -1964,7 +1988,10 @@ void Gdisplay::drawSphereFromMesh(std::vector<std::vector<double> > X, std::vect
     }
 }
 
-void Gdisplay::drawFlatCube(std::vector< std::vector<int> > C, std::vector< std::vector <double> > Col,double X, double Y, double Z)
+void
+morph::Gdisplay::drawFlatCube (std::vector<std::vector<int> > C,
+                               std::vector<std::vector<double> > Col,
+                               double X, double Y, double Z)
 {
     int n = sqrt(C.size()/6);
     double dn1 = 1./(double)n;
@@ -2005,7 +2032,8 @@ void Gdisplay::drawFlatCube(std::vector< std::vector<int> > C, std::vector< std:
 }
 
 #ifdef DRAWFLATCUBE_ATTEMPT
-void Gdisplay::drawFlatCube(std::vector< std::vector <double> > C)
+void
+morph::Gdisplay::drawFlatCube (std::vector<std::vector<double> > C)
 {
     int n = sqrt(C.size()/6);
     double dn1 = 1./(double)n;
@@ -2051,7 +2079,13 @@ void Gdisplay::drawFlatCube(std::vector< std::vector <double> > C)
 }
 #endif
 
-void Gdisplay::addQuad(std::vector <double> p1, std::vector <double> p2, std::vector <double> p3, std::vector <double> p4, std::vector <double> N, std::vector <double> C)
+void
+morph::Gdisplay::addQuad (std::vector<double> p1,
+                          std::vector<double> p2,
+                          std::vector<double> p3,
+                          std::vector<double> p4,
+                          std::vector<double> N,
+                          std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // fill
     glBegin(GL_POLYGON);
@@ -2070,7 +2104,8 @@ void Gdisplay::addQuad(std::vector <double> p1, std::vector <double> p2, std::ve
     glEnd();
 }
 
-void Gdisplay::addCrossHairs(double d, double l, int w)
+void
+morph::Gdisplay::addCrossHairs (double d, double l, int w)
 {
     //x col
     drawLine(-d,-d,-d,        -d+l,-d,-d,                1.,0.,0.,w); //-z
@@ -2115,7 +2150,8 @@ void Gdisplay::addCrossHairs(double d, double l, int w)
     drawLine(+d,-d,+d,        +d,-d,+d-l,                0.,0.,1.,w);
 }
 
-void Gdisplay::saveImage(std::string filename)
+void
+morph::Gdisplay::saveImage (std::string filename)
 {
     glXMakeCurrent(disp, win, glc);
     GLubyte * bits; //RGB bits
