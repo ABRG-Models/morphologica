@@ -11,7 +11,13 @@ Code is (or shortly will be) enclosed in the "morph" namespace.
 
 It requires OpenCV, Armadillo and OpenGL headers to compile, and
 programs linked with libmorphologica will also need to link to those
-dependencies.
+dependencies. You will also need the cmake program and a C++ compiler.
+
+To install these dependencies on Ubuntu or Debian Linux, you can do:
+
+```
+sudo apt install build-essential cmake libopencv-dev libarmadillo-dev libglu1-mesa-dev
+```
 
 To build, it's the usual CMake process:
 
