@@ -23,4 +23,12 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j4
 ctest
 sudo make install
+sudo ldconfig # Probably Linux specific! Mac alternative?
 ```
+
+Note the call to ldconfig at the end there, which makes sure that
+libmorphologica is available to your system's dynamic linker. On
+Linux, that means running ldconfig, as above, assuming you had the
+library installed in /usr/local, as in the example above. If you
+installed elsewhere, then you probably know how to set
+LD\_CONFIG\_PATH correctly.
