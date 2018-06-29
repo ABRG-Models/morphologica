@@ -9,7 +9,7 @@ using morph::BezCoord;
 using morph::BezCurve;
 
 /*
- * This test joins two curves together and selects points along eac
+ * This test joins two curves together and selects points along each
  * curve, making sure to keep them evenly spaced.
  */
 
