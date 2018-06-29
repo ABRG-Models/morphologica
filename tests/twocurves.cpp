@@ -42,7 +42,9 @@ int main()
     BezCurve cc2(p1_f, p2_f, p2_c1, p2_c2);
 
     // Now have two curves, generate points on the curves
-    vector<BezCoord> a = cc1.computePoints (float(1.0));
+    float steplen = 1.0f;
+
+    vector<BezCoord> a = cc1.computePoints (steplen);
 
     // Look at 'em
     vector<BezCoord>::iterator ai = a.begin();
@@ -54,10 +56,14 @@ int main()
         ++ai;
         ++ii;
     }
-    cout << "Remaining: " << a.back().getRemaining() << endl;
+    --ai; // Step back to final null coordinate
+    cout << "Remaining: " << ai->getRemaining() << endl;
+    --ai; // Once more to last non-null coordinate
+    cout << "Last element: " << ai->getCoord().first << endl;
+    pair<float,float> last_of_cc1 = ai->getCoord();
 
-
-    vector<BezCoord> b = cc2.computePoints (float(1.0));
+    float firstl = steplen - a.back().getRemaining();
+    vector<BezCoord> b = cc2.computePoints (steplen, firstl);
 
     ai = b.begin();
     ii = 0;
@@ -68,7 +74,24 @@ int main()
         ++ai;
         ++ii;
     }
-    cout << "Remaining: " << b.back().getRemaining() << endl;
+    --ai; // Step back to final null coordinate
+    cout << "Remaining: " << ai->getRemaining() << endl;
+    --ai; // Once more to last non-null coordinate
+    cout << "Last element: " << ai->getCoord().first << endl;
+    pair<float,float> first_of_cc2 = b.front().getCoord();
+
+    // Now determine the Cartesian distance between last of cc1 and
+    // first of cc2
+    float dx = first_of_cc2.first - last_of_cc1.first;
+    float dy = first_of_cc2.second - last_of_cc1.second;
+
+    float d = sqrt (dx*dx + dy* dy);
+
+    cout << "Distance between adjoining curves: " << d << endl;
+
+    if (steplen - d < 0.02) {
+        rtn = 0;
+    }
 
     return rtn;
 }

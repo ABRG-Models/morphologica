@@ -52,11 +52,21 @@ morph::BezCurve::computePoints (int n)
 }
 
 vector<BezCoord>
-morph::BezCurve::computePoints (float l)
+morph::BezCurve::computePoints (float l, float firstl)
 {
     vector<BezCoord> rtn;
     float t = 0.0f;
     bool lastnull = false;
+
+    if (firstl > 0.0f) {
+        // firstl is the desired distance to the first point and, if
+        // non-zero, overrides l for the first point.
+        BezCoord b = this->computePoint (t, firstl);
+        rtn.push_back (b);
+        t = b.t();
+        lastnull = b.getNullCoordinate();
+    }
+
     while (t != 1.0f && lastnull == false) {
         BezCoord b = this->computePoint (t, l);
         rtn.push_back (b);

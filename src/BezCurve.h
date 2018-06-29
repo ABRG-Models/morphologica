@@ -73,8 +73,13 @@ namespace morph
          * in the vector. The last point in the vector will be a
          * nullCoordinate BezCoord which will contain the Euclidean
          * distance to the end of the curve.
+         *
+         * If firstl is set and non-zero, then the first point will be
+         * a Cartesian distance firstl from the initial point of the
+         * curve, rather than being a distance l from the initial
+         * point.
          */
-        vector<BezCoord> computePoints (float l);
+        vector<BezCoord> computePoints (float l, float firstl = 0.0f);
 
         /*!
          * Get a vector of points on the curve with horizontal spacing
