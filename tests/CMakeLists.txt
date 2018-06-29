@@ -13,3 +13,10 @@ add_executable(${TARGETTEST1} ${SOURCETEST1})
 #target_compile_features(${TARGETTEST1} PUBLIC)
 target_link_libraries(${TARGETTEST1} morphologica)
 add_test(testbez ${TARGETTEST1})
+
+# Test two curves connected together
+set(TARGETTEST2 twocurves CACHE TYPE STRING)
+set(SOURCETEST2 twocurves.cpp)
+add_executable(${TARGETTEST2} ${SOURCETEST2})
+target_link_libraries(${TARGETTEST2} morphologica)
+add_test(twocurves ${TARGETTEST2})
