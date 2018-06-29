@@ -32,6 +32,12 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++11")
 endif()
 
+# The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
+# work, but was required for OpenCV, so it's useful to be able to
+# install a from-source build of Armadillo in /usr/local and link to
+# this.
+set(MORPH_ARMADILLO_LIBPATH "" CACHE PATH "The path to the armadillo library (e.g. /usr/local/lib)")
+
 # A section to ensure library linking works on Apple.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
@@ -74,7 +80,7 @@ add_subdirectory(tests)
 add_subdirectory(pc)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES ON)
+set(DEBUG_VARIABLES OFF)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})

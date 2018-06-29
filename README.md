@@ -40,3 +40,11 @@ CMAKE\_INSTALL\_PREFIX of /usr/local is already in your dynamic
 linker's search path) as in the example above. If you installed
 elsewhere, then you probably know how to set LD\_CONFIG\_PATH
 correctly (or at least you can now search up how to do that).
+
+Note also that we've had a peculiar linking issue with libarmadillo8
+on Ubuntu 18.04 LTS. So far the only way I found to solve this was to
+install a from-source compiled version of libarmadillo version 8.600
+in /usr/local/lib. If you have to do this, then you can pass
+-DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
+before -larmadillo to link the one that works, rather than the package
+managed one that seems not to (but is required by the OpenCV libs).

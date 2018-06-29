@@ -5,6 +5,11 @@ if(APPLE)
   link_directories(/usr/X11R6/lib)
 endif(APPLE)
 
+if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
+  message ("You have MORPH_ARMADILLO_LIBPATH set to: ${MORPH_ARMADILLO_LIBPATH}")
+  link_directories(${MORPH_ARMADILLO_LIBPATH})
+endif()
+
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
 if(APPLE)
