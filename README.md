@@ -17,7 +17,7 @@ To install these dependencies on Ubuntu or Debian Linux, you can do:
 
 ```sh
 sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
-                 libglu1-mesa-dev libxmu-dev libxi-dev
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
 ```
 
 To build, it's the usual CMake process:
