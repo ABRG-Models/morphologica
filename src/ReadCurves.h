@@ -91,6 +91,12 @@ namespace morph
         void readPath (xml_node<>* path_node, const string& layerName);
 
         /*!
+         * This parses the d attribute string in an SVG path. I'm
+         * assuming this will always be a list of Bezier Curves.
+         */
+        list<BezCurve> parseD (const string& d);
+
+        /*!
          * Read a <line> element. x1,y1,x2,y2 attributes from which
          * line length can be determined.
          */

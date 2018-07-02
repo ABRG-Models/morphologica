@@ -9,6 +9,7 @@
 
 using std::runtime_error;
 using std::stringstream;
+using std::make_pair;
 
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
@@ -106,6 +107,23 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
     }
 
     std::cout << "Path commands for layer " << layerName << ": " << d << std::endl;
+
+    list<BezCurve> curves = this->parseD (d);
+    if (layerName == "cortex") {
+        this->corticalPath = curves;
+    } else {
+        this->enclosedRegions.push_back (make_pair(layerName, curves));
+    }
+}
+
+list<BezCurve>
+morph::ReadCurves::parseD (const string& d)
+{
+    list<BezCurve> curves;
+
+    // Text parsing time!
+
+    return curves;
 }
 
 void
