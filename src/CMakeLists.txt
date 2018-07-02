@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp)
+set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -37,6 +37,6 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h sockserve.h tools.h world.h BezCurve.h BezCoord.h
+  FILES display.h sockserve.h tools.h world.h BezCurve.h BezCoord.h ReadCurves.h AllocAndRead.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )

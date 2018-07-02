@@ -61,7 +61,7 @@ find_package(X11 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH})
 
 # rapidxml is bundled in the source:
-#include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
 # Library code is compiled up as a shared library in lib/ (could also be compiled static if needed)
 add_subdirectory(src)
