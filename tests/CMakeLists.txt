@@ -20,3 +20,10 @@ set(SOURCETEST2 twocurves.cpp)
 add_executable(${TARGETTEST2} ${SOURCETEST2})
 target_link_libraries(${TARGETTEST2} morphologica)
 add_test(twocurves ${TARGETTEST2})
+
+# Test reading trial.svg
+set(TARGETTEST3 testreadcurves CACHE TYPE STRING)
+set(SOURCETEST3 testreadcurves.cpp)
+add_executable(${TARGETTEST3} ${SOURCETEST3})
+target_link_libraries(${TARGETTEST3} morphologica)
+add_test(testreadcurves ${TARGETTEST3})
