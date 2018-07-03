@@ -62,8 +62,7 @@ void
 morph::ReadCurves::read (void)
 {
     // Search each layer - these are called <g> elements in the SVG.
-    this->first_g_node = this->root_node->first_node("g");
-    for (xml_node<>* g_node = this->first_g_node;
+    for (xml_node<>* g_node = this->root_node->first_node("g");
          g_node;
          g_node = g_node->next_sibling("g")) {
         this->readG (g_node);
@@ -174,30 +173,33 @@ morph::ReadCurves::parseD (const string& d)
     // position at the end of the previous curve.
     pair<float, float> currentCoordinate = make_pair (0.0f, 0.0f);
 
-    // The first coordinate of the path
+    // The first coordinate of the path. Can be required with a Z
+    // command.
     pair<float, float> firstCoordinate = make_pair (0.0f, 0.0f);
 
     // The last Bezier control points, c2, especially may be required
-    // in a shortcut Bezier command (s or S)
+    // in a shortcut Bezier command (s or S), hence declaring these
+    // outside the scope of the while loop.
     pair<float, float> c1; // Control point 1
     pair<float, float> c2; // Control point 2
     pair<float, float> f;  // Final point of curve
 
+    // A list of SVG command characters
     const char* svgCmds = "mMcCsSqQtTzZ";
+
     // Text parsing time!
     string::size_type p0 = 0;
     string::size_type p1 = d.find_first_of (svgCmds, p0);
     string::size_type p2 = 0;
     while (p1 != string::npos) {
-        DBG2 (d[p1]);
-        switch (d[p1]) {
+
+        switch (d[p1]) { // switch on the command character
 
         case 'M': // move command, absolution coordinates
         case 'm': // move command, deltas
         {
             p2 = d.find_first_of (svgCmds, p1+1);
             string mCmd = d.substr (p1+1, p2-p1-1);
-            DBG2 ("mCmd: " << mCmd);
             vector<float> v = this->splitSvgCmdString (mCmd);
             if (v.size() != 2) {
                 throw runtime_error ("Unexpected size of SVG path M command (expected 2 numbers)");
@@ -205,13 +207,6 @@ morph::ReadCurves::parseD (const string& d)
             currentCoordinate = make_pair (v[0], v[1]);
             firstCoordinate = currentCoordinate;
             curves.initialCoordinate = currentCoordinate;
-#if 0
-            vector<float>::const_iterator vi = v.begin();
-            while (vi != v.end()) {
-                DBG ("float number: " << *vi);
-                ++vi;
-            }
-#endif
             break;
         }
 
@@ -225,32 +220,18 @@ morph::ReadCurves::parseD (const string& d)
             if (v.size() != 6) {
                 throw runtime_error ("Unexpected size of SVG path C command (expected 6 numbers)");
             }
-
             if (d[p1] == 'c') { // delta coordinates
-#if 0
-                c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                c2 = make_pair(c1.first + v[2], c1.second + v[3]);
-                f = make_pair(c2.first + v[4], c2.second + v[5]);
-#else
                 c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
                 c2 = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
                 f = make_pair(currentCoordinate.first + v[4], currentCoordinate.second + v[5]);
-#endif
-                DBG2 ("i: " << currentCoordinate.first << "," <<  currentCoordinate.second << " "
-                      << "c1: " << c1.first << "," << c1.second << " "
-                      << "c2: " << c2.first << "," << c2.second << " "
-                      << "f: " << f.first << "," << f.second);
-
             } else { // 'C', so absolute coordinates were given
                 c1 = make_pair (v[0],v[1]);
                 c2 = make_pair (v[2],v[3]);
                 f = make_pair (v[4],v[5]);
             }
-
             BezCurve c(currentCoordinate, f, c1, c2);
             curves.addCurve (c);
             currentCoordinate = f;
-
             break;
         }
 
@@ -264,43 +245,35 @@ morph::ReadCurves::parseD (const string& d)
             if (v.size() != 4) {
                 throw runtime_error ("Unexpected size of SVG path S command (expected 4 numbers)");
             }
-
             // c2 and currentCoordinate are stored locally in abs. coordinates:
             c1.first = 2 * currentCoordinate.first - c2.first;
             c1.second = 2 * currentCoordinate.second - c2.second;
-
             if (d[p1] == 's') { // delta coordinates
-                // Are the deltas counted from the currentCoordinate?
+                // Deltas are determined from the currentCoordinate
                 c2 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                // ...or from the point c1?
-                //c2 = make_pair(c1.first + v[0], c1.second + v[1]);
-
-                // Final from c2 or currentCoordinate?
-                //f = make_pair(c2.first + v[2], c2.second + v[3]);
                 f = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
-
             } else { // 'S', so absolute coordinates were given
                 c2 = make_pair (v[0],v[1]);
                 f = make_pair (v[2],v[3]);
             }
-
             BezCurve c(currentCoordinate, f, c1, c2);
             curves.addCurve (c);
             currentCoordinate = f;
-
             break;
         }
 
         case 'Q':
         case 'q': // Quadratic Bezier
+        {
             throw runtime_error ("Quadratic Bezier is unimplemented");
             break;
-
+        }
         case 'T':
         case 't': // Shortcut quadratic Bezier
+        {
             throw runtime_error ("Shortcut quadratic Bezier is unimplemented");
             break;
-
+        }
         case 'Z':
         case 'z': // straight line from current position to first point of path.
         {

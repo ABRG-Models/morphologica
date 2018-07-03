@@ -28,7 +28,9 @@ namespace morph
 {
     /*!
      * Read a .svg file containing information about curves in a
-     * neocortex.
+     * neocortex. The SVG file should conform to the format which we
+     * agreed in Davis, when Drew created trial.svg as a sample
+     * drawing of a curve outline.
      */
     class ReadCurves
     {
@@ -99,8 +101,9 @@ namespace morph
         void readPath (xml_node<>* path_node, const string& layerName);
 
         /*!
-         * Split up a string of SVG command numbers up. These are
-         * delimited either by a comma or by a minus sign.
+         * Split up a string of SVG command numbers. These are
+         * delimited either by a comma or by a minus sign. Interpret
+         * them as floats and return in a vector.
          */
         vector<float> splitSvgCmdString (const string& s);
 
@@ -154,13 +157,6 @@ namespace morph
          * the root node pointer.
          */
         xml_node<>* root_node = static_cast<xml_node<>*>(0);
-
-        /*!
-         * Do I need this? SpineML_PreFlight/modelpreflight keeps a
-         * copy for the first (population) node.
-         */
-        xml_node<>* first_g_node;
-
     };
 
 } // namespace morph
