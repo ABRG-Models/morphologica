@@ -67,6 +67,7 @@ namespace morph
         float getParam (void) const { return this->param; }
         float getRemaining (void) const { return this->remaining; }
         bool getNullCoordinate (void) const { return this->nullCoordinate; }
+        bool isNull (void) const { return this->nullCoordinate; }
         void setCoord (pair<float,float> c) { this->coord = c; }
         void setParam (float p) { this->param = p; }
         void setRemaining (float r) { this->remaining = r; }
@@ -135,7 +136,9 @@ namespace morph
     private: // attributes
 
         /*!
-         * Cartesian coordinates of the point.
+         * Cartesian coordinates of the point. In keeping with SVG,
+         * coord.first (x) is positive rightwards and coord.second is
+         * positive downwards.
          */
         pair<float,float> coord;
 

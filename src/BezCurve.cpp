@@ -2,10 +2,16 @@
  * Implementation of BezCurve methods
  */
 
+// To enable debug cout messages:
+#define DEBUG 1
+#define DBGSTREAM std::cout
+#include "MorphDbg.h"
+
 #include "BezCurve.h"
 #include <stdexcept>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using morph::BezCoord;
@@ -41,10 +47,14 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
 }
 
 vector<BezCoord>
-morph::BezCurve::computePoints (int n)
+morph::BezCurve::computePoints (unsigned int n) const
 {
+    DBG2 ("Called. i: " << this->p0.first << "," << this->p0.second
+          << " c1: " <<  this->control1.first << "," << this->control1.second
+          << " c2: " <<  this->control2.first << "," << this->control2.second
+          << " f: " <<  this->p1.first << "," << this->p1.second);
     vector<BezCoord> rtn;
-    for (int i = 0; i < n; ++i) {
+    for (unsigned int i = 0; i < n; ++i) {
         float t = i/static_cast<float>(n);
         rtn.push_back (this->computePoint (t));
     }
@@ -52,7 +62,7 @@ morph::BezCurve::computePoints (int n)
 }
 
 vector<BezCoord>
-morph::BezCurve::computePoints (float l, float firstl)
+morph::BezCurve::computePoints (float l, float firstl) const
 {
     vector<BezCoord> rtn;
     float t = 0.0f;
@@ -77,7 +87,7 @@ morph::BezCurve::computePoints (float l, float firstl)
 }
 
 vector<BezCoord>
-morph::BezCurve::computePointsHorz (float x)
+morph::BezCurve::computePointsHorz (float x) const
 {
     vector<BezCoord> rtn;
     float t = 0.0f;
@@ -92,8 +102,9 @@ morph::BezCurve::computePointsHorz (float x)
 }
 
 BezCoord
-morph::BezCurve::computePoint (float t)
+morph::BezCurve::computePoint (float t) const
 {
+    DBG2 ("Called computePoint(float t = "  << t << ")");
     switch (this->beztype) {
     case morph::BEZLINEAR:
         return this->computePointLinear (t);
@@ -106,8 +117,9 @@ morph::BezCurve::computePoint (float t)
 }
 
 BezCoord
-morph::BezCurve::computePoint (float t, float l)
+morph::BezCurve::computePoint (float t, float l) const
 {
+    DBG2 ("Called computePoint(float t, float l)");
     switch (this->beztype) {
     case morph::BEZLINEAR:
         return this->computePointLinear (t, l);
@@ -119,7 +131,7 @@ morph::BezCurve::computePoint (float t, float l)
 }
 
 BezCoord
-morph::BezCurve::computePointLinear (float t, float l)
+morph::BezCurve::computePointLinear (float t, float l) const
 {
     BezCoord b1 = this->computePoint (t);
     BezCoord e1 = this->computePoint (1.0f);
@@ -139,8 +151,38 @@ morph::BezCurve::computePointLinear (float t, float l)
     return this->computePointLinear (t);
 }
 
+string
+morph::BezCurve::output (unsigned int numPoints) const
+{
+    stringstream ss;
+    vector<BezCoord> points = this->computePoints (numPoints);
+    vector<BezCoord>::const_iterator i = points.begin();
+    while (i != points.end()) {
+        if (!i->isNull()) {
+            ss << i->x() << "," << i->y() << endl;
+        }
+        ++i;
+    }
+    return ss.str();
+}
+
+string
+morph::BezCurve::output (float step) const
+{
+    stringstream ss;
+    vector<BezCoord> points = this->computePoints (step);
+    vector<BezCoord>::const_iterator i = points.begin();
+    while (i != points.end()) {
+        if (!i->isNull()) {
+            ss << i->x() << "," << i->y() << endl;
+        }
+        ++i;
+    }
+    return ss.str();
+}
+
 BezCoord
-morph::BezCurve::computePointLinear (float t)
+morph::BezCurve::computePointLinear (float t) const
 {
     this->checkt(t);
     pair<float,float> b;
@@ -150,8 +192,9 @@ morph::BezCurve::computePointLinear (float t)
 }
 
 BezCoord
-morph::BezCurve::computePointQuadratic (float t)
+morph::BezCurve::computePointQuadratic (float t) const
 {
+    DBG2  ("Called");
     this->checkt (t);
     pair<float,float> b;
     float t_ = 1-t;
@@ -165,7 +208,7 @@ morph::BezCurve::computePointQuadratic (float t)
 }
 
 BezCoord
-morph::BezCurve::computePointCubic (float t)
+morph::BezCurve::computePointCubic (float t) const
 {
     this->checkt (t);
     pair<float,float> b;
@@ -182,7 +225,7 @@ morph::BezCurve::computePointCubic (float t)
 }
 
 BezCoord
-morph::BezCurve::computePointBySearch (float t, float l)
+morph::BezCurve::computePointBySearch (float t, float l) const
 {
     //cout << "Starting parameter: " << t << endl;
 
@@ -243,7 +286,7 @@ morph::BezCurve::computePointBySearch (float t, float l)
 }
 
 BezCoord
-morph::BezCurve::computePointBySearchHorz (float t, float x)
+morph::BezCurve::computePointBySearchHorz (float t, float x) const
 {
     //cout << "Starting parameter: " << t << "\t";
 
@@ -307,7 +350,7 @@ morph::BezCurve::computePointBySearchHorz (float t, float x)
 }
 
 void
-morph::BezCurve::checkt (float t)
+morph::BezCurve::checkt (float t) const
 {
     if (t < 0.0 || t > 1.0) {
         throw std::runtime_error ("t out of range [0,1]");

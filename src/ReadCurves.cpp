@@ -3,20 +3,29 @@
  */
 
 #include "ReadCurves.h"
-#include "BezCurve.h"
+#include "BezCurvePath.h"
 #include <stdexcept>
 #include <sstream>
+#include <vector>
+
+// To enable debug cout messages:
+#define DEBUG 1
+#define DBGSTREAM std::cout
+#include "MorphDbg.h"
 
 using std::runtime_error;
 using std::stringstream;
 using std::make_pair;
+using std::vector;
+using std::cout;
+using std::endl;
 
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
 using rapidxml::parse_declaration_node;
 using rapidxml::parse_no_data_nodes;
 
-using morph::BezCurve;
+using morph::BezCurvePath;
 
 morph::ReadCurves::ReadCurves (const string& svgpath)
 {
@@ -54,13 +63,11 @@ morph::ReadCurves::read (void)
 {
     // Search each layer - these are called <g> elements in the SVG.
     this->first_g_node = this->root_node->first_node("g");
-    //xml_node<>* g_node = this->first_g_node;
-    for (xml_node<>* g_node = this->first_g_node;//g_node = this->root_node->first_node("g");
+    for (xml_node<>* g_node = this->first_g_node;
          g_node;
          g_node = g_node->next_sibling("g")) {
         this->readG (g_node);
     }
-
 }
 
 void
@@ -106,22 +113,212 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         throw runtime_error ("Found a <path> element without a d attribute");
     }
 
-    std::cout << "Path commands for layer " << layerName << ": " << d << std::endl;
+    DBG ("Path commands for layer " << layerName << ": " << d);
 
-    list<BezCurve> curves = this->parseD (d);
+    BezCurvePath curves = this->parseD (d);
+    curves.name = layerName;
+    curves.output();
     if (layerName == "cortex") {
         this->corticalPath = curves;
     } else {
-        this->enclosedRegions.push_back (make_pair(layerName, curves));
+        this->enclosedRegions.push_back (curves);
     }
 }
 
-list<BezCurve>
+vector<float>
+morph::ReadCurves::splitSvgCmdString (const string& s)
+{
+    vector<float> numbers;
+    float n = 0.0f;
+
+    string::size_type p0 = 0;
+    string::size_type p1 = s.find_first_of ("-,", p0);
+    while (p1 != string::npos) {
+
+        if (p1 != p0) {
+            stringstream ss;
+            ss << s.substr(p0, p1-p0);
+            DBG2 ("ss.str(): " << ss.str());
+            ss >> n;
+            numbers.push_back (n);
+        }
+
+        if (s[p1] == ',') {
+            p0 = p1+1;
+        } else if (s[p1] == '-') {
+            p0 = p1; // Not +1 so that we include the - in the next one
+        }
+
+        p1 = s.find_first_of ("-,", p1+1);
+    }
+
+    if (p1 == string::npos) {
+        // No minus signs. Attempt to convert s into a single float and return
+        stringstream ss;
+        ss << s.substr(p0, p1-p0);
+        DBG2 ("Last one: ss.str(): " << ss.str());
+        ss >> n;
+        numbers.push_back (n);
+    }
+
+    return numbers;
+}
+
+BezCurvePath
 morph::ReadCurves::parseD (const string& d)
 {
-    list<BezCurve> curves;
+    BezCurvePath curves;
 
+    // As we parse through the path, we have to keep track of the
+    // current coordinate position, as curves are specified from the
+    // position at the end of the previous curve.
+    pair<float, float> currentCoordinate = make_pair (0.0f, 0.0f);
+
+    // The first coordinate of the path
+    pair<float, float> firstCoordinate = make_pair (0.0f, 0.0f);
+
+    // The last Bezier control points, c2, especially may be required
+    // in a shortcut Bezier command (s or S)
+    pair<float, float> c1; // Control point 1
+    pair<float, float> c2; // Control point 2
+    pair<float, float> f;  // Final point of curve
+
+    const char* svgCmds = "mMcCsSqQtTzZ";
     // Text parsing time!
+    string::size_type p0 = 0;
+    string::size_type p1 = d.find_first_of (svgCmds, p0);
+    string::size_type p2 = 0;
+    while (p1 != string::npos) {
+        DBG2 (d[p1]);
+        switch (d[p1]) {
+
+        case 'M': // move command, absolution coordinates
+        case 'm': // move command, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string mCmd = d.substr (p1+1, p2-p1-1);
+            DBG2 ("mCmd: " << mCmd);
+            vector<float> v = this->splitSvgCmdString (mCmd);
+            if (v.size() != 2) {
+                throw runtime_error ("Unexpected size of SVG path M command (expected 2 numbers)");
+            }
+            currentCoordinate = make_pair (v[0], v[1]);
+            firstCoordinate = currentCoordinate;
+            curves.initialCoordinate = currentCoordinate;
+#if 0
+            vector<float>::const_iterator vi = v.begin();
+            while (vi != v.end()) {
+                DBG ("float number: " << *vi);
+                ++vi;
+            }
+#endif
+            break;
+        }
+
+        case 'C': // cubic Bezier curve, abs positions
+        case 'c': // cubic Bezier curve, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string cCmd = d.substr (p1+1, p2-p1-1);
+            DBG2 ("cCmd: " << cCmd);
+            vector<float> v = this->splitSvgCmdString (cCmd);
+            if (v.size() != 6) {
+                throw runtime_error ("Unexpected size of SVG path C command (expected 6 numbers)");
+            }
+
+            if (d[p1] == 'c') { // delta coordinates
+#if 0
+                c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
+                c2 = make_pair(c1.first + v[2], c1.second + v[3]);
+                f = make_pair(c2.first + v[4], c2.second + v[5]);
+#else
+                c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
+                c2 = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
+                f = make_pair(currentCoordinate.first + v[4], currentCoordinate.second + v[5]);
+#endif
+                DBG2 ("i: " << currentCoordinate.first << "," <<  currentCoordinate.second << " "
+                      << "c1: " << c1.first << "," << c1.second << " "
+                      << "c2: " << c2.first << "," << c2.second << " "
+                      << "f: " << f.first << "," << f.second);
+
+            } else { // 'C', so absolute coordinates were given
+                c1 = make_pair (v[0],v[1]);
+                c2 = make_pair (v[2],v[3]);
+                f = make_pair (v[4],v[5]);
+            }
+
+            BezCurve c(currentCoordinate, f, c1, c2);
+            curves.addCurve (c);
+            currentCoordinate = f;
+
+            break;
+        }
+
+        case 'S': // shortcut cubic Bezier, absolute coordinates
+        case 's': // shortcut cubic Bezier, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string sCmd = d.substr (p1+1, p2-p1-1);
+            DBG2 ("sCmd: " << sCmd);
+            vector<float> v = this->splitSvgCmdString (sCmd);
+            if (v.size() != 4) {
+                throw runtime_error ("Unexpected size of SVG path S command (expected 4 numbers)");
+            }
+
+            // c2 and currentCoordinate are stored locally in abs. coordinates:
+            c1.first = 2 * currentCoordinate.first - c2.first;
+            c1.second = 2 * currentCoordinate.second - c2.second;
+
+            if (d[p1] == 's') { // delta coordinates
+                // Are the deltas counted from the currentCoordinate?
+                c2 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
+                // ...or from the point c1?
+                //c2 = make_pair(c1.first + v[0], c1.second + v[1]);
+
+                // Final from c2 or currentCoordinate?
+                //f = make_pair(c2.first + v[2], c2.second + v[3]);
+                f = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
+
+            } else { // 'S', so absolute coordinates were given
+                c2 = make_pair (v[0],v[1]);
+                f = make_pair (v[2],v[3]);
+            }
+
+            BezCurve c(currentCoordinate, f, c1, c2);
+            curves.addCurve (c);
+            currentCoordinate = f;
+
+            break;
+        }
+
+        case 'Q':
+        case 'q': // Quadratic Bezier
+            throw runtime_error ("Quadratic Bezier is unimplemented");
+            break;
+
+        case 'T':
+        case 't': // Shortcut quadratic Bezier
+            throw runtime_error ("Shortcut quadratic Bezier is unimplemented");
+            break;
+
+        case 'Z':
+        case 'z': // straight line from current position to first point of path.
+        {
+            if (currentCoordinate != firstCoordinate) {
+                BezCurve c(currentCoordinate, firstCoordinate);
+                curves.addCurve (c);
+                currentCoordinate = firstCoordinate;
+            }
+            break;
+        }
+
+        default:
+            break;
+        }
+
+        p0 = p1+1;
+        p1 = d.find_first_of (svgCmds, p0);
+    }
 
     return curves;
 }
@@ -163,31 +360,42 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     }
 
     // Now do something with x1,y1,x2,y2
-    std::cout << "line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")" << std::endl;
+    DBG ("line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")");
 }
 
-list<BezCurve>
-morph::ReadCurves::getCorticalPath (void)
+BezCurvePath
+morph::ReadCurves::getCorticalPath (void) const
 {
     return this->corticalPath;
 }
 
-list<BezCurve>
-morph::ReadCurves::getEnclosedRegion (const string& structName)
+BezCurvePath
+morph::ReadCurves::getEnclosedRegion (const string& structName) const
 {
-    list<BezCurve> nullrtn;
-    list<pair<string, list<BezCurve> > >::const_iterator i = this->enclosedRegions.begin();
+    BezCurvePath nullrtn;
+    list<BezCurvePath>::const_iterator i = this->enclosedRegions.begin();
     while (i != this->enclosedRegions.end()) {
-        if (i->first == structName) {
-            return i->second;
+        if (i->name == structName) {
+            return *i;
         }
         ++i;
     }
     return nullrtn;
 }
 
-list<pair<string, list<BezCurve> > >
-morph::ReadCurves::getEnclosedRegions (void)
+list<BezCurvePath>
+morph::ReadCurves::getEnclosedRegions (void) const
 {
     return this->enclosedRegions;
+}
+
+void
+morph::ReadCurves::save (float step) const
+{
+    this->corticalPath.save (step);
+    list<BezCurvePath>::const_iterator i = this->enclosedRegions.begin();
+    while (i != this->enclosedRegions.end()) {
+        i->save (step);
+        ++i;
+    }
 }

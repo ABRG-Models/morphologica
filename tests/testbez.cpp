@@ -30,7 +30,7 @@ int main()
     std::ofstream f1;
     f1.open ("tests/curve.csv", std::ios::trunc|std::ios::out);
     f1.precision(12);
-    vector<BezCoord> a = cc.computePoints (100);
+    vector<BezCoord> a = cc.computePoints ((unsigned int)100);
     vector<BezCoord>::iterator ai = a.begin();
     int ii = 0;
     while (ai != a.end()) {

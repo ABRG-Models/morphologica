@@ -11,13 +11,15 @@
 
 #include <string>
 #include <list>
+#include <vector>
 #include <utility>
 #include "rapidxml.hpp"
-#include "BezCurve.h"
+#include "BezCurvePath.h"
 #include "AllocAndRead.h"
 
 using std::string;
 using std::list;
+using std::vector;
 using std::pair;
 using rapidxml::xml_node;
 using rapidxml::xml_document;
@@ -42,20 +44,26 @@ namespace morph
         /*!
          * Get the cortical path as a list of BezCurves
          */
-        list<BezCurve> getCorticalPath (void);
+        BezCurvePath getCorticalPath (void) const;
 
         /*!
          * Get the path of an enclosed structure by name, as a list of
          * BezCurves.
          */
-        list<BezCurve> getEnclosedRegion (const string& structName);
+        BezCurvePath getEnclosedRegion (const string& structName) const;
 
         /*!
          * Get all the paths of enclosed structures. This is a list of
          * pairs, in which the name and the structure path are the two
          * parts of the pair.
          */
-        list<pair<string, list<BezCurve> > > getEnclosedRegions (void);
+        list<BezCurvePath> getEnclosedRegions (void) const;
+
+        /*!
+         * Save the paths to named files, with the step size being
+         * approximately step in Cartesian space along the path.
+         */
+        void save (float step = 1.0f) const;
 
     private:
 
@@ -72,7 +80,7 @@ namespace morph
 
         /*!
          * Read a <g> element; its id attribute and its enclosed
-         * <path> element.
+         * <path> or <line> element.
          */
         void readG (xml_node<>* g_node);
 
@@ -91,27 +99,34 @@ namespace morph
         void readPath (xml_node<>* path_node, const string& layerName);
 
         /*!
+         * Split up a string of SVG command numbers up. These are
+         * delimited either by a comma or by a minus sign.
+         */
+        vector<float> splitSvgCmdString (const string& s);
+
+        /*!
          * This parses the d attribute string in an SVG path. I'm
          * assuming this will always be a list of Bezier Curves.
          */
-        list<BezCurve> parseD (const string& d);
+        BezCurvePath parseD (const string& d);
 
         /*!
-         * Read a <line> element. x1,y1,x2,y2 attributes from which
-         * line length can be determined.
+         * Read a <line> element. Read x1,y1,x2,y2 attributes from
+         * which line length can be determined and lineToMillimetres
+         * populated.
          */
         void readLine (xml_node<>* line_node, const string& layerName);
 
         /*!
          * The neocortical path.
          */
-        list<BezCurve> corticalPath;
+        BezCurvePath corticalPath;
 
         /*!
          * A list of paths marking out structures within the
          * neocortex.
          */
-        list<pair<string, list<BezCurve> > > enclosedRegions;
+        list<BezCurvePath> enclosedRegions;
 
         /*!
          * lineToMillimeteres.first is the length of the line in the
