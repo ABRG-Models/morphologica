@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <sstream>
 #include <vector>
+#include <math.h>
+#include "util.h"
+#include <cstdlib>
 
 // To enable debug cout messages:
 #define DEBUG 1
@@ -20,12 +23,15 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+using std::atof;
+
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
 using rapidxml::parse_declaration_node;
 using rapidxml::parse_no_data_nodes;
 
 using morph::BezCurvePath;
+using morph::util;
 
 morph::ReadCurves::ReadCurves (const string& svgpath)
 {
@@ -67,6 +73,8 @@ morph::ReadCurves::read (void)
          g_node = g_node->next_sibling("g")) {
         this->readG (g_node);
     }
+    // Now the file is read, set the scaling:
+    this->setScale();
 }
 
 void
@@ -116,7 +124,6 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
 
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
-    curves.output();
     if (layerName == "cortex") {
         this->corticalPath = curves;
     } else {
@@ -299,6 +306,10 @@ morph::ReadCurves::parseD (const string& d)
 void
 morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
 {
+    if (this->foundLine == true) {
+        throw runtime_error ("Found >1 line element in the drawing - expecting just one.");
+    }
+
     string x1("");
     xml_attribute<>* x1_attr;
     if ((x1_attr = line_node->first_attribute ("x1"))) {
@@ -334,6 +345,35 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
 
     // Now do something with x1,y1,x2,y2
     DBG ("line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")");
+
+    // Compute the length of the line in the SVG coordinate system
+    float dx = atof (x2.c_str()) - atof (x1.c_str());
+    float dy = atof (y2.c_str()) - atof (y1.c_str());
+    float dl = sqrtf (dx*dx + dy*dy);
+
+    // Extract the length of the line in mm from the layer name
+    // _x33_mm means .33 mm
+    string mm(layerName);
+    util::searchReplace ("x", ".", mm);
+    util::searchReplace ("_", "", mm);
+    util::searchReplace ("m", "", mm);
+    DBG ("mm string is now: " << mm);
+    float mmf = atof (mm.c_str());
+    this->lineToMillimetres.first = 1;
+    this->lineToMillimetres.second = mmf/dl;
+    DBG ("mm per SVG unit: " << this->lineToMillimetres.second);
+    this->foundLine = true;
+}
+
+void
+morph::ReadCurves::setScale (void)
+{
+    this->corticalPath.setScale (this->lineToMillimetres.second);
+    list<BezCurvePath>::iterator ei = this->enclosedRegions.begin();
+    while (ei != this->enclosedRegions.end()) {
+        ei->setScale (this->lineToMillimetres.second);
+        ++ei;
+    }
 }
 
 BezCurvePath

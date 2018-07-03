@@ -114,6 +114,16 @@ namespace morph
          */
         string output (float step) const;
 
+        /*!
+         * A setter for the scaling factor.
+         */
+        void setScale (const float s);
+
+        /*!
+         * A setter for the length threshold.
+         */
+        void setLthresh (const float l);
+
     private: // methods
         /*!
          * Compute one point on the linear curve, distance t along the
@@ -186,6 +196,20 @@ namespace morph
         pair<float,float> control1;
         pair<float,float> control2;
         //@}
+
+        /*!
+         * A scaling factor to convert from the SVG drawing units into
+         * mm (or whatever). This is used when computing the BezCoords
+         * to output.
+         */
+        float scale = 1.0f;
+
+        /*!
+         * How close we need to be to the target l for a given choice
+         * of dt. arb. units in position space (not parameter space).
+         * This is used in computeBySearch and computeBySearchHorz.
+         */
+        float lthresh = 0.000001;
 
         /*!
          * The type of the bezier curve.

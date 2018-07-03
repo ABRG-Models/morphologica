@@ -121,6 +121,12 @@ namespace morph
         void readLine (xml_node<>* line_node, const string& layerName);
 
         /*!
+         * Set up the scaling in all BezCurvePaths based on
+         * lineToMillimetres. Do this after file has been read.
+         */
+        void setScale (void);
+
+        /*!
          * The neocortical path.
          */
         BezCurvePath corticalPath;
