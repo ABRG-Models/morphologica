@@ -8,7 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include "util.h"
+#include "tools.h"
 #include <cstdlib>
 
 // To enable debug cout messages:
@@ -31,7 +31,7 @@ using rapidxml::parse_declaration_node;
 using rapidxml::parse_no_data_nodes;
 
 using morph::BezCurvePath;
-using morph::util;
+using morph::Tools;
 
 morph::ReadCurves::ReadCurves (const string& svgpath)
 {
@@ -354,9 +354,9 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     // Extract the length of the line in mm from the layer name
     // _x33_mm means .33 mm
     string mm(layerName);
-    util::searchReplace ("x", ".", mm);
-    util::searchReplace ("_", "", mm);
-    util::searchReplace ("m", "", mm);
+    Tools::searchReplace ("x", ".", mm);
+    Tools::searchReplace ("_", "", mm);
+    Tools::searchReplace ("m", "", mm);
     DBG ("mm string is now: " << mm);
     float mmf = atof (mm.c_str());
     this->lineToMillimetres.first = 1;
