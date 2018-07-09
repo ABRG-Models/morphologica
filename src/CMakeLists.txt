@@ -37,6 +37,6 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h sockserve.h tools.h world.h BezCurve.h BezCoord.h ReadCurves.h AllocAndRead.h
+  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )

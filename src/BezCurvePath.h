@@ -52,6 +52,14 @@ namespace morph
         float scale = 1.0f;
 
         /*!
+         * A null BezCurvePath is one which has no curves. If curves
+         * is empty then the BezCurvePath is null.
+         */
+        bool isNull (void) const {
+            return this->curves.empty();
+        }
+
+        /*!
          * Set scaling on all member Bezier curves.
          */
         void setScale (const float s) {
