@@ -1,8 +1,25 @@
 /* -*-c++-*- */
 /*!
- * \file WmlDbg.h
+ * \file MorphDbg.h
  *
  * \brief The standard morph debugging scheme.
+ *
+ * Very quick instructions:
+ *
+ * Add this to your .cpp file in which you want to use DBG() calls:
+ *
+ *\code
+ #define DBGSTREAM std::cout
+ #define DEBUG 1
+ #include <morph/MorphDbg.h>
+ \endcode
+ *
+ * Then use DBG() like this:
+ *
+ *\code
+ DBG ("It's a bit like cout to use. You can stream numbers like "
+      << 2 << " and so on.");
+ \endcode
  *
  * Instructions:
  *
