@@ -33,3 +33,6 @@
 
 # Build directories
 build*
+
+# Emacs auto-save files
+*~

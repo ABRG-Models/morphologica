@@ -3,6 +3,7 @@
 #include <vector>
 #include <armadillo>
 #include <stdlib.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace arma;
@@ -245,9 +246,6 @@ morph::Tools::graph (vector<vector<int> > agg)
     return graphSorted;
 }
 
-/*
-  return indices of descending value in unsorted
-*/
 vector<int>
 morph::Tools::sort (vector<double> unsorted)
 {
@@ -306,3 +304,394 @@ morph::Tools::matrixMultiply (vector < vector <double> > a, vector < vector <dou
     return a;
 }
 #endif
+
+int
+morph::Tools::ensureUnixNewlines (std::string& input)
+{
+    int num = 0;
+
+    for (unsigned int i=0; i<input.size(); i++) {
+        if (input[i] == '\r') {
+            input.erase(i,1);
+            num++;
+        }
+    }
+
+    return num; // The number of \r characters we found in the string.
+}
+
+int
+morph::Tools::stripTrailingCarriageReturn (std::string& input)
+{
+    if (input[input.size()-1] == '\r') {
+        input.erase(input.size()-1, 1);
+        return 1;
+    }
+    return 0;
+}
+
+int
+morph::Tools::stripTrailingWhitespace (std::string& input)
+{
+    char c;
+    string::size_type len = input.size(), pos = len;
+    while (pos > 0 &&
+           ((c = input[pos-1]) == ' '
+            || c == '\t'
+            || c == '\n'
+            || c == '\r')) {
+        pos--;
+    }
+    input.erase (pos);
+    return (len - pos);
+}
+
+int
+morph::Tools::stripChars (std::string& input, const std::string& charList)
+{
+    int rtn(0);
+    string::size_type pos(0);
+    while ((pos = input.find_last_of (charList)) != string::npos) {
+        input.erase (pos, 1);
+        ++rtn;
+    }
+    return rtn;
+}
+
+int
+morph::Tools::stripChars (std::string& input, const char charList)
+{
+    int rtn(0);
+    string::size_type pos(0);
+    while ((pos = input.find_last_of (charList)) != string::npos) {
+        input.erase (pos, 1);
+        ++rtn;
+    }
+    return rtn;
+}
+
+int
+morph::Tools::convertCHexCharSequences (std::string& input)
+{
+    // This converts a string containing C style hex sequences
+    // like "\x41\x42\x43" into the corresponding characters
+    // ("ABC" for the example).
+
+    string::iterator readPos = input.begin();
+    string::iterator writePos = input.begin();
+    string::size_type newSize = 0;
+    char n1 = '\0', n2 = '\0'; // two Ns in "1xNN"
+    char c = 0;
+    int count = 0;
+
+    while (readPos != input.end()) {
+
+        c = *readPos;
+
+        if (*readPos == '\\') {
+            // We have a possible hex escape sequence.
+            ++readPos;
+            if (readPos != input.end() && *readPos == 'x') {
+                // We have a hex escape sequence. Read in next two chars
+                ++readPos;
+                if (readPos != input.end()) {
+                    n1 = *readPos;
+                    ++readPos;
+                    if (readPos != input.end()) {
+                        n2 = *readPos;
+                        ++count;
+                        // Now create the replacement for c.
+                        c = 0;
+                        switch (n1) {
+                        case '0':
+                            // c |= 0 << 4;
+                            break;
+                        case '1':
+                            c |= 1 << 4;
+                            break;
+                        case '2':
+                            c |= 2 << 4;
+                            break;
+                        case '3':
+                            c |= 3 << 4;
+                            break;
+                        case '4':
+                            c |= 4 << 4;
+                            break;
+                        case '5':
+                            c |= 5 << 4;
+                            break;
+                        case '6':
+                            c |= 6 << 4;
+                            break;
+                        case '7':
+                            c |= 7 << 4;
+                            break;
+                        case '8':
+                            c |= 8 << 4;
+                            break;
+                        case '9':
+                            c |= 9 << 4;
+                            break;
+                        case 'a':
+                        case 'A':
+                            c |= 10 << 4;
+                            break;
+                        case 'b':
+                        case 'B':
+                            c |= 11 << 4;
+                            break;
+                        case 'c':
+                        case 'C':
+                            c |= 12 << 4;
+                            break;
+                        case 'd':
+                        case 'D':
+                            c |= 13 << 4;
+                            break;
+                        case 'e':
+                        case 'E':
+                            c |= 14 << 4;
+                            break;
+                        case 'f':
+                        case 'F':
+                            c |= 15 << 4;
+                            break;
+                        default:
+                            break;
+                        }
+
+                        switch (n2) {
+                        case '0':
+                            // c |= 0;
+                            break;
+                        case '1':
+                            c |= 1;
+                            break;
+                        case '2':
+                            c |= 2;
+                            break;
+                        case '3':
+                            c |= 3;
+                            break;
+                        case '4':
+                            c |= 4;
+                            break;
+                        case '5':
+                            c |= 5;
+                            break;
+                        case '6':
+                            c |= 6;
+                            break;
+                        case '7':
+                            c |= 7;
+                            break;
+                        case '8':
+                            c |= 8;
+                            break;
+                        case '9':
+                            c |= 9;
+                            break;
+                        case 'a':
+                        case 'A':
+                            c |= 10;
+                            break;
+                        case 'b':
+                        case 'B':
+                            c |= 11;
+                            break;
+                        case 'c':
+                        case 'C':
+                            c |= 12;
+                            break;
+                        case 'd':
+                        case 'D':
+                            c |= 13;
+                            break;
+                        case 'e':
+                        case 'E':
+                            c |= 14;
+                            break;
+                        case 'f':
+                        case 'F':
+                            c |= 15;
+                            break;
+                        default:
+                            break;
+                        }
+
+                    } else {
+                        // Nothing following "\xN", step back 3.
+                        --readPos;
+                        --readPos;
+                        --readPos;
+                    }
+                } else {
+                    // Nothing following "\x", step back 2.
+                    --readPos;
+                    --readPos;
+                }
+
+            } else {
+                // Not an escape sequence, just a '\' character. Step back 1.
+                --readPos;
+            }
+
+        } else {
+            // We already set writePos to readPos and c to *readPos.
+        }
+
+        // if need to write
+        *writePos = c;
+        ++writePos;
+        ++newSize;
+
+        ++readPos;
+    }
+
+    // Terminate the now possibly shorter string:
+    input.resize (newSize);
+
+    return count;
+}
+
+int
+morph::Tools::stripTrailingSpaces (std::string& input)
+{
+    return Tools::stripTrailingChars (input);
+}
+
+int
+morph::Tools::stripTrailingChars (std::string& input, const char c)
+{
+    int i = 0;
+    while (input.size()>0 && input[input.size()-1] == c) {
+        input.erase (input.size()-1, 1);
+        i++;
+    }
+    return i;
+}
+
+int
+morph::Tools::stripLeadingWhitespace (std::string& input)
+{
+    char c;
+    string::size_type pos = 0;
+    while (pos<input.size() &&
+           ((c = input[pos]) == ' '
+            || c == '\t'
+            || c == '\n'
+            || c == '\r')) {
+        pos++;
+    }
+    input.erase (0, pos);
+    return pos;
+}
+
+int
+morph::Tools::stripWhitespace (std::string& input)
+{
+    int n = Tools::stripLeadingWhitespace (input);
+    n += Tools::stripTrailingWhitespace (input);
+    return n;
+}
+
+int
+morph::Tools::stripLeadingSpaces (std::string& input)
+{
+    return Tools::stripLeadingChars (input);
+}
+
+int
+morph::Tools::stripLeadingChars (std::string& input, const char c)
+{
+    int i = 0;
+    while (input.size()>0 && input[0] == c) {
+        input.erase (0, 1);
+        i++;
+    }
+    return i;
+}
+
+int
+morph::Tools::searchReplace (const string& searchTerm,
+                            const string& replaceTerm,
+                            std::string& data,
+                            const bool replaceAll)
+{
+    int count = 0;
+    string::size_type pos = 0;
+    string::size_type ptr = string::npos;
+    string::size_type stl = searchTerm.size();
+    if (replaceAll) {
+        pos = data.size();
+        while ((ptr = data.rfind (searchTerm, pos)) != string::npos) {
+            data.erase (ptr, stl);
+            data.insert (ptr, replaceTerm);
+            count++;
+            if (ptr >= stl) {
+                // This is a move backwards along the
+                // string far enough that we don't
+                // match a substring of the last
+                // replaceTerm in the next search.
+                pos = ptr - stl;
+            } else {
+                break;
+            }
+        }
+    } else {
+        // Replace first only
+        if ((ptr = data.find (searchTerm, pos)) != string::npos) {
+            data.erase (ptr, stl);
+            data.insert (ptr, replaceTerm);
+            count++;
+        }
+    }
+
+    return count;
+}
+
+void
+morph::Tools::conditionAsXmlTag (std::string& str)
+{
+    // 1) Replace chars which are disallowed in an XML tag
+    string::size_type ptr = string::npos;
+
+    // We allow numeric and alpha chars, the underscore and the
+    // hyphen. colon strictly allowed, but best avoided.
+    while ((ptr = str.find_last_not_of (CHARS_NUMERIC_ALPHA"_-", ptr)) != string::npos) {
+        // Replace the char with an underscore:
+        str[ptr] = '_';
+        ptr--;
+    }
+
+    // 2) Check first 3 chars don't spell xml (in any case)
+    string firstThree = str.substr (0,3);
+    transform (firstThree.begin(), firstThree.end(),
+               firstThree.begin(), morph::to_lower());
+    if (firstThree == "xml") {
+        // Prepend 'A'
+        string newStr("_");
+        newStr += str;
+        str = newStr;
+    }
+
+    // 3) Prepend an '_' if initial char begins with a numeral or hyphen
+    if (str[0] > 0x29 && str[0] < 0x3a) {
+        // Prepend '_'
+        string newStr("_");
+        newStr += str;
+        str = newStr;
+    }
+}
+
+unsigned int
+morph::Tools::countChars (const std::string& line, const char c)
+{
+    unsigned int count(0);
+    string::const_iterator i = line.begin();
+    while (i != line.end()) {
+        if (*i++ == c) { ++count; }
+    }
+    return count;
+}

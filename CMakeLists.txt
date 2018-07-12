@@ -67,10 +67,15 @@ find_package(X11 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH})
 
 # rapidxml is bundled in the source:
-#include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
-# Library code is compiled up as a shared library in lib/ (could also be compiled static if needed)
+# Library code is compiled up as a shared library in lib/ (could also
+# be compiled static if needed)
 add_subdirectory(src)
+
+# We have to make a morph/rapidxml-1.13 installation for client code
+# that uses the ReadCurves class.
+add_subdirectory(include)
 
 # Unit testing using the ctest framework
 enable_testing()

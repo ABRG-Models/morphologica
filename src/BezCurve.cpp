@@ -2,10 +2,16 @@
  * Implementation of BezCurve methods
  */
 
+// To enable debug cout messages:
+#define DEBUG 1
+#define DBGSTREAM std::cout
+#include "MorphDbg.h"
+
 #include "BezCurve.h"
 #include <stdexcept>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using morph::BezCoord;
@@ -41,10 +47,14 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
 }
 
 vector<BezCoord>
-morph::BezCurve::computePoints (int n)
+morph::BezCurve::computePoints (unsigned int n) const
 {
+    DBG2 ("Called. i: " << this->p0.first << "," << this->p0.second
+          << " c1: " <<  this->control1.first << "," << this->control1.second
+          << " c2: " <<  this->control2.first << "," << this->control2.second
+          << " f: " <<  this->p1.first << "," << this->p1.second);
     vector<BezCoord> rtn;
-    for (int i = 0; i < n; ++i) {
+    for (unsigned int i = 0; i < n; ++i) {
         float t = i/static_cast<float>(n);
         rtn.push_back (this->computePoint (t));
     }
@@ -52,11 +62,21 @@ morph::BezCurve::computePoints (int n)
 }
 
 vector<BezCoord>
-morph::BezCurve::computePoints (float l)
+morph::BezCurve::computePoints (float l, float firstl) const
 {
     vector<BezCoord> rtn;
     float t = 0.0f;
     bool lastnull = false;
+
+    if (firstl > 0.0f) {
+        // firstl is the desired distance to the first point and, if
+        // non-zero, overrides l for the first point.
+        BezCoord b = this->computePoint (t, firstl);
+        rtn.push_back (b);
+        t = b.t();
+        lastnull = b.getNullCoordinate();
+    }
+
     while (t != 1.0f && lastnull == false) {
         BezCoord b = this->computePoint (t, l);
         rtn.push_back (b);
@@ -67,7 +87,7 @@ morph::BezCurve::computePoints (float l)
 }
 
 vector<BezCoord>
-morph::BezCurve::computePointsHorz (float x)
+morph::BezCurve::computePointsHorz (float x) const
 {
     vector<BezCoord> rtn;
     float t = 0.0f;
@@ -82,8 +102,9 @@ morph::BezCurve::computePointsHorz (float x)
 }
 
 BezCoord
-morph::BezCurve::computePoint (float t)
+morph::BezCurve::computePoint (float t) const
 {
+    DBG2 ("Called computePoint(float t = "  << t << ")");
     switch (this->beztype) {
     case morph::BEZLINEAR:
         return this->computePointLinear (t);
@@ -96,8 +117,9 @@ morph::BezCurve::computePoint (float t)
 }
 
 BezCoord
-morph::BezCurve::computePoint (float t, float l)
+morph::BezCurve::computePoint (float t, float l) const
 {
+    DBG2 ("Called computePoint(float t, float l)");
     switch (this->beztype) {
     case morph::BEZLINEAR:
         return this->computePointLinear (t, l);
@@ -109,7 +131,7 @@ morph::BezCurve::computePoint (float t, float l)
 }
 
 BezCoord
-morph::BezCurve::computePointLinear (float t, float l)
+morph::BezCurve::computePointLinear (float t, float l) const
 {
     BezCoord b1 = this->computePoint (t);
     BezCoord e1 = this->computePoint (1.0f);
@@ -129,53 +151,93 @@ morph::BezCurve::computePointLinear (float t, float l)
     return this->computePointLinear (t);
 }
 
+string
+morph::BezCurve::output (unsigned int numPoints) const
+{
+    stringstream ss;
+    vector<BezCoord> points = this->computePoints (numPoints);
+    vector<BezCoord>::const_iterator i = points.begin();
+    while (i != points.end()) {
+        if (!i->isNull()) {
+            ss << i->x() << "," << i->y() << endl;
+        }
+        ++i;
+    }
+    return ss.str();
+}
+
+string
+morph::BezCurve::output (float step) const
+{
+    stringstream ss;
+    vector<BezCoord> points = this->computePoints (step);
+    vector<BezCoord>::const_iterator i = points.begin();
+    while (i != points.end()) {
+        if (!i->isNull()) {
+            ss << i->x() << "," << i->y() << endl;
+        }
+        ++i;
+    }
+    return ss.str();
+}
+
+void
+morph::BezCurve::setScale (const float s)
+{
+    this->scale = s;
+}
+
+void
+morph::BezCurve::setLthresh (const float l)
+{
+    this->lthresh = l;
+}
+
 BezCoord
-morph::BezCurve::computePointLinear (float t)
+morph::BezCurve::computePointLinear (float t) const
 {
     this->checkt(t);
     pair<float,float> b;
-    b.first = (1-t) * this->p0.first + t * this->p1.first;
-    b.second = (1-t) * this->p0.second + t * this->p1.second;
+    b.first = ((1-t) * this->p0.first + t * this->p1.first) * this->scale;
+    b.second = ((1-t) * this->p0.second + t * this->p1.second) * this->scale;
     return BezCoord(t, b);
 }
 
 BezCoord
-morph::BezCurve::computePointQuadratic (float t)
+morph::BezCurve::computePointQuadratic (float t) const
 {
     this->checkt (t);
     pair<float,float> b;
     float t_ = 1-t;
-    b.first = t_ * t_ * this->p0.first
-        + 2 * t_ * t * this->control1.first
-        + t * t * this->p1.first;
-    b.second = t_ * t_ * this->p0.second
-        + 2 * t_ * t * this->control1.second
-        + t * t * this->p1.second;
+    b.first = (t_ * t_ * this->p0.first
+               + 2 * t_ * t * this->control1.first
+               + t * t * this->p1.first) * this->scale;
+    b.second = (t_ * t_ * this->p0.second
+                + 2 * t_ * t * this->control1.second
+                + t * t * this->p1.second) * this->scale;
     return BezCoord(t, b);
 }
 
 BezCoord
-morph::BezCurve::computePointCubic (float t)
+morph::BezCurve::computePointCubic (float t) const
 {
     this->checkt (t);
     pair<float,float> b;
     float t_ = 1-t;
-    b.first = t_ * t_ * t_ * this->p0.first
-        + 3 * t_ * t_ * t * this->control1.first
-        + 3 * t_ * t * t * this->control2.first
-        + t * t * t * this->p1.first;
-    b.second = t_ * t_ * t_ * this->p0.second
-        + 3 * t_ * t_ * t * this->control1.second
-        + 3 * t_ * t * t * this->control2.second
-        + t * t * t * this->p1.second;
+    b.first = (t_ * t_ * t_ * this->p0.first
+               + 3 * t_ * t_ * t * this->control1.first
+               + 3 * t_ * t * t * this->control2.first
+               + t * t * t * this->p1.first) * this->scale;
+    b.second = (t_ * t_ * t_ * this->p0.second
+                + 3 * t_ * t_ * t * this->control1.second
+                + 3 * t_ * t * t * this->control2.second
+                + t * t * t * this->p1.second) * this->scale;
     return BezCoord(t, b);
 }
 
 BezCoord
-morph::BezCurve::computePointBySearch (float t, float l)
+morph::BezCurve::computePointBySearch (float t, float l) const
 {
-    //cout << "Starting parameter: " << t << endl;
-
     // Min and max of possible range for dt to make a step of length l in posn space
     float dtmin = 0.0f;
     float dtmax = 1.0f - t;
@@ -198,9 +260,6 @@ morph::BezCurve::computePointBySearch (float t, float l)
         return rtn;
     }
 
-    // How close we need to be to the target l for a given choice of dt.
-    float lthresh = 0.001; // arb. units in position space (not parameter space)
-
     // Do a binary search to find the value of dt
     BezCoord b2 (true);
     bool finished = false;
@@ -219,7 +278,6 @@ morph::BezCurve::computePointBySearch (float t, float l)
                 dtmin = dt;
             }
             dt = dtmin + (dtmax-dtmin)/2.0f;
-            //cout << "dt: " << dt << endl;
         }
     }
 
@@ -233,10 +291,8 @@ morph::BezCurve::computePointBySearch (float t, float l)
 }
 
 BezCoord
-morph::BezCurve::computePointBySearchHorz (float t, float x)
+morph::BezCurve::computePointBySearchHorz (float t, float x) const
 {
-    //cout << "Starting parameter: " << t << "\t";
-
     // Min and max of possible range for dt to make a step of length l in posn space
     float dtmin = 0.0f;
     float dtmax = 1.0f - t;
@@ -283,7 +339,6 @@ morph::BezCurve::computePointBySearchHorz (float t, float x)
             }
             lastdt = dt;
             dt = dtmin + (dtmax-dtmin)/2.0f;
-            //cout << "dt: " << dt << endl;
         }
     }
 
@@ -297,7 +352,7 @@ morph::BezCurve::computePointBySearchHorz (float t, float x)
 }
 
 void
-morph::BezCurve::checkt (float t)
+morph::BezCurve::checkt (float t) const
 {
     if (t < 0.0 || t > 1.0) {
         throw std::runtime_error ("t out of range [0,1]");
