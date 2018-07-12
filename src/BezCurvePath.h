@@ -118,6 +118,19 @@ namespace morph
             }
         }
 
+        static pair<float,float> getCentroid (const vector<BezCoord>& points) {
+            float c_x = 0.0f;
+            float c_y = 0.0f;
+            for (const BezCoord& i : points) {
+                c_x += i.x();
+                c_y += i.y();
+            }
+            c_x = c_x / points.size();
+            c_y = c_y / points.size();
+
+            return make_pair (c_x, c_y);
+        }
+
         /*!
          * Crunch the numbers to generate the coordinates for the
          * path, doing the right thing between curves (skipping

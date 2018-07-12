@@ -110,6 +110,38 @@ namespace morph
         }
 
         /*!
+         * Subtract the coordinate c from this BezCoord.
+         */
+        void subtract (const pair<float,float>& c) {
+            this->coord.first -= c.first;
+            this->coord.second -= c.second;
+        }
+
+        /*!
+         * Subtract the coordinate c from this BezCoord.
+         */
+        void subtract (const BezCoord& c) {
+            this->coord.first -= c.x();
+            this->coord.second -= c.y();
+        }
+
+        /*!
+         * Add the coordinate c to this BezCoord.
+         */
+        void add (const pair<float,float>& c) {
+            this->coord.first += c.first;
+            this->coord.second += c.second;
+        }
+
+        /*!
+         * Add the coordinate c to this BezCoord.
+         */
+        void add (const BezCoord& c) {
+            this->coord.first += c.x();
+            this->coord.second += c.y();
+        }
+
+        /*!
          * Operators
          */
         //@{
