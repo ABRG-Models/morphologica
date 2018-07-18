@@ -10,8 +10,39 @@ using namespace arma;
 
 /// @param gray gray value from 0.0 to 1.0
 /// @returns RGB value in jet colormap
+array<float,3>
+morph::Tools::getJetColorF (double gray)
+{
+    float color_table[][3] = {
+        {0.0, 0.0, 0.5}, // #00007F
+        {0.0, 0.0, 1.0}, // blue
+        {0.0, 0.5, 1.0}, // #007FFF
+        {0.0, 1.0, 1.0}, // cyan
+        {0.5, 1.0, 0.5}, // #7FFF7F
+        {1.0, 1.0, 0.0}, // yellow
+        {1.0, 0.5, 0.0}, // #FF7F00
+        {1.0, 0.0, 0.0}, // red
+        {0.5, 0.0, 0.0}, // #7F0000
+    };
+
+    array<float,3> col;
+    float ivl = 1.0/8.0;
+    for (int i=0; i<8; i++) {
+        double llim = (i==0)?0.:(double)i/8.;
+        double ulim = (i==7)?1.:((double)i+1.)/8.;
+        if (gray >= llim && gray <= ulim) {
+            for (int j=0; j<3; j++) {
+                float c = static_cast<float>(gray - llim);
+                col[j] = (color_table[i][j]*(ivl-c)/ivl + color_table[i+1][j]*c/ivl);
+            }
+            break;
+        }
+    }
+    return col;
+}
+
 vector<double>
-morph::Tools::getJetColor(double gray)
+morph::Tools::getJetColor (double gray)
 {
     double color_table[][3] = {
         {0.0, 0.0, 0.5}, // #00007F
@@ -26,14 +57,14 @@ morph::Tools::getJetColor(double gray)
     };
 
     vector<double> col;
-    double ivl = 1./8.;
+    double ivl = 1.0/8.0;
     for (int i=0; i<8; i++) {
         double llim = (i==0)?0.:(double)i/8.;
         double ulim = (i==7)?1.:((double)i+1.)/8.;
         if (gray >= llim && gray <= ulim) {
             for (int j=0; j<3; j++) {
                 double c = gray - llim;
-                col.push_back(color_table[i][j]*(ivl-c)/ivl + color_table[i+1][j]*c/ivl);
+                col.push_back (color_table[i][j]*(ivl-c)/ivl + color_table[i+1][j]*c/ivl);
             }
             break;
         }
@@ -76,16 +107,30 @@ morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
     return rgb;
 }
 
+#if 0 // This was confusingly named to return a double, rather than a float.
 double
 morph::Tools::randFloat(void)
 {
     return ((double) rand())/(double)RAND_MAX;
 }
+#endif
+
+double
+morph::Tools::randDouble (void)
+{
+    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
+}
+
+float
+morph::Tools::randSingle (void)
+{
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
 
 double
 morph::Tools::normalDistributionValue(void)
 {
-    return sqrt(-2. * log(randFloat())) * cos(2. * M_PI * randFloat());
+    return sqrt(-2. * log(randDouble())) * cos(2. * M_PI * randDouble());
 }
 
 double

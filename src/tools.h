@@ -6,11 +6,13 @@
 #define _TOOLS_H_
 
 #include <vector>
+#include <array>
 #include <list>
 #include <set>
 #include <map>
 #include <string>
 
+using std::array;
 using std::vector;
 using std::list;
 using std::set;
@@ -85,21 +87,46 @@ namespace morph
     class Tools {
     public:
 
-        static vector<double> getJetColor(double gray);
-        static vector<double> getGrayScaleColor(double gray);
-        static vector <double> HSVtoRGB(double,double,double);
-        static double randFloat(void);
-        static double normalDistributionValue(void);
+
+        static vector<double> getJetColor (double gray);
+
+        /*!
+         * Floating point array version of getJetColor()
+         */
+        static array<float, 3> getJetColorF (double gray);
+
+        static vector<double> getGrayScaleColor (double gray);
+        static vector<double> HSVtoRGB (double, double, double);
+#if 0
+        // This was confusingly named to return a double, rather than
+        // a float. I've created randDouble() which returns a double
+        // precision random number.
+        static double randFloat (void);
+#endif
+        /*!
+         * Return a random double precision number in the range [0,1], sampled
+         * from a uniform distribution.
+         */
+        static double randDouble (void);
+
+        /*!
+         * Return a random single precision number in the range [0,1],
+         * sampled from a uniform distribution.
+         */
+        static float randSingle (void);
+
+        static double normalDistributionValue (void);
+
         static double wrapAngle(double);
         static vector <vector <float> > rotateCloud (vector <vector <float> >, double, double, double);
 #ifdef SPHERE_ATTEMPT
-        static vector <vector <float> > sphere(int, double);
+        static vector <vector <float> > sphere (int, double);
 #endif
         static vector<vector<int> > graph(vector<vector<int> >);
         /*!
          * return indices of descending value in unsorted
          */
-        static vector<int> sort(vector<double>);
+        static vector<int> sort (vector<double> unsorted);
 
         /*!
          * This removes all carriage return characters ('\\r'

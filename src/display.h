@@ -20,11 +20,13 @@
 #endif
 #include <iostream>
 #include <vector>
+#include <array>
 #include <math.h>
 #include <cv.h>
 #include <highgui.h>
 
 using std::vector;
+using std::array;
 
 namespace morph {
 
@@ -58,9 +60,30 @@ namespace morph {
         void redrawDisplay();
         void closeDisplay();
         void drawHex(double,double,double,double,double,double,double);
+        /*!
+         * A drawHex taking float args. pos is the position of the
+         * hex. r is the shortest distance from the centre of the Hex
+         * to the perimeter. c is the colour to draw the hex with.
+         */
+        void drawHex (array<float, 3> pos, float r, array<float, 3> c);
+
         void drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q);
-        void drawTri(vector <double>,vector <double>,vector <double>,vector <double>);
-        void drawTriFill(vector <double>,vector <double>,vector <double>,vector <double>);
+
+        /*!
+         * Draw a triangle.
+         */
+        void drawTri (vector <double> p1, vector <double> p2, vector <double> p3, vector <double> C);
+
+        /*!
+         * Draw a filled triangle of colour cl with vertices at points
+         * p1, p2 and p3. p1-p3 are vectors in three-space. C is a
+         * three component RGB colour specification.
+         */
+        //@{
+        void drawTriFill (vector <double> p1, vector <double> p2, vector <double> p3, vector <double> C);
+        void drawTriFill (array<float, 3> p1, array<float, 3> p2, array<float, 3> p3, array<float, 3> C);
+        //@}
+
         void drawSphere(double,double,double,double,vector <double>,int);
         void drawLine(double,double,double,double,double,double,double,double,double,double);
         void addCrossHairs(double,double,int);

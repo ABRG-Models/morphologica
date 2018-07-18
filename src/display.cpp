@@ -235,6 +235,26 @@ morph::Gdisplay::drawHex (double x, double y, double z, double r,
 }
 
 void
+morph::Gdisplay::drawHex (array<float,3> pos, float r, array<float,3> c)
+{
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    GLfloat col[] = {(GLfloat)c[0], (GLfloat)c[1], (GLfloat)c[2], 1.f};
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+    float ry = r * 1.15470053838f; // r * 1.0/sin(pi/3.0)
+    float hry = ry * 0.5f;
+    glBegin(GL_POLYGON);
+    // x is pos[0], y is pos[1], z is pos[2]
+    glVertex3f(pos[0],pos[1]+ry,pos[2]);
+    glVertex3f(pos[0]+r,pos[1]+hry,pos[2]);
+    glVertex3f(pos[0]+r,pos[1]-hry,pos[2]);
+    glVertex3f(pos[0],pos[1]-ry,pos[2]);
+    glVertex3f(pos[0]-r,pos[1]-hry,pos[2]);
+    glVertex3f(pos[0]-r,pos[1]+hry,pos[2]);
+    glVertex3f(pos[0],pos[1]+ry,pos[2]);
+    glEnd();
+}
+
+void
 morph::Gdisplay::drawHexSeg (double x, double y, double z, double r,
                              double red, double green, double blue, int q)
 {
@@ -310,30 +330,50 @@ morph::Gdisplay::drawTri (std::vector<double> p1, std::vector<double> p2, std::v
 #endif
 
 void
-morph::Gdisplay::drawTri (std::vector<double> p1,std::vector<double> p2,std::vector<double> p3,std::vector<double> C)
+morph::Gdisplay::drawTri (std::vector<double> p1,
+                          std::vector<double> p2,
+                          std::vector<double> p3,
+                          std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
-
-    glBegin(GL_TRIANGLES);
-    glVertex3f(p1[0], p1[1], p1[2]);
-    glVertex3f(p2[0], p2[1], p2[2]);
-    glVertex3f(p3[0], p3[1], p3[2]);
+    GLfloat col[] = { (GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.0f };
+    glMaterialfv (GL_FRONT, GL_DIFFUSE, col);
+    glBegin (GL_TRIANGLES);
+    glVertex3f (p1[0], p1[1], p1[2]);
+    glVertex3f (p2[0], p2[1], p2[2]);
+    glVertex3f (p3[0], p3[1], p3[2]);
     glEnd();
 }
 
 void
-morph::Gdisplay::drawTriFill (std::vector<double> p1,std::vector<double> p2,std::vector<double> p3,std::vector<double> C)
+morph::Gdisplay::drawTriFill (std::vector<double> p1,
+                              std::vector<double> p2,
+                              std::vector<double> p3,
+                              std::vector<double> C)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    GLfloat col[] = {(GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.f};
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+    GLfloat col[] = { (GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.0f };
+    glMaterialfv (GL_FRONT, GL_DIFFUSE, col);
+    glBegin (GL_TRIANGLES);
+    glVertex3f (p1[0], p1[1], p1[2]);
+    glVertex3f (p2[0], p2[1], p2[2]);
+    glVertex3f (p3[0], p3[1], p3[2]);
+    glEnd();
+}
 
-    glBegin(GL_TRIANGLES);
-    glVertex3f(p1[0], p1[1], p1[2]);
-    glVertex3f(p2[0], p2[1], p2[2]);
-    glVertex3f(p3[0], p3[1], p3[2]);
+void
+morph::Gdisplay::drawTriFill (std::array<float,3> p1,
+                              std::array<float,3> p2,
+                              std::array<float,3> p3,
+                              std::array<float, 3> C)
+{
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    GLfloat col[] = { (GLfloat)C[0], (GLfloat)C[1], (GLfloat)C[2], 1.0f };
+    glMaterialfv (GL_FRONT, GL_DIFFUSE, col);
+    glBegin (GL_TRIANGLES);
+    glVertex3f (p1[0], p1[1], p1[2]);
+    glVertex3f (p2[0], p2[1], p2[2]);
+    glVertex3f (p3[0], p3[1], p3[2]);
     glEnd();
 }
 
