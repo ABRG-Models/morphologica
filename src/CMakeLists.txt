@@ -31,10 +31,18 @@ install(TARGETS morphologica
 add_library(morphstatic STATIC ${morphlibsrc})
 # Give static library same name as shared (ok on Linux & Mac?)
 set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
+if(APPLE)
+target_link_libraries(
+  morphstatic
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+  )
+else()
 target_link_libraries(
   morphstatic
   armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
   )
+endif(APPLE)
+
 install(TARGETS morphstatic
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
   ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
