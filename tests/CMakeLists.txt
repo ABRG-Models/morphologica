@@ -27,3 +27,10 @@ set(SOURCETEST3 testreadcurves.cpp)
 add_executable(${TARGETTEST3} ${SOURCETEST3})
 target_link_libraries(${TARGETTEST3} morphologica)
 add_test(testreadcurves ${TARGETTEST3})
+
+# Test display
+set(TARGETTEST4 testdisplay CACHE TYPE STRING)
+set(SOURCETEST4 testdisplay.cpp)
+add_executable(${TARGETTEST4} ${SOURCETEST4})
+target_link_libraries(${TARGETTEST4} morphologica)
+add_test(testdisplay ${TARGETTEST4})
