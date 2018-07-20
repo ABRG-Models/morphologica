@@ -28,7 +28,7 @@ add_executable(${TARGETTEST3} ${SOURCETEST3})
 target_link_libraries(${TARGETTEST3} morphologica)
 add_test(testreadcurves ${TARGETTEST3})
 
-# Test display
+# Test display. Note also linking to static library here, to prove it works.
 set(TARGETTEST4 testdisplay CACHE TYPE STRING)
 set(SOURCETEST4 testdisplay.cpp)
 add_executable(${TARGETTEST4} ${SOURCETEST4})

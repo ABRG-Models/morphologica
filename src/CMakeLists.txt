@@ -13,9 +13,12 @@ endif()
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
 if(APPLE)
+  # Note hard-coded linking of libX11.dylib, to avoid linking to one in /opt/local. There's 
+  # probably a better way to do this; ideally, find_package(X11) should be pointed towards the
+  # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
     )
 else()
   target_link_libraries(
@@ -34,7 +37,7 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
   )
 else()
 target_link_libraries(
