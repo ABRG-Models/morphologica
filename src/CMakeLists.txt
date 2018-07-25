@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp)
+set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -13,7 +13,7 @@ endif()
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
 if(APPLE)
-  # Note hard-coded linking of libX11.dylib, to avoid linking to one in /opt/local. There's 
+  # Note hard-coded linking of libX11.dylib, to avoid linking to one in /opt/local. There's
   # probably a better way to do this; ideally, find_package(X11) should be pointed towards the
   # X11 located in /opt/X11.
   target_link_libraries(
@@ -53,6 +53,6 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h
+  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
