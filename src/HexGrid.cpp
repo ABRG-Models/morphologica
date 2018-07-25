@@ -14,13 +14,13 @@
 #include <vector>
 #include <set>
 #include <stdexcept>
-#include <morph/BezCurvePath.h>
-#include <morph/BezCoord.h>
+#include "BezCurvePath.h"
+#include "BezCoord.h"
 
 #define DBGSTREAM std::cout
 #define DEBUG 1
 //#define DEBUG2 1
-#include <morph/MorphDbg.h>
+#include "MorphDbg.h"
 
 using std::ceil;
 using std::abs;

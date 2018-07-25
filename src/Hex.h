@@ -12,7 +12,7 @@
 #include <array>
 #include <utility>
 #include <cmath>
-#include "morph/BezCoord.h"
+#include "BezCoord.h"
 
 using std::string;
 using std::to_string;

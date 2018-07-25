@@ -8,7 +8,7 @@
 #define _HEXGRID_H_
 
 #include "Hex.h"
-#include <morph/BezCurvePath.h>
+#include "BezCurvePath.h"
 
 #include <list>
 #include <string>
