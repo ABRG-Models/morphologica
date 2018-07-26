@@ -135,19 +135,26 @@ namespace morph {
             this->y = dv*this->gi + dv*this->bi;
         }
 
+        /*!
+         * Compute the distance from the point given (in
+         * two-dimensions only; x and y) by @a cartesianPoint to the
+         * centre of this Hex.
+         */
         float distanceFrom (const pair<float, float> cartesianPoint) const {
             float dx = abs(cartesianPoint.first - x);
             float dy = abs(cartesianPoint.second - y);
-            float d = sqrt (dx*dx + dy*dy);
-            //cout << "distance: " << d << endl;
-            return d;
+            return sqrt (dx*dx + dy*dy);
         }
 
+        /*!
+         * Compute the distance from the point given (in
+         * two-dimensions only; x and y) by the BezCoord @a
+         * cartesianPoint to the centre of this Hex.
+         */
         float distanceFrom (const BezCoord& cartesianPoint) const {
             float dx = abs(cartesianPoint.x() - x);
             float dy = abs(cartesianPoint.y() - y);
-            float d = sqrt (dx*dx + dy*dy);
-            return d;
+            return sqrt (dx*dx + dy*dy);
         }
 
         /*!
@@ -168,6 +175,29 @@ namespace morph {
         float x = 0.0f;
         float y = 0.0f;
         float z = 0.0f;
+        //@}
+
+        /*!
+         * When storing x and y, we have to compute r and phi.
+         */
+        //@{
+        /*!
+         * Return the distance from the origin to this Hex's centre.
+         *
+         * Note this isn't getR() but getPolarR(), because I already have
+         * a getR() (which could be refactored to have a different
+         * name).
+         */
+        float getPolarR (void) const {
+            return sqrt (x*x + y*y);
+        }
+        /*!
+         * Return the angle from the x axis to the vector from the
+         * origin to this Hex's centre.
+         */
+        float getPolarPhi (void) const {
+            return atan2 (this->y, this->x);
+        }
         //@}
 
         /*!
