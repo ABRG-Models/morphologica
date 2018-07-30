@@ -183,19 +183,15 @@ namespace morph {
         //@{
         /*!
          * Return the distance from the origin to this Hex's centre.
-         *
-         * Note this isn't getR() but getPolarR(), because I already have
-         * a getR() (which could be refactored to have a different
-         * name).
          */
-        float getPolarR (void) const {
+        float getR (void) const {
             return sqrt (x*x + y*y);
         }
         /*!
          * Return the angle from the x axis to the vector from the
          * origin to this Hex's centre.
          */
-        float getPolarPhi (void) const {
+        float getPhi (void) const {
             return atan2 (this->y, this->x);
         }
         //@}
@@ -215,43 +211,45 @@ namespace morph {
         float d = 1.0f;
 
         /*!
-         * A getter for d, for completeness
+         * A getter for d, for completeness. d is the centre-to-centre
+         * distance between adjacent hexes.
          */
         float getD (void) {
             return this->d;
         }
 
         /*!
-         * Get the shortest distance from the centre to the perimeter
+         * Get the shortest distance from the centre to the
+         * perimeter. This is the "short radius".
          */
-        float getR (void) {
+        float getSR (void) {
             return this->d/2;
         }
 
         /*!
          * The distance from the centre of the Hex to any of the
-         * vertices.
+         * vertices. This is the "long radius".
          */
-        float getRv (void) {
-            float rv = this->d/morph::SQRT_OF_3_F;
-            return rv;
+        float getLR (void) {
+            float lr = this->d/morph::SQRT_OF_3_F;
+            return lr;
         }
 
         /*!
          * The vertical distance between hex centres on adjacent rows.
          */
-        float getDv (void) {
-            float dv = (this->d*morph::SQRT_OF_3_F)/2.0f;
-            return dv;
+        float getV (void) {
+            float v = (this->d*morph::SQRT_OF_3_F)/2.0f;
+            return v;
         }
 
         /*!
          * Return twice the vertical distance between hex centres on
          * adjacent rows.
          */
-        float getTwoDv (void) {
-            float tdv = (this->d*morph::SQRT_OF_3_F);
-            return tdv;
+        float getTwoV (void) {
+            float tv = (this->d*morph::SQRT_OF_3_F);
+            return tv;
         }
 
         /*!
