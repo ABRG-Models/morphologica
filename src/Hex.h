@@ -72,7 +72,7 @@ namespace morph {
             this->d = d_;
             this->ri = r_;
             this->gi = g_;
-            this->computeCartesian();
+            this->computeLocation();
         }
 
         /*!
@@ -126,13 +126,18 @@ namespace morph {
         }
 
         /*!
-         * Convert ri, gi and bi indices into x and y coordinates
-         * based on the hex-to-hex distance d.
+         * Convert ri, gi and bi indices into x and y coordinates and
+         * also r and phi coordinates, based on the hex-to-hex
+         * distance d.
          */
-        void computeCartesian (void) {
+        void computeLocation (void) {
+            // Compute Cartesian location
             this->x = this->d*this->ri + (d/2.0f)*this->gi - (d/2.0f)*this->bi;
-            float dv = (this->d*morph::SQRT_OF_3_F)/2.0f;
-            this->y = dv*this->gi + dv*this->bi;
+            float v = this->getV();
+            this->y = v*this->gi + v*this->bi;
+            // And location in the Polar coordinate system
+            this->r = sqrt (x*x + y*y);
+            this->phi = atan2 (y, x);
         }
 
         /*!
@@ -169,32 +174,28 @@ namespace morph {
         unsigned int vi;
 
         /*!
-         * Cartesian coordinates of the centre of the Hex.
+         * Cartesian coordinates of the centre of the Hex. Public, for
+         * direct access by client code.
          */
         //@{
         float x = 0.0f;
         float y = 0.0f;
-        float z = 0.0f;
         //@}
 
         /*!
-         * When storing x and y, we have to compute r and phi.
+         * Polar coordinates of the centre of the Hex. Public, for
+         * direct access by client code.
          */
         //@{
-        /*!
-         * Return the distance from the origin to this Hex's centre.
-         */
-        float getR (void) const {
-            return sqrt (x*x + y*y);
-        }
-        /*!
-         * Return the angle from the x axis to the vector from the
-         * origin to this Hex's centre.
-         */
-        float getPhi (void) const {
-            return atan2 (this->y, this->x);
-        }
+        float r = 0.0f;
+        float phi = 0.0f;
         //@}
+
+        /*!
+         * Position z of the Hex is common to both Cartesian and Polar
+         * coordinate systems.
+         */
+        float z = 0.0f;
 
         /*!
          * Get the Cartesian position of this Hex as a fixed size array.
