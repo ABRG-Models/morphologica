@@ -54,7 +54,23 @@ namespace morph {
         double rho, theta, phi, alpha, speed, X, Y, Z;
         double IK, JL, AD, WS, TG, FH, UO, QE, RY;
 
+    private:
+
+        /*!
+         * The aspect ratio of the window, taken from the windowWidth
+         * and windowHeight used in the construction of the Gdisplay.
+         */
+        GLfloat x_aspect_ratio;
+
+        /*!
+         * Common to all constructors. Create an Xwindow and GL context
+         */
+        void createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title);
+
+    public:
         Gdisplay(int,const char*, double, double, double);
+        Gdisplay(unsigned int, unsigned int, const char*, double, double, double);
+
         void setTitle(char*);
         void resetDisplay(vector <double>, vector <double>, vector <double>);
         void redrawDisplay();
@@ -66,6 +82,13 @@ namespace morph {
          * to the perimeter. c is the colour to draw the hex with.
          */
         void drawHex (array<float, 3> pos, float r, array<float, 3> c);
+        /*!
+         * A drawHex taking float args and an offset. pos is the
+         * position of the hex. r is the shortest distance from the
+         * centre of the Hex to the perimeter. c is the colour to draw
+         * the hex with.
+         */
+        void drawHex (array<float, 3> pos, array<float, 3> offset, float r, array<float, 3> c);
 
         void drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q);
 

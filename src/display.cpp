@@ -3,28 +3,7 @@
 
 morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, double thetaInit, double phiInit)
 {
-    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-    disp = XOpenDisplay(NULL);
-    if(disp == NULL){
-        printf("\n\tcannot connect to X server\n\n");
-        exit(0);
-    }
-    root = DefaultRootWindow(disp);
-    vi = glXChooseVisual(disp, 0, att);
-    if(vi == NULL){
-        printf("\n\tno appropriate visual found\n\n");
-        exit(0);
-    } else {
-        printf("\n\tvisual %p selected\n", (void *)vi->visualid);
-    }
-    cmap = XCreateColormap(disp, root, vi->visual, AllocNone);
-    swa.colormap = cmap;
-    swa.event_mask = ExposureMask | KeyPressMask;
-    win = XCreateWindow(disp, root, 0, 0, myWindowSize, myWindowSize, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
-
-    glc = glXCreateContext(disp, vi, NULL, GL_TRUE);
-    XMapWindow(disp, win);
-    XStoreName(disp, win, (char*) title);
+    this->createWindow ((unsigned int)myWindowSize, (unsigned int)myWindowSize, title);
 
     this->speed = 5.*acos(-1.)/180.; // in degrees
     this->rho = 2.5 + rhoInit;
@@ -32,6 +11,49 @@ morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, 
     this->phi   = (phiInit + 0.00000001)*acos(-1.);
     alpha = 0.;
     Z = 1.;
+}
+
+// A more flexible constructor.
+morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
+                           const char* title,
+                           double rhoInit, double thetaInit, double phiInit)
+{
+    this->createWindow (windowWidth, windowHeight, title);
+
+    this->speed = 5.*acos(-1.)/180.; // in degrees
+    this->rho = rhoInit; // Stuart did have rhoInit+2.5, for some reason. I prefer to have client code pass in the initial rho with no modification made.
+    this->theta = (thetaInit + 0.5)*acos(-1.);
+    this->phi   = (phiInit + 0.00000001)*acos(-1.);
+    alpha = 0.;
+    Z = 1.;
+}
+
+void
+morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title)
+{
+   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+    disp = XOpenDisplay(NULL);
+    if (disp == NULL) {
+        printf("\n\tcannot connect to X server\n\n");
+        exit(0);
+    }
+    root = DefaultRootWindow(disp);
+    vi = glXChooseVisual(disp, 0, att);
+    if (vi == NULL) {
+        printf("\n\tno appropriate visual found\n\n");
+        exit(0);
+    } else {
+        printf("\n\tvisual %p selected\n", (void *)vi->visualid);
+    }
+    this->x_aspect_ratio = (GLfloat)windowWidth / (GLfloat)windowHeight;
+    cmap = XCreateColormap(disp, root, vi->visual, AllocNone);
+    swa.colormap = cmap;
+    swa.event_mask = ExposureMask | KeyPressMask;
+    win = XCreateWindow(disp, root, 0, 0, windowWidth, windowHeight, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+
+    glc = glXCreateContext(disp, vi, NULL, GL_TRUE);
+    XMapWindow(disp, win);
+    XStoreName(disp, win, (char*) title);
 }
 
 void
@@ -56,10 +78,10 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(45.0,        //"Specifies the field of view angle, in degrees, in the y direction."
-                   1.0,            //"Aspect ratio of x to y"
-                   0.1,                //"Specifies the distance from the viewer to the near clipping plane (always positive)."
-                   20.0);   //"Specifies the distance from the viewer to the far clipping plane (always positive)."
+    gluPerspective(45.0,  // "Specifies the field of view angle, in degrees, in the y direction."
+                   this->x_aspect_ratio,   // "Aspect ratio of x to y"
+                   0.1,   // "Specifies the distance from the viewer to the near clipping plane (always positive)."
+                   20.0); // "Specifies the distance from the viewer to the far clipping plane (always positive)."
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -85,16 +107,16 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
                 // secondary keyboard controls
             case 'w': WS = +1.;   break; //
             case 's': WS = -1.;   break; //
-            case 'a': AD = -1.;          break; //
-            case 'd': AD = +1.;          break; //
+            case 'a': AD = -1.;   break; //
+            case 'd': AD = +1.;   break; //
             case 'q': QE = -1.;   break; //
             case 'e': QE = +1.;   break; //
 
                 // tertiary keyboard controls
             case 't': TG = +1.;   break; //
             case 'g': TG = -1.;   break; //
-            case 'f': FH = -1.;          break; //
-            case 'h': FH = +1.;          break; //
+            case 'f': FH = -1.;   break; //
+            case 'h': FH = +1.;   break; //
             case 'r': RY = -1.;   break; //
             case 'y': RY = +1.;   break; //
 
@@ -108,71 +130,20 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
     theta   += JL*speed;
 
     // spherical coordinates (rho=distance,theta=azimuth, i.e., horizontal,phi=polar)
+    GLfloat eeyex = rho*sin(phi)*cos(theta);
+    GLfloat eeyey = rho*sin(phi)*sin(theta);
+    GLfloat eeyez = eye[2]+rho*cos(phi);
+    printf ("eyexyz: (%f, %f, %f)", eeyex, eeyey, eeyez);
     gluLookAt(rho*sin(phi)*cos(theta), // eyex (co-ordinate of camera)
               rho*sin(phi)*sin(theta), // eyey
               eye[2]+rho*cos(phi),     // eyez
-              0.,                                       // centerx (eye fixation point, i.e., 0,0,0)
-              0.,                                       // centery
-              0.,                                       // centerz
-              0.,                                       // upx     (which way is up)
-              0.,                                       // upy
-              -sin(phi));                           // upz
+              0.,                      // centerx (eye fixation point, i.e., 0,0,0)
+              0.,                      // centery
+              0.,                      // centerz
+              0.,                      // upx     (which way is up)
+              0.,                      // upy
+              -sin(phi));              // upz
 
-
-    /*
-      if (XLookupString(&xev.xkey,text,1,&key,0)==1){
-      switch(text[0]){
-      case 's': rho += speed;          break; // out
-      case 'w': rho = fmax(0.,rho-speed);   break; // in
-      case 'a': alpha -= speed;          break; // forward
-      case 'd': alpha += speed;          break; // forward
-      case 'i': phi += speed;          break; // forward
-      case 'k': phi -= speed;   break; // backwards
-      case 'j': theta -= speed; break; // left
-      case 'l': theta += speed; break; // right
-
-      }
-      }
-
-      if (XLookupString(&xev.xkey,text,1,&key,0)==1){
-      switch(text[0]){
-      case 'i': X += speed*cos(theta); Y += speed*sin(theta); break; // forward
-      case 'k': X -= speed*cos(theta); Y -= speed*sin(theta); break; // backward
-      case 'j': theta += speed;          break; // leftward
-      case 'l': theta -= speed;          break; // rightward
-      case 'a': phi += speed;          break; // look down
-      case 'z': phi -= speed;   break; // look up
-      // case 'q': closeDisplay(); break;
-      }
-      }
-    */
-    //}
-
-    /*
-    // spherical coordinates (rho=distance,theta=azimuth, i.e., horizontal,phi=polar)
-    gluLookAt(eye[0],//+rho*sin(phi)*cos(theta), // eyex (co-ordinate of camera)
-    eye[1],//+rho*sin(phi)*sin(theta), // eyey
-    eye[2],//+rho*cos(phi),            // eyez
-    fix[0],                                                        // centerx (eye fixation point, i.e., 0,0,0)
-    fix[1],                                                        // centery
-    fix[2],                                                        // centerz
-    rot[0],                                                        // upx     (which way is up)
-    rot[1],                                                        // upy
-    rot[2]);//-sin(phi));                                        // upz
-    */
-
-    /*
-    // spherical coordinates (rho=distance,theta=azimuth, i.e., horizontal,phi=polar)
-    gluLookAt(X, // eyex (co-ordinate of camera)
-    Y, // eyey
-    Z,            // eyez
-    X+cos(theta),                       // centerx (eye fixation point, i.e., 0,0,0)
-    Y+sin(theta),                                                        // centery
-    Z+sin(phi),                                                        // centerz
-    0.,                                                        // upx     (which way is up)
-    0.,                                                        // upy
-    1.);                                        // upz
-    */
     glEnable(GL_DEPTH_TEST);
 
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
@@ -208,10 +179,10 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
 void
 morph::Gdisplay::redrawDisplay()
 {
-    glXMakeCurrent(disp, win, glc);
-    XGetWindowAttributes(disp, win, &gwa);
-    glViewport(0, 0, gwa.width, gwa.height);
-    glXSwapBuffers(disp, win);
+    glXMakeCurrent (disp, win, glc);
+    XGetWindowAttributes (disp, win, &gwa);
+    glViewport (0, 0, gwa.width, gwa.height);
+    glXSwapBuffers (disp, win);
 }
 
 void
@@ -251,6 +222,26 @@ morph::Gdisplay::drawHex (array<float,3> pos, float r, array<float,3> c)
     glVertex3f(pos[0]-r,pos[1]-hry,pos[2]);
     glVertex3f(pos[0]-r,pos[1]+hry,pos[2]);
     glVertex3f(pos[0],pos[1]+ry,pos[2]);
+    glEnd();
+}
+
+void
+morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, array<float,3> c)
+{
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    GLfloat col[] = {(GLfloat)c[0], (GLfloat)c[1], (GLfloat)c[2], 1.f};
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+    float ry = r * 1.15470053838f; // r * 1.0/sin(pi/3.0)
+    float hry = ry * 0.5f;
+    glBegin(GL_POLYGON);
+    // x is pos[0], y is pos[1], z is pos[2]
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]+ry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0]+r,pos[1]+offset[1]+hry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0]+r,pos[1]+offset[1]-hry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]-ry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0]-r,pos[1]+offset[1]-hry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0]-r,pos[1]+offset[1]+hry,pos[2]+offset[2]);
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]+ry,pos[2]+offset[2]);
     glEnd();
 }
 
