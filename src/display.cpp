@@ -149,16 +149,15 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
     GLfloat eeyex = rho*sin(phi)*cos(theta);
     GLfloat eeyey = rho*sin(phi)*sin(theta);
     GLfloat eeyez = eye[2]+rho*cos(phi);
-    printf ("eyexyz: (%f, %f, %f)", eeyex, eeyey, eeyez);
-    gluLookAt(rho*sin(phi)*cos(theta), // eyex (co-ordinate of camera)
-              rho*sin(phi)*sin(theta), // eyey
-              eye[2]+rho*cos(phi),     // eyez
-              0.,                      // centerx (eye fixation point, i.e., 0,0,0)
-              0.,                      // centery
-              0.,                      // centerz
-              0.,                      // upx     (which way is up)
-              0.,                      // upy
-              -sin(phi));              // upz
+    gluLookAt(eeyex, // eyex (co-ordinate of camera)
+              eeyey, // eyey
+              eeyez, // eyez
+              0.,    // centerx (eye fixation point, i.e., 0,0,0)
+              0.,    // centery
+              0.,    // centerz
+              0.,    // upx     (which way is up)
+              0.,    // upy
+              -sin(phi)); // upz
 
     glEnable(GL_DEPTH_TEST);
 
