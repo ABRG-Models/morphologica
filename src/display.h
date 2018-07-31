@@ -45,6 +45,8 @@ namespace morph {
         Colormap                cmap;
         XSetWindowAttributes    swa;
         Window                  win;
+        XClassHint*             classHints;
+        XWMHints*               wmHints;
         GLXContext              glc;
         XWindowAttributes       gwa;
         XEvent                  xev;
@@ -65,11 +67,49 @@ namespace morph {
         /*!
          * Common to all constructors. Create an Xwindow and GL context
          */
-        void createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title);
+        void createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title, XID firstWindow = (XID)0x0);
 
     public:
+
+        /*!
+         * Constructor for square displays
+         */
         Gdisplay(int,const char*, double, double, double);
-        Gdisplay(unsigned int, unsigned int, const char*, double, double, double);
+
+        /*!
+         * Constructor for OpenGL displays (i.e. windows) that are
+         * rectangular.
+         *
+         * If you want to group your windows (so that the window
+         * manager knows that they're all part of the same program),
+         * then pass in the win attribute of the first window as the
+         * firstWindow argument here. For example:
+         *
+         * Gdisplay d1(1020, 300, winTitle.c_str(), rhoInit, 0.0, 0.0);
+         * Gdisplay d2(1020, 300, winTitle.c_str(), rhoInit, 0.0, 0.0, d1.win);
+         *
+         * @param windowWidth The width of the window in pixels
+         *
+         * @param windowHeight The height of the window in pixels
+         *
+         * @param title The window title to show in the window bar
+         *
+         * @param rhoInit Part of spherical coordinates for the
+         * initial view into the GLX context
+         *
+         * @param thetaInit Part of spherical coordinates for the
+         * initial view into the GLX context
+         *
+         * @param phiInit Part of spherical coordinates for the
+         * initial view into the GLX context
+         *
+         * @param firstWindow The XID of the first window in the group
+         * of windows that this Gdisplay should be a member of.
+         */
+        Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
+                  const char* title,
+                  double rhoInit, double thetaInit, double phiInit,
+                  XID firstWindow = (XID)0x0);
 
         void setTitle(char*);
         void resetDisplay(vector <double>, vector <double>, vector <double>);

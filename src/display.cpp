@@ -16,9 +16,9 @@ morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, 
 // A more flexible constructor.
 morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
                            const char* title,
-                           double rhoInit, double thetaInit, double phiInit)
+                           double rhoInit, double thetaInit, double phiInit, XID firstWindow)
 {
-    this->createWindow (windowWidth, windowHeight, title);
+    this->createWindow (windowWidth, windowHeight, title, firstWindow);
 
     this->speed = 5.*acos(-1.)/180.; // in degrees
     this->rho = rhoInit; // Stuart did have rhoInit+2.5, for some reason. I prefer to have client code pass in the initial rho with no modification made.
@@ -29,7 +29,7 @@ morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
 }
 
 void
-morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title)
+morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title, XID firstWindow)
 {
    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
     disp = XOpenDisplay(NULL);
@@ -54,6 +54,22 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
     glc = glXCreateContext(disp, vi, NULL, GL_TRUE);
     XMapWindow(disp, win);
     XStoreName(disp, win, (char*) title);
+
+    // Setting the class hint, as well as the window title ensures
+    // Gnome 3 (and presumably some other window managers) will
+    // display the window name in the icon list.
+    this->classHints = XAllocClassHint();
+    this->classHints->res_class = (char*) title;
+    XSetClassHint (disp, win, this->classHints);
+
+    // Similarly for Window Manager Hints. Using the group here, but
+    // could also set an icon.
+    if (firstWindow != (XID)0x0) {
+        this->wmHints = XAllocWMHints();
+        this->wmHints->flags = WindowGroupHint;
+        this->wmHints->window_group = firstWindow;
+        XSetWMHints (disp, win, this->wmHints);
+    }
 }
 
 void
