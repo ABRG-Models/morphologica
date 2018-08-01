@@ -265,6 +265,27 @@ morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, ar
 }
 
 void
+morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, float val)
+{
+    array<float,3> c = morph::Tools::getJetColorF (val);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    GLfloat col[] = {(GLfloat)c[0], (GLfloat)c[1], (GLfloat)c[2], 1.f};
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
+    float ry = r * 1.15470053838f; // r * 1.0/sin(pi/3.0)
+    float hry = ry * 0.5f;
+    glBegin(GL_POLYGON);
+    // x is pos[0], y is pos[1], z is val
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]+ry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0]+r,pos[1]+offset[1]+hry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0]+r,pos[1]+offset[1]-hry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]-ry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0]-r,pos[1]+offset[1]-hry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0]-r,pos[1]+offset[1]+hry,val+offset[2]);
+    glVertex3f(pos[0]+offset[0],pos[1]+offset[1]+ry,val+offset[2]);
+    glEnd();
+}
+
+void
 morph::Gdisplay::drawHexSeg (double x, double y, double z, double r,
                              double red, double green, double blue, int q)
 {

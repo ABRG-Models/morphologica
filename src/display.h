@@ -130,6 +130,13 @@ namespace morph {
          */
         void drawHex (array<float, 3> pos, array<float, 3> offset, float r, array<float, 3> c);
 
+        /*!
+         * Use only x and y from pos to determine position in 2D of
+         * hex, set z position to val, to give a 3D coloured graph
+         * (determining colour from val)
+         */
+        void drawHex (array<float,3> pos, array<float,3> offset, float r, float val);
+
         void drawHexSeg(double x,double y,double z,double r,double red,double green,double blue,int q);
 
         /*!
