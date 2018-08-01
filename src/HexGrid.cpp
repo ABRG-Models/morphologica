@@ -77,7 +77,7 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
         list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin();
         while (bpi != bpoints.end()) {
             nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
-            DBG ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
+            DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
         }
 
         // Check that the boundary is contiguous.
@@ -319,6 +319,32 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator hi)
         if (hi->has_nse) {
             this->markHexesInside (hi->nse);
         }
+    }
+}
+
+void
+morph::HexGrid::computeDistanceToBoundary (void)
+{
+    list<Hex>::iterator h = this->hexen.begin();
+    while (h != this->hexen.end()) {
+        if (h->boundaryHex == true) {
+            h->distToBoundary = 0.0f;
+        } else {
+            // Not a boundary hex
+            list<Hex>::iterator bh = this->hexen.begin();
+            while (bh != this->hexen.end()) {
+                if (bh->boundaryHex == true) {
+                    float delta = h->distanceFrom (*bh);
+                    if (delta < h->distToBoundary || h->distToBoundary < 0.0f) {
+                        h->distToBoundary = delta;
+                    }
+                }
+                ++bh;
+            }
+        }
+        DBG2 ("Hex: " << h->vi <<"  d to bndry: " << h->distToBoundary
+              << " on bndry? " << (h->boundaryHex?"Y":"N"));
+        ++h;
     }
 }
 

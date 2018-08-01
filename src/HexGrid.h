@@ -110,9 +110,20 @@ namespace morph {
         //@}
 
         /*!
+         * Run through all the hexes and compute the distance to the
+         * nearest boundary hex.
+         */
+        void computeDistanceToBoundary (void);
+
+        /*!
          * The list of hexes that make up this HexGrid.
          */
         list<Hex> hexen;
+
+        /*!
+         * The boundary hexes.
+         */
+        //list<list<Hex>::iterator> boundaryHexen;
 
     private:
         /*!

@@ -163,6 +163,15 @@ namespace morph {
         }
 
         /*!
+         * Compute the distance from another hex to this one.
+         */
+        float distanceFrom (const Hex& otherHex) const {
+            float dx = abs(otherHex.x - x);
+            float dy = abs(otherHex.y - y);
+            return sqrt (dx*dx + dy*dy);
+        }
+
+        /*!
          * Vector index. This is the index into those data vectors
          * which hold the relevant data pertaining to this hex. This
          * is a scheme which allows me to keep the data in separate
@@ -288,6 +297,13 @@ namespace morph {
          * Set true if this Hex is known to be inside the boundary.
          */
         bool insideBoundary = false;
+
+        /*!
+         * This can be populated with the distance to the nearest
+         * boundary hex, so that an algorithm can set values in a hex
+         * based this metric.
+         */
+        float distToBoundary = -1.0f;
 
         /*!
          * Return true if this is a boundary hex - one on the outside
