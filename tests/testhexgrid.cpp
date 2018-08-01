@@ -1,4 +1,4 @@
-#include "morph/HexGrid.h"
+#include "HexGrid.h"
 #include <iostream>
 
 using namespace morph;

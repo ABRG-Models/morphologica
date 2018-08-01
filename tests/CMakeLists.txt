@@ -43,8 +43,11 @@ target_link_libraries(${TARGETTEST5} morphologica)
 add_test(testhexgrid ${TARGETTEST5})
 
 # Test hexgrid2
-#set(TARGETTEST6 testhexgrid2 CACHE TYPE STRING)
-#set(SOURCETEST6 testhexgrid2.cpp)
 add_executable(testhexgrid2 testhexgrid2.cpp)
 target_link_libraries(testhexgrid2 morphologica)
 add_test(testhexgrid2 testhexgrid2)
+
+# Test distance to boundary
+add_executable(testhexbounddist testhexbounddist.cpp)
+target_link_libraries(testhexbounddist morphologica)
+add_test(testhexbounddist testhexbounddist)

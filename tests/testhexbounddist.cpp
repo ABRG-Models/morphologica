@@ -1,6 +1,10 @@
+/*
+ * Test the code which determines distance to boundary
+ */
+
 #include "HexGrid.h"
-#include "ReadCurves.h"
 #include "tools.h"
+#include "ReadCurves.h"
 #include <iostream>
 
 using namespace morph;
@@ -25,8 +29,13 @@ int main()
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 1604) {
-            rtn = -1;
+        hg.computeDistanceToBoundary();
+
+        for (auto h : hg.hexen) {
+            cout << "r is " << h.r << " and dist to boundary: " << h.distToBoundary << endl;
+            if (h.distToBoundary == -1) {
+                rtn = -1;
+            }
         }
 
     } catch (const exception& e) {
