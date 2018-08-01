@@ -29,7 +29,7 @@ set(CMAKE_C_FLAGS "${MORPH_HOST_DEFINITION}")
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++11")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -g -std=c++11")
 endif()
 
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
