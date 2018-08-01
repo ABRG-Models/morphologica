@@ -34,3 +34,17 @@ set(SOURCETEST4 testdisplay.cpp)
 add_executable(${TARGETTEST4} ${SOURCETEST4})
 target_link_libraries(${TARGETTEST4} morphstatic)
 add_test(testdisplay ${TARGETTEST4})
+
+# Test hexgrid
+set(TARGETTEST5 testhexgrid CACHE TYPE STRING)
+set(SOURCETEST5 testhexgrid.cpp)
+add_executable(${TARGETTEST5} ${SOURCETEST5})
+target_link_libraries(${TARGETTEST5} morphologica)
+add_test(testhexgrid ${TARGETTEST5})
+
+# Test hexgrid2
+#set(TARGETTEST6 testhexgrid2 CACHE TYPE STRING)
+#set(SOURCETEST6 testhexgrid2.cpp)
+add_executable(testhexgrid2 testhexgrid2.cpp)
+target_link_libraries(testhexgrid2 morphologica)
+add_test(testhexgrid2 testhexgrid2)

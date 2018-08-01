@@ -84,10 +84,9 @@ namespace morph
         }
     };
 
-    class Tools {
+    class Tools
+    {
     public:
-
-
         static vector<double> getJetColor (double gray);
 
         /*!
@@ -138,6 +137,11 @@ namespace morph
          * character.
          */
         static int ensureUnixNewlines (string& input);
+
+        /*!
+         * Get the working directory
+         */
+        static string getPwd (void);
 
         /*!
          * If the last character of input is a carriage return

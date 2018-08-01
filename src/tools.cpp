@@ -5,6 +5,15 @@
 #include <stdlib.h>
 #include <stdexcept>
 
+#include <stdio.h>
+#ifdef __WIN__
+# include <direct.h>
+# define GetCurrentDir _getcwd
+#else
+# include <unistd.h>
+# define GetCurrentDir getcwd
+#endif
+
 using namespace std;
 using namespace arma;
 
@@ -363,6 +372,14 @@ morph::Tools::ensureUnixNewlines (std::string& input)
     }
 
     return num; // The number of \r characters we found in the string.
+}
+
+string
+morph::Tools::getPwd (void)
+{
+    char b[FILENAME_MAX];
+    GetCurrentDir (b, FILENAME_MAX);
+    return string(b);
 }
 
 int

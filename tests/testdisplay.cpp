@@ -8,29 +8,40 @@ using namespace std;
 
 int main()
 {
-    int rtn = 0;
-
-    morph::Gdisplay d(600, "testdisplay", 0.0, 0.0, 0.0);
-    vector<double> fix(3, 0.0);
-    vector<double> eye(3, 0.0);
-    eye[2] = -0.4;
-    vector<double> rot(3, 0.0);
-
-    d.resetDisplay (fix, eye, rot);
-
-    array<float,3> cl_a = morph::Tools::getJetColorF (0.98);
-    array<float,3> pos = { { 0, 0, 0} };
-    d.drawHex (pos, 0.5, cl_a);
-
-    d.redrawDisplay();
-
-    cout << "Sleep a while before closing display..." << endl;
-    unsigned int i = 0;
-    while (i++ < 6) {
-        usleep (1000000); // one second
+    unsigned int sleep_seconds = 3;
+    string pwd = morph::Tools::getPwd();
+    if (pwd.substr(pwd.length()-11) == "build/tests") {
+        sleep_seconds = 0;
     }
 
-    d.closeDisplay();
+    int rtn = 0;
+    try {
+        morph::Gdisplay d(600, "testdisplay", 0.0, 0.0, 0.0);
+        vector<double> fix(3, 0.0);
+        vector<double> eye(3, 0.0);
+        eye[2] = -0.4;
+        vector<double> rot(3, 0.0);
+
+        d.resetDisplay (fix, eye, rot);
+
+        array<float,3> cl_a = morph::Tools::getJetColorF (0.98);
+        array<float,3> pos = { { 0, 0, 0} };
+        d.drawHex (pos, 0.5, cl_a);
+        d.redrawDisplay();
+
+        cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
+        unsigned int i = 0;
+        while (i++ < sleep_seconds) {
+            usleep (1000000); // one second
+        }
+
+        d.closeDisplay();
+
+    } catch (const exception& e) {
+        cerr << "Caught exception: " << e.what() << endl;
+        rtn = -1;
+    }
+
 
     return rtn;
 }

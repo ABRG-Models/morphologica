@@ -1,5 +1,9 @@
 #include "display.h"
+#include "tools.h"
 #include <armadillo>
+#include <stdexcept>
+
+using std::runtime_error;
 
 morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, double thetaInit, double phiInit)
 {
@@ -35,13 +39,13 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
     disp = XOpenDisplay(NULL);
     if (disp == NULL) {
         printf("\n\tcannot connect to X server\n\n");
-        exit(0);
+        throw runtime_error ("Gdisplay: Cannot connect to X server");
     }
     root = DefaultRootWindow(disp);
     vi = glXChooseVisual(disp, 0, att);
     if (vi == NULL) {
         printf("\n\tno appropriate visual found\n\n");
-        exit(0);
+        throw runtime_error ("Gdisplay: No appropriate visual found");
     } else {
         printf("\n\tvisual %p selected\n", (void *)vi->visualid);
     }
