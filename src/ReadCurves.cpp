@@ -120,7 +120,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         throw runtime_error ("Found a <path> element without a d attribute");
     }
 
-    DBG ("Path commands for layer " << layerName << ": " << d);
+    DBG2 ("Path commands for layer " << layerName << ": " << d);
 
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
