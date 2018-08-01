@@ -18,11 +18,19 @@ namespace morph
     class World
     {
     public:
-        World(const char*,
-              const char*,
-              int,
-              int,
-              double);
+        World(const char* processName,
+              const char* logfileLocation,
+              int seed,
+              int portID,
+              double dt);
+
+        /*!
+         * Construct a World that won't do any network comms
+         */
+        World(const char* processName,
+              const char* logfileLocation,
+              int seed,
+              double dt);
 
         virtual ~World();
         vector<string> getCommand(vector<double*>);

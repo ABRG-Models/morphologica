@@ -39,6 +39,33 @@ morph::World::World (const char* processName,
     logfile<<"**********"<<endl<<flush;
 };
 
+morph::World::World (const char* processName,
+                     const char* logfileLocation,
+                     int seed,
+                     double dt)
+{
+    this->processName=processName; // process name
+    stringstream ss;          // logfile location
+    ss<<logfileLocation;           // logfile location
+    srand(seed);                   // random seed
+    //this->portID=portID;           // tcpip port ID
+    //this->master.init(portID);
+    //vector<Client> ports;          // Remember this can be used for multi inputs
+
+    TIME = 0;
+    this->dt = dt;
+
+    logfile.open(ss.str().c_str(),ios::out|ios::app);
+    ss.clear();
+    time_t timer = time(NULL);
+    logfile<<"*********"<<endl;
+    logfile<<"   HI!"<<endl;
+    logfile<<"*********"<<endl;
+    logfile<<"Time now: "<<timer<<endl;
+    logfile<<"Sim name: "<<processName<<endl;
+    logfile<<"**********"<<endl<<flush;
+};
+
 vector<string>
 morph::World::getCommand (vector<double*> msgOut)
 {
