@@ -396,10 +396,12 @@ void
 morph::HexGrid::renumberVectorIndices (void)
 {
     unsigned int vi = 0;
+    this->vhexen.clear();
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
         DBG2 ("Old vi: " << hi->vi << " new vi: " << vi);
         hi->vi = vi++;
+        this->vhexen.push_back (&(*hi));
         ++hi;
     }
 }

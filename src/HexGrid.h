@@ -121,6 +121,12 @@ namespace morph {
         list<Hex> hexen;
 
         /*!
+         * Once boundary secured, fill this vector. Experimental - can
+         * I do parallel loops with vectors of hexes?
+         */
+        vector<Hex*> vhexen;
+
+        /*!
          * The boundary hexes.
          */
         //list<list<Hex>::iterator> boundaryHexen;
