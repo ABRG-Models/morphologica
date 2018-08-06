@@ -7,7 +7,7 @@ using std::runtime_error;
 
 morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, double thetaInit, double phiInit)
 {
-    this->createWindow ((unsigned int)myWindowSize, (unsigned int)myWindowSize, title);
+    this->createWindow ((unsigned int)myWindowSize, (unsigned int)myWindowSize, 0, 0, title);
 
     this->speed = 5.*acos(-1.)/180.; // in degrees
     this->rho = 2.5 + rhoInit;
@@ -19,10 +19,11 @@ morph::Gdisplay::Gdisplay (int myWindowSize, const char* title, double rhoInit, 
 
 // A more flexible constructor.
 morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
+                           unsigned int x, unsigned int y,
                            const char* title,
                            double rhoInit, double thetaInit, double phiInit, XID firstWindow)
 {
-    this->createWindow (windowWidth, windowHeight, title, firstWindow);
+    this->createWindow (windowWidth, windowHeight, x, y, title, firstWindow);
 
     this->speed = 5.*acos(-1.)/180.; // in degrees
     this->rho = rhoInit; // Stuart did have rhoInit+2.5, for some reason. I prefer to have client code pass in the initial rho with no modification made.
@@ -33,7 +34,8 @@ morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
 }
 
 void
-morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title, XID firstWindow)
+morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight,
+                               unsigned int x, unsigned int y, const char* title, XID firstWindow)
 {
    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
     disp = XOpenDisplay(NULL);
@@ -53,7 +55,7 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
     cmap = XCreateColormap(disp, root, vi->visual, AllocNone);
     swa.colormap = cmap;
     swa.event_mask = ExposureMask | KeyPressMask;
-    win = XCreateWindow(disp, root, 0, 0, windowWidth, windowHeight, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+    win = XCreateWindow(disp, root, x, y, windowWidth, windowHeight, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
 
     glc = glXCreateContext(disp, vi, NULL, GL_TRUE);
     XMapWindow(disp, win);

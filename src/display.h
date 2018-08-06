@@ -67,7 +67,9 @@ namespace morph {
         /*!
          * Common to all constructors. Create an Xwindow and GL context
          */
-        void createWindow (unsigned int windowWidth, unsigned int windowHeight, const char* title, XID firstWindow = (XID)0x0);
+        void createWindow (unsigned int windowWidth, unsigned int windowHeight,
+                           unsigned int x, unsigned int y,
+                           const char* title, XID firstWindow = (XID)0x0);
 
     public:
 
@@ -92,6 +94,10 @@ namespace morph {
          *
          * @param windowHeight The height of the window in pixels
          *
+         * @param x horizontal position of window
+         *
+         * @param y vertical position of window
+         *
          * @param title The window title to show in the window bar
          *
          * @param rhoInit Part of spherical coordinates for the
@@ -107,6 +113,7 @@ namespace morph {
          * of windows that this Gdisplay should be a member of.
          */
         Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
+                  unsigned int x, unsigned int y,
                   const char* title,
                   double rhoInit, double thetaInit, double phiInit,
                   XID firstWindow = (XID)0x0);
