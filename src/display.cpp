@@ -288,46 +288,46 @@ morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, fl
 }
 
 void
-morph::Gdisplay::drawHexSeg (double x, double y, double z, double r,
-                             double red, double green, double blue, int q)
+morph::Gdisplay::drawHexSeg (array<float,3> pos, double r,
+                             array<float,3> rgb, int edgeIndex)
 {
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
     double hry = ry * 0.5;
 
     double ax, ay, bx, by;
-    switch (q){
+    switch (edgeIndex){
     case (0):{
-        ax=x+r,    ay=y-hry;
-        bx=x+r,    by=y+hry;
+        ax=pos[0]+r,    ay=pos[1]-hry;
+        bx=pos[0]+r,    by=pos[1]+hry;
     }break;
     case (1):{
-        ax=x+r,    ay=y+hry;
-        bx=x,      by=y+ry;
+        ax=pos[0]+r,    ay=pos[1]+hry;
+        bx=pos[0],      by=pos[1]+ry;
     }break;
     case (2):{
-        ax=x,      ay=y+ry;
-        bx=x-r,    by=y+hry;
+        ax=pos[0],      ay=pos[1]+ry;
+        bx=pos[0]-r,    by=pos[1]+hry;
     }break;
     case (3):{
-        ax=x-r,    ay=y+hry;
-        bx=x-r,    by=y-hry;
+        ax=pos[0]-r,    ay=pos[1]+hry;
+        bx=pos[0]-r,    by=pos[1]-hry;
     }break;
     case (4):{
-        ax=x-r,    ay=y-hry;
-        bx=x,      by=y-ry;
+        ax=pos[0]-r,    ay=pos[1]-hry;
+        bx=pos[0],      by=pos[1]-ry;
     }break;
     case (5):{
-        ax=x,      ay=y-ry;
-        bx=x+r,    by=y-hry;
+        ax=pos[0],      ay=pos[1]-ry;
+        bx=pos[0]+r,    by=pos[1]-hry;
     }break;
     }
 
-    GLfloat col[] = {(GLfloat)red, (GLfloat)green, (GLfloat)blue, 1.f};
+    GLfloat col[] = {(GLfloat)rgb[0], (GLfloat)rgb[1], (GLfloat)rgb[2], 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
     glPointSize(5.);
     glBegin(GL_LINES);
-    glVertex3d(ax,ay,z);
-    glVertex3d(bx,by,z);
+    glVertex3d(ax,ay,pos[2]);
+    glVertex3d(bx,by,pos[2]);
     glEnd();
 }
 

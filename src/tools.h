@@ -95,7 +95,9 @@ namespace morph
         static array<float, 3> getJetColorF (double gray);
 
         static vector<double> getGrayScaleColor (double gray);
-        static vector<double> HSVtoRGB (double, double, double);
+        //static vector<double> HSVtoRGB (double, double, double);
+        static array<float,3> HSVtoRGB (double, double, double);
+        
 #if 0
         // This was confusingly named to return a double, rather than
         // a float. I've created randDouble() which returns a double
