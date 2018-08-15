@@ -288,7 +288,7 @@ morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, fl
 }
 
 void
-morph::Gdisplay::drawHexSeg (array<float,3> pos, double r,
+morph::Gdisplay::drawHexSeg (array<float,3> pos, array<float,3> offset, double r,
                              array<float,3> rgb, int edgeIndex)
 {
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
@@ -326,8 +326,8 @@ morph::Gdisplay::drawHexSeg (array<float,3> pos, double r,
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
     glPointSize(5.);
     glBegin(GL_LINES);
-    glVertex3d(ax,ay,pos[2]);
-    glVertex3d(bx,by,pos[2]);
+    glVertex3d(ax+offset[0],ay+offset[1],pos[2]+offset[2]);
+    glVertex3d(bx+offset[0],by+offset[1],pos[2]+offset[2]);
     glEnd();
 }
 

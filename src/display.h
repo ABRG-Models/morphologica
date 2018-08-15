@@ -147,7 +147,7 @@ namespace morph {
         /*!
          * SW: Draw single line segment of the hex, with edgeIndex in 0 to 5 indexing anti-clockwise from East.
          */
-        void drawHexSeg(array<float,3> pos,double r,array<float,3> col,int q);
+        void drawHexSeg(array<float,3> pos,array<float,3> offset,double r,array<float,3> col,int q);
 
         /*!
          * Draw a triangle.
