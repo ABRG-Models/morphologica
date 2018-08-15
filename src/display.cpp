@@ -2234,7 +2234,7 @@ morph::Gdisplay::saveImage (std::string filename)
     int h = viewport[3];
     bits = new GLubyte[w*3*h];
     glFinish(); //finish all commands of OpenGL
-    glPixelStorei(GL_PACK_ALIGNMENT,1); //or glPixelStorei(GL_PACK_ALIGNMENT,4);
+    glPixelStorei(GL_PACK_ALIGNMENT,1);
     glPixelStorei(GL_PACK_ROW_LENGTH, 0);
     glPixelStorei(GL_PACK_SKIP_ROWS, 0);
     glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
@@ -2249,7 +2249,7 @@ morph::Gdisplay::saveImage (std::string filename)
     }
     std::stringstream outFile;
     outFile << filename;
-    cvSaveImage(outFile.str().c_str(),capImg);
+    imwrite(outFile.str().c_str(),cv::cvarrToMat(capImg));
     cvReleaseImage(&capImg);
     delete[] bits;
 }
