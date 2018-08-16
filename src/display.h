@@ -23,8 +23,6 @@
 #include <array>
 #include <math.h>
 
-#include <opencv2/highgui.hpp>
-
 using std::vector;
 using std::array;
 
