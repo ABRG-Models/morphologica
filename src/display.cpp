@@ -1,8 +1,8 @@
+#include <opencv2/opencv.hpp>
 #include "display.h"
 #include "tools.h"
 #include <armadillo>
 #include <stdexcept>
-#include <opencv2/opencv.hpp>
 
 using std::runtime_error;
 
