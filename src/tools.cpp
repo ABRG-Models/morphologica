@@ -987,7 +987,7 @@ morph::Tools::createDir (const string& path,
         return;
     }
 
-    // Set to true if we are provded with an absolute filepath
+    // Set to true if we are provided with an absolute filepath
     bool pathIsAbsolute(false);
 
     // Set umask to 0000 to stop it interfering with mode
@@ -995,21 +995,27 @@ morph::Tools::createDir (const string& path,
     string::size_type pos, lastPos = path.size()-1;
     vector<string> dirs;
     if ((pos = path.find_last_of ('/', lastPos)) == string::npos) {
-        // Path is not absolute, single directory. NB: This
-        // will be created in the ROOT of the filesystem tree
-        // (if permissions allow)
+        // Path is single directory.
         dirs.push_back (path);
     } else {
-        // Definitely DO have a '/' in the path:
+        // Definitely DO have a '/' in the path somewhere:
         if (path[0] == '/') {
             pathIsAbsolute = true;
+            while ((pos = path.find_last_of ('/', lastPos)) != 0) {
+                dirs.push_back (path.substr(pos+1, lastPos-pos));
+                lastPos = pos-1;
+            }
+            dirs.push_back (path.substr(1, lastPos));
+        } else {
+            // Non absolute...
+            while ((pos = path.find_last_of ('/', lastPos)) != 0) {
+                dirs.push_back (path.substr(pos+1, lastPos-pos));
+                lastPos = pos-1;
+                if (pos == string::npos) {
+                    break;
+                }
+            }
         }
-
-        while ((pos = path.find_last_of ('/', lastPos)) != 0) {
-            dirs.push_back (path.substr(pos+1, lastPos-pos));
-            lastPos = pos-1;
-        }
-        dirs.push_back (path.substr(1, lastPos));
     }
 
     vector<string>::reverse_iterator i = dirs.rbegin();
@@ -1018,10 +1024,7 @@ morph::Tools::createDir (const string& path,
     while (i != dirs.rend()) {
         if (first && !pathIsAbsolute) {
             prePath += "./" + *i;
-            first = true;
-        } else if (first && pathIsAbsolute) {
-            prePath += "/" + *i;
-            first = true;
+            first = false;
         } else {
             prePath += "/" + *i;
         }
