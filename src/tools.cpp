@@ -376,7 +376,7 @@ morph::Tools::matrixMultiply (vector < vector <double> > a, vector < vector <dou
 #endif
 
 int
-morph::Tools::ensureUnixNewlines (std::string& input)
+morph::Tools::ensureUnixNewlines (string& input)
 {
     int num = 0;
 
@@ -399,7 +399,7 @@ morph::Tools::getPwd (void)
 }
 
 int
-morph::Tools::stripTrailingCarriageReturn (std::string& input)
+morph::Tools::stripTrailingCarriageReturn (string& input)
 {
     if (input[input.size()-1] == '\r') {
         input.erase(input.size()-1, 1);
@@ -409,7 +409,7 @@ morph::Tools::stripTrailingCarriageReturn (std::string& input)
 }
 
 int
-morph::Tools::stripTrailingWhitespace (std::string& input)
+morph::Tools::stripTrailingWhitespace (string& input)
 {
     char c;
     string::size_type len = input.size(), pos = len;
@@ -425,7 +425,7 @@ morph::Tools::stripTrailingWhitespace (std::string& input)
 }
 
 int
-morph::Tools::stripChars (std::string& input, const std::string& charList)
+morph::Tools::stripChars (string& input, const string& charList)
 {
     int rtn(0);
     string::size_type pos(0);
@@ -437,7 +437,7 @@ morph::Tools::stripChars (std::string& input, const std::string& charList)
 }
 
 int
-morph::Tools::stripChars (std::string& input, const char charList)
+morph::Tools::stripChars (string& input, const char charList)
 {
     int rtn(0);
     string::size_type pos(0);
@@ -449,7 +449,7 @@ morph::Tools::stripChars (std::string& input, const char charList)
 }
 
 int
-morph::Tools::convertCHexCharSequences (std::string& input)
+morph::Tools::convertCHexCharSequences (string& input)
 {
     // This converts a string containing C style hex sequences
     // like "\x41\x42\x43" into the corresponding characters
@@ -634,13 +634,13 @@ morph::Tools::convertCHexCharSequences (std::string& input)
 }
 
 int
-morph::Tools::stripTrailingSpaces (std::string& input)
+morph::Tools::stripTrailingSpaces (string& input)
 {
     return Tools::stripTrailingChars (input);
 }
 
 int
-morph::Tools::stripTrailingChars (std::string& input, const char c)
+morph::Tools::stripTrailingChars (string& input, const char c)
 {
     int i = 0;
     while (input.size()>0 && input[input.size()-1] == c) {
@@ -651,7 +651,7 @@ morph::Tools::stripTrailingChars (std::string& input, const char c)
 }
 
 int
-morph::Tools::stripLeadingWhitespace (std::string& input)
+morph::Tools::stripLeadingWhitespace (string& input)
 {
     char c;
     string::size_type pos = 0;
@@ -667,7 +667,7 @@ morph::Tools::stripLeadingWhitespace (std::string& input)
 }
 
 int
-morph::Tools::stripWhitespace (std::string& input)
+morph::Tools::stripWhitespace (string& input)
 {
     int n = Tools::stripLeadingWhitespace (input);
     n += Tools::stripTrailingWhitespace (input);
@@ -675,13 +675,13 @@ morph::Tools::stripWhitespace (std::string& input)
 }
 
 int
-morph::Tools::stripLeadingSpaces (std::string& input)
+morph::Tools::stripLeadingSpaces (string& input)
 {
     return Tools::stripLeadingChars (input);
 }
 
 int
-morph::Tools::stripLeadingChars (std::string& input, const char c)
+morph::Tools::stripLeadingChars (string& input, const char c)
 {
     int i = 0;
     while (input.size()>0 && input[0] == c) {
@@ -694,7 +694,7 @@ morph::Tools::stripLeadingChars (std::string& input, const char c)
 int
 morph::Tools::searchReplace (const string& searchTerm,
                              const string& replaceTerm,
-                             std::string& data,
+                             string& data,
                              const bool replaceAll)
 {
     int count = 0;
@@ -730,7 +730,7 @@ morph::Tools::searchReplace (const string& searchTerm,
 }
 
 void
-morph::Tools::conditionAsXmlTag (std::string& str)
+morph::Tools::conditionAsXmlTag (string& str)
 {
     // 1) Replace chars which are disallowed in an XML tag
     string::size_type ptr = string::npos;
@@ -764,7 +764,7 @@ morph::Tools::conditionAsXmlTag (std::string& str)
 }
 
 unsigned int
-morph::Tools::countChars (const std::string& line, const char c)
+morph::Tools::countChars (const string& line, const char c)
 {
     unsigned int count(0);
     string::const_iterator i = line.begin();
@@ -779,7 +779,7 @@ morph::Tools::countChars (const std::string& line, const char c)
  */
 //@{
 bool
-morph::Tools::fileExists (const std::string& path)
+morph::Tools::fileExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -810,7 +810,7 @@ morph::Tools::fileExists (const std::string& path)
 }
 
 bool
-morph::Tools::regfileExists (const std::string& path)
+morph::Tools::regfileExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -832,7 +832,7 @@ morph::Tools::regfileExists (const std::string& path)
 }
 
 bool
-morph::Tools::userExefileExists (const std::string& path)
+morph::Tools::userExefileExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -854,7 +854,7 @@ morph::Tools::userExefileExists (const std::string& path)
 }
 
 bool
-morph::Tools::blockdevExists (const std::string& path)
+morph::Tools::blockdevExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -876,7 +876,7 @@ morph::Tools::blockdevExists (const std::string& path)
 }
 
 bool
-morph::Tools::socketExists (const std::string& path)
+morph::Tools::socketExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -898,7 +898,7 @@ morph::Tools::socketExists (const std::string& path)
 }
 
 bool
-morph::Tools::fifoExists (const std::string& path)
+morph::Tools::fifoExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -920,7 +920,7 @@ morph::Tools::fifoExists (const std::string& path)
 }
 
 bool
-morph::Tools::chardevExists (const std::string& path)
+morph::Tools::chardevExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -942,7 +942,7 @@ morph::Tools::chardevExists (const std::string& path)
 }
 
 bool
-morph::Tools::linkExists (const std::string& path)
+morph::Tools::linkExists (const string& path)
 {
     struct stat * buf = NULL;
 
@@ -964,7 +964,7 @@ morph::Tools::linkExists (const std::string& path)
 }
 
 bool
-morph::Tools::dirExists (const std::string& path)
+morph::Tools::dirExists (const string& path)
 {
     DIR* d;
     if (!(d = opendir (path.c_str()))) {
@@ -978,7 +978,7 @@ morph::Tools::dirExists (const std::string& path)
 }
 
 void
-morph::Tools::createDir (const std::string& path,
+morph::Tools::createDir (const string& path,
                          const mode_t mode,
                          const int uid, const int gid)
 {
@@ -1088,7 +1088,7 @@ morph::Tools::createDir (const std::string& path,
 }
 
 void
-morph::Tools::removeDir (const std::string& path)
+morph::Tools::removeDir (const string& path)
 {
     int rtn = rmdir (path.c_str());
     if (rtn) {
@@ -1188,8 +1188,8 @@ morph::Tools::setPermissions (const string& filepath, const mode_t mode)
 }
 
 bool
-morph::Tools::checkAccess (const std::string& filepath,
-                           const std::string& accessType)
+morph::Tools::checkAccess (const string& filepath,
+                           const string& accessType)
 {
     if (accessType.find("r") != string::npos) {
         ifstream in;
@@ -1261,7 +1261,7 @@ morph::Tools::setOwnership (const string& filepath, const int uid, const int gid
 }
 
 void
-morph::Tools::touchFile (const std::string& path)
+morph::Tools::touchFile (const string& path)
 {
     ofstream f;
     f.open (path.c_str(), ios::out|ios::app);
@@ -1420,7 +1420,7 @@ morph::Tools::copyFileToString (istream& from, string& to)
 }
 
 void
-morph::Tools::appendFile (const std::string& from, std::ostream& appendTo)
+morph::Tools::appendFile (const string& from, ostream& appendTo)
 {
     if (!appendTo.good()) {
         throw runtime_error ("Can't append to appendTo, it's not good()");
@@ -1504,8 +1504,8 @@ morph::Tools::appendFile (const string& from, const string& appendTo)
 }
 
 void
-morph::Tools::truncateFile (const std::string& from,
-                            const std::string& to,
+morph::Tools::truncateFile (const string& from,
+                            const string& to,
                             const unsigned int bytes)
 {
     ofstream out;
@@ -1772,8 +1772,8 @@ morph::Tools::readDirectoryTree (vector<string>& vec,
 }
 
 void
-morph::Tools::readDirectoryDirs (std::set<std::string>& dset,
-                                 const std::string& dirPath)
+morph::Tools::readDirectoryDirs (set<string>& dset,
+                                 const string& dirPath)
 {
     DIR* d;
     struct dirent *ep;
@@ -1803,9 +1803,9 @@ morph::Tools::readDirectoryDirs (std::set<std::string>& dset,
 }
 
 void
-morph::Tools::readDirectoryEmptyDirs (std::set<std::string>& dset,
-                                      const std::string& baseDirPath,
-                                      const std::string& subDir)
+morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
+                                      const string& baseDirPath,
+                                      const string& subDir)
 {
     DIR* d;
     struct dirent *ep;
@@ -1858,8 +1858,8 @@ morph::Tools::readDirectoryEmptyDirs (std::set<std::string>& dset,
 }
 
 void
-morph::Tools::removeUnusedDirs (std::set<std::string>& dset,
-                                const std::string& dirPath)
+morph::Tools::removeUnusedDirs (set<string>& dset,
+                                const string& dirPath)
 {
     set<string> onepass;
     do {
@@ -1870,9 +1870,9 @@ morph::Tools::removeUnusedDirs (std::set<std::string>& dset,
 }
 
 void
-morph::Tools::removeEmptySubDirs (std::set<std::string>& dset,
-                                  const std::string& baseDirPath,
-                                  const std::string& subDir)
+morph::Tools::removeEmptySubDirs (set<string>& dset,
+                                  const string& baseDirPath,
+                                  const string& subDir)
 {
     DIR* d;
     struct dirent *ep;
@@ -1928,7 +1928,7 @@ morph::Tools::removeEmptySubDirs (std::set<std::string>& dset,
     (void) closedir (d);
 }
 
-std::string
+string
 morph::Tools::fileModDatestamp (const string& filename)
 {
     struct stat * buf = NULL;

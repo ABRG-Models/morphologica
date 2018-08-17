@@ -18,6 +18,8 @@ using std::list;
 using std::set;
 using std::map;
 using std::string;
+using std::istream;
+using std::ostream;
 
 /*!
  * Character sets useful when calling util::sanitize().
@@ -310,7 +312,7 @@ namespace morph
          * Stat a file, return true if the file exists and is
          * any kind of file except a directory.
          */
-        static bool fileExists (const std::string& path);
+        static bool fileExists (const string& path);
 
         /*!
          * Stat a file, return true if the file exists and is
@@ -319,44 +321,44 @@ namespace morph
          * pointing to a regular file, fileExists returns
          * true.
          */
-        static bool regfileExists (const std::string& path);
+        static bool regfileExists (const string& path);
 
         /*!
          * Like regfileExists, but also checks if the file has
          * the "executable by user" bit set (chmod u+x).
          */
-        static bool userExefileExists (const std::string& path);
+        static bool userExefileExists (const string& path);
 
         /*!
          * Like regfileExists, but for block devices
          */
-        static bool blockdevExists (const std::string& path);
+        static bool blockdevExists (const string& path);
 
         /*!
          * Like regfileExists, but for sockets
          */
-        static bool socketExists (const std::string& path);
+        static bool socketExists (const string& path);
 
         /*!
          * Like regfileExists, but for fifos
          */
-        static bool fifoExists (const std::string& path);
+        static bool fifoExists (const string& path);
 
         /*!
          * Like regfileExists, but for char devices
          */
-        static bool chardevExists (const std::string& path);
+        static bool chardevExists (const string& path);
 
         /*!
          * Like lnkExists, but for char devices
          */
-        static bool linkExists (const std::string& path);
+        static bool linkExists (const string& path);
 
         /*!
          * Stat a directory, return true if the directory
          * exists.
          */
-        static bool dirExists (const std::string& path);
+        static bool dirExists (const string& path);
 
         /*!
          * Create the directory and any parent directories
@@ -387,19 +389,19 @@ namespace morph
          * was not created. This is NOT applied if it is set
          * to -1.
          */
-        static void createDir (const std::string& path,
+        static void createDir (const string& path,
                                const mode_t mode = 0775,
                                const int uid = -1, const int gid = -1);
 
         /*!
          * Attempt to rmdir path.
          */
-        static void removeDir (const std::string& path);
+        static void removeDir (const string& path);
 
         /*!
          * Set the permissions for the provided file
          */
-        static void setPermissions (const std::string& filepath,
+        static void setPermissions (const string& filepath,
                                     const mode_t mode);
 
         /*!
@@ -413,20 +415,20 @@ namespace morph
          * \param accessType Indicates which access type(s) to
          * check. r=read, w=write.
          */
-        static bool checkAccess (const std::string& filepath,
-                                 const std::string& accessType);
+        static bool checkAccess (const string& filepath,
+                                 const string& accessType);
 
         /*!
          * Set the ownership for the provided file
          */
-        static void setOwnership (const std::string& filepath,
+        static void setOwnership (const string& filepath,
                                   const int uid = -1,
                                   const int gid = -1);
 
         /*!
          * Touch the file.
          */
-        static void touchFile (const std::string& path);
+        static void touchFile (const string& path);
 
         /*!
          * Copy a file. If from/to is a string or a char*,
@@ -439,11 +441,11 @@ namespace morph
          * case.
          */
         //@{
-        static void copyFile (const std::string& from, const std::string& to);
-        static void copyFile (const std::string& from, std::ostream& to);
-        static void copyFile (FILE* from, const std::string& to);
-        static void copyFile (std::istream& from, const std::string& to);
-        static void copyFile (const std::string& from, FILE* to);
+        static void copyFile (const string& from, const string& to);
+        static void copyFile (const string& from, ostream& to);
+        static void copyFile (FILE* from, const string& to);
+        static void copyFile (istream& from, const string& to);
+        static void copyFile (const string& from, FILE* to);
         //@}
 
         /*!
@@ -456,45 +458,45 @@ namespace morph
         /*!
          * Copy a file from an input stream into a string.
          */
-        static void copyFileToString (std::istream& from, std::string& to);
+        static void copyFileToString (istream& from, string& to);
 
         /*!
          * Append the file from to the filestream appendTo
          */
         //@{
-        static void appendFile (const std::string& from, std::ostream& appendTo);
-        static void appendFile (std::istream& from, std::ostream& appendTo);
-        static void appendFile (std::istream& from, const std::string& appendTo);
-        static void appendFile (const std::string& from, const std::string& appendTo);
+        static void appendFile (const string& from, ostream& appendTo);
+        static void appendFile (istream& from, ostream& appendTo);
+        static void appendFile (istream& from, const string& appendTo);
+        static void appendFile (const string& from, const string& appendTo);
         //@}
 
         /*!
          * Make a copy of \param bytes bytes of the file at
          * \param original to the file \param truncated.
          */
-        static void truncateFile (const std::string& original,
-                                  const std::string& truncated,
+        static void truncateFile (const string& original,
+                                  const string& truncated,
                                   const unsigned int bytes);
 
         /*!
          * Move a file. Throw exception on failure.
          */
-        static void moveFile (const std::string& from, const std::string& to);
+        static void moveFile (const string& from, const string& to);
 
         /*!
          * Call unlink() on the given file path fpath. If
          * unlinking fails, throw a descriptive error based on
          * the errno which was set on unlink's return.
          */
-        static void unlinkFile (const std::string& fpath);
+        static void unlinkFile (const string& fpath);
 
         /*!
          * Unlink files in dirPath which are older than
          * olerThanSeconds and which contain filePart.
          */
-        static void clearoutDir (const std::string& dirPath,
+        static void clearoutDir (const string& dirPath,
                                  const unsigned int olderThanSeconds = 0,
-                                 const std::string& filePart = "");
+                                 const string& filePart = "");
 
         /*!
          * This reads the contents of a directory tree, making
@@ -526,9 +528,9 @@ namespace morph
          * value, then only files older than olderThanSeconds
          * will be returned.
          */
-        static void readDirectoryTree (std::vector<std::string>& vec,
-                                       const std::string& baseDirPath,
-                                       const std::string& subDirPath,
+        static void readDirectoryTree (vector<string>& vec,
+                                       const string& baseDirPath,
+                                       const string& subDirPath,
                                        const unsigned int olderThanSeconds = 0);
 
         /*!
@@ -539,8 +541,8 @@ namespace morph
          * value, then only files older than olderThanSeconds
          * will be returned.
          */
-        static void readDirectoryTree (std::vector<std::string>& vec,
-                                       const std::string& dirPath,
+        static void readDirectoryTree (vector<string>& vec,
+                                       const string& dirPath,
                                        const unsigned int olderThanSeconds = 0);
 
         /*!
@@ -558,8 +560,8 @@ namespace morph
          *
          * The set dset would be filled only with dir2, dir1.
          */
-        static void readDirectoryDirs (std::set<std::string>& dset,
-                                       const std::string& dirPath);
+        static void readDirectoryDirs (set<string>& dset,
+                                       const string& dirPath);
 
         /*!
          * Return empty subdirectories in
@@ -570,17 +572,17 @@ namespace morph
          * TRAILING '/'. The subDirPath should have NO INITIAL
          * '/' character.
          */
-        static void readDirectoryEmptyDirs (std::set<std::string>& dset,
-                                            const std::string& baseDirPath,
-                                            const std::string& subDir = "");
+        static void readDirectoryEmptyDirs (set<string>& dset,
+                                            const string& baseDirPath,
+                                            const string& subDir = "");
 
         /*!
          * Attempts to remove all the unused directories in a tree.
          *
          * May throw exceptions.
          */
-        static void removeUnusedDirs (std::set<std::string>& dset,
-                                      const std::string& dirPath);
+        static void removeUnusedDirs (set<string>& dset,
+                                      const string& dirPath);
 
         /*!
          * Recursively remove all empty directories in baseDirPath(/subDir)
@@ -594,20 +596,20 @@ namespace morph
          * end-of-directories in a tree. If you want to remove
          * all "unused" directories in a tree, use removeUnusedDirs()
          */
-        static void removeEmptySubDirs (std::set<std::string>& dset,
-                                        const std::string& baseDirPath,
-                                        const std::string& subDir = "");
+        static void removeEmptySubDirs (set<string>& dset,
+                                        const string& baseDirPath,
+                                        const string& subDir = "");
 
         /*!
          * Return a datestamp - st_mtime; the file
          * modification time for the given file.
          */
-        static std::string fileModDatestamp (const std::string& filename);
+        static string fileModDatestamp (const string& filename);
 
         /*!
          * Check whether the specified files differ.
          */
-        static bool filesDiffer (const std::string& first, const std::string& second);
+        static bool filesDiffer (const string& first, const string& second);
         //@}
 
         /*!
