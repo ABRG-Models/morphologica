@@ -95,15 +95,9 @@ namespace morph
         static array<float, 3> getJetColorF (double gray);
 
         static vector<double> getGrayScaleColor (double gray);
-        //static vector<double> HSVtoRGB (double, double, double);
+
         static array<float,3> HSVtoRGB (double, double, double);
-        
-#if 0
-        // This was confusingly named to return a double, rather than
-        // a float. I've created randDouble() which returns a double
-        // precision random number.
-        static double randFloat (void);
-#endif
+
         /*!
          * Return a random double precision number in the range [0,1], sampled
          * from a uniform distribution.
@@ -306,6 +300,315 @@ namespace morph
          */
         static vector<string> stringToVector (const string& s, const string& separator,
                                               const bool ignoreTrailingEmptyVal = true);
+
+        /*!
+         * File and directory access methods
+         */
+        //@{
+
+        /*!
+         * Stat a file, return true if the file exists and is
+         * any kind of file except a directory.
+         */
+        static bool fileExists (const std::string& path);
+
+        /*!
+         * Stat a file, return true if the file exists and is
+         * a regular file.  If file is a hanging symlink,
+         * fileExists returns false, if file is a symlink
+         * pointing to a regular file, fileExists returns
+         * true.
+         */
+        static bool regfileExists (const std::string& path);
+
+        /*!
+         * Like regfileExists, but also checks if the file has
+         * the "executable by user" bit set (chmod u+x).
+         */
+        static bool userExefileExists (const std::string& path);
+
+        /*!
+         * Like regfileExists, but for block devices
+         */
+        static bool blockdevExists (const std::string& path);
+
+        /*!
+         * Like regfileExists, but for sockets
+         */
+        static bool socketExists (const std::string& path);
+
+        /*!
+         * Like regfileExists, but for fifos
+         */
+        static bool fifoExists (const std::string& path);
+
+        /*!
+         * Like regfileExists, but for char devices
+         */
+        static bool chardevExists (const std::string& path);
+
+        /*!
+         * Like lnkExists, but for char devices
+         */
+        static bool linkExists (const std::string& path);
+
+        /*!
+         * Stat a directory, return true if the directory
+         * exists.
+         */
+        static bool dirExists (const std::string& path);
+
+        /*!
+         * Create the directory and any parent directories
+         * which need to be created.
+         *
+         * Makes use of mkdir() and acts like the system
+         * command mkdir -p path.
+         *
+         * If uid/gid is set to >-1, then chown each
+         * directory. This means that ownership is set for the
+         * directories in the path even if the directories do
+         * not need to be created.
+         *
+         * \param path The path (relative or absolute) to the
+         * directory which should be created.
+         *
+         * \param mode the permissions mode which should be
+         * set on the directory. This is applied even if the
+         * directory was not created.
+         *
+         * \param uid The user id to apply to the
+         * directory. This is applied even if the directory
+         * was not created. This is NOT applied if it is set
+         * to -1.
+         *
+         * \param gid The group id to apply to the
+         * directory. This is applied even if the directory
+         * was not created. This is NOT applied if it is set
+         * to -1.
+         */
+        static void createDir (const std::string& path,
+                               const mode_t mode = 0775,
+                               const int uid = -1, const int gid = -1);
+
+        /*!
+         * Attempt to rmdir path.
+         */
+        static void removeDir (const std::string& path);
+
+        /*!
+         * Set the permissions for the provided file
+         */
+        static void setPermissions (const std::string& filepath,
+                                    const mode_t mode);
+
+        /*!
+         * Check read/write access for the specified file.
+         *
+         * Checks whether read/write access, as indicated by
+         * the accessType string, is available for the
+         * specified file.
+         *
+         * \param filepath File to check.
+         * \param accessType Indicates which access type(s) to
+         * check. r=read, w=write.
+         */
+        static bool checkAccess (const std::string& filepath,
+                                 const std::string& accessType);
+
+        /*!
+         * Set the ownership for the provided file
+         */
+        static void setOwnership (const std::string& filepath,
+                                  const int uid = -1,
+                                  const int gid = -1);
+
+        /*!
+         * Touch the file.
+         */
+        static void touchFile (const std::string& path);
+
+        /*!
+         * Copy a file. If from/to is a string or a char*,
+         * then these are the filepaths. Some versions allow
+         * you to copy the file contents into an output
+         * stream. Throw exception on failure.
+         *
+         * The "from" file is expected to be a regular file -
+         * an exception will be thrown if this is not the
+         * case.
+         */
+        //@{
+        static void copyFile (const std::string& from, const std::string& to);
+        static void copyFile (const std::string& from, std::ostream& to);
+        static void copyFile (FILE* from, const std::string& to);
+        static void copyFile (std::istream& from, const std::string& to);
+        static void copyFile (const std::string& from, FILE* to);
+        //@}
+
+        /*!
+         * Copy from one file pointer to another. Both are
+         * expected to be open, neither is closed after the
+         * copy.
+         */
+        static void copyFile (FILE* from, FILE* to);
+
+        /*!
+         * Copy a file from an input stream into a string.
+         */
+        static void copyFileToString (std::istream& from, std::string& to);
+
+        /*!
+         * Append the file from to the filestream appendTo
+         */
+        //@{
+        static void appendFile (const std::string& from, std::ostream& appendTo);
+        static void appendFile (std::istream& from, std::ostream& appendTo);
+        static void appendFile (std::istream& from, const std::string& appendTo);
+        static void appendFile (const std::string& from, const std::string& appendTo);
+        //@}
+
+        /*!
+         * Make a copy of \param bytes bytes of the file at
+         * \param original to the file \param truncated.
+         */
+        static void truncateFile (const std::string& original,
+                                  const std::string& truncated,
+                                  const unsigned int bytes);
+
+        /*!
+         * Move a file. Throw exception on failure.
+         */
+        static void moveFile (const std::string& from, const std::string& to);
+
+        /*!
+         * Call unlink() on the given file path fpath. If
+         * unlinking fails, throw a descriptive error based on
+         * the errno which was set on unlink's return.
+         */
+        static void unlinkFile (const std::string& fpath);
+
+        /*!
+         * Unlink files in dirPath which are older than
+         * olerThanSeconds and which contain filePart.
+         */
+        static void clearoutDir (const std::string& dirPath,
+                                 const unsigned int olderThanSeconds = 0,
+                                 const std::string& filePart = "");
+
+        /*!
+         * This reads the contents of a directory tree, making
+         * up a list of the contents in the vector vec. If the
+         * directory tree has subdirectories, these are
+         * reflected in the vector entries. So, a directory
+         * structure might lead to the following entries in vec:
+         *
+         * file2
+         * file1
+         * dir2/file2
+         * dir2/file1
+         * dir1/file1
+         *
+         * Note that the order of the files is REVERSED from
+         * what you might expect. This is the way that
+         * readdir() seems to work. If it's important to
+         * iterate through the vector<string>& vec, then use a
+         * reverse_iterator.
+         *
+         * The base directory path baseDirPath should have NO
+         * TRAILING '/'. The subDirPath should have NO INITIAL
+         * '/' character.
+         *
+         * The subDirPath argument is present because this is
+         * a recursive function.
+         *
+         * If olderThanSeconds is passed in with a non-zero
+         * value, then only files older than olderThanSeconds
+         * will be returned.
+         */
+        static void readDirectoryTree (std::vector<std::string>& vec,
+                                       const std::string& baseDirPath,
+                                       const std::string& subDirPath,
+                                       const unsigned int olderThanSeconds = 0);
+
+        /*!
+         * A simple wrapper around the more complex version,
+         * for the user to call.
+         *
+         * If olderThanSeconds is passed in with a non-zero
+         * value, then only files older than olderThanSeconds
+         * will be returned.
+         */
+        static void readDirectoryTree (std::vector<std::string>& vec,
+                                       const std::string& dirPath,
+                                       const unsigned int olderThanSeconds = 0);
+
+        /*!
+         * Get a list of only the immediate subdirectories in
+         * dirPath.
+         *
+         * For example, if you have a structure like:
+         *
+         * file1
+         * file2
+         * dir1/file1
+         * dir2/file1
+         * dir2/file2
+         * dir2/aDirectory
+         *
+         * The set dset would be filled only with dir2, dir1.
+         */
+        static void readDirectoryDirs (std::set<std::string>& dset,
+                                       const std::string& dirPath);
+
+        /*!
+         * Return empty subdirectories in
+         * dirPath/subDir. Recursive partner to
+         * readDirectoryEmptyDirs(set<string>&, const string&).
+         *
+         * The base directory path baseDirPath should have NO
+         * TRAILING '/'. The subDirPath should have NO INITIAL
+         * '/' character.
+         */
+        static void readDirectoryEmptyDirs (std::set<std::string>& dset,
+                                            const std::string& baseDirPath,
+                                            const std::string& subDir = "");
+
+        /*!
+         * Attempts to remove all the unused directories in a tree.
+         *
+         * May throw exceptions.
+         */
+        static void removeUnusedDirs (std::set<std::string>& dset,
+                                      const std::string& dirPath);
+
+        /*!
+         * Recursively remove all empty directories in baseDirPath(/subDir)
+         *
+         * Removed directories are inserted into dset, so you
+         * know what you got rid of.
+         *
+         * This won't remove baseDirPath itself, even if that is empty.
+         *
+         * This does one "pass" - it removes all empty
+         * end-of-directories in a tree. If you want to remove
+         * all "unused" directories in a tree, use removeUnusedDirs()
+         */
+        static void removeEmptySubDirs (std::set<std::string>& dset,
+                                        const std::string& baseDirPath,
+                                        const std::string& subDir = "");
+
+        /*!
+         * Return a datestamp - st_mtime; the file
+         * modification time for the given file.
+         */
+        static std::string fileModDatestamp (const std::string& filename);
+
+        /*!
+         * Check whether the specified files differ.
+         */
+        static bool filesDiffer (const std::string& first, const std::string& second);
+        //@}
 
         /*!
          * This splits up a "search style" string into tokens.
