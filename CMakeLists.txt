@@ -64,7 +64,12 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH})
+# Find the HDF5 library
+set (HDF_LIB_TYPE SHARED) # STATIC or SHARED
+string(TOLOWER ${HDF_LIB_TYPE} HDF_SEARCH_TYPE)
+find_package (HDF5 NAMES hdf5 COMPONENTS C ${HDF_SEARCH_TYPE})
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR})
 
 # rapidxml is bundled in the source:
 include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")

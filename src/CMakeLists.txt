@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp)
+set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -18,12 +18,12 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
     )
 else()
   target_link_libraries(
     morphologica
-    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
     )
 endif(APPLE)
 install(TARGETS morphologica
@@ -37,12 +37,12 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
   )
 else()
 target_link_libraries(
   morphstatic
-  armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+  armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
   )
 endif(APPLE)
 
@@ -53,6 +53,6 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h
+  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
