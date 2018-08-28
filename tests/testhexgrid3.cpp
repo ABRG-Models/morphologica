@@ -36,7 +36,7 @@ int main()
         vector<double> eye(3, 0.0);
         vector<double> rot(3, 0.0);
         double rhoInit = 1.7;
-        morph::Gdisplay disp(800, 600, 0, 0, "showy", rhoInit, 1.0, 1.0);
+        morph::Gdisplay disp(800, 600, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
         disp.redrawDisplay();
 

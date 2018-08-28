@@ -127,7 +127,7 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
 
         // Compute the points on the boundary using half of the hex to
         // hex spacing as the step size.
-        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f);
+        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true); // true to invert y axis
 
         this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
         DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);

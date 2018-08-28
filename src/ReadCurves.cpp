@@ -185,7 +185,7 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
     }
 
     endOfCmd = p1;
-    DBG ("splitSvgCmdString: endOfCmd: " << endOfCmd << " s.size(): " << s.size());
+    DBG2 ("splitSvgCmdString: endOfCmd: " << endOfCmd << " s.size(): " << s.size());
 
     if (endOfCmd == string::npos) {
         this->lastCmd = '\0';
@@ -199,9 +199,6 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
 BezCurvePath
 morph::ReadCurves::parseD (const string& d)
 {
-    DBG ("=======================================");
-    DBG ("parsing: '" << d << "'");
-
     BezCurvePath curves;
 
     // As we parse through the path, we have to keep track of the
@@ -235,9 +232,7 @@ morph::ReadCurves::parseD (const string& d)
         // if lastCmd == '\0' switch on d, else switch on lastCmd.
         if (lastCmd == '\0') {
             cmd = d[p1];
-            DBG ("lastCmd was null; cmd is " << cmd);
         } else {
-            DBG ("lastCmd NOT null switching on it...");
             cmd = this->lastCmd;
         }
 

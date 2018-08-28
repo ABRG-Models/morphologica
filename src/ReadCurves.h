@@ -118,6 +118,12 @@ namespace morph
         /*!
          * This parses the d attribute string in an SVG path. I'm
          * assuming this will always be a list of Bezier Curves.
+         *
+         * NB: The SVG is encoded in a left-hand coordinate system,
+         * with x positive right and y positive down. This parsing
+         * does not change that coordinate system, and so the
+         * BezCoords in the path may need to have their y coordinates
+         * reversed.
          */
         BezCurvePath parseD (const string& d);
 

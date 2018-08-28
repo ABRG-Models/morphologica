@@ -85,6 +85,13 @@ namespace morph
         //@}
 
         /*!
+         * Use this if you need to invert the y axis
+         */
+        void invertY (void) {
+            this->coord.second = -this->coord.second;
+        }
+
+        /*!
          * Compute the Euclidean distance from the current coordinate
          * to the given coordinate.
          */

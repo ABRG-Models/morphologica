@@ -136,12 +136,20 @@ namespace morph
          * path, doing the right thing between curves (skipping
          * remaining, then advancing step-remaining into the next
          * curve and so on).
+         *
+         * If invertY is true, then multiply all the y values in the
+         * coordinates by -1. SVG is encoded in a left hand coordinate
+         * system, so if you're going to plot the BezCoord points in a
+         * right hand system, set invertY to true.
          */
-        vector<BezCoord> getPoints (float step) const {
+        vector<BezCoord> getPoints (float step, bool invertY = false) const {
             vector<BezCoord> rtn;
 
             // First the very start point:
             BezCoord startPt = this->curves.front().computePoint (0.0f);
+            if (invertY) {
+                startPt.invertY();
+            }
             rtn.push_back (startPt);
 
             list<BezCurve>::const_iterator i = this->curves.begin();
@@ -153,6 +161,13 @@ namespace morph
                 if (cp.back().isNull()) {
                     firstl = step - cp.back().getRemaining();
                     cp.pop_back();
+                }
+                if (invertY) {
+                    vector<BezCoord>::iterator bci = cp.begin();
+                    while (bci != cp.end()) {
+                        bci->invertY();
+                        ++bci;
+                    }
                 }
                 rtn.insert (rtn.end(), cp.begin(), cp.end());
                 ++i;
