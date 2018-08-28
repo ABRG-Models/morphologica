@@ -15,9 +15,9 @@ int main()
     int rtn = 0;
     try {
         string pwd = Tools::getPwd();
-        string curvepath = "../tests/trial.svg";
+        string curvepath = "../tests/trialmod.svg";
         if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/trial.svg";
+            curvepath = "../../tests/trialmod.svg";
         }
         ReadCurves r(curvepath);
 
@@ -35,7 +35,7 @@ int main()
         vector<double> fix(3, 0.0);
         vector<double> eye(3, 0.0);
         vector<double> rot(3, 0.0);
-        double rhoInit = 1.2;
+        double rhoInit = 1.7;
         morph::Gdisplay disp(800, 600, 0, 0, "showy", rhoInit, 1.0, 1.0);
         disp.resetDisplay (fix, eye, rot);
         disp.redrawDisplay();
@@ -89,7 +89,7 @@ int main()
         disp.drawHex (pos, 0.05, cl_aa);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 3;
+        unsigned int sleep_seconds = 15;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second
@@ -98,7 +98,7 @@ int main()
         disp.closeDisplay();
 
     } catch (const exception& e) {
-        cerr << "Caught exception reading trial.svg: " << e.what() << endl;
+        cerr << "Caught exception reading svg: " << e.what() << endl;
         cerr << "Current working directory: " << Tools::getPwd() << endl;
         rtn = -1;
     }

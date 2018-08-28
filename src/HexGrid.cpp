@@ -89,7 +89,9 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
     }
 
     // Check that the boundary is contiguous.
-    if (this->boundaryContiguous (bpoint) == false) {
+    set<unsigned int> seen;
+    list<Hex>::iterator hi = bpoint;
+    if (this->boundaryContiguous (bpoint, hi, seen) == false) {
         stringstream ee;
         ee << "The boundary is not a contiguous sequence of hexes.";
         throw runtime_error (ee.str());
@@ -150,7 +152,9 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
         }
 
         // Check that the boundary is contiguous.
-        if (this->boundaryContiguous (nearbyBoundaryPoint) == false) {
+        set<unsigned int> seen;
+        list<Hex>::iterator hi = nearbyBoundaryPoint;
+        if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
             stringstream ee;
             ee << "The boundary which was constructed from "
                << p.name << " is not a contiguous sequence of hexes.";
@@ -223,6 +227,7 @@ morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFro
 bool
 morph::HexGrid::findBoundaryHex (list<Hex>::const_iterator& hi) const
 {
+    DBG ("Testing Hex ri,gi = " << hi->ri << "," << hi->gi << " x,y = " << hi->x << "," << hi->y);
     if (hi->boundaryHex == true) {
         // No need to change the Hex iterator
         return true;
@@ -277,81 +282,65 @@ morph::HexGrid::findBoundaryHex (list<Hex>::const_iterator& hi) const
 bool
 morph::HexGrid::boundaryContiguous (void) const
 {
-    list<Hex>::const_iterator hi = this->hexen.begin();
-    if (this->findBoundaryHex (hi) == false) {
+    list<Hex>::const_iterator bhi = this->hexen.begin();
+    if (this->findBoundaryHex (bhi) == false) {
         // Found no boundary hex
         return false;
     }
-    return this->boundaryContiguous (hi);
+    set<unsigned int> seen;
+    list<Hex>::const_iterator hi = bhi;
+    return this->boundaryContiguous (bhi, hi, seen);
 }
 
 bool
-morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi) const
+morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const
 {
-    bool rtn = true;
+    DBG2 ("Called for hi=" << hi->vi);
+    bool rtn = false;
+    list<Hex>::const_iterator hi_next;
 
-    list<Hex>::const_iterator hi = bhi;
-    list<Hex>::const_iterator hi_next = bhi;
-    set<unsigned int> seen;
+    DBG2 ("Inserting " << hi->vi << " into seen which is Hex ("<< hi->ri << "," << hi->gi<<")");
+    seen.insert (hi->vi);
 
-    do {
-        hi = hi_next;
-        if (hi != bhi) {
-            DBG2 ("Inserting " << hi->vi << " into seen");
-            seen.insert (hi->vi);
-        }
-        DBG2 (hi->output());
+    DBG2 (hi->output());
 
-        if (hi->has_ne && hi->ne->boundaryHex == true && seen.find(hi->ne->vi) == seen.end()) {
-            DBG2 ("hi_next is neighbour EAST");
-            hi_next = hi->ne;
+    if (rtn == false && hi->has_ne && hi->ne->boundaryHex == true && seen.find(hi->ne->vi) == seen.end()) {
+        hi_next = hi->ne;
+        rtn = (this->boundaryContiguous (bhi, hi_next, seen));
+    }
+    if (rtn == false && hi->has_nne && hi->nne->boundaryHex == true && seen.find(hi->nne->vi) == seen.end()) {
+        hi_next = hi->nne;
+        rtn = this->boundaryContiguous (bhi, hi_next, seen);
+    }
+    if (rtn == false && hi->has_nnw && hi->nnw->boundaryHex == true && seen.find(hi->nnw->vi) == seen.end()) {
+        hi_next = hi->nnw;
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+    }
+    if (rtn == false && hi->has_nw && hi->nw->boundaryHex == true && seen.find(hi->nw->vi) == seen.end()) {
+        hi_next = hi->nw;
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+    }
+    if (rtn == false && hi->has_nsw && hi->nsw->boundaryHex == true && seen.find(hi->nsw->vi) == seen.end()) {
+        hi_next = hi->nsw;
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+    }
+    if (rtn == false && hi->has_nse && hi->nse->boundaryHex == true && seen.find(hi->nse->vi) == seen.end()) {
+        hi_next = hi->nse;
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+    }
+
+    if (rtn == false) {
+        // Checked all neighbours
+        if (hi == bhi) {
+            DBG2 ("Back at start, nowhere left to go! return true.");
+            rtn = true;
         } else {
-            if (hi->has_nne && hi->nne->boundaryHex == true && seen.find(hi->nne->vi) == seen.end()) {
-                DBG2 ("hi_next is neighbour NORTHEAST");
-                hi_next = hi->nne;
-            } else {
-                if (hi->has_nnw && hi->nnw->boundaryHex == true && seen.find(hi->nnw->vi) == seen.end()) {
-                    DBG2 ("hi_next is neighbour NORTHWEST");
-                    hi_next = hi->nnw;
-                } else {
-                    if (hi->has_nw && hi->nw->boundaryHex == true && seen.find(hi->nw->vi) == seen.end()) {
-                        DBG2 ("hi_next is neighbour WEST");
-                        hi_next = hi->nw;
-                    } else {
-                        if (hi->has_nsw && hi->nsw->boundaryHex == true && seen.find(hi->nsw->vi) == seen.end()) {
-                            DBG2 ("hi_next is neighbour SOUTHWEST");
-                            hi_next = hi->nsw;
-                        } else {
-                            if (hi->has_nse && hi->nse->boundaryHex == true && seen.find(hi->nse->vi) == seen.end()) {
-                                DBG2 ("hi_next is neighbour SOUTHEAST");
-                                hi_next = hi->nse;
-                            } else {
-                                // No neighbours left.
-                                DBG2 ("No neighbours left");
-                                if (hi == bhi) {
-                                    DBG2 ("Back at start, nowhere left to go!");
-                                    rtn = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        DBG2  ("Current hex: " << hi->ri << "," << hi->gi
-              << ". Next boundary hex: " << hi_next->ri << "," << hi_next->gi);
-
-        // if not progressed here, return false.
-        if (hi_next == hi) {
-            DBG ("hi_next == hi!");
+            DBG2 ("Back at hi=(" << hi->ri << "," << hi->gi << "), while bhi=(" <<  bhi->ri << "," << bhi->gi << "), return false");
             rtn = false;
-            break;
         }
+    }
 
-    } while (hi_next != bhi);
-
-    DBG ("Boundary " << (rtn ? "IS" : "isn't") << " contiguous");
+    DBG2 ("Boundary " << (rtn ? "IS" : "isn't") << " contiguous so far...");
 
     return rtn;
 }

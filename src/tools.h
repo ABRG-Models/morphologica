@@ -199,6 +199,12 @@ namespace morph
         static int stripWhitespace (string& input);
 
         /*!
+         * Return true if input contains only space, tab, newline
+         * chars.
+         */
+        static bool containsOnlyWhitespace (string& input);
+
+        /*!
          * Strip any occurrences of the characters in charList
          * from input.
          */

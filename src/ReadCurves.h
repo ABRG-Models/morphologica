@@ -102,10 +102,18 @@ namespace morph
 
         /*!
          * Split up a string of SVG command numbers. These are
-         * delimited either by a comma or by a minus sign. Interpret
-         * them as floats and return in a vector.
+         * delimited either by a comma, a space or by a minus
+         * sign. Interpret them as floats and return in a vector.
+         *
+         * This version also sets this->lastCmd where appropriate, and
+         * ensures that numParams are extracted from s. When s
+         * contains a longer than numParams list of numbers, endOfCmd
+         * is set to point to the end of the commands read into the
+         * return value.
          */
-        vector<float> splitSvgCmdString (const string& s);
+        vector<float> splitSvgCmdString (const string& s, char cmd,
+                                         unsigned int numParams,
+                                         string::size_type& endOfCmd);
 
         /*!
          * This parses the d attribute string in an SVG path. I'm
@@ -163,6 +171,12 @@ namespace morph
          * the root node pointer.
          */
         xml_node<>* root_node = static_cast<xml_node<>*>(0);
+
+        /*!
+         * Records the last command. Used when a string of identical
+         * commands needs to be parsed by parseD.
+         */
+        char lastCmd = '\0';
     };
 
 } // namespace morph

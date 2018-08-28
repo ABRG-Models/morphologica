@@ -120,7 +120,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         throw runtime_error ("Found a <path> element without a d attribute");
     }
 
-    DBG2 ("Path commands for layer " << layerName << ": " << d);
+    DBG ("Path commands for layer " << layerName << ": " << d);
 
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
@@ -132,39 +132,65 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
 }
 
 vector<float>
-morph::ReadCurves::splitSvgCmdString (const string& s)
+morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int numParams, string::size_type& endOfCmd)
 {
     vector<float> numbers;
+    unsigned int numnum = 0; // number of numbers stored in numbers
     float n = 0.0f;
 
     string::size_type p0 = 0;
-    string::size_type p1 = s.find_first_of ("-,", p0);
-    while (p1 != string::npos) {
+    string::size_type p1 = s.find_first_of ("-, ", p0);
+    while (p1 != string::npos && numnum < numParams) {
 
         if (p1 != p0) {
             stringstream ss;
             ss << s.substr(p0, p1-p0);
-            DBG2 ("ss.str(): " << ss.str());
-            ss >> n;
-            numbers.push_back (n);
+            DBG ("ss.str(): " << ss.str() << " length " << ss.str().size());
+            string ccs = ss.str();
+            if (Tools::containsOnlyWhitespace (ccs)) {
+                // Do nothing
+            } else {
+                ss >> n;
+                numbers.push_back (n);
+                ++numnum;
+            }
         }
 
         if (s[p1] == ',') {
+            p0 = p1+1;
+        } else if (s[p1] == ' ') {
             p0 = p1+1;
         } else if (s[p1] == '-') {
             p0 = p1; // Not +1 so that we include the - in the next one
         }
 
-        p1 = s.find_first_of ("-,", p1+1);
+        if (numnum < numParams) {
+            p1 = s.find_first_of ("-, ", p1+1);
+        }
     }
 
     if (p1 == string::npos) {
         // No minus signs. Attempt to convert s into a single float and return
+        DBG("Doing one more...");
         stringstream ss;
-        ss << s.substr(p0, p1-p0);
-        DBG2 ("Last one: ss.str(): " << ss.str());
+        ss << s.substr (p0, p1-p0);
+        DBG ("Last one: ss.str(): " << ss.str());
         ss >> n;
         numbers.push_back (n);
+        ++numnum;
+    }
+
+    if (numnum > numParams) {
+        throw runtime_error ("splitSvgCmdString: unexpected number of params in command.");
+    }
+
+    endOfCmd = p1;
+    DBG ("splitSvgCmdString: endOfCmd: " << endOfCmd << " s.size(): " << s.size());
+
+    if (endOfCmd == string::npos) {
+        this->lastCmd = '\0';
+    } else {
+        this->lastCmd = cmd;
     }
 
     return numbers;
@@ -173,6 +199,9 @@ morph::ReadCurves::splitSvgCmdString (const string& s)
 BezCurvePath
 morph::ReadCurves::parseD (const string& d)
 {
+    DBG ("=======================================");
+    DBG ("parsing: '" << d << "'");
+
     BezCurvePath curves;
 
     // As we parse through the path, we have to keep track of the
@@ -198,47 +227,73 @@ morph::ReadCurves::parseD (const string& d)
     string::size_type p0 = 0;
     string::size_type p1 = d.find_first_of (svgCmds, p0);
     string::size_type p2 = 0;
+    string::size_type p3 = string::npos;
+    this->lastCmd = '\0';
+    char cmd = '\0';
     while (p1 != string::npos) {
 
-        switch (d[p1]) { // switch on the command character
+        // if lastCmd == '\0' switch on d, else switch on lastCmd.
+        if (lastCmd == '\0') {
+            cmd = d[p1];
+            DBG ("lastCmd was null; cmd is " << cmd);
+        } else {
+            DBG ("lastCmd NOT null switching on it...");
+            cmd = this->lastCmd;
+        }
+
+        p3 = string::npos;
+
+        switch (cmd) { // switch on the command character
 
         case 'M': // move command, absolution coordinates
         case 'm': // move command, deltas
         {
             p2 = d.find_first_of (svgCmds, p1+1);
             string mCmd = d.substr (p1+1, p2-p1-1);
-            vector<float> v = this->splitSvgCmdString (mCmd);
-            if (v.size() != 2) {
-                throw runtime_error ("Unexpected size of SVG path M command (expected 2 numbers)");
+            if (Tools::containsOnlyWhitespace (mCmd)) {
+                p3 = mCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (mCmd, cmd, 2, p3);
+                if (v.size() != 2) {
+                    throw runtime_error ("Unexpected size of SVG path M command (expected 2 numbers)");
+                }
+                currentCoordinate = make_pair (v[0], v[1]);
+                firstCoordinate = currentCoordinate;
+                curves.initialCoordinate = currentCoordinate;
             }
-            currentCoordinate = make_pair (v[0], v[1]);
-            firstCoordinate = currentCoordinate;
-            curves.initialCoordinate = currentCoordinate;
             break;
         }
 
         case 'C': // cubic Bezier curve, abs positions
         case 'c': // cubic Bezier curve, deltas
         {
+            DBG2 ("c/C; p1+1 is " << p1+1);
             p2 = d.find_first_of (svgCmds, p1+1);
-            string cCmd = d.substr (p1+1, p2-p1-1);
-            DBG2 ("cCmd: " << cCmd);
-            vector<float> v = this->splitSvgCmdString (cCmd);
-            if (v.size() != 6) {
-                throw runtime_error ("Unexpected size of SVG path C command (expected 6 numbers)");
+            string cCmd = d.substr (p1+1, p2-p1-1); // cCmd may be either a single command (6 params) or a great long line.
+            DBG2 ("cCmd: '" << cCmd << "' with p1=" << p1);
+            if (Tools::containsOnlyWhitespace (cCmd)) {
+                p3 = cCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (cCmd, cmd, 6, p3);
+                DBG2 ("After splitSvgCmdString, lastCmd: " << this->lastCmd << " and p3: " << p3 << " which means p1+1+p3: " << p1+1+p3 << " d[]=" << d[p1+1+p3]);
+                if (v.size() != 6) {
+                    stringstream ee;
+                    ee << "Unexpected size of SVG path C command (expected 6 numbers, got " << v.size() << ")";
+                    throw runtime_error (ee.str());
+                }
+                if (cmd == 'c') { // delta coordinates
+                    c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
+                    c2 = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
+                    f = make_pair(currentCoordinate.first + v[4], currentCoordinate.second + v[5]);
+                } else { // 'C', so absolute coordinates were given
+                    c1 = make_pair (v[0],v[1]);
+                    c2 = make_pair (v[2],v[3]);
+                    f = make_pair (v[4],v[5]);
+                }
+                BezCurve c(currentCoordinate, f, c1, c2);
+                curves.addCurve (c);
+                currentCoordinate = f;
             }
-            if (d[p1] == 'c') { // delta coordinates
-                c1 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                c2 = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
-                f = make_pair(currentCoordinate.first + v[4], currentCoordinate.second + v[5]);
-            } else { // 'C', so absolute coordinates were given
-                c1 = make_pair (v[0],v[1]);
-                c2 = make_pair (v[2],v[3]);
-                f = make_pair (v[4],v[5]);
-            }
-            BezCurve c(currentCoordinate, f, c1, c2);
-            curves.addCurve (c);
-            currentCoordinate = f;
             break;
         }
 
@@ -248,24 +303,28 @@ morph::ReadCurves::parseD (const string& d)
             p2 = d.find_first_of (svgCmds, p1+1);
             string sCmd = d.substr (p1+1, p2-p1-1);
             DBG2 ("sCmd: " << sCmd);
-            vector<float> v = this->splitSvgCmdString (sCmd);
-            if (v.size() != 4) {
-                throw runtime_error ("Unexpected size of SVG path S command (expected 4 numbers)");
+            if (Tools::containsOnlyWhitespace (sCmd)) {
+                p3 = sCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (sCmd, cmd, 4, p3);
+                if (v.size() != 4) {
+                    throw runtime_error ("Unexpected size of SVG path S command (expected 4 numbers)");
+                }
+                // c2 and currentCoordinate are stored locally in abs. coordinates:
+                c1.first = 2 * currentCoordinate.first - c2.first;
+                c1.second = 2 * currentCoordinate.second - c2.second;
+                if (d[p1] == 's') { // delta coordinates
+                    // Deltas are determined from the currentCoordinate
+                    c2 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
+                    f = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
+                } else { // 'S', so absolute coordinates were given
+                    c2 = make_pair (v[0],v[1]);
+                    f = make_pair (v[2],v[3]);
+                }
+                BezCurve c(currentCoordinate, f, c1, c2);
+                curves.addCurve (c);
+                currentCoordinate = f;
             }
-            // c2 and currentCoordinate are stored locally in abs. coordinates:
-            c1.first = 2 * currentCoordinate.first - c2.first;
-            c1.second = 2 * currentCoordinate.second - c2.second;
-            if (d[p1] == 's') { // delta coordinates
-                // Deltas are determined from the currentCoordinate
-                c2 = make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                f = make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
-            } else { // 'S', so absolute coordinates were given
-                c2 = make_pair (v[0],v[1]);
-                f = make_pair (v[2],v[3]);
-            }
-            BezCurve c(currentCoordinate, f, c1, c2);
-            curves.addCurve (c);
-            currentCoordinate = f;
             break;
         }
 
@@ -296,8 +355,21 @@ morph::ReadCurves::parseD (const string& d)
             break;
         }
 
-        p0 = p1+1;
-        p1 = d.find_first_of (svgCmds, p0);
+        if (p3 == string::npos) {
+            DBG2 ("p3 is string::npos");
+            p0 = p1+1;
+            p1 = d.find_first_of (svgCmds, p0);
+            DBG2 ("Starting from d[" << p0 << "], found next svgCmd at p1=" << p1);
+        } else {
+            DBG2 ("Setting p1 from p3 = " << p3 << " to p1+1+p3: " << (p1+1+p3) << ". p2, by the way is " << p2);
+            p1 = p1+1+p3;
+            DBG2 ("new d[p1] is " << d[p1]);
+            if (p1+1 == p2) {
+                // It's a new command!
+                DBG ("Reset lastCmd");
+                this->lastCmd = '\0';
+            }
+        }
     }
 
     return curves;

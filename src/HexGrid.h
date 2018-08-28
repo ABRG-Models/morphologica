@@ -10,9 +10,11 @@
 #include "Hex.h"
 #include "BezCurvePath.h"
 
+#include <set>
 #include <list>
 #include <string>
 
+using std::set;
 using std::list;
 using std::string;
 using morph::Hex;
@@ -192,7 +194,7 @@ namespace morph {
          * Determine whether the boundary is contiguous, starting from
          * the boundary Hex iterator #bhi.
          */
-        bool boundaryContiguous (list<Hex>::const_iterator bhi) const;
+        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const;
 
         /*!
          * Find a hex, any hex, that's on the boundary specified by

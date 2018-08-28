@@ -674,6 +674,21 @@ morph::Tools::stripWhitespace (string& input)
     return n;
 }
 
+bool
+morph::Tools::containsOnlyWhitespace (string& input)
+{
+    bool rtn = true;
+    for (string::size_type i = 0; i < input.size(); ++i) {
+        if (input[i] == ' ' || input[i] == '\t' || input[i] == '\n' || input[i] == '\r') {
+            // continue.
+        } else {
+            rtn = false;
+            break;
+        }
+    }
+    return rtn;
+}
+
 int
 morph::Tools::stripLeadingSpaces (string& input)
 {
