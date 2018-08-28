@@ -125,6 +125,29 @@ namespace morph {
             return s;
         }
 
+#ifdef UNTESTED_UNUSED
+        /*!
+         * Change this Hex's position in space. Subtract
+         * cartesianPoint from this Hex's position and update all the
+         */
+        void subtractLocation (const pair<float, float> cartesianPoint) {
+            // Compute ri and gi that represent
+            // cartesianPoint. Subtract from this->ri and
+            // this->gi. Call this->computeLocation().
+            float sr = this->getSR();
+            float v = this->getV();
+            float gi_f = cartesianPoint.second / v;
+            float ri_f = cartesianPoint.second / sr + cartesianPoint.first / d;
+            int gi_i = round (gi_f);
+            int ri_i = round (ri_f);
+            cout << "Subtracting ri_i: " << ri_i << " from ri: " << ri << endl;
+            cout << "Subtracting gi_i: " << gi_i << " from gi: " << gi << endl;
+            this->ri -= ri_i;
+            this->gi -= gi_i;
+            this->computeLocation();
+        }
+#endif
+
         /*!
          * Convert ri, gi and bi indices into x and y coordinates and
          * also r and phi coordinates, based on the hex-to-hex

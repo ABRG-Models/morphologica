@@ -8,6 +8,7 @@
 
 #include "HexGrid.h"
 #include <cmath>
+#include <float.h>
 #include <limits>
 #include <iostream>
 #include <sstream>
@@ -51,6 +52,69 @@ morph::HexGrid::HexGrid (float d_, float x_span_, float z_)
     this->init();
 }
 
+pair<float, float>
+morph::HexGrid::computeCentroid (const list<Hex>& pHexes)
+{
+    pair<float, float> centroid;
+    centroid.first = 0;
+    centroid.second = 0;
+    for (auto h : pHexes) {
+        centroid.first += h.x;
+        centroid.second += h.y;
+    }
+    centroid.first /= pHexes.size();
+    centroid.second /= pHexes.size();
+    return centroid;
+}
+
+void
+morph::HexGrid::setBoundary (const list<Hex>& pHexes)
+{
+    this->boundaryCentroid = this->computeCentroid (pHexes);
+
+    list<Hex>::iterator bpoint = this->hexen.begin();
+    list<Hex>::iterator bpi = this->hexen.begin();
+    while (bpi != this->hexen.end()) {
+        for (auto ph : pHexes) {
+            // NB: The assumption right now is that the pHexes are
+            // from the same dimension hex grid as this->hexen.
+            if (bpi->ri == ph.ri && bpi->gi == ph.gi) {
+                // Set h as boundary hex.
+                bpi->boundaryHex = true;
+                bpoint = bpi;
+                break;
+            }
+        }
+        ++bpi;
+    }
+
+    // Check that the boundary is contiguous.
+    if (this->boundaryContiguous (bpoint) == false) {
+        stringstream ee;
+        ee << "The boundary is not a contiguous sequence of hexes.";
+        throw runtime_error (ee.str());
+    }
+
+    // Boundary IS contiguous, discard hexes outside the boundary.
+    this->discardOutside();
+}
+
+#ifdef UNTESTED_UNUSED
+void
+morph::HexGrid::offsetCentroid (void)
+{
+    for (auto h : this->hexen) {
+        cout << " * : " << h.x << "," << h.y << endl;
+    }
+    for (auto h : this->hexen) {
+        h.subtractLocation (this->boundaryCentroid);
+        cout << "***: " << h.x << "," << h.y << endl;
+    }
+    this->boundaryCentroid = make_pair (0.0, 0.0);
+}
+#endif
+
+//#define DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY 1
 void
 morph::HexGrid::setBoundary (const BezCurvePath& p)
 {
@@ -63,18 +127,23 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
         // hex spacing as the step size.
         vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f);
 
-        pair<float,float> c =  BezCurvePath::getCentroid (bpoints);
-        DBG ("Boundary centroid: " << c.first << "," << c.second);
+        this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
+        DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
 
-        // Offset the boundary by the centroid, which should now be 0,0.
+#ifdef DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY
+        list<Hex>::iterator nearbyBoundaryPoint = this->findHexNearest (this->boundaryCentroid);
+        DBG ("Hex near boundary centroid at x,y: " << nearbyBoundaryPoint->x << "," << nearbyBoundaryPoint->y);
+        auto bpi = bpoints.begin();
+#else // Offset BezCoords of the boundary BezCurvePath by its centroid, to make the centroid 0,0.
         auto bpi = bpoints.begin();
         while (bpi != bpoints.end()) {
-            bpi->subtract(c);
+            bpi->subtract (this->boundaryCentroid);
             ++bpi;
         }
-
+        this->boundaryCentroid = make_pair (0.0, 0.0);
+        list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
         bpi = bpoints.begin();
-        list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin();
+#endif
         while (bpi != bpoints.end()) {
             nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
             DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
@@ -352,7 +421,8 @@ void
 morph::HexGrid::discardOutside (void)
 {
     // Mark those hexes inside the boundary
-    this->markHexesInside (this->hexen.begin());
+    list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
+    this->markHexesInside (centroidHex);
 
 #ifdef DEBUG
     // Do a little count of them:
@@ -390,6 +460,26 @@ morph::HexGrid::discardOutside (void)
     // this to true to mark that the iterators to the outermost
     // vertices are no longer valid and shouldn't be used.
     this->gridReducedToBoundary = true;
+}
+
+list<Hex>::iterator
+morph::HexGrid::findHexNearest (const pair<float, float>& pos)
+{
+    list<Hex>::iterator nearest = this->hexen.end();
+    list<Hex>::iterator hi = this->hexen.begin();
+    float dist = FLT_MAX;
+    while (hi != this->hexen.end()) {
+        float dx = pos.first - hi->x;
+        float dy = pos.second - hi->y;
+        float dl = sqrt (dx*dx + dy*dy);
+        if (dl < dist) {
+            dist = dl;
+            nearest = hi;
+        }
+        ++hi;
+    }
+    DBG("Nearest Hex to " << pos.first << "," << pos.second << " is (r,g):" << nearest->ri << "," << nearest->gi << " (x,y):" << nearest->x << "," << nearest->y);
+    return nearest;
 }
 
 void

@@ -31,6 +31,9 @@ namespace morph {
      * to a set of hexes, then those hexes in the hexagonal grid lying
      * outside the boundary are removed.
      *
+     * Another option for boundary setting is to pass in a list of
+     * Hexes whose positions will be used to mark out the boundary.
+     *
      * This class manages the integer iterators stored in each Hex
      * (Hex::vi), which may be used to index into external data
      * structures (arrays or vectors) which contain information about
@@ -64,9 +67,34 @@ namespace morph {
         void init (float d_, float x_span_, float z_ = 0.0f);
 
         /*!
-         * Sets boundry to @a p, then runs the code to discard hexes
+         * Compute the centroid of the passed in list of Hexes.
+         */
+        pair<float, float> computeCentroid (const list<Hex>& pHexes);
+
+#ifdef UNTESTED_UNUSED
+        /*!
+         * Subtract the centroid of the boundary,
+         * i.e. this->boundaryCentroid, from the position of each Hex,
+         * then set this->boundaryCentroid to (0,0).
+         */
+        void offsetCentroid (void);
+#endif
+        /*!
+         * Sets boundary to match the list of hexes passed in as @a
+         * pHexes. Note, that unlike void setBoundary (const
+         * BezCurvePath& p), this method does not apply any offset to
+         * the positions of the hexes in @a pHexes.
+         */
+        void setBoundary (const list<Hex>& pHexes);
+
+        /*!
+         * Sets boundary to @a p, then runs the code to discard hexes
          * lying outside this boundary. Finishes up by calling
-         * setupNeighbours.
+         * discardOutside.
+         *
+         * The BezCurvePath's centroid may not be 0,0. This method
+         * offsets the boundary so that when it is applied to the
+         * HexGrid, the centroid IS (0,0).
          */
         void setBoundary (const BezCurvePath& p);
 
@@ -127,9 +155,14 @@ namespace morph {
         vector<Hex*> vhexen;
 
         /*!
-         * The boundary hexes.
+         * Store the centroid of the boundary path. The centroid of a
+         * read-in BezCurvePath [see void setBoundary (const
+         * BezCurvePath& p)] is subtracted from each generated point
+         * on the boundary path so that the boundary once it is
+         * expressed in the HexGrid will have a (2D) centroid of
+         * roughly (0,0). Hence, this is usually roughly (0,0).
          */
-        //list<list<Hex>::iterator> boundaryHexen;
+        pair<float, float> boundaryCentroid;
 
     private:
         /*!
@@ -180,6 +213,12 @@ namespace morph {
          * #boundary.
          */
         void discardOutside (void);
+
+        /*!
+         * Find the Hex in the Hex grid which is closest to the x,y
+         * position given by pos.
+         */
+        list<Hex>::iterator findHexNearest (const pair<float, float>& pos);
 
         /*!
          * Does what it says on the tin. Re-number the Hex::vi vector
