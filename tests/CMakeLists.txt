@@ -47,6 +47,11 @@ add_executable(testhexgrid2 testhexgrid2.cpp)
 target_link_libraries(testhexgrid2 morphologica)
 add_test(testhexgrid2 testhexgrid2)
 
+# Test hexgrid3 (hexgrid2 with visualisation)
+add_executable(testhexgrid3 testhexgrid3.cpp)
+target_link_libraries(testhexgrid3 morphologica)
+add_test(testhexgrid3 testhexgrid3)
+
 # Test distance to boundary
 add_executable(testhexbounddist testhexbounddist.cpp)
 target_link_libraries(testhexbounddist morphologica)
