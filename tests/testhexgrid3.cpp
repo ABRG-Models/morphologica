@@ -28,7 +28,7 @@ int main()
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 1604) {
+        if (hg.num() != 2070) {
             rtn = -1;
         }
 
@@ -89,7 +89,7 @@ int main()
         disp.drawHex (pos, 0.05, cl_aa);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 15;
+        unsigned int sleep_seconds = 3;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second
