@@ -13,6 +13,11 @@ using std::string;
 
 namespace morph {
 
+    /*!
+     * Very simple data access class, wrapping around the HDF5 C
+     * API. Operates either in write mode (the default) or read
+     * mode. Choose which when constructing.
+     */
     class HdfData
     {
     private:
@@ -21,16 +26,40 @@ namespace morph {
          */
         hid_t file_id = -1;
 
+        /*!
+         * Operate in read mode?
+         */
+        bool read_mode = false;
+
     public:
         /*!
-         * Construct, creating open file_id
+         * Construct, creating open file_id. If read_data is
          */
-        HdfData (const string fname);
+        HdfData (const string fname, const bool read_data = false);
 
         /*!
          * Deconstruct, closing the file_id
          */
         ~HdfData();
+
+        /*!
+         * Reading methods
+         */
+        //@{
+
+        /*!
+         * Read the data at path into vals.
+         */
+        void read_double_vector (const char* path, vector<double>& vals);
+
+        // WRITEME: Add read_double, read_float and read_float_vector.
+
+        //@} // reading methods
+
+        /*!
+         * Writing methods
+         */
+        //@{
 
         /*!
          * Makes necessary calls to add a double to an HDF5 file store,
@@ -57,6 +86,7 @@ namespace morph {
          * file store, using path as the name of the variable.
          */
         void add_float_vector (const char* path, const vector<float>& vals);
+        //@} // writing methods
 
     }; // class hdf5
 

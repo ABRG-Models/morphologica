@@ -56,3 +56,8 @@ add_test(testhexgrid3 testhexgrid3)
 add_executable(testhexbounddist testhexbounddist.cpp)
 target_link_libraries(testhexbounddist morphologica)
 add_test(testhexbounddist testhexbounddist)
+
+# Test HDF file access
+add_executable(testhdfdata1 testhdfdata1.cpp)
+target_link_libraries(testhdfdata1 morphologica)
+add_test(testhdfdata1 testhdfdata1)
