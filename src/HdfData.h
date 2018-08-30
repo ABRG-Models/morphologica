@@ -1,6 +1,9 @@
 /*!
  * Wrappers around the HDF5 C API for use in morphologica simulations.
  */
+#ifndef _HDFDATA_H_
+#define _HDFDATA_H_
+
 #include <hdf5.h>
 #include <vector>
 #include <string>
@@ -58,3 +61,5 @@ namespace morph {
     }; // class hdf5
 
 } // namespace morph
+
+#endif // _HDFDATA_H_
