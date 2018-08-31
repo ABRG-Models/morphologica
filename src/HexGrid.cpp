@@ -72,6 +72,7 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
 {
     this->boundaryCentroid = this->computeCentroid (pHexes);
 
+#ifdef PREVIOUS_WAY_WONKY_ON_MAC_POSSIBLY
     list<Hex>::iterator bpoint = this->hexen.begin();
     list<Hex>::iterator bpi = this->hexen.begin();
     while (bpi != this->hexen.end()) {
@@ -87,6 +88,25 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
         }
         ++bpi;
     }
+#else
+    list<Hex>::iterator bpoint = this->hexen.begin();
+    list<Hex>::iterator bpi = this->hexen.begin();
+    while (bpi != this->hexen.end()) {
+        list<Hex>::const_iterator ppi = pHexes.begin();
+        while (ppi != pHexes.end()) {
+            // NB: The assumption right now is that the pHexes are
+            // from the same dimension hex grid as this->hexen.
+            if (bpi->ri == ppi->ri && bpi->gi == ppi->gi) {
+                // Set h as boundary hex.
+                bpi->boundaryHex = true;
+                bpoint = bpi;
+                break;
+            }
+            ++ppi;
+        }
+        ++bpi;
+    }
+#endif
 
     // Check that the boundary is contiguous.
     set<unsigned int> seen;
