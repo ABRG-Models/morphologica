@@ -52,6 +52,26 @@ add_executable(testhexgrid3 testhexgrid3.cpp)
 target_link_libraries(testhexgrid3 morphologica)
 add_test(testhexgrid3 testhexgrid3)
 
+# Test boundary pgram
+add_executable(testdom_pgram testdom_pgram.cpp)
+target_link_libraries(testdom_pgram morphologica)
+add_test(testdom_pgram testdom_pgram)
+
+# Test boundary rect
+add_executable(testdom_rect testdom_rect.cpp)
+target_link_libraries(testdom_rect morphologica)
+add_test(testdom_rect testdom_rect)
+
+# Test boundary hex
+add_executable(testdom_hex testdom_hex.cpp)
+target_link_libraries(testdom_hex morphologica)
+add_test(testdom_hex testdom_hex)
+
+# Test boundary bound
+add_executable(testdom_bound testdom_bound.cpp)
+target_link_libraries(testdom_bound morphologica)
+add_test(testdom_bound testdom_bound)
+
 # Test distance to boundary
 add_executable(testhexbounddist testhexbounddist.cpp)
 target_link_libraries(testhexbounddist morphologica)
