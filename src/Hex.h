@@ -21,6 +21,7 @@ using std::array;
 using std::abs;
 using std::sqrt;
 using std::pair;
+using morph::BezCoord;
 
 #define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
@@ -28,6 +29,25 @@ using std::pair;
 using std::cout;
 using std::endl;
 #endif
+
+/*!
+ * Flags
+ */
+//@{
+#define HEX_HAS_NE        0x1
+#define HEX_HAS_NNE       0x2
+#define HEX_HAS_NNW       0x4
+#define HEX_HAS_NW        0x8
+#define HEX_HAS_NSW      0x10
+#define HEX_HAS_NSE      0x20
+
+// All hexes marked as boundary hexes, including some that are additional to requirements:
+#define HEX_IS_BOUNDARY      0x40
+// All hexes inside boundary plus as much of the boundary as needed to make a contiguous boundary:
+#define HEX_INSIDE_BOUNDARY  0x80
+// All hexes inside the domain of computation:
+#define HEX_INSIDE_DOMAIN   0x100
+//@}
 
 namespace morph {
 
@@ -309,6 +329,45 @@ namespace morph {
         //@}
 
         /*!
+         * Get all the flags packed into an unsigned int. Only uses 9
+         * bits of the 32 bits available.
+         */
+        unsigned int getFlags (void) {
+
+            unsigned int flgs = 0x0;
+
+            if (boundaryHex == true) {
+                flgs |= HEX_IS_BOUNDARY;
+            }
+            if (insideBoundary == true) {
+                flgs |= HEX_INSIDE_BOUNDARY;
+            }
+            if (insideDomain == true) {
+                flgs |= HEX_INSIDE_DOMAIN;
+            }
+            if (has_ne == true) {
+                flgs |= HEX_HAS_NE;
+            }
+            if (has_nne == true) {
+                flgs |= HEX_HAS_NNE;
+            }
+            if (has_nnw == true) {
+                flgs |= HEX_HAS_NNW;
+            }
+            if (has_nw == true) {
+                flgs |= HEX_HAS_NW;
+            }
+            if (has_nsw == true) {
+                flgs |= HEX_HAS_NSW;
+            }
+            if (has_nse == true) {
+                flgs |= HEX_HAS_NSE;
+            }
+
+            return flgs;
+        }
+
+        /*!
          * Set to true if this Hex has been marked as being on a
          * boundary. It is expected that client code will then re-set
          * the neighbour relations so that onBoundary() would return
@@ -320,6 +379,12 @@ namespace morph {
          * Set true if this Hex is known to be inside the boundary.
          */
         bool insideBoundary = false;
+
+        /*!
+         * Set true if this Hex is known to be inside the a
+         * rectangular, parallelogram or hexagonal 'domain'.
+         */
+        bool insideDomain = false;
 
         /*!
          * This can be populated with the distance to the nearest

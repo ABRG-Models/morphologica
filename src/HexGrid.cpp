@@ -43,11 +43,12 @@ morph::HexGrid::HexGrid ()
 {
 }
 
-morph::HexGrid::HexGrid (float d_, float x_span_, float z_)
+morph::HexGrid::HexGrid (float d_, float x_span_, float z_, morph::HexDomainShape shape)
 {
     this->d = d_;
     this->x_span = x_span_;
     this->z = z_;
+    this->domainShape = shape;
 
     this->init();
 }
@@ -72,23 +73,6 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
 {
     this->boundaryCentroid = this->computeCentroid (pHexes);
 
-#ifdef PREVIOUS_WAY_WONKY_ON_MAC_POSSIBLY
-    list<Hex>::iterator bpoint = this->hexen.begin();
-    list<Hex>::iterator bpi = this->hexen.begin();
-    while (bpi != this->hexen.end()) {
-        for (auto ph : pHexes) {
-            // NB: The assumption right now is that the pHexes are
-            // from the same dimension hex grid as this->hexen.
-            if (bpi->ri == ph.ri && bpi->gi == ph.gi) {
-                // Set h as boundary hex.
-                bpi->boundaryHex = true;
-                bpoint = bpi;
-                break;
-            }
-        }
-        ++bpi;
-    }
-#else
     list<Hex>::iterator bpoint = this->hexen.begin();
     list<Hex>::iterator bpi = this->hexen.begin();
     while (bpi != this->hexen.end()) {
@@ -106,7 +90,6 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
         }
         ++bpi;
     }
-#endif
 
     // Check that the boundary is contiguous.
     set<unsigned int> seen;
@@ -117,8 +100,12 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
         throw runtime_error (ee.str());
     }
 
-    // Boundary IS contiguous, discard hexes outside the boundary.
-    this->discardOutside();
+    if (this->domainShape == morph::HexDomainShape::Boundary) {
+        // Boundary IS contiguous, discard hexes outside the boundary.
+        this->discardOutsideBoundary();
+    } else {
+        throw runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to do if domain shape is not HexDomainShape::Boundary.");
+    }
 }
 
 #ifdef UNTESTED_UNUSED
@@ -172,18 +159,30 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
         }
 
         // Check that the boundary is contiguous.
-        set<unsigned int> seen;
-        list<Hex>::iterator hi = nearbyBoundaryPoint;
-        if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
-            stringstream ee;
-            ee << "The boundary which was constructed from "
-               << p.name << " is not a contiguous sequence of hexes.";
-            throw runtime_error (ee.str());
+        {
+            set<unsigned int> seen;
+            list<Hex>::iterator hi = nearbyBoundaryPoint;
+            if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
+                stringstream ee;
+                ee << "The boundary which was constructed from "
+                   << p.name << " is not a contiguous sequence of hexes.";
+                throw runtime_error (ee.str());
+            }
         }
 
-        // Given that the boundary IS contiguous, can now discard
-        // hexes outside the boundary.
-        this->discardOutside();
+        if (this->domainShape == morph::HexDomainShape::Boundary) {
+            this->discardOutsideBoundary();
+            // Fixme: Set d_ vectors.
+        } else {
+            // Given that the boundary IS contiguous, can now set a
+            // domain of hexes (rectangular, parallelogram or
+            // hexagonal region, such that computations can be
+            // efficient) and discard hexes outside the domain.
+            // setDomain() will define a regular domain, then discard
+            // those hexes outside the regular domain and populate all
+            // the d_ vectors.
+            this->setDomain();
+        }
     }
 }
 
@@ -401,6 +400,116 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator hi)
 }
 
 void
+morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
+{
+    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.
+    // Use gi to determine whether outside top/bottom region
+    // Add gi contribution to ri to determine whether outside left/right region
+
+    // Is the bottom row's gi even or odd?  extnts[2] is gi for the
+    // bottom row. If it's even, then we add 0.5 to all rows with even
+    // gi. If it's odd then we add 0.5 to all rows with ODD gi.
+    float even_addn = 0.5f;
+    float odd_addn = 0.0f;
+    float addleft = 0;
+    if (extnts[2]%2 == 0) {
+        DBG ("bottom row has EVEN gi (" << extnts[2] << ")");
+        even_addn = 0.0f;
+        odd_addn = 0.5f;
+    } else {
+        DBG ("bottom row has ODD gi (" << extnts[2] << ")");
+        addleft += 0.5f;
+    }
+
+    if (abs(extnts[2]%2) == abs(extnts[4]%2)) {
+        // Left most hex is on a parity-matching line to bottom line,
+        // no need to add left.
+        DBG("Left most hex on line matching parity of bottom line")
+    } else {
+        // Need to add left.
+        DBG("Left most hex NOT on line matching parity of bottom line add left to BL hex");
+        if (extnts[2]%2 == 0) {
+            addleft += 1.0f;
+            // For some reason, only in this case do we addleft (and
+            // not in the case where BR is ODD and Left most hex NOT
+            // matching, which makes addleft = 0.5 + 0.5). I can't
+            // work it out.
+            DBG ("Before: d_rowlen " << d_rowlen << " d_size " << d_size);
+            this->d_rowlen += addleft;
+            this->d_size = this->d_rowlen * this->d_numrows;
+            DBG ("after: d_rowlen " << d_rowlen << " d_size " << d_size);
+        } else {
+            addleft += 0.5f;
+        }
+    }
+
+    DBG ("FINAL addleft is: " << addleft);
+
+    auto hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+
+        // Here, hz is "horizontal index", made up of the ri index,
+        // half the gi index.
+        //
+        // plus a row-varying addition of a half
+        // (the row of hexes above is shifted right by 0.5 a hex
+        // width).
+        float hz = hi->ri + 0.5*(hi->gi); /*+ (hi->gi%2 ? odd_addn : even_addn)*/;
+        float parityhalf = (hi->gi%2 ? odd_addn : even_addn);
+
+        if (hz < (extnts[0] - addleft + parityhalf)) {
+            // outside
+            DBG2 ("Outside. gi:"<<hi->gi<<". Horz idx: " << hz << " < extnts[0]-addleft+parityhalf: " << extnts[0] <<"-"<< addleft <<"+"<< parityhalf);
+        } else if (hz > (extnts[1] + parityhalf)) {
+            // outside
+            DBG2 ("Outside. gi:"<<hi->gi<<". Horz idx: " << hz << " > extnts[1]+parityhalf: " << extnts[0] <<"+"<< parityhalf);
+        } else if (hi->gi < extnts[2]) {
+            // outside
+            DBG2 ("Outside. Vert idx: " << hi->gi << " < extnts[2]: " << extnts[2]);
+        } else if (hi->gi > extnts[3]) {
+            // outside
+            DBG2 ("Outside. Vert idx: " << hi->gi << " > extnts[3]: " << extnts[3]);
+        } else {
+            // inside
+            DBG2 ("INSIDE. Horz,vert index: " << hz << "," << hi->gi);
+            hi->insideDomain = true;
+        }
+        ++hi;
+    }
+}
+
+void
+morph::HexGrid::markHexesInsideParallelogramDomain (const array<int, 6>& extnts)
+{
+    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.
+    // Use gi to determine whether outside top/bottom region
+    // Add gi contribution to ri to determine whether outside left/right region
+    auto hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+        if (hi->ri < extnts[0]
+            || hi->ri > extnts[1]
+            || hi->gi < extnts[2]
+            || hi->gi > extnts[3]) {
+            // outside
+        } else {
+            // inside
+            hi->insideDomain = true;
+        }
+        ++hi;
+    }
+}
+
+void
+morph::HexGrid::markAllHexesInsideDomain (void)
+{
+    list<Hex>::iterator hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+        hi->insideDomain = true;
+        hi++;
+    }
+}
+
+void
 morph::HexGrid::computeDistanceToBoundary (void)
 {
     list<Hex>::iterator h = this->hexen.begin();
@@ -408,16 +517,21 @@ morph::HexGrid::computeDistanceToBoundary (void)
         if (h->boundaryHex == true) {
             h->distToBoundary = 0.0f;
         } else {
-            // Not a boundary hex
-            list<Hex>::iterator bh = this->hexen.begin();
-            while (bh != this->hexen.end()) {
-                if (bh->boundaryHex == true) {
-                    float delta = h->distanceFrom (*bh);
-                    if (delta < h->distToBoundary || h->distToBoundary < 0.0f) {
-                        h->distToBoundary = delta;
+            if (h->insideBoundary == false) {
+                // Set to a dummy, negative value
+                h->distToBoundary = -100.0;
+            } else {
+                // Not a boundary hex, but inside boundary
+                list<Hex>::iterator bh = this->hexen.begin();
+                while (bh != this->hexen.end()) {
+                    if (bh->boundaryHex == true) {
+                        float delta = h->distanceFrom (*bh);
+                        if (delta < h->distToBoundary || h->distToBoundary < 0.0f) {
+                            h->distToBoundary = delta;
+                        }
                     }
+                    ++bh;
                 }
-                ++bh;
             }
         }
         DBG2 ("Hex: " << h->vi <<"  d to bndry: " << h->distToBoundary
@@ -426,8 +540,291 @@ morph::HexGrid::computeDistanceToBoundary (void)
     }
 }
 
+array<int, 6>
+morph::HexGrid::findBoundaryExtents (void)
+{
+    // Return object contains {ri-left, ri-right, gi-bottom, gi-top, gi at ri-left, gi at ri-right}
+    // i.e. {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
+    array<int, 6> rtn = {{0,0,0,0,0,0}};
+
+    // Find the furthest left and right hexes and the further up and down hexes.
+    array<float, 4> limits = {{0,0,0,0}};
+    bool first = true;
+    for (auto h : this->hexen) {
+        if (h.boundaryHex == true) {
+            if (first) {
+                limits = {{h.x, h.x, h.y, h.y}};
+                first = false;
+            }
+            if (h.x < limits[0]) {
+                limits[0] = h.x;
+                rtn[4] = h.gi;
+            }
+            if (h.x > limits[1]) {
+                limits[1] = h.x;
+                rtn[5] = h.gi;
+            }
+            if (h.y < limits[2]) {
+                limits[2] = h.y;
+            }
+            if (h.y > limits[3]) {
+                limits[3] = h.y;
+            }
+        }
+    }
+
+    // Now compute the ri and gi values that these xmax/xmin/ymax/ymin
+    // correspond to. THIS, if nothing else, should auto-vectorise!
+    // d_ri is the distance moved in ri direction per x, d_gi is distance
+    float d_ri = this->hexen.front().getD();
+    float d_gi = this->hexen.front().getV();
+    rtn[0] = (int)(limits[0] / d_ri);
+    rtn[1] = (int)(limits[1] / d_ri);
+    rtn[2] = (int)(limits[2] / d_gi);
+    rtn[3] = (int)(limits[3] / d_gi);
+
+    DBG ("ll,lr,lb,lt:     {" << limits[0] << ","  << limits[1] << ","  << limits[2] << ","  << limits[3] << "}");
+    DBG ("d_ri: " << d_ri << ", d_gi: " << d_gi);
+    DBG ("ril,rir,gib,git: {" << rtn[0] << ","  << rtn[1] << ","  << rtn[2] << ","  << rtn[3] << "}");
+
+    // Add 'growth buffer'
+    rtn[0] -= this->d_growthbuffer_horz;
+    rtn[1] += this->d_growthbuffer_horz;
+    rtn[2] -= this->d_growthbuffer_vert;
+    rtn[3] += this->d_growthbuffer_vert;
+
+    return rtn;
+}
+
 void
-morph::HexGrid::discardOutside (void)
+morph::HexGrid::d_clear (void)
+{
+    this->d_x.clear();
+    this->d_y.clear();
+    this->d_ri.clear();
+    this->d_gi.clear();
+    this->d_bi.clear();
+    this->d_flags.clear();
+}
+
+void
+morph::HexGrid::d_push_back (list<Hex>::iterator hi)
+{
+    d_x.push_back (hi->x);
+    d_y.push_back (hi->y);
+    d_ri.push_back (hi->ri);
+    d_gi.push_back (hi->gi);
+    d_bi.push_back (hi->bi);
+    d_flags.push_back (hi->getFlags());
+    d_distToBoundary.push_back (hi->distToBoundary);
+}
+
+void
+morph::HexGrid::setDomain (void)
+{
+    // 1. Find extent of boundary, both left/right and up/down, with
+    // 'buffer region' already added.
+    array<int, 6> extnts = this->findBoundaryExtents();
+
+    // 1.5 set rowlen and numrows
+    this->d_rowlen = extnts[1]-extnts[0]+1;
+    this->d_numrows = extnts[3]-extnts[2]+1;
+    this->d_size = this->d_rowlen * this->d_numrows;
+    DBG("Initially, d_rowlen=" << d_rowlen << ", d_numrows=" << d_numrows << ", d_size=" << d_size);
+
+    if (this->domainShape == morph::HexDomainShape::Rectangle) {
+        // 2. Mark Hexes inside and outside the domain.
+        // Mark those hexes inside the boundary
+        this->markHexesInsideRectangularDomain (extnts);
+    } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
+        this->markHexesInsideParallelogramDomain (extnts);
+    } else if (this->domainShape == morph::HexDomainShape::Hexagon) {
+        // The original domain was hexagonal, so just mark ALL of them
+        // as being in the domain.
+        this->markAllHexesInsideDomain();
+    } else {
+        throw runtime_error ("Unknown HexDomainShape");
+    }
+
+    // 3. Discard hexes outside domain
+    this->discardOutsideDomain();
+
+    // 3.5 Mark hexes inside boundary
+    list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
+    this->markHexesInside (centroidHex);
+#ifdef DEBUG
+    {
+        // Do a little count of them:
+        unsigned int numInside = 0;
+        unsigned int numOutside = 0;
+        for (auto hi : this->hexen) {
+            if (hi.insideBoundary == true) {
+                ++numInside;
+            } else {
+                ++numOutside;
+            }
+        }
+        DBG ("Num inside: " << numInside << "; num outside: " << numOutside);
+    }
+#endif
+
+    // Before populating d_ vectors, also compute the distance to boundary
+    this->computeDistanceToBoundary();
+
+    // 4. Populate d_ vectors
+    this->populate_d_vectors (extnts);
+}
+
+void
+morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
+{
+    // First, find the starting hex. For Rectangular and parallelogram
+    // domains, that's the bottom left hex.
+    list<Hex>::iterator hi = this->hexen.begin();
+    // bottom left hex.
+    list<Hex>::iterator blh = this->hexen.end();
+
+    if (this->domainShape == morph::HexDomainShape::Rectangle
+        || this->domainShape == morph::HexDomainShape::Parallelogram) {
+
+        // Use neighbour relations to go from bottom left to top right.
+        // Find hex on bottom row.
+        while (hi != this->hexen.end()) {
+            if (hi->gi == extnts[2]) {
+                // We're on the bottom row
+                break;
+            }
+            ++hi;
+        }
+        DBG ("hi is on bottom row, posn xy:" << hi->x << "," << hi->y << " or rg:" << hi->ri << "," << hi->gi);
+        while (hi->has_nw == true) {
+            hi = hi->nw;
+        }
+        DBG ("hi is at bottom left posn xy:" << hi->x << "," << hi->y << " or rg:" << hi->ri << "," << hi->gi);
+
+        // hi should now be the bottom left hex.
+        blh = hi;
+
+        // Sanity check
+        if (blh->has_nne == false || blh->has_ne == false || blh->has_nnw == true) {
+            stringstream ee;
+            ee << "We expect the bottom left hex to have an east and a "
+               << "north east neighbour, but no north west neighbour. This has: "
+               << (blh->has_nne == true ? "Neighbour NE ":"NO Neighbour NE ")
+               << (blh->has_ne == true ? "Neighbour E ":"NO Neighbour E ")
+               << (blh->has_nnw == true ? "Neighbour NW ":"NO Neighbour NW ");
+            throw runtime_error (ee.str());
+        }
+
+    } // else Hexagon or Boundary starts from 0, hi already set to hexen.begin();
+
+    // Clear the d_ vectors.
+    this->d_clear();
+
+    // Now raster through the hexes, building the d_ vectors.
+    if (this->domainShape == morph::HexDomainShape::Rectangle) {
+        bool next_row_ne = true;
+        this->d_push_back (hi);
+        do {
+            hi = hi->ne;
+
+            this->d_push_back (hi);
+
+            DBG2 ("Pushed back flags: " << hi->getFlags() << " for r/g: " << hi->ri << "," << hi->gi);
+
+            if (hi->has_ne == false) {
+                if (hi->gi == extnts[3]) {
+                    // last (i.e. top) row and no neighbour east, so finished.
+                    DBG ("Fin. (top row)");
+                    break;
+                } else {
+
+                    if (next_row_ne == true) {
+                        hi = blh->nne;
+                        next_row_ne = false;
+                        blh = hi;
+                    } else {
+                        hi = blh->nnw;
+                        next_row_ne = true;
+                        blh = hi;
+                    }
+
+                    this->d_push_back (hi);
+                }
+            }
+        } while (hi->has_ne == true);
+
+    } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
+
+        this->d_push_back (hi); // Push back the first one, which is guaranteed to have a NE
+        while (hi->has_ne == true) {
+
+            // Step to new hex to the E
+            hi = hi->ne;
+
+            if (hi->has_ne == false) {
+                // New hex has no NE, so it is on end of row.
+                if (hi->gi == extnts[3]) {
+                    // on end of top row and no neighbour east, so finished.
+                    DBG ("Fin. (top row)");
+                    // push back and break
+                    this->d_push_back (hi);
+                    break;
+                } else {
+                    // On end of non-top row, so push back...
+                    this->d_push_back (hi);
+                    // do the 'carriage return'...
+                    hi = blh->nne;
+                    // And push that back...
+                    this->d_push_back (hi);
+                    // Update the new 'start of last row' iterator
+                    blh = hi;
+                }
+            } else {
+                // New hex does have neighbour east, so just push it back.
+                this->d_push_back (hi);
+            }
+        }
+
+    } else { // Hexagon or Boundary
+
+        while (hi != this->hexen.end()) {
+            this->d_push_back (hi);
+            hi++;
+        }
+    }
+    DBG ("Size of d_x: " << this->d_x.size() << " and d_size=" << this->d_size);
+}
+
+void
+morph::HexGrid::discardOutsideDomain (void)
+{
+    // Run through and discard those hexes outside the boundary:
+    auto hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+        if (hi->insideDomain == false) {
+            // When erasing a Hex, I need to update the neighbours of
+            // its neighbours.
+            hi->disconnectNeighbours();
+            // Having disconnected the neighbours, erase the Hex.
+            hi = this->hexen.erase (hi);
+        } else {
+            ++hi;
+        }
+    }
+    DBG("Number of hexes in this->hexen is now: " << this->hexen.size());
+
+    // The Hex::vi indices need to be re-numbered.
+    this->renumberVectorIndices();
+
+    // Finally, do something about the hexagonal grid vertices; set
+    // this to true to mark that the iterators to the outermost
+    // vertices are no longer valid and shouldn't be used.
+    this->gridReduced = true;
+}
+
+void
+morph::HexGrid::discardOutsideBoundary (void)
 {
     // Mark those hexes inside the boundary
     list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
@@ -468,7 +865,7 @@ morph::HexGrid::discardOutside (void)
     // Finally, do something about the hexagonal grid vertices; set
     // this to true to mark that the iterators to the outermost
     // vertices are no longer valid and shouldn't be used.
-    this->gridReducedToBoundary = true;
+    this->gridReduced = true;
 }
 
 list<Hex>::iterator
@@ -498,7 +895,6 @@ morph::HexGrid::renumberVectorIndices (void)
     this->vhexen.clear();
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
-        DBG2 ("Old vi: " << hi->vi << " new vi: " << vi);
         hi->vi = vi++;
         this->vhexen.push_back (&(*hi));
         ++hi;
@@ -541,7 +937,7 @@ string
 morph::HexGrid::extent (void) const
 {
     stringstream ss;
-    if (gridReducedToBoundary == false) {
+    if (gridReduced == false) {
         ss << "Grid vertices: \n"
            << "           NW: (" << this->vertexNW->x << "," << this->vertexNW->y << ") "
            << "      NE: (" << this->vertexNE->x << "," << this->vertexNE->y << ")\n"
@@ -559,6 +955,12 @@ float
 morph::HexGrid::getd (void) const
 {
     return this->d;
+}
+
+float
+morph::HexGrid::getv (void) const
+{
+    return this->v;
 }
 
 float
@@ -603,6 +1005,7 @@ void
 morph::HexGrid::init (float d_, float x_span_, float z_)
 {
     this->d = d_;
+    this->v = this->d * SQRT_OF_3_OVER_2_F;
     this->x_span = x_span_;
     this->z = z_;
     this->init();

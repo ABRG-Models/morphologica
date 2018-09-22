@@ -17,7 +17,7 @@ int main()
         }
         ReadCurves r(curvepath);
 
-        HexGrid hg(0.02, 7);
+        HexGrid hg(0.02, 7, 0, HexDomainShape::Boundary);
         hg.setBoundary (r.getCorticalPath());
 
         cout << hg.extent() << endl;
