@@ -35,6 +35,7 @@ namespace morph {
     };
 
     const float SQRT_OF_3_OVER_2_F = 0.866025404;
+
     /*!
      * This class is used to build an hexagonal grid of hexagons. The
      * member hexagons are all arranged with a vertex pointing
@@ -87,11 +88,16 @@ namespace morph {
          * Neighbour iterators. For use when the stride to the
          * neighbour ne or nw is not constant. i.e. for use when the
          * domain of computation is not a parallelogram. Note that
-         * d_ne and d_nw are not required, because the neighbour east
-         * or west is always +/- 1 in memory address space.
+         * d_ne and d_nw ARE required, because even though the
+         * neighbour east or west is always +/- 1 in memory address
+         * space in the parallelogram and rectangular domain cases, if
+         * the domain is hexagonal or arbitrary boundary, then even
+         * this is not true.
          */
+        alignas(8) vector<int> d_ne;
         alignas(8) vector<int> d_nne;
         alignas(8) vector<int> d_nnw;
+        alignas(8) vector<int> d_nw;
         alignas(8) vector<int> d_nsw;
         alignas(8) vector<int> d_nse;
 
