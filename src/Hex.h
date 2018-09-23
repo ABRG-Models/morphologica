@@ -226,6 +226,13 @@ namespace morph {
         unsigned int vi;
 
         /*!
+         * Index into the d_ vectors in HexGrid. Used to populate
+         * HexGrid::d_nne, HexGrid::d_nnw, HexGrid::d_nsw and
+         * HexGrid::d_nse.
+         */
+        unsigned int di = 0;
+
+        /*!
          * Cartesian coordinates of the centre of the Hex. Public, for
          * direct access by client code.
          */

@@ -84,6 +84,18 @@ namespace morph {
         alignas(8) vector<int> d_bi;
 
         /*!
+         * Neighbour iterators. For use when the stride to the
+         * neighbour ne or nw is not constant. i.e. for use when the
+         * domain of computation is not a parallelogram. Note that
+         * d_ne and d_nw are not required, because the neighbour east
+         * or west is always +/- 1 in memory address space.
+         */
+        alignas(8) vector<int> d_nne;
+        alignas(8) vector<int> d_nnw;
+        alignas(8) vector<int> d_nsw;
+        alignas(8) vector<int> d_nse;
+
+        /*!
          * Flags, such as "on boundary", "inside boundary", "outside
          * boundary", "has neighbour east", etc.
          */
@@ -128,6 +140,12 @@ namespace morph {
          * hi.
          */
         void d_push_back (list<Hex>::iterator hi);
+
+        /*!
+         * Once Hex::di attributes have been set, populate d_nne and
+         * friends.
+         */
+        void populate_d_neighbours (void);
 
         /*!
          * Clear out all the d_ vectors

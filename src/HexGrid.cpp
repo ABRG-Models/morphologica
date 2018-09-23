@@ -172,7 +172,14 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
 
         if (this->domainShape == morph::HexDomainShape::Boundary) {
             this->discardOutsideBoundary();
-            // Fixme: Set d_ vectors.
+            // Now populate the d_ vectors
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                this->d_push_back (hi);
+                hi++;
+            }
+            this->populate_d_neighbours();
+
         } else {
             // Given that the boundary IS contiguous, can now set a
             // domain of hexes (rectangular, parallelogram or
@@ -617,6 +624,62 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     d_bi.push_back (hi->bi);
     d_flags.push_back (hi->getFlags());
     d_distToBoundary.push_back (hi->distToBoundary);
+
+    // record in the Hex the iterator in the d_ vectors so that d_nne
+    // and friends can be set up later.
+    hi->di = d_x.size()-1;
+
+#if 0
+    // These are not computed yet, so have to be set up in a later run
+    // through the hexes.
+    d_nne.push_back (hi->nne->di);
+    d_nnw.push_back (hi->nnw->di);
+    d_nsw.push_back (hi->nsw->di);
+    d_nse.push_back (hi->nse->di);
+#endif
+}
+
+void
+morph::HexGrid::populate_d_neighbours (void)
+{
+    // Resize d_nne and friends
+    this->d_nne.resize (this->d_x.size(), 0);
+    this->d_nnw.resize (this->d_x.size(), 0);
+    this->d_nsw.resize (this->d_x.size(), 0);
+    this->d_nse.resize (this->d_x.size(), 0);
+
+    list<Hex>::iterator hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+        if (hi->has_nne == true) {
+            this->d_nne[hi->di] = hi->nne->di;
+        } else {
+            this->d_nne[hi->di] = -1;
+        }
+        if (hi->has_nnw == true) {
+            this->d_nnw[hi->di] = hi->nnw->di;
+        } else {
+            this->d_nnw[hi->di] = -1;
+        }
+        if (hi->has_nsw == true) {
+            this->d_nsw[hi->di] = hi->nsw->di;
+        } else {
+            this->d_nsw[hi->di] = -1;
+        }
+        if (hi->has_nse == true) {
+            this->d_nse[hi->di] = hi->nse->di;
+        } else {
+            this->d_nse[hi->di] = -1;
+        }
+#ifdef DEBUG
+        if (hi->di == 1075 || hi->di == 1076) {
+            DBG("Hex in d_ vector position " << hi->di << " has NNE: " << this->d_nne[hi->di]
+                << ", NNW: " << this->d_nnw[hi->di]
+                << ", NSW: " << this->d_nsw[hi->di]
+                << ", NSE: " << this->d_nse[hi->di]);
+        }
+#endif
+        ++hi;
+    }
 }
 
 void
@@ -794,6 +857,7 @@ morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
         }
     }
     DBG ("Size of d_x: " << this->d_x.size() << " and d_size=" << this->d_size);
+    this->populate_d_neighbours();
 }
 
 void
