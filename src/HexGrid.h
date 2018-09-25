@@ -31,7 +31,9 @@ namespace morph {
         Rectangle,
         Parallelogram,
         Hexagon,
-        Boundary // The shape of the arbitrary boundary set with HexGrid::setBoundary
+        Boundary, // The shape of the arbitrary boundary set with HexGrid::setBoundary
+        SubParallelograms // Arbitrary boundary shape with data in a
+                          // set of sub-parallelograms, automatically determined.
     };
 
     const float SQRT_OF_3_OVER_2_F = 0.866025404;
@@ -157,6 +159,78 @@ namespace morph {
          * Clear out all the d_ vectors
          */
         void d_clear (void);
+        //@}
+
+        /*!
+         * Sub-parallelogram data containers
+         *
+         * Sub-parallelograms have the following features:
+         *
+         * a) There is always the same sized stride to the NNW, NNE,
+         * NSW and NSE hexes
+         *
+         * b) All hexes in the sub-parallelogram have a neighbour in
+         * every direction, though neighbours may be found in the d_
+         * vectors.
+         *
+         * c) There may be many sub-parallelograms, though I will code
+         * for a single, central, big one first.
+         */
+        //@{
+        alignas(8) vector<vector<float> > sp_x;
+        alignas(8) vector<vector<float> > sp_y;
+
+        alignas(8) vector<vector<int> > sp_ri;
+        alignas(8) vector<vector<int> > sp_gi;
+        alignas(8) vector<vector<int> > sp_bi;
+
+        alignas(8) vector<vector<float> > sp_distToBoundary;
+
+        /*!
+         * You might not think that the neighbour iterators were
+         * required here, because the whole point of the parallelogram
+         * shape is that the NW is rowlen-1 from origin, NE is rowlen
+         * from origin and so on. *However*, to compute for the hexes
+         * around the edge of a sub-parallelogram, we need to access
+         * the neighbours in the d_ vectors surrounding the
+         * sub-parallelogram. So, where the value sp_d_ne is -1, then
+         * the neighbour east is found in the sp_ vector, If
+         * sp_d_ne is some number, such as 239, then the neighour east
+         * is d_ vector element [239].
+         */
+        alignas(8) vector<vector<int> > sp_d_ne;
+        alignas(8) vector<vector<int> > sp_d_nne;
+        alignas(8) vector<vector<int> > sp_d_nnw;
+        alignas(8) vector<vector<int> > sp_d_nw;
+        alignas(8) vector<vector<int> > sp_d_nsw;
+        alignas(8) vector<vector<int> > sp_d_nse;
+
+        /*!
+         * Flags, such as "on boundary", "inside boundary", "outside
+         * boundary", "has neighbour east", etc.
+         */
+        alignas(8) vector<vector<unsigned int> > sp_flags;
+
+        /*!
+         * The length of a row for each sub-parallelogram vector in sp_x.
+         */
+        alignas(8) vector<unsigned int> sp_rowlens;
+
+        /*!
+         * The number of rows in each sub-parallelogram
+         */
+        alignas(8) vector<unsigned int> sp_numrows;
+
+        /*!
+         * Allocate the sub-parallelograms
+         */
+        void allocateSubPgrams (void);
+
+        /*!
+         * Add entries to all the sp_ vectors for the Hex pointed to
+         * by hi.
+         */
+        void sp_push_back (list<Hex>::iterator hi);
         //@}
 
         /*!

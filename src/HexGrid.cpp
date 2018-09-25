@@ -123,6 +123,271 @@ morph::HexGrid::offsetCentroid (void)
 }
 #endif
 
+void
+morph::HexGrid::allocateSubPgrams (void)
+{
+    // Start at centroid. Build out until a central pgram touches the
+    // outer edge.
+    list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
+    // Iterators to corner hexes:
+    list<Hex>::iterator cornerNW = centroidHex->nnw;
+    // I disregard the very tip hex of the NE point of the
+    // parallelogram (the "pointy" corner - I've decided that the
+    // pgram will slant (with the top edge) to the right). So, there
+    // are two hexes making up the NE corner of the sub-parallelogram;
+    // 'north-north-east' and 'east-north-east'.
+    list<Hex>::iterator cornerNNE = centroidHex->nne;
+    list<Hex>::iterator cornerENE = centroidHex->ne;
+
+    list<Hex>::iterator cornerSSW = centroidHex->nsw;
+    list<Hex>::iterator cornerWSW = centroidHex->nw;
+
+    list<Hex>::iterator cornerSE = centroidHex->nse;
+
+    // Sharp corners
+    bool foundNE = false;
+    bool foundSW = false;
+    // Blunt corners
+    bool foundNW = false;
+    bool foundSE = false;
+
+    while (foundNE == false || foundSW == false
+           || foundNW == false || foundSE == false) {
+        DBG ("Corners:"
+             << " NNE: (" << cornerNNE->ri << "," << cornerNNE->gi << ")"
+             << " ENE: (" << cornerENE->ri << "," << cornerENE->gi << ")"
+             << " NW:  (" << cornerNW->ri << "," << cornerNW->gi << ")"
+             << " WSW: (" << cornerWSW->ri << "," << cornerWSW->gi << ")"
+             << " SSW: (" << cornerSSW->ri << "," << cornerSSW->gi << ")"
+             << " SE:  (" << cornerSE->ri << "," << cornerSE->gi << ")"
+            );
+        DBG ("found: NE: " << foundNE << " SW: " << foundSW << " NW: " << foundNW << " SE: " << foundSE);
+
+        if (cornerNNE->boundaryHex == true
+            || cornerENE->boundaryHex == true) {
+            DBG ("foundNE due to boundary hex");
+            foundNE = true;
+        }
+        if (cornerNW->boundaryHex == true) {
+            DBG ("foundNW due to boundary hex");
+            foundNW = true;
+        }
+        if (cornerSE->boundaryHex == true) {
+            DBG ("foundSE due to boundary hex");
+            foundSE = true;
+        }
+        if (cornerSSW->boundaryHex == true
+            || cornerWSW->boundaryHex == true) {
+            DBG ("foundSW due to boundary hex");
+            foundSW = true;
+        }
+
+        // Try to move corners out...
+        if (foundNE == false || foundNW == false || foundSE == false) {
+            DBG ("foundNE or foundNW or foundSE is false");
+            // Move NE corner out if possible. This is possible
+            // if by moving it out, both the NE corner still exists
+            // AND the NW and SE corners ( which much also move in one
+            // direction) exist.
+            if (cornerNNE->has_ne == true
+                && cornerNNE->ne->has_nne == true
+                && cornerNNE->ne->has_ne == true
+                && cornerNW->has_nne == true
+                && cornerSE->has_ne == true) {
+
+                cornerNNE = cornerNNE->ne->nne;
+                cornerENE = cornerNNE->ne->ne;
+                cornerNW = cornerNW->nne;
+                cornerSE = cornerSE->ne;
+
+            } else {
+                if (cornerNNE->has_ne == false
+                    || (cornerNNE->has_ne == true
+                        &&
+                        (cornerNNE->ne->has_nne == false || cornerNNE->ne->has_ne == false)
+                        )) {
+                    DBG ("No neighbour, foundNE is true");
+                    foundNE = true;
+                    // Nothing more to do but test if we've foundNW and foundSE too...
+                    if (cornerNW->has_nw == false) {
+                        DBG ("No neighbour west of cornerNW, foundNW is true");
+                        foundNW = true;
+                    } else {
+                        DBG ("Have left edge neighbour to W");
+                    }
+                    if (cornerSE->has_nsw == false) {
+                        DBG ("No neighbour southwest of cornerSE, foundSE is true");
+                        foundSE = true;
+                    } else {
+                        DBG ("Have bottom edge neighbour to SW");
+                    }
+                } else {
+                    if (cornerNW->has_nne == false) {
+                        DBG ("No neighbour northest of NW, foundNW is true");
+                        foundNW = true;
+                        // Can try to move east with SE corner:
+                        if (cornerSE->has_ne == true
+                            && cornerENE->has_ne == true
+                            && cornerNNE->has_ne == true) {
+                            DBG ("Extending right edge E");
+                            cornerSE = cornerSE->ne;
+                            cornerNNE = cornerNNE->ne;
+                            cornerENE = cornerNNE->ne;
+                        } else {
+                            DBG ("Not extending right edge E");
+                        }
+                    } else {
+                        DBG ("cornerNW has neighbour NE, not setting foundNW...");
+                    }
+                    if (cornerSE->has_ne == false) {
+                        DBG ("No neighbour east of SE, foundSE is true");
+                        foundSE = true;
+                        // Can try to move northeast with NW corner:
+                        if (cornerNW->has_nne == true
+                            && cornerENE->has_nne == true
+                            && cornerNNE->has_nne == true) {
+                            DBG ("Extending top edge NE");
+                            cornerNW = cornerNW->nne;
+                            cornerNNE = cornerNNE->nne;
+                            cornerENE = cornerENE->nne;
+                        } else {
+                            DBG ("Not extending top edge NE");
+                        }
+                    } else {
+                        DBG ("cornerSE has neighbour E, not setting foundSE...");
+                    }
+                }
+            }
+        }
+
+        if (foundSW == false || foundNW == false || foundSE == false) {
+
+            DBG ("foundSW or foundNW or foundSE is false");
+
+            if (cornerSSW->has_nw == true
+                && cornerSSW->nw->has_nw == true
+                && cornerSSW->nw->has_nsw == true
+                && cornerNW->has_nw == true
+                && cornerSE->has_nsw == true) {
+
+                DBG ("Move 3 SW corners...");
+                cornerSSW = cornerSSW->nw->nsw;
+                cornerWSW = cornerSSW->nw->nw;
+                cornerNW = cornerNW->nw;
+                cornerSE = cornerSE->nsw;
+
+            } else {
+
+                DBG ("Not moving 3 SW corneres...");
+                if (cornerSSW->has_nw == false
+                    || (cornerSSW->has_nw == true
+                        &&
+                        (cornerSSW->nw->has_nw == false || cornerSSW->nw->has_nsw == false)
+                        )) {
+                    DBG ("No neighbour, foundSW is true");
+                    foundSW = true;
+                    // Nothing more to do but test cornerNW and cornerSE
+                    if (cornerNW->has_nne == false) {
+                        foundNW = true;
+                    }
+                    if (cornerSE->has_ne == false) {
+                        foundSE = true;
+                    }
+                    if (foundNE == true) {
+                        DBG ("foundSW AND foundNE true, so can't exapand in any dirn. Set foundNW and foundSE true");
+                        foundNW = true;
+                        foundSE = true;
+                    }
+                } else {
+                    DBG ("foundSW not set true");
+                    // Not found the absolute southwest tip yet.
+                    if (cornerNW->has_nw == false) {
+                        DBG ("Set foundNW true as cornerNW has_nw");
+                        foundNW = true;
+                        // Can try to move bottom edge southwest
+                        if (cornerSE->has_nsw == true
+                            && cornerSSW->has_nsw == true
+                            && cornerWSW->has_nsw == true) {
+                            DBG ("Extending bottom edge SW");
+                            cornerSE = cornerSE->nsw;
+                            cornerSSW = cornerSSW->nsw;
+                            cornerWSW = cornerWSW->nsw;
+                        }
+                    } else {
+                        DBG ("foundNW not set true");
+                    }
+                    if (cornerSE->has_nsw == false) {
+                        DBG ("Setting foundSE true as cornerSE->has_nsw == false");
+                        foundSE = true;
+                        // Can try to move left edge west
+                        if (cornerNW->has_nw == true
+                            && cornerSSW->has_nw == true
+                            && cornerWSW->has_nw == true) {
+                            DBG ("Extending left edge W");
+                            cornerNW = cornerSE->nw;
+                            cornerSSW = cornerSSW->nw;
+                            cornerWSW = cornerWSW->nw;
+                        }
+                    } else {
+                        DBG ("foundSE not set true");
+                    }
+                }
+            }
+        }
+    }
+
+    // Now we have the corners of the sub-parallelogram we can define
+    // it. Something similar to markHexesInsideParalelogram, but not
+    // quite, because simultaneously need to copy to sp_ vectors.  The
+    // bottom left hex will be cornerSSW
+    int subpIdx = 0;
+
+    // Only doing a single sub pgram right now, just resize each
+    // vectorvector to one.
+    this->sp_x.resize(1);
+    this->sp_y.resize(1);
+    this->sp_ri.resize(1);
+    this->sp_gi.resize(1);
+    this->sp_bi.resize(1);
+    this->sp_distToBoundary.resize(1);
+    this->sp_d_ne.resize(1);
+    this->sp_d_nne.resize(1);
+    this->sp_d_nnw.resize(1);
+    this->sp_d_nw.resize(1);
+    this->sp_d_nsw.resize(1);
+    this->sp_d_nse.resize(1);
+    this->sp_flags.resize(1);
+    this->sp_rowlens.resize(1);
+    this->sp_numrows.resize(1);
+
+    unsigned int rl = cornerSE->ri - (cornerSSW->ri - 1);
+    list<Hex>::iterator rowstart = cornerSSW;
+    list<Hex>::iterator h = rowstart;
+    int bot_gi = cornerSSW->gi;
+    int top_gi = cornerNW->gi;
+    DBG("bot/top gi: " << bot_gi << ", " << top_gi);
+    for (int v = bot_gi; v<=top_gi; ++v) {
+        unsigned int rl_ = rl;
+        if (v==bot_gi || v==top_gi) {
+            --rl_;
+            if (rowstart->has_nnw) {
+                rowstart = rowstart->nnw;
+            }
+        } else {
+            if (rowstart->has_nne) {
+                rowstart = rowstart->nne;
+            }
+        }
+        for (unsigned int j = 0; j<rl_; ++j) {
+            h->allocatedSubp = subpIdx;
+            this->sp_push_back (h);
+            h = h->ne;
+        }
+        h = rowstart;
+    }
+    DBG ("Done.");
+}
+
 //#define DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY 1
 void
 morph::HexGrid::setBoundary (const BezCurvePath& p)
@@ -170,15 +435,37 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
             }
         }
 
-        if (this->domainShape == morph::HexDomainShape::Boundary) {
+        if (this->domainShape == morph::HexDomainShape::Boundary
+            || this->domainShape == morph::HexDomainShape::SubParallelograms) {
+
             this->discardOutsideBoundary();
-            // Now populate the d_ vectors
-            list<Hex>::iterator hi = this->hexen.begin();
-            while (hi != this->hexen.end()) {
-                this->d_push_back (hi);
-                hi++;
+
+            if (this->domainShape == morph::HexDomainShape::SubParallelograms) {
+                // Do something. Populate sp_vectors Are these now
+                // vectors of vectors? THEN populate d_ vectors with
+                // the remaining hexes.
+                this->allocateSubPgrams();
+
+                // Now populate the d_ vectors
+                list<Hex>::iterator hi = this->hexen.begin();
+                while (hi != this->hexen.end()) {
+                    if (hi->allocatedSubp == -1) {
+                        this->d_push_back (hi);
+                    }
+                    hi++;
+                }
+#ifdef READY // Currently causes a crash
+                this->populate_d_neighbours();
+#endif
+            } else {
+                // Now populate the d_ vectors
+                list<Hex>::iterator hi = this->hexen.begin();
+                while (hi != this->hexen.end()) {
+                    this->d_push_back (hi);
+                    hi++;
+                }
+                this->populate_d_neighbours();
             }
-            this->populate_d_neighbours();
 
         } else {
             // Given that the boundary IS contiguous, can now set a
@@ -614,6 +901,24 @@ morph::HexGrid::d_clear (void)
     this->d_flags.clear();
 }
 
+void
+morph::HexGrid::sp_push_back (list<Hex>::iterator hi)
+{
+    int subpIdx = hi->allocatedSubp;
+
+    this->sp_x[subpIdx].push_back (hi->x);
+    this->sp_y[subpIdx].push_back (hi->y);
+    this->sp_ri[subpIdx].push_back (hi->ri);
+    this->sp_gi[subpIdx].push_back (hi->gi);
+    this->sp_bi[subpIdx].push_back (hi->bi);
+
+    this->sp_flags[subpIdx].push_back (hi->getFlags());
+    this->sp_distToBoundary[subpIdx].push_back (hi->distToBoundary);
+
+    // record in the Hex the iterator in the sp_ vectors so that d_nne
+    // and friends can be set up later.
+    hi->di = sp_x[subpIdx].size()-1;
+}
 void
 morph::HexGrid::d_push_back (list<Hex>::iterator hi)
 {
