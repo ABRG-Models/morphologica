@@ -350,15 +350,23 @@ morph::HexGrid::allocateSubPgrams (void)
     this->sp_gi.resize(1);
     this->sp_bi.resize(1);
     this->sp_distToBoundary.resize(1);
-    this->sp_d_ne.resize(1);
-    this->sp_d_nne.resize(1);
-    this->sp_d_nnw.resize(1);
-    this->sp_d_nw.resize(1);
-    this->sp_d_nsw.resize(1);
-    this->sp_d_nse.resize(1);
+    this->sp_ne.resize(1);
+    this->sp_nne.resize(1);
+    this->sp_nnw.resize(1);
+    this->sp_nw.resize(1);
+    this->sp_nsw.resize(1);
+    this->sp_nse.resize(1);
+    this->sp_v_ne.resize(1);
+    this->sp_v_nne.resize(1);
+    this->sp_v_nnw.resize(1);
+    this->sp_v_nw.resize(1);
+    this->sp_v_nsw.resize(1);
+    this->sp_v_nse.resize(1);
     this->sp_flags.resize(1);
     this->sp_rowlens.resize(1);
     this->sp_numrows.resize(1);
+    this->sp_veclen.resize(1);
+    this->sp_numvecs = 1;
 
     unsigned int rl = cornerSE->ri - (cornerSSW->ri - 1);
     list<Hex>::iterator rowstart = cornerSSW;
@@ -366,6 +374,15 @@ morph::HexGrid::allocateSubPgrams (void)
     int bot_gi = cornerSSW->gi;
     int top_gi = cornerNW->gi;
     DBG("bot/top gi: " << bot_gi << ", " << top_gi);
+
+    // Note rowlens are set up so that each row is the same. That
+    // means that in data-vectors, the very first element is a dummy
+    // element, as is the last. The actual sub-parallelogram has those
+    // Hexes omitted.
+    this->sp_rowlens[0] = cornerSE->ri - (cornerSSW->ri - 1) + 1;
+    this->sp_numrows[0] = top_gi - bot_gi + 1;
+    this->sp_veclen[0] = this->sp_rowlens[0] * this->sp_numrows[0];
+
     for (int v = bot_gi; v<=top_gi; ++v) {
         unsigned int rl_ = rl;
         if (v==bot_gi || v==top_gi) {
@@ -454,9 +471,9 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
                     }
                     hi++;
                 }
-#ifdef READY // Currently causes a crash
-                this->populate_d_neighbours();
-#endif
+
+                this->populate_sp_d_neighbours();
+
             } else {
                 // Now populate the d_ vectors
                 list<Hex>::iterator hi = this->hexen.begin();
@@ -933,6 +950,10 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     // record in the Hex the iterator in the d_ vectors so that d_nne
     // and friends can be set up later.
     hi->di = d_x.size()-1;
+    // by default hi->allocatedSubp should be -1;
+    if (hi->allocatedSubp != -1) {
+        throw runtime_error ("by default hi->allocatedSubp should be -1 but it isn't");
+    }
 }
 
 void
@@ -946,8 +967,25 @@ morph::HexGrid::populate_d_neighbours (void)
     this->d_nsw.resize (this->d_x.size(), 0);
     this->d_nse.resize (this->d_x.size(), 0);
 
+    this->d_v_nne.resize (this->d_x.size(), 0);
+    this->d_v_ne.resize (this->d_x.size(), 0);
+    this->d_v_nnw.resize (this->d_x.size(), 0);
+    this->d_v_nw.resize (this->d_x.size(), 0);
+    this->d_v_nsw.resize (this->d_x.size(), 0);
+    this->d_v_nse.resize (this->d_x.size(), 0);
+
     list<Hex>::iterator hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
+
+        // All indices in d_ne, d_nne, etc index into the d_ vectors,
+        // so d_v_ne, etc are always equal to -1.
+        this->d_v_ne[hi->di] = -1;
+        this->d_v_nne[hi->di] = -1;
+        this->d_v_nnw[hi->di] = -1;
+        this->d_v_nw[hi->di] = -1;
+        this->d_v_nsw[hi->di] = -1;
+        this->d_v_nse[hi->di] = -1;
+
         if (hi->has_ne == true) {
             this->d_ne[hi->di] = hi->ne->di;
         } else {
@@ -986,6 +1024,156 @@ morph::HexGrid::populate_d_neighbours (void)
                 << ", NSE: " << this->d_nse[hi->di]);
         }
 #endif
+        ++hi;
+    }
+}
+
+void
+morph::HexGrid::populate_sp_d_neighbours (void)
+{
+    // Resize d_nne and friends
+    this->d_nne.resize (this->d_x.size(), 0);
+    this->d_ne.resize (this->d_x.size(), 0);
+    this->d_nnw.resize (this->d_x.size(), 0);
+    this->d_nw.resize (this->d_x.size(), 0);
+    this->d_nsw.resize (this->d_x.size(), 0);
+    this->d_nse.resize (this->d_x.size(), 0);
+
+    this->d_v_nne.resize (this->d_x.size(), -1);
+    this->d_v_ne.resize (this->d_x.size(), -1);
+    this->d_v_nnw.resize (this->d_x.size(), -1);
+    this->d_v_nw.resize (this->d_x.size(), -1);
+    this->d_v_nsw.resize (this->d_x.size(), -1);
+    this->d_v_nse.resize (this->d_x.size(), -1);
+
+    // Resize sp_nne and friends
+    for (unsigned int vi = 0; vi < this->sp_x.size(); ++vi) {
+        this->sp_nne[vi].resize (this->sp_x[vi].size());
+        this->sp_ne[vi].resize (this->sp_x[vi].size());
+        this->sp_nnw[vi].resize (this->sp_x[vi].size());
+        this->sp_nw[vi].resize (this->sp_x[vi].size());
+        this->sp_nsw[vi].resize (this->sp_x[vi].size());
+        this->sp_nse[vi].resize (this->sp_x[vi].size());
+
+        this->sp_v_nne[vi].resize (this->sp_x[vi].size());
+        this->sp_v_ne[vi].resize (this->sp_x[vi].size());
+        this->sp_v_nnw[vi].resize (this->sp_x[vi].size());
+        this->sp_v_nw[vi].resize (this->sp_x[vi].size());
+        this->sp_v_nsw[vi].resize (this->sp_x[vi].size());
+        this->sp_v_nse[vi].resize (this->sp_x[vi].size());
+    }
+
+    list<Hex>::iterator hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+
+        if (hi->has_ne == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_ne[hi->di] = hi->ne->di;
+                this->d_v_ne[hi->di] = hi->ne->allocatedSubp;
+            } else {
+                this->sp_ne[hi->allocatedSubp][hi->di] = hi->ne->di;
+                this->sp_v_ne[hi->allocatedSubp][hi->di] = hi->ne->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_ne[hi->di] = -1;
+                this->d_v_ne[hi->di] = -1;
+            } else {
+                this->sp_ne[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_ne[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nne == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nne[hi->di] = hi->nne->di;
+                this->d_v_nne[hi->di] = hi->nne->allocatedSubp;
+            } else {
+                this->sp_nne[hi->allocatedSubp][hi->di] = hi->nne->di;
+                this->sp_v_nne[hi->allocatedSubp][hi->di] = hi->nne->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nne[hi->di] = -1;
+                this->d_v_nne[hi->di] = -1;
+            } else {
+                this->sp_nne[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nne[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nnw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nnw[hi->di] = hi->nnw->di;
+                this->d_v_nnw[hi->di] = hi->nnw->allocatedSubp;
+            } else {
+                this->sp_nnw[hi->allocatedSubp][hi->di] = hi->nnw->di;
+                this->sp_v_nnw[hi->allocatedSubp][hi->di] = hi->nnw->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nnw[hi->di] = -1;
+                this->d_v_nnw[hi->di] = -1;
+            } else {
+                this->sp_nnw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nnw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nw[hi->di] = hi->nw->di;
+                this->d_v_nw[hi->di] = hi->nw->allocatedSubp;
+            } else {
+                this->sp_nw[hi->allocatedSubp][hi->di] = hi->nw->di;
+                this->sp_v_nw[hi->allocatedSubp][hi->di] = hi->nw->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nw[hi->di] = -1;
+                this->d_v_nw[hi->di] = -1;
+            } else {
+                this->sp_nw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nsw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nsw[hi->di] = hi->nsw->di;
+                this->d_v_nsw[hi->di] = hi->nsw->allocatedSubp;
+            } else {
+                this->sp_nsw[hi->allocatedSubp][hi->di] = hi->nsw->di;
+                this->sp_v_nsw[hi->allocatedSubp][hi->di] = hi->nsw->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nsw[hi->di] = -1;
+                this->d_v_nsw[hi->di] = -1;
+            } else {
+                this->sp_nsw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nsw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nse == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nse[hi->di] = hi->nse->di;
+                this->d_v_nse[hi->di] = hi->nse->allocatedSubp;
+            } else {
+                this->sp_nse[hi->allocatedSubp][hi->di] = hi->nse->di;
+                this->sp_v_nse[hi->allocatedSubp][hi->di] = hi->nse->allocatedSubp;
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nse[hi->di] = -1;
+                this->d_v_nse[hi->di] = -1;
+            } else {
+                this->sp_nse[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nse[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
         ++hi;
     }
 }

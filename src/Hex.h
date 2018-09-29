@@ -228,9 +228,16 @@ namespace morph {
         unsigned int vi;
 
         /*!
-         * Index into the d_ vectors in HexGrid. Used to populate
-         * HexGrid::d_nne, HexGrid::d_nnw, HexGrid::d_nsw and
-         * HexGrid::d_nse.
+         * Index into the d_ vectors or the sp_ vectors in
+         * HexGrid. Used to populate HexGrid::d_nne, HexGrid::d_nnw,
+         * HexGrid::d_nsw and HexGrid::d_nse, also HexGrid::sp_nne
+         * etc.
+         *
+         * The actual vector into which this indexes is given by
+         * allocatedSubp. If allocatedSubp is -1, then this indexes
+         * into the d_ vectors in the HexGrid object to which this Hex
+         * belongs. If it is 0 or higher, then the vectors into which
+         * di indexes are sp_*[allocatedSubp].
          */
         unsigned int di = 0;
 

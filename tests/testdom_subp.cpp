@@ -14,9 +14,9 @@ int main()
     int rtn = 0;
     try {
         string pwd = morph::Tools::getPwd();
-        string curvepath = "../tests/trialmod.svg";
+        string curvepath = "../tests/pgrammy.svg";
         if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/trialmod.svg";
+            curvepath = "../../tests/pgrammy.svg";
         }
         morph::ReadCurves r(curvepath);
 

@@ -96,12 +96,28 @@ namespace morph {
          * the domain is hexagonal or arbitrary boundary, then even
          * this is not true.
          */
+        //@{
         alignas(8) vector<int> d_ne;
         alignas(8) vector<int> d_nne;
         alignas(8) vector<int> d_nnw;
         alignas(8) vector<int> d_nw;
         alignas(8) vector<int> d_nsw;
         alignas(8) vector<int> d_nse;
+        //@}
+
+        /*!
+         * An additional address; the index of the vector into which
+         * d_ne, d_nne etc point. -1 means d_ne addresses into d_
+         * vectors. 0 and up are the index of the sp_ vectors.
+         */
+        //@{
+        alignas(8) vector<int> d_v_ne;
+        alignas(8) vector<int> d_v_nne;
+        alignas(8) vector<int> d_v_nnw;
+        alignas(8) vector<int> d_v_nw;
+        alignas(8) vector<int> d_v_nsw;
+        alignas(8) vector<int> d_v_nse;
+        //@}
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside
@@ -194,16 +210,28 @@ namespace morph {
          * around the edge of a sub-parallelogram, we need to access
          * the neighbours in the d_ vectors surrounding the
          * sub-parallelogram. So, where the value sp_d_ne is -1, then
-         * the neighbour east is found in the sp_ vector, If
-         * sp_d_ne is some number, such as 239, then the neighour east
-         * is d_ vector element [239].
+         * the neighbour east is found by 'parallelogram stride
+         * rules', If sp_d_ne is some number, such as 239, then the
+         * neighour east is in a d_ vector element [239] or another
+         * sp_ vector (i.e. a vector of a different parallelogram). In
+         * htese cases, the number vector into which to index is found
+         * in sp_d_v_ variables.
          */
-        alignas(8) vector<vector<int> > sp_d_ne;
-        alignas(8) vector<vector<int> > sp_d_nne;
-        alignas(8) vector<vector<int> > sp_d_nnw;
-        alignas(8) vector<vector<int> > sp_d_nw;
-        alignas(8) vector<vector<int> > sp_d_nsw;
-        alignas(8) vector<vector<int> > sp_d_nse;
+        //@{
+        alignas(8) vector<vector<int> > sp_ne;
+        alignas(8) vector<vector<int> > sp_nne;
+        alignas(8) vector<vector<int> > sp_nnw;
+        alignas(8) vector<vector<int> > sp_nw;
+        alignas(8) vector<vector<int> > sp_nsw;
+        alignas(8) vector<vector<int> > sp_nse;
+
+        alignas(8) vector<vector<int> > sp_v_ne;
+        alignas(8) vector<vector<int> > sp_v_nne;
+        alignas(8) vector<vector<int> > sp_v_nnw;
+        alignas(8) vector<vector<int> > sp_v_nw;
+        alignas(8) vector<vector<int> > sp_v_nsw;
+        alignas(8) vector<vector<int> > sp_v_nse;
+        //@}
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside
@@ -222,6 +250,16 @@ namespace morph {
         alignas(8) vector<unsigned int> sp_numrows;
 
         /*!
+         * The number of hexes in each sub-parallelogram
+         */
+        alignas(8) vector<unsigned int> sp_veclen;
+
+        /*!
+         * Fill with the number of sub-parallelograms
+         */
+        alignas(8) unsigned int sp_numvecs = 0;
+
+        /*!
          * Allocate the sub-parallelograms
          */
         void allocateSubPgrams (void);
@@ -231,6 +269,13 @@ namespace morph {
          * by hi.
          */
         void sp_push_back (list<Hex>::iterator hi);
+
+        /*!
+         * Once Hex::di attributes have been set, populate d_nne and
+         * friends and sp_nne and friends.
+         */
+        void populate_sp_d_neighbours (void);
+
         //@}
 
         /*!
