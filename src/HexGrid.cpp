@@ -379,9 +379,13 @@ morph::HexGrid::allocateSubPgrams (void)
     // means that in data-vectors, the very first element is a dummy
     // element, as is the last. The actual sub-parallelogram has those
     // Hexes omitted.
-    this->sp_rowlens[0] = cornerSE->ri - (cornerSSW->ri - 1) + 1;
+    this->sp_rowlens[0] = cornerSE->ri - (cornerSSW->ri - 1);
     this->sp_numrows[0] = top_gi - bot_gi + 1;
     this->sp_veclen[0] = this->sp_rowlens[0] * this->sp_numrows[0];
+    // The two hexes at the ends of the pointiest corners of the
+    // parallelogram aren't included, so subtract 2 to get the correct
+    // veclen:
+    this->sp_veclen[0] -= 2;
 
     for (int v = bot_gi; v<=top_gi; ++v) {
         unsigned int rl_ = rl;
