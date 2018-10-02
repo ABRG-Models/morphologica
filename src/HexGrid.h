@@ -81,10 +81,15 @@ namespace morph {
         // NB: For these to be alignas(4) need to do some sort of packing.
         alignas(8) vector<float> d_x;
         alignas(8) vector<float> d_y;
-
         alignas(8) vector<int> d_ri;
         alignas(8) vector<int> d_gi;
         alignas(8) vector<int> d_bi;
+
+        alignas(8) vector<double> d64_x;
+        alignas(8) vector<double> d64_y;
+        alignas(8) vector<long long int> d64_ri;
+        alignas(8) vector<long long int> d64_gi;
+        alignas(8) vector<long long int> d64_bi;
 
         /*!
          * Neighbour iterators. For use when the stride to the
@@ -103,6 +108,13 @@ namespace morph {
         alignas(8) vector<int> d_nw;
         alignas(8) vector<int> d_nsw;
         alignas(8) vector<int> d_nse;
+
+        alignas(8) vector<long long int> d64_ne;
+        alignas(8) vector<long long int> d64_nne;
+        alignas(8) vector<long long int> d64_nnw;
+        alignas(8) vector<long long int> d64_nw;
+        alignas(8) vector<long long int> d64_nsw;
+        alignas(8) vector<long long int> d64_nse;
         //@}
 
         /*!
@@ -117,6 +129,13 @@ namespace morph {
         alignas(8) vector<int> d_v_nw;
         alignas(8) vector<int> d_v_nsw;
         alignas(8) vector<int> d_v_nse;
+
+        alignas(8) vector<long long int> d64_v_ne;
+        alignas(8) vector<long long int> d64_v_nne;
+        alignas(8) vector<long long int> d64_v_nnw;
+        alignas(8) vector<long long int> d64_v_nw;
+        alignas(8) vector<long long int> d64_v_nsw;
+        alignas(8) vector<long long int> d64_v_nse;
         //@}
 
         /*!
@@ -124,11 +143,13 @@ namespace morph {
          * boundary", "has neighbour east", etc.
          */
         alignas(8) vector<unsigned int> d_flags;
+        alignas(8) vector<unsigned long long int> d64_flags;
 
         /*!
          * Distance to boundary for any hex.
          */
         alignas(8) vector<float> d_distToBoundary;
+        alignas(8) vector<double> d64_distToBoundary;
 
         /*!
          * The length of a row in the domain. The first Hex in the
@@ -195,12 +216,22 @@ namespace morph {
         //@{
         alignas(8) vector<vector<float> > sp_x;
         alignas(8) vector<vector<float> > sp_y;
-
         alignas(8) vector<vector<int> > sp_ri;
         alignas(8) vector<vector<int> > sp_gi;
         alignas(8) vector<vector<int> > sp_bi;
-
         alignas(8) vector<vector<float> > sp_distToBoundary;
+
+        /*!
+         * 64 bit aligned versions of sp_x, sp_y, etc.
+         */
+        //@{
+        alignas(8) vector<vector<double> > sp64_x;
+        alignas(8) vector<vector<double> > sp64_y;
+        alignas(8) vector<vector<long long int> > sp64_ri;
+        alignas(8) vector<vector<long long int> > sp64_gi;
+        alignas(8) vector<vector<long long int> > sp64_bi;
+        alignas(8) vector<vector<double> > sp64_distToBoundary;
+        //@}
 
         /*!
          * You might not think that the neighbour iterators were
@@ -231,6 +262,20 @@ namespace morph {
         alignas(8) vector<vector<int> > sp_v_nw;
         alignas(8) vector<vector<int> > sp_v_nsw;
         alignas(8) vector<vector<int> > sp_v_nse;
+
+        alignas(8) vector<vector<long long int> > sp64_ne;
+        alignas(8) vector<vector<long long int> > sp64_nne;
+        alignas(8) vector<vector<long long int> > sp64_nnw;
+        alignas(8) vector<vector<long long int> > sp64_nw;
+        alignas(8) vector<vector<long long int> > sp64_nsw;
+        alignas(8) vector<vector<long long int> > sp64_nse;
+
+        alignas(8) vector<vector<long long int> > sp64_v_ne;
+        alignas(8) vector<vector<long long int> > sp64_v_nne;
+        alignas(8) vector<vector<long long int> > sp64_v_nnw;
+        alignas(8) vector<vector<long long int> > sp64_v_nw;
+        alignas(8) vector<vector<long long int> > sp64_v_nsw;
+        alignas(8) vector<vector<long long int> > sp64_v_nse;
         //@}
 
         /*!
@@ -238,6 +283,7 @@ namespace morph {
          * boundary", "has neighbour east", etc.
          */
         alignas(8) vector<vector<unsigned int> > sp_flags;
+        alignas(8) vector<vector<unsigned long long int> > sp64_flags;
 
         /*!
          * The length of a row for each sub-parallelogram vector in sp_x.
