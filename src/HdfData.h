@@ -82,6 +82,11 @@ namespace morph {
         void add_double_vector (const char* path, const vector<double>& vals);
 
         /*!
+         * Add nvals doubles from the double array vals.
+         */
+        void add_double_star (const char* path, double*& vals, const unsigned int nvals);
+
+        /*!
          * Makes necessary calls to add a vector of floats to an HDF5
          * file store, using path as the name of the variable.
          */
