@@ -20,7 +20,20 @@ sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
 ```
 
-To build, it's the usual CMake process:
+You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
+
+```sh
+tar xvf hdf5-1.10.x.tar.gz
+cd hdf5-1.10.x
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make -j4 # or however many cores you have. This takes a while.
+sudo make install
+```
+
+
+To build morphologica, it's the usual CMake process:
 
 ```sh
 cd morphologica
@@ -40,19 +53,6 @@ CMAKE\_INSTALL\_PREFIX of /usr/local is already in your dynamic
 linker's search path) as in the example above. If you installed
 elsewhere, then you probably know how to set LD\_CONFIG\_PATH
 correctly (or at least you can now search up how to do that).
-
-You will also need HDF5 installed on your system. Download HDF5, and do a compile and install like this:
-
-```sh
-tar xvf hdf5-1.10.x.tar.gz
-cd hdf5-1.10.x
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-make -j4 # or however many cores you have. This takes a while.
-sudo make install
-```
-
 
 If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
