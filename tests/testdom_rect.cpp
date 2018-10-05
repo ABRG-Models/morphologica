@@ -1,11 +1,11 @@
-#include <morph/display.h>
-#include <morph/tools.h>
+#include "display.h"
+#include "tools.h"
 #include <utility>
 #include <iostream>
 #include <unistd.h>
 
 #include "HexGrid.h"
-#include <morph/ReadCurves.h>
+#include "ReadCurves.h"
 
 using namespace std;
 
