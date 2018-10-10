@@ -123,6 +123,316 @@ morph::HexGrid::offsetCentroid (void)
 }
 #endif
 
+void
+morph::HexGrid::allocateSubPgrams (void)
+{
+    // Start at centroid. Build out until a central pgram touches the
+    // outer edge.
+    list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
+    // Iterators to corner hexes:
+    list<Hex>::iterator cornerNW = centroidHex->nnw;
+    // I disregard the very tip hex of the NE point of the
+    // parallelogram (the "pointy" corner - I've decided that the
+    // pgram will slant (with the top edge) to the right). So, there
+    // are two hexes making up the NE corner of the sub-parallelogram;
+    // 'north-north-east' and 'east-north-east'.
+    list<Hex>::iterator cornerNNE = centroidHex->nne;
+    list<Hex>::iterator cornerENE = centroidHex->ne;
+
+    list<Hex>::iterator cornerSSW = centroidHex->nsw;
+    list<Hex>::iterator cornerWSW = centroidHex->nw;
+
+    list<Hex>::iterator cornerSE = centroidHex->nse;
+
+    // Sharp corners
+    bool foundNE = false;
+    bool foundSW = false;
+    // Blunt corners
+    bool foundNW = false;
+    bool foundSE = false;
+
+    while (foundNE == false || foundSW == false
+           || foundNW == false || foundSE == false) {
+        DBG ("Corners:"
+             << " NNE: (" << cornerNNE->ri << "," << cornerNNE->gi << ")"
+             << " ENE: (" << cornerENE->ri << "," << cornerENE->gi << ")"
+             << " NW:  (" << cornerNW->ri << "," << cornerNW->gi << ")"
+             << " WSW: (" << cornerWSW->ri << "," << cornerWSW->gi << ")"
+             << " SSW: (" << cornerSSW->ri << "," << cornerSSW->gi << ")"
+             << " SE:  (" << cornerSE->ri << "," << cornerSE->gi << ")"
+            );
+        DBG ("found: NE: " << foundNE << " SW: " << foundSW << " NW: " << foundNW << " SE: " << foundSE);
+
+        if (cornerNNE->boundaryHex == true
+            || cornerENE->boundaryHex == true) {
+            DBG ("foundNE due to boundary hex");
+            foundNE = true;
+        }
+        if (cornerNW->boundaryHex == true) {
+            DBG ("foundNW due to boundary hex");
+            foundNW = true;
+        }
+        if (cornerSE->boundaryHex == true) {
+            DBG ("foundSE due to boundary hex");
+            foundSE = true;
+        }
+        if (cornerSSW->boundaryHex == true
+            || cornerWSW->boundaryHex == true) {
+            DBG ("foundSW due to boundary hex");
+            foundSW = true;
+        }
+
+        // Try to move corners out...
+        if (foundNE == false || foundNW == false || foundSE == false) {
+            DBG ("foundNE or foundNW or foundSE is false");
+            // Move NE corner out if possible. This is possible
+            // if by moving it out, both the NE corner still exists
+            // AND the NW and SE corners ( which much also move in one
+            // direction) exist.
+            if (cornerNNE->has_ne == true
+                && cornerNNE->ne->has_nne == true
+                && cornerNNE->ne->has_ne == true
+                && cornerNW->has_nne == true
+                && cornerSE->has_ne == true) {
+
+                cornerNNE = cornerNNE->ne->nne;
+                cornerENE = cornerNNE->ne->ne;
+                cornerNW = cornerNW->nne;
+                cornerSE = cornerSE->ne;
+
+            } else {
+                if (cornerNNE->has_ne == false
+                    || (cornerNNE->has_ne == true
+                        &&
+                        (cornerNNE->ne->has_nne == false || cornerNNE->ne->has_ne == false)
+                        )) {
+                    DBG ("No neighbour, foundNE is true");
+                    foundNE = true;
+                    // Nothing more to do but test if we've foundNW and foundSE too...
+                    if (cornerNW->has_nw == false) {
+                        DBG ("No neighbour west of cornerNW, foundNW is true");
+                        foundNW = true;
+                    } else {
+                        DBG ("Have left edge neighbour to W");
+                    }
+                    if (cornerSE->has_nsw == false) {
+                        DBG ("No neighbour southwest of cornerSE, foundSE is true");
+                        foundSE = true;
+                    } else {
+                        DBG ("Have bottom edge neighbour to SW");
+                    }
+                } else {
+                    if (cornerNW->has_nne == false) {
+                        DBG ("No neighbour northest of NW, foundNW is true");
+                        foundNW = true;
+                        // Can try to move east with SE corner:
+                        if (cornerSE->has_ne == true
+                            && cornerENE->has_ne == true
+                            && cornerNNE->has_ne == true) {
+                            DBG ("Extending right edge E");
+                            cornerSE = cornerSE->ne;
+                            cornerNNE = cornerNNE->ne;
+                            cornerENE = cornerNNE->ne;
+                        } else {
+                            DBG ("Not extending right edge E");
+                        }
+                    } else {
+                        DBG ("cornerNW has neighbour NE, not setting foundNW...");
+                    }
+                    if (cornerSE->has_ne == false) {
+                        DBG ("No neighbour east of SE, foundSE is true");
+                        foundSE = true;
+                        // Can try to move northeast with NW corner:
+                        if (cornerNW->has_nne == true
+                            && cornerENE->has_nne == true
+                            && cornerNNE->has_nne == true) {
+                            DBG ("Extending top edge NE");
+                            cornerNW = cornerNW->nne;
+                            cornerNNE = cornerNNE->nne;
+                            cornerENE = cornerENE->nne;
+                        } else {
+                            DBG ("Not extending top edge NE");
+                        }
+                    } else {
+                        DBG ("cornerSE has neighbour E, not setting foundSE...");
+                    }
+                }
+            }
+        }
+
+        if (foundSW == false || foundNW == false || foundSE == false) {
+
+            DBG ("foundSW or foundNW or foundSE is false");
+
+            if (cornerSSW->has_nw == true
+                && cornerSSW->nw->has_nw == true
+                && cornerSSW->nw->has_nsw == true
+                && cornerNW->has_nw == true
+                && cornerSE->has_nsw == true) {
+
+                DBG ("Move 3 SW corners...");
+                cornerSSW = cornerSSW->nw->nsw;
+                cornerWSW = cornerSSW->nw->nw;
+                cornerNW = cornerNW->nw;
+                cornerSE = cornerSE->nsw;
+
+            } else {
+
+                DBG ("Not moving 3 SW corneres...");
+                if (cornerSSW->has_nw == false
+                    || (cornerSSW->has_nw == true
+                        &&
+                        (cornerSSW->nw->has_nw == false || cornerSSW->nw->has_nsw == false)
+                        )) {
+                    DBG ("No neighbour, foundSW is true");
+                    foundSW = true;
+                    // Nothing more to do but test cornerNW and cornerSE
+                    if (cornerNW->has_nne == false) {
+                        foundNW = true;
+                    }
+                    if (cornerSE->has_ne == false) {
+                        foundSE = true;
+                    }
+                    if (foundNE == true) {
+                        DBG ("foundSW AND foundNE true, so can't exapand in any dirn. Set foundNW and foundSE true");
+                        foundNW = true;
+                        foundSE = true;
+                    }
+                } else {
+                    DBG ("foundSW not set true");
+                    // Not found the absolute southwest tip yet.
+                    if (cornerNW->has_nw == false) {
+                        DBG ("Set foundNW true as cornerNW has_nw");
+                        foundNW = true;
+                        // Can try to move bottom edge southwest
+                        if (cornerSE->has_nsw == true
+                            && cornerSSW->has_nsw == true
+                            && cornerWSW->has_nsw == true) {
+                            DBG ("Extending bottom edge SW");
+                            cornerSE = cornerSE->nsw;
+                            cornerSSW = cornerSSW->nsw;
+                            cornerWSW = cornerWSW->nsw;
+                        }
+                    } else {
+                        DBG ("foundNW not set true");
+                    }
+                    if (cornerSE->has_nsw == false) {
+                        DBG ("Setting foundSE true as cornerSE->has_nsw == false");
+                        foundSE = true;
+                        // Can try to move left edge west
+                        if (cornerNW->has_nw == true
+                            && cornerSSW->has_nw == true
+                            && cornerWSW->has_nw == true) {
+                            DBG ("Extending left edge W");
+                            cornerNW = cornerSE->nw;
+                            cornerSSW = cornerSSW->nw;
+                            cornerWSW = cornerWSW->nw;
+                        }
+                    } else {
+                        DBG ("foundSE not set true");
+                    }
+                }
+            }
+        }
+    }
+
+    // Now we have the corners of the sub-parallelogram we can define
+    // it. Something similar to markHexesInsideParalelogram, but not
+    // quite, because simultaneously need to copy to sp_ vectors.  The
+    // bottom left hex will be cornerSSW
+    int subpIdx = 0;
+
+    // Only doing a single sub pgram right now, just resize each
+    // vectorvector to one.
+    this->sp_x.resize(1);
+    this->sp_y.resize(1);
+    this->sp_ri.resize(1);
+    this->sp_gi.resize(1);
+    this->sp_bi.resize(1);
+    this->sp_distToBoundary.resize(1);
+    this->sp_ne.resize(1);
+    this->sp_nne.resize(1);
+    this->sp_nnw.resize(1);
+    this->sp_nw.resize(1);
+    this->sp_nsw.resize(1);
+    this->sp_nse.resize(1);
+    this->sp_v_ne.resize(1);
+    this->sp_v_nne.resize(1);
+    this->sp_v_nnw.resize(1);
+    this->sp_v_nw.resize(1);
+    this->sp_v_nsw.resize(1);
+    this->sp_v_nse.resize(1);
+    this->sp_flags.resize(1);
+
+    this->sp64_x.resize(1);
+    this->sp64_y.resize(1);
+    this->sp64_ri.resize(1);
+    this->sp64_gi.resize(1);
+    this->sp64_bi.resize(1);
+    this->sp64_distToBoundary.resize(1);
+    this->sp64_ne.resize(1);
+    this->sp64_nne.resize(1);
+    this->sp64_nnw.resize(1);
+    this->sp64_nw.resize(1);
+    this->sp64_nsw.resize(1);
+    this->sp64_nse.resize(1);
+    this->sp64_v_ne.resize(1);
+    this->sp64_v_nne.resize(1);
+    this->sp64_v_nnw.resize(1);
+    this->sp64_v_nw.resize(1);
+    this->sp64_v_nsw.resize(1);
+    this->sp64_v_nse.resize(1);
+    this->sp64_flags.resize(1);
+
+    this->sp_rowlens.resize(1);
+    this->sp_numrows.resize(1);
+    this->sp_veclen.resize(1);
+    this->sp_numvecs = 1;
+
+    unsigned int rl = cornerSE->ri - (cornerSSW->ri - 1);
+    list<Hex>::iterator rowstart = cornerSSW;
+    list<Hex>::iterator h = rowstart;
+    int bot_gi = cornerSSW->gi;
+    int top_gi = cornerNW->gi;
+    DBG("bot/top gi: " << bot_gi << ", " << top_gi);
+
+    // Note rowlens are set up so that each row is the same. That
+    // means that in data-vectors, the very first element is a dummy
+    // element, as is the last. The actual sub-parallelogram has those
+    // Hexes omitted.
+    this->sp_rowlens[0] = cornerSE->ri - (cornerSSW->ri - 1);
+    this->sp_numrows[0] = top_gi - bot_gi + 1;
+    this->sp_veclen[0] = this->sp_rowlens[0] * this->sp_numrows[0];
+    // The two hexes at the ends of the pointiest corners of the
+    // parallelogram aren't included, so subtract 2 to get the correct
+    // veclen:
+    this->sp_veclen[0] -= 2;
+
+    unsigned int nsubpalloc = 0;
+
+    for (int v = bot_gi; v<=top_gi; ++v) {
+        unsigned int rl_ = rl;
+        if (v==bot_gi || v==top_gi) {
+            --rl_;
+            if (rowstart->has_nnw) {
+                rowstart = rowstart->nnw;
+            }
+        } else {
+            if (rowstart->has_nne) {
+                rowstart = rowstart->nne;
+            }
+        }
+        for (unsigned int j = 0; j<rl_; ++j) {
+            nsubpalloc++;
+            h->allocatedSubp = subpIdx;
+            this->sp_push_back (h);
+            h = h->ne;
+        }
+        h = rowstart;
+    }
+    DBG ("Done. set h->allocatedSubp for " << nsubpalloc << " hexes");
+}
+
 //#define DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY 1
 void
 morph::HexGrid::setBoundary (const BezCurvePath& p)
@@ -170,15 +480,37 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
             }
         }
 
-        if (this->domainShape == morph::HexDomainShape::Boundary) {
+        if (this->domainShape == morph::HexDomainShape::Boundary
+            || this->domainShape == morph::HexDomainShape::SubParallelograms) {
+
             this->discardOutsideBoundary();
-            // Now populate the d_ vectors
-            list<Hex>::iterator hi = this->hexen.begin();
-            while (hi != this->hexen.end()) {
-                this->d_push_back (hi);
-                hi++;
+
+            if (this->domainShape == morph::HexDomainShape::SubParallelograms) {
+                // Do something. Populate sp_vectors Are these now
+                // vectors of vectors? THEN populate d_ vectors with
+                // the remaining hexes.
+                this->allocateSubPgrams();
+
+                // Now populate the d_ vectors
+                list<Hex>::iterator hi = this->hexen.begin();
+                while (hi != this->hexen.end()) {
+                    if (hi->allocatedSubp == -1) {
+                        this->d_push_back (hi);
+                    }
+                    hi++;
+                }
+
+                this->populate_sp_d_neighbours();
+
+            } else {
+                // Now populate the d_ vectors
+                list<Hex>::iterator hi = this->hexen.begin();
+                while (hi != this->hexen.end()) {
+                    this->d_push_back (hi);
+                    hi++;
+                }
+                this->populate_d_neighbours();
             }
-            this->populate_d_neighbours();
 
         } else {
             // Given that the boundary IS contiguous, can now set a
@@ -612,8 +944,40 @@ morph::HexGrid::d_clear (void)
     this->d_gi.clear();
     this->d_bi.clear();
     this->d_flags.clear();
+
+    this->d64_x.clear();
+    this->d64_y.clear();
+    this->d64_ri.clear();
+    this->d64_gi.clear();
+    this->d64_bi.clear();
+    this->d64_flags.clear();
 }
 
+void
+morph::HexGrid::sp_push_back (list<Hex>::iterator hi)
+{
+    int subpIdx = hi->allocatedSubp;
+
+    this->sp_x[subpIdx].push_back (hi->x);
+    this->sp_y[subpIdx].push_back (hi->y);
+    this->sp_ri[subpIdx].push_back (hi->ri);
+    this->sp_gi[subpIdx].push_back (hi->gi);
+    this->sp_bi[subpIdx].push_back (hi->bi);
+    this->sp_flags[subpIdx].push_back (hi->getFlags());
+    this->sp_distToBoundary[subpIdx].push_back (hi->distToBoundary);
+
+    this->sp64_x[subpIdx].push_back (hi->x);
+    this->sp64_y[subpIdx].push_back (hi->y);
+    this->sp64_ri[subpIdx].push_back (hi->ri);
+    this->sp64_gi[subpIdx].push_back (hi->gi);
+    this->sp64_bi[subpIdx].push_back (hi->bi);
+    this->sp64_flags[subpIdx].push_back (hi->getFlags());
+    this->sp64_distToBoundary[subpIdx].push_back (hi->distToBoundary);
+
+    // record in the Hex the iterator in the sp_ vectors so that d_nne
+    // and friends can be set up later.
+    hi->di = sp_x[subpIdx].size()-1;
+}
 void
 morph::HexGrid::d_push_back (list<Hex>::iterator hi)
 {
@@ -625,9 +989,21 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     d_flags.push_back (hi->getFlags());
     d_distToBoundary.push_back (hi->distToBoundary);
 
+    d64_x.push_back (hi->x);
+    d64_y.push_back (hi->y);
+    d64_ri.push_back (hi->ri);
+    d64_gi.push_back (hi->gi);
+    d64_bi.push_back (hi->bi);
+    d64_flags.push_back (hi->getFlags());
+    d64_distToBoundary.push_back (hi->distToBoundary);
+
     // record in the Hex the iterator in the d_ vectors so that d_nne
     // and friends can be set up later.
     hi->di = d_x.size()-1;
+    // by default hi->allocatedSubp should be -1;
+    if (hi->allocatedSubp != -1) {
+        throw runtime_error ("by default hi->allocatedSubp should be -1 but it isn't");
+    }
 }
 
 void
@@ -641,38 +1017,88 @@ morph::HexGrid::populate_d_neighbours (void)
     this->d_nsw.resize (this->d_x.size(), 0);
     this->d_nse.resize (this->d_x.size(), 0);
 
+    this->d_v_nne.resize (this->d_x.size(), 0);
+    this->d_v_ne.resize (this->d_x.size(), 0);
+    this->d_v_nnw.resize (this->d_x.size(), 0);
+    this->d_v_nw.resize (this->d_x.size(), 0);
+    this->d_v_nsw.resize (this->d_x.size(), 0);
+    this->d_v_nse.resize (this->d_x.size(), 0);
+
+    this->d64_nne.resize (this->d_x.size(), 0);
+    this->d64_ne.resize (this->d_x.size(), 0);
+    this->d64_nnw.resize (this->d_x.size(), 0);
+    this->d64_nw.resize (this->d_x.size(), 0);
+    this->d64_nsw.resize (this->d_x.size(), 0);
+    this->d64_nse.resize (this->d_x.size(), 0);
+
+    this->d64_v_nne.resize (this->d_x.size(), 0);
+    this->d64_v_ne.resize (this->d_x.size(), 0);
+    this->d64_v_nnw.resize (this->d_x.size(), 0);
+    this->d64_v_nw.resize (this->d_x.size(), 0);
+    this->d64_v_nsw.resize (this->d_x.size(), 0);
+    this->d64_v_nse.resize (this->d_x.size(), 0);
+
     list<Hex>::iterator hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
+
+        // All indices in d_ne, d_nne, etc index into the d_ vectors,
+        // so d_v_ne, etc are always equal to -1.
+        this->d_v_ne[hi->di] = -1;
+        this->d_v_nne[hi->di] = -1;
+        this->d_v_nnw[hi->di] = -1;
+        this->d_v_nw[hi->di] = -1;
+        this->d_v_nsw[hi->di] = -1;
+        this->d_v_nse[hi->di] = -1;
+
+        this->d64_v_ne[hi->di] = -1;
+        this->d64_v_nne[hi->di] = -1;
+        this->d64_v_nnw[hi->di] = -1;
+        this->d64_v_nw[hi->di] = -1;
+        this->d64_v_nsw[hi->di] = -1;
+        this->d64_v_nse[hi->di] = -1;
+
         if (hi->has_ne == true) {
             this->d_ne[hi->di] = hi->ne->di;
         } else {
             this->d_ne[hi->di] = -1;
         }
+        this->d64_ne[hi->di] = this->d_ne[hi->di];
+
         if (hi->has_nne == true) {
             this->d_nne[hi->di] = hi->nne->di;
         } else {
             this->d_nne[hi->di] = -1;
         }
+        this->d64_nne[hi->di] = this->d_nne[hi->di];
+
         if (hi->has_nnw == true) {
             this->d_nnw[hi->di] = hi->nnw->di;
         } else {
             this->d_nnw[hi->di] = -1;
         }
+        this->d64_nnw[hi->di] = this->d_nnw[hi->di];
+
         if (hi->has_nw == true) {
             this->d_nw[hi->di] = hi->nw->di;
         } else {
             this->d_nw[hi->di] = -1;
         }
+        this->d64_nw[hi->di] = this->d_nw[hi->di];
+
         if (hi->has_nsw == true) {
             this->d_nsw[hi->di] = hi->nsw->di;
         } else {
             this->d_nsw[hi->di] = -1;
         }
+        this->d64_nsw[hi->di] = this->d_nsw[hi->di];
+
         if (hi->has_nse == true) {
             this->d_nse[hi->di] = hi->nse->di;
         } else {
             this->d_nse[hi->di] = -1;
         }
+        this->d64_nse[hi->di] = this->d_nse[hi->di];
+
 #ifdef DEBUG
         if (hi->di == 1075 || hi->di == 1076) {
             DBG("Hex in d_ vector position " << hi->di << " has NNE: " << this->d_nne[hi->di]
@@ -681,6 +1107,232 @@ morph::HexGrid::populate_d_neighbours (void)
                 << ", NSE: " << this->d_nse[hi->di]);
         }
 #endif
+        ++hi;
+    }
+}
+
+void
+morph::HexGrid::populate_sp_d_neighbours (void)
+{
+    // Resize d_nne and friends
+    this->d_nne.resize (this->d_x.size(), 0);
+    this->d_ne.resize (this->d_x.size(), 0);
+    this->d_nnw.resize (this->d_x.size(), 0);
+    this->d_nw.resize (this->d_x.size(), 0);
+    this->d_nsw.resize (this->d_x.size(), 0);
+    this->d_nse.resize (this->d_x.size(), 0);
+
+    this->d_v_nne.resize (this->d_x.size(), -1);
+    this->d_v_ne.resize (this->d_x.size(), -1);
+    this->d_v_nnw.resize (this->d_x.size(), -1);
+    this->d_v_nw.resize (this->d_x.size(), -1);
+    this->d_v_nsw.resize (this->d_x.size(), -1);
+    this->d_v_nse.resize (this->d_x.size(), -1);
+
+    this->d64_nne.resize (this->d_x.size(), 0);
+    this->d64_ne.resize (this->d_x.size(), 0);
+    this->d64_nnw.resize (this->d_x.size(), 0);
+    this->d64_nw.resize (this->d_x.size(), 0);
+    this->d64_nsw.resize (this->d_x.size(), 0);
+    this->d64_nse.resize (this->d_x.size(), 0);
+
+    this->d64_v_nne.resize (this->d_x.size(), -1);
+    this->d64_v_ne.resize (this->d_x.size(), -1);
+    this->d64_v_nnw.resize (this->d_x.size(), -1);
+    this->d64_v_nw.resize (this->d_x.size(), -1);
+    this->d64_v_nsw.resize (this->d_x.size(), -1);
+    this->d64_v_nse.resize (this->d_x.size(), -1);
+
+    // Resize sp_nne and friends
+    for (unsigned int vi = 0; vi < this->sp_x.size(); ++vi) {
+        this->sp_nne[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp_ne[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp_nnw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp_nw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp_nsw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp_nse[vi].resize (this->sp_x[vi].size(), 0);
+
+        this->sp_v_nne[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp_v_ne[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp_v_nnw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp_v_nw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp_v_nsw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp_v_nse[vi].resize (this->sp_x[vi].size(), -1);
+
+        this->sp64_nne[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp64_ne[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp64_nnw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp64_nw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp64_nsw[vi].resize (this->sp_x[vi].size(), 0);
+        this->sp64_nse[vi].resize (this->sp_x[vi].size(), 0);
+
+        this->sp64_v_nne[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp64_v_ne[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp64_v_nnw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp64_v_nw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp64_v_nsw[vi].resize (this->sp_x[vi].size(), -1);
+        this->sp64_v_nse[vi].resize (this->sp_x[vi].size(), -1);
+    }
+
+    list<Hex>::iterator hi = this->hexen.begin();
+    while (hi != this->hexen.end()) {
+
+        if (hi->has_ne == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_ne[hi->di] = hi->ne->di;
+                this->d_v_ne[hi->di] = hi->ne->allocatedSubp;
+                this->d64_ne[hi->di] = static_cast<long long int>(hi->ne->di);
+                this->d64_v_ne[hi->di] = static_cast<long long int>(hi->ne->allocatedSubp);
+            } else {
+                this->sp_ne[hi->allocatedSubp][hi->di] = hi->ne->di;
+                this->sp_v_ne[hi->allocatedSubp][hi->di] = hi->ne->allocatedSubp;
+                this->sp64_ne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->ne->di);
+                this->sp64_v_ne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->ne->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_ne[hi->di] = -1;
+                this->d_v_ne[hi->di] = -1;
+                this->d64_ne[hi->di] = -1;
+                this->d64_v_ne[hi->di] = -1;
+            } else {
+                this->sp_ne[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_ne[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_ne[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_ne[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nne == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nne[hi->di] = hi->nne->di;
+                this->d_v_nne[hi->di] = hi->nne->allocatedSubp;
+                this->d64_nne[hi->di] = static_cast<long long int>(hi->nne->di);
+                this->d64_v_nne[hi->di] = static_cast<long long int>(hi->nne->allocatedSubp);
+            } else {
+                this->sp_nne[hi->allocatedSubp][hi->di] = hi->nne->di;
+                this->sp_v_nne[hi->allocatedSubp][hi->di] = hi->nne->allocatedSubp;
+                this->sp64_nne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nne->di);
+                this->sp64_v_nne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nne->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nne[hi->di] = -1;
+                this->d_v_nne[hi->di] = -1;
+                this->d64_nne[hi->di] = -1;
+                this->d64_v_nne[hi->di] = -1;
+            } else {
+                this->sp_nne[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nne[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_nne[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_nne[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nnw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nnw[hi->di] = hi->nnw->di;
+                this->d_v_nnw[hi->di] = hi->nnw->allocatedSubp;
+                this->d64_nnw[hi->di] = static_cast<long long int>(hi->nnw->di);
+                this->d64_v_nnw[hi->di] = static_cast<long long int>(hi->nnw->allocatedSubp);
+            } else {
+                this->sp_nnw[hi->allocatedSubp][hi->di] = hi->nnw->di;
+                this->sp_v_nnw[hi->allocatedSubp][hi->di] = hi->nnw->allocatedSubp;
+                this->sp64_nnw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nnw->di);
+                this->sp64_v_nnw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nnw->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nnw[hi->di] = -1;
+                this->d_v_nnw[hi->di] = -1;
+                this->d64_nnw[hi->di] = -1;
+                this->d64_v_nnw[hi->di] = -1;
+            } else {
+                this->sp_nnw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nnw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_nnw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_nnw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nw[hi->di] = hi->nw->di;
+                this->d_v_nw[hi->di] = hi->nw->allocatedSubp;
+                this->d64_nw[hi->di] = static_cast<long long int>(hi->nw->di);
+                this->d64_v_nw[hi->di] = static_cast<long long int>(hi->nw->allocatedSubp);
+            } else {
+                this->sp_nw[hi->allocatedSubp][hi->di] = hi->nw->di;
+                this->sp_v_nw[hi->allocatedSubp][hi->di] = hi->nw->allocatedSubp;
+                this->sp64_nw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nw->di);
+                this->sp64_v_nw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nw->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nw[hi->di] = -1;
+                this->d_v_nw[hi->di] = -1;
+                this->d64_nw[hi->di] = -1;
+                this->d64_v_nw[hi->di] = -1;
+            } else {
+                this->sp_nw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_nw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_nw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nsw == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nsw[hi->di] = hi->nsw->di;
+                this->d_v_nsw[hi->di] = hi->nsw->allocatedSubp;
+                this->d64_nsw[hi->di] = static_cast<long long int>(hi->nsw->di);
+                this->d64_v_nsw[hi->di] = static_cast<long long int>(hi->nsw->allocatedSubp);
+            } else {
+                this->sp_nsw[hi->allocatedSubp][hi->di] = hi->nsw->di;
+                this->sp_v_nsw[hi->allocatedSubp][hi->di] = hi->nsw->allocatedSubp;
+                this->sp64_nsw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nsw->di);
+                this->sp64_v_nsw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nsw->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nsw[hi->di] = -1;
+                this->d_v_nsw[hi->di] = -1;
+                this->d64_nsw[hi->di] = -1;
+                this->d64_v_nsw[hi->di] = -1;
+            } else {
+                this->sp_nsw[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nsw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_nsw[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_nsw[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
+        if (hi->has_nse == true) {
+            if (hi->allocatedSubp == -1) {
+                this->d_nse[hi->di] = hi->nse->di;
+                this->d_v_nse[hi->di] = hi->nse->allocatedSubp;
+                this->d64_nse[hi->di] = static_cast<long long int>(hi->nse->di);
+                this->d64_v_nse[hi->di] = static_cast<long long int>(hi->nse->allocatedSubp);
+            } else {
+                this->sp_nse[hi->allocatedSubp][hi->di] = hi->nse->di;
+                this->sp_v_nse[hi->allocatedSubp][hi->di] = hi->nse->allocatedSubp;
+                this->sp64_nse[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nse->di);
+                this->sp64_v_nse[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nse->allocatedSubp);
+            }
+        } else {
+            if (hi->allocatedSubp == -1) {
+                this->d_nse[hi->di] = -1;
+                this->d_v_nse[hi->di] = -1;
+                this->d64_nse[hi->di] = -1;
+                this->d64_v_nse[hi->di] = -1;
+            } else {
+                this->sp_nse[hi->allocatedSubp][hi->di] = -1;
+                this->sp_v_nse[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_nse[hi->allocatedSubp][hi->di] = -1;
+                this->sp64_v_nse[hi->allocatedSubp][hi->di] = -1;
+            }
+        }
+
         ++hi;
     }
 }

@@ -31,7 +31,9 @@ namespace morph {
         Rectangle,
         Parallelogram,
         Hexagon,
-        Boundary // The shape of the arbitrary boundary set with HexGrid::setBoundary
+        Boundary, // The shape of the arbitrary boundary set with HexGrid::setBoundary
+        SubParallelograms // Arbitrary boundary shape with data in a
+                          // set of sub-parallelograms, automatically determined.
     };
 
     const float SQRT_OF_3_OVER_2_F = 0.866025404;
@@ -79,10 +81,15 @@ namespace morph {
         // NB: For these to be alignas(4) need to do some sort of packing.
         alignas(8) vector<float> d_x;
         alignas(8) vector<float> d_y;
-
         alignas(8) vector<int> d_ri;
         alignas(8) vector<int> d_gi;
         alignas(8) vector<int> d_bi;
+
+        alignas(8) vector<double> d64_x;
+        alignas(8) vector<double> d64_y;
+        alignas(8) vector<long long int> d64_ri;
+        alignas(8) vector<long long int> d64_gi;
+        alignas(8) vector<long long int> d64_bi;
 
         /*!
          * Neighbour iterators. For use when the stride to the
@@ -94,6 +101,7 @@ namespace morph {
          * the domain is hexagonal or arbitrary boundary, then even
          * this is not true.
          */
+        //@{
         alignas(8) vector<int> d_ne;
         alignas(8) vector<int> d_nne;
         alignas(8) vector<int> d_nnw;
@@ -101,16 +109,47 @@ namespace morph {
         alignas(8) vector<int> d_nsw;
         alignas(8) vector<int> d_nse;
 
+        alignas(8) vector<long long int> d64_ne;
+        alignas(8) vector<long long int> d64_nne;
+        alignas(8) vector<long long int> d64_nnw;
+        alignas(8) vector<long long int> d64_nw;
+        alignas(8) vector<long long int> d64_nsw;
+        alignas(8) vector<long long int> d64_nse;
+        //@}
+
+        /*!
+         * An additional address; the index of the vector into which
+         * d_ne, d_nne etc point. -1 means d_ne addresses into d_
+         * vectors. 0 and up are the index of the sp_ vectors.
+         */
+        //@{
+        alignas(8) vector<int> d_v_ne;
+        alignas(8) vector<int> d_v_nne;
+        alignas(8) vector<int> d_v_nnw;
+        alignas(8) vector<int> d_v_nw;
+        alignas(8) vector<int> d_v_nsw;
+        alignas(8) vector<int> d_v_nse;
+
+        alignas(8) vector<long long int> d64_v_ne;
+        alignas(8) vector<long long int> d64_v_nne;
+        alignas(8) vector<long long int> d64_v_nnw;
+        alignas(8) vector<long long int> d64_v_nw;
+        alignas(8) vector<long long int> d64_v_nsw;
+        alignas(8) vector<long long int> d64_v_nse;
+        //@}
+
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside
          * boundary", "has neighbour east", etc.
          */
         alignas(8) vector<unsigned int> d_flags;
+        alignas(8) vector<unsigned long long int> d64_flags;
 
         /*!
          * Distance to boundary for any hex.
          */
         alignas(8) vector<float> d_distToBoundary;
+        alignas(8) vector<double> d64_distToBoundary;
 
         /*!
          * The length of a row in the domain. The first Hex in the
@@ -157,6 +196,132 @@ namespace morph {
          * Clear out all the d_ vectors
          */
         void d_clear (void);
+        //@}
+
+        /*!
+         * Sub-parallelogram data containers
+         *
+         * Sub-parallelograms have the following features:
+         *
+         * a) There is always the same sized stride to the NNW, NNE,
+         * NSW and NSE hexes
+         *
+         * b) All hexes in the sub-parallelogram have a neighbour in
+         * every direction, though neighbours may be found in the d_
+         * vectors.
+         *
+         * c) There may be many sub-parallelograms, though I will code
+         * for a single, central, big one first.
+         */
+        //@{
+        alignas(8) vector<vector<float> > sp_x;
+        alignas(8) vector<vector<float> > sp_y;
+        alignas(8) vector<vector<int> > sp_ri;
+        alignas(8) vector<vector<int> > sp_gi;
+        alignas(8) vector<vector<int> > sp_bi;
+        alignas(8) vector<vector<float> > sp_distToBoundary;
+
+        /*!
+         * 64 bit aligned versions of sp_x, sp_y, etc.
+         */
+        //@{
+        alignas(8) vector<vector<double> > sp64_x;
+        alignas(8) vector<vector<double> > sp64_y;
+        alignas(8) vector<vector<long long int> > sp64_ri;
+        alignas(8) vector<vector<long long int> > sp64_gi;
+        alignas(8) vector<vector<long long int> > sp64_bi;
+        alignas(8) vector<vector<double> > sp64_distToBoundary;
+        //@}
+
+        /*!
+         * You might not think that the neighbour iterators were
+         * required here, because the whole point of the parallelogram
+         * shape is that the NW is rowlen-1 from origin, NE is rowlen
+         * from origin and so on. *However*, to compute for the hexes
+         * around the edge of a sub-parallelogram, we need to access
+         * the neighbours in the d_ vectors surrounding the
+         * sub-parallelogram. So, where the value sp_d_ne is -1, then
+         * the neighbour east is found by 'parallelogram stride
+         * rules', If sp_d_ne is some number, such as 239, then the
+         * neighour east is in a d_ vector element [239] or another
+         * sp_ vector (i.e. a vector of a different parallelogram). In
+         * htese cases, the number vector into which to index is found
+         * in sp_d_v_ variables.
+         */
+        //@{
+        alignas(8) vector<vector<int> > sp_ne;
+        alignas(8) vector<vector<int> > sp_nne;
+        alignas(8) vector<vector<int> > sp_nnw;
+        alignas(8) vector<vector<int> > sp_nw;
+        alignas(8) vector<vector<int> > sp_nsw;
+        alignas(8) vector<vector<int> > sp_nse;
+
+        alignas(8) vector<vector<int> > sp_v_ne;
+        alignas(8) vector<vector<int> > sp_v_nne;
+        alignas(8) vector<vector<int> > sp_v_nnw;
+        alignas(8) vector<vector<int> > sp_v_nw;
+        alignas(8) vector<vector<int> > sp_v_nsw;
+        alignas(8) vector<vector<int> > sp_v_nse;
+
+        alignas(8) vector<vector<long long int> > sp64_ne;
+        alignas(8) vector<vector<long long int> > sp64_nne;
+        alignas(8) vector<vector<long long int> > sp64_nnw;
+        alignas(8) vector<vector<long long int> > sp64_nw;
+        alignas(8) vector<vector<long long int> > sp64_nsw;
+        alignas(8) vector<vector<long long int> > sp64_nse;
+
+        alignas(8) vector<vector<long long int> > sp64_v_ne;
+        alignas(8) vector<vector<long long int> > sp64_v_nne;
+        alignas(8) vector<vector<long long int> > sp64_v_nnw;
+        alignas(8) vector<vector<long long int> > sp64_v_nw;
+        alignas(8) vector<vector<long long int> > sp64_v_nsw;
+        alignas(8) vector<vector<long long int> > sp64_v_nse;
+        //@}
+
+        /*!
+         * Flags, such as "on boundary", "inside boundary", "outside
+         * boundary", "has neighbour east", etc.
+         */
+        alignas(8) vector<vector<unsigned int> > sp_flags;
+        alignas(8) vector<vector<unsigned long long int> > sp64_flags;
+
+        /*!
+         * The length of a row for each sub-parallelogram vector in sp_x.
+         */
+        alignas(8) vector<unsigned int> sp_rowlens;
+
+        /*!
+         * The number of rows in each sub-parallelogram
+         */
+        alignas(8) vector<unsigned int> sp_numrows;
+
+        /*!
+         * The number of hexes in each sub-parallelogram
+         */
+        alignas(8) vector<unsigned int> sp_veclen;
+
+        /*!
+         * Fill with the number of sub-parallelograms
+         */
+        alignas(8) unsigned int sp_numvecs = 0;
+
+        /*!
+         * Allocate the sub-parallelograms
+         */
+        void allocateSubPgrams (void);
+
+        /*!
+         * Add entries to all the sp_ vectors for the Hex pointed to
+         * by hi.
+         */
+        void sp_push_back (list<Hex>::iterator hi);
+
+        /*!
+         * Once Hex::di attributes have been set, populate d_nne and
+         * friends and sp_nne and friends.
+         */
+        void populate_sp_d_neighbours (void);
+
         //@}
 
         /*!

@@ -47,6 +47,8 @@ using std::endl;
 #define HEX_INSIDE_BOUNDARY  0x80
 // All hexes inside the domain of computation:
 #define HEX_INSIDE_DOMAIN   0x100
+// Hex has been allocated to a sub-parallelogram region:
+#define HEX_SUBP_ALLOCATED  0x200
 //@}
 
 namespace morph {
@@ -226,9 +228,16 @@ namespace morph {
         unsigned int vi;
 
         /*!
-         * Index into the d_ vectors in HexGrid. Used to populate
-         * HexGrid::d_nne, HexGrid::d_nnw, HexGrid::d_nsw and
-         * HexGrid::d_nse.
+         * Index into the d_ vectors or the sp_ vectors in
+         * HexGrid. Used to populate HexGrid::d_nne, HexGrid::d_nnw,
+         * HexGrid::d_nsw and HexGrid::d_nse, also HexGrid::sp_nne
+         * etc.
+         *
+         * The actual vector into which this indexes is given by
+         * allocatedSubp. If allocatedSubp is -1, then this indexes
+         * into the d_ vectors in the HexGrid object to which this Hex
+         * belongs. If it is 0 or higher, then the vectors into which
+         * di indexes are sp_*[allocatedSubp].
          */
         unsigned int di = 0;
 
@@ -370,6 +379,9 @@ namespace morph {
             if (has_nse == true) {
                 flgs |= HEX_HAS_NSE;
             }
+            if (allocatedSubp > -1) {
+                flgs |= HEX_SUBP_ALLOCATED;
+            }
 
             return flgs;
         }
@@ -392,6 +404,14 @@ namespace morph {
          * rectangular, parallelogram or hexagonal 'domain'.
          */
         bool insideDomain = false;
+
+        /*!
+         * Set >-1 if this hex has been allocated as being part of a
+         * sub-parallelogram within the wider, arbitrarily-shaped
+         * boundary. The actual number is the index of the
+         * subparallelogram to which the hex has been allocated.
+         */
+        int allocatedSubp = -1;
 
         /*!
          * This can be populated with the distance to the nearest
