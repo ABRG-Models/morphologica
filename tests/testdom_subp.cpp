@@ -14,9 +14,9 @@ int main()
     int rtn = 0;
     try {
         string pwd = morph::Tools::getPwd();
-        string curvepath = "../tests/pgrammy.svg";
+        string curvepath = "../tests/pgrammy2.svg";
         if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/pgrammy.svg";
+            curvepath = "../../tests/pgrammy2.svg";
         }
         morph::ReadCurves r(curvepath);
 
@@ -25,6 +25,9 @@ int main()
 
         cout << hg.extent() << endl;
         cout << "Number of hexes in grid:" << hg.num() << endl;
+        cout << "Number of hexes in d_vecs:" << hg.d_x.size() << endl;
+        cout << "sp_vec[0] rowlen/numrows: " << hg.sp_rowlens[0] <<"/"<< hg.sp_numrows[0] << endl;
+        cout << "Number of hexes in sp_vecs:" << hg.sp_veclen[0] << " or " << hg.sp_x[0].size()<< " or " << hg.sp_y[0].size() << " or " << hg.sp_ri[0].size() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
         if (hg.num() != 8123) {
