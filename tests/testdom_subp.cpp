@@ -30,7 +30,7 @@ int main()
         cout << "Number of hexes in sp_vecs:" << hg.sp_veclen[0] << " or " << hg.sp_x[0].size()<< " or " << hg.sp_y[0].size() << " or " << hg.sp_ri[0].size() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 8123) {
+        if (hg.num() != 9539) {
             rtn = -1;
         }
 
@@ -86,7 +86,7 @@ int main()
         disp.drawHex (pos, 0.05, cl_aa);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 400;
+        unsigned int sleep_seconds = 1;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second

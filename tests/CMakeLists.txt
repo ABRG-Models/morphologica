@@ -75,7 +75,7 @@ add_test(testdom_bound testdom_bound)
 # Test boundary sub-parallelograms
 add_executable(testdom_subp testdom_subp.cpp)
 target_link_libraries(testdom_subp morphologica)
-add_test(testdom_bound testdom_subp)
+add_test(testdom_subp testdom_subp)
 
 # Test distance to boundary
 add_executable(testhexbounddist testhexbounddist.cpp)

@@ -93,5 +93,6 @@ int main()
         rtn = -1;
     }
 
+    cerr << "Return " << rtn << endl;
     return rtn;
 }
