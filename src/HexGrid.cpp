@@ -433,7 +433,6 @@ morph::HexGrid::allocateSubPgrams (void)
     DBG ("Done. set h->allocatedSubp for " << nsubpalloc << " hexes");
 }
 
-//#define DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY 1
 void
 morph::HexGrid::setBoundary (const BezCurvePath& p)
 {
@@ -448,21 +447,15 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
 
         this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
         DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
-
-#ifdef DONT_OFFSET_CENTROID_BEFORE_SETTING_BOUNDARY
-        list<Hex>::iterator nearbyBoundaryPoint = this->findHexNearest (this->boundaryCentroid);
-        DBG ("Hex near boundary centroid at x,y: " << nearbyBoundaryPoint->x << "," << nearbyBoundaryPoint->y);
-        auto bpi = bpoints.begin();
-#else // Offset BezCoords of the boundary BezCurvePath by its centroid, to make the centroid 0,0.
         auto bpi = bpoints.begin();
         while (bpi != bpoints.end()) {
             bpi->subtract (this->boundaryCentroid);
             ++bpi;
         }
         this->boundaryCentroid = make_pair (0.0, 0.0);
+
         list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
         bpi = bpoints.begin();
-#endif
         while (bpi != bpoints.end()) {
             nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
             DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
