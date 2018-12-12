@@ -120,7 +120,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         throw runtime_error ("Found a <path> element without a d attribute");
     }
 
-    DBG ("Path commands for layer " << layerName << ": " << d);
+    DBG2 ("Path commands for layer " << layerName << ": " << d);
 
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
@@ -145,7 +145,7 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
         if (p1 != p0) {
             stringstream ss;
             ss << s.substr(p0, p1-p0);
-            DBG ("ss.str(): " << ss.str() << " length " << ss.str().size());
+            DBG2 ("ss.str(): " << ss.str() << " length " << ss.str().size());
             string ccs = ss.str();
             if (Tools::containsOnlyWhitespace (ccs)) {
                 // Do nothing
@@ -171,10 +171,10 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
 
     if (p1 == string::npos) {
         // No minus signs. Attempt to convert s into a single float and return
-        DBG("Doing one more...");
+        DBG2 ("Doing one more...");
         stringstream ss;
         ss << s.substr (p0, p1-p0);
-        DBG ("Last one: ss.str(): " << ss.str());
+        DBG2 ("Last one: ss.str(): " << ss.str());
         ss >> n;
         numbers.push_back (n);
         ++numnum;
@@ -411,7 +411,7 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     }
 
     // Now do something with x1,y1,x2,y2
-    DBG ("line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")");
+    DBG2 ("line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")");
 
     // Compute the length of the line in the SVG coordinate system
     float dx = atof (x2.c_str()) - atof (x1.c_str());
