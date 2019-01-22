@@ -112,6 +112,13 @@ namespace morph
          */
         static float randSingle (void);
 
+        /*!
+         * Return a random floating point number with type F, where F
+         * is expected to be either float or double.
+         */
+        template<typename F>
+        static F randF (void);
+
         static double normalDistributionValue (void);
 
         static double wrapAngle(double);
@@ -644,6 +651,16 @@ namespace morph
     }; // class Tools
 
 } // morph namespace
+
+/*!
+ * Templated random number function.
+ */
+template <typename F>
+F
+morph::Tools::randF (void)
+{
+    return static_cast<F>(rand()) / static_cast<F>(RAND_MAX);
+}
 
 /*!
  * Templated function splitStringWithEncs implementation.

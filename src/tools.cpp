@@ -132,14 +132,6 @@ morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
     return rgb;
 }
 
-#if 0 // This was confusingly named to return a double, rather than a float.
-double
-morph::Tools::randFloat(void)
-{
-    return ((double) rand())/(double)RAND_MAX;
-}
-#endif
-
 double
 morph::Tools::randDouble (void)
 {
