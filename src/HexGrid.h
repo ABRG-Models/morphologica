@@ -380,6 +380,19 @@ namespace morph {
          */
         void setBoundary (const BezCurvePath& p);
 
+        //private:
+        void setBoundary (vector<BezCoord>& bpoints);
+
+        vector<BezCoord> ellipseCompute (const float a, const float b);
+
+        float ellipsePerimeter (const float a, const float b);
+
+        /*!
+         * Set the boundary to be an ellipse with the given focii
+         * parameters a and b.
+         */
+        void setEllipticalBoundary (const float a, const float b);
+
         /*!
          * \brief Accessor for the size of hexen.
          *

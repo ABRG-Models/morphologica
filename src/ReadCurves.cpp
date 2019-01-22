@@ -96,6 +96,8 @@ morph::ReadCurves::readG (xml_node<>* g_node)
     for (xml_node<>* path_node = g_node->first_node("path");
          path_node;
          path_node = path_node->next_sibling("path")) {
+        // Fixme: Handle >1 paths. But this SHOULD be doing that...
+        DBG ("Read path...");
         this->readPath (path_node, g_id);
     }
 
@@ -120,7 +122,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         throw runtime_error ("Found a <path> element without a d attribute");
     }
 
-    DBG2 ("Path commands for layer " << layerName << ": " << d);
+    DBG ("Path commands for layer " << layerName << ": " << d);
 
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;

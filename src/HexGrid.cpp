@@ -433,6 +433,51 @@ morph::HexGrid::allocateSubPgrams (void)
     DBG ("Done. set h->allocatedSubp for " << nsubpalloc << " hexes");
 }
 
+float
+morph::HexGrid::ellipsePerimeter (const float a, const float b)
+{
+    double apb = (double)a+b;
+    double amb = (double)a-b;
+    double h = amb * amb / (apb * apb);
+    // Compute approximation to the ellipses perimeter (7 terms)
+    double sum = 1.0
+        + (0.25)      * h
+        + (1.0/64.0)  * h * h
+        + (1.0/256.0) * h * h * h
+        + (25.0/16384.0) * h * h * h * h
+        + (49.0/65536.0) * h * h * h * h * h
+        + (441.0/1048576.0) * h * h * h * h * h * h;
+    double p = M_PI * apb * sum;
+
+    return (float)p;
+}
+
+vector<BezCoord>
+morph::HexGrid::ellipseCompute (const float a, const float b)
+{
+    vector<BezCoord> bpoints;
+    // Determine perimeter of the ellipse
+    float perim = this->ellipsePerimeter (a, b);
+    DBG ("Perimeter length is " << perim);
+
+    // FIXME: Fill bpoints with a point every h/2
+    float spacing = this->d/2.0f;
+    int number = (int)ceilf(perim/spacing);
+    DBG ("That means " << number << " points along the ellipse");
+
+    return bpoints;
+}
+
+void
+morph::HexGrid::setEllipticalBoundary (const float a, const float b)
+{
+    DBG ("Applying elliptical boundary...");
+    // Compute the points on the boundary using half of the hex to
+    // hex spacing as the step size.
+    vector<BezCoord> bpoints = ellipseCompute (a, b);
+    this->setBoundary (bpoints);
+}
+
 void
 morph::HexGrid::setBoundary (const BezCurvePath& p)
 {
@@ -444,77 +489,84 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
         // Compute the points on the boundary using half of the hex to
         // hex spacing as the step size.
         vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true); // true to invert y axis
+        this->setBoundary (bpoints);
+    }
+}
 
-        this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
-        DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
-        auto bpi = bpoints.begin();
-        while (bpi != bpoints.end()) {
-            bpi->subtract (this->boundaryCentroid);
-            ++bpi;
+void
+morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
+{
+    this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
+    DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
+    auto bpi = bpoints.begin();
+    while (bpi != bpoints.end()) {
+        bpi->subtract (this->boundaryCentroid);
+        ++bpi;
+    }
+    this->boundaryCentroid = make_pair (0.0, 0.0);
+
+    list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
+    bpi = bpoints.begin();
+    while (bpi != bpoints.end()) {
+        nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
+        DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
+    }
+
+    // Check that the boundary is contiguous.
+    {
+        set<unsigned int> seen;
+        list<Hex>::iterator hi = nearbyBoundaryPoint;
+        if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
+            stringstream ee;
+            //ee << "The boundary which was constructed from "
+            //<< p.name << " is not a contiguous sequence of hexes.";
+            ee << "The constructed boundary "
+               << "is not a contiguous sequence of hexes.";
+            throw runtime_error (ee.str());
         }
-        this->boundaryCentroid = make_pair (0.0, 0.0);
+    }
 
-        list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
-        bpi = bpoints.begin();
-        while (bpi != bpoints.end()) {
-            nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
-            DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
-        }
+    if (this->domainShape == morph::HexDomainShape::Boundary
+        || this->domainShape == morph::HexDomainShape::SubParallelograms) {
 
-        // Check that the boundary is contiguous.
-        {
-            set<unsigned int> seen;
-            list<Hex>::iterator hi = nearbyBoundaryPoint;
-            if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
-                stringstream ee;
-                ee << "The boundary which was constructed from "
-                   << p.name << " is not a contiguous sequence of hexes.";
-                throw runtime_error (ee.str());
-            }
-        }
+        this->discardOutsideBoundary();
 
-        if (this->domainShape == morph::HexDomainShape::Boundary
-            || this->domainShape == morph::HexDomainShape::SubParallelograms) {
+        if (this->domainShape == morph::HexDomainShape::SubParallelograms) {
+            // Do something. Populate sp_vectors Are these now
+            // vectors of vectors? THEN populate d_ vectors with
+            // the remaining hexes.
+            this->allocateSubPgrams();
 
-            this->discardOutsideBoundary();
-
-            if (this->domainShape == morph::HexDomainShape::SubParallelograms) {
-                // Do something. Populate sp_vectors Are these now
-                // vectors of vectors? THEN populate d_ vectors with
-                // the remaining hexes.
-                this->allocateSubPgrams();
-
-                // Now populate the d_ vectors
-                list<Hex>::iterator hi = this->hexen.begin();
-                while (hi != this->hexen.end()) {
-                    if (hi->allocatedSubp == -1) {
-                        this->d_push_back (hi);
-                    }
-                    hi++;
-                }
-
-                this->populate_sp_d_neighbours();
-
-            } else {
-                // Now populate the d_ vectors
-                list<Hex>::iterator hi = this->hexen.begin();
-                while (hi != this->hexen.end()) {
+            // Now populate the d_ vectors
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->allocatedSubp == -1) {
                     this->d_push_back (hi);
-                    hi++;
                 }
-                this->populate_d_neighbours();
+                hi++;
             }
+
+            this->populate_sp_d_neighbours();
 
         } else {
-            // Given that the boundary IS contiguous, can now set a
-            // domain of hexes (rectangular, parallelogram or
-            // hexagonal region, such that computations can be
-            // efficient) and discard hexes outside the domain.
-            // setDomain() will define a regular domain, then discard
-            // those hexes outside the regular domain and populate all
-            // the d_ vectors.
-            this->setDomain();
+            // Now populate the d_ vectors
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                this->d_push_back (hi);
+                hi++;
+            }
+            this->populate_d_neighbours();
         }
+
+    } else {
+        // Given that the boundary IS contiguous, can now set a
+        // domain of hexes (rectangular, parallelogram or
+        // hexagonal region, such that computations can be
+        // efficient) and discard hexes outside the domain.
+        // setDomain() will define a regular domain, then discard
+        // those hexes outside the regular domain and populate all
+        // the d_ vectors.
+        this->setDomain();
     }
 }
 

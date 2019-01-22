@@ -13,21 +13,14 @@ int main()
 {
     int rtn = 0;
     try {
-        string pwd = morph::Tools::getPwd();
-        string curvepath = "../tests/ellipse.svg";
-        if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/ellipse.svg";
-        }
-        morph::ReadCurves r(curvepath);
-
         morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
-        hg.setBoundary (r.getCorticalPath());
+        hg.setEllipticalBoundary (2, 3);
 
         cout << hg.extent() << endl;
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 8123) {
+        if (hg.num() != 14535) {
             rtn = -1;
         }
 
@@ -35,7 +28,7 @@ int main()
         vector<double> eye(3, 0.0);
         vector<double> rot(3, 0.0);
         double rhoInit = 1.7;
-        morph::Gdisplay disp(960, 700, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
+        morph::Gdisplay disp(960, 700, 0, 0, "Elliptical boundary", rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
         disp.redrawDisplay();
 
@@ -93,6 +86,5 @@ int main()
         rtn = -1;
     }
 
-    cerr << "Return " << rtn << endl;
     return rtn;
 }
