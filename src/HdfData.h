@@ -31,6 +31,12 @@ namespace morph {
          */
         bool read_mode = false;
 
+        /*!
+         * If there's an error in status, output a context (given by
+         * emsg) sensible message and throw an exception.
+         */
+        void handle_error (const herr_t& status, const string& emsg);
+
     public:
         /*!
          * Construct, creating open file_id. If read_data is
@@ -48,12 +54,14 @@ namespace morph {
         //@{
 
         /*!
-         * Read the data at path into vals.
+         * Read the data at path into the container vals. Templating
+         * worthwhile because of number of possible overloads? Quite
+         * possibly.
          */
-        template <typename F>
-        void read_fpoint_vector (const char* path, vector<F>& vals);
+        void read_contained_vals (const char* path, vector<double>& vals);
+        void read_contained_vals (const char* path, vector<float>& vals);
 
-        // WRITEME: Add read_double, read_float and read_float_vector.
+        // WRITEME: Add the rest of the functions required.
 
         //@} // reading methods
 
@@ -63,156 +71,49 @@ namespace morph {
         //@{
 
         /*!
-         * Makes necessary calls to add a double to an HDF5 file store,
-         * using path as the name of the variable. Path could be /myvar or
-         * /somegroup/myvar, though I think you'd have to have created the
-         * group for the latter.
+         * Makes necessary calls to add a double or float (or integer
+         * types if the overloads are added) to an HDF5 file store,
+         * using path as the name of the variable. Path could be
+         * /myvar or /somegroup/myvar, though I think you'd have to
+         * have created the group for the latter. I don't think
+         * templating is worthwhile for these functions.
          */
-        template <typename F>
-        void add_fpoint (const char* path, const double& val);
+        //@{
+        void add_val (const char* path, const double& val);
+        void add_val (const char* path, const float& val);
+        //@}
 
         /*!
-         * Makes necessary calls to add a vector of floating point
-         * values to an HDF5 file store, using path as the name of the
-         * variable.
+         * Makes necessary calls to add a container of values to an
+         * HDF5 file store, using path as the name of the
+         * variable. This might be a candidate for templating, where
+         * it wasn't worth it for add_val(), because of the
+         * possibility of vectors, lists, sets, deques etc, of floats,
+         * doubles, integers, unsigned integers, etc. However, I can't
+         * see the solution to the problem of the specialisation
+         * required in just one line of each function, so it may be
+         * that may overloaded copies of these functions is still the
+         * best solution. It also compiles to linkable, unchanging
+         * code in libmorphologica, rather than being header-only,
          */
-        template <typename F>
-        void add_fpoint_vector (const char* path, const vector<F>& vals);
+        //@{
+        void add_contained_vals (const char* path, const vector<double>& vals);
+        void add_contained_vals (const char* path, const vector<float>& vals);
+        //@}
 
         /*!
-         * Add nvals floating point values from the F* array vals.
+         * Add nvals values from the pointer vals.
+         * was add_double_star
          */
-        template <typename F>
-        void add_fpoint_star (const char* path, F*& vals, const unsigned int nvals);
+        //@{
+        void add_ptrarray_vals (const char* path, double*& vals, const unsigned int nvals);
+        void add_ptrarray_vals (const char* path, float*& vals, const unsigned int nvals);
+        //@}
 
         //@} // writing methods
 
     }; // class hdf5
 
 } // namespace morph
-
-// THIS is where I will DEFINITELY need template/function specialization
-template <typename F>
-void
-morph::HdfData::read_fpoint_vector (const char* path, vector<F>& vals)
-{
-    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
-
-    // Get number of elements in the dataset at path, and resize vals
-    // so it's ready to receive the data.
-    hid_t space_id = H5Dget_space (dataset_id);
-    hsize_t dims[1] = {0};
-    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
-    if (ndims != 1) {
-        stringstream ee;
-        ee << "Error. Expected 1D data to be stored in " << path;
-        throw runtime_error (ee.str());
-    }
-    vals.resize (dims[0], 0.0);
-
-    // E.g HERE will need specialisation...
-    herr_t status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dread: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Dclose (dataset_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dclose: " << status;
-        throw runtime_error (ee.str());
-    }
-}
-
-template <typename F>
-void
-morph::HdfData::add_fpoint (const char* path, const F& val)
-{
-    hsize_t dim_singleparam[1];
-    dim_singleparam[0] = 1;
-    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-    // NB: Always use H5T_IEEE_F64LE to save the data in the file, so this line doesn't need specialisation:
-    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    // This lines needs specialisation
-    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dwrite: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Dclose (dataset_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dclose: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Sclose (dataspace_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Sclose: " << status;
-        throw runtime_error (ee.str());
-    }
-}
-
-template <typename F>
-void
-morph::HdfData::add_fpoint_star (const char* path, F*& vals, const unsigned int nvals)
-{
-    hsize_t dim_singleparam[1];
-    herr_t status;
-    dim_singleparam[0] = nvals;
-    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    // Specialise this line in some way:
-    status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dwrite: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Dclose (dataset_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dclose: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Sclose (dataspace_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Sclose: " << status;
-        throw runtime_error (ee.str());
-    }
-}
-
-template <typename F>
-void
-morph::HdfData::add_fpoint_vector (const char* path, const vector<F>& vals)
-{
-    hsize_t dim_singleparam[1];
-    herr_t status;
-    dim_singleparam[0] = vals.size();
-    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    // Specialise this line:
-    status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dwrite: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Dclose (dataset_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Dclose: " << status;
-        throw runtime_error (ee.str());
-    }
-    status = H5Sclose (dataspace_id);
-    if (status) {
-        stringstream ee;
-        ee << "Error. status after H5Sclose: " << status;
-        throw runtime_error (ee.str());
-    }
-}
 
 #endif // _HDFDATA_H_
