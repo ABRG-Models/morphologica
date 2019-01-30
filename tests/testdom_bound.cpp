@@ -14,9 +14,9 @@ int main()
     int rtn = 0;
     try {
         string pwd = morph::Tools::getPwd();
-        string curvepath = "../tests/ellipse.svg";
+        string curvepath = "../tests/trial.svg";
         if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/ellipse.svg";
+            curvepath = "../../tests/trial.svg";
         }
         morph::ReadCurves r(curvepath);
 
@@ -27,7 +27,9 @@ int main()
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 8123) {
+        unsigned int correctNum = 6286;
+        if (hg.num() != correctNum) {
+            cout << "hg.num() == " << hg.num() << " which is not " << correctNum << endl;
             rtn = -1;
         }
 

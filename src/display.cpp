@@ -38,36 +38,39 @@ void
 morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeight,
                                unsigned int x, unsigned int y, const char* title, XID firstWindow)
 {
-   GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-    disp = XOpenDisplay(NULL);
-    if (disp == NULL) {
-        printf("\n\tcannot connect to X server\n\n");
+    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+    this->disp = XOpenDisplay (NULL);
+    if (this->disp == NULL) {
+        printf ("\n\tcannot connect to X server\n\n");
         throw runtime_error ("Gdisplay: Cannot connect to X server");
     }
-    root = DefaultRootWindow(disp);
-    vi = glXChooseVisual(disp, 0, att);
-    if (vi == NULL) {
-        printf("\n\tno appropriate visual found\n\n");
+    this->root = DefaultRootWindow (this->disp);
+    this->vi = glXChooseVisual (this->disp, 0, att);
+    if (this->vi == NULL) {
+        printf ("\n\tno appropriate visual found\n\n");
         throw runtime_error ("Gdisplay: No appropriate visual found");
     } else {
-        printf("\n\tvisual %p selected\n", (void *)vi->visualid);
+        printf ("\n\tvisual %p selected\n", (void *)vi->visualid);
     }
+    this->winWidth = windowWidth;
+    this->winHeight = windowHeight;
     this->x_aspect_ratio = (GLfloat)windowWidth / (GLfloat)windowHeight;
-    cmap = XCreateColormap(disp, root, vi->visual, AllocNone);
-    swa.colormap = cmap;
-    swa.event_mask = ExposureMask | KeyPressMask;
-    win = XCreateWindow(disp, root, x, y, windowWidth, windowHeight, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+    this->cmap = XCreateColormap (this->disp, this->root, this->vi->visual, AllocNone);
+    this->swa.colormap = this->cmap;
+    this->swa.event_mask = ExposureMask | KeyPressMask;
+    this->win = XCreateWindow (this->disp, this->root, x, y, windowWidth, windowHeight, 0,
+                               this->vi->depth, InputOutput, this->vi->visual, CWColormap | CWEventMask, &this->swa);
 
-    glc = glXCreateContext(disp, vi, NULL, GL_TRUE);
-    XMapWindow(disp, win);
-    XStoreName(disp, win, (char*) title);
+    glc = glXCreateContext (this->disp, vi, NULL, GL_TRUE);
+    XMapWindow (this->disp, this->win);
+    XStoreName (this->disp, this->win, (char*)title);
 
     // Setting the class hint, as well as the window title ensures
     // Gnome 3 (and presumably some other window managers) will
     // display the window name in the icon list.
     this->classHints = XAllocClassHint();
-    this->classHints->res_class = (char*) title;
-    XSetClassHint (disp, win, this->classHints);
+    this->classHints->res_class = (char*)title;
+    XSetClassHint (this->disp, this->win, this->classHints);
 
     // Similarly for Window Manager Hints. Using the group here, but
     // could also set an icon.
@@ -75,7 +78,7 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
         this->wmHints = XAllocWMHints();
         this->wmHints->flags = WindowGroupHint;
         this->wmHints->window_group = firstWindow;
-        XSetWMHints (disp, win, this->wmHints);
+        XSetWMHints (this->disp, this->win, this->wmHints);
     }
 }
 
@@ -201,10 +204,10 @@ morph::Gdisplay::resetDisplay (std::vector<double> fix, std::vector<double> eye,
 void
 morph::Gdisplay::redrawDisplay()
 {
-    glXMakeCurrent (disp, win, glc);
-    XGetWindowAttributes (disp, win, &gwa);
-    glViewport (0, 0, gwa.width, gwa.height);
-    glXSwapBuffers (disp, win);
+    glXMakeCurrent (this->disp, this->win, this->glc);
+    XGetWindowAttributes (this->disp, this->win, &this->gwa);
+    glViewport (0, 0, this->gwa.width, this->gwa.height);
+    glXSwapBuffers (this->disp, this->win);
 }
 
 void
