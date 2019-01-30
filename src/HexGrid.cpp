@@ -364,26 +364,6 @@ morph::HexGrid::allocateSubPgrams (void)
     this->sp_v_nse.resize(1);
     this->sp_flags.resize(1);
 
-    this->sp64_x.resize(1);
-    this->sp64_y.resize(1);
-    this->sp64_ri.resize(1);
-    this->sp64_gi.resize(1);
-    this->sp64_bi.resize(1);
-    this->sp64_distToBoundary.resize(1);
-    this->sp64_ne.resize(1);
-    this->sp64_nne.resize(1);
-    this->sp64_nnw.resize(1);
-    this->sp64_nw.resize(1);
-    this->sp64_nsw.resize(1);
-    this->sp64_nse.resize(1);
-    this->sp64_v_ne.resize(1);
-    this->sp64_v_nne.resize(1);
-    this->sp64_v_nnw.resize(1);
-    this->sp64_v_nw.resize(1);
-    this->sp64_v_nsw.resize(1);
-    this->sp64_v_nse.resize(1);
-    this->sp64_flags.resize(1);
-
     this->sp_rowlens.resize(1);
     this->sp_numrows.resize(1);
     this->sp_veclen.resize(1);
@@ -989,13 +969,6 @@ morph::HexGrid::d_clear (void)
     this->d_gi.clear();
     this->d_bi.clear();
     this->d_flags.clear();
-
-    this->d64_x.clear();
-    this->d64_y.clear();
-    this->d64_ri.clear();
-    this->d64_gi.clear();
-    this->d64_bi.clear();
-    this->d64_flags.clear();
 }
 
 void
@@ -1011,14 +984,6 @@ morph::HexGrid::sp_push_back (list<Hex>::iterator hi)
     this->sp_flags[subpIdx].push_back (hi->getFlags());
     this->sp_distToBoundary[subpIdx].push_back (hi->distToBoundary);
 
-    this->sp64_x[subpIdx].push_back (hi->x);
-    this->sp64_y[subpIdx].push_back (hi->y);
-    this->sp64_ri[subpIdx].push_back (hi->ri);
-    this->sp64_gi[subpIdx].push_back (hi->gi);
-    this->sp64_bi[subpIdx].push_back (hi->bi);
-    this->sp64_flags[subpIdx].push_back (hi->getFlags());
-    this->sp64_distToBoundary[subpIdx].push_back (hi->distToBoundary);
-
     // record in the Hex the iterator in the sp_ vectors so that d_nne
     // and friends can be set up later.
     hi->di = sp_x[subpIdx].size()-1;
@@ -1033,14 +998,6 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     d_bi.push_back (hi->bi);
     d_flags.push_back (hi->getFlags());
     d_distToBoundary.push_back (hi->distToBoundary);
-
-    d64_x.push_back (hi->x);
-    d64_y.push_back (hi->y);
-    d64_ri.push_back (hi->ri);
-    d64_gi.push_back (hi->gi);
-    d64_bi.push_back (hi->bi);
-    d64_flags.push_back (hi->getFlags());
-    d64_distToBoundary.push_back (hi->distToBoundary);
 
     // record in the Hex the iterator in the d_ vectors so that d_nne
     // and friends can be set up later.
@@ -1069,20 +1026,6 @@ morph::HexGrid::populate_d_neighbours (void)
     this->d_v_nsw.resize (this->d_x.size(), 0);
     this->d_v_nse.resize (this->d_x.size(), 0);
 
-    this->d64_nne.resize (this->d_x.size(), 0);
-    this->d64_ne.resize (this->d_x.size(), 0);
-    this->d64_nnw.resize (this->d_x.size(), 0);
-    this->d64_nw.resize (this->d_x.size(), 0);
-    this->d64_nsw.resize (this->d_x.size(), 0);
-    this->d64_nse.resize (this->d_x.size(), 0);
-
-    this->d64_v_nne.resize (this->d_x.size(), 0);
-    this->d64_v_ne.resize (this->d_x.size(), 0);
-    this->d64_v_nnw.resize (this->d_x.size(), 0);
-    this->d64_v_nw.resize (this->d_x.size(), 0);
-    this->d64_v_nsw.resize (this->d_x.size(), 0);
-    this->d64_v_nse.resize (this->d_x.size(), 0);
-
     list<Hex>::iterator hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
 
@@ -1095,54 +1038,41 @@ morph::HexGrid::populate_d_neighbours (void)
         this->d_v_nsw[hi->di] = -1;
         this->d_v_nse[hi->di] = -1;
 
-        this->d64_v_ne[hi->di] = -1;
-        this->d64_v_nne[hi->di] = -1;
-        this->d64_v_nnw[hi->di] = -1;
-        this->d64_v_nw[hi->di] = -1;
-        this->d64_v_nsw[hi->di] = -1;
-        this->d64_v_nse[hi->di] = -1;
-
         if (hi->has_ne == true) {
             this->d_ne[hi->di] = hi->ne->di;
         } else {
             this->d_ne[hi->di] = -1;
         }
-        this->d64_ne[hi->di] = this->d_ne[hi->di];
 
         if (hi->has_nne == true) {
             this->d_nne[hi->di] = hi->nne->di;
         } else {
             this->d_nne[hi->di] = -1;
         }
-        this->d64_nne[hi->di] = this->d_nne[hi->di];
 
         if (hi->has_nnw == true) {
             this->d_nnw[hi->di] = hi->nnw->di;
         } else {
             this->d_nnw[hi->di] = -1;
         }
-        this->d64_nnw[hi->di] = this->d_nnw[hi->di];
 
         if (hi->has_nw == true) {
             this->d_nw[hi->di] = hi->nw->di;
         } else {
             this->d_nw[hi->di] = -1;
         }
-        this->d64_nw[hi->di] = this->d_nw[hi->di];
 
         if (hi->has_nsw == true) {
             this->d_nsw[hi->di] = hi->nsw->di;
         } else {
             this->d_nsw[hi->di] = -1;
         }
-        this->d64_nsw[hi->di] = this->d_nsw[hi->di];
 
         if (hi->has_nse == true) {
             this->d_nse[hi->di] = hi->nse->di;
         } else {
             this->d_nse[hi->di] = -1;
         }
-        this->d64_nse[hi->di] = this->d_nse[hi->di];
 
 #ifdef DEBUG
         //if (hi->di == 1075 || hi->di == 1076) {
@@ -1176,20 +1106,6 @@ morph::HexGrid::populate_sp_d_neighbours (void)
     this->d_v_nsw.resize (this->d_x.size(), -1);
     this->d_v_nse.resize (this->d_x.size(), -1);
 
-    this->d64_nne.resize (this->d_x.size(), 0);
-    this->d64_ne.resize (this->d_x.size(), 0);
-    this->d64_nnw.resize (this->d_x.size(), 0);
-    this->d64_nw.resize (this->d_x.size(), 0);
-    this->d64_nsw.resize (this->d_x.size(), 0);
-    this->d64_nse.resize (this->d_x.size(), 0);
-
-    this->d64_v_nne.resize (this->d_x.size(), -1);
-    this->d64_v_ne.resize (this->d_x.size(), -1);
-    this->d64_v_nnw.resize (this->d_x.size(), -1);
-    this->d64_v_nw.resize (this->d_x.size(), -1);
-    this->d64_v_nsw.resize (this->d_x.size(), -1);
-    this->d64_v_nse.resize (this->d_x.size(), -1);
-
     // Resize sp_nne and friends
     for (unsigned int vi = 0; vi < this->sp_x.size(); ++vi) {
         this->sp_nne[vi].resize (this->sp_x[vi].size(), 0);
@@ -1205,20 +1121,6 @@ morph::HexGrid::populate_sp_d_neighbours (void)
         this->sp_v_nw[vi].resize (this->sp_x[vi].size(), -1);
         this->sp_v_nsw[vi].resize (this->sp_x[vi].size(), -1);
         this->sp_v_nse[vi].resize (this->sp_x[vi].size(), -1);
-
-        this->sp64_nne[vi].resize (this->sp_x[vi].size(), 0);
-        this->sp64_ne[vi].resize (this->sp_x[vi].size(), 0);
-        this->sp64_nnw[vi].resize (this->sp_x[vi].size(), 0);
-        this->sp64_nw[vi].resize (this->sp_x[vi].size(), 0);
-        this->sp64_nsw[vi].resize (this->sp_x[vi].size(), 0);
-        this->sp64_nse[vi].resize (this->sp_x[vi].size(), 0);
-
-        this->sp64_v_nne[vi].resize (this->sp_x[vi].size(), -1);
-        this->sp64_v_ne[vi].resize (this->sp_x[vi].size(), -1);
-        this->sp64_v_nnw[vi].resize (this->sp_x[vi].size(), -1);
-        this->sp64_v_nw[vi].resize (this->sp_x[vi].size(), -1);
-        this->sp64_v_nsw[vi].resize (this->sp_x[vi].size(), -1);
-        this->sp64_v_nse[vi].resize (this->sp_x[vi].size(), -1);
     }
 
     list<Hex>::iterator hi = this->hexen.begin();
@@ -1228,25 +1130,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_ne[hi->di] = hi->ne->di;
                 this->d_v_ne[hi->di] = hi->ne->allocatedSubp;
-                this->d64_ne[hi->di] = static_cast<long long int>(hi->ne->di);
-                this->d64_v_ne[hi->di] = static_cast<long long int>(hi->ne->allocatedSubp);
             } else {
                 this->sp_ne[hi->allocatedSubp][hi->di] = hi->ne->di;
                 this->sp_v_ne[hi->allocatedSubp][hi->di] = hi->ne->allocatedSubp;
-                this->sp64_ne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->ne->di);
-                this->sp64_v_ne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->ne->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_ne[hi->di] = -1;
                 this->d_v_ne[hi->di] = -1;
-                this->d64_ne[hi->di] = -1;
-                this->d64_v_ne[hi->di] = -1;
             } else {
                 this->sp_ne[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_ne[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_ne[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_ne[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
@@ -1254,25 +1148,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_nne[hi->di] = hi->nne->di;
                 this->d_v_nne[hi->di] = hi->nne->allocatedSubp;
-                this->d64_nne[hi->di] = static_cast<long long int>(hi->nne->di);
-                this->d64_v_nne[hi->di] = static_cast<long long int>(hi->nne->allocatedSubp);
             } else {
                 this->sp_nne[hi->allocatedSubp][hi->di] = hi->nne->di;
                 this->sp_v_nne[hi->allocatedSubp][hi->di] = hi->nne->allocatedSubp;
-                this->sp64_nne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nne->di);
-                this->sp64_v_nne[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nne->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_nne[hi->di] = -1;
                 this->d_v_nne[hi->di] = -1;
-                this->d64_nne[hi->di] = -1;
-                this->d64_v_nne[hi->di] = -1;
             } else {
                 this->sp_nne[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_nne[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_nne[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_nne[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
@@ -1280,25 +1166,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_nnw[hi->di] = hi->nnw->di;
                 this->d_v_nnw[hi->di] = hi->nnw->allocatedSubp;
-                this->d64_nnw[hi->di] = static_cast<long long int>(hi->nnw->di);
-                this->d64_v_nnw[hi->di] = static_cast<long long int>(hi->nnw->allocatedSubp);
             } else {
                 this->sp_nnw[hi->allocatedSubp][hi->di] = hi->nnw->di;
                 this->sp_v_nnw[hi->allocatedSubp][hi->di] = hi->nnw->allocatedSubp;
-                this->sp64_nnw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nnw->di);
-                this->sp64_v_nnw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nnw->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_nnw[hi->di] = -1;
                 this->d_v_nnw[hi->di] = -1;
-                this->d64_nnw[hi->di] = -1;
-                this->d64_v_nnw[hi->di] = -1;
             } else {
                 this->sp_nnw[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_nnw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_nnw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_nnw[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
@@ -1306,25 +1184,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_nw[hi->di] = hi->nw->di;
                 this->d_v_nw[hi->di] = hi->nw->allocatedSubp;
-                this->d64_nw[hi->di] = static_cast<long long int>(hi->nw->di);
-                this->d64_v_nw[hi->di] = static_cast<long long int>(hi->nw->allocatedSubp);
             } else {
                 this->sp_nw[hi->allocatedSubp][hi->di] = hi->nw->di;
                 this->sp_v_nw[hi->allocatedSubp][hi->di] = hi->nw->allocatedSubp;
-                this->sp64_nw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nw->di);
-                this->sp64_v_nw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nw->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_nw[hi->di] = -1;
                 this->d_v_nw[hi->di] = -1;
-                this->d64_nw[hi->di] = -1;
-                this->d64_v_nw[hi->di] = -1;
             } else {
                 this->sp_nw[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_nw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_nw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_nw[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
@@ -1332,25 +1202,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_nsw[hi->di] = hi->nsw->di;
                 this->d_v_nsw[hi->di] = hi->nsw->allocatedSubp;
-                this->d64_nsw[hi->di] = static_cast<long long int>(hi->nsw->di);
-                this->d64_v_nsw[hi->di] = static_cast<long long int>(hi->nsw->allocatedSubp);
             } else {
                 this->sp_nsw[hi->allocatedSubp][hi->di] = hi->nsw->di;
                 this->sp_v_nsw[hi->allocatedSubp][hi->di] = hi->nsw->allocatedSubp;
-                this->sp64_nsw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nsw->di);
-                this->sp64_v_nsw[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nsw->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_nsw[hi->di] = -1;
                 this->d_v_nsw[hi->di] = -1;
-                this->d64_nsw[hi->di] = -1;
-                this->d64_v_nsw[hi->di] = -1;
             } else {
                 this->sp_nsw[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_nsw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_nsw[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_nsw[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
@@ -1358,25 +1220,17 @@ morph::HexGrid::populate_sp_d_neighbours (void)
             if (hi->allocatedSubp == -1) {
                 this->d_nse[hi->di] = hi->nse->di;
                 this->d_v_nse[hi->di] = hi->nse->allocatedSubp;
-                this->d64_nse[hi->di] = static_cast<long long int>(hi->nse->di);
-                this->d64_v_nse[hi->di] = static_cast<long long int>(hi->nse->allocatedSubp);
             } else {
                 this->sp_nse[hi->allocatedSubp][hi->di] = hi->nse->di;
                 this->sp_v_nse[hi->allocatedSubp][hi->di] = hi->nse->allocatedSubp;
-                this->sp64_nse[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nse->di);
-                this->sp64_v_nse[hi->allocatedSubp][hi->di] = static_cast<long long int>(hi->nse->allocatedSubp);
             }
         } else {
             if (hi->allocatedSubp == -1) {
                 this->d_nse[hi->di] = -1;
                 this->d_v_nse[hi->di] = -1;
-                this->d64_nse[hi->di] = -1;
-                this->d64_v_nse[hi->di] = -1;
             } else {
                 this->sp_nse[hi->allocatedSubp][hi->di] = -1;
                 this->sp_v_nse[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_nse[hi->allocatedSubp][hi->di] = -1;
-                this->sp64_v_nse[hi->allocatedSubp][hi->di] = -1;
             }
         }
 
