@@ -123,6 +123,7 @@ morph::HexGrid::offsetCentroid (void)
 }
 #endif
 
+#ifdef SUBP
 void
 morph::HexGrid::allocateSubPgrams (void)
 {
@@ -412,6 +413,7 @@ morph::HexGrid::allocateSubPgrams (void)
     }
     DBG ("Done. set h->allocatedSubp for " << nsubpalloc << " hexes");
 }
+#endif
 
 float
 morph::HexGrid::ellipsePerimeter (const float a, const float b)
@@ -507,10 +509,14 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
     }
 
     if (this->domainShape == morph::HexDomainShape::Boundary
-        || this->domainShape == morph::HexDomainShape::SubParallelograms) {
+#ifdef SUBP
+        || this->domainShape == morph::HexDomainShape::SubParallelograms
+#endif
+        ) {
 
         this->discardOutsideBoundary();
 
+#ifdef SUBP
         if (this->domainShape == morph::HexDomainShape::SubParallelograms) {
             // Do something. Populate sp_vectors Are these now
             // vectors of vectors? THEN populate d_ vectors with
@@ -529,6 +535,7 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
             this->populate_sp_d_neighbours();
 
         } else {
+#endif // SUBP
             // Now populate the d_ vectors
             list<Hex>::iterator hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
@@ -536,7 +543,9 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
                 hi++;
             }
             this->populate_d_neighbours();
+#ifdef SUBP
         }
+#endif // SUBP
 
     } else {
         // Given that the boundary IS contiguous, can now set a
@@ -971,6 +980,7 @@ morph::HexGrid::d_clear (void)
     this->d_flags.clear();
 }
 
+#ifdef SUBP
 void
 morph::HexGrid::sp_push_back (list<Hex>::iterator hi)
 {
@@ -988,6 +998,8 @@ morph::HexGrid::sp_push_back (list<Hex>::iterator hi)
     // and friends can be set up later.
     hi->di = sp_x[subpIdx].size()-1;
 }
+#endif // SUBP
+
 void
 morph::HexGrid::d_push_back (list<Hex>::iterator hi)
 {
@@ -1088,6 +1100,7 @@ morph::HexGrid::populate_d_neighbours (void)
     }
 }
 
+#ifdef SUBP
 void
 morph::HexGrid::populate_sp_d_neighbours (void)
 {
@@ -1237,6 +1250,7 @@ morph::HexGrid::populate_sp_d_neighbours (void)
         ++hi;
     }
 }
+#endif // SUBP
 
 void
 morph::HexGrid::setDomain (void)

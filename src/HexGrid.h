@@ -31,9 +31,11 @@ namespace morph {
         Rectangle,
         Parallelogram,
         Hexagon,
-        Boundary, // The shape of the arbitrary boundary set with HexGrid::setBoundary
-        SubParallelograms // Arbitrary boundary shape with data in a
-                          // set of sub-parallelograms, automatically determined.
+        Boundary // The shape of the arbitrary boundary set with HexGrid::setBoundary
+#ifdef SUBP
+        ,SubParallelograms // Arbitrary boundary shape with data in a
+                           // set of sub-parallelograms, automatically determined.
+#endif
     };
 
     const float SQRT_OF_3_OVER_2_F = 0.866025404;
@@ -175,6 +177,7 @@ namespace morph {
         void d_clear (void);
         //@}
 
+#ifdef SUBP
         /*!
          * Sub-parallelogram data containers
          *
@@ -273,6 +276,7 @@ namespace morph {
         void populate_sp_d_neighbours (void);
 
         //@}
+#endif // SUBP
 
         /*!
          * Default constructor
