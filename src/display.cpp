@@ -52,8 +52,6 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
     } else {
         printf ("\n\tvisual %p selected\n", (void *)vi->visualid);
     }
-    this->winWidth = windowWidth;
-    this->winHeight = windowHeight;
     this->x_aspect_ratio = (GLfloat)windowWidth / (GLfloat)windowHeight;
     this->cmap = XCreateColormap (this->disp, this->root, this->vi->visual, AllocNone);
     this->swa.colormap = this->cmap;
