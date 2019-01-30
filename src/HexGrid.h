@@ -68,7 +68,7 @@ namespace morph {
          *
          * Vectors containing the "domain" info extracted from the
          * list of Hexes. The "domain" is the set of Hexes left over
-         * after teh boundary has been applied and the outer Hexes
+         * after the boundary has been applied and the outer Hexes
          * have been reduced down to a regular, somewhat rectangular
          * set.
          *
@@ -78,9 +78,8 @@ namespace morph {
          * from top left to bottom right.
          */
         //@{
-        // NB: For these to be alignas(4) need to do some sort of packing.
-        alignas(8) vector<float> d_x;
-        alignas(8) vector<float> d_y;
+        alignas(alignof(vector<float>)) vector<float> d_x;
+        alignas(alignof(vector<float>)) vector<float> d_y;
         alignas(8) vector<int> d_ri;
         alignas(8) vector<int> d_gi;
         alignas(8) vector<int> d_bi;

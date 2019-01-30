@@ -1145,12 +1145,14 @@ morph::HexGrid::populate_d_neighbours (void)
         this->d64_nse[hi->di] = this->d_nse[hi->di];
 
 #ifdef DEBUG
-        if (hi->di == 1075 || hi->di == 1076) {
-            DBG("Hex in d_ vector position " << hi->di << " has NNE: " << this->d_nne[hi->di]
-                << ", NNW: " << this->d_nnw[hi->di]
-                << ", NSW: " << this->d_nsw[hi->di]
-                << ", NSE: " << this->d_nse[hi->di]);
-        }
+        //if (hi->di == 1075 || hi->di == 1076) {
+        DBG("d_[" << hi->di << "] has NNE: " << this->d_nne[hi->di]
+            << ", NNW: " << this->d_nnw[hi->di]
+            << ", NW: " << this->d_nw[hi->di]
+            << ", NSW: " << this->d_nsw[hi->di]
+            << ", NSE: " << this->d_nse[hi->di]
+            << ", NE: " << this->d_ne[hi->di]);
+        //}
 #endif
         ++hi;
     }
