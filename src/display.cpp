@@ -28,8 +28,8 @@ morph::Gdisplay::Gdisplay (unsigned int windowWidth, unsigned int windowHeight,
 
     this->speed = 5.*acos(-1.)/180.; // in degrees
     this->rho = rhoInit; // Stuart did have rhoInit+2.5, for some reason. I prefer to have client code pass in the initial rho with no modification made.
-    this->theta = (thetaInit + 0.5)*acos(-1.);
-    this->phi   = (phiInit + 0.00000001)*acos(-1.);
+    this->theta = (thetaInit + 0.5)*acos(-1.); // Why this? acos(-1) is pi. so , theta is rotated by pi/2
+    this->phi   = (phiInit + 0.00000001)*acos(-1.); // Phi is not rotated.
     alpha = 0.;
     Z = 1.;
 }
