@@ -1086,7 +1086,7 @@ morph::HexGrid::populate_d_neighbours (void)
             this->d_nse[hi->di] = -1;
         }
 
-#ifdef DEBUG
+#ifdef DEBUG__
         //if (hi->di == 1075 || hi->di == 1076) {
         DBG("d_[" << hi->di << "] has NNE: " << this->d_nne[hi->di]
             << ", NNW: " << this->d_nnw[hi->di]
