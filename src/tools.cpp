@@ -1973,3 +1973,448 @@ morph::Tools::filesDiffer (const string& first, const string& second)
     return (system (diffcmd.c_str()) != 0);
 }
 //@}
+
+/*!
+ * Implementation of date and time methods
+ */
+//@{
+unsigned int
+morph::Tools::yearNow (void)
+{
+    time_t curtime; // Current time
+    struct tm * t;
+    curtime = time(NULL);
+    t = localtime (&curtime);
+    unsigned int theYear = static_cast<unsigned int>(t->tm_year+1900);
+    return theYear;
+}
+
+unsigned int
+morph::Tools::monthNow (void)
+{
+    time_t curtime; // Current time
+    struct tm * t;
+    curtime = time(NULL);
+    t = localtime (&curtime);
+    unsigned int theMonth = static_cast<unsigned int>(t->tm_mon+1);
+    return theMonth;
+}
+
+unsigned int
+morph::Tools::dateNow (void)
+{
+    time_t curtime; // Current time
+    struct tm * t;
+    curtime = time(NULL);
+    t = localtime (&curtime);
+    unsigned int theDate = static_cast<unsigned int>(t->tm_mday);
+    return theDate;
+}
+
+string
+morph::Tools::monthStr (const int month, const bool shortFormat)
+{
+    string rtn("");
+
+    if (shortFormat == true) {
+        switch (month) {
+        case 1:
+            rtn = "Jan";
+            break;
+        case 2:
+            rtn = "Feb";
+            break;
+        case 3:
+            rtn = "Mar";
+            break;
+        case 4:
+            rtn = "Apr";
+            break;
+        case 5:
+            rtn = "May";
+            break;
+        case 6:
+            rtn = "Jun";
+            break;
+        case 7:
+            rtn = "Jul";
+            break;
+        case 8:
+            rtn = "Aug";
+            break;
+        case 9:
+            rtn = "Sep";
+            break;
+        case 10:
+            rtn = "Oct";
+            break;
+        case 11:
+            rtn = "Nov";
+            break;
+        case 12:
+            rtn = "Dec";
+            break;
+        default:
+            rtn = "unk";
+            break;
+        }
+    } else {
+        switch (month) {
+        case 1:
+            rtn = "January";
+            break;
+        case 2:
+            rtn = "February";
+            break;
+        case 3:
+            rtn = "March";
+            break;
+        case 4:
+            rtn = "April";
+            break;
+        case 5:
+            rtn = "May";
+            break;
+        case 6:
+            rtn = "June";
+            break;
+        case 7:
+            rtn = "July";
+            break;
+        case 8:
+            rtn = "August";
+            break;
+        case 9:
+            rtn = "September";
+            break;
+        case 10:
+            rtn = "October";
+            break;
+        case 11:
+            rtn = "November";
+            break;
+        case 12:
+            rtn = "December";
+            break;
+        default:
+            rtn = "unknown";
+            break;
+        }
+    }
+
+    return rtn;
+}
+
+time_t
+morph::Tools::dateToNum (const std::string& dateStr)
+{
+    char separator = '\0';
+
+    if (dateStr.empty()) {
+        return -2;
+    }
+
+    if (dateStr.size() < 8) {
+        return -3;
+    }
+
+    bool bigEndian (true);
+
+    if (dateStr[2] < '0'
+        || dateStr[2] > '9') {
+        separator = dateStr[2];
+        bigEndian = false;
+    } else if (dateStr[4] < '0'
+               || dateStr[4] > '9') {
+        separator = dateStr[4];
+    }
+    if (separator != '\0' && dateStr.size() < 10) {
+        return -4;
+    }
+
+    string year;
+    string month;
+    string day;
+    unsigned int yearN=0, monthN=0, dayN=0;
+
+    if (bigEndian) {
+        year = dateStr.substr (0,4);
+
+        if (separator == '\0') {
+            month = dateStr.substr (4,2);
+            day = dateStr.substr (6,2);
+        } else {
+            month = dateStr.substr (5,2);
+            day = dateStr.substr (8,2);
+        }
+
+    } else {
+        day = dateStr.substr (0,2);
+
+        if (separator == '\0') {
+            month = dateStr.substr (2,2);
+            year = dateStr.substr (4,4);
+        } else {
+            month = dateStr.substr (3,2);
+            year = dateStr.substr (6,4);
+        }
+    }
+
+    stringstream yearss, monthss, dayss;
+    yearss << year;
+    yearss.width(4);
+    yearss.fill ('0');
+    yearss >> yearN;
+
+    monthss << month;
+    monthss.width(2);
+    monthss.fill ('0');
+    monthss >> monthN;
+
+    dayss << day;
+    dayss.width(2);
+    dayss.fill ('0');
+    dayss >> dayN;
+
+    struct tm * t;
+    t = (struct tm*) malloc (sizeof (struct tm));
+    t->tm_year = yearN-1900;
+    t->tm_mon = monthN-1;
+    t->tm_mday = dayN;
+    t->tm_hour = 0;
+    t->tm_min = 0;
+    t->tm_sec = 0;
+    t->tm_isdst = -1;
+    time_t rtnTime = mktime (t);
+    if (rtnTime == -1) {
+        throw runtime_error ("mktime() returned -1");
+    }
+    free (t);
+
+    return rtnTime;
+}
+
+time_t
+morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
+{
+    char dateSeparator = '\0';
+    char timeSeparator = '\0';
+
+    if (dateTimeStr.empty()) {
+        return -2;
+    }
+
+    if (dateTimeStr.size() < 8) {
+        return -3;
+    }
+
+    if (dateTimeStr[4] < '0'
+        || dateTimeStr[4] > '9') {
+        dateSeparator = dateTimeStr[4];
+        if (dateTimeStr.size() < 10) {
+            return -4;
+        }
+    }
+
+    string year;
+    string month;
+    string day;
+    unsigned int yearN=0, monthN=0, dayN=0;
+
+    year = dateTimeStr.substr (0,4);
+
+    if (dateSeparator == '\0') {
+        month = dateTimeStr.substr (4,2);
+        day = dateTimeStr.substr (6,2);
+    } else {
+        month = dateTimeStr.substr (5,2);
+        day = dateTimeStr.substr (8,2);
+    }
+
+    stringstream yearss, monthss, dayss;
+    yearss << year;
+    yearss.width(4);
+    yearss.fill ('0');
+    yearss >> yearN;
+
+    monthss << month;
+    monthss.width(2);
+    monthss.fill ('0');
+    monthss >> monthN;
+
+    dayss << day;
+    dayss.width(2);
+    dayss.fill ('0');
+    dayss >> dayN;
+
+    string hour;
+    string min;
+    string sec;
+    unsigned int hourN=0, minN=0, secN=0;
+
+    string::size_type spacePos = dateTimeStr.find (" ", 0);
+    if (spacePos != string::npos) {
+        if (dateTimeStr[spacePos+3] < '0'
+            || dateTimeStr[spacePos+3] > '9') {
+            timeSeparator = dateTimeStr[spacePos+3];
+        }
+
+        hour = dateTimeStr.substr (spacePos+1, 2);
+
+        if (timeSeparator != '\0') {
+            min = dateTimeStr.substr (spacePos+4, 2);
+            sec = dateTimeStr.substr (spacePos+7, 2);
+        } else {
+            min = dateTimeStr.substr (spacePos+3, 2);
+            sec = dateTimeStr.substr (spacePos+5, 2);
+        }
+
+        //DBG ("hour: " << hour << " min: " << min << " sec: " << sec);
+
+        stringstream hourss, minss, secss;
+        hourss << hour;
+        hourss.width(2);
+        hourss.fill ('0');
+        hourss >> hourN;
+
+        minss << min;
+        minss.width(2);
+        minss.fill ('0');
+        minss >> minN;
+
+        secss << sec;
+        secss.width(2);
+        secss.fill ('0');
+        secss >> secN;
+    }
+
+    struct tm * t;
+    t = (struct tm*) malloc (sizeof (struct tm));
+    t->tm_year = yearN-1900;
+    t->tm_mon = monthN-1;
+    t->tm_mday = dayN;
+    t->tm_hour = hourN;
+    t->tm_min = minN;
+    t->tm_sec = secN;
+    t->tm_isdst = -1;
+    time_t rtnTime = mktime (t);
+    if (rtnTime == -1) {
+        throw runtime_error ("mktime() returned -1");
+    }
+    free (t);
+
+    return rtnTime;
+}
+
+std::string
+morph::Tools::numToDateTime (const time_t epochSeconds,
+                             const char dateSeparator,
+                             const char timeSeparator)
+{
+    if (epochSeconds == 0) {
+        return "unknown";
+    }
+
+    struct tm * t;
+    time_t es = epochSeconds;
+    t = (struct tm*) malloc (sizeof (struct tm));
+    t = localtime_r (&es, t);
+    int theDay = t->tm_mday;
+    int theMonth = t->tm_mon+1;
+    int theYear = t->tm_year+1900;
+    int theHour = t->tm_hour;
+    int theMin = t->tm_min;
+    int theSec = t->tm_sec;
+    free (t);
+
+    stringstream rtn;
+
+    // Date part
+    rtn.width(4);
+    rtn.fill('0');
+    rtn << theYear;
+    if (dateSeparator != '\0') {
+        rtn << dateSeparator;
+    }
+    rtn.width(2);
+    rtn.fill('0');
+    rtn << theMonth;
+    if (dateSeparator != '\0') {
+        rtn << dateSeparator;
+    }
+    rtn.width(2);
+    rtn.fill('0');
+    rtn << theDay;
+
+    rtn << " ";
+
+    // Time part
+    rtn.width(2);
+    rtn.fill('0');
+    rtn << theHour;
+    if (timeSeparator != '\0') {
+        rtn << timeSeparator;
+    }
+    rtn.width(2);
+    rtn.fill('0');
+    rtn << theMin;
+    if (timeSeparator != '\0') {
+        rtn << timeSeparator;
+    }
+    rtn.width(2);
+    rtn.fill('0');
+    rtn << theSec;
+
+    return rtn.str();
+}
+
+std::string
+morph::Tools::numToDate (const time_t epochSeconds,
+                         const char separator)
+{
+    struct tm * t;
+    time_t es = epochSeconds;
+    t = (struct tm*) malloc (sizeof (struct tm));
+    t = localtime_r (&es, t);
+    int theDay = t->tm_mday;
+    int theMonth = t->tm_mon+1;
+    int theYear = t->tm_year+1900;
+    free (t);
+
+    stringstream rtn;
+    if (separator == '\0') {
+        rtn.width(4);
+        rtn.fill('0');
+        rtn << theYear;
+        rtn.width(2);
+        rtn.fill('0');
+        rtn << theMonth;
+        rtn.width(2);
+        rtn.fill('0');
+        rtn << theDay;
+    } else {
+        rtn.width(4);
+        rtn.fill('0');
+        rtn << theYear << separator;
+        rtn.width(2);
+        rtn.fill('0');
+        rtn << theMonth << separator;
+        rtn.width(2);
+        rtn.fill('0');
+        rtn << theDay;
+    }
+
+    return rtn.str();
+}
+
+string
+morph::Tools::timeNow (void)
+{
+    time_t curtime;
+    struct tm *loctime;
+    curtime = time (NULL);
+    loctime = localtime (&curtime);
+    return asctime(loctime);
+}
+
+//@}

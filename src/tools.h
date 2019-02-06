@@ -626,6 +626,83 @@ namespace morph
         //@}
 
         /*!
+         * Date and time utility functions
+         */
+        //@{
+        /*!
+         * Return the current year.
+         */
+        static unsigned int yearNow (void);
+
+        /*!
+         * Return the current month (1==Jan, 12==Dec).
+         */
+        static unsigned int monthNow (void);
+
+        /*!
+         * Return the current date.
+         */
+        static unsigned int dateNow (void);
+
+        /*!
+         * Given the month as an int, where 1==Jan, 12==Dec,
+         * return the month as a string. If shortFormat is true,
+         * return "Jan", "Dec", etc., otherwise "January",
+         * "December" etc.
+         */
+        static std::string monthStr (const int month, const bool shortFormat=false);
+
+        /*!
+         * Give the number n, return the suitable (english)
+         * suffix. E.g. "st" for 1, "nd" for 22 etc.
+         */
+        static std::string suffix (const int n);
+
+        /*!
+         * Convert a date of form 2009-02-16 to the unix epoch
+         * number. The fifth character of the string is
+         * examined, and if it is not a numeral, it is used as
+         * the separator. If the fifth character IS a numeral,
+         * then the date format is read in as YYYYMMDD.
+         */
+        static time_t dateToNum (const std::string& dateStr);
+
+        /*!
+         * Convert a date/time of form 2009-02-16 14:34:34 to
+         * the unix epoch number. The fifth character of the
+         * string is examined, and if it is not a numeral, it
+         * is used as the date separator. If the fifth
+         * character IS a numeral, then the date format is
+         * read in as YYYYMMDD.
+         *
+         * The 3rd char after the space is read in and used as
+         * time separator
+         */
+        static time_t dateTimeToNum (const std::string& dateTimeStr);
+
+        /*!
+         * Convert a unix epoch number to a date/time of form
+         * 2009-02-16 02:03:01, using dateSeparator to delimit
+         * the date and timeSeparator to delimit the time.
+         */
+        static std::string numToDateTime (const time_t epochSeconds,
+                                          const char dateSeparator = '\0',
+                                          const char timeSeparator = '\0');
+
+        /*!
+         * Convert a unix epoch number to a date of form
+         * 2009-02-16, using separator to delimit the date.
+         */
+        static std::string numToDate (const time_t epochSeconds,
+                                      const char separator = '\0');
+
+        /*!
+         * Return the current time in neat string format.
+         */
+        static std::string timeNow (void);
+        //@}
+
+        /*!
          * This splits up a "search style" string into tokens.
          *
          * \param s The string to split up
