@@ -81,6 +81,10 @@ namespace morph {
         //@{
         void add_val (const char* path, const double& val);
         void add_val (const char* path, const float& val);
+        void add_val (const char* path, const int& val);
+        void add_val (const char* path, const unsigned int& val);
+        void add_val (const char* path, const long long int& val);
+        void add_val (const char* path, const unsigned long long int& val);
         //@}
 
         /*!

@@ -138,7 +138,67 @@ morph::HdfData::add_val (const char* path, const float& val)
     status = H5Sclose (dataspace_id);
     this->handle_error (status, "Error. status after H5Sclose: ");
 }
-//@}
+
+void
+morph::HdfData::add_val (const char* path, const int& val)
+{
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = 1;
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_val (const char* path, const unsigned int& val)
+{
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = 1;
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_val (const char* path, const long long int& val)
+{
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = 1;
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_val (const char* path, const unsigned long long int& val)
+{
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = 1;
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+//@} // add_val overloads
 
 /*!
  * add_ptrarray_vals() overloads
