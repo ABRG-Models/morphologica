@@ -19,7 +19,7 @@
 #include "BezCoord.h"
 
 #define DBGSTREAM std::cout
-#define DEBUG 1
+//#define DEBUG 1
 //#define DEBUG2 1
 #include "MorphDbg.h"
 
@@ -438,6 +438,7 @@ vector<BezCoord>
 morph::HexGrid::ellipseCompute (const float a, const float b)
 {
     vector<BezCoord> bpoints;
+#ifdef WORK_IN_PROGRESS
     // Determine perimeter of the ellipse
     float perim = this->ellipsePerimeter (a, b);
     DBG ("Perimeter length is " << perim);
@@ -446,7 +447,7 @@ morph::HexGrid::ellipseCompute (const float a, const float b)
     float spacing = this->d/2.0f;
     int number = (int)ceilf(perim/spacing);
     DBG ("That means " << number << " points along the ellipse");
-
+#endif
     return bpoints;
 }
 
