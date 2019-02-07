@@ -334,8 +334,20 @@ namespace morph {
          */
         void setBoundary (const BezCurvePath& p);
 
-        //private:
+        /*!
+         * Sets boundary based on the vector of BezCoords.
+         */
         void setBoundary (vector<BezCoord>& bpoints);
+
+        /*!
+         * Get all the boundary hexes in a list. This assumes that a
+         * boundary has already been set with one of the setBoundary()
+         * methods and so there is therefore a set of Hexes which are
+         * already marked as being on the boundary (with the attribute
+         * Hex::boundaryHex == true) Do this by going around the
+         * boundary neighbour to neighbour?
+         */
+        list<Hex> getBoundary (void) const;
 
         vector<BezCoord> ellipseCompute (const float a, const float b);
 
@@ -398,6 +410,12 @@ namespace morph {
         void computeDistanceToBoundary (void);
 
         /*!
+         * Populate d_ vectors. simple version. (Finds extents, then
+         * calls populate_d_vectors(const array<int, 6>&)
+         */
+        void populate_d_vectors (void);
+
+        /*!
          * Populate d_ vectors, paying attention to domainShape.
          */
         void populate_d_vectors (const array<int, 6>& extnts);
@@ -458,8 +476,14 @@ namespace morph {
         /*!
          * Determine whether the boundary is contiguous, starting from
          * the boundary Hex iterator #bhi.
+         *
+         * The overload with bhexes takes a list of Hex pointers and
+         * populates it with pointers to the hexes on the boundary.
          */
+        //@{
         bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const;
+        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const;
+        //@}
 
         /*!
          * Find a hex, any hex, that's on the boundary specified by
@@ -521,6 +545,11 @@ namespace morph {
          */
         array<int, 6> findBoundaryExtents (void);
 
+        /*!
+         * setDomain() will define a regular domain, then discard
+         * those hexes outside the regular domain and populate all
+         * the d_ vectors.
+         */
         void setDomain (void);
 
         /*!

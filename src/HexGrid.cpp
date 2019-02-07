@@ -106,6 +106,8 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
     } else {
         throw runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to do if domain shape is not HexDomainShape::Boundary.");
     }
+
+    this->populate_d_vectors();
 }
 
 #ifdef UNTESTED_UNUSED
@@ -538,12 +540,7 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
         } else {
 #endif // SUBP
             // Now populate the d_ vectors
-            list<Hex>::iterator hi = this->hexen.begin();
-            while (hi != this->hexen.end()) {
-                this->d_push_back (hi);
-                hi++;
-            }
-            this->populate_d_neighbours();
+            this->populate_d_vectors();
 #ifdef SUBP
         }
 #endif // SUBP
@@ -617,6 +614,31 @@ morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFro
     return h;
 }
 
+list<Hex>
+morph::HexGrid::getBoundary (void) const
+{
+    list<Hex> bhexes;
+
+    list<Hex>::const_iterator bhi = this->hexen.begin();
+    if (this->findBoundaryHex (bhi) == false) {
+        // Found no boundary hex, return empty bhexes
+        return bhexes;
+    }
+    set<unsigned int> seen;
+    list<Hex>::const_iterator hi = bhi;
+    list<Hex*> bhexptrs;
+    bool bcont = this->boundaryContiguous (bhi, hi, seen, bhexptrs);
+
+    if (bcont == true) {
+        auto hh = bhexptrs.begin();
+        while (hh != bhexptrs.end()) {
+            bhexes.push_back (*(*hh));
+            ++hh;
+        }
+    }
+    return bhexes;
+}
+
 bool
 morph::HexGrid::findBoundaryHex (list<Hex>::const_iterator& hi) const
 {
@@ -682,11 +704,19 @@ morph::HexGrid::boundaryContiguous (void) const
     }
     set<unsigned int> seen;
     list<Hex>::const_iterator hi = bhi;
-    return this->boundaryContiguous (bhi, hi, seen);
+    list<Hex*> bhexes;
+    return this->boundaryContiguous (bhi, hi, seen, bhexes);
 }
 
 bool
 morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const
+{
+    list<Hex*> bhexes;
+    return this->boundaryContiguous (bhi, hi, seen, bhexes);
+}
+
+bool
+morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const
 {
     DBG2 ("Called for hi=" << hi->vi);
     bool rtn = false;
@@ -694,32 +724,34 @@ morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::co
 
     DBG2 ("Inserting " << hi->vi << " into seen which is Hex ("<< hi->ri << "," << hi->gi<<")");
     seen.insert (hi->vi);
+    // Insert into the list of Hex pointers, too
+    bhexes.push_back ((Hex*)&(*hi));
 
     DBG2 (hi->output());
 
     if (rtn == false && hi->has_ne && hi->ne->boundaryHex == true && seen.find(hi->ne->vi) == seen.end()) {
         hi_next = hi->ne;
-        rtn = (this->boundaryContiguous (bhi, hi_next, seen));
+        rtn = (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
     }
     if (rtn == false && hi->has_nne && hi->nne->boundaryHex == true && seen.find(hi->nne->vi) == seen.end()) {
         hi_next = hi->nne;
-        rtn = this->boundaryContiguous (bhi, hi_next, seen);
+        rtn = this->boundaryContiguous (bhi, hi_next, seen, bhexes);
     }
     if (rtn == false && hi->has_nnw && hi->nnw->boundaryHex == true && seen.find(hi->nnw->vi) == seen.end()) {
         hi_next = hi->nnw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
     }
     if (rtn == false && hi->has_nw && hi->nw->boundaryHex == true && seen.find(hi->nw->vi) == seen.end()) {
         hi_next = hi->nw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
     }
     if (rtn == false && hi->has_nsw && hi->nsw->boundaryHex == true && seen.find(hi->nsw->vi) == seen.end()) {
         hi_next = hi->nsw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
     }
     if (rtn == false && hi->has_nse && hi->nse->boundaryHex == true && seen.find(hi->nse->vi) == seen.end()) {
         hi_next = hi->nse;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
     }
 
     if (rtn == false) {
@@ -1306,6 +1338,13 @@ morph::HexGrid::setDomain (void)
     this->computeDistanceToBoundary();
 
     // 4. Populate d_ vectors
+    this->populate_d_vectors (extnts);
+}
+
+void
+morph::HexGrid::populate_d_vectors (void)
+{
+    array<int, 6> extnts = this->findBoundaryExtents();
     this->populate_d_vectors (extnts);
 }
 
