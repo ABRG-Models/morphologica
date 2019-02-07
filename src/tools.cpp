@@ -23,6 +23,7 @@ extern "C" {
 #include <sys/ioctl.h>
 #include <dirent.h>
 #include <string.h>
+#include <time.h>
 }
 
 using namespace std;
@@ -132,6 +133,32 @@ morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
     return rgb;
 }
 
+/*!
+ * Random number generation functions
+ */
+//@{
+unsigned int
+morph::Tools::mix (unsigned int a, unsigned int b, unsigned int c)
+{
+    a=a-b;  a=a-c;  a=a^(c >> 13);
+    b=b-c;  b=b-a;  b=b^(a << 8);
+    c=c-a;  c=c-b;  c=c^(b >> 13);
+    a=a-b;  a=a-c;  a=a^(c >> 12);
+    b=b-c;  b=b-a;  b=b^(a << 16);
+    c=c-a;  c=c-b;  c=c^(b >> 5);
+    a=a-b;  a=a-c;  a=a^(c >> 3);
+    b=b-c;  b=b-a;  b=b^(a << 10);
+    c=c-a;  c=c-b;  c=c^(b >> 15);
+    return c;
+}
+
+unsigned int
+morph::Tools::randomSeed (void)
+{
+    unsigned int rsd = morph::Tools::mix(clock(), time(NULL), getpid());
+    return rsd;
+}
+
 double
 morph::Tools::randDouble (void)
 {
@@ -149,6 +176,7 @@ morph::Tools::normalDistributionValue(void)
 {
     return sqrt(-2. * log(randDouble())) * cos(2. * M_PI * randDouble());
 }
+//@}
 
 double
 morph::Tools::wrapAngle(double a)

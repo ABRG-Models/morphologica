@@ -101,6 +101,19 @@ namespace morph
         static array<float,3> HSVtoRGB (double, double, double);
 
         /*!
+         * For mixing up bits of three args; used to generate a good
+         * random seed using time() getpid() and clock().
+         */
+        static unsigned int mix (unsigned int a, unsigned int b, unsigned int c);
+
+        /*!
+         * Using clock(), time() and getpid() along with the mix
+         * utility function, generate a decently random seed for
+         * seeding your RNG.
+         */
+        static unsigned int randomSeed (void);
+
+        /*!
          * Return a random double precision number in the range [0,1], sampled
          * from a uniform distribution.
          */
