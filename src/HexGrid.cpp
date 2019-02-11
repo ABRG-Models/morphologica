@@ -46,6 +46,7 @@ morph::HexGrid::HexGrid ()
 morph::HexGrid::HexGrid (float d_, float x_span_, float z_, morph::HexDomainShape shape)
 {
     this->d = d_;
+    this->v = this->d * SQRT_OF_3_OVER_2_F;
     this->x_span = x_span_;
     this->z = z_;
     this->domainShape = shape;
