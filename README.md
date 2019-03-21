@@ -13,6 +13,8 @@ It requires OpenCV, Armadillo, OpenGL and X headers to compile, and
 programs linked with libmorphologica will also need to link to those
 dependencies. You will also need the cmake program and a C++ compiler.
 
+## Install dependencies on GNU/Linux
+
 To install these dependencies on Ubuntu or Debian Linux, you can do:
 
 ```sh
@@ -32,6 +34,19 @@ make -j4 # or however many cores you have. This takes a while.
 sudo make install
 ```
 
+## Install dependencies on Mac
+
+[Note: work in progress on Mac]
+
+You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/. Install XCode from the App Store. Installation of the other dependencies is best achieved using Mac ports. Install Mac ports following the instructions on http://www.macports.org/ (which has helpful information about the XCode installation and XCode command line tools). Finally, use Mac ports to install the rest of the dependencies:
+
+```sh
+sudo port install cmake armadillo opencv
+```
+
+Note that installation of armadillo will pull in hdf5, so hopefully, we won't need to re-compile that manually.
+
+## Build morphologica
 
 To build morphologica, it's the usual CMake process:
 
