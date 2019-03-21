@@ -5,7 +5,13 @@ file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "includedir=\${prefix}/inc
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Name: ${PROJECT_NAME}\n")
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Description: ${PROJECT_NAME} library from the Wilson lab\n")
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Version: ${VERSION}\n")
-file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: -L\${libdir} -lmorphologica\n")
+
+if(APPLE)
+  file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: \${libdir}/libmorphologica.dylib\n")
+else()
+  file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: -L\${libdir} -lmorphologica\n")
+endif(APPLE)
+
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Cflags: -I\${includedir}\n")
 
 # Install
