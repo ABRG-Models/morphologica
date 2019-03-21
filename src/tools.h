@@ -21,6 +21,9 @@ using std::string;
 using std::istream;
 using std::ostream;
 
+#include <sys/stat.h>
+#include <stdlib.h>
+
 /*!
  * Character sets useful when calling util::sanitize().
  *
