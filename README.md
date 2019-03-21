@@ -36,15 +36,19 @@ sudo make install
 
 ## Install dependencies on Mac
 
-[Note: work in progress on Mac]
+You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store. 
 
-You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/. Install XCode from the App Store. Installation of the other dependencies is best achieved using Mac ports. Install Mac ports following the instructions on http://www.macports.org/ (which has helpful information about the XCode installation and XCode command line tools). Finally, use Mac ports to install the rest of the dependencies:
+Installation of the other dependencies is best achieved using Mac ports. Install Mac ports, following the instructions on http://www.macports.org/. This will guide you to install the XCode command line tools, then install the Mac ports installation package.
+
+Finally, use Mac ports to install the rest of the dependencies:
 
 ```sh
 sudo port install cmake armadillo opencv
 ```
 
-Note that installation of armadillo will pull in hdf5, so hopefully, we won't need to re-compile that manually.
+Note that the installation of armadillo will pull in hdf5, so on Mac, we don't need to compile hdf5 manually.
+
+*Be aware that if you have conflicting versions of any of the libraries, you may run into problems during the build.*
 
 ## Build morphologica
 
