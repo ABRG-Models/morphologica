@@ -33,9 +33,6 @@ namespace morph {
      */
     class Gdisplay
     {
-    private:
-        XSetWindowAttributes attributes;
-
     public:
         Display                 *disp;
         Window                  root;
