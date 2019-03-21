@@ -65,9 +65,15 @@ find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 
 # Find the HDF5 library
-set (HDF_LIB_TYPE SHARED) # STATIC or SHARED
-string(TOLOWER ${HDF_LIB_TYPE} HDF_SEARCH_TYPE)
-find_package (HDF5 NAMES hdf5 COMPONENTS C ${HDF_SEARCH_TYPE})
+if (APPLE)
+  # hdf5, as installed by mac ports, gets found easily:
+  find_package (HDF5 REQUIRED)
+else()
+  # This finds a manually-installed HDF5 in /usr/local on Linux:
+  set (HDF_LIB_TYPE SHARED) # STATIC or SHARED
+  string(TOLOWER ${HDF_LIB_TYPE} HDF_SEARCH_TYPE)
+  find_package (HDF5 NAMES hdf5 COMPONENTS C ${HDF_SEARCH_TYPE} REQUIRED)
+endif(APPLE)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR})
 
