@@ -68,6 +68,7 @@ find_package(X11 REQUIRED)
 if (APPLE)
   # hdf5, as installed by mac ports, gets found easily:
   find_package (HDF5 REQUIRED)
+  find_package (Armadillo 9.20 HINTS /opt/local/lib REQUIRED)
 else()
   # This finds a manually-installed HDF5 in /usr/local on Linux:
   set (HDF_LIB_TYPE SHARED) # STATIC or SHARED
