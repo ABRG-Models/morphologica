@@ -35,3 +35,22 @@ morph::Visual::~Visual()
     glfwDestroyWindow (this->window);
     glfwTerminate();
 }
+
+void
+morph::Visual::redraw (void)
+{
+}
+
+void
+morph::Visual::updateHexGridVisual (const unsigned int gridId,
+                                    const vector<float>& data)
+{
+}
+
+unsigned int
+morph::Visual::addHexGridVisual (const HexGrid* hg,
+                                 const vector<float>& data,
+                                 const array<float, 3> offset)
+{
+    return 0;
+}
