@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
+set(morphlibsrc display.cpp Visual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -10,6 +10,21 @@ if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
   link_directories(${MORPH_ARMADILLO_LIBPATH})
 endif()
 
+# Find GLFW library? Or compile in place (that would be better)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+  # There's no FindXaw script on my Ubuntu system. Can use pkg-config to check it's present:
+  pkg_check_modules(GLFW3 REQUIRED glfw3)
+  if (GLFW3_FOUND)
+    # Good....
+  else(GLFW3_FOUND)
+    # Bad....
+  endif(GLFW3_FOUND)
+else()
+  message(WARNING "There's no pkg-config on this system to check for libglfw3. You may need to try `sudo apt-get install pkg-config`")
+endif()
+
+
 # Shared library
 add_library(morphologica SHARED ${morphlibsrc})
 if(APPLE)
@@ -18,12 +33,12 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES}
+    ${ARMADILLO_LIBRARY} GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${GLFW3_LDFLAGS}
     )
 else()
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} /usr/local/lib/libglfw3.a
     )
 endif(APPLE)
 install(TARGETS morphologica
@@ -42,7 +57,7 @@ target_link_libraries(
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} ${GLFW3_STATIC_LDFLAGS}
   )
 endif(APPLE)
 
@@ -53,6 +68,15 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h
+  FILES display.h Visual.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
+
+# For debugging, you can list variables like this:
+set(DEBUG_VARIABLES ON)
+if(DEBUG_VARIABLES)
+  get_cmake_property(_variableNames VARIABLES)
+  foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+  endforeach()
+endif(DEBUG_VARIABLES)
