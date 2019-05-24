@@ -12,6 +12,7 @@
 
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
+#include "HexGridVisual.h"
 
 #include <string>
 using std::string;
@@ -21,15 +22,6 @@ using std::array;
 using std::vector;
 
 namespace morph {
-
-    class HexGridVisual
-    {
-    public:
-        /*!
-         * The offset of this HexGridVisual
-         */
-        array<float, 3> offset;
-    };
 
     /*!
      * A class for visualising computational models on an OpenGL
@@ -78,8 +70,10 @@ namespace morph {
                                        const vector<float>& data,
                                        const array<float, 3> offset);
 
-        // We redraw, updating colour and 3D position based on current rotation etc.
-        void redraw();
+        /*!
+         * Render the scene
+         */
+        void render();
 
     private:
         /*!
@@ -90,7 +84,7 @@ namespace morph {
         /*!
          * This Visual is going to render some HexGridVisuals for us. 1 or more.
          */
-        vector<HexGridVisual*> HexGridVis;
+        vector<HexGridVisual*> hexGridVis;
     };
 
 } // namespace morph

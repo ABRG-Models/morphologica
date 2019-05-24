@@ -313,6 +313,15 @@ namespace morph {
         }
 
         /*!
+         * The vertical distance from the centre of the hex to the
+         * "north east" vertex of the hex.
+         */
+        float getVtoNE (void) {
+            float v = this->d/(2.0f*morph::SQRT_OF_3_F);
+            return v;
+        }
+
+        /*!
          * Return twice the vertical distance between hex centres on
          * adjacent rows.
          */
