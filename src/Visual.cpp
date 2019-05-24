@@ -37,14 +37,21 @@ morph::Visual::~Visual()
 }
 
 void
-morph::Visual::redraw (void)
+morph::Visual::render (void)
 {
+    // Render it.
+    vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
+    while (hgvi != this->layers.end()) {
+        (*hgvi)->render();
+        ++hgvi;
+    }
 }
 
 void
 morph::Visual::updateHexGridVisual (const unsigned int gridId,
                                     const vector<float>& data)
 {
+    // Replace grids[gridId].data
 }
 
 unsigned int
@@ -52,5 +59,9 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
                                  const vector<float>& data,
                                  const array<float, 3> offset)
 {
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    HexGridVisual* hgv1 = new HexGridVisual(hg, data, offset);
+    this->hexGridVis.push_back (hgv1);
+
     return 0;
 }
