@@ -1,76 +1,88 @@
 #ifndef _HEXGRIDVISUAL_H_
 #define _HEXGRIDVISUAL_H_
 
-#include <OpenGLBuffer> // etc
+#include "GL3/gl3.h"
+
+#include "HexGrid.h"
 
 #include <vector>
 using std::vector;
+#include <array>
+using std::array;
 
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
-class HexGridVisual
-{
-public:
-    HexGridVisual(const HexGrid* _hg,
-                  const vector<float>& _data,
-                  const array<float, 3> _offset);
+namespace morph {
 
-    ~HexGridVisual();
+    //! Forward declaration of Visual class
+    class Visual;
 
-    //! Initialize vertex buffer objects and vertex array object.
-    void initialize (void);
+    // Because I put vertices in three buffers, all attributes start at position 0
+    enum Attrib_IDs { vPosition = 0 };
 
-    //! Render the HexGridVisual
-    void render (void);
+    class HexGridVisual
+    {
+    public:
+        HexGridVisual(const Visual* _parent,
+                      const HexGrid* _hg,
+                      const vector<float>* _data,
+                      const array<float, 3> _offset);
 
-    //! The offset of this HexGridVisual
-    array<float, 3> offset;
+        ~HexGridVisual();
 
-private:
-    //! The HexGrid to visualize
-    const HexGrid* hg;
+        //! Initialize vertex buffer objects and vertex array object.
+        void initializeVertices (void);
 
-    //! The data to visualize as z/colour
-    const vector<float>& data;
+        //! Render the HexGridVisual
+        void render (void);
 
-    // Add a way to control the scaling scheme here.
+        //! The offset of this HexGridVisual
+        array<float, 3> offset;
 
-    /*!
-     * Compute positions and colours of vertices for the hexes and
-     * store in these:
-     */
-    //@{
-    //! Indices Vertex Buffer Object
-    OpenGLBuffer ivbo;
-    //! positions Vertex Buffer Object
-    OpenGLBuffer pvbo;
-    //! normals Vertex Buffer Object
-    OpenGLBuffer nvbo;
-    //! colors Vertex Buffer Object
-    OpenGLBuffer cvbo;
+    private:
+        //! The parent Visual object - provides access to the shader prog
+        const Visual* parent;
 
-    //! CPU-side data for indices
-    vector<VBOint> indices;
-    //! CPU-side data for vertex positions
-    vector<float> vertexPositions;
-    //! CPU-side data for vertex normals
-    vector<float> vertexNormals;
-    //! CPU-side data for vertex colours
-    vector<float> vertexColors;
-    //@}
+        //! The HexGrid to visualize
+        const HexGrid* hg;
 
-    //! I guess we'll need a shader program.
-    OpenGLShaderProgram* shaderProgram;
+        //! The data to visualize as z/colour
+        const vector<float>* data;
 
-    //! The OpenGL Vertex Array Object
-    OpenGLVertexArrayObject vao;
+        // Add a way to control the scaling scheme here.
 
-    //! Push three floats onto the vector of floats @vp
-    void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp);
+        /*!
+         * Compute positions and colours of vertices for the hexes and
+         * store in these:
+         */
+        //@{
+        //! Indices Vertex Buffer Object
+        GLuint* bufobjs;
 
-    //! Set up a vertex buffer object
-    void setupVBO (OpenGLBuffer& buf, vector<float>& dat, const char* arrayname);
-};
+        //! CPU-side data for indices
+        vector<VBOint> indices;
+        //! CPU-side data for vertex positions
+        vector<float> vertexPositions;
+        //! CPU-side data for vertex normals
+        vector<float> vertexNormals;
+        //! CPU-side data for vertex colours
+        vector<float> vertexColors;
+        //@}
+
+        //! I guess we'll need a shader program.
+        GLuint* shaderProgram;
+
+        //! The OpenGL Vertex Array Object
+        GLuint vaos[1];
+
+        //! Push three floats onto the vector of floats @vp
+        void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp);
+
+        //! Set up a vertex buffer object
+        void setupVBO (GLuint& buf, vector<float>& dat, const char* arrayname);
+    };
+
+} // namespace morph
 
 #endif // _HEXGRIDVISUAL_H_

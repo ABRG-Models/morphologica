@@ -14,6 +14,8 @@
 #include "HexGrid.h"
 #include "HexGridVisual.h"
 
+#include "GL3/gl3.h"
+
 #include <string>
 using std::string;
 #include <array>
@@ -22,6 +24,26 @@ using std::array;
 using std::vector;
 
 namespace morph {
+
+    /*
+     * LoadShaders() takes an array of ShaderFile structures, each of
+     * which contains the type of the shader, and a pointer a C-style
+     * character string (i.e., a NULL-terminated array of characters)
+     * containing the entire shader source.
+     *
+     * The array of structures is terminated by a final Shader with
+     * the "type" field set to GL_NONE.
+     *
+     * LoadShaders() returns the shader program value (as returned by
+     * glCreateProgram()) on success, or zero on failure.
+     */
+
+    typedef struct
+    {
+        GLenum type;
+        const char* filename;
+        GLuint shader;
+    } ShaderInfo;
 
     /*!
      * A class for visualising computational models on an OpenGL
@@ -75,7 +97,23 @@ namespace morph {
          */
         void render();
 
+        /*!
+         * The OpenGL shader program
+         */
+        GLuint shaderprog;
+
     private:
+
+        /*!
+         * Read a shader
+         */
+        const GLchar* ReadShader (const char* filename);
+
+        /*!
+         * Shader loading code
+         */
+        GLuint LoadShaders (ShaderInfo* si);
+
         /*!
          * The window (and OpenGL context) for this Visual
          */

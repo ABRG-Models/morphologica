@@ -395,6 +395,24 @@ namespace morph {
         float getv (void) const;
 
         /*!
+         * Get the shortest distance from the centre to the
+         * perimeter. This is the "short radius".
+         */
+        float getSR (void) const;
+
+        /*!
+         * The distance from the centre of the Hex to any of the
+         * vertices. This is the "long radius".
+         */
+        float getLR (void) const;
+
+        /*!
+         * The vertical distance from the centre of the hex to the
+         * "north east" vertex of the hex.
+         */
+        float getVtoNE (void) const;
+
+        /*!
          * Find the minimum or maximum value of x' on the HexGrid,
          * where x' is the x axis rotated by phi degrees.
          */
