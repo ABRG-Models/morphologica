@@ -1,5 +1,7 @@
 #include "Visual.h"
 #include "HexGrid.h"
+#include "ReadCurves.h"
+#include "tools.h"
 #include <utility>
 #include <iostream>
 #include <fstream>
@@ -8,6 +10,9 @@
 using namespace std;
 using morph::Visual;
 using morph::HexGrid;
+using morph::Tools;
+using morph::HexDomainShape;
+using morph::ReadCurves;
 
 int main()
 {
@@ -15,28 +20,53 @@ int main()
 
     Visual v(800,600,"Test window");
 
-    HexGrid hg(2.309401, 4000);
-    cout << "Set up " << hg.num() << " hexes in a grid." << endl;
+    try {
+        string pwd = Tools::getPwd();
+        string curvepath = "./tests/trial.svg";
+        if (pwd.substr(pwd.length()-11) == "build/tests") {
+            curvepath = "./../tests/trial.svg";
+        }
+        ReadCurves r(curvepath);
 
-    vector<float> data;
-    unsigned int nhex = hg.num();
-    data.resize(nhex, 0.0);
+        HexGrid hg(0.02, 7, 0, HexDomainShape::Boundary);
+        hg.setBoundary (r.getCorticalPath());
 
-    // Make some dummy data
-    for (unsigned int hi=0; hi<nhex; ++hi) {
-        data[hi] = 1.0 * hg.d_x[hi];
+        cout << hg.extent() << endl;
+
+        cout << "Number of hexes in grid:" << hg.num() << endl;
+        cout << "Last vector index:" << hg.lastVectorIndex() << endl;
+
+        if (hg.num() != 1604) {
+            rtn = -1;
+        }
+
+        vector<float> data;
+        unsigned int nhex = hg.num();
+        data.resize(nhex, 0.0);
+
+        // Make some dummy data
+        for (unsigned int hi=0; hi<nhex; ++hi) {
+            data[hi] = 1.0 * hg.d_x[hi];
+        }
+        cout << "Created " << data.size() << " floats in data" << endl;
+
+        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
+        cout << "Added HexGridVisual with gridId " << gridId << endl;
+
+        v.render();
+
+        cout << "Enter key to end" << endl;
+
+        int a;
+        cin >> a;
+
+    } catch (const exception& e) {
+        cerr << "Caught exception reading trial.svg: " << e.what() << endl;
+        cerr << "Current working directory: " << Tools::getPwd() << endl;
+        rtn = -1;
     }
 
-    array<float, 3> offset = { 0.0, 0.0, 0.0 };
-    unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
-    cout << "Added HexGridVisual with gridId " << gridId << endl;
-
-    v.render();
-
-    cout << "Enter key to end" << endl;
-
-    int a;
-    cin >> a;
 
     return rtn;
 }

@@ -23,6 +23,8 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
     this->hg = _hg;
     this->data = _data;
 
+    this->bufobjs = new GLuint[4];
+
     this->initializeVertices();
 
     glGenVertexArrays (1, this->vaos);
@@ -49,6 +51,7 @@ morph::HexGridVisual::~HexGridVisual()
 {
     // destroy buffers
     glDeleteBuffers (4, bufobjs);
+    delete (this->bufobjs);
 }
 
 void
