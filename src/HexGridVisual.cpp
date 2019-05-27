@@ -1,41 +1,58 @@
+#include "HexGridVisual.h"
+
+#include "GL3/gl3.h"
+#include "GL/glext.h"
+
 #include <iostream>
 using std::cout;
 using std::endl;
 
-HexGridVisual::HexGridVisual (const HexGrid* _hg,
-                              const vector<float>& _data,
-                              const array<float, 3> _offset)
-    : ivbo(OpenGLBuffer::IndexBuffer)
-    , pvbo(OpenGLBuffer::VertexBuffer)
-    , nvbo(OpenGLBuffer::VertexBuffer)
-    , cvbo(OpenGLBuffer::VertexBuffer)
+#include <vector>
+using std::vector;
+#include <array>
+using std::array;
+
+morph::HexGridVisual::HexGridVisual (const Visual* _parent,
+                                     const HexGrid* _hg,
+                                     const vector<float>* _data,
+                                     const array<float, 3> _offset)
 {
     // Set up...
+    this->parent = _parent;
     this->offset = _offset;
     this->hg = _hg;
     this->data = _data;
 
-    this->initialize();
+    this->initializeVertices();
+
+    glGenVertexArrays (1, this->vaos);
+    glBindVertexArray (this->vaos[0]);
+
+    glCreateBuffers (4, this->bufobjs);
+
+    // Set up indices buffer object (bind, then allocate space)
+    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, this->bufobjs[0]); // For index buffer
+    int sz = this->indices.size() * sizeof(VBOint);
+    glBufferData (GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
+
+    // Binds data from the "C++ world" to the OpenGL shader world for
+    // "position", "normalin" and "color"
+    this->setupVBO (this->bufobjs[1], this->vertexPositions, "position");
+    this->setupVBO (this->bufobjs[2], this->vertexNormals, "normalin");
+    this->setupVBO (this->bufobjs[3], this->vertexColors, "color");
+
+    // Possibly release (unbind) the vertex buffers (but not index buffer)
+
 }
 
-HexGridVisual::~HexGridVisual()
+morph::HexGridVisual::~HexGridVisual()
 {
-    if (this->ivbo.isCreated()) {
-        this->ivbo.destroy();
-    }
-    if (this->pvbo.isCreated()) {
-        this->pvbo.destroy();
-    }
-    if (this->nvbo.isCreated()) {
-        this->nvbo.destroy();
-    }
-    if (this->cvbo.isCreated()) {
-        this->cvbo.destroy();
-    }
+    // destroy buffers
+    glDeleteBuffers (4, bufobjs);
 }
 
 void
-HexGridVisual::initialize (void)
+morph::HexGridVisual::initializeVertices (void)
 {
     // Simplest visualization is: for each vertex in hg, create 6
     // triangles, all with a common colour. This way, I don't have to
@@ -52,31 +69,31 @@ HexGridVisual::initialize (void)
         // First push the 7 positions of the triangle vertices, starting with the centre
         this->vertex_push (this->hg->d_x[hi],
                            this->hg->d_y[hi],
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // NE
         this->vertex_push (this->hg->d_x[hi]+sr,
                            this->hg->d_y[hi]+vne,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // SE
         this->vertex_push (this->hg->d_x[hi]+sr,
                            this->hg->d_y[hi]-vne,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // S
         this->vertex_push (this->hg->d_x[hi],
                            this->hg->d_y[hi]-lr,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // SW
         this->vertex_push (this->hg->d_x[hi]-sr,
                            this->hg->d_y[hi]-vne,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // NW
         this->vertex_push (this->hg->d_x[hi]-sr,
                            this->hg->d_y[hi]+vne,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
         // N
         this->vertex_push (this->hg->d_x[hi],
                            this->hg->d_y[hi]+lr,
-                           this->data[hi], this->vertexPositions);
+                           (*this->data)[hi], this->vertexPositions);
 
         // All normal point up
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -125,31 +142,34 @@ HexGridVisual::initialize (void)
 }
 
 void
-HexGridVisual::render (void)
+morph::HexGridVisual::render (void)
 {
     // render...
 }
 
 void
-HexGridVisual::setupVBO (OpenGLBuffer& buf,
-                         vector<float>& dat,
-                         const char* arrayname)
+morph::HexGridVisual::setupVBO (GLuint& buf,
+                                vector<float>& dat,
+                                const char* arrayname)
 {
-    if (buf.create() == false) {
-        cout << "VBO create failed" << endl;
-    }
-    buf.setUsagePattern (OpenGLBuffer::StaticDraw);
-    if (buf.bind() == false) {
-        cout << "VBO bind failed" << endl;
-    }
-    buf.allocate (dat.data(), dat.size() * sizeof(float));
+    glBindBuffer (GL_ARRAY_BUFFER, buf);
+    //if (checkBound == false) {
+    //    cout << "VBO bind failed" << endl;
+    //}
+    int sz = (*this->data).size() * sizeof(float);
+    glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
+#if 0
     // Because array attributes are disabled by default in OpenGL 4:
     this->shaderProgram->enableAttributeArray (arrayname);
-    this->shaderProgram->setAttributeBuffer (arrayname, GL_FLOAT, 0, 3);
+    this->parent->shaderprog->setAttributeBuffer (arrayname, GL_FLOAT, 0, 3);
+#endif
+    // Something like:
+    glVertexAttribPointer (vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray (vPosition);
 }
 
 void
-HexGridVisual::vertex_push (const float& x, const float& y, const float& z, vector<float>& vp)
+morph::HexGridVisual::vertex_push (const float& x, const float& y, const float& z, vector<float>& vp)
 {
     vp.push_back (x);
     vp.push_back (y);

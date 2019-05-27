@@ -29,8 +29,9 @@ int main()
 
     array<float, 3> offset = { 0.0, 0.0, 0.0 };
     unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
+    cout << "Added HexGridVisual with gridId " << gridId << endl;
 
-    v.redraw();
+    v.render();
 
     cout << "Enter key to end" << endl;
 

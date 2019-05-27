@@ -32,6 +32,10 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -g -std=c++11")
 endif()
 
+# Additional GL compiler flags.
+# maybe -DGL_GLEXT_PROTOTYPES
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
 # work, but was required for OpenCV, so it's useful to be able to
 # install a from-source build of Armadillo in /usr/local and link to
@@ -79,6 +83,9 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_
 
 # rapidxml is bundled in the source:
 include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+
+# OpenGL code needs the local include directory, too
+include_directories ("${PROJECT_SOURCE_DIR}/include")
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)

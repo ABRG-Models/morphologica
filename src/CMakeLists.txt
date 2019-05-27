@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp Visual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
+set(morphlibsrc display.cpp Visual.cpp HexGridVisual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -13,20 +13,23 @@ endif()
 # Find GLFW library? Or compile in place (that would be better)
 find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
-  # There's no FindXaw script on my Ubuntu system. Can use pkg-config to check it's present:
+  # Use pkg-config to check GLFW3 is present:
   pkg_check_modules(GLFW3 REQUIRED glfw3)
   if (GLFW3_FOUND)
     # Good....
+    message(INFO, "pkg-config found glfw3. Excellent.")
   else(GLFW3_FOUND)
     # Bad....
+    message(ERROR, "glfw3 was NOT found by pkg-config. Uh oh.")
   endif(GLFW3_FOUND)
 else()
   message(WARNING "There's no pkg-config on this system to check for libglfw3. You may need to try `sudo apt-get install pkg-config`")
 endif()
 
-
-# Shared library
+# Compile shared library
 add_library(morphologica SHARED ${morphlibsrc})
+
+# Library linking
 if(APPLE)
   # Note hard-coded linking of libX11.dylib, to avoid linking to one in /opt/local. There's
   # probably a better way to do this; ideally, find_package(X11) should be pointed towards the
