@@ -23,6 +23,7 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
     this->hg = _hg;
     this->data = _data;
 
+    // Allocate the vertex buffer object array
     this->bufobjs = new GLuint[4];
 
     this->initializeVertices();
@@ -44,7 +45,6 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
     this->setupVBO (this->bufobjs[3], this->vertexColors, "color");
 
     // Possibly release (unbind) the vertex buffers (but not index buffer)
-
 }
 
 morph::HexGridVisual::~HexGridVisual()
@@ -108,12 +108,12 @@ morph::HexGridVisual::initializeVertices (void)
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
 
         // All vertices black to begin with, but should set from data.
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors); // Black
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors); // Black
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
 
         // Define indices now to produce the 6 triangles in the hex
         this->indices.push_back (idx+1);
@@ -148,6 +148,9 @@ void
 morph::HexGridVisual::render (void)
 {
     // render...
+    //glBindVertexArray (this->vaos[0]);
+    glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+    //glUnbindVertexArray (this->vaos[0]);
 }
 
 void

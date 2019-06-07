@@ -48,6 +48,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     glUseProgram (this->shaderprog);
 
     // Now client code can set up HexGridVisuals.
+    glEnable (GL_DEPTH_TEST);
 }
 
 morph::Visual::~Visual()
@@ -117,6 +118,12 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
 
     GLuint program = glCreateProgram();
 
+    GLboolean shaderCompilerPresent = GL_TRUE;
+    glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
+    if (shaderCompilerPresent == GL_FALSE) {
+        cerr << "shader compiler NOT present" << endl;
+    }
+
     ShaderInfo* entry = shaders;
     while (entry->type != GL_NONE) {
         GLuint shader = glCreateShader (entry->type);
@@ -146,15 +153,18 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
             cout << "Shader compilation resulted in GL_INVALID_OPERATION" << endl;
         } // shaderError is 0
 
-        GLint compiled;
+        GLint compiled = GL_FALSE;
         glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
-        if (!compiled) {
-            GLsizei len;
+        if (compiled != GL_TRUE) {
+            GLsizei len = 0;
             glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &len);
-            GLchar* log = new GLchar[len+1];
-            glGetShaderInfoLog (shader, len, &len, log);
-            std::cerr << "Shader compilation failed: " << (char*)log << std::endl;
-            delete [] log;
+            cout << "compiled is GL_FALSE. log length is " << len << " compiled has value " << compiled <<  endl;
+            if (len > 0) {
+                GLchar* log = new GLchar[len+1];
+                glGetShaderInfoLog (shader, len, &len, log);
+                std::cerr << "Shader compilation failed: " << (char*)log << std::endl;
+                delete [] log;
+            }
             return 0;
         }
 
