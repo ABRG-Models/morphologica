@@ -120,10 +120,12 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
 
     GLuint program = glCreateProgram();
 
-    GLboolean shaderCompilerPresent = GL_FALSE;
-    glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
+    GLint shaderCompilerPresent = 0;
+    glGetIntegerv (GL_SHADER_COMPILER, &shaderCompilerPresent);
     if (shaderCompilerPresent == GL_FALSE) {
-        cerr << "shader compiler NOT present" << endl;
+        cerr << "shader compiler NOT present: " << shaderCompilerPresent << endl;
+    } else {
+        cout << "shader compiler present: " << shaderCompilerPresent << endl;
     }
 
     ShaderInfo* entry = shaders;
