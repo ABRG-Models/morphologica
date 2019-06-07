@@ -37,6 +37,8 @@ morph::Visual::Visual(int width, int height, const string& title)
         cerr << "GLFW window creation failed!" << endl;
     }
 
+    glfwMakeContextCurrent (this->window);
+
     // Load up the shaders
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Visual.vert.glsl" },
@@ -118,7 +120,7 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
 
     GLuint program = glCreateProgram();
 
-    GLboolean shaderCompilerPresent = GL_TRUE;
+    GLboolean shaderCompilerPresent = GL_FALSE;
     glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
     if (shaderCompilerPresent == GL_FALSE) {
         cerr << "shader compiler NOT present" << endl;
