@@ -23,15 +23,27 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
     this->hg = _hg;
     this->data = _data;
 
-    // Allocate the vertex buffer object array
+    // Allocate the vertex buffer object array and init the unsigned
+    // int `names' to 1,2,3,4
     this->bufobjs = new GLuint[4];
 
     this->initializeVertices();
 
     glGenVertexArrays (1, this->vaos);
+    cout << "vertex array name/handle: " << this->vaos[0] << endl;
+    // Check for GL_INVALID_VALUE?
     glBindVertexArray (this->vaos[0]);
+    // Check for GL_INVALID_VALUE?
 
-    glCreateBuffers (4, this->bufobjs);
+    // OpenGL 4.5 and lower:
+    glGenBuffers (4, this->bufobjs);
+    // OpenGL 4.5 only:
+    //glCreateBuffers (4, this->bufobjs);
+    // Verify buffer names:
+    for (unsigned int ii = 0; ii < 4; ++ii) {
+        cout << "buffer " << ii << ": " << this->bufobjs[ii] << endl;
+    }
+    // Check for GL_INVALID_VALUE?
 
     // Set up indices buffer object (bind, then allocate space)
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, this->bufobjs[0]); // For index buffer
@@ -148,7 +160,8 @@ void
 morph::HexGridVisual::render (void)
 {
     // render...
-    //glBindVertexArray (this->vaos[0]);
+    glBindVertexArray (this->vaos[0]);
+    cout << "Drawing " << this->indices.size() << " GL_TRIANGLES" << endl;
     glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
     //glUnbindVertexArray (this->vaos[0]);
 }
@@ -170,8 +183,10 @@ morph::HexGridVisual::setupVBO (GLuint& buf,
     this->parent->shaderprog->setAttributeBuffer (arrayname, GL_FLOAT, 0, 3);
 #endif
     // Something like:
+#if 1
     glVertexAttribPointer (vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray (vPosition);
+#endif
 }
 
 void
