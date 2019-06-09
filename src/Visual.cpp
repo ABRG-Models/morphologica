@@ -62,12 +62,17 @@ morph::Visual::~Visual()
 void
 morph::Visual::render (void)
 {
+    static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
+    glClearBufferfv (GL_COLOR, 0, white);
+
     // Render it.
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();
         ++hgvi;
     }
+
+    glfwSwapBuffers (this->window);
 }
 
 void
