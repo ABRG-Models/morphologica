@@ -32,6 +32,9 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -g -std=c++11")
 endif()
 
+# Following `cmake --help-policy CMP0072`
+set(OpenGL_GL_PREFERENCE "GLVND")
+
 # Additional GL compiler flags.
 # maybe -DGL_GLEXT_PROTOTYPES
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")

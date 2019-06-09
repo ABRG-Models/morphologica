@@ -11,6 +11,9 @@ using std::endl;
 #include <cstring>
 using std::strlen;
 
+#include "Quaternion.h"
+using morph::Quaternion;
+
 using morph::ShaderInfo;
 
 void
@@ -60,8 +63,88 @@ morph::Visual::~Visual()
 }
 
 void
+morph::Visual::mousePressEvent ()
+{
+    // Save mouse press position
+    this->mousePressPosition = Vector2<float> (0.0f, 0.0f);
+}
+
+void morph::Visual::mouseReleaseEvent ()
+{
+    // Mouse release position - mouse press position
+    Vector2<float> diff = Vector2 (0.0f, 0.0f); // FIXME: init with mouse release position
+    diff -= this->mousePressPosition;
+
+    // Rotation axis is perpendicular to the mouse position difference vector
+    Vector3<float> n = Vector3<float>(diff[1], diff[0], 0.0f).renormalize();
+
+    // Accelerate angular speed relative to the length of the mouse sweep
+    float acc = diff.length() / 100.0;
+
+    // Calculate new rotation axis as weighted sum
+    this->rotationAxis = ((this->rotationAxis * this->angularSpeed)
+                          + (n * acc)).renormalize();
+
+    // Increase angular speed
+    this->angularSpeed += acc;
+}
+
+void morph::Visual::timerEvent ()
+{
+    // Decrease angular speed (friction)
+    this->angularSpeed *= 0.95;
+
+    // Stop rotation when speed goes below threshold
+    if (this->angularSpeed < 0.01) {
+        this->angularSpeed = 0.0;
+    } else {
+        // Update rotation
+        Quaternion<float> q;
+        q.rotate (rotationAxis, angularSpeed);
+        this->rotation.premultiply (q);
+
+        // Request an update
+        this->render();
+    }
+}
+
+void
+morph::Visual::setIdentity (array<float, 16> a)
+{
+#pragma omp simd
+    for (unsigned int i = 0; i < 16; ++i) {
+        a[i] = 0.0f;
+    }
+    a[0] = 1.0f;
+    a[4] = 1.0f;
+    a[10] = 1.0f;
+    a[15] = 1.0f;
+}
+
+void
+morph::Visual::setProjectionPerspective (float fov, float aspect, float zNear, float zFar)
+{
+    // Apply perspective change to this->projection (the column major 4x4 transformation matrix)
+}
+
+void
+morph::Visual::setPerspective (int w, int h)
+{
+    // Calculate aspect ratio
+    float aspect = float(w) / float(h ? h : 1);
+    // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
+    const float zNear = 0.5, zFar = 10.0, fov = 65.0;
+    // Reset projection
+    this->setIdentify (this->projection);
+    // Set perspective projection
+    this->projection.perspective (fov, aspect, zNear, zFar);
+}
+
+void
 morph::Visual::render (void)
 {
+    Quaternion<float> q;
+
     static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
     glClearBufferfv (GL_COLOR, 0, white);
 
