@@ -103,11 +103,9 @@ void morph::Visual::timerEvent ()
         this->angularSpeed = 0.0;
     } else {
         // Update rotation
-        Quaternion<float> q;
-#if 0
-        q.rotate (this->rotationAxis, this->angularSpeed);
-#endif
-        this->rotation.premultiply (q);
+        Quaternion<float> rotationQuaternion;
+        rotationQuaternion.initFromAxisAngle (this->rotationAxis, this->angularSpeed);
+        this->rotation.premultiply (rotationQuaternion);
 
         // Request an update
         this->render();
@@ -115,41 +113,40 @@ void morph::Visual::timerEvent ()
 }
 
 void
-morph::Visual::setIdentity (array<float, 16> a)
+morph::Visual::setPerspective (void)
 {
-#pragma omp simd
-    for (unsigned int i = 0; i < 16; ++i) {
-        a[i] = 0.0f;
-    }
-    a[0] = 1.0f;
-    a[4] = 1.0f;
-    a[10] = 1.0f;
-    a[15] = 1.0f;
-}
+    // Obtain window size
+    int w, h;
+    glfwGetWindowSize (this->window, &w, &h);
 
-void
-morph::Visual::setProjectionPerspective (float fov, float aspect, float zNear, float zFar)
-{
-    // Apply perspective change to this->projection (the column major 4x4 transformation matrix)
-}
-
-void
-morph::Visual::setPerspective (int w, int h)
-{
     // Calculate aspect ratio
     float aspect = float(w) / float(h ? h : 1);
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
     const float zNear = 0.5, zFar = 10.0, fov = 65.0;
     // Reset projection
-//    this->setIdentify (this->projection);
+    this->projection.setToIdentity();
     // Set perspective projection
-//    this->projection.perspective (fov, aspect, zNear, zFar);
+    this->projection.perspective (fov, aspect, zNear, zFar);
 }
 
 void
 morph::Visual::render (void)
 {
     Quaternion<float> q;
+
+    // Set the perspective from the width/height
+    this->setPerspective();
+
+    // Calculate model view transformation
+    TransformMatrix<float> rotmat;
+    rotmat.translate (0.0, 0.0, -3.50); // send backwards into distance
+    rotmat.rotate (this->rotation);
+
+    // Bind shader program...
+    //this->shaderProg->bind();
+
+    // Set modelview-projection matrix
+    //this->shaderProg->setUniformValue ("mvp_matrix", this->projection * rotmat);
 
     static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
     glClearBufferfv (GL_COLOR, 0, white);
@@ -162,6 +159,8 @@ morph::Visual::render (void)
     }
 
     glfwSwapBuffers (this->window);
+
+    // release shader?
 }
 
 void

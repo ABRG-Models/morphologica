@@ -14,6 +14,7 @@
 #include "HexGrid.h"
 #include "HexGridVisual.h"
 #include "Quaternion.h"
+#include "TransformMatrix.h"
 #include "Vector2.h"
 #include "Vector3.h"
 
@@ -114,15 +115,8 @@ namespace morph {
         //! trigger on timer event
         void timerEvent (void);
 
-        //! Set identity on a, in col major form. Probably code up a
-        //! XformMatrix class and move this there.
-        void setIdentity (array<float, 16> a);
-
-        //! Apply perspective change to this->projection (the column major 4x4 transformation matrix)
-        void setProjectionPerspective (float fov, float aspect, float zNear, float zFar);
-
         //! Set perspective based on window width and height
-        void setPerspective (int w, int h);
+        void setPerspective (void);
 
     private:
 
@@ -154,7 +148,7 @@ namespace morph {
         Vector3<float> rotationAxis;
         float angularSpeed;
         Quaternion<float> rotation;
-        array<float, 16> projection;
+        TransformMatrix<float> projection;
         //@}
     };
 
