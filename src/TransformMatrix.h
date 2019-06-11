@@ -222,76 +222,76 @@ namespace morph {
 
             array<Flt, 16> result;
             // Top row
-            result[0] = this->mat[0] * m2[0]
-                + this->mat[4] * m2[1]
-                + this->mat[8] * m2[2]
-                + this->mat[12] * m2[3];
-            result[4] = this->mat[0] * m2[4]
-                + this->mat[4] * m2[5]
-                + this->mat[8] * m2[6]
-                + this->mat[12] * m2[7];
-            result[8] = this->mat[0] * m2[8]
-                + this->mat[4] * m2[9]
-                + this->mat[8] * m2[10]
-                + this->mat[12] * m2[11];
-            result[12] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result[0] = this->mat[0] * m2.mat[0]
+                + this->mat[4] * m2.mat[1]
+                + this->mat[8] * m2.mat[2]
+                + this->mat[12] * m2.mat[3];
+            result[4] = this->mat[0] * m2.mat[4]
+                + this->mat[4] * m2.mat[5]
+                + this->mat[8] * m2.mat[6]
+                + this->mat[12] * m2.mat[7];
+            result[8] = this->mat[0] * m2.mat[8]
+                + this->mat[4] * m2.mat[9]
+                + this->mat[8] * m2.mat[10]
+                + this->mat[12] * m2.mat[11];
+            result[12] = this->mat[0] * m2.mat[12]
+                + this->mat[4] * m2.mat[13]
+                + this->mat[8] * m2.mat[14]
+                + this->mat[12] * m2.mat[15];
 
             // Second row
-            result[1] = this->mat[1] * m2[0]
-                + this->mat[5] * m2[1]
-                + this->mat[9] * m2[2]
-                + this->mat[13] * m2[3];
-            result[5] = this->mat[1] * m2[4]
-                + this->mat[5] * m2[5]
-                + this->mat[9] * m2[6]
-                + this->mat[13] * m2[7];
-            result[9] = this->mat[1] * m2[8]
-                + this->mat[5] * m2[9]
-                + this->mat[9] * m2[10]
-                + this->mat[13] * m2[11];
-            result[13] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result[1] = this->mat[1] * m2.mat[0]
+                + this->mat[5] * m2.mat[1]
+                + this->mat[9] * m2.mat[2]
+                + this->mat[13] * m2.mat[3];
+            result[5] = this->mat[1] * m2.mat[4]
+                + this->mat[5] * m2.mat[5]
+                + this->mat[9] * m2.mat[6]
+                + this->mat[13] * m2.mat[7];
+            result[9] = this->mat[1] * m2.mat[8]
+                + this->mat[5] * m2.mat[9]
+                + this->mat[9] * m2.mat[10]
+                + this->mat[13] * m2.mat[11];
+            result[13] = this->mat[0] * m2.mat[12]
+                + this->mat[4] * m2.mat[13]
+                + this->mat[8] * m2.mat[14]
+                + this->mat[12] * m2.mat[15];
 
             // Third row
-            result[2] = this->mat[2] * m2[0]
-                + this->mat[6] * m2[1]
-                + this->mat[10] * m2[2]
-                + this->mat[14] * m2[3];
-            result[6] = this->mat[2] * m2[4]
-                + this->mat[6] * m2[5]
-                + this->mat[10] * m2[6]
-                + this->mat[14] * m2[7];
-            result[10] = this->mat[2] * m2[8]
-                + this->mat[6] * m2[9]
-                + this->mat[10] * m2[10]
-                + this->mat[14] * m2[11];
-            result[14] = this->mat[2] * m2[12]
-                + this->mat[6] * m2[13]
-                + this->mat[10] * m2[14]
-                + this->mat[14] * m2[15];
+            result[2] = this->mat[2] * m2.mat[0]
+                + this->mat[6] * m2.mat[1]
+                + this->mat[10] * m2.mat[2]
+                + this->mat[14] * m2.mat[3];
+            result[6] = this->mat[2] * m2.mat[4]
+                + this->mat[6] * m2.mat[5]
+                + this->mat[10] * m2.mat[6]
+                + this->mat[14] * m2.mat[7];
+            result[10] = this->mat[2] * m2.mat[8]
+                + this->mat[6] * m2.mat[9]
+                + this->mat[10] * m2.mat[10]
+                + this->mat[14] * m2.mat[11];
+            result[14] = this->mat[2] * m2.mat[12]
+                + this->mat[6] * m2.mat[13]
+                + this->mat[10] * m2.mat[14]
+                + this->mat[14] * m2.mat[15];
 
             // Bottom row
-            result[3] = this->mat[3] * m2[0]
-                + this->mat[7] * m2[1]
-                + this->mat[11] * m2[2]
-                + this->mat[15] * m2[3];
-            result[7] = this->mat[3] * m2[4]
-                + this->mat[7] * m2[5]
-                + this->mat[11] * m2[6]
-                + this->mat[15] * m2[7];
-            result[11] = this->mat[3] * m2[8]
-                + this->mat[7] * m2[9]
-                + this->mat[11] * m2[10]
-                + this->mat[15] * m2[11];
-            result[15] = this->mat[3] * m2[12]
-                + this->mat[7] * m2[13]
-                + this->mat[11] * m2[14]
-                + this->mat[15] * m2[15];
+            result[3] = this->mat[3] * m2.mat[0]
+                + this->mat[7] * m2.mat[1]
+                + this->mat[11] * m2.mat[2]
+                + this->mat[15] * m2.mat[3];
+            result[7] = this->mat[3] * m2.mat[4]
+                + this->mat[7] * m2.mat[5]
+                + this->mat[11] * m2.mat[6]
+                + this->mat[15] * m2.mat[7];
+            result[11] = this->mat[3] * m2.mat[8]
+                + this->mat[7] * m2.mat[9]
+                + this->mat[11] * m2.mat[10]
+                + this->mat[15] * m2.mat[11];
+            result[15] = this->mat[3] * m2.mat[12]
+                + this->mat[7] * m2.mat[13]
+                + this->mat[11] * m2.mat[14]
+                + this->mat[15] * m2.mat[15];
 
             this->mat.swap (result);
 
@@ -300,75 +300,75 @@ namespace morph {
 
         TransformMatrix<Flt> operator* (const array<Flt, 16>& m2) {
 
-            array<Flt, 16> result;
+            TransformMatrix<Flt> result;
             // Top row
-            result[0] = this->mat[0] * m2[0]
+            result.mat[0] = this->mat[0] * m2[0]
                 + this->mat[4] * m2[1]
                 + this->mat[8] * m2[2]
                 + this->mat[12] * m2[3];
-            result[4] = this->mat[0] * m2[4]
+            result.mat[4] = this->mat[0] * m2[4]
                 + this->mat[4] * m2[5]
                 + this->mat[8] * m2[6]
                 + this->mat[12] * m2[7];
-            result[8] = this->mat[0] * m2[8]
+            result.mat[8] = this->mat[0] * m2[8]
                 + this->mat[4] * m2[9]
                 + this->mat[8] * m2[10]
                 + this->mat[12] * m2[11];
-            result[12] = this->mat[0] * m2[12]
+            result.mat[12] = this->mat[0] * m2[12]
                 + this->mat[4] * m2[13]
                 + this->mat[8] * m2[14]
                 + this->mat[12] * m2[15];
 
             // Second row
-            result[1] = this->mat[1] * m2[0]
+            result.mat[1] = this->mat[1] * m2[0]
                 + this->mat[5] * m2[1]
                 + this->mat[9] * m2[2]
                 + this->mat[13] * m2[3];
-            result[5] = this->mat[1] * m2[4]
+            result.mat[5] = this->mat[1] * m2[4]
                 + this->mat[5] * m2[5]
                 + this->mat[9] * m2[6]
                 + this->mat[13] * m2[7];
-            result[9] = this->mat[1] * m2[8]
+            result.mat[9] = this->mat[1] * m2[8]
                 + this->mat[5] * m2[9]
                 + this->mat[9] * m2[10]
                 + this->mat[13] * m2[11];
-            result[13] = this->mat[0] * m2[12]
+            result.mat[13] = this->mat[0] * m2[12]
                 + this->mat[4] * m2[13]
                 + this->mat[8] * m2[14]
                 + this->mat[12] * m2[15];
 
             // Third row
-            result[2] = this->mat[2] * m2[0]
+            result.mat[2] = this->mat[2] * m2[0]
                 + this->mat[6] * m2[1]
                 + this->mat[10] * m2[2]
                 + this->mat[14] * m2[3];
-            result[6] = this->mat[2] * m2[4]
+            result.mat[6] = this->mat[2] * m2[4]
                 + this->mat[6] * m2[5]
                 + this->mat[10] * m2[6]
                 + this->mat[14] * m2[7];
-            result[10] = this->mat[2] * m2[8]
+            result.mat[10] = this->mat[2] * m2[8]
                 + this->mat[6] * m2[9]
                 + this->mat[10] * m2[10]
                 + this->mat[14] * m2[11];
-            result[14] = this->mat[2] * m2[12]
+            result.mat[14] = this->mat[2] * m2[12]
                 + this->mat[6] * m2[13]
                 + this->mat[10] * m2[14]
                 + this->mat[14] * m2[15];
 
             // Bottom row
-            result[3] = this->mat[3] * m2[0]
+            result.mat[3] = this->mat[3] * m2[0]
                 + this->mat[7] * m2[1]
                 + this->mat[11] * m2[2]
                 + this->mat[15] * m2[3];
-            result[7] = this->mat[3] * m2[4]
+            result.mat[7] = this->mat[3] * m2[4]
                 + this->mat[7] * m2[5]
                 + this->mat[11] * m2[6]
                 + this->mat[15] * m2[7];
-            result[11] = this->mat[3] * m2[8]
+            result.mat[11] = this->mat[3] * m2[8]
                 + this->mat[7] * m2[9]
                 + this->mat[11] * m2[10]
                 + this->mat[15] * m2[11];
-            result[15] = this->mat[3] * m2[12]
+            result.mat[15] = this->mat[3] * m2[12]
                 + this->mat[7] * m2[13]
                 + this->mat[11] * m2[14]
                 + this->mat[15] * m2[15];
@@ -378,78 +378,78 @@ namespace morph {
 
         TransformMatrix<Flt> operator* (const TransformMatrix<Flt>& m2) {
 
-            array<Flt, 16> result;
+            TransformMatrix<Flt> result;
             // Top row
-            result[0] = this->mat[0] * m2[0]
-                + this->mat[4] * m2[1]
-                + this->mat[8] * m2[2]
-                + this->mat[12] * m2[3];
-            result[4] = this->mat[0] * m2[4]
-                + this->mat[4] * m2[5]
-                + this->mat[8] * m2[6]
-                + this->mat[12] * m2[7];
-            result[8] = this->mat[0] * m2[8]
-                + this->mat[4] * m2[9]
-                + this->mat[8] * m2[10]
-                + this->mat[12] * m2[11];
-            result[12] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result.mat[0] = this->mat[0] * m2.mat[0]
+                + this->mat[4] * m2.mat[1]
+                + this->mat[8] * m2.mat[2]
+                + this->mat[12] * m2.mat[3];
+            result.mat[4] = this->mat[0] * m2.mat[4]
+                + this->mat[4] * m2.mat[5]
+                + this->mat[8] * m2.mat[6]
+                + this->mat[12] * m2.mat[7];
+            result.mat[8] = this->mat[0] * m2.mat[8]
+                + this->mat[4] * m2.mat[9]
+                + this->mat[8] * m2.mat[10]
+                + this->mat[12] * m2.mat[11];
+            result.mat[12] = this->mat[0] * m2.mat[12]
+                + this->mat[4] * m2.mat[13]
+                + this->mat[8] * m2.mat[14]
+                + this->mat[12] * m2.mat[15];
 
             // Second row
-            result[1] = this->mat[1] * m2[0]
-                + this->mat[5] * m2[1]
-                + this->mat[9] * m2[2]
-                + this->mat[13] * m2[3];
-            result[5] = this->mat[1] * m2[4]
-                + this->mat[5] * m2[5]
-                + this->mat[9] * m2[6]
-                + this->mat[13] * m2[7];
-            result[9] = this->mat[1] * m2[8]
-                + this->mat[5] * m2[9]
-                + this->mat[9] * m2[10]
-                + this->mat[13] * m2[11];
-            result[13] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result.mat[1] = this->mat[1] * m2.mat[0]
+                + this->mat[5] * m2.mat[1]
+                + this->mat[9] * m2.mat[2]
+                + this->mat[13] * m2.mat[3];
+            result.mat[5] = this->mat[1] * m2.mat[4]
+                + this->mat[5] * m2.mat[5]
+                + this->mat[9] * m2.mat[6]
+                + this->mat[13] * m2.mat[7];
+            result.mat[9] = this->mat[1] * m2.mat[8]
+                + this->mat[5] * m2.mat[9]
+                + this->mat[9] * m2.mat[10]
+                + this->mat[13] * m2.mat[11];
+            result.mat[13] = this->mat[0] * m2.mat[12]
+                + this->mat[4] * m2.mat[13]
+                + this->mat[8] * m2.mat[14]
+                + this->mat[12] * m2.mat[15];
 
             // Third row
-            result[2] = this->mat[2] * m2[0]
-                + this->mat[6] * m2[1]
-                + this->mat[10] * m2[2]
-                + this->mat[14] * m2[3];
-            result[6] = this->mat[2] * m2[4]
-                + this->mat[6] * m2[5]
-                + this->mat[10] * m2[6]
-                + this->mat[14] * m2[7];
-            result[10] = this->mat[2] * m2[8]
-                + this->mat[6] * m2[9]
-                + this->mat[10] * m2[10]
-                + this->mat[14] * m2[11];
-            result[14] = this->mat[2] * m2[12]
-                + this->mat[6] * m2[13]
-                + this->mat[10] * m2[14]
-                + this->mat[14] * m2[15];
+            result.mat[2] = this->mat[2] * m2.mat[0]
+                + this->mat[6] * m2.mat[1]
+                + this->mat[10] * m2.mat[2]
+                + this->mat[14] * m2.mat[3];
+            result.mat[6] = this->mat[2] * m2.mat[4]
+                + this->mat[6] * m2.mat[5]
+                + this->mat[10] * m2.mat[6]
+                + this->mat[14] * m2.mat[7];
+            result.mat[10] = this->mat[2] * m2.mat[8]
+                + this->mat[6] * m2.mat[9]
+                + this->mat[10] * m2.mat[10]
+                + this->mat[14] * m2.mat[11];
+            result.mat[14] = this->mat[2] * m2.mat[12]
+                + this->mat[6] * m2.mat[13]
+                + this->mat[10] * m2.mat[14]
+                + this->mat[14] * m2.mat[15];
 
             // Bottom row
-            result[3] = this->mat[3] * m2[0]
-                + this->mat[7] * m2[1]
-                + this->mat[11] * m2[2]
-                + this->mat[15] * m2[3];
-            result[7] = this->mat[3] * m2[4]
-                + this->mat[7] * m2[5]
-                + this->mat[11] * m2[6]
-                + this->mat[15] * m2[7];
-            result[11] = this->mat[3] * m2[8]
-                + this->mat[7] * m2[9]
-                + this->mat[11] * m2[10]
-                + this->mat[15] * m2[11];
-            result[15] = this->mat[3] * m2[12]
-                + this->mat[7] * m2[13]
-                + this->mat[11] * m2[14]
-                + this->mat[15] * m2[15];
+            result.mat[3] = this->mat[3] * m2.mat[0]
+                + this->mat[7] * m2.mat[1]
+                + this->mat[11] * m2.mat[2]
+                + this->mat[15] * m2.mat[3];
+            result.mat[7] = this->mat[3] * m2.mat[4]
+                + this->mat[7] * m2.mat[5]
+                + this->mat[11] * m2.mat[6]
+                + this->mat[15] * m2.mat[7];
+            result.mat[11] = this->mat[3] * m2.mat[8]
+                + this->mat[7] * m2.mat[9]
+                + this->mat[11] * m2.mat[10]
+                + this->mat[15] * m2.mat[11];
+            result.mat[15] = this->mat[3] * m2.mat[12]
+                + this->mat[7] * m2.mat[13]
+                + this->mat[11] * m2.mat[14]
+                + this->mat[15] * m2.mat[15];
 
             return result;
         }
