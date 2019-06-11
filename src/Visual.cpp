@@ -146,7 +146,9 @@ morph::Visual::render (void)
     //this->shaderProg->bind();
 
     // Set modelview-projection matrix
-    //this->shaderProg->setUniformValue ("mvp_matrix", this->projection * rotmat);
+    TransformMatrix<float> pr = this->projection * rotmat;
+    int loc = 1; // location_for_name ("mvp_matrix");
+    glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
 
     static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
     glClearBufferfv (GL_COLOR, 0, white);
