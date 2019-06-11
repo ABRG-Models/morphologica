@@ -96,3 +96,8 @@ add_test(test_ellipseboundary test_ellipseboundary)
 add_executable(testvis testVisual.cpp)
 target_link_libraries(testvis morphologica)
 add_test(testvis testvis)
+
+# Test morph::Process class
+add_executable(testProcess testProcess.cpp)
+target_link_libraries(testProcess morphologica)
+add_test(testProcess testProcess)

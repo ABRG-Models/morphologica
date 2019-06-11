@@ -66,12 +66,15 @@ void
 morph::Visual::mousePressEvent ()
 {
     // Save mouse press position
+#if 0
     this->mousePressPosition = Vector2<float> (0.0f, 0.0f);
+#endif
 }
 
 void morph::Visual::mouseReleaseEvent ()
 {
     // Mouse release position - mouse press position
+#if 0
     Vector2<float> diff = Vector2 (0.0f, 0.0f); // FIXME: init with mouse release position
     diff -= this->mousePressPosition;
 
@@ -87,6 +90,7 @@ void morph::Visual::mouseReleaseEvent ()
 
     // Increase angular speed
     this->angularSpeed += acc;
+#endif
 }
 
 void morph::Visual::timerEvent ()
@@ -100,7 +104,9 @@ void morph::Visual::timerEvent ()
     } else {
         // Update rotation
         Quaternion<float> q;
-        q.rotate (rotationAxis, angularSpeed);
+#if 0
+        q.rotate (this->rotationAxis, this->angularSpeed);
+#endif
         this->rotation.premultiply (q);
 
         // Request an update
@@ -135,9 +141,9 @@ morph::Visual::setPerspective (int w, int h)
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
     const float zNear = 0.5, zFar = 10.0, fov = 65.0;
     // Reset projection
-    this->setIdentify (this->projection);
+//    this->setIdentify (this->projection);
     // Set perspective projection
-    this->projection.perspective (fov, aspect, zNear, zFar);
+//    this->projection.perspective (fov, aspect, zNear, zFar);
 }
 
 void

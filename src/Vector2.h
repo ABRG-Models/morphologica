@@ -23,7 +23,7 @@ namespace morph {
             : x(0.0)
             , y(0.0) {}
 
-        Quaternion (Flt _x, Flt _y)
+        Vector2 (Flt _x, Flt _y)
             : x(_x)
             , y(_y) {}
 

@@ -24,7 +24,7 @@ namespace morph {
             , y(0.0)
             , z(0.0) {}
 
-        Quaternion (Flt _x, Flt _y)
+        Vector3 (Flt _x, Flt _y, Flt _z)
             : x(_x)
             , y(_y)
             , z(_z) {}
