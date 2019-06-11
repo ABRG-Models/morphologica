@@ -5,6 +5,9 @@
 #ifndef _QUATERNION_H_
 #define _QUATERNION_H_
 
+#include "Vector3.h"
+using morph::Vector3;
+
 #include <cmath>
 using std::abs;
 using std::sqrt;
@@ -22,6 +25,12 @@ namespace morph {
     template <class Flt>
     class Quaternion
     {
+    private:
+        const Flt oneOver360   = 0.00277777777778;
+        const Flt pi           = 3.14159265358979;
+        const Flt piOver360    = 0.00872664625997;
+        const Flt twoPiOver360 = 0.01745329251994;
+
     public:
         // Note, we need a Quaternion which has magnitude 1 as the default.
         Quaternion (void)
@@ -70,6 +79,25 @@ namespace morph {
                 rtn = false;
             }
             return rtn;
+        }
+
+        /*!
+         * Initialize the Quaternion from the given axis and angle.
+         */
+        void initFromAxisAngle (const Vector3<Flt>& axis, const Flt& angle) {
+
+            Flt a = piOver360 * angle; // angle/2 converted to rads
+            Flt s = sin(a);
+            Flt c = cos(a);
+            Vector3<Flt> ax = axis;
+            ax.renormalize();
+
+            this->w = c;
+            this->x = ax.x * s;
+            this->y = ax.y * s;
+            this->z = ax.z * s;
+
+            this->renormalize();
         }
 
         /*!
