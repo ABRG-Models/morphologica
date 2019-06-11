@@ -51,7 +51,7 @@ namespace morph {
             this->w *= oneovermag;
             this->x *= oneovermag;
             this->y *= oneovermag;
-            this->z *= oneovermag
+            this->z *= oneovermag;
         }
 
         /*!

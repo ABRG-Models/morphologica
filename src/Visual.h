@@ -122,7 +122,7 @@ namespace morph {
         void setProjectionPerspective (float fov, float aspect, float zNear, float zFar);
 
         //! Set perspective based on window width and height
-        void setPerspective (int w, int h)
+        void setPerspective (int w, int h);
 
     private:
 

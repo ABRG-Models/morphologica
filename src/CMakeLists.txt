@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp Visual.cpp HexGridVisual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
+set(morphlibsrc display.cpp Visual.cpp HexGridVisual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -71,7 +71,7 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h Visual.h HexGridVisual.h Quaternion.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h
+  FILES display.h Visual.h HexGridVisual.h Quaternion.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h Process.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 
