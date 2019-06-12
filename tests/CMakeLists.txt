@@ -106,3 +106,13 @@ add_test(testProcess testProcess)
 add_executable(testQuaternion testQuaternion.cpp)
 target_link_libraries(testQuaternion morphologica)
 add_test(testQuaternion testQuaternion)
+
+# Test morph::Vector3
+add_executable(testVector3 testVector3.cpp)
+target_link_libraries(testVector3 morphologica)
+add_test(testVector3 testVector3)
+
+# Test morph::Transformmatrix
+add_executable(testTransformMatrix testTransformMatrix.cpp)
+target_link_libraries(testTransformMatrix morphologica)
+add_test(testTransformMatrix testTransformMatrix)

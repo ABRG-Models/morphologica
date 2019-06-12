@@ -51,6 +51,14 @@ namespace morph {
             cout << "| " << mat[3] << " , " << mat[7] << " , " << mat[11] << " , " << mat[15] << " |\n";
         }
 
+        //! Output array to stdout
+        static void output (const array<Flt, 16>& arr) {
+            cout << "| " << arr[0] << " , " << arr[4] << " , " << arr[8] << " , " << arr[12] << " |\n";
+            cout << "| " << arr[1] << " , " << arr[5] << " , " << arr[9] << " , " << arr[13] << " |\n";
+            cout << "| " << arr[2] << " , " << arr[6] << " , " << arr[10] << " , " << arr[14] << " |\n";
+            cout << "| " << arr[3] << " , " << arr[7] << " , " << arr[11] << " , " << arr[15] << " |\n";
+        }
+
         //! Self-explanatory
         void setToIdentity (void) {
             this->mat.fill (static_cast<Flt>(0.0));
@@ -150,7 +158,7 @@ namespace morph {
             *this *= m;
         }
 
-        TransformMatrix<Flt> operator*= (const array<Flt, 16>& m2) {
+        void operator*= (const array<Flt, 16>& m2) {
 
             array<Flt, 16> result;
             // Top row
@@ -226,11 +234,9 @@ namespace morph {
                 + this->mat[15] * m2[15];
 
             this->mat.swap (result);
-
-            return *this;
         }
 
-        TransformMatrix<Flt> operator*= (const TransformMatrix<Flt>& m2) {
+        void operator*= (const TransformMatrix<Flt>& m2) {
 
             array<Flt, 16> result;
             // Top row
@@ -306,11 +312,9 @@ namespace morph {
                 + this->mat[15] * m2.mat[15];
 
             this->mat.swap (result);
-
-            return *this;
         }
 
-        TransformMatrix<Flt> operator* (const array<Flt, 16>& m2) {
+        TransformMatrix<Flt> operator* (const array<Flt, 16>& m2) const {
 
             TransformMatrix<Flt> result;
             // Top row
@@ -388,7 +392,7 @@ namespace morph {
             return result;
         }
 
-        TransformMatrix<Flt> operator* (const TransformMatrix<Flt>& m2) {
+        TransformMatrix<Flt> operator* (const TransformMatrix<Flt>& m2) const {
 
             TransformMatrix<Flt> result;
             // Top row
