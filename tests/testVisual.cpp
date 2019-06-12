@@ -54,12 +54,10 @@ int main()
         unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
         cout << "Added HexGridVisual with gridId " << gridId << endl;
 
-        v.render();
-
-        cout << "Enter key to end" << endl;
-
-        int a;
-        cin >> a;
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout(2.5);
+            v.render();
+        }
 
     } catch (const exception& e) {
         cerr << "Caught exception reading trial.svg: " << e.what() << endl;

@@ -16,12 +16,6 @@ using morph::Quaternion;
 
 using morph::ShaderInfo;
 
-void
-morph::Visual::errorCallback (int error, const char* description)
-{
-    cerr << "Error: " << description << " (code "  << error << ")" << endl;
-}
-
 morph::Visual::Visual(int width, int height, const string& title)
 {
     if (!glfwInit()) {
@@ -29,8 +23,8 @@ morph::Visual::Visual(int width, int height, const string& title)
         cerr << "GLFW initialization failed!" << endl;
     }
 
+    // Set up error callback
     glfwSetErrorCallback (morph::Visual::errorCallback);
-
 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -39,6 +33,12 @@ morph::Visual::Visual(int width, int height, const string& title)
         // Window or OpenGL context creation failed
         cerr << "GLFW window creation failed!" << endl;
     }
+
+    // Fix the event handling for benefit of static functions.
+    this->setEventHandling();
+
+    // Set up key/mouse callbacks
+    glfwSetKeyCallback (this->window, VisualBase::key_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
 
@@ -147,8 +147,8 @@ morph::Visual::render (void)
 
     // Set modelview-projection matrix
     TransformMatrix<float> pr = this->projection * rotmat;
-    int loc = 1; // location_for_name ("mvp_matrix");
-    glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+    glUniformMatrix4fv (glGetUniformLocation (this->shaderprog, "mvp_matrix"),
+                        1, GL_FALSE, pr.mat.data());
 
     static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
     glClearBufferfv (GL_COLOR, 0, white);
@@ -294,3 +294,24 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
 
     return program;
 }
+
+/*!
+ * GLFW callback functions
+ */
+//@{
+
+void
+morph::Visual::errorCallback (int error, const char* description)
+{
+    cerr << "Error: " << description << " (code "  << error << ")" << endl;
+}
+
+void
+morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+        std::cout << "x for exit was pressed!!!!" << std::endl;
+        this->readyToFinish = true;
+    }
+}
+
+//@}
