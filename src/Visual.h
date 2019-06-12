@@ -18,6 +18,9 @@
 #include "Vector2.h"
 #include "Vector3.h"
 
+// A base class with static event handling dispatchers
+#include "VisualBase.h"
+
 #include "GL3/gl3.h"
 
 #include <string>
@@ -61,7 +64,7 @@ namespace morph {
      * also to rotate the entire scene, as well as use keys to
      * generate particular effects/views.
      */
-    class Visual
+    class Visual : VisualBase
     {
     public:
         /*!
@@ -118,6 +121,9 @@ namespace morph {
         //! Set perspective based on window width and height
         void setPerspective (void);
 
+        //! Set to true when the program should end
+        bool readyToFinish = false;
+
     private:
 
         /*!
@@ -150,6 +156,8 @@ namespace morph {
         Quaternion<float> rotation;
         TransformMatrix<float> projection;
         //@}
+
+        virtual void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods);
     };
 
 } // namespace morph
