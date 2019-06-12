@@ -18,6 +18,10 @@ using std::sin;
 #include <array>
 using std::array;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace morph {
 
     template <class Flt>
@@ -30,7 +34,7 @@ namespace morph {
         const Flt twoPiOver360 = 0.01745329251994;
 
     public:
-
+        //! Default constructor
         TransformMatrix (void) {}
 
         /*!
@@ -38,6 +42,14 @@ namespace morph {
          * format to be OpenGL friendly.
          */
         alignas(array<Flt, 16>) array<Flt, 16> mat;
+
+        //! Output to stdout
+        void output (void) const {
+            cout << "| " << mat[0] << " , " << mat[4] << " , " << mat[8] << " , " << mat[12] << " |\n";
+            cout << "| " << mat[1] << " , " << mat[5] << " , " << mat[9] << " , " << mat[13] << " |\n";
+            cout << "| " << mat[2] << " , " << mat[6] << " , " << mat[10] << " , " << mat[14] << " |\n";
+            cout << "| " << mat[3] << " , " << mat[7] << " , " << mat[11] << " , " << mat[15] << " |\n";
+        }
 
         //! Self-explanatory
         void setToIdentity (void) {

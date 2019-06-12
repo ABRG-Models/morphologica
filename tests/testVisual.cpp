@@ -56,7 +56,7 @@ int main()
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout(2.5);
-            v.render();
+            v.timerEvent();
         }
 
     } catch (const exception& e) {

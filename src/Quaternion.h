@@ -17,6 +17,10 @@ using std::sin;
 #include <array>
 using std::array;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace morph {
 
     /*!
@@ -49,6 +53,11 @@ namespace morph {
         alignas(Flt) Flt x;
         alignas(Flt) Flt y;
         alignas(Flt) Flt z;
+
+        //! An "output to stdout" function
+        void output (void) const {
+            cout << "w,x,y,z: " << w << "," << x << "," << y << "," << z << endl;
+        }
 
         /*!
          * Renormalize the Quaternion, in case floating point
