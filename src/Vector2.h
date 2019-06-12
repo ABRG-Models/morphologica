@@ -13,6 +13,10 @@ using std::sin;
 #include <array>
 using std::array;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace morph {
 
     template <class Flt>
@@ -35,13 +39,20 @@ namespace morph {
         alignas(Flt) Flt y;
         //@}
 
+        void output (void) const {
+            cout << "Vector2(" << x << "," << y << ")" << endl;
+        }
+
         /*!
          * Renormalize the vector to 1
          */
         void renormalize (void) {
-            Flt oneovermag = 1.0 / sqrt (x*x + y*y);
-            this->x *= oneovermag;
-            this->y *= oneovermag;
+            Flt denom = sqrt (x*x + y*y);
+            if (denom != static_cast<Flt>(0.0)) {
+                Flt oneovermag = 1.0 / sqrt (x*x + y*y);
+                this->x *= oneovermag;
+                this->y *= oneovermag;
+            }
         }
 
         /*!
@@ -68,6 +79,14 @@ namespace morph {
             return len;
         }
 
+        //! Assignment operator
+        Vector2<Flt> operator= (const Vector2<Flt>& other) {
+            Vector2<Flt> v;
+            v.x = other.x;
+            v.y = other.y;
+            return v;
+        }
+
         //! Scalar multiply.
         //@{
         Vector2<Flt> operator* (const float& f) {
@@ -84,20 +103,34 @@ namespace morph {
         }
 
         //! Vector addition
+        //@{
         Vector2<Flt> operator+ (const Vector2<Flt>& v2) {
             Vector2<Flt> v;
             v.x = this->x + v2.x;
             v.y = this->y + v2.y;
             return v;
         }
+        Vector2<Flt> operator+= (const Vector2<Flt>& v2) {
+            this->x = this->x + v2.x;
+            this->y = this->y + v2.y;
+            return *this;
+        }
+        //@}
 
         //! Vector subtraction
+        //@{
         Vector2<Flt> operator- (const Vector2<Flt>& v2) {
             Vector2<Flt> v;
             v.x = this->x - v2.x;
             v.y = this->y - v2.y;
             return v;
         }
+        Vector2<Flt> operator-= (const Vector2<Flt>& v2) {
+            this->x = this->x - v2.x;
+            this->y = this->y - v2.y;
+            return *this;
+        }
+        //@}
 
         //! Scalar addition
         //@{

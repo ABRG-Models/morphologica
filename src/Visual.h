@@ -142,6 +142,14 @@ namespace morph {
         GLFWwindow* window;
 
         /*!
+         * Cursor position
+         */
+        //@{
+        double cursorx = 0.0;
+        double cursory = 0.0;
+        //@}
+
+        /*!
          * This Visual is going to render some HexGridVisuals for us. 1 or more.
          */
         vector<HexGridVisual*> hexGridVis;
@@ -157,7 +165,15 @@ namespace morph {
         TransformMatrix<float> projection;
         //@}
 
+        /*!
+         * GLFW callback handlers
+         */
+        //@{
         virtual void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods);
+        virtual void cursor_position_callback (GLFWwindow* window, double x, double y);
+        virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods);
+        virtual void window_size_callback (GLFWwindow* window, int width, int height);
+        //@}
     };
 
 } // namespace morph

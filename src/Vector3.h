@@ -13,6 +13,10 @@ using std::sin;
 #include <array>
 using std::array;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 namespace morph {
 
     template <class Flt>
@@ -38,14 +42,21 @@ namespace morph {
         alignas(Flt) Flt z;
         //@}
 
+        void output (void) const {
+            cout << "Vector3(" << x << "," << y << "," << z << ")" << endl;
+        }
+
         /*!
          * Renormalize the vector to 1
          */
         void renormalize (void) {
-            Flt oneovermag = 1.0 / sqrt (x*x + y*y + z*z);
-            this->x *= oneovermag;
-            this->y *= oneovermag;
-            this->z *= oneovermag;
+            Flt denom = sqrt (x*x + y*y + z*z);
+            if (denom != static_cast<Flt>(0.0)) {
+                Flt oneovermag = 1.0 / denom;
+                this->x *= oneovermag;
+                this->y *= oneovermag;
+                this->z *= oneovermag;
+            }
         }
 
         /*!
@@ -72,8 +83,20 @@ namespace morph {
             return len;
         }
 
+        //! Assignment operator
+        void operator= (const Vector3<Flt>& other) {
+            this->x = other.x;
+            this->y = other.y;
+            this->z = other.z;
+        }
+
+        //! Unary negate
+        Vector3<Flt> operator- (void) const {
+            return Vector3<Flt>(-this->x, -this->y, -this->z);
+        }
+
         //! Vector multiply. Cross product.
-        Vector3<Flt> operator* (const Vector3<Flt>& v2) {
+        Vector3<Flt> operator* (const Vector3<Flt>& v2) const {
             Vector3<Flt> v;
             v.x = this->y * v2.z - this->z * v2.y;
             v.y = this->z * v2.x - this->x * v2.z;
@@ -83,24 +106,20 @@ namespace morph {
 
         //! Scalar multiply.
         //@{
-        Vector3<Flt> operator* (const float& f) {
-            Vector3<Flt> v;
-            v.x = this->x * static_cast<Flt>(f);
-            v.y = this->y * static_cast<Flt>(f);
-            v.z = this->z * static_cast<Flt>(f);
-            return v;
+        Vector3<Flt> operator* (const float& f) const {
+            return Vector3<Flt>(this->x * static_cast<Flt>(f),
+                                this->y * static_cast<Flt>(f),
+                                this->z * static_cast<Flt>(f));
         }
-        Vector3<Flt> operator* (const double& d) {
-            Vector3<Flt> v;
-            v.x = this->x * static_cast<Flt>(d);
-            v.y = this->y * static_cast<Flt>(d);
-            v.z = this->z * static_cast<Flt>(d);
-            return v;
+        Vector3<Flt> operator* (const double& d) const {
+            return Vector3<Flt>(this->x * static_cast<Flt>(d),
+                                this->y * static_cast<Flt>(d),
+                                this->z * static_cast<Flt>(d));
         }
         //@}
 
         //! Vector addition
-        Vector3<Flt> operator+ (const Vector3<Flt>& v2) {
+        Vector3<Flt> operator+ (const Vector3<Flt>& v2) const {
             Vector3<Flt> v;
             v.x = this->x + v2.x;
             v.y = this->y + v2.y;
@@ -109,7 +128,7 @@ namespace morph {
         }
 
         //! Vector subtraction
-        Vector3<Flt> operator- (const Vector3<Flt>& v2) {
+        Vector3<Flt> operator- (const Vector3<Flt>& v2) const {
             Vector3<Flt> v;
             v.x = this->x - v2.x;
             v.y = this->y - v2.y;
@@ -119,14 +138,14 @@ namespace morph {
 
         //! Scalar addition
         //@{
-        Vector3<Flt> operator+ (const float& f) {
+        Vector3<Flt> operator+ (const float& f) const {
             Vector3<Flt> v;
             v.x = this->x + static_cast<Flt>(f);
             v.y = this->y + static_cast<Flt>(f);
             v.z = this->z + static_cast<Flt>(f);
             return v;
         }
-        Vector3<Flt> operator+ (const double& d) {
+        Vector3<Flt> operator+ (const double& d) const {
             Vector3<Flt> v;
             v.x = this->x + static_cast<Flt>(d);
             v.y = this->y + static_cast<Flt>(d);
@@ -137,14 +156,14 @@ namespace morph {
 
         //! Scalar subtraction
         //@{
-        Vector3<Flt> operator- (const float& f) {
+        Vector3<Flt> operator- (const float& f) const {
             Vector3<Flt> v;
             v.x = this->x - static_cast<Flt>(f);
             v.y = this->y - static_cast<Flt>(f);
             v.z = this->z - static_cast<Flt>(f);
             return v;
         }
-        Vector3<Flt> operator- (const double& d) {
+        Vector3<Flt> operator- (const double& d) const {
             Vector3<Flt> v;
             v.x = this->x - static_cast<Flt>(d);
             v.y = this->y - static_cast<Flt>(d);

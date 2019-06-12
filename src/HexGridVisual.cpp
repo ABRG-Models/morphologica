@@ -161,7 +161,7 @@ morph::HexGridVisual::render (void)
 {
     // render...
     glBindVertexArray (this->vaos[0]);
-    cout << "Drawing " << this->indices.size() << " GL_TRIANGLES" << endl;
+    //cout << "Drawing " << this->indices.size() << " GL_TRIANGLES" << endl;
     glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
     //glUnbindVertexArray (this->vaos[0]);
 }

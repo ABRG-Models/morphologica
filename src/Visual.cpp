@@ -37,8 +37,12 @@ morph::Visual::Visual(int width, int height, const string& title)
     // Fix the event handling for benefit of static functions.
     this->setEventHandling();
 
-    // Set up key/mouse callbacks
-    glfwSetKeyCallback (this->window, VisualBase::key_callback_dispatch);
+    // Set up callbacks
+    glfwSetKeyCallback (this->window,         VisualBase::key_callback_dispatch);
+    glfwSetMouseButtonCallback (this->window, VisualBase::mouse_button_callback_dispatch);
+    glfwSetCursorPosCallback (this->window,   VisualBase::cursor_position_callback_dispatch);
+    // May not need these:
+    //glfwSetWindowSizeCallback (this->window,  VisualBase::window_size_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
 
@@ -63,34 +67,39 @@ morph::Visual::~Visual()
 }
 
 void
-morph::Visual::mousePressEvent ()
+morph::Visual::mousePressEvent (void)
 {
     // Save mouse press position
-#if 0
-    this->mousePressPosition = Vector2<float> (0.0f, 0.0f);
-#endif
+    this->mousePressPosition.x = static_cast<float>(this->cursorx);
+    this->mousePressPosition.y = static_cast<float>(this->cursory);
 }
 
-void morph::Visual::mouseReleaseEvent ()
+void morph::Visual::mouseReleaseEvent (void)
 {
     // Mouse release position - mouse press position
-#if 0
-    Vector2<float> diff = Vector2 (0.0f, 0.0f); // FIXME: init with mouse release position
+    Vector2<float> diff (static_cast<float>(this->cursorx),
+                         static_cast<float>(this->cursory));
+
     diff -= this->mousePressPosition;
+    //cout << "diff: " << diff.x << "," << diff.y << endl;
 
     // Rotation axis is perpendicular to the mouse position difference vector
-    Vector3<float> n = Vector3<float>(diff[1], diff[0], 0.0f).renormalize();
+    Vector3<float> n(diff.y, diff.x, 0.0f);
+    n.renormalize();
+    cout << "n = ";
+    n.output();
 
     // Accelerate angular speed relative to the length of the mouse sweep
     float acc = diff.length() / 100.0;
 
     // Calculate new rotation axis as weighted sum
-    this->rotationAxis = ((this->rotationAxis * this->angularSpeed)
-                          + (n * acc)).renormalize();
+    this->rotationAxis = (this->rotationAxis * this->angularSpeed) + (n * acc);
+    this->rotationAxis.renormalize();
+    //cout << "acc = " << acc << ", rotationAxis = ";
+    //this->rotationAxis.output();
 
     // Increase angular speed
     this->angularSpeed += acc;
-#endif
 }
 
 void morph::Visual::timerEvent ()
@@ -106,6 +115,7 @@ void morph::Visual::timerEvent ()
         Quaternion<float> rotationQuaternion;
         rotationQuaternion.initFromAxisAngle (this->rotationAxis, this->angularSpeed);
         this->rotation.premultiply (rotationQuaternion);
+        this->rotation.output();
 
         // Request an update
         this->render();
@@ -127,6 +137,7 @@ morph::Visual::setPerspective (void)
     this->projection.setToIdentity();
     // Set perspective projection
     this->projection.perspective (fov, aspect, zNear, zFar);
+    this->projection.output();
 }
 
 void
@@ -307,11 +318,47 @@ morph::Visual::errorCallback (int error, const char* description)
 }
 
 void
-morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods) {
+morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods)
+{
     if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-        std::cout << "x for exit was pressed!!!!" << std::endl;
+        cout << "User requested exit." << endl;
         this->readyToFinish = true;
     }
+    // Could have several other actions:
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        cout << "Autoscale?" << endl;
+    }
+}
+
+void
+morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action, int mods)
+{
+    // button is the button number, action is either key press (1) or key release (0)
+    cout << "button " << button;
+    //if (button == 0) { // Do we care which button? Not for now.
+    if (action == 1) {
+        // press means start a drag
+        cout << " mouse press" << endl;
+        this->mousePressEvent();
+    } else if (action == 0) {
+        // release
+        cout << " mouse release" << endl;
+        this->mouseReleaseEvent();
+    }
+    //}
+}
+
+void
+morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
+{
+    this->cursorx = x;
+    this->cursory = y;
+}
+
+void
+morph::Visual::window_size_callback (GLFWwindow* window, int width, int height)
+{
+    cout << "window size" << endl;
 }
 
 //@}

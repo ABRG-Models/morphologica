@@ -101,3 +101,8 @@ add_test(testvis testvis)
 add_executable(testProcess testProcess.cpp)
 target_link_libraries(testProcess morphologica)
 add_test(testProcess testProcess)
+
+# Test morph::Quaternion
+add_executable(testQuaternion testQuaternion.cpp)
+target_link_libraries(testQuaternion morphologica)
+add_test(testQuaternion testQuaternion)
