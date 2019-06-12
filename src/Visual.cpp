@@ -128,7 +128,6 @@ morph::Visual::setPerspective (void)
     // Obtain window size
     int w, h;
     glfwGetWindowSize (this->window, &w, &h);
-
     // Calculate aspect ratio
     float aspect = float(w) / float(h ? h : 1);
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
@@ -137,7 +136,7 @@ morph::Visual::setPerspective (void)
     this->projection.setToIdentity();
     // Set perspective projection
     this->projection.perspective (fov, aspect, zNear, zFar);
-    this->projection.output();
+    //this->projection.output();
 }
 
 void
