@@ -35,7 +35,7 @@ namespace morph {
 
     public:
         //! Default constructor
-        TransformMatrix (void) {}
+        TransformMatrix (void) { this->setToIdentity(); }
 
         /*!
          * The transformation matrix data, arranged in column major

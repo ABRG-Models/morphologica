@@ -57,7 +57,6 @@ morph::Visual::Visual(int width, int height, const string& title)
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "triangles.vert" },
         {GL_FRAGMENT_SHADER, "triangles.frag" },
-        //{GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
         {GL_NONE, NULL }
     };
     this->shaderprog = this->LoadShaders (shaders);
@@ -163,10 +162,12 @@ morph::Visual::render (void)
 
     // Calculate model view transformation
     TransformMatrix<float> rotmat;
-    rotmat.translate (0.0, 0.0, -3.50); // send backwards into distance
+    rotmat.translate (0.0, 0.1, 0.0); // send backwards into distance
     rotmat.rotate (this->rotation);
+    cout << "Rotation quaternion: ";
+    this->rotation.output();
 
-    // Bind shader program...
+    // Bind shader program if necessary?
     //this->shaderProg->bind();
 
     // Set modelview-projection matrix
@@ -179,7 +180,7 @@ morph::Visual::render (void)
         //cout << "mvp_matrix loc: " << loc << endl;
 #if 0
         Quaternion<float> dummy;
-        dummy.initFromAxisAngle (Vector3<float>(0,1,0), 23);
+        dummy.initFromAxisAngle (Vector3<float>(0,1,0), count++%360);
         dummy.renormalize();
         array<float, 16> arr;
         dummy.rotationMatrix (arr);
@@ -198,6 +199,16 @@ morph::Visual::render (void)
 
         // Original:
         //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+        glUniformMatrix4fv (loc, 1, GL_FALSE, rotmat.mat.data());
+#if 1
+        cout << "|-------------" << endl;
+        cout << "| " << rotmat.mat[0] << " , " << rotmat.mat[4] << " , " << rotmat.mat[8] << " , " << rotmat.mat[12] << " |\n";
+        cout << "| " << rotmat.mat[1] << " , " << rotmat.mat[5] << " , " << rotmat.mat[9] << " , " << rotmat.mat[13] << " |\n";
+        cout << "| " << rotmat.mat[2] << " , " << rotmat.mat[6] << " , " << rotmat.mat[10] << " , " << rotmat.mat[14] << " |\n";
+        cout << "| " << rotmat.mat[3] << " , " << rotmat.mat[7] << " , " << rotmat.mat[11] << " , " << rotmat.mat[15] << " |\n";
+        cout << "               -------------|" << endl;
+#endif
+        //glUniformMatrix4fv (loc, 1, GL_FALSE, this->projection.mat.data());
     }
 
     // Clear color buffer and **also depth buffer**
