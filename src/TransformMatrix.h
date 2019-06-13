@@ -470,6 +470,12 @@ namespace morph {
             return result;
         }
 
+        void operator*= (const float& f) {
+            for (unsigned int i = 0; i<16; ++i) {
+                this->mat[i] *= f;
+            }
+        }
+
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
             Flt fovRad = fovDeg * piOver360; // fovDeg/2 converted to radians
             Flt sineFov = std::sin (fovRad);

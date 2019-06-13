@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"
+#include "TriangleVisual.h"
 #include "Quaternion.h"
 #include "TransformMatrix.h"
 #include "Vector2.h"
@@ -98,6 +99,7 @@ namespace morph {
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const vector<float>& data,
                                        const array<float, 3> offset);
+        unsigned int addTriangleVisual (void);
 
         /*!
          * Render the scene
@@ -153,6 +155,9 @@ namespace morph {
          * This Visual is going to render some HexGridVisuals for us. 1 or more.
          */
         vector<HexGridVisual*> hexGridVis;
+
+        //! Simple triangle visual for hopefully simple testing
+        vector<TriangleVisual*> triangleVis;
 
         /*!
          * Variables to manage projection and rotation of the object

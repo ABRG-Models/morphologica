@@ -47,9 +47,17 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwMakeContextCurrent (this->window);
 
     // Load up the shaders
+#if 0
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Visual.vert.glsl" },
         {GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
+        {GL_NONE, NULL }
+    };
+#endif
+    ShaderInfo shaders[] = {
+        {GL_VERTEX_SHADER, "triangles.vert" },
+        {GL_FRAGMENT_SHADER, "triangles.frag" },
+        //{GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
         {GL_NONE, NULL }
     };
     this->shaderprog = this->LoadShaders (shaders);
@@ -57,7 +65,10 @@ morph::Visual::Visual(int width, int height, const string& title)
     glUseProgram (this->shaderprog);
 
     // Now client code can set up HexGridVisuals.
-    glEnable (GL_DEPTH_TEST);
+    //glEnable (GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+    //glDisable(GL_DEPTH_TEST);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 morph::Visual::~Visual()
@@ -115,7 +126,7 @@ void morph::Visual::timerEvent ()
         Quaternion<float> rotationQuaternion;
         rotationQuaternion.initFromAxisAngle (this->rotationAxis, this->angularSpeed);
         this->rotation.premultiply (rotationQuaternion);
-        this->rotation.output();
+        //this->rotation.output();
 
         // Request an update
         this->render();
@@ -142,7 +153,10 @@ morph::Visual::setPerspective (void)
 void
 morph::Visual::render (void)
 {
-    Quaternion<float> q;
+    const double retinaScale = 1; // devicePixelRatio()?
+    int w, h;
+    glfwGetWindowSize (this->window, &w, &h);
+    glViewport (0, 0, w * retinaScale, h * retinaScale);
 
     // Set the perspective from the width/height
     this->setPerspective();
@@ -157,22 +171,59 @@ morph::Visual::render (void)
 
     // Set modelview-projection matrix
     TransformMatrix<float> pr = this->projection * rotmat;
-    glUniformMatrix4fv (glGetUniformLocation (this->shaderprog, "mvp_matrix"),
-                        1, GL_FALSE, pr.mat.data());
+    //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
+    GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+    if (loc == -1) {
+        cout << "No mvp_matrix? loc: " << loc << endl;
+    } else {
+        //cout << "mvp_matrix loc: " << loc << endl;
+#if 0
+        Quaternion<float> dummy;
+        dummy.initFromAxisAngle (Vector3<float>(0,1,0), 23);
+        dummy.renormalize();
+        array<float, 16> arr;
+        dummy.rotationMatrix (arr);
+        cout << "| " << arr[0] << " , " << arr[4] << " , " << arr[8] << " , " << arr[12] << " |\n";
+        cout << "| " << arr[1] << " , " << arr[5] << " , " << arr[9] << " , " << arr[13] << " |\n";
+        cout << "| " << arr[2] << " , " << arr[6] << " , " << arr[10] << " , " << arr[14] << " |\n";
+        cout << "| " << arr[3] << " , " << arr[7] << " , " << arr[11] << " , " << arr[15] << " |\n";
+        cout << "arr.data()[0]: " << arr.data()[0] << endl;
+        glUniformMatrix4fv (loc, 1, GL_FALSE, arr.data());
+#endif
+#if 0
+        TransformMatrix<float> dummy;
+        dummy.translate(0, 0, -3);
+        glUniformMatrix4fv (loc, 1, GL_FALSE, dummy.mat.data());
+#endif
 
-    static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
-    glClearBufferfv (GL_COLOR, 0, white);
+        // Original:
+        //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+    }
+
+    // Clear color buffer and **also depth buffer**
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
+    //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
+#if 0
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();
         ++hgvi;
     }
+#endif
+
+    vector<TriangleVisual*>::iterator tvi = this->triangleVis.begin();
+    while (tvi != this->triangleVis.end()) {
+        (*tvi)->render();
+        ++tvi;
+    }
 
     glfwSwapBuffers (this->window);
 
-    // release shader?
+    // release shader if it was bound
 }
 
 void
@@ -190,6 +241,16 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
     HexGridVisual* hgv1 = new HexGridVisual(this, hg, &data, offset);
     this->hexGridVis.push_back (hgv1);
+
+    return 0;
+}
+
+unsigned int
+morph::Visual::addTriangleVisual (void)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    TriangleVisual* tv1 = new TriangleVisual(this->shaderprog);
+    this->triangleVis.push_back (tv1);
 
     return 0;
 }
@@ -275,6 +336,8 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
                 delete [] log;
             }
             return 0;
+        } else {
+            cout << "shader compiled" << endl;
         }
 
         glAttachShader (program, shader);
@@ -300,6 +363,8 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         }
 
         return 0;
+    } else {
+        cout << "Good, shader is linked." << endl;
     }
 
     return program;

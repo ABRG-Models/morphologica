@@ -74,7 +74,7 @@ namespace morph {
         GLuint* shaderProgram;
 
         //! The OpenGL Vertex Array Object
-        GLuint vaos[1];
+        GLuint* vaos;
 
         //! Push three floats onto the vector of floats @vp
         void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp);
