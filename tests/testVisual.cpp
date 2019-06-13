@@ -28,7 +28,7 @@ int main()
         }
         ReadCurves r(curvepath);
 
-        HexGrid hg(0.02, 1, 0, HexDomainShape::Boundary);
+        HexGrid hg(0.5, 3, 0, HexDomainShape::Boundary);
         hg.setBoundary (r.getCorticalPath());
 
         cout << hg.extent() << endl;
@@ -53,6 +53,7 @@ int main()
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
         cout << "Added HexGridVisual with gridId " << gridId << endl;
+        v.addTriangleVisual();
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout(2.5);
