@@ -128,6 +128,8 @@ namespace morph {
 
     private:
 
+        unsigned long long int count = 0;
+
         /*!
          * Read a shader
          */
