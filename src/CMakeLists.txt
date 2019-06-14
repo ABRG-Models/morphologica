@@ -18,12 +18,13 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
+    # FIXME: Check if ${ARMADILLO_LIBRARY} and ${LAPACK_LIBRARIES} will work on Mac and add here if so.
     armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5}
     )
 else()
   target_link_libraries(
     morphologica
-    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
     )
 endif(APPLE)
 install(TARGETS morphologica
@@ -42,7 +43,7 @@ target_link_libraries(
 else()
 target_link_libraries(
   morphstatic
-  armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
   )
 endif(APPLE)
 
