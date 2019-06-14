@@ -4,9 +4,9 @@
 // program, so only one mvp_matrix.
 uniform mat4 mvp_matrix;
 
-in vec4 position;
-in vec4 normalin;
-in vec4 color;
+layout(location = 0) in vec4 position; // Attrib location 0
+layout(location = 1) in vec4 normalin; // Attrib location 1
+layout(location = 2) in vec4 color;    // Attrib location 2
 out VERTEX
 {
     vec4 normal;

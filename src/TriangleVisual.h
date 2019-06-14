@@ -30,17 +30,14 @@ namespace morph {
 
         GLuint  indices[6] = {0,1,2,3,4,5};
 
-        GLuint loc_attrib = 0; // Vertex location attribute is in 0th location in glsl file
         GLfloat  vertices[NumVertices][3] = {
             { -0.90f, -0.90f, 0.3f }, {  0.85f, -0.90f, 2.0f }, { -0.90f,  0.9f, 2.0f },
             {  0.90f, -0.85f, 0.3f }, {  0.90f,  0.90f, 0.3f }, { -0.85f,  0.90f, 0.3f }
         };
-        GLuint normal_attrib = 1;
         GLfloat  normals[NumVertices][3] = {
             { -0.0f, -0.0f, 1.0f }, {  0.0f, 0.0f, 1.0f }, { -0.0f,  0.0f, 1.0f },
             {  0.0f, -0.0f, 1.0f }, {  0.0f, 0.0f, 1.0f }, { -0.0f,  0.0f, 1.0f }
         };
-        GLuint col_attrib = 2;
         GLfloat  colours[NumVertices][3] = {
             {  0.0f, 0.0f, 1.0f }, {  0.0f, 0.0f, 1.0f }, { -0.0f,  0.0f, 1.0f },
             {  0.0f, 1.0f, 1.0f }, {  0.0f, 1.0f, 0.0f }, { -0.0f,  1.0f, 0.0f }
@@ -52,26 +49,11 @@ namespace morph {
             glCreateVertexArrays (1, &vao);
             glBindVertexArray (vao);
 
-
-#if 0 // OpenGL 4.5/ARB_direct_state_access example calls:
-            // Enable my attributes
-            glEnableVertexArrayAttrib(array, loc_attrib);
-            glEnableVertexArrayAttrib(array, normal_attrib);
-            glEnableVertexArrayAttrib(array, col_attrib);
-            // Set up the formats for my attributes
-            glVertexArrayAttribFormat(array, loc_attrib,      3, GL_FLOAT, GL_FALSE, 0);
-            glVertexArrayAttribFormat(array, normal_attrib,   3, GL_FLOAT, GL_FALSE, 12);
-            glVertexArrayAttribFormat(array, col_attrib,      2, GL_FLOAT, GL_FALSE, 24);
-            // Make my attributes all use binding 0
-            glVertexArrayAttribBinding(array, loc_attrib,      0);
-            glVertexArrayAttribBinding(array, normal_attrib,   0);
-            glVertexArrayAttribBinding(array, col_attrib, 0);
-#endif
-
             glCreateBuffers (NumBuffers, vbo);
 
             // Element buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[ElementBuffer]);
+            cout << "sizeof(indices) is " << sizeof(indices) << endl;
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
             // Location buffer
@@ -99,20 +81,8 @@ namespace morph {
             glEnableVertexAttribArray (cPosition);
 
             glUseProgram (shaderprog);
+        }
 
-        }
-#if 0
-        void setupVBO (GLuint& buf,
-                       GLfloat**  dat,
-                       const char* arrayname) {
-            glBindBuffer (GL_ARRAY_BUFFER, buf);
-            int sz = (*this->data).size() * sizeof(float);
-            glBufferData (GL_ARRAY_BUFFER, sz, dat, GL_STATIC_DRAW);
-            // Something like:
-            glVertexAttribPointer (vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-            glEnableVertexAttribArray (vPosition);
-        }
-#endif
         void render (void) {
             //static const float colour[] = { 1.0f, 0.0f, 0.0f, 0.0f };
             //glClearBufferfv(GL_COLOR, 0, colour);

@@ -5,7 +5,7 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include <math.h>
+x#include <cmath>
 
 using namespace std;
 using morph::Visual;
@@ -28,7 +28,7 @@ int main()
         }
         ReadCurves r(curvepath);
 
-        HexGrid hg(0.5, 3, 0, HexDomainShape::Boundary);
+        HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);
         hg.setBoundary (r.getCorticalPath());
 
         cout << hg.extent() << endl;
@@ -46,7 +46,7 @@ int main()
 
         // Make some dummy data
         for (unsigned int hi=0; hi<nhex; ++hi) {
-            data[hi] = 0.1 * hg.d_x[hi];
+            data[hi] = 0.1 * std::sin(10*hg.d_x[hi]);
             cout << "Hex " << hi << " data[] = " << data[hi] << endl;
         }
         cout << "Created " << data.size() << " floats in data" << endl;

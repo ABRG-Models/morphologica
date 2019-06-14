@@ -12,95 +12,115 @@ using std::vector;
 #include <array>
 using std::array;
 
-morph::HexGridVisual::HexGridVisual (const Visual* _parent,
+morph::HexGridVisual::HexGridVisual (GLuint sp,
                                      const HexGrid* _hg,
                                      const vector<float>* _data,
                                      const array<float, 3> _offset)
 {
     // Set up...
-    this->parent = _parent;
+    this->shaderprog = sp;
     this->offset = _offset;
     this->hg = _hg;
     this->data = _data;
 
-    // Allocate the vertex buffer object array and init the unsigned
-    // int `names' to 1,2,3,4
-    this->bufobjs = new GLuint[4];
-    this->vaos = new GLuint[1];
-
     this->initializeVertices();
 
-    glCreateVertexArrays (1, this->vaos); // OpenGL 4.5+
-    cout << "vertex array name/handle: " << this->vaos[0] << endl;
+    // Allocate the vertex buffer object array and init the unsigned
+    // int `names' to 1,2,3,4
+    this->vbos = new GLuint[numVBO];
 
-#if 0 // Probably need this:
-    // Enable my attributes
-    glEnableVertexArrayAttrib (this->vaos[0], loc_attrib);
-    glEnableVertexArrayAttrib (this->vaos[0], normal_attrib);
-    glEnableVertexArrayAttrib (this->vaos[0], texcoord_attrib);
-#endif
+    glCreateVertexArrays (1, &this->vao); // OpenGL 4.5+
 
-    // Check for GL_INVALID_VALUE?
-    glBindVertexArray (this->vaos[0]);
-    // Check for GL_INVALID_VALUE?
+    glBindVertexArray (this->vao);
 
-    // OpenGL 4.5 and lower:
-    glGenBuffers (4, this->bufobjs);
-    // OpenGL 4.5 only:
-    //glCreateBuffers (4, this->bufobjs);
-    // Verify buffer names:
-    for (unsigned int ii = 0; ii < 4; ++ii) {
-        cout << "buffer " << ii << ": " << this->bufobjs[ii] << endl;
-    }
-    // Check for GL_INVALID_VALUE?
+    glCreateBuffers (numVBO, this->vbos);
 
-    // Set up indices buffer object (bind, then allocate space)
-    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, this->bufobjs[0]); // For index buffer
+    // Element buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
     int sz = this->indices.size() * sizeof(VBOint);
-    cout << "After binding indices buff, set buffer data for " << sz << " indices" << endl;
-    glBufferData (GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-
-    // Is this needed for indices?
-    glVertexAttribPointer (vPosition, 1, VBO_ENUM_TYPE, GL_FALSE, 0, (void*)0); // VBO_ENUM_TYPE is GL_UNSIGNED_INT
-    glEnableVertexAttribArray (vPosition);
-    GLuint arrayEnabled = GL_FALSE;
-    glGetVertexAttribIuiv (vPosition, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &arrayEnabled);
-    cout << "arrayEnabled: " << arrayEnabled << endl;
+    cout << "indices sz = " << sz << " bytes" << endl;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
 
     // Binds data from the "C++ world" to the OpenGL shader world for
     // "position", "normalin" and "color"
-    this->setupVBO (this->bufobjs[1], this->vertexPositions, "position");
-    this->setupVBO (this->bufobjs[2], this->vertexNormals, "normalin");
-    this->setupVBO (this->bufobjs[3], this->vertexColors, "color");
+    this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
+    this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
+    this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
 
     // Possibly release (unbind) the vertex buffers (but not index buffer)
     // Possible glVertexAttribPointer and glEnableVertexAttribArray?
+    glUseProgram (shaderprog);
+
+    //glBindVertexArray(0);
 }
 
 void
 morph::HexGridVisual::setupVBO (GLuint& buf,
                                 vector<float>& dat,
-                                const char* arrayname)
+                                unsigned int bufferAttribPosition)
 {
+    // I use the data array to determine the size of each vertex
+    // buffer object. Each vbo is 3 times the size of this->data,
+    // because each vbo contains 3 coordinates per element in
+    // this->data. sz could be a member variable.
+    int sz = dat.size() * sizeof(float);
+    cout << "data sz = " << sz << " bytes" << endl;
+
     glBindBuffer (GL_ARRAY_BUFFER, buf);
-    //if (checkBound == false) {
-    //    cout << "VBO bind failed" << endl;
-    //}
-    int sz = (*this->data).size() * sizeof(float);
     glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
-    // Something like:
-    glVertexAttribPointer (vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray (vPosition);
+    glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+    cout << "EnableVertexAttribArray at position " << bufferAttribPosition << endl;
+    glEnableVertexAttribArray (bufferAttribPosition);
 }
 
 morph::HexGridVisual::~HexGridVisual()
 {
     // destroy buffers
-    glDeleteBuffers (4, bufobjs);
-    delete (this->bufobjs);
-    delete (this->vaos);
+    glDeleteBuffers (4, vbos);
+    delete (this->vbos);
 }
 
+//#define SIMPLE_INIT 1
+#ifdef SIMPLE_INIT
+// Build very simple vertices/indices
+void
+morph::HexGridVisual::initializeVertices (void)
+{
+    this->vertex_push (-0.90f, -0.90f, 0.3f, this->vertexPositions);
+    this->vertex_push (0.85f, -0.90f, 2.0f, this->vertexPositions);
+    this->vertex_push (-0.90f,  0.9f, 2.0f, this->vertexPositions);
+    this->vertex_push (0.90f, -0.85f, 0.3f, this->vertexPositions);
+    this->vertex_push (0.90f,  0.90f, 0.3f, this->vertexPositions);
+    this->vertex_push (-0.85f,  0.90f, 0.3f, this->vertexPositions);
+
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+    this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexColors);
+    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+    //
+    this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexColors);
+    this->vertex_push (1.0f, 0.0f, 1.0f, this->vertexColors);
+    this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexColors);
+
+    this->indices.push_back (0);
+    this->indices.push_back (1);
+    this->indices.push_back (2);
+    this->indices.push_back (3);
+    this->indices.push_back (4);
+    this->indices.push_back (5);
+
+    cout << "vertexPositions size: " << vertexPositions.size() << " elements" << endl;
+    cout << "vertexNormals size: " << vertexNormals.size() << " elements" << endl;
+    cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
+    cout << "indices size: " << indices.size() << " elements" << endl;
+}
+#else
 void
 morph::HexGridVisual::initializeVertices (void)
 {
@@ -165,6 +185,7 @@ morph::HexGridVisual::initializeVertices (void)
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
+        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
 
         // Define indices now to produce the 6 triangles in the hex
         this->indices.push_back (idx+1);
@@ -193,24 +214,27 @@ morph::HexGridVisual::initializeVertices (void)
 
         idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
 
+#if 0
         cout << "vertexPositions size: " << vertexPositions.size() << endl;
         cout << "vertexNormals size: " << vertexNormals.size() << endl;
         cout << "vertexColors size: " << vertexPositions.size() << endl;
-        cout << "indices size: " << indices.size() << endl;
+        cout << "indices size: " << indices.size() << " elements" << endl;
+#endif
     }
-    cout << "At END" << endl;
-    cout << "vertexPositions size: " << vertexPositions.size() << endl;
-    cout << "vertexNormals size: " << vertexNormals.size() << endl;
-    cout << "vertexColors size: " << vertexPositions.size() << endl;
-    cout << "indices size: " << indices.size() << endl;
+    cout << "vertexPositions size: " << vertexPositions.size() << " elements" << endl;
+    cout << "vertexNormals size: " << vertexNormals.size() << " elements" << endl;
+    cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
+    cout << "indices size: " << indices.size() << " elements" << endl;
 }
+#endif
 
 void
 morph::HexGridVisual::render (void)
 {
-    glBindVertexArray (this->vaos[0]);
+    glBindVertexArray (this->vao);
+    cout << "Render " << this->indices.size() << " vertices" << endl;
     glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-    // glBindVertexArray(0);
+    glBindVertexArray(0);
 }
 
 void

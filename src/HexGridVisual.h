@@ -18,13 +18,13 @@ namespace morph {
     //! Forward declaration of Visual class
     class Visual;
 
-    // Because I put vertices in three buffers, all attributes start at position 0
-    enum Attrib_IDs { vPosition = 0 };
+    //! The locations for the position, normal and colour vertex attributes in the GLSL program
+    enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2 };
 
     class HexGridVisual
     {
     public:
-        HexGridVisual(const Visual* _parent,
+        HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const vector<float>* _data,
                       const array<float, 3> _offset);
@@ -41,6 +41,9 @@ namespace morph {
         array<float, 3> offset;
 
     private:
+        //! This enum contains the positions within the vbo array of the different vertex buffer objects
+        enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
+
         //! The parent Visual object - provides access to the shader prog
         const Visual* parent;
 
@@ -50,6 +53,9 @@ namespace morph {
         //! The data to visualize as z/colour
         const vector<float>* data;
 
+        //! A copy of the reference to the shader program
+        GLuint shaderprog;
+
         // Add a way to control the scaling scheme here.
 
         /*!
@@ -57,8 +63,11 @@ namespace morph {
          * store in these:
          */
         //@{
-        //! Indices Vertex Buffer Object
-        GLuint* bufobjs;
+        //! The OpenGL Vertex Array Object
+        GLuint vao;
+
+        //! Vertex Buffer Objects stored in an array
+        GLuint* vbos;
 
         //! CPU-side data for indices
         vector<VBOint> indices;
@@ -73,14 +82,11 @@ namespace morph {
         //! I guess we'll need a shader program.
         GLuint* shaderProgram;
 
-        //! The OpenGL Vertex Array Object
-        GLuint* vaos;
-
         //! Push three floats onto the vector of floats @vp
         void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp);
 
         //! Set up a vertex buffer object
-        void setupVBO (GLuint& buf, vector<float>& dat, const char* arrayname);
+        void setupVBO (GLuint& buf, vector<float>& dat, unsigned int bufferAttribPosition);
     };
 
 } // namespace morph

@@ -235,20 +235,20 @@ morph::Visual::render (void)
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
-#if 0
+#define RENDERHEX 1
+#ifdef RENDERHEX
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();
         ++hgvi;
     }
-#endif
-
+#else
     vector<TriangleVisual*>::iterator tvi = this->triangleVis.begin();
     while (tvi != this->triangleVis.end()) {
         (*tvi)->render();
         ++tvi;
     }
-
+#endif
     glfwSwapBuffers (this->window);
 
     // release shader if it was bound
@@ -267,7 +267,7 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
                                  const array<float, 3> offset)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    HexGridVisual* hgv1 = new HexGridVisual(this, hg, &data, offset);
+    HexGridVisual* hgv1 = new HexGridVisual(this->shaderprog, hg, &data, offset);
     this->hexGridVis.push_back (hgv1);
 
     return 0;
