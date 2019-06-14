@@ -30,8 +30,15 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
 
     this->initializeVertices();
 
-    glGenVertexArrays (1, this->vaos);
+    glCreateVertexArrays (1, this->vaos); // OpenGL 4.5+
     cout << "vertex array name/handle: " << this->vaos[0] << endl;
+
+
+    // Enable my attributes
+    glEnableVertexArrayAttrib (this->vaos[0], loc_attrib);
+    glEnableVertexArrayAttrib (this->vaos[0], normal_attrib);
+    glEnableVertexArrayAttrib (this->vaos[0], texcoord_attrib);
+
     // Check for GL_INVALID_VALUE?
     glBindVertexArray (this->vaos[0]);
     // Check for GL_INVALID_VALUE?
@@ -200,17 +207,9 @@ morph::HexGridVisual::initializeVertices (void)
 void
 morph::HexGridVisual::render (void)
 {
-    // render...
-#if 1
     glBindVertexArray (this->vaos[0]);
-    //glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, this->bufobjs[0]);
-    //glBindBuffer (GL_ARRAY_BUFFER, this->bufobjs[1]);
-    //glBindBuffer (GL_ARRAY_BUFFER, this->bufobjs[2]);
-    //glBindBuffer (GL_ARRAY_BUFFER, this->bufobjs[3]);
-#endif
-    //cout << "Drawing " << this->indices.size() << " GL_TRIANGLES" << endl;
     glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-    //glUnbindVertexArray (this->vaos[0]);
+    // glBindVertexArray(0);
 }
 
 void
