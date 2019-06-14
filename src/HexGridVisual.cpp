@@ -80,47 +80,6 @@ morph::HexGridVisual::~HexGridVisual()
     delete (this->vbos);
 }
 
-//#define SIMPLE_INIT 1
-#ifdef SIMPLE_INIT
-// Build very simple vertices/indices
-void
-morph::HexGridVisual::initializeVertices (void)
-{
-    this->vertex_push (-0.90f, -0.90f, 0.3f, this->vertexPositions);
-    this->vertex_push (0.85f, -0.90f, 2.0f, this->vertexPositions);
-    this->vertex_push (-0.90f,  0.9f, 2.0f, this->vertexPositions);
-    this->vertex_push (0.90f, -0.85f, 0.3f, this->vertexPositions);
-    this->vertex_push (0.90f,  0.90f, 0.3f, this->vertexPositions);
-    this->vertex_push (-0.85f,  0.90f, 0.3f, this->vertexPositions);
-
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-    this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexColors);
-    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-    //
-    this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexColors);
-    this->vertex_push (1.0f, 0.0f, 1.0f, this->vertexColors);
-    this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexColors);
-
-    this->indices.push_back (0);
-    this->indices.push_back (1);
-    this->indices.push_back (2);
-    this->indices.push_back (3);
-    this->indices.push_back (4);
-    this->indices.push_back (5);
-
-    cout << "vertexPositions size: " << vertexPositions.size() << " elements" << endl;
-    cout << "vertexNormals size: " << vertexNormals.size() << " elements" << endl;
-    cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
-    cout << "indices size: " << indices.size() << " elements" << endl;
-}
-#else
 void
 morph::HexGridVisual::initializeVertices (void)
 {
@@ -226,7 +185,6 @@ morph::HexGridVisual::initializeVertices (void)
     cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
     cout << "indices size: " << indices.size() << " elements" << endl;
 }
-#endif
 
 void
 morph::HexGridVisual::render (void)
