@@ -71,6 +71,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
+find_package(glfw3 REQUIRED)
 
 # Find the HDF5 library
 if (APPLE)
@@ -86,7 +87,7 @@ else()
   find_package(Armadillo REQUIRED)
 endif(APPLE)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR})
 
 # rapidxml is bundled in the source:
 include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
