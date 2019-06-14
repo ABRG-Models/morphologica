@@ -3,6 +3,8 @@
 #include "GL3/gl3.h"
 #include "GL/glext.h"
 
+#include "tools.h"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -80,12 +82,15 @@ morph::HexGridVisual::~HexGridVisual()
     delete (this->vbos);
 }
 
+#ifdef INITIALISE_TRIANGLE_GRID
+//writeme
+#else // This is probably compute intensive:
 void
 morph::HexGridVisual::initializeVertices (void)
 {
     // Simplest visualization is: for each vertex in hg, create 6
     // triangles, all with a common colour. This way, I don't have to
-    // worry about the order of the Hexs.
+    // worry about the order of the Hexes.
 
     float sr = this->hg->getSR();
     float vne = this->hg->getVtoNE();
@@ -94,6 +99,7 @@ morph::HexGridVisual::initializeVertices (void)
     unsigned int nhex = this->hg->num();
     unsigned int idx = 0;
 
+    float datum = 0.0f;
     for (unsigned int hi = 0; hi < nhex; ++hi) {
         cout << "Hex " << hi << endl;
         // First push the 7 positions of the triangle vertices, starting with the centre
@@ -101,32 +107,73 @@ morph::HexGridVisual::initializeVertices (void)
                            this->hg->d_y[hi],
                            (*this->data)[hi], this->vertexPositions);
         cout << "centre vertex " << this->hg->d_x[hi] << "," << this->hg->d_y[hi] << "," << (*this->data)[hi] << endl;
-        // NE
+
+        if (HAS_NNE(hi) && HAS_NE(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NNE(hi)] + (*this->data)[NE(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi]+sr,
                            this->hg->d_y[hi]+vne,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, // mean of this->data[hi] and NE and E hexes
+                           this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
         cout << "NE vertex " << this->hg->d_x[hi]+sr << "," << this->hg->d_y[hi]+vne << "," << (*this->data)[hi] << endl;
 
         // SE
+        if (HAS_NE(hi) && HAS_NSE(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NE(hi)] + (*this->data)[NSE(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi]+sr,
                            this->hg->d_y[hi]-vne,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
+
         // S
+        if (HAS_NSE(hi) && HAS_NSW(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NSE(hi)] + (*this->data)[NSW(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi],
                            this->hg->d_y[hi]-lr,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
+
         // SW
+        if (HAS_NW(hi) && HAS_NSW(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NW(hi)] + (*this->data)[NSW(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi]-sr,
                            this->hg->d_y[hi]-vne,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
+
         // NW
+        if (HAS_NNW(hi) && HAS_NW(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NNW(hi)] + (*this->data)[NW(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi]-sr,
                            this->hg->d_y[hi]+vne,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
+
         // N
+        if (HAS_NNW(hi) && HAS_NNE(hi)) {
+            datum = (1/3.0f) * ((*this->data)[hi] + (*this->data)[NNW(hi)] + (*this->data)[NNE(hi)]);
+        } else {
+            datum = (*this->data)[hi];
+        }
         this->vertex_push (this->hg->d_x[hi],
                            this->hg->d_y[hi]+lr,
-                           (*this->data)[hi], this->vertexPositions);
+                           datum, this->vertexPositions);
+        this->vertex_push (morph::Tools::getJetColorF((double)datum), this->vertexColors);
 
         // All normal point up
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -136,15 +183,6 @@ morph::HexGridVisual::initializeVertices (void)
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-
-        // All vertices same colour value to begin with, but should set from data.
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
-        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexColors);
 
         // Define indices now to produce the 6 triangles in the hex
         this->indices.push_back (idx+1);
@@ -185,6 +223,7 @@ morph::HexGridVisual::initializeVertices (void)
     cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
     cout << "indices size: " << indices.size() << " elements" << endl;
 }
+#endif
 
 void
 morph::HexGridVisual::render (void)
@@ -201,4 +240,12 @@ morph::HexGridVisual::vertex_push (const float& x, const float& y, const float& 
     vp.push_back (x);
     vp.push_back (y);
     vp.push_back (z);
+}
+
+void
+morph::HexGridVisual::vertex_push (const array<float, 3>& arr, vector<float>& vp)
+{
+    vp.push_back (arr[0]);
+    vp.push_back (arr[1]);
+    vp.push_back (arr[2]);
 }

@@ -13,6 +13,44 @@ using std::array;
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
+/*!
+ * Macros for testing neighbours. The step along for neighbours on the
+ * rows above/below is given by:
+ *
+ * Dest  | step
+ * ----------------------
+ * NNE   | +rowlen
+ * NNW   | +rowlen - 1
+ * NSW   | -rowlen
+ * NSE   | -rowlen + 1
+ */
+//@{
+#define NE(hi) (this->hg->d_ne[hi])
+#define HAS_NE(hi) (this->hg->d_ne[hi] == -1 ? false : true)
+
+#define NW(hi) (this->hg->d_nw[hi])
+#define HAS_NW(hi) (this->hg->d_nw[hi] == -1 ? false : true)
+
+#define NNE(hi) (this->hg->d_nne[hi])
+#define HAS_NNE(hi) (this->hg->d_nne[hi] == -1 ? false : true)
+
+#define NNW(hi) (this->hg->d_nnw[hi])
+#define HAS_NNW(hi) (this->hg->d_nnw[hi] == -1 ? false : true)
+
+#define NSE(hi) (this->hg->d_nse[hi])
+#define HAS_NSE(hi) (this->hg->d_nse[hi] == -1 ? false : true)
+
+#define NSW(hi) (this->hg->d_nsw[hi])
+#define HAS_NSW(hi) (this->hg->d_nsw[hi] == -1 ? false : true)
+//@}
+
+#define IF_HAS_NE(hi, yesval, noval)  (HAS_NE(hi)  ? yesval : noval)
+#define IF_HAS_NNE(hi, yesval, noval) (HAS_NNE(hi) ? yesval : noval)
+#define IF_HAS_NNW(hi, yesval, noval) (HAS_NNW(hi) ? yesval : noval)
+#define IF_HAS_NW(hi, yesval, noval)  (HAS_NW(hi)  ? yesval : noval)
+#define IF_HAS_NSW(hi, yesval, noval) (HAS_NSW(hi) ? yesval : noval)
+#define IF_HAS_NSE(hi, yesval, noval) (HAS_NSE(hi) ? yesval : noval)
+
 namespace morph {
 
     //! Forward declaration of Visual class
@@ -84,6 +122,7 @@ namespace morph {
 
         //! Push three floats onto the vector of floats @vp
         void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp);
+        void vertex_push (const array<float, 3>& arr, vector<float>& vp);
 
         //! Set up a vertex buffer object
         void setupVBO (GLuint& buf, vector<float>& dat, unsigned int bufferAttribPosition);
