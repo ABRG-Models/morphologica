@@ -86,7 +86,7 @@ morph::HexGridVisual::setupVBO (GLuint& buf,
     //if (checkBound == false) {
     //    cout << "VBO bind failed" << endl;
     //}
-    int sz = (*this->data).size() * 3 * sizeof(float); // *3 to include position, colour & normal? Or is that ALREADY factored into the size of dat?
+    int sz = (*this->data).size() * sizeof(float);
     glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
     // Something like:
     glVertexAttribPointer (vPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);

@@ -47,18 +47,18 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwMakeContextCurrent (this->window);
 
     // Load up the shaders
-#if 0
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Visual.vert.glsl" },
         {GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
         {GL_NONE, NULL }
     };
-#endif
+#if 0
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "triangles.vert" },
         {GL_FRAGMENT_SHADER, "triangles.frag" },
         {GL_NONE, NULL }
     };
+#endif
     this->shaderprog = this->LoadShaders (shaders);
 
     glUseProgram (this->shaderprog);
@@ -235,7 +235,7 @@ morph::Visual::render (void)
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
-#if 1
+#if 0
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();
