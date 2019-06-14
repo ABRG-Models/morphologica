@@ -152,6 +152,7 @@ morph::Visual::setPerspective (void)
 void
 morph::Visual::render (void)
 {
+    // Can avoid this by getting window size into members only when window size changes.
     const double retinaScale = 1; // devicePixelRatio()?
     int w, h;
     glfwGetWindowSize (this->window, &w, &h);
@@ -162,7 +163,7 @@ morph::Visual::render (void)
 
     // Calculate model view transformation
     TransformMatrix<float> rotmat;
-    rotmat.translate (0.0, 0.1, 0.0); // send backwards into distance
+    rotmat.translate (0.0, 0.0, 0.0); // send backwards into distance
     rotmat.rotate (this->rotation);
     cout << "Rotation quaternion: ";
     this->rotation.output();
@@ -197,17 +198,33 @@ morph::Visual::render (void)
         glUniformMatrix4fv (loc, 1, GL_FALSE, dummy.mat.data());
 #endif
 
-        // Original:
-        //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
-        glUniformMatrix4fv (loc, 1, GL_FALSE, rotmat.mat.data());
 #if 1
-        cout << "|-------------" << endl;
+        cout << "|------------- rotation" << endl;
         cout << "| " << rotmat.mat[0] << " , " << rotmat.mat[4] << " , " << rotmat.mat[8] << " , " << rotmat.mat[12] << " |\n";
         cout << "| " << rotmat.mat[1] << " , " << rotmat.mat[5] << " , " << rotmat.mat[9] << " , " << rotmat.mat[13] << " |\n";
         cout << "| " << rotmat.mat[2] << " , " << rotmat.mat[6] << " , " << rotmat.mat[10] << " , " << rotmat.mat[14] << " |\n";
         cout << "| " << rotmat.mat[3] << " , " << rotmat.mat[7] << " , " << rotmat.mat[11] << " , " << rotmat.mat[15] << " |\n";
-        cout << "               -------------|" << endl;
+        cout << "                                     -------------|" << endl;
 #endif
+#if 1
+        cout << "|------------- projection " << endl;
+        cout << "| " << this->projection.mat[0] << " , " << this->projection.mat[4] << " , " << this->projection.mat[8] << " , " << this->projection.mat[12] << " |\n";
+        cout << "| " << this->projection.mat[1] << " , " << this->projection.mat[5] << " , " << this->projection.mat[9] << " , " << this->projection.mat[13] << " |\n";
+        cout << "| " << this->projection.mat[2] << " , " << this->projection.mat[6] << " , " << this->projection.mat[10] << " , " << this->projection.mat[14] << " |\n";
+        cout << "| " << this->projection.mat[3] << " , " << this->projection.mat[7] << " , " << this->projection.mat[11] << " , " << this->projection.mat[15] << " |\n";
+        cout << "                                     -------------|" << endl;
+#endif
+#if 1
+        cout << "|------------- projection * rotation " << endl;
+        cout << "| " << pr.mat[0] << " , " << pr.mat[4] << " , " << pr.mat[8] << " , " << pr.mat[12] << " |\n";
+        cout << "| " << pr.mat[1] << " , " << pr.mat[5] << " , " << pr.mat[9] << " , " << pr.mat[13] << " |\n";
+        cout << "| " << pr.mat[2] << " , " << pr.mat[6] << " , " << pr.mat[10] << " , " << pr.mat[14] << " |\n";
+        cout << "| " << pr.mat[3] << " , " << pr.mat[7] << " , " << pr.mat[11] << " , " << pr.mat[15] << " |\n";
+        cout << "                                     -------------|" << endl;
+#endif
+        // Original:
+        //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+        glUniformMatrix4fv (loc, 1, GL_FALSE, rotmat.mat.data());
         //glUniformMatrix4fv (loc, 1, GL_FALSE, this->projection.mat.data());
     }
 
@@ -218,7 +235,7 @@ morph::Visual::render (void)
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
-#if 0
+#if 1
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();

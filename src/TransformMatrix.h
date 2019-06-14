@@ -476,6 +476,32 @@ namespace morph {
             }
         }
 
+        //! Transpose this matrix
+        void transpose (void) {
+            array<Flt, 6> a;
+            a[0] = this->mat[4];
+            a[1] = this->mat[8];
+            a[2] = this->mat[9];
+            a[3] = this->mat[12];
+            a[4] = this->mat[13];
+            a[5] = this->mat[14];
+
+            this->mat[4] = this->mat[1];
+            this->mat[8] = this->mat[2];
+            this->mat[9] = this->mat[6];
+            this->mat[12] = this->mat[3];
+            this->mat[13] = this->mat[7];
+            this->mat[14] = this->mat[11];
+
+            this->mat[1] = a[0];  // mat[4]
+            this->mat[2] = a[1];  // mat[8]
+            this->mat[3] = a[3];  // mat[12]
+            this->mat[6] = a[2];  // mat[9]
+            this->mat[7] = a[4];  // mat[13]
+            this->mat[11] = a[5]; // mat[14]
+        }
+
+        //! Make a perspective projection
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
             Flt fovRad = fovDeg * piOver360; // fovDeg/2 converted to radians
             Flt sineFov = std::sin (fovRad);
@@ -490,7 +516,13 @@ namespace morph {
             persMat[10] = -(zNear+zFar)/clip;
             persMat[11] = -(2.0 * zNear * zFar)/clip;
             persMat[14] = -1.0;
-
+#if 0
+            // Try a transpose of the perspective matrix
+            TransformMatrix<Flt> trans;
+            trans.mat.swap(persMat);
+            trans.transpose();
+            persMat.swap(trans.mat);
+#endif
             (*this) *= persMat;
         }
     };

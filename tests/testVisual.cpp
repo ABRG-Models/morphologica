@@ -46,7 +46,8 @@ int main()
 
         // Make some dummy data
         for (unsigned int hi=0; hi<nhex; ++hi) {
-            data[hi] = 1.0 * hg.d_x[hi];
+            data[hi] = 0.1 * hg.d_x[hi];
+            cout << "Hex " << hi << " data[] = " << data[hi] << endl;
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
