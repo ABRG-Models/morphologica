@@ -33,11 +33,12 @@ morph::HexGridVisual::HexGridVisual (const Visual* _parent,
     glCreateVertexArrays (1, this->vaos); // OpenGL 4.5+
     cout << "vertex array name/handle: " << this->vaos[0] << endl;
 
-
+#if 0 // Probably need this:
     // Enable my attributes
     glEnableVertexArrayAttrib (this->vaos[0], loc_attrib);
     glEnableVertexArrayAttrib (this->vaos[0], normal_attrib);
     glEnableVertexArrayAttrib (this->vaos[0], texcoord_attrib);
+#endif
 
     // Check for GL_INVALID_VALUE?
     glBindVertexArray (this->vaos[0]);
