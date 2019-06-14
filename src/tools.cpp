@@ -27,7 +27,6 @@ extern "C" {
 }
 
 using namespace std;
-using namespace arma;
 
 /// @param gray gray value from 0.0 to 1.0
 /// @returns RGB value in jet colormap
@@ -195,9 +194,9 @@ vector < vector <double> > rotateCloud (vector < vector <double> > cloud, double
     }
     // make rotation matrix
     arma::mat RX, RY, RZ;
-    RX <<1.0<<0.0<<0.0<<endr<<0.0<<cos(Rx)<<-sin(Rx)<<endr<<0.0<<sin(Rx)<<cos(Rx)<<endr;
-    RY <<cos(Ry)<<0.0<<sin(Ry)<<endr<<0.0<<1.0<<0.0<<endr<<-sin(Ry)<<0.0<<cos(Ry)<<endr;
-    RZ <<cos(Rz)<<-sin(Rz)<<0.0<<endr<<sin(Rz)<<cos(Rz)<<0.0<<endr<<0.0<<0.0<<1.0<<endr;
+    RX <<1.0<<0.0<<0.0<<arma::endr<<0.0<<cos(Rx)<<-sin(Rx)<<arma::endr<<0.0<<sin(Rx)<<cos(Rx)<<arma::endr;
+    RY <<cos(Ry)<<0.0<<sin(Ry)<<arma::endr<<0.0<<1.0<<0.0<<arma::endr<<-sin(Ry)<<0.0<<cos(Ry)<<arma::endr;
+    RZ <<cos(Rz)<<-sin(Rz)<<0.0<<arma::endr<<sin(Rz)<<cos(Rz)<<0.0<<arma::endr<<0.0<<0.0<<1.0<<arma::endr;
 
     // do rotation
     Cloud = RX*Cloud; Cloud = RY*Cloud; Cloud = RZ*Cloud;
