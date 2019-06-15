@@ -127,8 +127,9 @@ namespace morph {
         bool readyToFinish = false;
 
     private:
-
+#if 0 // Used only in some test code
         unsigned long long int count = 0;
+#endif
 
         /*!
          * Read a shader
@@ -144,6 +145,14 @@ namespace morph {
          * The window (and OpenGL context) for this Visual
          */
         GLFWwindow* window;
+
+        /*!
+         * Current window width and height
+         */
+        //@{
+        int window_w;
+        int window_h;
+        //@}
 
         /*!
          * Cursor position

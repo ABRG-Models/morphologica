@@ -70,7 +70,18 @@ namespace morph {
         ~HexGridVisual();
 
         //! Initialize vertex buffer objects and vertex array object.
-        void initializeVertices (void);
+        //@{
+        //! Initialize as triangled. Gives a smooth surface with much
+        //! less comput than initializeVerticesHexesInterpolated.
+        void initializeVerticesTris (void);
+        //! Initialize as hexes, with z position of each of the 6
+        //! outer edges of the hexes interpolated, but a single colour
+        //! for each hex. Gives a smooth surface.
+        void initializeVerticesHexesInterpolated (void);
+        //! Initialize as hexes, with a step quad between each
+        //! hex. Might look cool.
+        void initializeVerticesHexesStepped (void);
+        //@}
 
         //! Render the HexGridVisual
         void render (void);

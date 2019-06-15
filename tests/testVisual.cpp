@@ -47,7 +47,7 @@ int main()
         // Make some dummy data
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.1 * std::sin(10*hg.d_x[hi]);
-            cout << "Hex " << hi << " data[] = " << data[hi] << endl;
+            //cout << "Hex " << hi << " data[] = " << data[hi] << endl;
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 

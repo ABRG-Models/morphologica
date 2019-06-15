@@ -17,6 +17,8 @@ using morph::Quaternion;
 using morph::ShaderInfo;
 
 morph::Visual::Visual(int width, int height, const string& title)
+    : window_w(width)
+    , window_h(height)
 {
     if (!glfwInit()) {
         // Initialization failed
@@ -25,6 +27,12 @@ morph::Visual::Visual(int width, int height, const string& title)
 
     // Set up error callback
     glfwSetErrorCallback (morph::Visual::errorCallback);
+
+    // See https://www.glfw.org/docs/latest/monitor_guide.html
+    GLFWmonitor* primary = glfwGetPrimaryMonitor();
+    float xscale, yscale;
+    glfwGetMonitorContentScale(primary, &xscale, &yscale);
+    cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << endl;
 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -41,8 +49,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwSetKeyCallback (this->window,         VisualBase::key_callback_dispatch);
     glfwSetMouseButtonCallback (this->window, VisualBase::mouse_button_callback_dispatch);
     glfwSetCursorPosCallback (this->window,   VisualBase::cursor_position_callback_dispatch);
-    // May not need these:
-    //glfwSetWindowSizeCallback (this->window,  VisualBase::window_size_callback_dispatch);
+    glfwSetWindowSizeCallback (this->window,  VisualBase::window_size_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
 
@@ -52,19 +59,14 @@ morph::Visual::Visual(int width, int height, const string& title)
         {GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
         {GL_NONE, NULL }
     };
-#if 0
-    ShaderInfo shaders[] = {
-        {GL_VERTEX_SHADER, "triangles.vert" },
-        {GL_FRAGMENT_SHADER, "triangles.frag" },
-        {GL_NONE, NULL }
-    };
-#endif
+
     this->shaderprog = this->LoadShaders (shaders);
 
+    // shaderprog is bound here, and never unbound
     glUseProgram (this->shaderprog);
 
     // Now client code can set up HexGridVisuals.
-    //glEnable (GL_DEPTH_TEST);
+    glEnable (GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
     //glDisable(GL_DEPTH_TEST);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -135,18 +137,15 @@ void morph::Visual::timerEvent ()
 void
 morph::Visual::setPerspective (void)
 {
-    // Obtain window size
-    int w, h;
-    glfwGetWindowSize (this->window, &w, &h);
     // Calculate aspect ratio
-    float aspect = float(w) / float(h ? h : 1);
+    float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const float zNear = 0.5, zFar = 10.0, fov = 65.0;
+    const float zNear = 0.5, zFar = 10.0, fov = 45.0;
     // Reset projection
     this->projection.setToIdentity();
     // Set perspective projection
+    cout << "aspect ratio: " << aspect << endl;
     this->projection.perspective (fov, aspect, zNear, zFar);
-    //this->projection.output();
 }
 
 void
@@ -154,9 +153,8 @@ morph::Visual::render (void)
 {
     // Can avoid this by getting window size into members only when window size changes.
     const double retinaScale = 1; // devicePixelRatio()?
-    int w, h;
-    glfwGetWindowSize (this->window, &w, &h);
-    glViewport (0, 0, w * retinaScale, h * retinaScale);
+
+    glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
     // Set the perspective from the width/height
     this->setPerspective();
@@ -167,9 +165,6 @@ morph::Visual::render (void)
     rotmat.rotate (this->rotation);
     cout << "Rotation quaternion: ";
     this->rotation.output();
-
-    // Bind shader program if necessary?
-    //this->shaderProg->bind();
 
     // Set modelview-projection matrix
     TransformMatrix<float> pr = this->projection * rotmat;
@@ -191,11 +186,6 @@ morph::Visual::render (void)
         cout << "| " << arr[3] << " , " << arr[7] << " , " << arr[11] << " , " << arr[15] << " |\n";
         cout << "arr.data()[0]: " << arr.data()[0] << endl;
         glUniformMatrix4fv (loc, 1, GL_FALSE, arr.data());
-#endif
-#if 0
-        TransformMatrix<float> dummy;
-        dummy.translate(0, 0, -3);
-        glUniformMatrix4fv (loc, 1, GL_FALSE, dummy.mat.data());
 #endif
 
 #if 1
@@ -222,36 +212,33 @@ morph::Visual::render (void)
         cout << "| " << pr.mat[3] << " , " << pr.mat[7] << " , " << pr.mat[11] << " , " << pr.mat[15] << " |\n";
         cout << "                                     -------------|" << endl;
 #endif
-        // Original:
+        // Set the uniform:
         //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+        //
         glUniformMatrix4fv (loc, 1, GL_FALSE, rotmat.mat.data());
+        //
         //glUniformMatrix4fv (loc, 1, GL_FALSE, this->projection.mat.data());
+        //
+        //TransformMatrix<float> translation;
+        //translation.translate (0.0, 0.0, 0.1);
+        //glUniformMatrix4fv (loc, 1, GL_FALSE, translation.mat.data());
     }
 
     // Clear color buffer and **also depth buffer**
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //static const float white[] = { 0.0f, 1.0f, 1.0f, 0.5f };
+    // Can set a background colour:
+    //static const float white[] = { 1.0f, 1.0f, 1.0f, 0.5f };
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
-#define RENDERHEX 1
-#ifdef RENDERHEX
     vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
     while (hgvi != this->hexGridVis.end()) {
         (*hgvi)->render();
         ++hgvi;
     }
-#else
-    vector<TriangleVisual*>::iterator tvi = this->triangleVis.begin();
-    while (tvi != this->triangleVis.end()) {
-        (*tvi)->render();
-        ++tvi;
-    }
-#endif
-    glfwSwapBuffers (this->window);
 
-    // release shader if it was bound
+    glfwSwapBuffers (this->window);
 }
 
 void
@@ -317,9 +304,9 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
     GLboolean shaderCompilerPresent = GL_FALSE;
     glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
     if (shaderCompilerPresent == GL_FALSE) {
-        cerr << "shader compiler NOT present: " << shaderCompilerPresent << endl;
+        cerr << "Shader compiler NOT present!" << endl;
     } else {
-        cout << "shader compiler present: " << shaderCompilerPresent << endl;
+        cout << "Shader compiler present" << endl;
     }
 
     ShaderInfo* entry = shaders;
@@ -334,12 +321,13 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
                 entry->shader = 0;
             }
             return 0;
+#ifdef DEBUG
         } else {
             cout << "Compiling this shader: " << endl << "-----" << endl;
             cout << source << "-----" << endl;
+#endif
         }
         GLint slen = (GLint)strlen (source);
-        cout << "Shader length: " << slen << endl;
         glShaderSource (shader, 1, &source, &slen);
         delete [] source;
 
@@ -364,8 +352,10 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
                 delete [] log;
             }
             return 0;
+#ifdef DEBUG
         } else {
             cout << "shader compiled" << endl;
+#endif
         }
 
         glAttachShader (program, shader);
@@ -450,7 +440,9 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
 void
 morph::Visual::window_size_callback (GLFWwindow* window, int width, int height)
 {
-    cout << "window size" << endl;
+    this->window_w = width;
+    this->window_h = height;
+    this->render();
 }
 
 //@}
