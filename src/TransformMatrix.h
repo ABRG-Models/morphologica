@@ -81,7 +81,7 @@ namespace morph {
         }
 
         /*!
-         * Algorithm from:
+         * This algorithm was obtained from:
          * http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
          */
         void rotate (const Quaternion<float>& q) {
@@ -192,10 +192,10 @@ namespace morph {
                 + this->mat[5] * m2[9]
                 + this->mat[9] * m2[10]
                 + this->mat[13] * m2[11];
-            result[13] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result[13] = this->mat[1] * m2[12]
+                + this->mat[5] * m2[13]
+                + this->mat[9] * m2[14]
+                + this->mat[13] * m2[15];
 
             // Third row
             result[2] = this->mat[2] * m2[0]
@@ -270,10 +270,10 @@ namespace morph {
                 + this->mat[5] * m2.mat[9]
                 + this->mat[9] * m2.mat[10]
                 + this->mat[13] * m2.mat[11];
-            result[13] = this->mat[0] * m2.mat[12]
-                + this->mat[4] * m2.mat[13]
-                + this->mat[8] * m2.mat[14]
-                + this->mat[12] * m2.mat[15];
+            result[13] = this->mat[1] * m2.mat[12]
+                + this->mat[5] * m2.mat[13]
+                + this->mat[9] * m2.mat[14]
+                + this->mat[13] * m2.mat[15];
 
             // Third row
             result[2] = this->mat[2] * m2.mat[0]
@@ -348,10 +348,10 @@ namespace morph {
                 + this->mat[5] * m2[9]
                 + this->mat[9] * m2[10]
                 + this->mat[13] * m2[11];
-            result.mat[13] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            result.mat[13] = this->mat[1] * m2[12]
+                + this->mat[5] * m2[13]
+                + this->mat[9] * m2[14]
+                + this->mat[13] * m2[15];
 
             // Third row
             result.mat[2] = this->mat[2] * m2[0]
@@ -426,10 +426,10 @@ namespace morph {
                 + this->mat[5] * m2.mat[9]
                 + this->mat[9] * m2.mat[10]
                 + this->mat[13] * m2.mat[11];
-            result.mat[13] = this->mat[0] * m2.mat[12]
-                + this->mat[4] * m2.mat[13]
-                + this->mat[8] * m2.mat[14]
-                + this->mat[12] * m2.mat[15];
+            result.mat[13] = this->mat[1] * m2.mat[12]
+                + this->mat[5] * m2.mat[13]
+                + this->mat[9] * m2.mat[14]
+                + this->mat[13] * m2.mat[15];
 
             // Third row
             result.mat[2] = this->mat[2] * m2.mat[0]
@@ -513,6 +513,9 @@ namespace morph {
 
             Flt fovRad = fovDeg * piOver360; // fovDeg/2 converted to radians
             Flt sineFov = std::sin (fovRad);
+            if (sineFov == static_cast<Flt>(0.0)) {
+                return;
+            }
             Flt cotanFov = std::cos (fovRad) / sineFov;
             Flt clip = zFar - zNear;
 
@@ -524,13 +527,7 @@ namespace morph {
             persMat[10] = -(zNear+zFar)/clip;
             persMat[11] = -(2.0 * zNear * zFar)/clip;
             persMat[14] = -1.0;
-#if 0
-            // Try a transpose of the perspective matrix
-            TransformMatrix<Flt> trans;
-            trans.mat.swap(persMat);
-            trans.transpose();
-            persMat.swap(trans.mat);
-#endif
+
             (*this) *= persMat;
 
             cout << "After perspective" << endl;
