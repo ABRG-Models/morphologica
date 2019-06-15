@@ -69,15 +69,15 @@ namespace morph {
         }
 
         void translate (const Vector3<Flt>& v) {
-            this->mat[3] += v.x;
-            this->mat[7] += v.y;
-            this->mat[11] += v.z;
+            this->mat[12] += v.x;
+            this->mat[13] += v.y;
+            this->mat[14] += v.z;
         }
 
         void translate (const Flt& x, const Flt& y, const Flt& z) {
-            this->mat[3] += x;
-            this->mat[7] += y;
-            this->mat[11] += z;
+            this->mat[12] += x;
+            this->mat[13] += y;
+            this->mat[14] += z;
         }
 
         /*!
@@ -503,6 +503,14 @@ namespace morph {
 
         //! Make a perspective projection
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
+
+            cout << "Before perspective" << endl;
+            this->output();
+            // Bail out if the projection volume is zero-sized.
+            if (zNear == zFar || aspect == 0.0f) {
+                return;
+            }
+
             Flt fovRad = fovDeg * piOver360; // fovDeg/2 converted to radians
             Flt sineFov = std::sin (fovRad);
             Flt cotanFov = std::cos (fovRad) / sineFov;
@@ -524,6 +532,9 @@ namespace morph {
             persMat.swap(trans.mat);
 #endif
             (*this) *= persMat;
+
+            cout << "After perspective" << endl;
+            this->output();
         }
     };
 
