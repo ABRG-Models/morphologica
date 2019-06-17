@@ -79,42 +79,6 @@ morph::Visual::~Visual()
     glfwTerminate();
 }
 
-void
-morph::Visual::mousePressEvent (void)
-{
-    // Save mouse press position
-    this->mousePressPosition.x = static_cast<float>(this->cursorx);
-    this->mousePressPosition.y = static_cast<float>(this->cursory);
-}
-
-void morph::Visual::mouseReleaseEvent (void)
-{
-    // Mouse release position - mouse press position
-    Vector2<float> diff (static_cast<float>(this->cursorx),
-                         static_cast<float>(this->cursory));
-
-    diff -= this->mousePressPosition;
-    //cout << "diff: " << diff.x << "," << diff.y << endl;
-
-    // Rotation axis is perpendicular to the mouse position difference vector
-    Vector3<float> n(diff.y, diff.x, 0.0f);
-    n.renormalize();
-    cout << "n = ";
-    n.output();
-
-    // Accelerate angular speed relative to the length of the mouse sweep
-    float acc = diff.length() / 100.0;
-
-    // Calculate new rotation axis as weighted sum
-    this->rotationAxis = (this->rotationAxis * this->angularSpeed) + (n * acc);
-    this->rotationAxis.renormalize();
-    //cout << "acc = " << acc << ", rotationAxis = ";
-    //this->rotationAxis.output();
-
-    // Increase angular speed
-    this->angularSpeed += acc;
-}
-
 void morph::Visual::timerEvent ()
 {
     // Decrease angular speed (friction)
@@ -369,25 +333,81 @@ void
 morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action, int mods)
 {
     // button is the button number, action is either key press (1) or key release (0)
-    cout << "button " << button;
-    //if (button == 0) { // Do we care which button? Not for now.
-    if (action == 1) {
-        // press means start a drag
-        cout << " mouse press" << endl;
-        this->mousePressEvent();
-    } else if (action == 0) {
-        // release
-        cout << " mouse release" << endl;
-        this->mouseReleaseEvent();
+    cout << "button: " << button << " action: " << (action==1?("press"):("release")) << endl;
+
+    // Record the position at which the button was pressed
+    if (action == 1) { // Button down
+        this->mousePressPosition = this->cursorpos;
     }
-    //}
+
+    if (button == 0) { // Primary button means rotate
+        this->rotateMode = (action == 1);
+    } else if (button == 1) { // Secondary button means translate
+        this->translateMode = (action == 1);
+    }
 }
+
+#if 0
+void morph::Visual::mouseReleaseEvent (void)
+{
+    // Mouse release position - mouse press position
+    Vector2<float> diff (static_cast<float>(this->cursorx),
+                         static_cast<float>(this->cursory));
+
+    diff -= this->mousePressPosition;
+    //cout << "diff: " << diff.x << "," << diff.y << endl;
+
+    // Rotation axis is perpendicular to the mouse position difference vector
+    Vector3<float> n(diff.y, diff.x, 0.0f);
+    n.renormalize();
+    cout << "n = ";
+    n.output();
+
+    // Accelerate angular speed relative to the length of the mouse sweep
+    float acc = diff.length() / 100.0;
+
+    // Calculate new rotation axis as weighted sum
+    this->rotationAxis = (this->rotationAxis * this->angularSpeed) + (n * acc);
+    this->rotationAxis.renormalize();
+    //cout << "acc = " << acc << ", rotationAxis = ";
+    //this->rotationAxis.output();
+
+    // Increase angular speed
+    this->angularSpeed += acc;
+}
+#endif
 
 void
 morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
 {
-    this->cursorx = x;
-    this->cursory = y;
+    this->cursorpos.x = static_cast<float>(x);
+    this->cursorpos.y = static_cast<float>(y);
+
+    Vector2<float> diff = this->cursorpos;
+    diff -= this->mousePressPosition;
+
+    if (this->rotateMode) {
+        //cout << "diff: " << diff.x << "," << diff.y << endl;
+        // Rotation axis is perpendicular to the mouse position difference vector
+        Vector3<float> n(diff.y, diff.x, 0.0f);
+        n.renormalize();
+        // Accelerate angular speed relative to the length of the mouse sweep
+        float rotamount = diff.length() / 100.0;
+        // Calculate new rotation axis as weighted sum
+        this->rotationAxis = this->rotationAxis + (n * rotamount);
+        this->rotationAxis.renormalize();
+        // Update rotation
+        Quaternion<float> rotationQuaternion;
+        rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
+        this->rotation.premultiply (rotationQuaternion);
+    }
+
+    if (this->translateMode) {
+        this->scenetrans.x += diff.x * this->scenetrans_mousestepsize;
+        this->scenetrans.y -= diff.y * this->scenetrans_mousestepsize;
+    }
+
+    this->render();
 }
 
 void
@@ -401,9 +421,8 @@ morph::Visual::window_size_callback (GLFWwindow* window, int width, int height)
 void
 morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
 {
-    cout << "Scroll with offsets " << xoffset << "," << yoffset << endl;
     // x and y can be +/- 1
-    this->scenetrans.x += -xoffset * this->scenetrans_stepsize;
+    this->scenetrans.x -= xoffset * this->scenetrans_stepsize;
     this->scenetrans.z += yoffset * this->scenetrans_stepsize;
     this->render();
 }

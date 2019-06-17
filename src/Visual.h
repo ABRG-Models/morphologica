@@ -111,12 +111,6 @@ namespace morph {
          */
         GLuint shaderprog;
 
-        //! trigger on mouse press event
-        void mousePressEvent (void);
-
-        //! trigger on mouse release event
-        void mouseReleaseEvent (void);
-
         //! trigger on timer event
         void timerEvent (void);
 
@@ -155,23 +149,6 @@ namespace morph {
         //@}
 
         /*!
-         * Cursor position
-         */
-        //@{
-        double cursorx = 0.0;
-        double cursory = 0.0;
-        //@}
-
-        //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, -3.5};
-
-        //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, -3.5};
-
-        //! How big should the steps in scene translation be when scrolling?
-        float scenetrans_stepsize = 0.05;
-
-        /*!
          * This Visual is going to render some HexGridVisuals for us. 1 or more.
          */
         vector<HexGridVisual*> hexGridVis;
@@ -183,6 +160,26 @@ namespace morph {
          * Variables to manage projection and rotation of the object
          */
         //@{
+
+        //! Cursor position
+        Vector2<float> cursorpos;
+
+        //! Holds the translation coordinates for the current location of the entire scene
+        Vector3<float> scenetrans = {0.0, 0.0, -3.5};
+
+        //! Default for scenetrans
+        const Vector3<float> scenetrans_default = {0.0, 0.0, -3.5};
+
+        //! How big should the steps in scene translation be when scrolling?
+        float scenetrans_stepsize = 0.05;
+        float scenetrans_mousestepsize = 0.001;
+
+        //! When true, cursor movements induce rotation of scene
+        bool rotateMode = false;
+
+        //! When true, cursor movements induce translation of scene
+        bool translateMode = false;
+
         Vector2<float> mousePressPosition;
         Vector3<float> rotationAxis;
         float angularSpeed;
