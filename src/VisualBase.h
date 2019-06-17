@@ -21,6 +21,7 @@ namespace morph {
         virtual void mouse_button_callback (GLFWwindow* win, int button, int action, int mods) = 0;
         virtual void cursor_position_callback (GLFWwindow* win, double x, double y) = 0;
         virtual void window_size_callback (GLFWwindow* win, int width, int height) = 0;
+        virtual void scroll_callback (GLFWwindow* win, double xoffset, double yoffset) = 0;
         //@}
 
         //! static pointer for event handling
@@ -49,6 +50,11 @@ namespace morph {
         static void window_size_callback_dispatch (GLFWwindow* win, int width, int height) {
             if (event_handling != (VisualBase*)0) {
                 event_handling->window_size_callback (win, width, height);
+            }
+        }
+        static void scroll_callback_dispatch (GLFWwindow* win, double xoffset, double yoffset) {
+            if (event_handling != (VisualBase*)0) {
+                event_handling->scroll_callback (win, xoffset, yoffset);
             }
         }
         //@}

@@ -504,8 +504,6 @@ namespace morph {
         //! Make a perspective projection
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
 
-            cout << "Before perspective" << endl;
-            this->output();
             // Bail out if the projection volume is zero-sized.
             if (zNear == zFar || aspect == 0.0f) {
                 return;
@@ -525,13 +523,10 @@ namespace morph {
             persMat[0] = cotanFov/aspect;
             persMat[5] = cotanFov;
             persMat[10] = -(zNear+zFar)/clip;
-            persMat[11] = -(2.0 * zNear * zFar)/clip;
-            persMat[14] = -1.0;
+            persMat[11] = -1.0;
+            persMat[14] = -(2.0 * zNear * zFar)/clip;
 
             (*this) *= persMat;
-
-            cout << "After perspective" << endl;
-            this->output();
         }
     };
 

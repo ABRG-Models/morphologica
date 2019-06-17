@@ -92,6 +92,10 @@ namespace morph {
             this->x = other.x;
             this->y = other.y;
         }
+        void operator= (const array<Flt, 2>& other) {
+            this->x = other[0];
+            this->y = other[1];
+        }
 
         //! Comparison operator
         bool operator== (const Vector2<Flt>& other) {

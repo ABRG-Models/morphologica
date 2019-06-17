@@ -162,6 +162,15 @@ namespace morph {
         double cursory = 0.0;
         //@}
 
+        //! Holds the translation coordinates for the current location of the entire scene
+        Vector3<float> scenetrans = {0.0, 0.0, -3.5};
+
+        //! Default for scenetrans
+        const Vector3<float> scenetrans_default = {0.0, 0.0, -3.5};
+
+        //! How big should the steps in scene translation be when scrolling?
+        float scenetrans_stepsize = 0.05;
+
         /*!
          * This Visual is going to render some HexGridVisuals for us. 1 or more.
          */
@@ -189,6 +198,7 @@ namespace morph {
         virtual void cursor_position_callback (GLFWwindow* window, double x, double y);
         virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods);
         virtual void window_size_callback (GLFWwindow* window, int width, int height);
+        virtual void scroll_callback (GLFWwindow* window, double xoffset, double yoffset);
         //@}
     };
 

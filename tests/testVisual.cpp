@@ -55,6 +55,7 @@ int main()
         unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
         cout << "Added HexGridVisual with gridId " << gridId << endl;
         v.addTriangleVisual();
+        v.render();
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout(2.5);

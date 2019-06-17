@@ -277,7 +277,7 @@ void
 morph::HexGridVisual::render (void)
 {
     glBindVertexArray (this->vao);
-    cout << "Render " << this->indices.size() << " vertices" << endl;
+    //cout << "Render " << this->indices.size() << " vertices" << endl;
     glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
     glBindVertexArray(0);
 }

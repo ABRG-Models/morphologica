@@ -50,6 +50,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwSetMouseButtonCallback (this->window, VisualBase::mouse_button_callback_dispatch);
     glfwSetCursorPosCallback (this->window,   VisualBase::cursor_position_callback_dispatch);
     glfwSetWindowSizeCallback (this->window,  VisualBase::window_size_callback_dispatch);
+    glfwSetScrollCallback (this->window,  VisualBase::scroll_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
 
@@ -140,11 +141,10 @@ morph::Visual::setPerspective (void)
     // Calculate aspect ratio
     float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const float zNear = 0.5, zFar = 10.0, fov = 45.0;
+    const float zNear = 1.5, zFar = 5.0, fov = 45.0;
     // Reset projection
     this->projection.setToIdentity();
     // Set perspective projection
-    cout << "aspect ratio: " << aspect << endl;
     this->projection.perspective (fov, aspect, zNear, zFar);
 }
 
@@ -161,10 +161,10 @@ morph::Visual::render (void)
 
     // Calculate model view transformation
     TransformMatrix<float> rotmat;
-    rotmat.translate (0.0, 0.0, 0.0); // send backwards into distance
+    rotmat.translate (this->scenetrans); // send backwards into distance
     rotmat.rotate (this->rotation);
-    cout << "Rotation quaternion: ";
-    this->rotation.output();
+    //cout << "Rotation quaternion: ";
+    //this->rotation.output();
 
     // Set modelview-projection matrix
     TransformMatrix<float> pr = this->projection * rotmat;
@@ -173,55 +173,8 @@ morph::Visual::render (void)
     if (loc == -1) {
         cout << "No mvp_matrix? loc: " << loc << endl;
     } else {
-        //cout << "mvp_matrix loc: " << loc << endl;
-#if 0
-        Quaternion<float> dummy;
-        dummy.initFromAxisAngle (Vector3<float>(0,1,0), count++%360);
-        dummy.renormalize();
-        array<float, 16> arr;
-        dummy.rotationMatrix (arr);
-        cout << "| " << arr[0] << " , " << arr[4] << " , " << arr[8] << " , " << arr[12] << " |\n";
-        cout << "| " << arr[1] << " , " << arr[5] << " , " << arr[9] << " , " << arr[13] << " |\n";
-        cout << "| " << arr[2] << " , " << arr[6] << " , " << arr[10] << " , " << arr[14] << " |\n";
-        cout << "| " << arr[3] << " , " << arr[7] << " , " << arr[11] << " , " << arr[15] << " |\n";
-        cout << "arr.data()[0]: " << arr.data()[0] << endl;
-        glUniformMatrix4fv (loc, 1, GL_FALSE, arr.data());
-#endif
-
-#if 1
-        cout << "|------------- rotation" << endl;
-        cout << "| " << rotmat.mat[0] << " , " << rotmat.mat[4] << " , " << rotmat.mat[8] << " , " << rotmat.mat[12] << " |\n";
-        cout << "| " << rotmat.mat[1] << " , " << rotmat.mat[5] << " , " << rotmat.mat[9] << " , " << rotmat.mat[13] << " |\n";
-        cout << "| " << rotmat.mat[2] << " , " << rotmat.mat[6] << " , " << rotmat.mat[10] << " , " << rotmat.mat[14] << " |\n";
-        cout << "| " << rotmat.mat[3] << " , " << rotmat.mat[7] << " , " << rotmat.mat[11] << " , " << rotmat.mat[15] << " |\n";
-        cout << "                                     -------------|" << endl;
-#endif
-#if 1
-        cout << "|------------- projection " << endl;
-        cout << "| " << this->projection.mat[0] << " , " << this->projection.mat[4] << " , " << this->projection.mat[8] << " , " << this->projection.mat[12] << " |\n";
-        cout << "| " << this->projection.mat[1] << " , " << this->projection.mat[5] << " , " << this->projection.mat[9] << " , " << this->projection.mat[13] << " |\n";
-        cout << "| " << this->projection.mat[2] << " , " << this->projection.mat[6] << " , " << this->projection.mat[10] << " , " << this->projection.mat[14] << " |\n";
-        cout << "| " << this->projection.mat[3] << " , " << this->projection.mat[7] << " , " << this->projection.mat[11] << " , " << this->projection.mat[15] << " |\n";
-        cout << "                                     -------------|" << endl;
-#endif
-#if 1
-        cout << "|------------- projection * rotation " << endl;
-        cout << "| " << pr.mat[0] << " , " << pr.mat[4] << " , " << pr.mat[8] << " , " << pr.mat[12] << " |\n";
-        cout << "| " << pr.mat[1] << " , " << pr.mat[5] << " , " << pr.mat[9] << " , " << pr.mat[13] << " |\n";
-        cout << "| " << pr.mat[2] << " , " << pr.mat[6] << " , " << pr.mat[10] << " , " << pr.mat[14] << " |\n";
-        cout << "| " << pr.mat[3] << " , " << pr.mat[7] << " , " << pr.mat[11] << " , " << pr.mat[15] << " |\n";
-        cout << "                                     -------------|" << endl;
-#endif
         // Set the uniform:
-        //glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
-        //
-        glUniformMatrix4fv (loc, 1, GL_FALSE, rotmat.mat.data());
-        //
-        //glUniformMatrix4fv (loc, 1, GL_FALSE, this->projection.mat.data());
-        //
-        //TransformMatrix<float> translation;
-        //translation.translate (0.0, 0.0, 0.1);
-        //glUniformMatrix4fv (loc, 1, GL_FALSE, translation.mat.data());
+        glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
     }
 
     // Clear color buffer and **also depth buffer**
@@ -445,4 +398,13 @@ morph::Visual::window_size_callback (GLFWwindow* window, int width, int height)
     this->render();
 }
 
+void
+morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
+{
+    cout << "Scroll with offsets " << xoffset << "," << yoffset << endl;
+    // x and y can be +/- 1
+    this->scenetrans.x += -xoffset * this->scenetrans_stepsize;
+    this->scenetrans.z += yoffset * this->scenetrans_stepsize;
+    this->render();
+}
 //@}
