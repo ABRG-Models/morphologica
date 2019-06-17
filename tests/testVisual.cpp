@@ -59,7 +59,7 @@ int main()
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout(2.5);
-            v.timerEvent();
+            v.render();
         }
 
     } catch (const exception& e) {

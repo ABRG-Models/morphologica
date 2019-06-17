@@ -79,26 +79,6 @@ morph::Visual::~Visual()
     glfwTerminate();
 }
 
-void morph::Visual::timerEvent ()
-{
-    // Decrease angular speed (friction)
-    this->angularSpeed *= 0.95;
-
-    // Stop rotation when speed goes below threshold
-    if (this->angularSpeed < 0.01) {
-        this->angularSpeed = 0.0;
-    } else {
-        // Update rotation
-        Quaternion<float> rotationQuaternion;
-        rotationQuaternion.initFromAxisAngle (this->rotationAxis, this->angularSpeed);
-        this->rotation.premultiply (rotationQuaternion);
-        //this->rotation.output();
-
-        // Request an update
-        this->render();
-    }
-}
-
 void
 morph::Visual::setPerspective (void)
 {
@@ -319,13 +299,22 @@ morph::Visual::errorCallback (int error, const char* description)
 void
 morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    // Exit action
     if (key == GLFW_KEY_X && action == GLFW_PRESS) {
         cout << "User requested exit." << endl;
         this->readyToFinish = true;
     }
-    // Could have several other actions:
+
+    // Reset view to default
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-        cout << "Autoscale?" << endl;
+        cout << "Reset to default view" << endl;
+        // Reset translation
+        this->scenetrans = this->scenetrans_default;
+        // Reset rotation
+        Quaternion<float> rt;
+        this->rotation = rt;
+
+        this->render();
     }
 }
 
@@ -346,36 +335,6 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         this->translateMode = (action == 1);
     }
 }
-
-#if 0
-void morph::Visual::mouseReleaseEvent (void)
-{
-    // Mouse release position - mouse press position
-    Vector2<float> diff (static_cast<float>(this->cursorx),
-                         static_cast<float>(this->cursory));
-
-    diff -= this->mousePressPosition;
-    //cout << "diff: " << diff.x << "," << diff.y << endl;
-
-    // Rotation axis is perpendicular to the mouse position difference vector
-    Vector3<float> n(diff.y, diff.x, 0.0f);
-    n.renormalize();
-    cout << "n = ";
-    n.output();
-
-    // Accelerate angular speed relative to the length of the mouse sweep
-    float acc = diff.length() / 100.0;
-
-    // Calculate new rotation axis as weighted sum
-    this->rotationAxis = (this->rotationAxis * this->angularSpeed) + (n * acc);
-    this->rotationAxis.renormalize();
-    //cout << "acc = " << acc << ", rotationAxis = ";
-    //this->rotationAxis.output();
-
-    // Increase angular speed
-    this->angularSpeed += acc;
-}
-#endif
 
 void
 morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)

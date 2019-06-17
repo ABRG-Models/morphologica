@@ -111,9 +111,6 @@ namespace morph {
          */
         GLuint shaderprog;
 
-        //! trigger on timer event
-        void timerEvent (void);
-
         //! Set perspective based on window width and height
         void setPerspective (void);
 

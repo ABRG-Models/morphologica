@@ -110,6 +110,16 @@ namespace morph {
         }
 
         /*!
+         * Assignment operators
+         */
+        void operator= (const Quaternion<Flt>& q2) {
+            this->w = q2.w;
+            this->x = q2.x;
+            this->y = q2.y;
+            this->z = q2.z;
+        }
+
+        /*!
          * Overload * operator. q1 is 'this->'
          */
         Quaternion<Flt> operator* (const Quaternion<Flt>& q2) {
