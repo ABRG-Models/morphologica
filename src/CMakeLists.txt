@@ -75,11 +75,7 @@ install(
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 
-# For debugging, you can list variables like this:
-set(DEBUG_VARIABLES ON)
-if(DEBUG_VARIABLES)
-  get_cmake_property(_variableNames VARIABLES)
-  foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-  endforeach()
-endif(DEBUG_VARIABLES)
+# Morphologica util readcurves:
+add_executable(readcurves readcurves.cpp)
+target_link_libraries(readcurves morphologica)
+install(TARGETS readcurves DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
