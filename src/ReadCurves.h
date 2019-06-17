@@ -146,6 +146,11 @@ namespace morph
         BezCurvePath corticalPath;
 
         /*!
+         * Init to false, set true if we find the "cortex" layer in the svg file.
+         */
+        bool gotCortex = false;
+
+        /*!
          * A list of paths marking out structures within the
          * neocortex.
          */

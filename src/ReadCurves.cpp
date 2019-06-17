@@ -12,7 +12,7 @@
 #include <cstdlib>
 
 // To enable debug cout messages:
-//#define DEBUG 1
+#define DEBUG 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -41,6 +41,11 @@ morph::ReadCurves::ReadCurves (const string& svgpath)
     this->init();
     // Read the curves:
     this->read();
+    if (this->gotCortex == false) {
+        cout << "WARNING: No object in SVG with id \"cortex\". Cortical boundary will be null." << endl;
+    } else {
+        cout << "Got a cortex id" << endl;
+    }
 }
 
 void
@@ -87,18 +92,39 @@ morph::ReadCurves::readG (xml_node<>* g_node)
     if ((id_attr = g_node->first_attribute ("id"))) {
         g_id = id_attr->value();
     } // else failed to get g_id
+    DBG("readG called, g id is " << g_id);
 
     if (g_id.empty()) {
         throw runtime_error ("Found a <g> element without an id attribute (i.e. a layer without a name)");
     }
 
     // Parse paths:
+    bool gotpath = false;
     for (xml_node<>* path_node = g_node->first_node("path");
          path_node;
          path_node = path_node->next_sibling("path")) {
         // Fixme: Handle >1 paths. But this SHOULD be doing that...
+        // Fixme Fixme: Handle a g within a g: any g within a g called cortex should be a cortex!
         DBG ("Read path...");
         this->readPath (path_node, g_id);
+        gotpath = true;
+    }
+    if (!gotpath) {
+        // Search <g> within a <g>, as produced by inkscape.
+        for (xml_node<>* gg_node = g_node->first_node("g");
+             gg_node;
+             gg_node = gg_node->next_sibling("g")) {
+            for (xml_node<>* path_node = gg_node->first_node("path");
+                 path_node;
+                 path_node = path_node->next_sibling("path")) {
+                DBG ("Read path in sub-g using the same g_id");
+                this->readPath (path_node, g_id);
+                gotpath = true;
+            }
+        }
+        if (!gotpath) {
+            cout << "WARNING: Failed to read a path in <g> element with id " << g_id << endl;
+        }
     }
 
     // Parse lines:
@@ -127,6 +153,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
     if (layerName == "cortex") {
+        this->gotCortex = true;
         this->corticalPath = curves;
     } else {
         this->enclosedRegions.push_back (curves);

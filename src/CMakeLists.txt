@@ -56,3 +56,8 @@ install(
   FILES display.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
+
+# Morphologica util readcurves:
+add_executable(readcurves readcurves.cpp)
+target_link_libraries(readcurves morphologica)
+install(TARGETS readcurves DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
