@@ -127,7 +127,9 @@ morph::ReadCurves::readG (xml_node<>* g_node)
         }
     }
 
-    // Parse lines:
+    // Parse lines: Fixme: Inkscape will savea line as a path with
+    // implicit lineto in the form of a path with 2 pairs of
+    // coordinates.
     for (xml_node<>* line_node = g_node->first_node("line");
          line_node;
          line_node = line_node->next_sibling("line")) {
