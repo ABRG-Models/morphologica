@@ -92,10 +92,12 @@ add_executable(test_ellipseboundary test_ellipseboundary.cpp)
 target_link_libraries(test_ellipseboundary morphologica)
 add_test(test_ellipseboundary test_ellipseboundary)
 
-# Test morph::Visual class
-add_executable(testvis testVisual.cpp)
-target_link_libraries(testvis morphologica)
-add_test(testvis testvis)
+if(${glfw3_FOUND})
+  # Test morph::Visual class
+  add_executable(testvis testVisual.cpp)
+  target_link_libraries(testvis morphologica)
+  add_test(testvis testvis)
+endif()
 
 # Test morph::Process class
 add_executable(testProcess testProcess.cpp)
