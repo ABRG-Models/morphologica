@@ -4,6 +4,7 @@
 
 // To enable debug cout messages:
 #define DEBUG 1
+#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -64,6 +65,7 @@ morph::BezCurve::computePoints (unsigned int n) const
 vector<BezCoord>
 morph::BezCurve::computePoints (float l, float firstl) const
 {
+    DBG2 ("computePoints (float l, float firstl) called");
     vector<BezCoord> rtn;
     float t = 0.0f;
     bool lastnull = false;
@@ -133,6 +135,7 @@ morph::BezCurve::computePoint (float t, float l) const
 BezCoord
 morph::BezCurve::computePointLinear (float t, float l) const
 {
+    DBG2 ("Called computePointLinear(float t="<<t<<", float l="<<l<<")");
     BezCoord b1 = this->computePoint (t);
     BezCoord e1 = this->computePoint (1.0f);
     float toEnd = b1.distanceTo (e1);
@@ -196,8 +199,10 @@ morph::BezCurve::setLthresh (const float l)
 BezCoord
 morph::BezCurve::computePointLinear (float t) const
 {
+    DBG2 ("computePointLinear (t=" << t << ")");
     this->checkt(t);
     pair<float,float> b;
+    // Bug here. scale is 0.
     b.first = ((1-t) * this->p0.first + t * this->p1.first) * this->scale;
     b.second = ((1-t) * this->p0.second + t * this->p1.second) * this->scale;
     return BezCoord(t, b);

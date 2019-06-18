@@ -12,8 +12,8 @@
 #include <cstdlib>
 
 // To enable debug cout messages:
-//#define DEBUG 1
-//#define DEBUG2 1
+#define DEBUG 1
+#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -79,6 +79,21 @@ morph::ReadCurves::read (void)
          g_node = g_node->next_sibling("g")) {
         this->readG (g_node);
     }
+
+    // Search un-enclosed paths, as well as those enclosed in <g> elements
+    for (xml_node<>* path_node = this->root_node->first_node("path");
+         path_node;
+         path_node = path_node->next_sibling("path")) {
+        // Un-enclosed paths will need to use their id attribute
+        string p_id("");
+        xml_attribute<>* path_id_attr;
+        if ((path_id_attr = path_node->first_attribute ("id"))) {
+            p_id = path_id_attr->value();
+            DBG("Un-enclosed path id is " << p_id);
+            this->readPath (path_node, p_id);
+        } // else failed to get p_id
+    }
+
     // Now the file is read, set the scaling:
     this->setScale();
 }
@@ -86,12 +101,12 @@ morph::ReadCurves::read (void)
 xml_node<>*
 morph::ReadCurves::findNodeRecursive (xml_node<>* a_node, const string& tagname) const
 {
-    DBG2 ("Called for tag " << tagname);
+    DBG2 ("Called for tag '" << tagname << "'");
     for (xml_node<>* path_node = a_node->first_node();
          path_node;
          path_node = path_node->next_sibling()) {
 
-        DBG2("path_node->name(): " << path_node->name());
+        DBG2("path_node->name(): " << path_node->name() << " compare with " << tagname);
         if (strncmp (path_node->name(), tagname.c_str(), tagname.size()) == 0) {
             DBG2("return path_node");
             return path_node;
@@ -119,28 +134,67 @@ morph::ReadCurves::readG (xml_node<>* g_node)
     } // else failed to get g_id
     DBG("readG called, g id is " << g_id);
 
+#if 0
     if (g_id.empty()) {
         throw runtime_error ("Found a <g> element without an id attribute (i.e. a layer without a name)");
     }
+#endif
 
-    // Recursively search down any number of levels until a <path> node is found
-    bool gotpath = false;
-    xml_node<>* path_node = this->findNodeRecursive (g_node, "path");
-    if (path_node != (xml_node<>*)0) {
-        this->readPath (path_node, g_id);
-        gotpath = true;
-    }
+    // Recursively search down any number of levels until a <path>
+    // node is found. Read it, then continue searching.
+    xml_node<>* path_node = g_node;
+    do {
+        path_node = this->findNodeRecursive (path_node, "path");
 
-    if (!gotpath) {
-        // Search for a line element
-        xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
-        if (line_node != (xml_node<>*)0) {
-            if (this->foundLine == true) {
-                cout << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)" << endl;
+        if (path_node != (xml_node<>*)0) {
+            // See if path has an id that isn't the generic "path0000"
+            // format. If so, use this to override the id from the <g>
+            // element
+            string p_id("");
+            xml_attribute<>* path_id_attr;
+            DBG("Check path id attribute...");
+            if ((path_id_attr = path_node->first_attribute ("id"))) {
+                p_id = path_id_attr->value();
+                DBG("path id is " << p_id);
+            } // else failed to get p_id
+            if (!p_id.empty()) {
+                if (!p_id.find("path") == 0) {
+                    // p_id doesn't start with "path", so write it into g_id
+                    DBG2 ("Write p_id=" << p_id << " into g_id");
+                    g_id = p_id;
+                }
             }
-            this->readLine (line_node, g_id);
-            this->foundLine = true;
+            this->readPath (path_node, g_id);
+
+            path_node = path_node->next_sibling();
+
+            if (path_node != (xml_node<>*)0) {
+                // Check path_node, itself before passing to findNodeRecursive...
+                if ((path_id_attr = path_node->first_attribute ("id"))) {
+                    p_id = path_id_attr->value();
+                    DBG("path id is " << p_id);
+                } // else failed to get p_id
+                if (!p_id.empty()) {
+                    if (!p_id.find("path") == 0) {
+                        // p_id doesn't start with "path", so write it into g_id
+                        DBG2 ("Write p_id=" << p_id << " into g_id");
+                        g_id = p_id;
+                    }
+                }
+                this->readPath (path_node, g_id);
+            }
         }
+
+    } while (path_node != (xml_node<>*)0);
+
+    // Search for a line element
+    xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
+    if (line_node != (xml_node<>*)0) {
+        if (this->foundLine == true) {
+            cout << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)" << endl;
+        }
+        this->readLine (line_node, g_id);
+        this->foundLine = true;
     }
 
     // If g_id contains the string "mm", then treat it as a scale
@@ -242,9 +296,11 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
         stringstream ss;
         ss << s.substr (p0, p1-p0);
         DBG2 ("Last one: ss.str(): " << ss.str());
-        ss >> n;
-        numbers.push_back (n);
-        ++numnum;
+        if (!ss.str().empty()) {
+            ss >> n;
+            numbers.push_back (n);
+            ++numnum;
+        }
     }
 
     if (numnum > numParams) {
@@ -266,9 +322,6 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
 BezCurvePath
 morph::ReadCurves::parseD (const string& d)
 {
-    DBG2("-----");
-    DBG2("NEW parseD call");
-    DBG2("-----");
     BezCurvePath curves;
 
     // As we parse through the path, we have to keep track of the
@@ -288,7 +341,7 @@ morph::ReadCurves::parseD (const string& d)
     pair<float, float> f;  // Final point of curve
 
     // A list of SVG command characters
-    const char* svgCmds = "mMcCsSqQtTzZ";
+    const char* svgCmds = "mMcCsSqQtTzZlLhHvV";
 
     // Text parsing time!
     string::size_type p0 = 0;
@@ -310,21 +363,130 @@ morph::ReadCurves::parseD (const string& d)
 
         switch (cmd) { // switch on the command character
 
+        case 'L': // lineto command, absolution coordinates
+        case 'l': // lineto command, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string lCmd = d.substr (p1+1, p2-p1-1);
+            if (Tools::containsOnlyWhitespace (lCmd)) {
+                p3 = lCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (lCmd, cmd, 10000, p3);
+                if (v.size()%2 != 0) {
+                    throw runtime_error ("Unexpected size of SVG path L command (expected pairs of numbers)");
+                }
+                for (unsigned int i = 0; i<v.size(); i+=2) {
+                    if (cmd == 'l') { // delta coordinates
+                        f = make_pair (currentCoordinate.first + v[i],
+                                       currentCoordinate.second + v[i+1]);
+                    } else {
+                        f = make_pair (v[i], v[i+1]);
+                    }
+                    BezCurve c(currentCoordinate, f);
+                    curves.addCurve (c);
+                    currentCoordinate = f;
+                }
+            }
+            break;
+        }
+
+        case 'H': // horizontal lineto command, absolution coordinates
+        case 'h': // horizontal lineto command, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string lCmd = d.substr (p1+1, p2-p1-1);
+            if (Tools::containsOnlyWhitespace (lCmd)) {
+                p3 = lCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (lCmd, cmd, 10000, p3);
+                if (v.size() != 0) {
+                    throw runtime_error ("Unexpected size of SVG path H command (expected at least one number)");
+                }
+                for (unsigned int i = 0; i<v.size(); ++i) {
+                    if (cmd == 'h') { // delta coordinates
+                        f = make_pair (currentCoordinate.first + v[i],
+                                       currentCoordinate.second);
+                    } else {
+                        f = make_pair (v[i], currentCoordinate.second);
+                    }
+                    BezCurve c(currentCoordinate, f);
+                    curves.addCurve (c);
+                    currentCoordinate = f;
+                }
+            }
+            break;
+        }
+
+        case 'V': // vertical lineto command, absolution coordinates
+        case 'v': // vertical lineto command, deltas
+        {
+            p2 = d.find_first_of (svgCmds, p1+1);
+            string lCmd = d.substr (p1+1, p2-p1-1);
+            if (Tools::containsOnlyWhitespace (lCmd)) {
+                p3 = lCmd.size()-1;
+            } else {
+                vector<float> v = this->splitSvgCmdString (lCmd, cmd, 10000, p3);
+                if (v.size() != 0) {
+                    throw runtime_error ("Unexpected size of SVG path V command (expected at least one number)");
+                }
+                for (unsigned int i = 0; i<v.size(); ++i) {
+                    if (cmd == 'v') { // delta coordinates
+                        f = make_pair (currentCoordinate.first,
+                                       currentCoordinate.second + v[i]);
+                    } else {
+                        f = make_pair (currentCoordinate.first, v[i]);
+                    }
+                    BezCurve c(currentCoordinate, f);
+                    curves.addCurve (c);
+                    currentCoordinate = f;
+                }
+            }
+            break;
+        }
+
         case 'M': // move command, absolution coordinates
         case 'm': // move command, deltas
         {
             p2 = d.find_first_of (svgCmds, p1+1);
             string mCmd = d.substr (p1+1, p2-p1-1);
+            DBG("mCmd: " << mCmd);
             if (Tools::containsOnlyWhitespace (mCmd)) {
                 p3 = mCmd.size()-1;
             } else {
-                vector<float> v = this->splitSvgCmdString (mCmd, cmd, 2, p3);
-                if (v.size() != 2) {
-                    throw runtime_error ("Unexpected size of SVG path M command (expected 2 numbers)");
+                vector<float> v = this->splitSvgCmdString (mCmd, cmd, 10000, p3);
+                DBG("v.size() for M command: " << v.size());
+                if (v.size()%2 != 0) {
+                    throw runtime_error ("Unexpected size of SVG path M command (expected pairs of numbers)");
                 }
-                currentCoordinate = make_pair (v[0], v[1]);
+
+                if (cmd == 'm') { // delta coordinates
+                    currentCoordinate = make_pair (currentCoordinate.first + v[0],
+                                                   currentCoordinate.second + v[1]);
+                } else {
+                    currentCoordinate = make_pair (v[0], v[1]);
+                }
                 firstCoordinate = currentCoordinate;
                 curves.initialCoordinate = currentCoordinate;
+
+                if (v.size() == 2) {
+                    // Just 2 coords means it's a move command; nothing further to do
+                    DBG("Just 2 coords in M command");
+                } else {
+                    DBG("coord pairs in M command");
+                    // pairs of commands implies linetos.
+                    for (unsigned int i = 2; i<v.size(); i+=2) {
+                        if (cmd == 'm') { // delta coordinates
+                            f = make_pair (currentCoordinate.first + v[i],
+                                           currentCoordinate.second + v[i+1]);
+                        } else {
+                            f = make_pair (v[i], v[i+1]);
+                        }
+                        BezCurve c(currentCoordinate, f);
+                        DBG("curves.addCurve...");
+                        curves.addCurve (c);
+                        currentCoordinate = f;
+                    }
+                }
             }
             break;
         }
@@ -491,6 +653,9 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
 void
 morph::ReadCurves::setScale (void)
 {
+    if (this->lineToMillimetres.second == 0.0f) {
+        throw runtime_error ("Failed to obtain scaling from the scale bar.");
+    }
     this->corticalPath.setScale (this->lineToMillimetres.second);
     list<BezCurvePath>::iterator ei = this->enclosedRegions.begin();
     while (ei != this->enclosedRegions.end()) {
