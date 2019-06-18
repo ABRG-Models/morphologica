@@ -36,20 +36,12 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-<<<<<<< HEAD
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES}
-=======
-    ${ARMADILLO_LIBRARY} GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${GLFW3_LDFLAGS}
->>>>>>> 4b9b56776b1e4ac9c6b7c6e4acd6091464e4725c
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${GLFW3_LDFLAGS}
     )
 else()
   target_link_libraries(
     morphologica
-<<<<<<< HEAD
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY}
-=======
     ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} ${GLFW3_STATIC_LDFLAGS}
->>>>>>> 4b9b56776b1e4ac9c6b7c6e4acd6091464e4725c
     )
 endif(APPLE)
 install(TARGETS morphologica
@@ -63,11 +55,7 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-<<<<<<< HEAD
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5}
-=======
-  ${ARMADILLO_LIBRARY} GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${GLFW3_LDFLAGS}
->>>>>>> 4b9b56776b1e4ac9c6b7c6e4acd6091464e4725c
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${GLFW3_LDFLAGS}
   )
 else()
 target_link_libraries(
