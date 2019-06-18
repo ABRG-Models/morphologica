@@ -1,5 +1,12 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp Visual.cpp HexGridVisual.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
+set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
+
+# If we have glfw3 then attempt to compile Seb's modern opengl visualization code
+if (${glfw3_FOUND})
+  message ("GLFW3 found, compiling in Visual.cpp, etc")
+  set(morphlibsrc ${morphlibsrc} Visual.cpp HexGridVisual.cpp)
+  message ("morphlibsrc: ${morphlibsrc}")
+endif()
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
@@ -36,14 +43,19 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${GLFW3_LDFLAGS}
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES}
     )
 else()
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} ${GLFW3_STATIC_LDFLAGS}
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
     )
 endif(APPLE)
+
+if (${glfw3_FOUND})
+  target_link_libraries (morphologica ${GLFW3_LDFLAGS})
+endif()
+
 install(TARGETS morphologica
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   )
@@ -55,14 +67,18 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${GLFW3_LDFLAGS}
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5}
   )
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} ${GLFW3_STATIC_LDFLAGS}
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES}
   )
 endif(APPLE)
+
+if (${glfw3_FOUND})
+  target_link_libraries (morphstatic ${GLFW3_STATIC_LDFLAGS})
+endif()
 
 install(TARGETS morphstatic
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
@@ -71,15 +87,10 @@ install(TARGETS morphstatic
 
 # Header installation
 install(
-  FILES display.h Visual.h HexGridVisual.h Quaternion.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h Process.h
+  FILES display.h Quaternion.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h Hex.h HexGrid.h HdfData.h Process.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 
-# For debugging, you can list variables like this:
-set(DEBUG_VARIABLES ON)
-if(DEBUG_VARIABLES)
-  get_cmake_property(_variableNames VARIABLES)
-  foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-  endforeach()
-endif(DEBUG_VARIABLES)
+if (${glfw3_FOUND})
+  install( FILES Visual.h HexGridVisual.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
+endif()
