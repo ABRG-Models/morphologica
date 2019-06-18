@@ -71,7 +71,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
-find_package(glfw3 REQUIRED)
+find_package(glfw3)
 
 # Find the HDF5 library
 if (APPLE)
