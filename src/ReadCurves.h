@@ -107,6 +107,13 @@ namespace morph
         void readPath (xml_node<>* path_node, const string& layerName);
 
         /*!
+         * If g_id contains the string "mm", then treat it as a scale
+         * bar. If it contains "cortex", then treat it as the special
+         * outer/main boundary
+         */
+        void setupScaling (const string& g_id);
+
+        /*!
          * Read a <path> element, assuming that it contains an
          * implicit set of lines encoded as moveto commands.
          */

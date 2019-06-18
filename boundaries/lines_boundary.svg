@@ -5,11 +5,35 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg8"
    version="1.1"
    viewBox="0 0 210 297"
    height="297mm"
-   width="210mm">
+   width="210mm"
+   sodipodi:docname="lines_boundary.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1336"
+     inkscape:window-height="841"
+     id="namedview2208"
+     showgrid="false"
+     inkscape:zoom="0.5946522"
+     inkscape:cx="751.15637"
+     inkscape:cy="880.8485"
+     inkscape:window-x="1078"
+     inkscape:window-y="562"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg8" />
   <defs
      id="defs2" />
   <metadata
@@ -20,19 +44,18 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <g
-     id="layer1">
-    <path
-       id="cortex"
-       d="M 57.997486,86.926149 71.360963,39.084906 115.99497,35.343131 132.56568,63.406432 130.6948,93.34062 106.106,118.73122 80.715397,116.59307 Z"
-       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       id="x9_mm"
-       d="m 132.03115,39.619443 h 14.69982"
-       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-  </g>
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 48.480272,87.398077 61.843749,39.556834 106.47776,35.815059 123.04847,63.87836 121.17759,93.812548 96.588786,119.20315 71.198183,117.065 Z"
+     id="cortex"
+     inkscape:connector-curvature="0" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.54890114px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 96.67823,46.029798 h 63.26672"
+     id="x9_mm"
+     inkscape:connector-curvature="0" />
 </svg>

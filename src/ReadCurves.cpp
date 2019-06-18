@@ -196,10 +196,11 @@ morph::ReadCurves::readG (xml_node<>* g_node)
         this->readLine (line_node, g_id);
         this->foundLine = true;
     }
+}
 
-    // If g_id contains the string "mm", then treat it as a scale
-    // bar. If it contains "cortex", then treat it as the special
-    // outer/main boundary
+void
+morph::ReadCurves::setupScaling (const string& g_id)
+{
     if (g_id.find("mm") != string::npos) {
         // Parse lines. Note that Inkscape will save a line as a path with
         // implicit lineto in the form of a path with 2 pairs of
@@ -247,6 +248,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
         this->corticalPath = curves;
     } else if (layerName.find ("mm") != string::npos) {
         this->linePath = curves;
+        this->setupScaling (layerName);
     } else {
         this->enclosedRegions.push_back (curves);
     }
@@ -360,7 +362,7 @@ morph::ReadCurves::parseD (const string& d)
         }
 
         p3 = string::npos;
-
+        DBG("switch (" << cmd << ")");
         switch (cmd) { // switch on the command character
 
         case 'L': // lineto command, absolution coordinates
@@ -399,7 +401,7 @@ morph::ReadCurves::parseD (const string& d)
                 p3 = lCmd.size()-1;
             } else {
                 vector<float> v = this->splitSvgCmdString (lCmd, cmd, 10000, p3);
-                if (v.size() != 0) {
+                if (v.size() == 0) {
                     throw runtime_error ("Unexpected size of SVG path H command (expected at least one number)");
                 }
                 for (unsigned int i = 0; i<v.size(); ++i) {
@@ -426,19 +428,25 @@ morph::ReadCurves::parseD (const string& d)
                 p3 = lCmd.size()-1;
             } else {
                 vector<float> v = this->splitSvgCmdString (lCmd, cmd, 10000, p3);
-                if (v.size() != 0) {
+                if (v.size() == 0) {
                     throw runtime_error ("Unexpected size of SVG path V command (expected at least one number)");
                 }
+                DBG("v.size(): " << v.size());
                 for (unsigned int i = 0; i<v.size(); ++i) {
                     if (cmd == 'v') { // delta coordinates
-                        f = make_pair (currentCoordinate.first,
-                                       currentCoordinate.second + v[i]);
+                        if (v[i] != 0.0f) {
+                            f = make_pair (currentCoordinate.first,
+                                           currentCoordinate.second + v[i]);
+                            BezCurve c(currentCoordinate, f);
+                            curves.addCurve (c);
+                            currentCoordinate = f;
+                        }
                     } else {
                         f = make_pair (currentCoordinate.first, v[i]);
+                        BezCurve c(currentCoordinate, f);
+                        curves.addCurve (c);
+                        currentCoordinate = f;
                     }
-                    BezCurve c(currentCoordinate, f);
-                    curves.addCurve (c);
-                    currentCoordinate = f;
                 }
             }
             break;
@@ -648,6 +656,8 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     this->linePath.reset();
     this->linePath.initialCoordinate = p1;
     this->linePath.addCurve (linecurve);
+
+    this->setupScaling (layerName);
 }
 
 void

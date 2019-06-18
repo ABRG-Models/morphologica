@@ -4,7 +4,7 @@
 
 // To enable debug cout messages:
 #define DEBUG 1
-#define DEBUG2 1
+//#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 

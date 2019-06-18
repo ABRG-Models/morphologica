@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     try {
         // First read the curves and output on stdout
         ReadCurves r(argv[1]);
-        vector<BezCoord> pts = r.getCorticalPath().getPoints (0.01f);
+        vector<BezCoord> pts = r.getCorticalPath().getPoints (hexdia);
         auto i = pts.begin();
         cout << "The cortical path list of points is: " << endl;
         cout << "t,x,y" << endl;
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
         vector<double> fix(3, 0.0);
         vector<double> eye(3, 0.0);
         vector<double> rot(3, 0.0);
-        double rhoInit = 1.8;
+        double rhoInit = 2;
         morph::Gdisplay disp(960, 900, 0, 0, argv[0], rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
         disp.redrawDisplay();
