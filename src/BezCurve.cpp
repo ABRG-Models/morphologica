@@ -358,3 +358,33 @@ morph::BezCurve::checkt (float t) const
         throw std::runtime_error ("t out of range [0,1]");
     }
 }
+
+pair<float,float>
+morph::BezCurve::getInitialPointUnscaled (void) const
+{
+    return this->p0;
+}
+
+pair<float,float>
+morph::BezCurve::getFinalPointUnscaled (void) const
+{
+    return this->p1;
+}
+
+pair<float,float>
+morph::BezCurve::getInitialPointScaled (void) const
+{
+    pair<float,float> rtn = this->p0;
+    rtn.first *= this->scale;
+    rtn.second *= this->scale;
+    return rtn;
+}
+
+pair<float,float>
+morph::BezCurve::getFinalPointScaled (void) const
+{
+    pair<float,float> rtn = this->p1;
+    rtn.first *= this->scale;
+    rtn.second *= this->scale;
+    return rtn;
+}
