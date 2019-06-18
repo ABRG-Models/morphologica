@@ -1639,6 +1639,26 @@ morph::HexGrid::getv (void) const
 }
 
 float
+morph::HexGrid::getSR (void) const
+{
+    return this->d/2;
+}
+
+float
+morph::HexGrid::getLR (void) const
+{
+    float lr = this->d/morph::SQRT_OF_3_F;
+    return lr;
+}
+
+float
+morph::HexGrid::getVtoNE (void) const
+{
+    float vne = this->d/(2.0f*morph::SQRT_OF_3_F);
+    return vne;
+}
+
+float
 morph::HexGrid::getXmin (float phi) const
 {
     float xmin = 0.0f;

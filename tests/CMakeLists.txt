@@ -91,3 +91,28 @@ add_test(testhdfdata1 testhdfdata1)
 add_executable(test_ellipseboundary test_ellipseboundary.cpp)
 target_link_libraries(test_ellipseboundary morphologica)
 add_test(test_ellipseboundary test_ellipseboundary)
+
+# Test morph::Visual class
+add_executable(testvis testVisual.cpp)
+target_link_libraries(testvis morphologica)
+add_test(testvis testvis)
+
+# Test morph::Process class
+add_executable(testProcess testProcess.cpp)
+target_link_libraries(testProcess morphologica)
+add_test(testProcess testProcess)
+
+# Test morph::Quaternion
+add_executable(testQuaternion testQuaternion.cpp)
+target_link_libraries(testQuaternion morphologica)
+add_test(testQuaternion testQuaternion)
+
+# Test morph::Vector3
+add_executable(testVector3 testVector3.cpp)
+target_link_libraries(testVector3 morphologica)
+add_test(testVector3 testVector3)
+
+# Test morph::Transformmatrix
+add_executable(testTransformMatrix testTransformMatrix.cpp)
+target_link_libraries(testTransformMatrix morphologica)
+add_test(testTransformMatrix testTransformMatrix)

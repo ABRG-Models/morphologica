@@ -32,6 +32,13 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -g -std=c++11")
 endif()
 
+# Following `cmake --help-policy CMP0072`
+set(OpenGL_GL_PREFERENCE "GLVND")
+
+# Additional GL compiler flags.
+# maybe -DGL_GLEXT_PROTOTYPES
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
 # work, but was required for OpenCV, so it's useful to be able to
 # install a from-source build of Armadillo in /usr/local and link to
@@ -64,6 +71,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
+find_package(glfw3 REQUIRED)
 
 # Find the HDF5 library
 if (APPLE)
@@ -79,10 +87,13 @@ else()
   find_package(Armadillo REQUIRED)
 endif(APPLE)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR})
 
 # rapidxml is bundled in the source:
 include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+
+# OpenGL code needs the local include directory, too
+include_directories ("${PROJECT_SOURCE_DIR}/include")
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
