@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg895"
+   xml:space="preserve"
+   style="enable-background:new 0 0 612 792;"
+   viewBox="0 0 612 792"
+   y="0px"
+   x="0px"
+   version="1.1"><metadata
+   id="metadata901"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs899" />
+<style
+   id="style878"
+   type="text/css">
+	.st0{fill:none;stroke:#000000;stroke-miterlimit:10;}
+</style>
+<g
+   id="cortex">
+	<path
+   style="fill:none;stroke:#000000;stroke-miterlimit:10"
+   id="path880"
+   d="m 331.76666,289.03334 c -75.89999,0.1 -149.9,33.53333 -149.39999,90.93333 0.16666,58.86666 74.46666,96.4 151.56666,95.56666 C 412.37312,476.8322 476.0957,433.05999 476.4,380.2 476.86667,328.26666 416.76667,289.33333 331.76666,289.03334 Z"
+   class="st0" />
+</g>
+<g
+   id="s1">
+	<path
+   id="path883"
+   d="M313.5,330.9c-3.7,9.6-4.9,20-6.2,30.2c-1.2,9.6-1.7,20.9,5.6,27.2c7.3,6.3,19.1,3.9,26.5-2.4   c5-4.2,8.8-10,10.6-16.3c1.1-3.9,1.6-7.9,2-11.9c1.6-15.4,3.3-30.8,4.9-46.2c0.7-6.2,1.1-13.2-2.8-18c-8.8-10.9-21.2-1.1-24.5,8.7   C325.9,312.9,317.6,320,313.5,330.9z"
+   class="st0" />
+</g>
+<g
+   id="v1">
+	<path
+   id="path886"
+   d="M416.2,351.7c-1.9,8.5-2,17.4-0.2,26c2.2,10.6,7.6,20.9,16.6,26.9s21.9,6.5,30.2-0.4c8.2-6.9,8-21.5,7.6-31.2   c-0.3-8-1.1-16.2-3.9-23.7c-1.4-3.8-3.3-7.4-5.3-11c-3.7-7-19.8-34.6-31.1-24.5c-4,3.6-5.2,12.9-7,17.7   C420.6,338.1,417.8,344.7,416.2,351.7z"
+   class="st0" />
+</g>
+<g
+   id="a1">
+	<path
+   id="path889"
+   d="M379.3,398.4c-23.5,3-29,39.6-0.8,40.3C397.6,439.1,421.8,393,379.3,398.4C374.4,399,387.3,397.4,379.3,398.4z   "
+   class="st0" />
+</g>
+<g
+   id="_x33_mm">
+	<line
+   id="line892"
+   y2="513"
+   x2="365.7"
+   y1="513"
+   x1="267"
+   class="st0" />
+</g>
+</svg>
