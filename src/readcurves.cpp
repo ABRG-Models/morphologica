@@ -59,6 +59,7 @@ int main(int argc, char** argv)
         vector<BezCoord> pts = r.getCorticalPath().getPoints (0.01f);
         auto i = pts.begin();
         cout << "The cortical path list of points is: " << endl;
+        cout << "t,x,y" << endl;
         while (i != pts.end()) {
             cout << *i << endl;
             ++i;

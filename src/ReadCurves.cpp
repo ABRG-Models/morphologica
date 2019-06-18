@@ -123,23 +123,24 @@ morph::ReadCurves::readG (xml_node<>* g_node)
         throw runtime_error ("Found a <g> element without an id attribute (i.e. a layer without a name)");
     }
 
-    // Parse paths:
-    bool gotpath = false, gotline = false;
-
     // Recursively search down any number of levels until a <path> node is found
+    bool gotpath = false;
     xml_node<>* path_node = this->findNodeRecursive (g_node, "path");
     if (path_node != (xml_node<>*)0) {
         this->readPath (path_node, g_id);
         gotpath = true;
     }
 
-    // Search for a line element
-    DBG2("findNodeRecursive for line...");
-    xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
-    if (line_node != (xml_node<>*)0) {
-        DBG2("readLine(line_node, g_id)");
-        this->readLine (line_node, g_id);
-        gotline = true;
+    if (!gotpath) {
+        // Search for a line element
+        xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
+        if (line_node != (xml_node<>*)0) {
+            if (this->foundLine == true) {
+                cout << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)" << endl;
+            }
+            this->readLine (line_node, g_id);
+            this->foundLine = true;
+        }
     }
 
     // If g_id contains the string "mm", then treat it as a scale
@@ -485,26 +486,6 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     this->linePath.reset();
     this->linePath.initialCoordinate = p1;
     this->linePath.addCurve (linecurve);
-
-#if 0 // This goes elsewhere
-    // Compute the length of the line in the SVG coordinate system
-    float dx = atof (x2.c_str()) - atof (x1.c_str());
-    float dy = atof (y2.c_str()) - atof (y1.c_str());
-    float dl = sqrtf (dx*dx + dy*dy);
-
-    // Extract the length of the line in mm from the layer name
-    // _x33_mm means .33 mm
-    string mm(layerName);
-    Tools::searchReplace ("x", ".", mm);
-    Tools::searchReplace ("_", "", mm);
-    Tools::searchReplace ("m", "", mm);
-    DBG ("mm string is now: " << mm);
-    float mmf = atof (mm.c_str());
-    this->lineToMillimetres.first = 1;
-    this->lineToMillimetres.second = mmf/dl;
-    DBG ("mm per SVG unit: " << this->lineToMillimetres.second);
-    this->foundLine = true;
-#endif
 }
 
 void
