@@ -60,6 +60,16 @@ namespace morph
         }
 
         /*!
+         * Reset this BezCurvePath
+         */
+        void reset (void) {
+            this->curves.clear();
+            this->initialCoordinate = make_pair (0.0f, 0.0f);
+            this->scale = 1.0f;
+            this->name = "";
+        }
+
+        /*!
          * Set scaling on all member Bezier curves.
          */
         void setScale (const float s) {
@@ -118,6 +128,22 @@ namespace morph
             }
         }
 
+        /*!
+         * Compute the as-the-crow-flies distance from the initial
+         * coordinate of this BezCurvePath to the final
+         * coordinate. Uses the scale factor.
+         */
+        float getEndToEnd (void) const {
+            // Distance from this->initialCoordinate to:
+            pair<float,float> cend = this->curves.back().getFinalPointScaled();
+            float dx = cend.first - initialCoordinate.first;
+            float dy = cend.second - initialCoordinate.second;
+            return sqrtf (dx * dx + dy * dy);
+        }
+
+        /*!
+         * Compute the centroid of the passed in set of positions.
+         */
         static pair<float,float> getCentroid (const vector<BezCoord>& points) {
             float c_x = 0.0f;
             float c_y = 0.0f;

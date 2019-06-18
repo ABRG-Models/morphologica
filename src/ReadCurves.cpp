@@ -13,6 +13,7 @@
 
 // To enable debug cout messages:
 //#define DEBUG 1
+//#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -41,6 +42,11 @@ morph::ReadCurves::ReadCurves (const string& svgpath)
     this->init();
     // Read the curves:
     this->read();
+    if (this->gotCortex == false) {
+        cout << "WARNING: No object in SVG with id \"cortex\". Cortical boundary will be null." << endl;
+    } else {
+        cout << "Got a cortex id" << endl;
+    }
 }
 
 void
@@ -77,6 +83,30 @@ morph::ReadCurves::read (void)
     this->setScale();
 }
 
+xml_node<>*
+morph::ReadCurves::findNodeRecursive (xml_node<>* a_node, const string& tagname) const
+{
+    DBG2 ("Called for tag " << tagname);
+    for (xml_node<>* path_node = a_node->first_node();
+         path_node;
+         path_node = path_node->next_sibling()) {
+
+        DBG2("path_node->name(): " << path_node->name());
+        if (strncmp (path_node->name(), tagname.c_str(), tagname.size()) == 0) {
+            DBG2("return path_node");
+            return path_node;
+        }
+
+        xml_node<>* rtn_node = findNodeRecursive (path_node, tagname);
+        if (rtn_node != (xml_node<>*)0 && strncmp (rtn_node->name(), tagname.c_str(), tagname.size()) == 0) {
+            DBG2("return rtn_node");
+            return rtn_node;
+        }
+    }
+
+    return (xml_node<>*)0;
+}
+
 void
 morph::ReadCurves::readG (xml_node<>* g_node)
 {
@@ -87,25 +117,56 @@ morph::ReadCurves::readG (xml_node<>* g_node)
     if ((id_attr = g_node->first_attribute ("id"))) {
         g_id = id_attr->value();
     } // else failed to get g_id
+    DBG("readG called, g id is " << g_id);
 
     if (g_id.empty()) {
         throw runtime_error ("Found a <g> element without an id attribute (i.e. a layer without a name)");
     }
 
     // Parse paths:
-    for (xml_node<>* path_node = g_node->first_node("path");
-         path_node;
-         path_node = path_node->next_sibling("path")) {
-        // Fixme: Handle >1 paths. But this SHOULD be doing that...
-        DBG ("Read path...");
+    bool gotpath = false, gotline = false;
+
+    // Recursively search down any number of levels until a <path> node is found
+    xml_node<>* path_node = this->findNodeRecursive (g_node, "path");
+    if (path_node != (xml_node<>*)0) {
         this->readPath (path_node, g_id);
+        gotpath = true;
     }
 
-    // Parse lines:
-    for (xml_node<>* line_node = g_node->first_node("line");
-         line_node;
-         line_node = line_node->next_sibling("line")) {
+    // Search for a line element
+    DBG2("findNodeRecursive for line...");
+    xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
+    if (line_node != (xml_node<>*)0) {
+        DBG2("readLine(line_node, g_id)");
         this->readLine (line_node, g_id);
+        gotline = true;
+    }
+
+    // If g_id contains the string "mm", then treat it as a scale
+    // bar. If it contains "cortex", then treat it as the special
+    // outer/main boundary
+    if (g_id.find("mm") != string::npos) {
+        // Parse lines. Note that Inkscape will save a line as a path with
+        // implicit lineto in the form of a path with 2 pairs of
+        // coordinates in a move command. Adobe Illustrator uses a <line>
+        // element.
+
+        // Extract the length of the line in mm from the layer name
+        // _x33_mm means .33 mm
+        string mm(g_id);
+        Tools::searchReplace ("x", ".", mm);
+        Tools::searchReplace ("_", "", mm);
+        Tools::searchReplace ("m", "", mm);
+        DBG ("mm string is now: " << mm);
+        float mmf = atof (mm.c_str());
+        // dl is the length of the scale bar line
+        float dl = 0.0f;
+        dl = this->linePath.getEndToEnd();
+        // Having found the length of the line from the <line> or
+        // <path>, compute lineToMillimetres
+        this->lineToMillimetres.first = 1;
+        this->lineToMillimetres.second = dl > 0.0f ? mmf/dl : 1.0f;
+        DBG ("mm per SVG unit: " << this->lineToMillimetres.second);
     }
 }
 
@@ -127,7 +188,10 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
     BezCurvePath curves = this->parseD (d);
     curves.name = layerName;
     if (layerName == "cortex") {
+        this->gotCortex = true;
         this->corticalPath = curves;
+    } else if (layerName.find ("mm") != string::npos) {
+        this->linePath = curves;
     } else {
         this->enclosedRegions.push_back (curves);
     }
@@ -201,6 +265,9 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
 BezCurvePath
 morph::ReadCurves::parseD (const string& d)
 {
+    DBG2("-----");
+    DBG2("NEW parseD call");
+    DBG2("-----");
     BezCurvePath curves;
 
     // As we parse through the path, we have to keep track of the
@@ -375,10 +442,6 @@ morph::ReadCurves::parseD (const string& d)
 void
 morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
 {
-    if (this->foundLine == true) {
-        throw runtime_error ("Found >1 line element in the drawing - expecting just one.");
-    }
-
     string x1("");
     xml_attribute<>* x1_attr;
     if ((x1_attr = line_node->first_attribute ("x1"))) {
@@ -415,6 +478,15 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     // Now do something with x1,y1,x2,y2
     DBG2 ("line: (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ")");
 
+    // Create a BezCurve object then add this to this->linePath
+    pair<float,float> p1 = make_pair (atof (x1.c_str()), atof (y1.c_str()));
+    pair<float,float> p2 = make_pair (atof (x2.c_str()), atof (y2.c_str()));
+    BezCurve linecurve (p1, p2);
+    this->linePath.reset();
+    this->linePath.initialCoordinate = p1;
+    this->linePath.addCurve (linecurve);
+
+#if 0 // This goes elsewhere
     // Compute the length of the line in the SVG coordinate system
     float dx = atof (x2.c_str()) - atof (x1.c_str());
     float dy = atof (y2.c_str()) - atof (y1.c_str());
@@ -432,6 +504,7 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     this->lineToMillimetres.second = mmf/dl;
     DBG ("mm per SVG unit: " << this->lineToMillimetres.second);
     this->foundLine = true;
+#endif
 }
 
 void

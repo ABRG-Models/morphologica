@@ -124,6 +124,17 @@ namespace morph
          */
         void setLthresh (const float l);
 
+        /*!
+         * Getters for p0 and p1, the initial and final positions on
+         * the curve, either unscaled or scaled by @scale
+         */
+        //@{
+        pair<float,float> getInitialPointUnscaled (void) const;
+        pair<float,float> getFinalPointUnscaled (void) const;
+        pair<float,float> getInitialPointScaled (void) const;
+        pair<float,float> getFinalPointScaled (void) const;
+        //@}
+
     private: // methods
         /*!
          * Compute one point on the linear curve, distance t along the

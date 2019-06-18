@@ -87,6 +87,12 @@ namespace morph
         void readG (xml_node<>* g_node);
 
         /*!
+         * Recursively search in a_node until a node with the tag name
+         * @tagname is found. Return it.
+         */
+        xml_node<>* findNodeRecursive (xml_node<>* a_node, const string& tagname) const;
+
+        /*!
          * Read a <path> element. A path will contain a series of
          * commands in a d attribute. These commands can be
          * interpreted as a series of Bezier curves, and the Beziers
@@ -99,6 +105,12 @@ namespace morph
          * found.
          */
         void readPath (xml_node<>* path_node, const string& layerName);
+
+        /*!
+         * Read a <path> element, assuming that it contains an
+         * implicit set of lines encoded as moveto commands.
+         */
+        float readPathAsLine (xml_node<>* path_node);
 
         /*!
          * Split up a string of SVG command numbers. These are
@@ -146,10 +158,20 @@ namespace morph
         BezCurvePath corticalPath;
 
         /*!
+         * Init to false, set true if we find the "cortex" layer in the svg file.
+         */
+        bool gotCortex = false;
+
+        /*!
          * A list of paths marking out structures within the
          * neocortex.
          */
         list<BezCurvePath> enclosedRegions;
+
+        /*!
+         * To hold the scale bar line.
+         */
+        BezCurvePath linePath;
 
         /*!
          * lineToMillimeteres.first is the length of the line in the

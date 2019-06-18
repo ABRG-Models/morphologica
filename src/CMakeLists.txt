@@ -94,3 +94,8 @@ install(
 if (${glfw3_FOUND})
   install( FILES Visual.h HexGridVisual.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
 endif()
+
+# The readcurves utility program
+add_executable(readcurves readcurves.cpp)
+target_link_libraries(readcurves morphologica)
+install(TARGETS readcurves DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
