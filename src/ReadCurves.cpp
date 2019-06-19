@@ -12,8 +12,8 @@
 #include <cstdlib>
 
 // To enable debug cout messages:
-#define DEBUG 1
-#define DEBUG2 1
+//#define DEBUG 1
+//#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -672,6 +672,25 @@ morph::ReadCurves::setScale (void)
         ei->setScale (this->lineToMillimetres.second);
         ++ei;
     }
+}
+
+float
+morph::ReadCurves::getScale_mmpersvg (void)
+{
+    /*
+     * lineToMillimetres.first is the length of the line in the
+     * units of the SVG file. lineToMillimeteres.second is the
+     * length in mm that the line represents.
+     */
+    float scale = lineToMillimetres.second/lineToMillimetres.first;
+    return scale;
+}
+
+float
+morph::ReadCurves::getScale_svgpermm (void)
+{
+    float scale = lineToMillimetres.first/lineToMillimetres.second;
+    return scale;
 }
 
 BezCurvePath

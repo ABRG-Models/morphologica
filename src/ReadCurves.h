@@ -67,6 +67,16 @@ namespace morph
          */
         void save (float step = 1.0f) const;
 
+        /*!
+         * Get the scaling in mm per SVG unit.
+         */
+        float getScale_mmpersvg (void);
+
+        /*!
+         * Get the scaling in SVG units per mm.
+         */
+        float getScale_svgpermm (void);
+
     private:
 
         /*!
@@ -181,7 +191,7 @@ namespace morph
         BezCurvePath linePath;
 
         /*!
-         * lineToMillimeteres.first is the length of the line in the
+         * lineToMillimetres.first is the length of the line in the
          * units of the SVG file. lineToMillimeteres.second is the
          * length in mm that the line represents.
          */

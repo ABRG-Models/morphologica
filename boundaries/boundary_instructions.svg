@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="boundary_instructions.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="258.42359"
+     inkscape:cy="514.02396"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1182"
+     inkscape:window-height="1315"
+     inkscape:window-x="1532"
+     inkscape:window-y="699"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 30.994048,75.505952 c 1.133927,-2.645833 24.568451,-23.056548 24.568451,-23.056548 0,0 56.318451,-6.047618 59.720241,12.473215 3.40178,18.520833 9.4494,14.74107 5.66964,36.663691 -3.77976,21.92262 -40.821429,29.86012 -40.821429,29.86012 0,0 -27.214285,11.33928 -36.285712,-10.58334 C 34.773809,98.940476 20.78869,94.404761 23.8125,88.357143 26.836309,82.309522 30.994048,75.505952 30.994048,75.505952 Z"
+       id="cortex"
+       inkscape:connector-curvature="0"
+       inkscape:label="#path4747" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.60726684px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 109.38966,44.214575 36.73258,66.362515"
+       id="mm_3x3"
+       inkscape:connector-curvature="0"
+       inkscape:label="#path4770" />
+  </g>
+</svg>

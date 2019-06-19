@@ -26,7 +26,7 @@ using morph::ReadCurves;
 using morph::BezCoord;
 using std::vector;
 
-#define DEBUG 1
+//#define DEBUG 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -54,29 +54,24 @@ int main(int argc, char** argv)
     }
 
     try {
-        // First read the curves and output on stdout
+        // Read the curves
         ReadCurves r(argv[1]);
-        vector<BezCoord> pts = r.getCorticalPath().getPoints (hexdia);
-        auto i = pts.begin();
-        cout << "The cortical path list of points is: " << endl;
-        cout << "t,x,y" << endl;
-        while (i != pts.end()) {
-            cout << *i << endl;
-            ++i;
-        }
-
-        // Now plot the boundary
+        // Create a HexGrid
         morph::HexGrid hg(hexdia, gridspan, 0, morph::HexDomainShape::Boundary);
+        // Apply the curves as a boundary
         hg.setBoundary (r.getCorticalPath());
 
-        cout << hg.extent() << endl;
+        cout << "HexGrid extent:" << endl;
+        cout << "  x range: " << hg.getXmin() << " to " << hg.getXmax() << endl;
+        cout << "  y range: " << hg.getXmin(90) << " to " << hg.getXmax(90) << endl;
+        cout << "Scaling is " << r.getScale_mmpersvg() << " mm per SVG unit, or "
+             << r.getScale_svgpermm() << " units/mm" << endl;
         cout << "Number of hexes in grid:" << hg.num() << endl;
-        cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
         vector<double> fix(3, 0.0);
         vector<double> eye(3, 0.0);
         vector<double> rot(3, 0.0);
-        double rhoInit = 2;
+        double rhoInit = (double)gridspan;
         morph::Gdisplay disp(960, 900, 0, 0, argv[0], rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
         disp.redrawDisplay();
