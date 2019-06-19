@@ -693,10 +693,6 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     // record in the Hex the iterator in the d_ vectors so that d_nne
     // and friends can be set up later.
     hi->di = d_x.size()-1;
-    // by default hi->allocatedSubp should be -1;
-    if (hi->allocatedSubp != -1) {
-        throw runtime_error ("by default hi->allocatedSubp should be -1 but it isn't");
-    }
 }
 
 void
