@@ -158,7 +158,7 @@ morph::ReadCurves::readG (xml_node<>* g_node)
                 DBG("path id is " << p_id);
             } // else failed to get p_id
             if (!p_id.empty()) {
-                if (!p_id.find("path") == 0) {
+                if (!(p_id.find("path") == 0)) {
                     // p_id doesn't start with "path", so write it into g_id
                     DBG2 ("Write p_id=" << p_id << " into g_id");
                     g_id = p_id;
@@ -175,7 +175,7 @@ morph::ReadCurves::readG (xml_node<>* g_node)
                     DBG("path id is " << p_id);
                 } // else failed to get p_id
                 if (!p_id.empty()) {
-                    if (!p_id.find("path") == 0) {
+                    if (!(p_id.find("path") == 0)) {
                         // p_id doesn't start with "path", so write it into g_id
                         DBG2 ("Write p_id=" << p_id << " into g_id");
                         g_id = p_id;
