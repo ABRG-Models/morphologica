@@ -28,7 +28,7 @@ int main()
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 2070) {
+        if (hg.num() != 2088) {
             rtn = -1;
         }
 

@@ -87,16 +87,16 @@ add_executable(testhdfdata1 testhdfdata1.cpp)
 target_link_libraries(testhdfdata1 morphologica)
 add_test(testhdfdata1 testhdfdata1)
 
-# Test distance to boundary
-add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-target_link_libraries(test_ellipseboundary morphologica)
-add_test(test_ellipseboundary test_ellipseboundary)
+# Test ellipse code (not written yet)
+#add_executable(test_ellipseboundary test_ellipseboundary.cpp)
+#target_link_libraries(test_ellipseboundary morphologica)
+#add_test(test_ellipseboundary test_ellipseboundary)
 
 if(${glfw3_FOUND})
   # Test morph::Visual class
   add_executable(testvis testVisual.cpp)
   target_link_libraries(testvis morphologica)
-  add_test(testvis testvis)
+  #add_test(testvis testvis)
 endif()
 
 # Test morph::Process class
