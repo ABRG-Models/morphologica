@@ -71,11 +71,18 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
-# glfw3 provides a cmake find_package script, though it doesn't set lib paths etc.
-find_package(glfw3 QUIET)
 
-# Find GLFW library with pkgconfig. Or compile in place (that would be better)
-if(0) # switched off for now
+# glfw3 library finding. However, it's possible to compile from
+# source, and there are instructions on the glfw3 website on how to do
+# this with cmake.
+#
+# glfw3 provides a cmake find_package script, though it doesn't set
+# lib paths etc. Then you just link with "glfw3" if you happened to
+# compile the static libglfw3.a or with "glfw" if you compiled the
+# dynamic libglfw.so
+find_package(glfw3 QUIET)
+# You can find GLFW library with pkgconfig, but it's switched off for now
+if(0)
   find_package(PkgConfig)
   if(PKG_CONFIG_FOUND)
     # Use pkg-config to check GLFW3 is present:
