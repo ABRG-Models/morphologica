@@ -468,7 +468,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
     list<Hex>::iterator hexcol_south = centre_hi;
     while (hexcol_south->boundaryHex == false) {
         if (hexcol_south->has_nsw) {
-            hexcol_south = hexcol_south->nw;
+            hexcol_south = hexcol_south->nsw;
             hexcol_south->insideBoundary = hexcol_south->boundaryHex;
         } else {
             // no neighbour to the south
@@ -479,6 +479,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
         }
     }
 
+    // Temporary hex iterator used in the while loops below
     list<Hex>::iterator hi;
 
     // Traverse from west to east
@@ -540,26 +541,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
     hexcol = hexcol_south->nne;
     while (hexcol->boundaryHex == false) {
 
-        // Traverse up and down in the 'g' direction (sw to ne)
-        hi = hexcol;
-        // Go from centre hex and traverse up in the g direction (ne)
-        // until the boundary is found.
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nne) {
-                hi = hi->nne;
-            }
-        }
-        // Now traverse in the -g direction (sw)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nsw) {
-                hi = hi->nsw;
-            }
-        }
-
-        // Now traverse up and down in the 'b' direction (nw and se)
+        // Traverse up and down in the 'b' direction (nw and se)
         hi = hexcol;
         // Go from centre hex and traverse up in the b direction (nw)
         // until the boundary is found.
@@ -575,6 +557,25 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
             hi->insideBoundary = true;
             if (hi->has_nse) {
                 hi = hi->nse;
+            }
+        }
+
+        // Now traverse left and right in the 'r' direction (w and e)
+        hi = hexcol;
+        // Go from centre hex and traverse up in the b direction (nw)
+        // until the boundary is found.
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nw) {
+                hi = hi->nw;
+            }
+        }
+        // Now traverse in the -b direction (e)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_ne) {
+                hi = hi->ne;
             }
         }
 
