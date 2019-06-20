@@ -457,8 +457,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
         } else {
             // no further neighbour to the west
             if (hexcol_west->boundaryHex == false) {
-                cerr << "WARNING: Got to edge of region with encountering a boundary Hex. "
-                     << "Forcing it to be a boundary Hex.\n";
+                cerr << "WARNING: Got to (west) edge of region without encountering a boundary Hex.\n";
                 break;
             }
         }
@@ -473,7 +472,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
         } else {
             // no neighbour to the south
             if (hexcol_south->boundaryHex == false) {
-                cerr << "WARNING: Got to (south) edge of region with encountering a boundary Hex.\n";
+                cerr << "WARNING: Got to (south) edge of region without encountering a boundary Hex.\n";
                 break;
             }
         }
@@ -531,7 +530,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
         } else {
             // No neighbour east
             if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (east) edge of region with encountering a boundary Hex.\n";
+                cerr << "WARNING: Got to (east) edge of region without encountering a boundary Hex.\n";
                 break;
             }
         }
@@ -585,7 +584,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
         } else {
             // No neighbour north-east
             if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (north-east) edge of region with encountering a boundary Hex.\n";
+                cerr << "WARNING: Got to (north-east) edge of region without encountering a boundary Hex.\n";
                 break;
             }
         }
