@@ -25,6 +25,8 @@
 
 using std::ceil;
 using std::abs;
+using std::cout;
+using std::cerr;
 using std::endl;
 using std::stringstream;
 using std::vector;
@@ -84,6 +86,7 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
             if (bpi->ri == ppi->ri && bpi->gi == ppi->gi) {
                 // Set h as boundary hex.
                 bpi->boundaryHex = true;
+                bpi->insideBoundary = true;
                 bpoint = bpi;
                 break;
             }
@@ -611,6 +614,8 @@ morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFro
 
     // Mark it for being on the boundary
     h->boundaryHex = true;
+    // Boundary hexes are 'inside the boundary' or more accurately 'inside the domain'
+    h->insideBoundary = true;
 
     return h;
 }
@@ -772,36 +777,151 @@ morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::co
 }
 
 void
-morph::HexGrid::markHexesInside (list<Hex>::iterator hi)
+morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
 {
-    if (hi->boundaryHex == true) {
-        hi->insideBoundary = true;
-        return;
+    // Starting from hi, which is going to be the hex closest to the
+    // centroid of the boundary, run up and down hex rows
+    // systematically until boundary hexes are found.
 
-    } else if (hi->insideBoundary == true) {
-        return;
+    // Find the west-most hex on this row of hexes
+    list<Hex>::iterator hexcol_west = centre_hi;
+    while (hexcol_west->boundaryHex == false) {
+        if (hexcol_west->has_nw) {
+            hexcol_west = hexcol_west->nw;
+            hexcol_west->insideBoundary = hexcol_west->boundaryHex;
+        } else {
+            // no further neighbour to the west
+            if (hexcol_west->boundaryHex == false) {
+                cerr << "WARNING: Got to edge of region with encountering a boundary Hex. "
+                     << "Forcing it to be a boundary Hex.\n";
+                break;
+            }
+        }
+    }
 
-    } else {
+    // Find the south-most hex on this row of hexes
+    list<Hex>::iterator hexcol_south = centre_hi;
+    while (hexcol_south->boundaryHex == false) {
+        if (hexcol_south->has_nsw) {
+            hexcol_south = hexcol_south->nw;
+            hexcol_south->insideBoundary = hexcol_south->boundaryHex;
+        } else {
+            // no neighbour to the south
+            if (hexcol_south->boundaryHex == false) {
+                cerr << "WARNING: Got to (south) edge of region with encountering a boundary Hex.\n";
+                break;
+            }
+        }
+    }
 
-        hi->insideBoundary = true;
+    list<Hex>::iterator hi;
 
-        if (hi->has_ne) {
-            this->markHexesInside (hi->ne);
+    // Traverse from west to east
+    list<Hex>::iterator hexcol = hexcol_west->ne;
+    while (hexcol->boundaryHex == false) {
+
+        // Traverse up and down in the 'g' direction (sw to ne)
+        hi = hexcol;
+        // Go from centre hex and traverse up in the g direction (ne)
+        // until the boundary is found.
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nne) {
+                // boundary hexes themselves are inside the boundary:
+                hi = hi->nne;
+            }
         }
-        if (hi->has_nne) {
-            this->markHexesInside (hi->nne);
+        // Now traverse in the -g direction (sw)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nsw) {
+                hi = hi->nsw;
+            }
         }
-        if (hi->has_nnw) {
-            this->markHexesInside (hi->nnw);
+
+        // Now traverse up and down in the 'b' direction (nw and se)
+        hi = hexcol;
+        // Go from centre hex and traverse up in the b direction (nw)
+        // until the boundary is found.
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nnw) {
+                hi = hi->nnw;
+            }
         }
-        if (hi->has_nw) {
-            this->markHexesInside (hi->nw);
+        // Now traverse in the -b direction (se)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nse) {
+                hi = hi->nse;
+            }
         }
-        if (hi->has_nsw) {
-            this->markHexesInside (hi->nsw);
+
+        // Step east before moving to the next loop in the while
+        if (hexcol->has_ne) {
+            hexcol = hexcol->ne;
+        } else {
+            // No neighbour east
+            if (hexcol->boundaryHex == false) {
+                cerr << "WARNING: Got to (east) edge of region with encountering a boundary Hex.\n";
+                break;
+            }
         }
-        if (hi->has_nse) {
-            this->markHexesInside (hi->nse);
+    }
+
+    // Repeat traverse from south to north
+    hexcol = hexcol_south->nne;
+    while (hexcol->boundaryHex == false) {
+
+        // Traverse up and down in the 'g' direction (sw to ne)
+        hi = hexcol;
+        // Go from centre hex and traverse up in the g direction (ne)
+        // until the boundary is found.
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nne) {
+                hi = hi->nne;
+            }
+        }
+        // Now traverse in the -g direction (sw)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nsw) {
+                hi = hi->nsw;
+            }
+        }
+
+        // Now traverse up and down in the 'b' direction (nw and se)
+        hi = hexcol;
+        // Go from centre hex and traverse up in the b direction (nw)
+        // until the boundary is found.
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nnw) {
+                hi = hi->nnw;
+            }
+        }
+        // Now traverse in the -b direction (se)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nse) {
+                hi = hi->nse;
+            }
+        }
+
+        // Step north-east before moving to the next loop in the while
+        if (hexcol->has_nne) {
+            hexcol = hexcol->nne;
+        } else {
+            // No neighbour north-east
+            if (hexcol->boundaryHex == false) {
+                cerr << "WARNING: Got to (north-east) edge of region with encountering a boundary Hex.\n";
+                break;
+            }
         }
     }
 }
