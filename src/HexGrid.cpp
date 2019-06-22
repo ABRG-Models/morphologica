@@ -19,7 +19,7 @@
 #include "BezCoord.h"
 
 #define DBGSTREAM std::cout
-//#define DEBUG 1
+#define DEBUG 1
 //#define DEBUG2 1
 #include "MorphDbg.h"
 
@@ -447,7 +447,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
     // Starting from hi, which is going to be the hex closest to the
     // centroid of the boundary, run up and down hex rows
     // systematically until boundary hexes are found.
-
+#if 0
     // Find the west-most hex on this row of hexes
     list<Hex>::iterator hexcol_west = centre_hi;
     while (hexcol_west->boundaryHex == false) {
@@ -477,50 +477,49 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
             }
         }
     }
-
+#endif
     // Temporary hex iterator used in the while loops below
     list<Hex>::iterator hi;
 
     // Traverse from west to east
-    list<Hex>::iterator hexcol = hexcol_west->ne;
-    while (hexcol->boundaryHex == false) {
+    list<Hex>::iterator hexcol = centre_hi;//hexcol_west->ne;
 
-        // Traverse up and down in the 'g' direction (sw to ne)
+#if 1 // ONE
+    while (hexcol->boundaryHex == false) {
+        // Traverse -+g while stepping west (poss. only on the south west legs)
+        // Traverse in the -g direction (sw)
         hi = hexcol;
-        // Go from centre hex and traverse up in the g direction (ne)
-        // until the boundary is found.
         while (hi->boundaryHex == false) {
             hi->insideBoundary = true;
-            if (hi->has_nne) {
-                // boundary hexes themselves are inside the boundary:
-                hi = hi->nne;
+            if (hi->has_nw
+                && hi->nw->insideBoundary == false
+                && hi->nw->boundaryHex == false) {
+                DBG ("Step west");
+                hi = hi->nw;
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                continue;
             }
-        }
-        // Now traverse in the -g direction (sw)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
             if (hi->has_nsw) {
                 hi = hi->nsw;
             }
         }
-
-        // Now traverse up and down in the 'b' direction (nw and se)
+        // Traverse in +g direction (ne)
         hi = hexcol;
-        // Go from centre hex and traverse up in the b direction (nw)
-        // until the boundary is found.
         while (hi->boundaryHex == false) {
             hi->insideBoundary = true;
-            if (hi->has_nnw) {
-                hi = hi->nnw;
+            if (hi->has_nw
+                && hi->nw->insideBoundary == false
+                && hi->nw->boundaryHex == false) {
+                //DBG ("Step west");
+                hi = hi->nw;
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                continue;
             }
-        }
-        // Now traverse in the -b direction (se)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nse) {
-                hi = hi->nse;
+            if (hi->has_nne) {
+                // boundary hexes themselves are inside the boundary:
+                hi = hi->nne;
             }
         }
 
@@ -535,7 +534,115 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
             }
         }
     }
+#endif
 
+#if 0 // TWO
+    hexcol = centre_hi;
+    while (hexcol->boundaryHex == false) {
+        // Traverse -+b while stepping south west
+        // Traverse up in the 'b' direction (nw)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nsw
+                && hi->nsw->insideBoundary == false
+                && hi->nsw->boundaryHex == false) {
+                DBG ("Step south west");
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                hi = hi->nsw;
+                continue;
+            }
+            if (hi->has_nnw) {
+                hi = hi->nnw;
+            }
+        }
+
+        // Traverse in the -b direction (se)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nsw
+                && hi->nsw->insideBoundary == false
+                && hi->nsw->boundaryHex == false) {
+                DBG ("Step south west");
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                hi = hi->nsw;
+                continue;
+            }
+            if (hi->has_nse) {
+                hi = hi->nse;
+            }
+        }
+
+        // Step north east before moving to the next loop in the while
+        if (hexcol->has_nne) {
+            hexcol = hexcol->nne;
+        } else {
+            // No neighbour north east
+            if (hexcol->boundaryHex == false) {
+                cerr << "WARNING: Got to (north east) edge of region without encountering a boundary Hex.\n";
+                break;
+            }
+        }
+    }
+#endif
+
+#if 0 // THREE
+    hexcol = centre_hi;
+    while (hexcol->boundaryHex == false) {
+        // Traverse -+r while stepping south east
+        // Traverse left in the 'r' direction (w)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nse
+                && hi->nse->insideBoundary == false
+                && hi->nse->boundaryHex == false) {
+                DBG ("Step south east");
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                hi = hi->nse;
+                continue;
+            }
+            if (hi->has_nw) {
+                hi = hi->nw;
+            }
+        }
+
+        // Traverse in the +b direction (e)
+        hi = hexcol;
+        while (hi->boundaryHex == false) {
+            hi->insideBoundary = true;
+            if (hi->has_nse
+                && hi->nse->insideBoundary == false
+                && hi->nse->boundaryHex == false) {
+                DBG ("Step south east");
+                // Reset hexcol to start here in the next while loop stanza
+                hexcol = hi;
+                hi = hi->nse;
+                continue;
+            }
+            if (hi->has_ne) {
+                hi = hi->ne;
+            }
+        }
+
+        // Step north west before moving to the next loop in the while
+        if (hexcol->has_nnw) {
+            hexcol = hexcol->nnw;
+        } else {
+            // No neighbour north west
+            if (hexcol->boundaryHex == false) {
+                cerr << "WARNING: Got to (north west) edge of region without encountering a boundary Hex.\n";
+                break;
+            }
+        }
+    }
+#endif
+
+#if 0
     // Repeat traverse from south to north
     hexcol = hexcol_south->nne;
     while (hexcol->boundaryHex == false) {
@@ -589,6 +696,48 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
             }
         }
     }
+#endif
+
+#if 0
+    // This guarantees all Hexes are marked, but it's pretty
+    // slow. However, it only runs slow for unusual boundaries; for
+    // most, the code above should mark all the hexes.
+    unsigned int numMarked = 1;
+    while (numMarked > 0) {
+        numMarked = 0;
+        list<Hex>::iterator hr = this->hexen.begin();
+        while (hr != this->hexen.end()) {
+            if (hr->insideBoundary == true && hr->boundaryHex == false) {
+                if (hr->has_ne && hr->ne->insideBoundary == false && hr->ne->boundaryHex == false) {
+                    hr->ne->insideBoundary = true;
+                    ++numMarked;
+                }
+                if (hr->has_nne && hr->nne->insideBoundary == false && hr->nne->boundaryHex == false) {
+                    hr->nne->insideBoundary = true;
+                    ++numMarked;
+                }
+                if (hr->has_nnw && hr->nnw->insideBoundary == false && hr->nnw->boundaryHex == false) {
+                    hr->nnw->insideBoundary = true;
+                    ++numMarked;
+                }
+                if (hr->has_nw && hr->nw->insideBoundary == false && hr->nw->boundaryHex == false) {
+                    hr->nw->insideBoundary = true;
+                    ++numMarked;
+                }
+                if (hr->has_nsw && hr->nsw->insideBoundary == false && hr->nsw->boundaryHex == false) {
+                    hr->nsw->insideBoundary = true;
+                    ++numMarked;
+                }
+                if (hr->has_nse && hr->nse->insideBoundary == false && hr->nse->boundaryHex == false) {
+                    hr->nse->insideBoundary = true;
+                    ++numMarked;
+                }
+            }
+            ++hr;
+        }
+        DBG("On that loop through hexen, numMarked is " << numMarked);
+    }
+#endif
 }
 
 void
