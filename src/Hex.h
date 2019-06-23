@@ -41,6 +41,14 @@ using std::endl;
 #define HEX_HAS_NSW      0x10
 #define HEX_HAS_NSE      0x20
 
+// Neighbour positions
+#define HEX_NEIGHBOUR_POS_E   0x0
+#define HEX_NEIGHBOUR_POS_NE  0x1
+#define HEX_NEIGHBOUR_POS_NW  0x2
+#define HEX_NEIGHBOUR_POS_W   0x3
+#define HEX_NEIGHBOUR_POS_SW  0x4
+#define HEX_NEIGHBOUR_POS_SE  0x5
+
 // All hexes marked as boundary hexes, including some that are additional to requirements:
 #define HEX_IS_BOUNDARY      0x40
 // All hexes inside boundary plus as much of the boundary as needed to make a contiguous boundary:
@@ -142,6 +150,47 @@ namespace morph {
             s += to_string(this->ri).substr(0,4) + ",";
             s += to_string(this->gi).substr(0,4) + ") is at (x,y) = ("
                 + to_string(this->x).substr(0,4) +"," + to_string(this->y).substr(0,4) + ")";
+            return s;
+        }
+
+        /*!
+         * Convert the neighbour position number into a short string
+         * representing the direction/position of the neighbour.
+         */
+        static string neighbour_pos (unsigned short dir) {
+            string s("");
+            switch (dir) {
+            case HEX_NEIGHBOUR_POS_E:
+            {
+                s = "E";
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NE:
+            {
+                s = "NE";
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NW:
+            {
+                s = "NW";
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_W:
+            {
+                s = "W";
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SW:
+            {
+                s = "SW";
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SE:
+            {
+                s = "SE";
+                break;
+            }
+            };
             return s;
         }
 
@@ -481,6 +530,93 @@ namespace morph {
             this->has_nse = false;
         }
         //@}
+
+        /*!
+         * Test if have neighbour at position p.
+         * East: 0, North-East: 1, North-West: 2
+         * West: 3, South-West: 4, South-East: 5
+         */
+        bool has_neighbour (unsigned short ni) {
+            unsigned int flags = this->getFlags();
+            switch (ni) {
+            case HEX_NEIGHBOUR_POS_E:
+            {
+                return (flags & HEX_HAS_NE) ? true : false;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NE:
+            {
+                return (flags & HEX_HAS_NNE) ? true : false;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NW:
+            {
+                return (flags & HEX_HAS_NNW) ? true : false;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_W:
+            {
+                return (flags & HEX_HAS_NW) ? true : false;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SW:
+            {
+                return (flags & HEX_HAS_NSW) ? true : false;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SE:
+            {
+                return (flags & HEX_HAS_NSE) ? true : false;
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+            return false;
+        }
+
+        list<Hex>::iterator get_neighbour (unsigned short ni) {
+            list<Hex>::iterator hi;
+            switch (ni) {
+            case HEX_NEIGHBOUR_POS_E:
+            {
+                hi = this->ne;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NE:
+            {
+                hi = this->nne;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_NW:
+            {
+                hi = this->nnw;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_W:
+            {
+                hi = this->nw;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SW:
+            {
+                hi = this->nsw;
+                break;
+            }
+            case HEX_NEIGHBOUR_POS_SE:
+            {
+                hi = this->nse;
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+            return hi;
+        }
 
         /*!
          * Un-set the pointers on all my neighbours so that THEY no longer point to ME.
