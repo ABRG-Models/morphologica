@@ -376,7 +376,7 @@ namespace morph {
          * so, populate a list<Hex> containing just the boundary
          * Hexes.
          */
-        bool boundaryContiguous (void); // const;
+        bool boundaryContiguous (void);
 
         /*!
          * Determine whether the boundary is contiguous, starting from
@@ -386,8 +386,7 @@ namespace morph {
          * populates it with pointers to the hexes on the boundary.
          */
         //@{
-        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen); // const;
-        //bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const;
+        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen);
         //@}
 
         /*!

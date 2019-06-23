@@ -355,7 +355,6 @@ morph::HexGrid::findBoundaryHex (list<Hex>::const_iterator& hi) const
 bool
 morph::HexGrid::boundaryContiguous (void)
 {
-    DBG("Clearing bhexen...");
     this->bhexen.clear();
 
     list<Hex>::const_iterator bhi = this->hexen.begin();
