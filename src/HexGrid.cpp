@@ -288,26 +288,13 @@ morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFro
 list<Hex>
 morph::HexGrid::getBoundary (void) const
 {
-    list<Hex> bhexes;
-
-    list<Hex>::const_iterator bhi = this->hexen.begin();
-    if (this->findBoundaryHex (bhi) == false) {
-        // Found no boundary hex, return empty bhexes
-        return bhexes;
+    list<Hex> bhexen_concrete;
+    auto hh = this->bhexen.begin();
+    while (hh != this->bhexen.end()) {
+        bhexen_concrete.push_back (*(*hh));
+        ++hh;
     }
-    set<unsigned int> seen;
-    list<Hex>::const_iterator hi = bhi;
-    list<Hex*> bhexptrs;
-    bool bcont = this->boundaryContiguous (bhi, hi, seen, bhexptrs);
-
-    if (bcont == true) {
-        auto hh = bhexptrs.begin();
-        while (hh != bhexptrs.end()) {
-            bhexes.push_back (*(*hh));
-            ++hh;
-        }
-    }
-    return bhexes;
+    return bhexen_concrete;
 }
 
 bool
@@ -366,8 +353,11 @@ morph::HexGrid::findBoundaryHex (list<Hex>::const_iterator& hi) const
 }
 
 bool
-morph::HexGrid::boundaryContiguous (void) const
+morph::HexGrid::boundaryContiguous (void)
 {
+    DBG("Clearing bhexen...");
+    this->bhexen.clear();
+
     list<Hex>::const_iterator bhi = this->hexen.begin();
     if (this->findBoundaryHex (bhi) == false) {
         // Found no boundary hex
@@ -375,54 +365,46 @@ morph::HexGrid::boundaryContiguous (void) const
     }
     set<unsigned int> seen;
     list<Hex>::const_iterator hi = bhi;
-    list<Hex*> bhexes;
-    return this->boundaryContiguous (bhi, hi, seen, bhexes);
+    return this->boundaryContiguous (bhi, hi, seen);
 }
 
 bool
-morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const
-{
-    list<Hex*> bhexes;
-    return this->boundaryContiguous (bhi, hi, seen, bhexes);
-}
-
-bool
-morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const
+morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen)
 {
     DBG2 ("Called for hi=" << hi->vi);
     bool rtn = false;
     list<Hex>::const_iterator hi_next;
 
-    DBG2 ("Inserting " << hi->vi << " into seen which is Hex ("<< hi->ri << "," << hi->gi<<")");
+    DBG2 ("Inserting " << hi->vi << " into seen (and bhexen) which is Hex ("<< hi->ri << "," << hi->gi<<")");
     seen.insert (hi->vi);
     // Insert into the list of Hex pointers, too
-    bhexes.push_back ((Hex*)&(*hi));
+    this->bhexen.push_back ((Hex*)&(*hi));
 
     DBG2 (hi->output());
 
     if (rtn == false && hi->has_ne && hi->ne->boundaryHex == true && seen.find(hi->ne->vi) == seen.end()) {
         hi_next = hi->ne;
-        rtn = (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
+        rtn = (this->boundaryContiguous (bhi, hi_next, seen));
     }
     if (rtn == false && hi->has_nne && hi->nne->boundaryHex == true && seen.find(hi->nne->vi) == seen.end()) {
         hi_next = hi->nne;
-        rtn = this->boundaryContiguous (bhi, hi_next, seen, bhexes);
+        rtn = this->boundaryContiguous (bhi, hi_next, seen);
     }
     if (rtn == false && hi->has_nnw && hi->nnw->boundaryHex == true && seen.find(hi->nnw->vi) == seen.end()) {
         hi_next = hi->nnw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
     }
     if (rtn == false && hi->has_nw && hi->nw->boundaryHex == true && seen.find(hi->nw->vi) == seen.end()) {
         hi_next = hi->nw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
     }
     if (rtn == false && hi->has_nsw && hi->nsw->boundaryHex == true && seen.find(hi->nsw->vi) == seen.end()) {
         hi_next = hi->nsw;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
     }
     if (rtn == false && hi->has_nse && hi->nse->boundaryHex == true && seen.find(hi->nse->vi) == seen.end()) {
         hi_next = hi->nse;
-        rtn =  (this->boundaryContiguous (bhi, hi_next, seen, bhexes));
+        rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
     }
 
     if (rtn == false) {
@@ -442,302 +424,170 @@ morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::co
 }
 
 void
+morph::HexGrid::markFromBoundary (list<Hex>::iterator hi)
+{
+    this->markFromBoundary (&(*hi));
+}
+
+void
+morph::HexGrid::markFromBoundary (list<Hex*>::iterator hi)
+{
+    this->markFromBoundary ((*hi));
+}
+
+void
+morph::HexGrid::markFromBoundary (Hex* hi)
+{
+    // Find a marked-inside Hex next to this boundary hex. This will
+    // be the first direction to mark a line of inside hexes in.
+    list<Hex>::iterator first_inside = this->hexen.begin();
+    unsigned short firsti = 0;
+    for (unsigned short i = 0; i < 6; ++i) {
+        if (hi->has_neighbour(i)
+            && hi->get_neighbour(i)->insideBoundary == true
+            && hi->get_neighbour(i)->boundaryHex == false
+            ) {
+            first_inside = hi->get_neighbour(i);
+            firsti = i;
+            break;
+        }
+    }
+
+    // Mark a line in the first direction
+    //DBG ("Mark line in direction " << Hex::neighbour_pos(firsti));
+    this->markFromBoundaryCommon (first_inside, firsti);
+
+    // For each other direction also mark lines. Count direction upwards until we hit a boundary hex:
+    short diri = (firsti + 1) % 6;
+    //DBG ("First count up direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->boundaryHex==false && diri != firsti) {
+        first_inside = hi->get_neighbour(diri);
+        //DBG ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
+        this->markFromBoundaryCommon (first_inside, diri);
+        diri = (diri + 1) % 6;
+    }
+    // Then count downwards until we hit the other boundary hex
+    diri = (firsti - 1);
+    if (diri < 0) { diri = 5; }
+    //DBG ("First count down direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->boundaryHex==false && diri != firsti) {
+        first_inside = hi->get_neighbour(diri);
+        //DBG ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
+        this->markFromBoundaryCommon (first_inside, diri);
+        diri = (diri - 1);
+        if (diri < 0) { diri = 5; }
+    }
+}
+
+void
+morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti)
+{
+    // From the "first inside the boundary hex" head in the direction
+    // specified by firsti until a boundary hex is reached.
+    list<Hex>::iterator straight = first_inside;
+
+    DBG2 ("First inside:" << first_inside->insideBoundary
+          << ", on boundary: " << first_inside->boundaryHex);
+
+    while (straight->boundaryHex == false) {
+        DBG2 ("Set insideBoundary true");
+        straight->insideBoundary = true;
+        if (straight->has_neighbour(firsti)) {
+            DBG2 ("has neighbour in " << firsti << " dirn");
+            straight = straight->get_neighbour (firsti);
+            //straight->insideBoundary = straight->boundaryHex;
+        } else {
+            // no further neighbour in this direction
+            if (straight->boundaryHex == false) {
+                cerr << "WARNING: Got to edge of region (dirn " << firsti
+                     << ") without encountering a boundary Hex.\n";
+                break;
+            }
+        }
+    }
+}
+
+bool
+morph::HexGrid::findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::iterator& bhi_last) const
+{
+    bool gotnextneighbour = false;
+    // From each boundary hex, loop round all 6 neighbours until we get to a new neighbour
+    for (unsigned short i = 0; i < 6 && gotnextneighbour == false; ++i) {
+
+        //DBG ("Looking at boundary neighbour in dirn " << Hex::neighbour_pos(i));
+
+        // This is "if it's a neighbour and the neighbour is a boundary hex"
+        if (bhi->has_neighbour(i) && bhi->get_neighbour(i)->boundaryHex) {
+
+            //DBG (Hex::neighbour_pos(i) << " is a candidate boundary hex");
+            // cbhi is "candidate boundary hex iterator", now guaranteed to be a boundary hex
+            list<Hex>::iterator cbhi = bhi->get_neighbour(i);
+
+            if (bhi_last != this->hexen.end() && cbhi == bhi_last) {
+                //DBG ("candidate was the last used boundary hex, continue: " << cbhi->outputCart());
+                continue;
+            }
+
+            unsigned short i_opp = ((i+3)%6);
+            //DBG2 ("Opp. dirn: " << Hex::neighbour_pos(i_opp));
+
+            // Go round each of the candidate boundary hex's neighbours (but j!=i)
+            for (unsigned short j = 0; j < 6; ++j) {
+
+                // Ignore the candidate boundary hex itself
+                if (j==i_opp) {
+                    //DBG ("Neighbour to " << Hex::neighbour_pos (j) << " is the candidate iself");
+                    continue;
+                }
+#ifdef DEBUG
+                if (cbhi->has_neighbour(j)) {
+                    DBG ("Candidate neighbour " << Hex::neighbour_pos (j)
+                         << " Inside:" << (cbhi->get_neighbour(j)->insideBoundary?"Y":"N")
+                         << " Boundary:" << (cbhi->get_neighbour(j)->boundaryHex?"Y":"N"));
+                } else {
+                    DBG ("No neighbour to " << Hex::neighbour_pos (j));
+                }
+#endif
+                if (cbhi->has_neighbour(j)
+                    && cbhi->get_neighbour(j)->insideBoundary==true
+                    && cbhi->get_neighbour(j)->boundaryHex==false) {
+                    //DBG ("Candidate boundary hex has a neighbouring inside hex. NEXT BOUND DIR: " << Hex::neighbour_pos(i));
+                    bhi_last = bhi;
+                    bhi = cbhi;
+                    gotnextneighbour = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return (gotnextneighbour);
+}
+
+void
 morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
 {
-    // Starting from hi, which is going to be the hex closest to the
-    // centroid of the boundary, run up and down hex rows
-    // systematically until boundary hexes are found.
-#if 0
-    // Find the west-most hex on this row of hexes
-    list<Hex>::iterator hexcol_west = centre_hi;
-    while (hexcol_west->boundaryHex == false) {
-        if (hexcol_west->has_nw) {
-            hexcol_west = hexcol_west->nw;
-            hexcol_west->insideBoundary = hexcol_west->boundaryHex;
-        } else {
-            // no further neighbour to the west
-            if (hexcol_west->boundaryHex == false) {
-                cerr << "WARNING: Got to (west) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
+    // Run to boundary, marking as we go
+    list<Hex>::iterator bhi(centre_hi);
+    while (bhi->boundaryHex == false && bhi->has_nne) {
+        bhi->insideBoundary = true;
+        bhi = bhi->nne;
     }
+    list<Hex>::iterator bhi_start = bhi;
 
-    // Find the south-most hex on this row of hexes
-    list<Hex>::iterator hexcol_south = centre_hi;
-    while (hexcol_south->boundaryHex == false) {
-        if (hexcol_south->has_nsw) {
-            hexcol_south = hexcol_south->nsw;
-            hexcol_south->insideBoundary = hexcol_south->boundaryHex;
-        } else {
-            // no neighbour to the south
-            if (hexcol_south->boundaryHex == false) {
-                cerr << "WARNING: Got to (south) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
+    // Mark from first boundary hex and across the region
+    //DBG ("markFromBoundary with hex " << bhi->outputCart());
+    this->markFromBoundary (bhi);
+
+    // Find the first next neighbour:
+    list<Hex>::iterator bhi_last = this->hexen.end();
+    bool gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last);
+    // Loop around boundary, marking inwards in all possible directions from each boundary hex
+    while (gotnext && bhi != bhi_start) {
+        //DBG ("0 markFromBoundary with hex " << bhi->outputCart());
+        this->markFromBoundary (bhi);
+        gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last);
     }
-#endif
-    // Temporary hex iterator used in the while loops below
-    list<Hex>::iterator hi;
-
-    // Traverse from west to east
-    list<Hex>::iterator hexcol = centre_hi;//hexcol_west->ne;
-
-#if 1 // ONE
-    while (hexcol->boundaryHex == false) {
-        // Traverse -+g while stepping west (poss. only on the south west legs)
-        // Traverse in the -g direction (sw)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nw
-                && hi->nw->insideBoundary == false
-                && hi->nw->boundaryHex == false) {
-                DBG ("Step west");
-                hi = hi->nw;
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                continue;
-            }
-            if (hi->has_nsw) {
-                hi = hi->nsw;
-            }
-        }
-        // Traverse in +g direction (ne)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nw
-                && hi->nw->insideBoundary == false
-                && hi->nw->boundaryHex == false) {
-                //DBG ("Step west");
-                hi = hi->nw;
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                continue;
-            }
-            if (hi->has_nne) {
-                // boundary hexes themselves are inside the boundary:
-                hi = hi->nne;
-            }
-        }
-
-        // Step east before moving to the next loop in the while
-        if (hexcol->has_ne) {
-            hexcol = hexcol->ne;
-        } else {
-            // No neighbour east
-            if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (east) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
-    }
-#endif
-
-#if 0 // TWO
-    hexcol = centre_hi;
-    while (hexcol->boundaryHex == false) {
-        // Traverse -+b while stepping south west
-        // Traverse up in the 'b' direction (nw)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nsw
-                && hi->nsw->insideBoundary == false
-                && hi->nsw->boundaryHex == false) {
-                DBG ("Step south west");
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                hi = hi->nsw;
-                continue;
-            }
-            if (hi->has_nnw) {
-                hi = hi->nnw;
-            }
-        }
-
-        // Traverse in the -b direction (se)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nsw
-                && hi->nsw->insideBoundary == false
-                && hi->nsw->boundaryHex == false) {
-                DBG ("Step south west");
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                hi = hi->nsw;
-                continue;
-            }
-            if (hi->has_nse) {
-                hi = hi->nse;
-            }
-        }
-
-        // Step north east before moving to the next loop in the while
-        if (hexcol->has_nne) {
-            hexcol = hexcol->nne;
-        } else {
-            // No neighbour north east
-            if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (north east) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
-    }
-#endif
-
-#if 0 // THREE
-    hexcol = centre_hi;
-    while (hexcol->boundaryHex == false) {
-        // Traverse -+r while stepping south east
-        // Traverse left in the 'r' direction (w)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nse
-                && hi->nse->insideBoundary == false
-                && hi->nse->boundaryHex == false) {
-                DBG ("Step south east");
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                hi = hi->nse;
-                continue;
-            }
-            if (hi->has_nw) {
-                hi = hi->nw;
-            }
-        }
-
-        // Traverse in the +b direction (e)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nse
-                && hi->nse->insideBoundary == false
-                && hi->nse->boundaryHex == false) {
-                DBG ("Step south east");
-                // Reset hexcol to start here in the next while loop stanza
-                hexcol = hi;
-                hi = hi->nse;
-                continue;
-            }
-            if (hi->has_ne) {
-                hi = hi->ne;
-            }
-        }
-
-        // Step north west before moving to the next loop in the while
-        if (hexcol->has_nnw) {
-            hexcol = hexcol->nnw;
-        } else {
-            // No neighbour north west
-            if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (north west) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
-    }
-#endif
-
-#if 0
-    // Repeat traverse from south to north
-    hexcol = hexcol_south->nne;
-    while (hexcol->boundaryHex == false) {
-
-        // Traverse up and down in the 'b' direction (nw and se)
-        hi = hexcol;
-        // Go from centre hex and traverse up in the b direction (nw)
-        // until the boundary is found.
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nnw) {
-                hi = hi->nnw;
-            }
-        }
-        // Now traverse in the -b direction (se)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nse) {
-                hi = hi->nse;
-            }
-        }
-
-        // Now traverse left and right in the 'r' direction (w and e)
-        hi = hexcol;
-        // Go from centre hex and traverse up in the b direction (nw)
-        // until the boundary is found.
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_nw) {
-                hi = hi->nw;
-            }
-        }
-        // Now traverse in the -b direction (e)
-        hi = hexcol;
-        while (hi->boundaryHex == false) {
-            hi->insideBoundary = true;
-            if (hi->has_ne) {
-                hi = hi->ne;
-            }
-        }
-
-        // Step north-east before moving to the next loop in the while
-        if (hexcol->has_nne) {
-            hexcol = hexcol->nne;
-        } else {
-            // No neighbour north-east
-            if (hexcol->boundaryHex == false) {
-                cerr << "WARNING: Got to (north-east) edge of region without encountering a boundary Hex.\n";
-                break;
-            }
-        }
-    }
-#endif
-
-#if 0
-    // This guarantees all Hexes are marked, but it's pretty
-    // slow. However, it only runs slow for unusual boundaries; for
-    // most, the code above should mark all the hexes.
-    unsigned int numMarked = 1;
-    while (numMarked > 0) {
-        numMarked = 0;
-        list<Hex>::iterator hr = this->hexen.begin();
-        while (hr != this->hexen.end()) {
-            if (hr->insideBoundary == true && hr->boundaryHex == false) {
-                if (hr->has_ne && hr->ne->insideBoundary == false && hr->ne->boundaryHex == false) {
-                    hr->ne->insideBoundary = true;
-                    ++numMarked;
-                }
-                if (hr->has_nne && hr->nne->insideBoundary == false && hr->nne->boundaryHex == false) {
-                    hr->nne->insideBoundary = true;
-                    ++numMarked;
-                }
-                if (hr->has_nnw && hr->nnw->insideBoundary == false && hr->nnw->boundaryHex == false) {
-                    hr->nnw->insideBoundary = true;
-                    ++numMarked;
-                }
-                if (hr->has_nw && hr->nw->insideBoundary == false && hr->nw->boundaryHex == false) {
-                    hr->nw->insideBoundary = true;
-                    ++numMarked;
-                }
-                if (hr->has_nsw && hr->nsw->insideBoundary == false && hr->nsw->boundaryHex == false) {
-                    hr->nsw->insideBoundary = true;
-                    ++numMarked;
-                }
-                if (hr->has_nse && hr->nse->insideBoundary == false && hr->nse->boundaryHex == false) {
-                    hr->nse->insideBoundary = true;
-                    ++numMarked;
-                }
-            }
-            ++hr;
-        }
-        DBG("On that loop through hexen, numMarked is " << numMarked);
-    }
-#endif
 }
 
 void

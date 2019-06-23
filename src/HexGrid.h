@@ -219,6 +219,8 @@ namespace morph {
          * already marked as being on the boundary (with the attribute
          * Hex::boundaryHex == true) Do this by going around the
          * boundary neighbour to neighbour?
+         *
+         * Now a getter for this->bhexen.
          */
         list<Hex> getBoundary (void) const;
 
@@ -335,6 +337,12 @@ namespace morph {
         vector<Hex*> vhexen;
 
         /*!
+         * While determining if boundary is continuous, fill this maps
+         * container of hexes.
+         */
+        list<Hex*> bhexen; // Not better as a separate list<Hex>?
+
+        /*!
          * Store the centroid of the boundary path. The centroid of a
          * read-in BezCurvePath [see void setBoundary (const
          * BezCurvePath& p)] is subtracted from each generated point
@@ -364,9 +372,11 @@ namespace morph {
         list<Hex>::iterator setBoundary (const BezCoord& point, list<Hex>::iterator startFrom);
 
         /*!
-         * Determine whether the boundary is contiguous
+         * Determine whether the boundary is contiguous. Whilst doing
+         * so, populate a list<Hex> containing just the boundary
+         * Hexes.
          */
-        bool boundaryContiguous (void) const;
+        bool boundaryContiguous (void); // const;
 
         /*!
          * Determine whether the boundary is contiguous, starting from
@@ -376,8 +386,8 @@ namespace morph {
          * populates it with pointers to the hexes on the boundary.
          */
         //@{
-        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen) const;
-        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const;
+        bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen); // const;
+        //bool boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::const_iterator hi, set<unsigned int>& seen, list<Hex*>& bhexes) const;
         //@}
 
         /*!
@@ -389,8 +399,35 @@ namespace morph {
         bool findBoundaryHex (list<Hex>::const_iterator& hi) const;
 
         /*!
-         * Recursively mark hexes to be kept if they are inside the
-         * boundary.
+         * Mark hexes as being inside the boundary given that @hi
+         * refers to a boundary Hex and at least one adjacent hex to
+         * @hi has already been marked as inside the boundary (thus
+         * allowing the algorithm to know which side of the boundary
+         * hex is the inside)
+         */
+        //@{
+        void markFromBoundary (list<Hex*>::iterator hi);
+        void markFromBoundary (list<Hex>::iterator hi);
+        void markFromBoundary (Hex* hi);
+        //@}
+
+        /*!
+         * Common code used by markFromBoundary()
+         */
+        void markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti);
+
+        /*!
+         * Given the current boundary hex iterator, bhi and the last
+         * boundary hex iterator bhi_last, and assuming that bhi has
+         * had all its adjacent inside hexes marked as insideBoundary,
+         * find the next boundary hex.
+         */
+        bool findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::iterator& bhi_last) const;
+
+        /*!
+         * Mark hexes as insideBoundary if they are inside the
+         * boundary. Starts from @hi which is assumed to already be
+         * known to refer to a hex lying inside the boundary.
          */
         void markHexesInside (list<Hex>::iterator hi);
 
