@@ -19,7 +19,7 @@
 #include "BezCoord.h"
 
 #define DBGSTREAM std::cout
-#define DEBUG 1
+//#define DEBUG 1
 //#define DEBUG2 1
 #include "MorphDbg.h"
 
@@ -538,7 +538,7 @@ morph::HexGrid::findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::
                     //DBG ("Neighbour to " << Hex::neighbour_pos (j) << " is the candidate iself");
                     continue;
                 }
-#ifdef DEBUG
+#ifdef DEBUG2
                 if (cbhi->has_neighbour(j)) {
                     DBG ("Candidate neighbour " << Hex::neighbour_pos (j)
                          << " Inside:" << (cbhi->get_neighbour(j)->insideBoundary?"Y":"N")

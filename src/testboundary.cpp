@@ -49,7 +49,7 @@ int main(int argc, char** argv)
         hexdia = atof (argv[3]);
         cout << "User supplied hex size: " << hexdia << " mm" << endl;
         if (hexdia < 0.003f) {
-            cerr << "Very small hex dia - expect trouble..." << endl;
+            cerr << "Very small hex dia - memory use may be large." << endl;
         }
     }
 
@@ -59,6 +59,7 @@ int main(int argc, char** argv)
         // Create a HexGrid
         morph::HexGrid hg(hexdia, gridspan, 0, morph::HexDomainShape::Boundary);
         // Apply the curves as a boundary
+        cout << "Number of hexes before setting boundary: " << hg.num() << endl;
         hg.setBoundary (r.getCorticalPath());
 
         cout << "HexGrid extent:" << endl;
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
         cout << "  y range: " << hg.getXmin(90) << " to " << hg.getXmax(90) << endl;
         cout << "Scaling is " << r.getScale_mmpersvg() << " mm per SVG unit, or "
              << r.getScale_svgpermm() << " units/mm" << endl;
-        cout << "Number of hexes in grid:" << hg.num() << endl;
+        cout << "Number of hexes within the boundary: " << hg.num() << endl;
 
         vector<double> fix(3, 0.0);
         vector<double> eye(3, 0.0);
