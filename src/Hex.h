@@ -280,7 +280,12 @@ namespace morph {
          * HexGrid::d_nse, etc.
          *
          * This indexes into the d_ vectors in the HexGrid object to
-         * which this Hex belongs.
+         * which this Hex belongs. The d_ vectors are ordered
+         * differently from the list<Hex> object in HexGrid::hexen and
+         * hence we have this attribute di in addition to the vector
+         * index vi, which provides an index into list<Hex> or
+         * vector<Hex> objects which either are, or are arranged like,
+         * HexGrid::hexen
          */
         unsigned int di = 0;
 
