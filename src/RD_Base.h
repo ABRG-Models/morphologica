@@ -1,3 +1,6 @@
+#ifndef _RD_BASE_H_
+#define _RD_BASE_H_
+
 #include "morph/tools.h"
 #include "morph/ReadCurves.h"
 #include "morph/HexGrid.h"
@@ -64,6 +67,8 @@ using morph::HdfData;
 #define IF_HAS_NW(hi, yesval, noval)  (HAS_NW(hi)  ? yesval : noval)
 #define IF_HAS_NSW(hi, yesval, noval) (HAS_NSW(hi) ? yesval : noval)
 #define IF_HAS_NSE(hi, yesval, noval) (HAS_NSE(hi) ? yesval : noval)
+
+namespace morph {
 
 /*!
  * Base class for RD systems
@@ -744,3 +749,7 @@ public:
         return rtn;
     }
 }; // RD_Helper
+
+} // namespace morph
+
+#endif // _RD_BASE_H_
