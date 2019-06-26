@@ -7,6 +7,7 @@
  */
 
 #include "HexGrid.h"
+#include <string>
 #include <cmath>
 #include <float.h>
 #include <limits>
@@ -17,6 +18,7 @@
 #include <stdexcept>
 #include "BezCurvePath.h"
 #include "BezCoord.h"
+#include "HdfData.h"
 
 #define DBGSTREAM std::cout
 //#define DEBUG 1
@@ -33,6 +35,7 @@ using std::vector;
 using std::set;
 using std::runtime_error;
 using std::numeric_limits;
+using std::to_string;
 
 using morph::BezCurvePath;
 using morph::BezCoord;
@@ -45,6 +48,14 @@ morph::HexGrid::HexGrid ()
 {
 }
 
+morph::HexGrid::HexGrid (const string& path)
+    : d(1.0f)
+    , x_span(1.0f)
+    , z(0.0f)
+{
+    this->load (path);
+}
+
 morph::HexGrid::HexGrid (float d_, float x_span_, float z_, morph::HexDomainShape shape)
 {
     this->d = d_;
@@ -54,6 +65,72 @@ morph::HexGrid::HexGrid (float d_, float x_span_, float z_, morph::HexDomainShap
     this->domainShape = shape;
 
     this->init();
+}
+
+void
+morph::HexGrid::load (const string& path)
+{
+    // Writeme.
+}
+
+void
+morph::HexGrid::save (const string& path)
+{
+    HdfData hgdata (path);
+    hgdata.add_val ("/d", d);
+    hgdata.add_val ("/v", v);
+    hgdata.add_val ("/x_span", x_span);
+    hgdata.add_val ("/z", z);
+    hgdata.add_val ("/d_rowlen", d_rowlen);
+    hgdata.add_val ("/d_numrows", d_numrows);
+    hgdata.add_val ("/d_size", d_size);
+    hgdata.add_val ("/d_grownthbuffer_horz", d_growthbuffer_horz);
+    hgdata.add_val ("/d_grownthbuffer_vert", d_growthbuffer_vert);
+
+    // pair<float,float>
+    hgdata.add_contained_vals ("/boundaryCentroid", boundaryCentroid);
+
+    // Don't save BezCurvePath boundary - limit this to the ability to
+    // save which hexes are boun dary hexes and which aren't
+
+    // Don't save vertexE, vertexNE etc. Make sure to set gridReduced
+    // = false when calling load()
+
+    // vector<float>
+    hgdata.add_contained_vals ("/d_x", d_x);
+    hgdata.add_contained_vals ("/d_y", d_y);
+    hgdata.add_contained_vals ("/d_distToBoundary", d_distToBoundary);
+    // vector<int>
+    hgdata.add_contained_vals ("/d_ri", d_ri);
+    hgdata.add_contained_vals ("/d_gi", d_gi);
+    hgdata.add_contained_vals ("/d_bi", d_bi);
+
+    hgdata.add_contained_vals ("/d_ne", d_ne);
+    hgdata.add_contained_vals ("/d_nne", d_nne);
+    hgdata.add_contained_vals ("/d_nnw", d_nnw);
+    hgdata.add_contained_vals ("/d_nw", d_nw);
+    hgdata.add_contained_vals ("/d_nsw", d_nsw);
+    hgdata.add_contained_vals ("/d_nse", d_nse);
+
+    // vector<unsigned int>
+    hgdata.add_contained_vals ("/d_flags", d_flags);
+
+    // list<Hex> hexen
+    // for i in list, save Hex
+    list<Hex>::const_iterator h = this->hexen.begin();
+    unsigned int hcount = 0;
+    while (h != this->hexen.end()) {
+        // Make up a path
+        string h5path = "/hexen/" + to_string(hcount);
+        h->save (hgdata, h5path);
+        ++h;
+        ++hcount;
+    }
+    hgdata.add_val ("/hexennum", hcount);
+
+    // What about vhexen? Probably don't save and re-call method to populate.
+
+    // What about bhexen? Probably re-run/test this->boundaryContiguous() on load.
 }
 
 pair<float, float>

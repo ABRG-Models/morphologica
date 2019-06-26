@@ -7,9 +7,11 @@
 #include <hdf5.h>
 #include <vector>
 #include <string>
+#include <utility>
 
 using std::vector;
 using std::string;
+using std::pair;
 
 namespace morph {
 
@@ -61,14 +63,22 @@ namespace morph {
         void read_contained_vals (const char* path, vector<double>& vals);
         void read_contained_vals (const char* path, vector<float>& vals);
 
-        // WRITEME: Add the rest of the functions required.
-
         //@} // reading methods
 
         /*!
          * Writing methods
          */
         //@{
+
+        /*!
+         * Given a path like /a/b/c, verify and if necessary create
+         * group a, then verify and if necessary create group b so
+         * that the dataset c can be succesfully created.
+         */
+        //@{
+        void process_groups (const char* path);
+        void verify_group (const string& path);
+        //@}
 
         /*!
          * Makes necessary calls to add a double or float (or integer
@@ -103,6 +113,15 @@ namespace morph {
         //@{
         void add_contained_vals (const char* path, const vector<double>& vals);
         void add_contained_vals (const char* path, const vector<float>& vals);
+        void add_contained_vals (const char* path, const vector<int>& vals);
+        void add_contained_vals (const char* path, const vector<unsigned int>& vals);
+        //@}
+
+        /*!
+         * Pairs
+         */
+        //@{
+        void add_contained_vals (const char* path, const pair<float, float>& vals);
         //@}
 
         /*!

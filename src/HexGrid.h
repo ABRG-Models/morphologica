@@ -160,9 +160,26 @@ namespace morph {
         //@}
 
         /*!
+         * Save this HexGrid (and all the Hexes in it) into the HDF5
+         * file at the location @path.
+         */
+        void save (const string& path);
+
+        /*!
+         * Populate this HexGrid from the HDF5 file at the location
+         * @path.
+         */
+        void load (const string& path);
+
+        /*!
          * Default constructor
          */
         HexGrid();
+
+        /*!
+         * Construct then load from file.
+         */
+        HexGrid(const string& path);
 
         /*!
          * Construct the hexagonal hex grid with a hex to hex distance

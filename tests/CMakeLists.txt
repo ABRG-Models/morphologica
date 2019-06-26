@@ -52,6 +52,11 @@ add_executable(testhexgrid3 testhexgrid3.cpp)
 target_link_libraries(testhexgrid3 morphologica)
 add_test(testhexgrid3 testhexgrid3)
 
+# Test hexgridsave (HexGrid's save feature)
+add_executable(testhexgridsave testhexgridsave.cpp)
+target_link_libraries(testhexgridsave morphologica)
+add_test(testhexgridsave testhexgridsave)
+
 # Test boundary pgram
 add_executable(testdom_pgram testdom_pgram.cpp)
 target_link_libraries(testdom_pgram morphologica)

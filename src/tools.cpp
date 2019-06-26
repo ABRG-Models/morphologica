@@ -2576,4 +2576,36 @@ morph::Tools::timeNow (void)
     return asctime(loctime);
 }
 
+// Similiar to futil::splitString() but FASTER.
+vector<string>
+morph::Tools::stringToVector (const string& s, const string& separator,
+                              const bool ignoreTrailingEmptyVal)
+{
+    if (separator.empty()) {
+        throw runtime_error ("Can't split the string; the separator is empty.");
+    }
+    vector<string> theVec;
+    string entry("");
+    string::size_type sepLen = separator.size();
+    string::size_type a=0, b=0;
+    while (a < s.size()
+           && (b = s.find (separator, a)) != string::npos) {
+        entry = s.substr (a, b-a);
+        theVec.push_back (entry);
+        a=b+sepLen;
+    }
+    // Last one has no separator
+    if (a < s.size()) {
+        b = s.size();
+        entry = s.substr (a, b-a);
+        theVec.push_back (entry);
+    } else {
+        if (!ignoreTrailingEmptyVal) {
+            theVec.push_back ("");
+        }
+    }
+
+    return theVec;
+}
+
 //@}

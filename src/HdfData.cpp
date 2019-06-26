@@ -3,15 +3,18 @@
  */
 
 #include "HdfData.h"
+#include "tools.h"
 #include <vector>
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 using std::vector;
 using std::string;
 using std::runtime_error;
 using std::stringstream;
+using std::pair;
 
 #include <iostream>
 using std::cout;
@@ -99,6 +102,31 @@ morph::HdfData::read_contained_vals (const char* path, vector<float>& vals)
 }
 //@}
 
+void
+morph::HdfData::process_groups (const char* path)
+{
+    vector<string> pbits = morph::Tools::stringToVector (path, "/");
+    unsigned int numgroups = pbits.size() - 1;
+    if (numgroups > 1) { // There's always the first, empty (root) group
+        string groupstr("");
+        for (unsigned int g = 1; g < numgroups; ++g) {
+            groupstr += "/" + pbits[g];
+            this->verify_group (groupstr);
+        }
+    }
+}
+
+void
+morph::HdfData::verify_group (const string& path)
+{
+    if (H5Lexists (this->file_id, path.c_str(), H5P_DEFAULT) <= 0) {
+        //cout << "Create group " << path << endl;
+        hid_t group = H5Gcreate (this->file_id, path.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        herr_t status = H5Gclose (group);
+        this->handle_error (status, "Error. status after H5Gclose: ");
+    }
+}
+
 /*!
  * add_val() overloads
  */
@@ -106,6 +134,7 @@ morph::HdfData::read_contained_vals (const char* path, vector<float>& vals)
 void
 morph::HdfData::add_val (const char* path, const double& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     // Try hsize_t dim_singleparam[1] = {1} later...
@@ -127,6 +156,7 @@ morph::HdfData::add_val (const char* path, const double& val)
 void
 morph::HdfData::add_val (const char* path, const float& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -142,6 +172,7 @@ morph::HdfData::add_val (const char* path, const float& val)
 void
 morph::HdfData::add_val (const char* path, const int& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -157,6 +188,7 @@ morph::HdfData::add_val (const char* path, const int& val)
 void
 morph::HdfData::add_val (const char* path, const unsigned int& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -172,6 +204,7 @@ morph::HdfData::add_val (const char* path, const unsigned int& val)
 void
 morph::HdfData::add_val (const char* path, const long long int& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -187,6 +220,7 @@ morph::HdfData::add_val (const char* path, const long long int& val)
 void
 morph::HdfData::add_val (const char* path, const unsigned long long int& val)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = 1;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -207,6 +241,7 @@ morph::HdfData::add_val (const char* path, const unsigned long long int& val)
 void
 morph::HdfData::add_ptrarray_vals (const char* path, double*& vals, const unsigned int nvals)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = nvals;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -222,6 +257,7 @@ morph::HdfData::add_ptrarray_vals (const char* path, double*& vals, const unsign
 void
 morph::HdfData::add_ptrarray_vals (const char* path, float*& vals, const unsigned int nvals)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = nvals;
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -242,6 +278,7 @@ morph::HdfData::add_ptrarray_vals (const char* path, float*& vals, const unsigne
 void
 morph::HdfData::add_contained_vals (const char* path, const vector<double>& vals)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = vals.size();
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -257,6 +294,7 @@ morph::HdfData::add_contained_vals (const char* path, const vector<double>& vals
 void
 morph::HdfData::add_contained_vals (const char* path, const vector<float>& vals)
 {
+    this->process_groups (path);
     hsize_t dim_singleparam[1];
     dim_singleparam[0] = vals.size();
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
@@ -267,5 +305,46 @@ morph::HdfData::add_contained_vals (const char* path, const vector<float>& vals)
     this->handle_error (status, "Error. status after H5Dclose: ");
     status = H5Sclose (dataspace_id);
     this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<int>& vals)
+{
+    this->process_groups (path);
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = vals.size();
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<unsigned int>& vals)
+{
+    this->process_groups (path);
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = vals.size();
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const pair<float, float>& vals)
+{
+    vector<float> vf;
+    vf.push_back (vals.first);
+    vf.push_back (vals.second);
+    this->add_contained_vals (path, vf);
 }
 //@}

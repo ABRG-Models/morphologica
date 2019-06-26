@@ -13,6 +13,7 @@
 #include <utility>
 #include <cmath>
 #include "BezCoord.h"
+#include "HdfData.h"
 
 using std::string;
 using std::to_string;
@@ -22,6 +23,7 @@ using std::abs;
 using std::sqrt;
 using std::pair;
 using morph::BezCoord;
+using morph::HdfData;
 
 #define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
@@ -101,6 +103,40 @@ namespace morph {
             this->ri = r_;
             this->gi = g_;
             this->computeLocation();
+        }
+
+        /*!
+         * Save the data for this Hex into the already open HdfData
+         * object @h5data in the path @h5path.
+         */
+        void save (HdfData& h5data, const string& h5path) const {
+            string dpath = h5path + "/vi";
+            h5data.add_val (dpath.c_str(), this->vi);
+            dpath = h5path + "/di";
+            h5data.add_val (dpath.c_str(), this->di);
+            dpath = h5path + "/x";
+            h5data.add_val (dpath.c_str(), this->x);
+            dpath = h5path + "/y";
+            h5data.add_val (dpath.c_str(), this->y);
+            dpath = h5path + "/z";
+            h5data.add_val (dpath.c_str(), this->z);
+            dpath = h5path + "/r";
+            h5data.add_val (dpath.c_str(), this->r);
+            dpath = h5path + "/phi";
+            h5data.add_val (dpath.c_str(), this->phi);
+            dpath = h5path + "/d";
+            h5data.add_val (dpath.c_str(), this->d);
+            dpath = h5path + "/ri";
+            h5data.add_val (dpath.c_str(), this->ri);
+            dpath = h5path + "/gi";
+            h5data.add_val (dpath.c_str(), this->gi);
+            dpath = h5path + "/bi";
+            h5data.add_val (dpath.c_str(), this->bi);
+            dpath = h5path + "/distToBoundary";
+            h5data.add_val (dpath.c_str(), this->distToBoundary);
+            // Rather than saving the 9 booleans in this class, save these as a set of bit flags
+            dpath = h5path + "/flags";
+            h5data.add_val (dpath.c_str(), this->getFlags());
         }
 
         /*!
@@ -405,7 +441,7 @@ namespace morph {
          * Get all the flags packed into an unsigned int. Only uses 9
          * bits of the 32 bits available.
          */
-        unsigned int getFlags (void) {
+        unsigned int getFlags (void) const {
 
             unsigned int flgs = 0x0;
 
@@ -438,6 +474,21 @@ namespace morph {
             }
 
             return flgs;
+        }
+
+        /*!
+         * Set the various booleans from the passed in unsigned int.
+         */
+        void setFromFlags (unsigned int flgs) {
+            this->boundaryHex = (flgs & HEX_IS_BOUNDARY) ? true : false;
+            this->insideBoundary = (flgs & HEX_INSIDE_BOUNDARY) ? true : false;
+            this->insideDomain = (flgs & HEX_INSIDE_DOMAIN) ? true : false;
+            this->has_ne = (flgs & HEX_HAS_NE) ? true : false;
+            this->has_nne = (flgs & HEX_HAS_NNE) ? true : false;
+            this->has_nnw = (flgs & HEX_HAS_NNW) ? true : false;
+            this->has_nw = (flgs & HEX_HAS_NW) ? true : false;
+            this->has_nsw = (flgs & HEX_HAS_NSE) ? true : false;
+            this->has_nse = (flgs & HEX_HAS_NSE) ? true : false;
         }
 
         /*!
