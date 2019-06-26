@@ -106,6 +106,13 @@ namespace morph {
         }
 
         /*!
+         * Construct using the passed in HDF5 file and path.
+         */
+        Hex (HdfData& h5data, const string& h5path) {
+            this->load (h5data, h5path);
+        }
+
+        /*!
          * Save the data for this Hex into the already open HdfData
          * object @h5data in the path @h5path.
          */
@@ -137,6 +144,37 @@ namespace morph {
             // Rather than saving the 9 booleans in this class, save these as a set of bit flags
             dpath = h5path + "/flags";
             h5data.add_val (dpath.c_str(), this->getFlags());
+        }
+
+        void load (HdfData& h5data, const string& h5path) {
+            string dpath = h5path + "/vi";
+            h5data.read_val (dpath.c_str(), this->vi);
+            dpath = h5path + "/di";
+            h5data.read_val (dpath.c_str(), this->di);
+            dpath = h5path + "/x";
+            h5data.read_val (dpath.c_str(), this->x);
+            dpath = h5path + "/y";
+            h5data.read_val (dpath.c_str(), this->y);
+            dpath = h5path + "/z";
+            h5data.read_val (dpath.c_str(), this->z);
+            dpath = h5path + "/r";
+            h5data.read_val (dpath.c_str(), this->r);
+            dpath = h5path + "/phi";
+            h5data.read_val (dpath.c_str(), this->phi);
+            dpath = h5path + "/d";
+            h5data.read_val (dpath.c_str(), this->d);
+            dpath = h5path + "/ri";
+            h5data.read_val (dpath.c_str(), this->ri);
+            dpath = h5path + "/gi";
+            h5data.read_val (dpath.c_str(), this->gi);
+            dpath = h5path + "/bi";
+            h5data.read_val (dpath.c_str(), this->bi);
+            dpath = h5path + "/distToBoundary";
+            h5data.read_val (dpath.c_str(), this->distToBoundary);
+            unsigned int flgs = 0;
+            dpath = h5path + "/flags";
+            h5data.read_val (dpath.c_str(), flgs);
+            this->setFromFlags (flgs);
         }
 
         /*!

@@ -70,7 +70,39 @@ morph::HexGrid::HexGrid (float d_, float x_span_, float z_, morph::HexDomainShap
 void
 morph::HexGrid::load (const string& path)
 {
-    // Writeme.
+    HdfData hgdata (path, true);
+    hgdata.read_val ("/d", this->d);
+    cout << "d is now " << this->d << endl;
+    hgdata.read_val ("/v", this->v);
+    hgdata.read_val ("/x_span", this->x_span);
+    hgdata.read_val ("/z", this->z);
+    hgdata.read_val ("/d_rowlen", this->d_rowlen);
+    hgdata.read_val ("/d_numrows", this->d_numrows);
+    hgdata.read_val ("/d_size", this->d_size);
+    hgdata.read_val ("/d_growthbuffer_horz", this->d_growthbuffer_horz);
+    hgdata.read_val ("/d_growthbuffer_vert", this->d_growthbuffer_vert);
+
+    hgdata.read_contained_vals ("/boundaryCentroid", this->boundaryCentroid);
+    hgdata.read_contained_vals ("/d_x", this->d_x);
+    hgdata.read_contained_vals ("/d_y", this->d_y);
+    hgdata.read_contained_vals ("/d_distToBoundary", this->d_distToBoundary);
+    hgdata.read_contained_vals ("/d_ri", this->d_ri);
+    hgdata.read_contained_vals ("/d_gi", this->d_gi);
+    hgdata.read_contained_vals ("/d_bi", this->d_bi);
+    hgdata.read_contained_vals ("/d_ne", this->d_ne);
+    hgdata.read_contained_vals ("/d_nne", this->d_nne);
+    hgdata.read_contained_vals ("/d_nnw", this->d_nnw);
+    hgdata.read_contained_vals ("/d_nw", this->d_nw);
+    hgdata.read_contained_vals ("/d_nsw", this->d_nsw);
+    hgdata.read_contained_vals ("/d_nse", this->d_nse);
+
+    unsigned int hcount = 0;
+    hgdata.read_val ("/hcount", hcount);
+    for (unsigned int i = 0; i < hcount; ++i) {
+        string h5path = "/hexen/" + to_string(i);
+        Hex h (hgdata, h5path);
+        this->hexen.push_back (h);
+    }
 }
 
 void
@@ -84,8 +116,8 @@ morph::HexGrid::save (const string& path)
     hgdata.add_val ("/d_rowlen", d_rowlen);
     hgdata.add_val ("/d_numrows", d_numrows);
     hgdata.add_val ("/d_size", d_size);
-    hgdata.add_val ("/d_grownthbuffer_horz", d_growthbuffer_horz);
-    hgdata.add_val ("/d_grownthbuffer_vert", d_growthbuffer_vert);
+    hgdata.add_val ("/d_growthbuffer_horz", d_growthbuffer_horz);
+    hgdata.add_val ("/d_growthbuffer_vert", d_growthbuffer_vert);
 
     // pair<float,float>
     hgdata.add_contained_vals ("/boundaryCentroid", boundaryCentroid);
@@ -126,11 +158,13 @@ morph::HexGrid::save (const string& path)
         ++h;
         ++hcount;
     }
-    hgdata.add_val ("/hexennum", hcount);
+    hgdata.add_val ("/hcount", hcount);
 
     // What about vhexen? Probably don't save and re-call method to populate.
+    this->renumberVectorIndices();
 
     // What about bhexen? Probably re-run/test this->boundaryContiguous() on load.
+    this->boundaryContiguous();
 }
 
 pair<float, float>

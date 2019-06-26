@@ -100,6 +100,156 @@ morph::HdfData::read_contained_vals (const char* path, vector<float>& vals)
     status = H5Dclose (dataset_id);
     this->handle_error (status, "Error. status after H5Dclose: ");
 }
+
+void
+morph::HdfData::read_contained_vals (const char* path, vector<int>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[1] = {0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 1) {
+        stringstream ee;
+        ee << "Error. Expected 1D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0], 0.0);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, vector<unsigned int>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[1] = {0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 1) {
+        stringstream ee;
+        ee << "Error. Expected 1D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0], 0.0);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, vector<long long int>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[1] = {0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 1) {
+        stringstream ee;
+        ee << "Error. Expected 1D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0], 0.0);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, vector<unsigned long long int>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[1] = {0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 1) {
+        stringstream ee;
+        ee << "Error. Expected 1D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0], 0.0);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, pair<float, float>& vals)
+{
+    vector<float> vvals;
+    this->read_contained_vals (path, vvals);
+    if (vvals.size() != 2) {
+        stringstream ee;
+        ee << "Error. Expected pair<float, float> data to be stored in a vector of size 2";
+        throw runtime_error (ee.str());
+    }
+    vals.first = vvals[0];
+    vals.second = vvals[1];
+}
+
+void
+morph::HdfData::read_val (const char* path, double& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, float& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, int& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, unsigned int& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, long long int& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, unsigned long long int& val)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
 //@}
 
 void
@@ -332,6 +482,38 @@ morph::HdfData::add_contained_vals (const char* path, const vector<unsigned int>
     hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
     hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<long long int>& vals)
+{
+    this->process_groups (path);
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = vals.size();
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<unsigned long long int>& vals)
+{
+    this->process_groups (path);
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = vals.size();
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
     this->handle_error (status, "Error. status after H5Dwrite: ");
     status = H5Dclose (dataset_id);
     this->handle_error (status, "Error. status after H5Dclose: ");

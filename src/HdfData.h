@@ -62,7 +62,19 @@ namespace morph {
          */
         void read_contained_vals (const char* path, vector<double>& vals);
         void read_contained_vals (const char* path, vector<float>& vals);
+        void read_contained_vals (const char* path, vector<int>& vals);
+        void read_contained_vals (const char* path, vector<unsigned int>& vals);
+        void read_contained_vals (const char* path, vector<long long int>& vals);
+        void read_contained_vals (const char* path, vector<unsigned long long int>& vals);
 
+        void read_contained_vals (const char* path, pair<float, float>& vals);
+
+        void read_val (const char* path, double& val);
+        void read_val (const char* path, float& val);
+        void read_val (const char* path, int& val);
+        void read_val (const char* path, unsigned int& val);
+        void read_val (const char* path, long long int& val);
+        void read_val (const char* path, unsigned long long int& val);
         //@} // reading methods
 
         /*!
@@ -115,10 +127,12 @@ namespace morph {
         void add_contained_vals (const char* path, const vector<float>& vals);
         void add_contained_vals (const char* path, const vector<int>& vals);
         void add_contained_vals (const char* path, const vector<unsigned int>& vals);
+        void add_contained_vals (const char* path, const vector<long long int>& vals);
+        void add_contained_vals (const char* path, const vector<unsigned long long int>& vals);
         //@}
 
         /*!
-         * Pairs
+         * Add pairs
          */
         //@{
         void add_contained_vals (const char* path, const pair<float, float>& vals);
@@ -126,7 +140,6 @@ namespace morph {
 
         /*!
          * Add nvals values from the pointer vals.
-         * was add_double_star
          */
         //@{
         void add_ptrarray_vals (const char* path, double*& vals, const unsigned int nvals);
