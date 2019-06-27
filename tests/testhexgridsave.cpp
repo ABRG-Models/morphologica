@@ -11,6 +11,7 @@ using namespace std;
 int main()
 {
     int rtn = 0;
+    int hexnum = 0;
 
     cout << "Start " << Tools::timeNow() << endl;
     // Create and then write a HexGrid
@@ -22,19 +23,16 @@ int main()
         }
         ReadCurves r(curvepath);
 
-        HexGrid hg(0.005, 3, 0, HexDomainShape::Boundary);
+        HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);
         hg.setBoundary (r.getCorticalPath());
 
         cout << hg.extent() << endl;
 
+        hexnum = hg.num();
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 1608) {
-            rtn = -1;
-        }
-
-        //hg.save("../trialhexgrid.h5");
+        hg.save("../trialhexgrid.h5");
 
     } catch (const exception& e) {
         cerr << "Caught exception reading trial.svg: " << e.what() << endl;
@@ -47,6 +45,11 @@ int main()
         HexGrid hg("../trialhexgrid.h5");
 
         cout << "Read " << Tools::timeNow() << endl;
+
+        // Make sure read-in grid has same number of hexes as the generated one.
+        if (hexnum != hg.num()) {
+            rtn = -1;
+        }
 
         vector<double> fix(3, 0.0);
         vector<double> eye(3, 0.0);
