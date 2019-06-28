@@ -11,7 +11,7 @@ using namespace std;
 int main()
 {
     int rtn = 0;
-    int hexnum = 0;
+    unsigned int hexnum = 0;
 
     cout << "Start " << Tools::timeNow() << endl;
     // Create and then write a HexGrid
