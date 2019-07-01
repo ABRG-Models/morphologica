@@ -34,9 +34,27 @@ make -j4 # or however many cores you have. This takes a while.
 sudo make install
 ```
 
+Finally, you'll need the jsoncpp library. I cloned this from github:
+
+```sh
+git clone https://github.com/open-source-parsers/jsoncpp.git
+cd jsoncpp
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+This installs jsoncpp as a static library in
+/usr/local/lib/libjsoncpp.a which is then linked directly to
+libmorphologica by means of the src/CMakeLists.txt file. I'm using the
+HEAD of the master branch of the jsoncpp repository, which installs a
+library with version about 1.8.4.
+
 ## Install dependencies on Mac
 
-You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store. 
+You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store.
 
 Installation of the other dependencies is best achieved using Mac ports. Install Mac ports, following the instructions on http://www.macports.org/. This will guide you to install the XCode command line tools, then install the Mac ports installation package.
 
@@ -48,7 +66,10 @@ sudo port install cmake armadillo opencv
 
 Note that the installation of armadillo will pull in hdf5, so on Mac, we don't need to compile hdf5 manually.
 
-*Be aware that if you have conflicting versions of any of the libraries, you may run into problems during the build.*
+*Be aware that if you have conflicting versions of any of the
+ libraries, you may run into problems during the build.*
+
+You'll need jsoncpp on Mac, too.
 
 ## Build morphologica
 
