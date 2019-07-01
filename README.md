@@ -34,7 +34,9 @@ make -j4 # or however many cores you have. This takes a while.
 sudo make install
 ```
 
-Finally, you'll need the jsoncpp library. I cloned this from github:
+For the saving and reading of configuration information, you'll need
+the jsoncpp library compiled and installed in /usr/local. I cloned it
+from github:
 
 ```sh
 git clone https://github.com/open-source-parsers/jsoncpp.git
@@ -51,6 +53,10 @@ This installs jsoncpp as a static library in
 libmorphologica by means of the src/CMakeLists.txt file. I'm using the
 HEAD of the master branch of the jsoncpp repository, which installs a
 library with version about 1.8.4.
+
+There is some OpenGL 2 style OpenGL code in display.h/cpp and also
+some more modern OpenGL code in Visual/HexGridVisual. This modern code
+requires the library GLFW3 and only compiles if GLFW3 is present.
 
 ## Install dependencies on Mac
 
