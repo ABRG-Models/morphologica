@@ -75,7 +75,17 @@ Note that the installation of armadillo will pull in hdf5, so on Mac, we don't n
 *Be aware that if you have conflicting versions of any of the
  libraries, you may run into problems during the build.*
 
-You'll need jsoncpp on Mac, too.
+You'll need jsoncpp on Mac, too, built as a static library, just like for Linux, above:
+
+```sh
+git clone https://github.com/open-source-parsers/jsoncpp.git
+cd jsoncpp
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## Build morphologica
 
