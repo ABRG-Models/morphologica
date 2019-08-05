@@ -123,3 +123,8 @@ add_test(testVector3 testVector3)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 target_link_libraries(testTransformMatrix morphologica)
 add_test(testTransformMatrix testTransformMatrix)
+
+# Test Hex::get_vertex_coord()
+add_executable(testHexVertexPos testHexVertexPos.cpp)
+target_link_libraries(testHexVertexPos morphologica)
+add_test(testHexVertexPos testHexVertexPos)

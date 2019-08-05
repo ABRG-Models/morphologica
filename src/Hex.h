@@ -43,13 +43,21 @@ using std::endl;
 #define HEX_HAS_NSW      0x10
 #define HEX_HAS_NSE      0x20
 
-// Neighbour positions
+// Neighbour (or edge, or side) positions
 #define HEX_NEIGHBOUR_POS_E   0x0
 #define HEX_NEIGHBOUR_POS_NE  0x1
 #define HEX_NEIGHBOUR_POS_NW  0x2
 #define HEX_NEIGHBOUR_POS_W   0x3
 #define HEX_NEIGHBOUR_POS_SW  0x4
 #define HEX_NEIGHBOUR_POS_SE  0x5
+
+// Vertex positions
+#define HEX_VERTEX_POS_NE     0x0
+#define HEX_VERTEX_POS_N      0x1
+#define HEX_VERTEX_POS_NW     0x2
+#define HEX_VERTEX_POS_SW     0x3
+#define HEX_VERTEX_POS_S      0x4
+#define HEX_VERTEX_POS_SE     0x5
 
 // All hexes marked as boundary hexes, including some that are additional to requirements:
 #define HEX_IS_BOUNDARY      0x40
@@ -88,6 +96,13 @@ namespace morph {
      *         *     *
      *         -g * -b
      *
+     *
+     * I've defined numbering for the Hex's vertices and for its edges.
+     *
+     * Vertices: NE: 0, N: 1, NW: 2, SW: 3, S: 4, SE: 5.
+     *
+     * Edges/Sides: East: 0, North-East: 1, North-West: 2 West: 3,
+     * South-West: 4, South-East: 5
      */
     class Hex
     {
@@ -710,6 +725,61 @@ namespace morph {
             }
             }
             return hi;
+        }
+
+        /*!
+         * Get the Cartesian coordinates of the given vertex of the
+         * Hex. The Hex has a north vertex, a north east vertex and
+         * vertices for SE, S, SW and NW. The single argument @ni
+         * specifies which vertex to return the coordinate for. Use
+         * the definitions HEX_VERTEX_POS_N, etc to pass in a
+         * human-readable label for the vertex.
+         */
+        pair<float, float> get_vertex_coord (unsigned short ni) {
+            pair<float, float> rtn = {0.0, 0.0};
+            switch (ni) {
+            case HEX_VERTEX_POS_NE:
+            {
+                rtn.first = this->x + this->getSR();
+                rtn.second = this->y + this->getVtoNE();
+                break;
+            }
+            case HEX_VERTEX_POS_N:
+            {
+                rtn.first = this->x;
+                rtn.second = this->y + this->getLR();
+                break;
+            }
+            case HEX_VERTEX_POS_NW:
+            {
+                rtn.first = this->x - this->getSR();
+                rtn.second = this->y + this->getVtoNE();
+                break;
+            }
+            case HEX_VERTEX_POS_SW:
+            {
+                rtn.first = this->x - this->getSR();
+                rtn.second = this->y - this->getVtoNE();
+                break;
+            }
+            case HEX_VERTEX_POS_S:
+            {
+                rtn.first = this->x;
+                rtn.second = this->y - this->getLR();
+                break;
+            }
+            case HEX_VERTEX_POS_SE:
+            {
+                rtn.first = this->x + this->getSR();
+                rtn.second = this->y - this->getVtoNE();
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+            return rtn;
         }
 
         /*!
