@@ -728,6 +728,50 @@ namespace morph {
         }
 
         /*!
+         * Turn the vertex index into a string name
+         */
+        static string vertex_name (unsigned short ni) {
+            string s("");
+            switch (ni) {
+            case HEX_VERTEX_POS_NE:
+            {
+                s = "NE";
+                break;
+            }
+            case HEX_VERTEX_POS_N:
+            {
+                s = "N";
+                break;
+            }
+            case HEX_VERTEX_POS_NW:
+            {
+                s = "NW";
+                break;
+            }
+            case HEX_VERTEX_POS_SW:
+            {
+                s = "SW";
+                break;
+            }
+            case HEX_VERTEX_POS_S:
+            {
+                s = "S";
+                break;
+            }
+            case HEX_VERTEX_POS_SE:
+            {
+                s = "SE";
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+            return s;
+        }
+
+        /*!
          * Get the Cartesian coordinates of the given vertex of the
          * Hex. The Hex has a north vertex, a north east vertex and
          * vertices for SE, S, SW and NW. The single argument @ni
