@@ -649,6 +649,67 @@ namespace morph {
     }; // RD_Base
 
     /*!
+     * A class to use with an std::set. This is a container for a pair
+     * of floats (representing a pair of coordinates in 2D cartesian
+     * space) and a comparison operation which ensures that coordinate
+     * pairs which are similar are treated as being equal.
+     */
+    class DirichVtx {
+    public:
+        //! The coordinate data
+        pair<float, float> v;
+
+        /*!
+         * A distance threshold that makes sense within the problem -
+         * probably some fraction of the hex-to-hex distance, d is
+         * correct, because I'm using this to find hex vertices, and
+         * they are spaced exactly one side length of a hex
+         * apart. Basing threshold upon this metric means that we
+         * don't have to worry about the difficulties of comparing
+         * floating point numbers of different sizes (where, because
+         * the mantissa is of variable number of bits, the threshold
+         * that makes sense in a comparison is a function of the size
+         * of the number represented in the float).
+         */
+        float threshold = +0.00001f;
+
+        //! Constructors
+        //@{
+        //! Construct with passed in float pair, using default threshold
+        DirichVtx (const pair<float, float>& p) : v(p) {}
+        /*!
+         * Construct with passed in float pair, set the threshold on the
+         * basis of being passed in the Hex to Hex distance d.
+         */
+        DirichVtx (const pair<float, float>& p, const float& d) : v(p) {
+            // This is half of the shortest possible distance in the y
+            // direction between two adjacent Hex vertices.
+            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+        }
+        //@}
+
+        //! Comparison operation
+        bool operator< (const DirichVtx& rhs) const {
+            if (rhs.v.first - this->v.first > this->threshold) {
+                return true;
+            }
+            if (this->v.first - rhs.v.first > this->threshold) {
+                return false;
+            }
+            // Get here, then rhs.v.first and this->v.first are "equal"
+            if (rhs.v.second - this->v.second > this->threshold) {
+                return true;
+            }
+            // No need for this comparison:
+            // if (rhs.v.second < this->v.second) {
+            //     return false;
+            // }
+            // Because we fall through to return false here:
+            return false;
+        }
+    };
+
+    /*!
      * A helper class, containing (at time of writing) get_contours()
      */
     template <class Flt>
@@ -748,6 +809,103 @@ namespace morph {
 
             return rtn;
         }
+
+        /*!
+         * To go to the RD_Help class. Take a set of variables. Mark
+         * each hex with the outer index of the f which is highest for
+         * that hex, scaled and converted to a float.
+         */
+        static vector<Flt>
+        dirichlet_regions (HexGrid* hg, vector<vector<Flt> >& f) {
+            unsigned int N = f.size();
+
+            // Single variable to return
+            vector<Flt> rtn (f[0].size(), 0.0);
+
+            // Mark regions first.
+            for (auto h : hg->hexen) {
+
+                Flt maxf = -1e7;
+                for (unsigned int i = 0; i<N; ++i) {
+                    if (f[i][h.vi] > maxf) {
+                        maxf = f[i][h.vi];
+                        Flt fi = 0.0f;
+                        fi = (Flt)i;
+                        rtn[h.vi] = (fi/N);
+                    }
+                }
+            }
+
+            return rtn;
+        }
+
+        /*!
+         * Determine the locations of the vertices on a Hex grid which
+         * are surrounded by three different values of @f. @f is
+         * indexed by the HexGrid @hg. Return a set of the vertices.
+         */
+        static set<morph::DirichVtx>
+        dirichlet_vertices (HexGrid* hg, vector<Flt>& f) {
+            // A set of pairs of floats, with a comparison function that will
+            // set points as equivalent if they're within a small difference
+            // of each other.
+            set<morph::DirichVtx> vertices;
+
+            for (auto h : hg->hexen) {
+
+                // For each hex, examine its neighbours, counting number of different neighbours.
+                set<Flt> n_ids;
+                n_ids.insert (f[h.vi]);
+                for (unsigned int ni = 0; ni < 6; ++ni) {
+                    if (h.has_neighbour(ni)) {
+                        n_ids.insert (f[h.get_neighbour(ni)->vi]);
+                    }
+                }
+
+                if (n_ids.size() > 2) { // Can actually only be 1, 2 or 3
+
+                    // Ok, this has more than 2 different types in self &
+                    // neighbouring hexes, so now work out which of the Hex's
+                    // vertices is the vertex of the domain.
+                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
+
+                        // If there's a neihgbour in direction ni and that neighbour has different ID:
+                        if (h.has_neighbour(ni) && f[h.get_neighbour(ni)->vi] != f[h.vi]) {
+
+                            // The first non-identical ID
+                            Flt f1 = f[h.get_neighbour(ni)->vi];
+                            int nii = (ni+1)%6;
+                            if (h.has_neighbour(nii)
+                                && f[h.get_neighbour(nii)->vi] != f[h.vi]
+                                && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
+                                ) {
+                                // Then vertex is "vertex ni"
+                                vertices.insert (morph::DirichVtx(h.get_vertex_coord(ni), hg->getd()));
+                                break;
+                            } else {
+                                nii = (ni-1)%6;
+                                if (h.has_neighbour(nii)
+                                    && f[h.get_neighbour(nii)->vi] != f[h.vi]
+                                    && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
+                                    ) {
+                                    // Then vertex is "vertex ni-1%6", i.e. nii.
+                                    vertices.insert (morph::DirichVtx(h.get_vertex_coord(nii), hg->getd()));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            cout << "At end of dirichlet_vertices: vertices has size " << vertices.size() << " and contains:" << endl;
+            set<morph::DirichVtx>::iterator si = vertices.begin();
+            while (si != vertices.end() ) {
+                cout << "   " << si->v.first << "," << si->v.second << endl;
+                ++si;
+            }
+            return vertices;
+        }
+
     }; // RD_Helper
 
 } // namespace morph
