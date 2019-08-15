@@ -910,19 +910,16 @@ namespace morph {
                 float neighbour = v.neighb.first;
 
                 // Now find the other vertex which divides "me" and "neighbour"
-                set<morph::DirichVtx>::iterator dvi2 = dvi; // Don't have to start from beginning
+                set<morph::DirichVtx>::iterator dvi2 = dv.begin();
 
                 while (dvi2 != dv.end()) {
-                    if (dvi2->f != me) {
-                        break;
+                    if (dvi2->f == me) {
+                        ++dvi2;
+                        continue;
                     }
-                    if (dvi2->neighb.second == neighbour) {
-                        cout << "match on neighb.second" << endl;
-                        v.vn = dvi2->v;
-                        break;
-                    }
-                    if (dvi2->neighb.first == neighbour) {
-                        cout << "match on neighb.first" << endl;
+                    if (dvi2->neighb.second == v.neighb.first
+                        && dvi2->neighb.first == v.neighb.second) {
+                        cout << "match on alt neighbours" << endl;
                         v.vn = dvi2->v;
                         break;
                     }
