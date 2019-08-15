@@ -659,6 +659,14 @@ namespace morph {
         //! The coordinate data
         pair<float, float> v;
 
+        //! The location of the neighbouring vertex - necessary for
+        //! computing a Dirichlet metric. Populated after a set of
+        //! vertices has been created.
+        pair<float, float> vn;
+
+        //! The value of the domain for which this vertex is a vertex.
+        float f;
+
         /*!
          * A distance threshold that makes sense within the problem -
          * probably some fraction of the hex-to-hex distance, d is
@@ -673,6 +681,17 @@ namespace morph {
          */
         float threshold = +0.00001f;
 
+        /*!
+         * The OTHER, neighbouring domains that this vertex
+         * divides. Always 3 domains are divided by one vertex on an
+         * hexagonal grid. The first domain value is the identifier
+         * for the Dirichlet domain for which this vertex is a vertex,
+         * which is stored in @f. The other 2 domains are stored
+         * here. If one of the domains is "outside" the boundary set
+         * -1.0f?
+         */
+        pair<float, float> neighb;
+
         //! Constructors
         //@{
         //! Construct with passed in float pair, using default threshold
@@ -686,10 +705,35 @@ namespace morph {
             // direction between two adjacent Hex vertices.
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
+        /*!
+         * Construct with passed in float pair; set the threshold on
+         * the basis of being passed in the Hex to Hex distance d and
+         * also set the value of the vertex to be @id
+         */
+        DirichVtx (const pair<float, float>& p, const float& d, const float& id) : v(p), f(id) {
+            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+        }
+
+        /*!
+         * Construct with passed in float pair; set the threshold on
+         * the basis of being passed in the Hex to Hex distance d and
+         * also set the value of the vertex to be @id
+         */
+        DirichVtx (const pair<float, float>& p, const float& d, const float& id, const pair<float, float>& oth) : v(p), f(id), neighb(oth) {
+            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+        }
         //@}
 
-        //! Comparison operation
+        //! Comparison operation. Note: Ignores this->vn!
         bool operator< (const DirichVtx& rhs) const {
+            // Compare value:
+            if (this->f < rhs.f) {
+                return true;
+            }
+            if (this->f > rhs.f) {
+                return false;
+            }
+            // Values are equal, so compare coordinates:
             if (rhs.v.first - this->v.first > this->threshold) {
                 return true;
             }
@@ -700,11 +744,22 @@ namespace morph {
             if (rhs.v.second - this->v.second > this->threshold) {
                 return true;
             }
-            // No need for this comparison:
-            // if (rhs.v.second < this->v.second) {
-            //     return false;
-            // }
-            // Because we fall through to return false here:
+            if (rhs.v.second < this->v.second) {
+                return false;
+            }
+            // Value and vertex coord equal; last check is on the vertex neighbour coord:
+            if (rhs.vn.first - this->vn.first > this->threshold) {
+                return true;
+            }
+            if (this->vn.first - rhs.vn.first > this->threshold) {
+                return false;
+            }
+            // Get here, then rhs.v.first and this->v.first are "equal"
+            if (rhs.vn.second - this->vn.second > this->threshold) {
+                return true;
+            }
+            // Not necessary:
+            // if (rhs.vn.second < this->vn.second) { return false; }
             return false;
         }
     };
@@ -811,9 +866,11 @@ namespace morph {
         }
 
         /*!
-         * To go to the RD_Help class. Take a set of variables. Mark
-         * each hex with the outer index of the f which is highest for
-         * that hex, scaled and converted to a float.
+         * Take a set of variables, @f, for the given HexGrid
+         * @hg. Return a vector of Flts (again, based on the HexGrid
+         * @hg) which marks each hex with the outer index of the @f
+         * which has highest value in that hex, scaled and converted to a
+         * float.
          */
         static vector<Flt>
         dirichlet_regions (HexGrid* hg, vector<vector<Flt> >& f) {
@@ -837,6 +894,44 @@ namespace morph {
             }
 
             return rtn;
+        }
+
+        static void
+        dirichlet_set_neighbours (set<morph::DirichVtx>& dv) {
+            set<morph::DirichVtx>::iterator dvi = dv.begin();
+            while (dvi != dv.end()) {
+
+                morph::DirichVtx v = *dvi;
+                dvi = dv.erase (dvi);
+
+                float me = v.f;
+                // Find another vertex whose domain is dom and which
+                // contains the first of the two neighbour domains.
+                float neighbour = v.neighb.first;
+
+                // Now find the other vertex which divides "me" and "neighbour"
+                set<morph::DirichVtx>::iterator dvi2 = dvi; // Don't have to start from beginning
+
+                while (dvi2 != dv.end()) {
+                    if (dvi2->f != me) {
+                        break;
+                    }
+                    if (dvi2->neighb.second == neighbour) {
+                        cout << "match on neighb.second" << endl;
+                        v.vn = dvi2->v;
+                        break;
+                    }
+                    if (dvi2->neighb.first == neighbour) {
+                        cout << "match on neighb.first" << endl;
+                        v.vn = dvi2->v;
+                        break;
+                    }
+                    ++dvi2;
+                }
+                dv.insert(v);
+
+                //++dvi;
+            }
         }
 
         /*!
@@ -869,7 +964,7 @@ namespace morph {
                     // vertices is the vertex of the domain.
                     for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
 
-                        // If there's a neihgbour in direction ni and that neighbour has different ID:
+                        // If there's a neighbour in direction ni and that neighbour has different ID:
                         if (h.has_neighbour(ni) && f[h.get_neighbour(ni)->vi] != f[h.vi]) {
 
                             // The first non-identical ID
@@ -880,7 +975,14 @@ namespace morph {
                                 && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
                                 ) {
                                 // Then vertex is "vertex ni"
-                                vertices.insert (morph::DirichVtx(h.get_vertex_coord(ni), hg->getd()));
+                                vertices.insert (
+                                    morph::DirichVtx(
+                                        h.get_vertex_coord(ni),
+                                        hg->getd(),
+                                        f[h.vi],
+                                        make_pair(f[h.get_neighbour(nii)->vi], f[h.get_neighbour(ni)->vi])
+                                        )
+                                    );
                                 break;
                             } else {
                                 nii = (ni-1)%6;
@@ -889,7 +991,14 @@ namespace morph {
                                     && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
                                     ) {
                                     // Then vertex is "vertex ni-1%6", i.e. nii.
-                                    vertices.insert (morph::DirichVtx(h.get_vertex_coord(nii), hg->getd()));
+                                    vertices.insert (
+                                        morph::DirichVtx(
+                                            h.get_vertex_coord(nii),
+                                            hg->getd(),
+                                            f[h.vi],
+                                            make_pair(f[h.get_neighbour(ni)->vi], f[h.get_neighbour(nii)->vi])
+                                            )
+                                        );
                                     break;
                                 }
                             }
@@ -897,12 +1006,20 @@ namespace morph {
                     }
                 }
             }
+#ifdef DEBUG_VERTICES
             cout << "At end of dirichlet_vertices: vertices has size " << vertices.size() << " and contains:" << endl;
             set<morph::DirichVtx>::iterator si = vertices.begin();
             while (si != vertices.end() ) {
                 cout << "   " << si->v.first << "," << si->v.second << endl;
                 ++si;
             }
+#endif
+            // The last task, before returning vertices, is to process
+            // through and populate the "neighbour" vertex coordinate
+            // for each vertex. This can be computed based on the
+            // three domains which each vertex divides.
+            dirichlet_set_neighbours (vertices);
+
             return vertices;
         }
 
