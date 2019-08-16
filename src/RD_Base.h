@@ -866,6 +866,9 @@ namespace morph {
         }
 
         /*!
+         * NB: Dirichlet code has nothing to do with RD systems, so
+         * should be in its own helper class!
+         *
          * Take a set of variables, @f, for the given HexGrid
          * @hg. Return a vector of Flts (again, based on the HexGrid
          * @hg) which marks each hex with the outer index of the @f
@@ -901,13 +904,19 @@ namespace morph {
             set<morph::DirichVtx>::iterator dvi = dv.begin();
             while (dvi != dv.end()) {
 
+                // Don't set neighbours for the edge vertices
+                if (dvi->neighb.first == -1.0f || dvi->neighb.second == -1.0f) {
+                    ++dvi;
+                    continue;
+                }
+
                 morph::DirichVtx v = *dvi;
                 dvi = dv.erase (dvi);
 
                 float me = v.f;
                 // Find another vertex whose domain is dom and which
                 // contains the first of the two neighbour domains.
-                float neighbour = v.neighb.first;
+                //float neighbour = v.neighb.first;
 
                 // Now find the other vertex which divides "me" and "neighbour"
                 set<morph::DirichVtx>::iterator dvi2 = dv.begin();
@@ -919,7 +928,13 @@ namespace morph {
                     }
                     if (dvi2->neighb.second == v.neighb.first
                         && dvi2->neighb.first == v.neighb.second) {
-                        cout << "match on alt neighbours" << endl;
+                        cout << "match on alt neighbours, set v.vn = (" << dvi2->v.first << "," << dvi2->v.second << ")" << endl;
+                        v.vn = dvi2->v;
+                        break;
+                    } else if ((dvi2->neighb.second == v.neighb.first && dvi2->neighb.first == -1.0f)
+                               ||
+                               (dvi2->neighb.first == v.neighb.second &&  dvi2->neighb.second == -1.0f)) {
+                        cout << "match on edge neighbour, set v.vn = (" << dvi2->v.first << "," << dvi2->v.second << ")" << endl;
                         v.vn = dvi2->v;
                         break;
                     }
