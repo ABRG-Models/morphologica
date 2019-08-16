@@ -926,8 +926,7 @@ namespace morph {
                     ++dvi2;
                 }
                 dv.insert(v);
-
-                //++dvi;
+                // no need to ++dvi;
             }
         }
 
@@ -954,7 +953,54 @@ namespace morph {
                     }
                 }
 
-                if (n_ids.size() > 2) { // Can actually only be 1, 2 or 3
+                if (h.boundaryHex == true && n_ids.size() == 2) {
+                    // I need to set a vertex where two hexes join and
+                    // we're on the boundary. This provides
+                    // information to set the angles to discover the
+                    // best center for each domain (see Honda 1983).
+                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
+
+                        // If there's a neighbour in direction ni and that neighbour has different ID:
+                        if (h.has_neighbour(ni) && f[h.get_neighbour(ni)->vi] != f[h.vi]) {
+
+                            // Change this - examine which direction
+                            // DOESN'T have a neighbour and that will
+                            // determine which hex vertex is the
+                            // domain vertex.
+
+                            // The first non-identical ID
+                            Flt f1 = f[h.get_neighbour(ni)->vi];
+                            int nii = (ni+1)%6;
+                            if (!h.has_neighbour(nii)) {
+                                // Then vertex is "vertex ni"
+                                vertices.insert (
+                                    morph::DirichVtx(
+                                        h.get_vertex_coord(ni),
+                                        hg->getd(),
+                                        f[h.vi],
+                                        make_pair(-1.0f, f[h.get_neighbour(ni)->vi])
+                                        )
+                                    );
+                                break;
+                            } else {
+                                nii = (ni-1)%6;
+                                if (!h.has_neighbour(nii)) {
+                                    // Then vertex is "vertex ni-1%6", i.e. nii.
+                                    vertices.insert (
+                                        morph::DirichVtx(
+                                            h.get_vertex_coord(nii),
+                                            hg->getd(),
+                                            f[h.vi],
+                                            make_pair(f[h.get_neighbour(ni)->vi], -1.0f)
+                                            )
+                                        );
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                } else if (n_ids.size() > 2) { // Can actually only be 1, 2 or 3
 
                     // Ok, this has more than 2 different types in self &
                     // neighbouring hexes, so now work out which of the Hex's
