@@ -692,6 +692,9 @@ namespace morph {
          */
         pair<float, float> neighb;
 
+        //! *Domain* neighbours of the *vertex* neighbour.
+        pair<float, float> neighbn;
+
         //! Constructors
         //@{
         //! Construct with passed in float pair, using default threshold
@@ -901,42 +904,78 @@ namespace morph {
 
         static void
         dirichlet_set_neighbours (set<morph::DirichVtx>& dv) {
+
             set<morph::DirichVtx>::iterator dvi = dv.begin();
+
             while (dvi != dv.end()) {
 
-                // Don't set neighbours for the edge vertices
+                // Don't set neighbours for the edge vertices (though
+                // edge vertices *can be set* as neighbours for other
+                // vertices).
                 if (dvi->neighb.first == -1.0f || dvi->neighb.second == -1.0f) {
                     ++dvi;
                     continue;
                 }
 
+                // Make a copy of the vertex at *dvi, as I want to modify it.
                 morph::DirichVtx v = *dvi;
                 dvi = dv.erase (dvi);
 
-                float me = v.f;
-                // Find another vertex whose domain is dom and which
-                // contains the first of the two neighbour domains.
-                //float neighbour = v.neighb.first;
-
+#if 0
+                // Select an f value for which to show debug data.
+                bool dbg = (fabs(v.f-0.28f)<0.01);
+#endif
                 // Now find the other vertex which divides "me" and "neighbour"
                 set<morph::DirichVtx>::iterator dvi2 = dv.begin();
 
+                // Two floats that define the edge we want to move out along.
+                pair<float, float> edges = v.neighb;
+
                 while (dvi2 != dv.end()) {
-                    if (dvi2->f == me) {
+
+                    // Ignore vertices of the same domain
+                    if (dvi2->f == v.f) { // v.f is "me"
                         ++dvi2;
                         continue;
                     }
-                    if (dvi2->neighb.second == v.neighb.first
-                        && dvi2->neighb.first == v.neighb.second) {
-                        cout << "match on alt neighbours, set v.vn = (" << dvi2->v.first << "," << dvi2->v.second << ")" << endl;
-                        v.vn = dvi2->v;
-                        break;
-                    } else if ((dvi2->neighb.second == v.neighb.first && dvi2->neighb.first == -1.0f)
-                               ||
-                               (dvi2->neighb.first == v.neighb.second &&  dvi2->neighb.second == -1.0f)) {
-                        cout << "match on edge neighbour, set v.vn = (" << dvi2->v.first << "," << dvi2->v.second << ")" << endl;
-                        v.vn = dvi2->v;
-                        break;
+
+                    // Ignore vertices that are equal in location
+                    if (dvi2->v.first == v.v.first
+                        && dvi2->v.second == v.v.second) {
+                        ++dvi2;
+                        continue;
+                    }
+
+                    // if dvi2 contains the two floats in edges, then it's a match.
+                    pair<bool, bool> matches = { false, false };
+                    if ((dvi2->f == edges.first)
+                        || (dvi2->neighb.first == edges.first)
+                        || (dvi2->neighb.second == edges.first)) {
+                        matches.first = true;
+                    }
+                    if ((dvi2->f == edges.second)
+                        || (dvi2->neighb.first == edges.second)
+                        || (dvi2->neighb.second == edges.second)) {
+                        matches.second = true;
+                    }
+
+                    if (matches.first && matches.second) {
+                        // Test distance:
+                        if ( (dvi2->v.first - v.v.first)*(dvi2->v.first - v.v.first)
+                             + (dvi2->v.second - v.v.second)*(dvi2->v.second - v.v.second) > 1e-7 ) {
+#if 0
+                            if (dbg) {
+                                cout << "===================\n"
+                                     << "match neighbours, set v.vn = (" << dvi2->v.first << "," << dvi2->v.second
+                                     << ", " << std::hex << &dvi2->v << std::dec << ")"
+                                     << " as neighbour for me at (" << v.v.first << "," << v.v.second << ")"
+                                     << endl;
+                            }
+#endif
+                            v.vn = dvi2->v;
+                            v.neighbn = dvi2->neighb;
+                            break;
+                        } // else don't match vertex in same location
                     }
                     ++dvi2;
                 }
@@ -952,6 +991,7 @@ namespace morph {
          */
         static set<morph::DirichVtx>
         dirichlet_vertices (HexGrid* hg, vector<Flt>& f) {
+
             // A set of pairs of floats, with a comparison function that will
             // set points as equivalent if they're within a small difference
             // of each other.
@@ -968,14 +1008,16 @@ namespace morph {
                     }
                 }
 
-                if (h.boundaryHex == true && n_ids.size() == 2) {
-                    // I need to set a vertex where two hexes join and
+                if (h.boundaryHex == true && n_ids.size() == 2) { // 1. Test for boundary vertices
+
+                    // Here, I need to set a vertex where two hexes join and
                     // we're on the boundary. This provides
                     // information to set the angles to discover the
                     // best center for each domain (see Honda 1983).
+
                     for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
 
-                        // If there's a neighbour in direction ni and that neighbour has different ID:
+                        // If there's a neighbour in neighbour direction ni and that neighbour has different ID:
                         if (h.has_neighbour(ni) && f[h.get_neighbour(ni)->vi] != f[h.vi]) {
 
                             // Change this - examine which direction
@@ -987,7 +1029,7 @@ namespace morph {
                             Flt f1 = f[h.get_neighbour(ni)->vi];
                             int nii = (ni+1)%6;
                             if (!h.has_neighbour(nii)) {
-                                // Then vertex is "vertex ni"
+                                // Then vertex direction is "vertex direction ni"
                                 vertices.insert (
                                     morph::DirichVtx(
                                         h.get_vertex_coord(ni),
@@ -996,11 +1038,13 @@ namespace morph {
                                         make_pair(-1.0f, f[h.get_neighbour(ni)->vi])
                                         )
                                     );
-                                break;
+                                break; // or set ni=6;
+
                             } else {
-                                nii = (ni-1)%6;
+
+                                nii = ni>0 ? (ni-1) : 5;
                                 if (!h.has_neighbour(nii)) {
-                                    // Then vertex is "vertex ni-1%6", i.e. nii.
+                                    // Then vertex direction is "vertex direction (ni-1) or 5", i.e. nii.
                                     vertices.insert (
                                         morph::DirichVtx(
                                             h.get_vertex_coord(nii),
@@ -1009,17 +1053,18 @@ namespace morph {
                                             make_pair(f[h.get_neighbour(ni)->vi], -1.0f)
                                             )
                                         );
-                                    break;
+                                    break; // or set ni=6;
                                 }
                             }
                         }
                     }
 
-                } else if (n_ids.size() > 2) { // Can actually only be 1, 2 or 3
+                } else if (n_ids.size() > 2) { // 2. Test for internal vertices
 
-                    // Ok, this has more than 2 different types in self &
-                    // neighbouring hexes, so now work out which of the Hex's
-                    // vertices is the vertex of the domain.
+                    // >2 (i.e. 3) different types in self &
+                    // neighbouring hexes, so now work out which of
+                    // the Hex's vertices is the vertex of the domain.
+
                     for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
 
                         // If there's a neighbour in direction ni and that neighbour has different ID:
@@ -1028,6 +1073,7 @@ namespace morph {
                             // The first non-identical ID
                             Flt f1 = f[h.get_neighbour(ni)->vi];
                             int nii = (ni+1)%6;
+
                             if (h.has_neighbour(nii)
                                 && f[h.get_neighbour(nii)->vi] != f[h.vi]
                                 && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
@@ -1042,13 +1088,13 @@ namespace morph {
                                         )
                                     );
                                 break;
+
                             } else {
-                                nii = (ni-1)%6;
+                                nii = ni>0 ? (ni-1) : 5;
                                 if (h.has_neighbour(nii)
                                     && f[h.get_neighbour(nii)->vi] != f[h.vi]
                                     && f[h.get_neighbour(nii)->vi] != f1 // f1 already tested != f[h.vi]
                                     ) {
-                                    // Then vertex is "vertex ni-1%6", i.e. nii.
                                     vertices.insert (
                                         morph::DirichVtx(
                                             h.get_vertex_coord(nii),
@@ -1064,14 +1110,7 @@ namespace morph {
                     }
                 }
             }
-#ifdef DEBUG_VERTICES
-            cout << "At end of dirichlet_vertices: vertices has size " << vertices.size() << " and contains:" << endl;
-            set<morph::DirichVtx>::iterator si = vertices.begin();
-            while (si != vertices.end() ) {
-                cout << "   " << si->v.first << "," << si->v.second << endl;
-                ++si;
-            }
-#endif
+
             // The last task, before returning vertices, is to process
             // through and populate the "neighbour" vertex coordinate
             // for each vertex. This can be computed based on the
