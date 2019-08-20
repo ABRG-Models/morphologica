@@ -820,9 +820,33 @@ namespace morph {
             }
             default:
             {
+                rtn.first = -1.0f;
+                rtn.second = -1.0f;
                 break;
             }
             }
+            return rtn;
+        }
+        pair<float, float> get_vertex_coord (unsigned int ni) {
+            pair<float, float> rtn = {-2.0, -2.0};
+            if (ni > 6) {
+                return rtn;
+            }
+            rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
+            return rtn;
+        }
+        pair<float, float> get_vertex_coord (int ni) {
+            pair<float, float> rtn = {-3.0, -3.0};
+            if (ni > 6) {
+                rtn.first = -4.0f;
+                return rtn;
+            }
+            if (ni < 0) {
+                std::cout << "ni < 0 and is " << ni << std::endl;
+                rtn.second = -4.0f;
+                return rtn;
+            }
+            rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
             return rtn;
         }
 
