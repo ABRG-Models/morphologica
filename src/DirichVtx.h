@@ -2,6 +2,8 @@
 #define _DIRICHVTX_H_
 
 #include "MathConst.h"
+#include <limits>
+using std::numeric_limits;
 #include <utility>
 using std::pair;
 
@@ -147,6 +149,102 @@ namespace morph {
             // Not necessary:
             // if (rhs.vn.second < this->vn.second) { return false; }
             return false;
+        }
+
+        //! Parameters for line
+        Flt m;
+        Flt c;
+        pair<Flt, Flt> P_i;
+
+        /*!
+         * Compute the equation for the line that is drawn towards the
+         * putative centre of the Dirichlet domain. Needs to be passed
+         * in the coordinates of the vertex that is clockwise in the
+         * domain. As per Honda 1983, p 196, @prev_vertex is A_{i-1},
+         * @next_vertex is A_{i+1}. A_i and B_i are stored here as
+         * this->v (A_i) and this->vn (B_i). With this information,
+         * it's possible to compute the gradient of the line that
+         * emerges from A_i and heads towards the Dirichlet domain
+         * centre.
+         */
+        void compute_line_to_centre (const DirichVtx<Flt>& prev_vertex,
+                                     const DirichVtx<Flt>& next_vertex) {
+
+            /*
+             * 1. Find angle A_{i+1} A_i P_i from A_i, B_i and A_{i-1}
+             */
+            pair<Flt, Flt> Aim1, Aip1, Bi, Ai;
+            Aim1 = prev_vertex.v;
+            Aip1 = next_vertex.v;
+            Bi = vn;
+            Ai = v;  // Get rid of these copies of the pair<Flt,Flt>s in the final code
+
+            // Triangle side lengths (or rather squares of lengths)
+            // x is side from A_i-1 to Bi
+            // y is side from Bi to Ai
+            // z is side from Ai to A_i-1
+            Flt xsq = (Bi.first - Aim1.first)*(Bi.first - Aim1.first)
+                + (Bi.second - Aim1.second)*(Bi.second - Aim1.second);
+
+            Flt ysq = (Bi.first - Ai.first)*(Bi.first - Ai.first)
+                + (Bi.second - Ai.second)*(Bi.second - Ai.second);
+
+            Flt zsq = (Ai.first - Aim1.first)*(Ai.first - Aim1.first)
+                + (Ai.second - Aim1.second)*(Ai.second - Aim1.second);
+
+            // Angle X is the angle B_i A_i A_i-1
+            //
+            // X = arccos( (1/2yz) * (ysq+zsq-xsq) )
+            Flt X = arccos ( (0.5/(sqrt(ysq)*sqrt(zsq))) * (ysq+zsq-xsq) );
+
+            /*
+             * 2. Find one point P_i.
+             *
+             * Choose the distance from A_i to P_i to be equal to the
+             * distance from A_i+1 to A_i.  In this case, distance
+             * from A_i+1 to P_i is x, where:
+             */
+
+            Flt y = sqrt ((Ai.first - Aip1.first)*(Ai.first - Aip1.first)
+                          + (Ai.second - Aip1.second)*(Ai.second - Aip1.second));
+            // NB: zsq = ysq;
+
+            Flt Y = 0.5*(180-X);
+            // NB Flt Z = Y;
+
+            Flt x = sin (X) * (y/sin(Y));
+
+            // With x, Y, Z, A_i and A_i+1, can now find P_i coordinates
+
+            // Find angle between line joining A_i+1 and A_i and vertical.
+            Flt theta = arctan2 (Ai.first-Aip1.first, Ai.second-Aip1.second);
+
+            // The angle phi is
+            Flt phi = theta+Y-90;
+
+            // The changes in x/y from point A_i+1 are:
+            Flt dx = x * cos(phi);
+            Flt dy = x * sin(phi);
+
+            this->P_i.first = Aip1.first + dx;
+            this->P_i.second = Aip1.second + dy;
+
+            /*
+             * 3. Use A_i and P_i to compute gradient/offset of the
+             * line equation that passes through point A_i. Store in
+             * this->m and this->c (or whatever is suitable).
+             */
+            if (this->P_i.first == Ai.first) {
+                this->m = this->P_i.second < Ai.second ? numeric_limits<Flt>::lowest() : numeric_limits<Flt>::max();
+                this->c = numeric_limits<Flt>::max();
+                // And if c is max(), then it's a vertical line from
+                // A_i through P_i which means that P_i.first ==
+                // A_i.first and P_i.second can be anything.
+
+            } else {
+                this->m = (this->P_i.second - Ai.second) / (this->P_i.first - Ai.first);
+                this->c = Ai.second - this->m * Ai.first;
+            }
         }
     };
 
