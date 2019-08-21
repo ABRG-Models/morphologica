@@ -14,6 +14,7 @@
 #include <cmath>
 #include "BezCoord.h"
 #include "HdfData.h"
+#include "MathConst.h"
 
 using std::string;
 using std::to_string;
@@ -69,7 +70,6 @@ using std::endl;
 
 namespace morph {
 
-    const float SQRT_OF_3_F = 1.73205081;
     /*!
      * Describes a regular hexagon arranged with vertices pointing
      * vertically and two flat sides perpendicular to the horizontal
