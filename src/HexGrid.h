@@ -9,6 +9,7 @@
 
 #include "Hex.h"
 #include "BezCurvePath.h"
+#include "MathConst.h"
 
 #include <set>
 #include <list>
@@ -33,8 +34,6 @@ namespace morph {
         Hexagon,
         Boundary // The shape of the arbitrary boundary set with HexGrid::setBoundary
     };
-
-    const float SQRT_OF_3_OVER_2_F = 0.866025404;
 
     /*!
      * This class is used to build an hexagonal grid of hexagons. The
