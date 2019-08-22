@@ -6,6 +6,12 @@
 using std::numeric_limits;
 #include <utility>
 using std::pair;
+#include <list>
+using std::list;
+#include <vector>
+using std::vector;
+#include "HexGrid.h"
+using morph::Hex;
 
 namespace morph {
 
@@ -28,6 +34,12 @@ namespace morph {
     public:
         //! The coordinate data for the main vertex represented.
         pair<Flt, Flt> v;
+
+        /*!
+         * The series of points that make up the edge between the
+         * this vertex (v) and its vertex neighbour (vn). Should order by size.
+         */
+        set<pair<Flt, Flt> > edge;
 
         /*! The location of the neighbouring vertex - necessary for
          * computing a Dirichlet-ness metric. Intended to be
@@ -73,6 +85,15 @@ namespace morph {
         //! Two of the *Domain* neighbours of the *vertex* neighbour.
         pair<Flt, Flt> neighbn;
 
+        /*!
+         * An iterator into the accompanying list of Hexes. Intended
+         * to be an iterator into HexGrid::hexen. This points to the
+         * hex containing the vertex that is this
+         * DirichVtx. Important so that from one DirichVtx, we can
+         * find our way along and edge to the next vertex.
+         */
+        list<Hex>::iterator hi;
+
         //! Constructors
         //@{
 
@@ -108,6 +129,18 @@ namespace morph {
          */
         DirichVtx (const pair<Flt, Flt>& p, const Flt& d, const Flt& id, const pair<Flt, Flt>& oth)
             : v(p), f(id), neighb(oth) {
+            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+        }
+
+        /*!
+         * Construct with passed in Flt pair; set the threshold on the
+         * basis of being passed in the Hex to Hex distance d, set the
+         * value of the vertex to be @id, set this->neighb (with @oth)
+         * and finally, set the list<Hex> iterator @hex.
+         */
+        DirichVtx (const pair<Flt, Flt>& p, const Flt& d, const Flt& id,
+                   const pair<Flt, Flt>& oth, const list<Hex>::iterator hex)
+            : v(p), f(id), neighb(oth), hi(hex) {
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
         //@}
