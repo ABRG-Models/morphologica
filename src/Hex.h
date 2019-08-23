@@ -128,6 +128,35 @@ namespace morph {
         }
 
         /*!
+         * Comparison operation to enable use of set<Hex>
+         */
+        bool operator< (const Hex& rhs) const {
+            // Compare position first.
+            if (this->x < rhs.x) {
+                return true;
+            }
+            if (this->x > rhs.x) {
+                return false;
+            }
+            if (this->y < rhs.y) {
+                return true;
+            }
+            if (this->y > rhs.y) {
+                return false;
+            }
+            // If position can't differentiate, compare vector index
+            if (this->vi < rhs.vi) {
+                return true;
+            }
+            #if 0
+            if (this->vi > rhs.vi) {
+                return false;
+            }
+            #endif
+            return false;
+        }
+
+        /*!
          * Save the data for this Hex into the already open HdfData
          * object @h5data in the path @h5path.
          */
