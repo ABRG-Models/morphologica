@@ -191,6 +191,120 @@ namespace morph {
             }
         }
 
+        static void
+        vertex_test (HexGrid* hg, vector<Flt>& f, list<Hex>::iterator h, set<DirichVtx<Flt> >& vertices) {
+            // For each hex, examine its neighbours, counting number of different neighbours.
+            set<Flt> n_ids;
+            n_ids.insert (f[h->vi]);
+            for (unsigned int ni = 0; ni < 6; ++ni) {
+                if (h->has_neighbour(ni)) {
+                    n_ids.insert (f[h->get_neighbour(ni)->vi]);
+                }
+            }
+
+            if (h->boundaryHex == true && n_ids.size() == 2) { // 1. Test for boundary vertices
+
+                // Here, I need to set a vertex where two hexes join and
+                // we're on the boundary. This provides
+                // information to set the angles to discover the
+                // best center for each domain (see Honda 1983).
+
+                for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
+
+                    // If there's a neighbour in neighbour direction ni and that neighbour has different ID:
+                    if (h->has_neighbour(ni) && f[h->get_neighbour(ni)->vi] != f[h->vi]) {
+
+                        // Change this - examine which direction
+                        // DOESN'T have a neighbour and that will
+                        // determine which hex vertex is the
+                        // domain vertex.
+
+                        // The first non-identical ID
+                        Flt f1 = f[h->get_neighbour(ni)->vi];
+                        int nii = (ni+1)%6;
+                        if (!h->has_neighbour(nii)) {
+                            // Then vertex direction is "vertex direction ni"
+                            vertices.insert (
+                                DirichVtx<Flt> (
+                                    h->get_vertex_coord(ni),
+                                    hg->getd(),
+                                    f[h->vi],
+                                    make_pair(-1.0f, f[h->get_neighbour(ni)->vi]),
+                                    h)
+                                );
+                            break; // or set ni=6;
+
+                        } else {
+
+                            nii = ni>0 ? (ni-1) : 5;
+                            if (!h->has_neighbour(nii)) {
+                                // Then vertex direction is "vertex direction (ni-1) or 5", i.e. nii.
+                                vertices.insert (
+                                    DirichVtx<Flt> (
+                                        h->get_vertex_coord(nii),
+                                        hg->getd(),
+                                        f[h->vi],
+                                        make_pair(f[h->get_neighbour(ni)->vi], -1.0f),
+                                        h)
+                                    );
+                                break; // or set ni=6;
+                            }
+                        }
+                    }
+                }
+
+            } else if (n_ids.size() > 2) { // 2. Test for internal vertices
+
+                // >2 (i.e. 3) different types in self &
+                // neighbouring hexes, so now work out which of
+                // the Hex's vertices is the vertex of the domain.
+
+                for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
+
+                    // If there's a neighbour in direction ni and that neighbour has different ID:
+                    if (h->has_neighbour(ni) && f[h->get_neighbour(ni)->vi] != f[h->vi]) {
+
+                        // The first non-identical ID
+                        Flt f1 = f[h->get_neighbour(ni)->vi];
+                        int nii = (ni+1)%6;
+
+                        if (h->has_neighbour(nii)
+                            && f[h->get_neighbour(nii)->vi] != f[h->vi]
+                            && f[h->get_neighbour(nii)->vi] != f1 // f1 already tested != f[h->vi]
+                            ) {
+                            // Then vertex is "vertex ni"
+                            vertices.insert (
+                                DirichVtx<Flt>(
+                                    h->get_vertex_coord(ni),
+                                    hg->getd(),
+                                    f[h->vi],
+                                    make_pair(f[h->get_neighbour(nii)->vi], f[h->get_neighbour(ni)->vi]),
+                                    h)
+                                );
+                            break;
+
+                        } else {
+                            nii = ni>0 ? (ni-1) : 5;
+                            if (h->has_neighbour(nii)
+                                && f[h->get_neighbour(nii)->vi] != f[h->vi]
+                                && f[h->get_neighbour(nii)->vi] != f1 // f1 already tested != f[h->vi]
+                                ) {
+                                vertices.insert (
+                                    DirichVtx<Flt>(
+                                        h->get_vertex_coord(nii),
+                                        hg->getd(),
+                                        f[h->vi],
+                                        make_pair(f[h->get_neighbour(ni)->vi], f[h->get_neighbour(nii)->vi]),
+                                        h)
+                                    );
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         /*!
          * This method takes the HexGrid, along with the ID map, and
          * uses information in each hex to traverse edges out from
@@ -221,7 +335,8 @@ namespace morph {
                 bool dbg = (fabs(v.f-0.28f)<0.01);
 
                 if (dbg) {
-                    DBG ("I have f=" << v.f << " and neighbour f values " << v.neighb.first << "/" << v.neighb.second);
+                    DBG ("I have f=" << v.f << " and neighbour f values "
+                         << v.neighb.first << "/" << v.neighb.second);
                 }
 #endif
 
@@ -232,6 +347,7 @@ namespace morph {
                 list<Hex>::iterator hexit = v.hi;
                 list<Hex>::iterator hexit_next = v.hi;
                 list<Hex>::iterator hexit_neighb = v.hi;
+                list<Hex>::iterator hexit_last = v.hi;
 
                 // Set true when we find the partner vertex.
                 bool partner_found = false;
@@ -250,7 +366,8 @@ namespace morph {
                         if (hexit->has_neighbour ((i+1)%6)) {
 
                             if (dbg) {
-                                cout << "adjoining hex in direction i+1 = " << ((i+1)%6) << " has f=" << f[hexit->get_neighbour ((i+1)%6)->vi] << endl;
+                                cout << "adjoining hex in direction i+1 = " << ((i+1)%6)
+                                     << " has f=" << f[hexit->get_neighbour ((i+1)%6)->vi] << endl;
                             }
 
                             // The next hex is this:
@@ -265,7 +382,8 @@ namespace morph {
                             break;
 
                         } else {
-                            cout << "No neighbour in direction " << ((i+1)%6) << ". What to do?" << endl;
+                            cout << "No neighbour in direction " << ((i+1)%6)
+                                 << ". What to do?" << endl;
                         }
                     }
                 }
@@ -273,32 +391,63 @@ namespace morph {
                 // Here, we have in hexit, a hex with value
                 // edgedoms.first. Find the neighbour hex with value
                 // edgedoms.second and add two vertices to v.edge accordingly.
-                while (!partner_found && hexit != hg->hexen.end()) {
+                //unsigned int icount = 0;
+                set<Hex> edgehexes;
+                while (!partner_found && hexit != hg->hexen.end()/* && icount++ < 100*/) {
                     for (int j = 0; j<6; ++j) {
                         // Look at hex neighbour in direction j
                         if (hexit->has_neighbour (j)) {
-                            // If we have a neihgbour, then check if it's on the other side of the edge.
+                            // If we have a neighbour, then check if it's on the other side of the edge.
                             hexit_neighb = hexit->get_neighbour(j);
                             if (f[hexit_neighb->vi] == edgedoms.second) {
-                                // As it IS on the other side of the edge, add vertex j and vertex j-1 (or 5) to the list of coordinates in the edge.
+                                // As it IS on the other side of the edge, add vertex j and
+                                // vertex j-1 (or 5) to the list of coordinates in the edge.
                                 cout << "Insert coordinates, hex vi=" << hexit->vi << ", j=" << j << endl;
+                                edgehexes.insert (*hexit);
+                                if (partner_found) {
+                                    cout << "NOTE: Inserting after finding partner" << endl;
+                                }
                                 v.edge.insert (hexit->get_vertex_coord (j));
                                 v.edge.insert (hexit->get_vertex_coord (((j>0)?(j-1):5)));
 
                                 // Given neighbour *is* over the edge, check for the next hex in the adjoining neighbours
                                 if (hexit->has_neighbour ((j>0)?(j-1):5)
-                                    && f[hexit->get_neighbour ((j>0)?(j-1):5)->vi] == edgedoms.first) {
-                                    hexit_next = hexit->get_neighbour ((j>0)?(j-1):5);
+                                    && !edgehexes.count(*(hexit_next = hexit->get_neighbour ((j>0)?(j-1):5)))
+                                    && f[hexit_next->vi] == edgedoms.first) {
+                                    cout << "1 hexit_next is " << hexit_next->vi << endl;
                                     hexit = hexit_next;
                                 } else if (hexit->has_neighbour ((j+1)%6)
-                                           && f[hexit->get_neighbour ((j+1)%6)->vi] == edgedoms.first) {
-                                    hexit_next = hexit->get_neighbour ((j+1)%6);
+                                           && !edgehexes.count(*(hexit_next = hexit->get_neighbour ((j+1)%6)))
+                                           && f[hexit_next->vi] == edgedoms.first) {
+                                    cout << "2 hexit_next is " << hexit_next->vi << endl;
                                     hexit = hexit_next;
                                 } else {
                                     cout << "Could not find next hex in edge. Are we at the end?" << endl;
                                     // Check for which vertex is surrounded by three different types.
-                                    // Double check if this vertex exists in dv
-                                    partner_found = true;
+                                    set<DirichVtx<Flt> > onevertex;
+                                    vertex_test (hg, f, hexit, onevertex);
+                                    cout << "Got " << onevertex.size() << " vertices from vertex_test()" << endl;
+                                    // (maybe: double check if this vertex exists in dv) then put it in v.
+                                    for (auto ovi : onevertex) {
+                                        v.vn = ovi.v;
+                                        cout << "Set partner to coordinate (" << v.vn.first << "," << v.vn.second<< ")" << endl;
+                                        v.neighbn = ovi.neighb;
+                                        partner_found = true;
+                                    }
+#define DEBUG__END 1
+#ifdef DEBUG__END // Maybe useful, but store edge information first.
+                                    if (!partner_found) {
+                                        cout << "Should have found a partner for hex ["
+                                             << hexit->ri << "," << hexit->gi << "," << hexit->bi << "]" << endl;
+                                        cout << "which has neighbour in direction " << Hex::neighbour_pos(j)
+                                             << " which has ID " << edgedoms.second << "=" << f[hexit_neighb->vi] << endl;
+                                        cout << " neighbour in (j>0)?(j-1):5 dirn " << ((j>0)?(j-1):5) << "/" << Hex::neighbour_pos((j>0)?(j-1):5) << "?:"
+                                             << (hexit->has_neighbour ((j>0)?(j-1):5) ? "yes":"no") << endl;
+                                        cout << " neighbour in j+1%6 dirn " << ((j+1)%6) << "/" << Hex::neighbour_pos((j+1)%6) << "?:"
+                                             << (hexit->has_neighbour ((j+1)%6) ? "yes":"no") << endl;
+                                        partner_found = true; // To get us out of loop.
+                                    }
+#endif
                                 }
                             }
                         }
@@ -325,118 +474,7 @@ namespace morph {
 
             list<Hex>::iterator h = hg->hexen.begin();
             while (h != hg->hexen.end()) {
-
-                // For each hex, examine its neighbours, counting number of different neighbours.
-                set<Flt> n_ids;
-                n_ids.insert (f[h->vi]);
-                for (unsigned int ni = 0; ni < 6; ++ni) {
-                    if (h->has_neighbour(ni)) {
-                        n_ids.insert (f[h->get_neighbour(ni)->vi]);
-                    }
-                }
-
-                if (h->boundaryHex == true && n_ids.size() == 2) { // 1. Test for boundary vertices
-
-                    // Here, I need to set a vertex where two hexes join and
-                    // we're on the boundary. This provides
-                    // information to set the angles to discover the
-                    // best center for each domain (see Honda 1983).
-
-                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
-
-                        // If there's a neighbour in neighbour direction ni and that neighbour has different ID:
-                        if (h->has_neighbour(ni) && f[h->get_neighbour(ni)->vi] != f[h->vi]) {
-
-                            // Change this - examine which direction
-                            // DOESN'T have a neighbour and that will
-                            // determine which hex vertex is the
-                            // domain vertex.
-
-                            // The first non-identical ID
-                            Flt f1 = f[h->get_neighbour(ni)->vi];
-                            int nii = (ni+1)%6;
-                            if (!h->has_neighbour(nii)) {
-                                // Then vertex direction is "vertex direction ni"
-                                vertices.insert (
-                                    DirichVtx<Flt> (
-                                        h->get_vertex_coord(ni),
-                                        hg->getd(),
-                                        f[h->vi],
-                                        make_pair(-1.0f, f[h->get_neighbour(ni)->vi]),
-                                        h)
-                                    );
-                                break; // or set ni=6;
-
-                            } else {
-
-                                nii = ni>0 ? (ni-1) : 5;
-                                if (!h->has_neighbour(nii)) {
-                                    // Then vertex direction is "vertex direction (ni-1) or 5", i.e. nii.
-                                    vertices.insert (
-                                        DirichVtx<Flt> (
-                                            h->get_vertex_coord(nii),
-                                            hg->getd(),
-                                            f[h->vi],
-                                            make_pair(f[h->get_neighbour(ni)->vi], -1.0f),
-                                            h)
-                                        );
-                                    break; // or set ni=6;
-                                }
-                            }
-                        }
-                    }
-
-                } else if (n_ids.size() > 2) { // 2. Test for internal vertices
-
-                    // >2 (i.e. 3) different types in self &
-                    // neighbouring hexes, so now work out which of
-                    // the Hex's vertices is the vertex of the domain.
-
-                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
-
-                        // If there's a neighbour in direction ni and that neighbour has different ID:
-                        if (h->has_neighbour(ni) && f[h->get_neighbour(ni)->vi] != f[h->vi]) {
-
-                            // The first non-identical ID
-                            Flt f1 = f[h->get_neighbour(ni)->vi];
-                            int nii = (ni+1)%6;
-
-                            if (h->has_neighbour(nii)
-                                && f[h->get_neighbour(nii)->vi] != f[h->vi]
-                                && f[h->get_neighbour(nii)->vi] != f1 // f1 already tested != f[h->vi]
-                                ) {
-                                // Then vertex is "vertex ni"
-                                vertices.insert (
-                                    DirichVtx<Flt>(
-                                        h->get_vertex_coord(ni),
-                                        hg->getd(),
-                                        f[h->vi],
-                                        make_pair(f[h->get_neighbour(nii)->vi], f[h->get_neighbour(ni)->vi]),
-                                        h)
-                                    );
-                                break;
-
-                            } else {
-                                nii = ni>0 ? (ni-1) : 5;
-                                if (h->has_neighbour(nii)
-                                    && f[h->get_neighbour(nii)->vi] != f[h->vi]
-                                    && f[h->get_neighbour(nii)->vi] != f1 // f1 already tested != f[h->vi]
-                                    ) {
-                                    vertices.insert (
-                                        DirichVtx<Flt>(
-                                            h->get_vertex_coord(nii),
-                                            hg->getd(),
-                                            f[h->vi],
-                                            make_pair(f[h->get_neighbour(ni)->vi], f[h->get_neighbour(nii)->vi]),
-                                            h)
-                                        );
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
+                vertex_test (hg, f, h, vertices);
                 // Move on to the next Hex in hexen
                 ++h;
             }
