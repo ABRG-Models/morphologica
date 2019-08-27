@@ -39,7 +39,13 @@ namespace morph {
          * The series of points that make up the edge between the
          * this vertex (v) and its vertex neighbour (vn). Should order by size.
          */
-        set<pair<Flt, Flt> > edge;
+        set<pair<Flt, Flt> > pathto_neighbour;
+
+        /*!
+         * Series of points that make the edge between thsi vertex and
+         * the next one in the list.
+         */
+        set<pair<Flt, Flt> > pathto_next;
 
         /*! The location of the neighbouring vertex - necessary for
          * computing a Dirichlet-ness metric. Intended to be
