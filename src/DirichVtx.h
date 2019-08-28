@@ -35,6 +35,14 @@ namespace morph {
         //! The coordinate data for the main vertex represented.
         pair<Flt, Flt> v;
 
+        //! Compare @other with this->v. Return true if they're the same.
+        bool compare (const pair<Flt, Flt>& other) {
+            if (other.first == v.first && other.second == v.second) {
+                return true;
+            }
+            return false;
+        }
+
         /*!
          * The series of points that make up the edge between the
          * this vertex (v) and its vertex neighbour (vn). Should order by size.

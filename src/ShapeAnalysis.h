@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <set>
+#include <limits>
 #include "morph/Hex.h"
 #include "morph/HexGrid.h"
 #include "morph/DirichVtx.h"
@@ -11,6 +12,7 @@
 using std::vector;
 using std::list;
 using std::set;
+using std::numeric_limits;
 
 using morph::Hex;
 using morph::HexGrid;
@@ -246,8 +248,11 @@ namespace morph {
         }
 
         // Need to return some sort of reference to the vertex that we find at the end of the walk.
-        static void
+        static pair<Flt, Flt>
         walk_common (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, list<pair<Flt, Flt>>& path, pair<Flt, Flt>& edgedoms) {
+
+            // Really, we only have coordinates to return.
+            pair<Flt, Flt> next_one = {numeric_limits<Flt>.max(), numeric_limits<Flt>.max()};
 
             list<Hex>::iterator hexit = v.hi;
             list<Hex>::iterator hexit_next = v.hi;
@@ -336,6 +341,7 @@ namespace morph {
                                     v.vn = ovi.v;
                                     cout << "Set partner to coordinate (" << v.vn.first << "," << v.vn.second<< ")" << endl;
                                     v.neighbn = ovi.neighb;
+                                    next_one = v.vn;
                                     partner_found = true;
                                 }
 //#define DEBUG__END 1
@@ -357,13 +363,14 @@ namespace morph {
                     }
                 }
             }
+            return next_one;
         }
 
         /*!
          * Walk out to the next vertex from vertx @v on HexGrid @hg
          * for which identities are in @f.
          */
-        static list<DirichVtx<Flt>>::iterator
+        static pair<Flt, Flt>
         walk_to_next (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v) {
 
             // Starting from hex v.hi, find neighbours whos f
@@ -374,7 +381,9 @@ namespace morph {
             edgedoms.first = v.f;
             edgedoms.second = v.neighb.first;
 
-            list<DirichVtx<Flt>>::iterator next_one = walk_common (hg, f, v, v.pathto_neighbour, edgedoms);
+            pair<Flt, Flt> next_one = walk_common (hg, f, v, v.pathto_neighbour, edgedoms);
+            cout << "Next vertex coord: " << neighbour_coord.first << "," << neighbour_coord.second << endl;
+            return next_one;
         }
 
         /*!
@@ -391,36 +400,49 @@ namespace morph {
             }
 
             pair<Flt, Flt> edgedoms = v.neighb;
-            walk_common (hg, f, v, v.pathto_next, edgedoms);
+            pair<Flt, Flt> neighbour_coord = walk_common (hg, f, v, v.pathto_next, edgedoms);
+            cout << "Neighbour coord: " << neighbour_coord.first << "," << neighbour_coord.second << endl;
         }
 
         /*!
-         * Given an iterator into a list of DirichVtxs, find the next
-         * vertex in the domain, along with the vertex neighbours, and
-         * repeat until @domain has been populated with all the
-         * vertices that define it.
+         * Given an iterator into the list of DirichVtxs @vertices,
+         * find the next vertex in the domain, along with the vertex
+         * neighbours, and recurse until @domain has been populated
+         * with all the vertices that define it.
+         *
+         * Return true for success, false for failure, and leave dv
+         * pointing to the next vertex in vertices so that @domain can
+         * be stored, reset and the next Dirichlet domain can be
+         * found.
          */
         static bool
         process_domain (HexGrid* hg, vector<Flt>& f,
                         list<DirichVtx<Flt>>::iterator dv,
                         list<DirichVtx<Flt>>& vertices,
-                        list<DirichVtx<Flt>>& domain) {
+                        list<DirichVtx<Flt>>& domain,
+                        list<DirichVtx<Flt>>::iterator first_vtx) {
 
             // Domain ID is set in dv as dv->f;
             DirichVtx<Flt> v = *dv;
 
-            // Find the neighbour of this vertex, if possible (can't
+            // On the first call, first_vtx should have been set to vertices.end()
+            if (first_vtx == vertices.end()) {
+                // Mark the first vertex in our domain
+                first_vtx = dv;
+            }
+
+            // Find the neighbour of this vertex, if possible. Can't
             // do this if it's a boundary vertex, but nothing happens
-            // in that case).
+            // in that case.
             walk_to_neighbour (hg, f, v);
 
             // Walk to the next vertex
-            list<DirichVtx<Flt>>::iterator next_one = walk_to_next (hg, f, v, dv);
+            pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, dv);
 
-            if (next_one != first_one) {
+            if (first_vtx->compare_v(nv) == true) {
                 dv = vertices.erase (dv);
                 domain.push_back (v);
-                dv = next_one;
+                dv = next_vtx;
             } else {
                 dv = vertices.erase (dv);
                 domain.push_back (v);
@@ -430,7 +452,7 @@ namespace morph {
             // Now delete dv and move on to the next, recalling
             // process_domain recursively, or exiting if we got to the
             // start of the domain perimeter.
-            return (process_domain (hg, f, dv, vertices, domain));
+            return (process_domain (hg, f, dv, vertices, domain, first_vtx));
         }
 
         /*!
@@ -442,17 +464,14 @@ namespace morph {
         static list<list<DirichVtx<Flt> > >
         dirichlet_vertices (HexGrid* hg, vector<Flt>& f) {
 
-            // A set of pairs of floats, with a comparison function that will
-            // set points as equivalent if they're within a small difference
-            // of each other.
+            // 1. Go though and find a list of all vertices, in no
+            // particular order.  This will lead to duplications
+            // because >1 domain for a given ID, f, is possible early
+            // in simulations. From this list, I can find vertex sets,
+            // whilst deleting from the list until it is empty, and
+            // know that I will have discovered all the domain vertex
+            // sets.
             list<DirichVtx<Flt> > vertices;
-
-            // 1. Go though and find a LIST of all vertices.  This
-            // will lead to duplications because >1 domain for an ID f
-            // is possible early in simulations. However, that means
-            // that I can find vertex sets, whilst deleting from that
-            // list until it is empty, and know that I will have
-            // discovered all the domain vertex sets.
             list<Hex>::iterator h = hg->hexen.begin();
             while (h != hg->hexen.end()) {
                 vertex_test (hg, f, h, vertices);
@@ -461,15 +480,18 @@ namespace morph {
             }
 
             // 2. Delete from the list<DirichVtx> and construct a
-            // list<set<DirichVtx>> of all the domains. Have to do
-            // Dirichlet domain boundary walks to achieve this (to
-            // disambiguate between vertices from separate, but
-            // same-ID domains).
+            // list<list<DirichVtx>> of all the domains. The
+            // list<DirichVtx> for a single domain should be ordered
+            // so that the perimeter of the domain is traversed. I
+            // have to do Dirichlet domain boundary walks to achieve
+            // this (to disambiguate between vertices from separate,
+            // but same-ID domains).
             list<list<DirichVtx<Flt>>> dirich_domains;
             list<DirichVtx<Flt>>::iterator dv = vertices.begin();
             while (dv != vertices.end()) {
                 list<DirichVtx> one_domain;
-                bool success = process_domain (hg, f, dv, vertices, one_domain);
+                list<DirichVtx>::iterator first_vtx = vertices.end();
+                bool success = process_domain (hg, f, dv, vertices, one_domain, first_vtx);
                 if (success) {
                     dirich_domains.push_back (one_domain);
                 } else {
