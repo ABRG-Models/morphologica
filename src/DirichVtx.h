@@ -43,17 +43,32 @@ namespace morph {
             return false;
         }
 
+#if 0
+        static pair<Flt, Flt> default_coord (void) {
+            return pair<Flt, Flt>(numeric_limits<Flt>::max(), numeric_limits<Flt>::max());
+        }
+#endif
+
+        //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
+        bool unset (void) {
+            if (this->v.first == numeric_limits<Flt>::max()
+                && this->v.second == numeric_limits<Flt>::max()) {
+                return true;
+            }
+            return false;
+        }
+
         /*!
          * The series of points that make up the edge between the
          * this vertex (v) and its vertex neighbour (vn). Should order by size.
          */
-        set<pair<Flt, Flt> > pathto_neighbour;
+        list<pair<Flt, Flt> > pathto_neighbour;
 
         /*!
          * Series of points that make the edge between thsi vertex and
          * the next one in the list.
          */
-        set<pair<Flt, Flt> > pathto_next;
+        list<pair<Flt, Flt> > pathto_next;
 
         /*! The location of the neighbouring vertex - necessary for
          * computing a Dirichlet-ness metric. Intended to be
@@ -110,6 +125,12 @@ namespace morph {
 
         //! Constructors
         //@{
+
+        //! Default constructor
+        DirichVtx (void) {
+            v.first = numeric_limits<Flt>::max();
+            v.second = numeric_limits<Flt>::max();
+        }
 
         //! Construct with passed in float pair, using default threshold
         DirichVtx (const pair<float, Flt>& p) : v(p) {}

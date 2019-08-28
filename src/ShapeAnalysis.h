@@ -133,7 +133,8 @@ namespace morph {
          * vertex. If so, a vertex should be greated in @vertices.
          */
         static void
-        vertex_test (HexGrid* hg, vector<Flt>& f, list<Hex>::iterator h, list<DirichVtx<Flt> >& vertices) {
+        vertex_test (HexGrid* hg, vector<Flt>& f,
+                     list<Hex>::iterator h, list<DirichVtx<Flt> >& vertices) {
 
             // For each hex, examine its neighbours, counting number of different neighbours.
             set<Flt> n_ids;
@@ -249,10 +250,15 @@ namespace morph {
 
         // Need to return some sort of reference to the vertex that we find at the end of the walk.
         static pair<Flt, Flt>
-        walk_common (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, list<pair<Flt, Flt>>& path, pair<Flt, Flt>& edgedoms) {
+        walk_common (HexGrid* hg,
+                     vector<Flt>& f,
+                     DirichVtx<Flt>& v,
+                     list<pair<Flt, Flt>>& path,
+                     pair<Flt, Flt>& edgedoms,
+                     Flt& next_neighb_dom) {
 
             // Really, we only have coordinates to return.
-            pair<Flt, Flt> next_one = {numeric_limits<Flt>.max(), numeric_limits<Flt>.max()};
+            pair<Flt, Flt> next_one = {numeric_limits<Flt>::max(), numeric_limits<Flt>::max()};
 
             list<Hex>::iterator hexit = v.hi;
             list<Hex>::iterator hexit_next = v.hi;
@@ -267,23 +273,20 @@ namespace morph {
             for (i = 0; i<6; ++i) {
                 if (hexit->get_vertex_coord(i) == v.v) {
                     // Then the neighbours are either side of vertex direction i.
-                    if (dbg) {
-                        cout << "initial vertex in direction " << i << endl;
-                    }
-
+                    #if 0
+                    cout << "initial vertex in direction " << i << endl;
+                    #endif
                     // I'll track the hex in neighb.first.
                     if (hexit->has_neighbour ((i+1)%6)) {
-
-                        if (dbg) {
-                            cout << "adjoining hex in direction i+1 = " << ((i+1)%6)
-                                 << " has f=" << f[hexit->get_neighbour ((i+1)%6)->vi] << endl;
-                        }
-
+                        #if 0
+                        cout << "adjoining hex in direction i+1 = " << ((i+1)%6)
+                             << " has f=" << f[hexit->get_neighbour ((i+1)%6)->vi] << endl;
+                        #endif
                         // The next hex is this:
                         hexit = hexit->get_neighbour ((i+1)%6);
 
                         if (f[hexit->vi] == edgedoms.first) {
-                            if (dbg) { cout << "Good" << endl; }
+                            cout << "Good" << endl;
                         } else {
                             cout << "Not good." << endl;
                         }
@@ -296,6 +299,8 @@ namespace morph {
                     }
                 }
             }
+            cout << "After determining initial direction, i=" << i << ": "
+                 << Hex::neighbour_pos(i) << endl;
 
             // Here, we have in hexit, a hex with value
             // edgedoms.first. Find the neighbour hex with value
@@ -311,15 +316,17 @@ namespace morph {
                         if (f[hexit_neighb->vi] == edgedoms.second) {
                             // As it IS on the other side of the edge, add vertex j and
                             // vertex j-1 (or 5) to the list of coordinates in the edge.
-                            cout << "Insert coordinates, hex vi=" << hexit->vi << ", j=" << j << endl;
+                            cout << "Insert coordinates, hex vi="
+                                 << hexit->vi << ", j=" << j << endl;
                             edgehexes.insert (*hexit);
                             if (partner_found) {
                                 cout << "NOTE: Inserting after finding partner" << endl;
                             }
-                            path.insert (hexit->get_vertex_coord (j));
-                            path.insert (hexit->get_vertex_coord (((j>0)?(j-1):5)));
+                            path.push_back (hexit->get_vertex_coord (j));
+                            path.push_back (hexit->get_vertex_coord (((j>0)?(j-1):5)));
 
-                            // Given neighbour *is* over the edge, check for the next hex in the adjoining neighbours
+                            // Given neighbour *is* over the edge, check for the next hex in the
+                            // adjoining neighbours
                             if (hexit->has_neighbour ((j>0)?(j-1):5)
                                 && !edgehexes.count(*(hexit_next = hexit->get_neighbour ((j>0)?(j-1):5)))
                                 && f[hexit_next->vi] == edgedoms.first) {
@@ -335,13 +342,20 @@ namespace morph {
                                 // Check for which vertex is surrounded by three different types.
                                 list<DirichVtx<Flt> > onevertex;
                                 vertex_test (hg, f, hexit, onevertex);
-                                cout << "Got " << onevertex.size() << " vertices from vertex_test()" << endl;
+                                cout << "Got " << onevertex.size()
+                                     << " vertices from vertex_test()" << endl;
                                 // (maybe: double check if this vertex exists in dv) then put it in v.
                                 for (auto ovi : onevertex) {
                                     v.vn = ovi.v;
-                                    cout << "Set partner to coordinate (" << v.vn.first << "," << v.vn.second<< ")" << endl;
+                                    cout << "Set partner to coordinate ("
+                                         << v.vn.first << "," << v.vn.second << ")" << endl;
                                     v.neighbn = ovi.neighb;
                                     next_one = v.vn;
+                                    // How to find the value of the
+                                    // identity of the hex which ends
+                                    // this edge?
+                                    cout << "HACK of next_neighb_dom just to get some code compiling" << endl;
+                                    next_neighb_dom = v.neighbn.first; // FIXME THIS IS WRONG
                                     partner_found = true;
                                 }
 //#define DEBUG__END 1
@@ -369,9 +383,19 @@ namespace morph {
         /*!
          * Walk out to the next vertex from vertx @v on HexGrid @hg
          * for which identities are in @f.
+         *
+         * @hg The HexGrid on which the action takes place
+         *
+         * @f The identity variable.
+         *
+         * @v The Dirichlet Vertex that we're walking from, and into
+         * which we're going to write the path to the next neighbour
+         *
+         * @next_neighb_dom The identity of the next domain neighbour
+         * when we find the vertex neighbour.
          */
         static pair<Flt, Flt>
-        walk_to_next (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v) {
+        walk_to_next (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
 
             // Starting from hex v.hi, find neighbours whos f
             // values are v.f/v.neighb.first. Record
@@ -381,16 +405,26 @@ namespace morph {
             edgedoms.first = v.f;
             edgedoms.second = v.neighb.first;
 
-            pair<Flt, Flt> next_one = walk_common (hg, f, v, v.pathto_neighbour, edgedoms);
-            cout << "Next vertex coord: " << neighbour_coord.first << "," << neighbour_coord.second << endl;
+            pair<Flt, Flt> next_one = walk_common (hg, f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
+            cout << "Next vertex coord: " << next_one.first << "," << next_one.second << endl;
             return next_one;
         }
 
         /*!
          * Walk out to a neighbour from vertex @v.
+         *
+         * @hg The HexGrid on which the action takes place
+         *
+         * @f The identity variable.
+         *
+         * @v The Dirichlet Vertex that we're walking from, and into
+         * which we're going to write the path to the next neighbour
+         *
+         * @next_neighb_dom The identity of the next domain neighbour
+         * when we find the vertex neighbour.
          */
         static void
-        walk_to_neighbour (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v) {
+        walk_to_neighbour (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
 
             // Don't set neighbours for the edge vertices (though
             // edge vertices *can be set* as neighbours for other
@@ -400,7 +434,7 @@ namespace morph {
             }
 
             pair<Flt, Flt> edgedoms = v.neighb;
-            pair<Flt, Flt> neighbour_coord = walk_common (hg, f, v, v.pathto_next, edgedoms);
+            pair<Flt, Flt> neighbour_coord = walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
             cout << "Neighbour coord: " << neighbour_coord.first << "," << neighbour_coord.second << endl;
         }
 
@@ -417,35 +451,51 @@ namespace morph {
          */
         static bool
         process_domain (HexGrid* hg, vector<Flt>& f,
-                        list<DirichVtx<Flt>>::iterator dv,
+                        typename list<DirichVtx<Flt>>::iterator dv,
                         list<DirichVtx<Flt>>& vertices,
                         list<DirichVtx<Flt>>& domain,
-                        list<DirichVtx<Flt>>::iterator first_vtx) {
+                        DirichVtx<Flt> first_vtx) {
 
             // Domain ID is set in dv as dv->f;
             DirichVtx<Flt> v = *dv;
 
             // On the first call, first_vtx should have been set to vertices.end()
-            if (first_vtx == vertices.end()) {
+            if (first_vtx.unset()) {
                 // Mark the first vertex in our domain
-                first_vtx = dv;
+                first_vtx = v;
             }
 
             // Find the neighbour of this vertex, if possible. Can't
             // do this if it's a boundary vertex, but nothing happens
             // in that case.
-            walk_to_neighbour (hg, f, v);
+            Flt next_neighb_dom = numeric_limits<Flt>::max();
+            walk_to_neighbour (hg, f, v, next_neighb_dom);
 
             // Walk to the next vertex
-            pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, dv);
+            next_neighb_dom = numeric_limits<Flt>::max();
+            pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, next_neighb_dom);
 
-            if (first_vtx->compare_v(nv) == true) {
-                dv = vertices.erase (dv);
-                domain.push_back (v);
-                dv = next_vtx;
+            // Erase the vertex and push back v
+            dv = vertices.erase (dv);
+            domain.push_back (v);
+
+            if (first_vtx.compare (next_vtx) == false) {
+                // Find dv which matches next_vtx.
+                while (dv != vertices.end()) {
+                    // Instead of: dv = next_vtx;, do:
+                    if (dv->compare (next_vtx) == true) {
+                        // vertex has correct coordinate. Check it has correct neighbours.
+                        if (dv->f == v.f
+                            && dv->neighb.first == v.neighb.second
+                            && dv->neighb.second == next_neighb_dom) {
+                            // Match for current dv
+                            break;
+                        }
+                        ++dv;
+                    }
+                }
             } else {
-                dv = vertices.erase (dv);
-                domain.push_back (v);
+                cout << "Walk to next arrived back at the first vertex." << endl;
                 return true;
             }
 
@@ -487,10 +537,10 @@ namespace morph {
             // this (to disambiguate between vertices from separate,
             // but same-ID domains).
             list<list<DirichVtx<Flt>>> dirich_domains;
-            list<DirichVtx<Flt>>::iterator dv = vertices.begin();
+            typename list<DirichVtx<Flt>>::iterator dv = vertices.begin();
             while (dv != vertices.end()) {
-                list<DirichVtx> one_domain;
-                list<DirichVtx>::iterator first_vtx = vertices.end();
+                list<DirichVtx<Flt>> one_domain;
+                DirichVtx<Flt> first_vtx;
                 bool success = process_domain (hg, f, dv, vertices, one_domain, first_vtx);
                 if (success) {
                     dirich_domains.push_back (one_domain);
