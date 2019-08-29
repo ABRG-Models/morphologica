@@ -272,6 +272,17 @@ namespace morph {
         }
 
         /*!
+         * Output a string containing just "(ri, gi)"
+         */
+        string outputRG (void) const {
+            string s("vi=");
+            s += to_string(this->vi).substr(0,2) + ", RG(";
+            s += to_string(this->ri).substr(0,4) + ",";
+            s += to_string(this->gi).substr(0,4) + ")";
+            return s;
+        }
+
+        /*!
          * Convert the neighbour position number into a short string
          * representing the direction/position of the neighbour.
          */
@@ -856,6 +867,7 @@ namespace morph {
             }
             return rtn;
         }
+
         pair<float, float> get_vertex_coord (unsigned int ni) {
             pair<float, float> rtn = {-2.0, -2.0};
             if (ni > 6) {
@@ -864,6 +876,7 @@ namespace morph {
             rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
             return rtn;
         }
+
         pair<float, float> get_vertex_coord (int ni) {
             pair<float, float> rtn = {-3.0, -3.0};
             if (ni > 6) {
@@ -878,6 +891,32 @@ namespace morph {
             rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
             return rtn;
         }
+
+        /*!
+         * Return true if coord is reasonably close to being in the
+         * same location as the vertex at vertex ni with the distance
+         * threshold being set from the Hex to Hex spacing. This is
+         * for distinguishing between vertices and hex centres on a
+         * HexGrid.
+         */
+        //@{
+        bool compare_vertex_coord (int ni, pair<float, float>& coord) {
+            pair<float, float> vc = this->get_vertex_coord (ni);
+            if (abs(vc.first - coord.first) < this->d/100
+                && abs(vc.second - coord.second) < this->d/100) {
+                return true;
+            }
+            return false;
+        }
+        bool compare_vertex_coord (int ni, pair<double, double>& coord) {
+            pair<float, float> vc = this->get_vertex_coord (ni);
+            if (abs(vc.first - coord.first) < this->d/100
+                && abs(vc.second - coord.second) < this->d/100) {
+                return true;
+            }
+            return false;
+        }
+        //@}
 
         /*!
          * Un-set the pointers on all my neighbours so that THEY no longer point to ME.
