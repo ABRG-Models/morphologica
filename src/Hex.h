@@ -275,8 +275,12 @@ namespace morph {
          * Output a string containing just "(ri, gi)"
          */
         string outputRG (void) const {
+#if 0
             string s("vi=");
             s += to_string(this->vi).substr(0,2) + ", RG(";
+#else
+            string s("RG(");
+#endif
             s += to_string(this->ri).substr(0,4) + ",";
             s += to_string(this->gi).substr(0,4) + ")";
             return s;

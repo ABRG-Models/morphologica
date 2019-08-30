@@ -229,6 +229,15 @@ namespace morph {
         void setBoundary (vector<BezCoord>& bpoints);
 
         /*!
+         * Set all the outer hexes as being "boundary" hexes. This
+         * makes it possible to create the default hexagon of hexes,
+         * then mark the outer hexes as being the boundary.
+         *
+         * Works only on the initial hexagonal layout of hexes.
+         */
+        void setBoundaryOnOuterEdge (void);
+
+        /*!
          * Get all the boundary hexes in a list. This assumes that a
          * boundary has already been set with one of the setBoundary()
          * methods and so there is therefore a set of Hexes which are

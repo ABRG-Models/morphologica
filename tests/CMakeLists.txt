@@ -128,3 +128,8 @@ add_test(testTransformMatrix testTransformMatrix)
 add_executable(testHexVertexPos testHexVertexPos.cpp)
 target_link_libraries(testHexVertexPos morphologica)
 add_test(testHexVertexPos testHexVertexPos)
+
+# Test Dirichlet code
+add_executable(testDirichlet testDirichlet.cpp)
+target_link_libraries(testDirichlet morphologica)
+add_test(testDirichlet testDirichlet)

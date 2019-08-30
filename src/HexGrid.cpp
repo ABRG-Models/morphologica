@@ -183,6 +183,70 @@ morph::HexGrid::computeCentroid (const list<Hex>& pHexes)
 }
 
 void
+morph::HexGrid::setBoundaryOnOuterEdge (void)
+{
+    // From centre head to boundary, then mark boundary and walk
+    // around the edge.
+    list<Hex>::iterator bpi = this->hexen.begin();
+    while (bpi->has_nne) { bpi = bpi->nne; }
+    bpi->boundaryHex = true;
+    bpi->insideBoundary = true;
+    while (bpi->has_ne) {
+        bpi = bpi->ne;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_nse) {
+        bpi = bpi->nse;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_nsw) {
+        bpi = bpi->nsw;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_nw) {
+        bpi = bpi->nw;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_nnw) {
+        bpi = bpi->nnw;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_nne) {
+        bpi = bpi->nne;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    while (bpi->has_ne && bpi->ne->boundaryHex == false) {
+        bpi = bpi->ne;
+        bpi->boundaryHex = true;
+        bpi->insideBoundary = true;
+    }
+    // Check that the boundary is contiguous.
+    set<unsigned int> seen;
+    list<Hex>::iterator hi = bpi;
+    if (this->boundaryContiguous (bpi, hi, seen) == false) {
+        stringstream ee;
+        ee << "The boundary is not a contiguous sequence of hexes.";
+        throw runtime_error (ee.str());
+    }
+
+    if (this->domainShape == morph::HexDomainShape::Boundary) {
+        // Boundary IS contiguous, discard hexes outside the boundary.
+        this->discardOutsideBoundary();
+    } else {
+        throw runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to do if domain shape is not HexDomainShape::Boundary.");
+    }
+
+    this->populate_d_vectors();
+
+}
+
+void
 morph::HexGrid::setBoundary (const list<Hex>& pHexes)
 {
     this->boundaryCentroid = this->computeCentroid (pHexes);
@@ -592,6 +656,7 @@ morph::HexGrid::markFromBoundary (Hex* hi)
 void
 morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti)
 {
+    DBG ("Called");
     // From the "first inside the boundary hex" head in the direction
     // specified by firsti until a boundary hex is reached.
     list<Hex>::iterator straight = first_inside;
@@ -599,6 +664,7 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
     DBG2 ("First inside:" << first_inside->insideBoundary
           << ", on boundary: " << first_inside->boundaryHex);
 
+    bool warning_given = false;
     while (straight->boundaryHex == false) {
         DBG2 ("Set insideBoundary true");
         straight->insideBoundary = true;
@@ -609,8 +675,11 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
         } else {
             // no further neighbour in this direction
             if (straight->boundaryHex == false) {
-                cerr << "WARNING: Got to edge of region (dirn " << firsti
-                     << ") without encountering a boundary Hex.\n";
+                if (!warning_given) {
+                    //cerr << "WARNING: Got to edge of region (dirn " << firsti
+                    //     << ") without encountering a boundary Hex.\n";
+                    warning_given = true;
+                }
                 break;
             }
         }

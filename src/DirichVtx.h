@@ -2,6 +2,8 @@
 #define _DIRICHVTX_H_
 
 #include "MathConst.h"
+#include <cmath>
+using std::sqrt;
 #include <limits>
 using std::numeric_limits;
 #include <utility>
@@ -34,29 +36,6 @@ namespace morph {
     public:
         //! The coordinate data for the main vertex represented.
         pair<Flt, Flt> v;
-
-        //! Compare @other with this->v. Return true if they're the same.
-        bool compare (const pair<Flt, Flt>& other) {
-            if (other.first == v.first && other.second == v.second) {
-                return true;
-            }
-            return false;
-        }
-
-#if 0
-        static pair<Flt, Flt> default_coord (void) {
-            return pair<Flt, Flt>(numeric_limits<Flt>::max(), numeric_limits<Flt>::max());
-        }
-#endif
-
-        //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
-        bool unset (void) {
-            if (this->v.first == numeric_limits<Flt>::max()
-                && this->v.second == numeric_limits<Flt>::max()) {
-                return true;
-            }
-            return false;
-        }
 
         /*!
          * The series of points that make up the edge between the
@@ -122,6 +101,14 @@ namespace morph {
          * find our way along and edge to the next vertex.
          */
         list<Hex>::iterator hi;
+
+        //! Parameters for line
+        Flt m;
+        Flt c;
+        pair<Flt, Flt> P_i;
+
+        //! Debug - try marking vertices in a list as finsihed with, rather than erasing from that list.
+        bool closed = false;
 
         //! Constructors
         //@{
@@ -219,10 +206,32 @@ namespace morph {
             return false;
         }
 
-        //! Parameters for line
-        Flt m;
-        Flt c;
-        pair<Flt, Flt> P_i;
+        //! Compare @other with this->v. Return true if they're the same.
+        bool compare (const pair<Flt, Flt>& other) {
+            // Equality too strong a test. Use this->threshold Is
+            // distance from v to other smaller than threshold? If so
+            // return true.
+            Flt distance = sqrt ( (other.first-v.first)*(other.first-v.first) + (other.second-v.second)*(other.second-v.second) );
+            if (distance < this->threshold) {
+                return true;
+            }
+            return false;
+        }
+
+#if 0
+        static pair<Flt, Flt> default_coord (void) {
+            return pair<Flt, Flt>(numeric_limits<Flt>::max(), numeric_limits<Flt>::max());
+        }
+#endif
+
+        //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
+        bool unset (void) {
+            if (this->v.first == numeric_limits<Flt>::max()
+                && this->v.second == numeric_limits<Flt>::max()) {
+                return true;
+            }
+            return false;
+        }
 
         /*!
          * Compute the equation for the line that is drawn towards the
