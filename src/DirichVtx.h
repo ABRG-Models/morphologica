@@ -110,6 +110,9 @@ namespace morph {
         //! Debug - try marking vertices in a list as finsihed with, rather than erasing from that list.
         bool closed = false;
 
+        //! Is it necessary/useful to mark vertices as being on the boundary?
+        bool onBoundary = false;
+
         //! Constructors
         //@{
 

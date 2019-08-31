@@ -63,13 +63,22 @@ int main()
         }
         f[hi2->vi] = 0.4f;
 
+        hi = hg.hexen.begin();
+        f[hi->vi] = 0.3f;
+        f[hi->ne->vi] = 0.3f;
+        f[hi->nse->vi] = 0.3f;
+
         // The code to actually test:
-        list<list<morph::DirichVtx<float> > > dv;
         list<morph::DirichVtx<float>> vertices;
-        dv = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
+        list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
         for (auto verti : vertices) {
             DBG ("Vertex: " << verti.v.first << "," << verti.v.second << " " << verti.f << "/" << verti.neighb.first<< "," << verti.neighb.second);
+        }
+
+        // There should be 19 vertices, precisely.
+        if (vertices.size() != 19) {
+            rtn -= 1;
         }
 
 #if 1
@@ -87,7 +96,6 @@ int main()
         array<float,3> offset = {{0, 0, 0}};
         array<float,3> offset2 = {{0, 0, 0.001}};
         array<float,3> cl_b = morph::Tools::getJetColorF (0.78);
-
         float sz = hg.hexen.front().d;
         for (auto h : hg.hexen) {
             array<float,3> cl_a = morph::Tools::getJetColorF (f[h.vi]);
@@ -96,6 +104,7 @@ int main()
                 disp.drawHex (h.position(), offset2, (sz/12.0f), cl_b);
             }
         }
+
         array<float,3> cl_c = morph::Tools::getJetColorF (0.98);
         for (auto verti : vertices) {
             array<float,3> posn = {{0,0,0.002}};
@@ -103,6 +112,23 @@ int main()
             posn[1] = verti.v.second;
             disp.drawHex (posn, offset2, (sz/8.0f), cl_c);
         }
+
+        array<float,3> offset3 = {{0, 0, 0.001}};
+        array<float,3> cl_d = morph::Tools::getJetColorF (0.7);
+        for (auto dom_outer : domains) {
+            for (auto dom_inner : dom_outer) {
+                // Draw the paths
+                DBG ("Draw path to next...");
+                for (auto path : dom_inner.pathto_next) {
+                    DBG ("path coordinate " << path.first << "," << path.second);
+                    array<float,3> posn = {{0,0,0.003}};
+                    posn[0] = path.first;
+                    posn[1] = path.second;
+                    disp.drawHex (posn, offset3, (sz/16.0f), cl_d);
+                }
+            }
+        }
+
         disp.redrawDisplay();
 
         unsigned int sleep_seconds = 30;
