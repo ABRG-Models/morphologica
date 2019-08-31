@@ -168,9 +168,9 @@ namespace morph {
                     // Here, I need to set a vertex where two hexes join and we're on the
                     // boundary. This provides information to set the angles to discover the best
                     // center for each domain (see Honda 1983).
-                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour east. 1 is neighbour NE, etc.
+                    for (int ni = 0; ni < 6; ++ni) { // ni==0 is neighbour E. 1 is neighbour NE, etc.
 
-                        // If there's a neighbour in neighbour direction ni and that neighbour has different ID:
+                        // If there's a neighbour in direction ni and it has a different ID:
                         if (h->has_neighbour(ni) && f[h->get_neighbour(ni)->vi] != f[h->vi]) {
 
                             // Examine which direction DOESN'T have a neighbour and that will
@@ -193,7 +193,7 @@ namespace morph {
                             } else {
                                 nii = ni>0?ni-1:5;
                                 if (!h->has_neighbour(nii)) {
-                                    // Then vertex direction is "vertex direction (ni-1) or 5", i.e. nii.
+                                    // Then vertex dirn is "vertex direction (ni-1) or 5", i.e. nii.
                                     DBG ("vtx bh 2");
                                     DirichVtx<Flt> a (
                                         h->get_vertex_coord(nii),
@@ -242,7 +242,7 @@ namespace morph {
             }
         }
 
-#define DEBUG_WALK 1
+//#define DEBUG_WALK 1
 #ifdef DEBUG_WALK
 # define WALK(s)  DBGSTREAM << "WLK: " << __FUNCTION__ << ": " << s << std::endl;
 #else
@@ -556,7 +556,7 @@ namespace morph {
             edgedoms.first = v.f;
             edgedoms.second = v.neighb.first;
 
-            return walk_common (hg, f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
+            return walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
         }
 
         /*!
@@ -586,7 +586,7 @@ namespace morph {
 
             pair<Flt, Flt> edgedoms = v.neighb;
 
-            return walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
+            return walk_common (hg, f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
         }
 
         /*!
@@ -614,7 +614,8 @@ namespace morph {
                 // Mark the first vertex in our domain
                 DBG ("Mark first vertex");
                 first_vtx = v;
-                DBG ("First vertex  has v.f=" << v.f << ", and v.neighb.first/second=" << v.neighb.first << "/" << v.neighb.second);
+                DBG ("First vertex  has v.f=" << v.f << ", and v.neighb.first/second="
+                     << v.neighb.first << "/" << v.neighb.second);
             } else {
                 DBG ("Don't mark first vertex...");
             }
@@ -625,14 +626,17 @@ namespace morph {
             Flt next_neighb_dom = numeric_limits<Flt>::max();
             DBG ("walk_to_neighbour...");
             pair<Flt, Flt> neighb_vtx = walk_to_neighbour (hg, f, v, next_neighb_dom);
-            DBG ("walk_to_neighbour returned with vertex (" << neighb_vtx.first << "," << neighb_vtx.second << ")");
+            DBG ("walk_to_neighbour returned with vertex (" << neighb_vtx.first
+                 << "," << neighb_vtx.second << ")");
 
             // Walk to the next vertex
             next_neighb_dom = numeric_limits<Flt>::max();
             pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, next_neighb_dom);
-            DBG ("starting from (" << v.v.first << "," << v.v.second << "), walk_to_next returned with vertex ("
+            DBG ("starting from (" << v.v.first << "," << v.v.second
+                 << "), walk_to_next returned with vertex ("
                  << next_vtx.first << "," << next_vtx.second << ")");
 
+            // FIXME: Something from here isn't right yet.
             dv->closed = true;
             domain.push_back (v);
 
@@ -646,8 +650,10 @@ namespace morph {
                     if (dv2->closed == false && dv2->compare (next_vtx) == true) {
                         // vertex has correct coordinate. Check it has correct neighbours.
                         DBG ("Is dv2->f == v.f? " << dv2->f << " == " << v.f << "?");
-                        DBG ("Is dv2->neighb.first == next_neighb_dom? " << dv2->neighb.first << " == " << next_neighb_dom << "?");
-                        DBG ("Is dv2->neighb.second == v.neighb.first? " << dv2->neighb.second << " == " << v.neighb.first << "?");
+                        DBG ("Is dv2->neighb.first == next_neighb_dom? " << dv2->neighb.first
+                             << " == " << next_neighb_dom << "?");
+                        DBG ("Is dv2->neighb.second == v.neighb.first? " << dv2->neighb.second
+                             << " == " << v.neighb.first << "?");
                         DBG ("(v.neighb.second = " << v.neighb.second << ")");
                         if (dv2->f == v.f
                             && dv2->neighb.second == v.neighb.first
@@ -655,6 +661,7 @@ namespace morph {
                             // Match for current dv2
                             DBG ("Match");
                             matched_next_vertex = true;
+                            dv = dv2;
                             break;
                         } else {
                             DBG ("No match");
@@ -662,7 +669,8 @@ namespace morph {
 
 #if 0
                     } else {
-                        DBG ("Closed vertex or vertex with INcorrect coordinate; (" << dv2->v.first << "," << dv2->v.second << ")");
+                        DBG ("Closed vertex or vertex with INcorrect coordinate; ("
+                             << dv2->v.first << "," << dv2->v.second << ")");
 #endif
                     }
                     ++dv2;
@@ -683,9 +691,9 @@ namespace morph {
             //DBG ("After erasing dv from vertices, there are now " << vertices.size() << " left.");
 
             // Move on to next non-closed vertex.
-            while (dv->closed == true && dv != vertices.end()) {
-                ++dv;
-            }
+            //while (dv->closed == true && dv != vertices.end()) {
+            //    ++dv;
+            //}
 
             // Now delete dv and move on to the next, recalling process_domain recursively, or
             // exiting if we got to the start of the domain perimeter. We shouldn't get anywhere

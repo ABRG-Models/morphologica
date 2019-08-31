@@ -115,20 +115,27 @@ int main()
 
         array<float,3> offset3 = {{0, 0, 0.001}};
         array<float,3> cl_d = morph::Tools::getJetColorF (0.7);
+        array<float,3> cl_e = morph::Tools::getJetColorF (0.01);
         for (auto dom_outer : domains) {
             for (auto dom_inner : dom_outer) {
                 // Draw the paths
-                DBG ("Draw path to next...");
                 for (auto path : dom_inner.pathto_next) {
-                    DBG ("path coordinate " << path.first << "," << path.second);
                     array<float,3> posn = {{0,0,0.003}};
                     posn[0] = path.first;
                     posn[1] = path.second;
                     disp.drawHex (posn, offset3, (sz/16.0f), cl_d);
                 }
+                for (auto path : dom_inner.pathto_neighbour) {
+                    array<float,3> posn = {{0,0,0.003}};
+                    posn[0] = path.first;
+                    posn[1] = path.second;
+                    disp.drawHex (posn, offset3, (sz/16.0f), cl_e);
+                }
             }
         }
 
+        // To avoid the annoying failure to draw, first sleep a while...
+        usleep (100000);
         disp.redrawDisplay();
 
         unsigned int sleep_seconds = 30;
