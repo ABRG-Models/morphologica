@@ -8,10 +8,10 @@
 #include <stdexcept>
 // Note that having morph/include.h will lead to the installed version of the header being
 // preferred. Perhaps these paths should be set up in CMakeLists.txt?
-#include "morph/Hex.h"
-#include "morph/HexGrid.h"
-#include "morph/DirichVtx.h"
-#include "morph/MorphDbg.h"
+#include "Hex.h"
+#include "HexGrid.h"
+#include "DirichVtx.h"
+#include "MorphDbg.h"
 
 using std::vector;
 using std::list;
