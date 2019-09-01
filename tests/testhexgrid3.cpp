@@ -38,7 +38,6 @@ int main()
         double rhoInit = 1.7;
         morph::Gdisplay disp(800, 600, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
-        disp.redrawDisplay();
 
         // plot stuff here.
         array<float,3> cl_a = morph::Tools::getJetColorF (0.78);
@@ -51,8 +50,6 @@ int main()
                 disp.drawHex (h.position(), offset, (h.d/2.0f), cl_b);
             }
         }
-        disp.redrawDisplay();
-
 
 #if 0
         // Offset centroid
@@ -69,7 +66,7 @@ int main()
                 disp.drawHex (h.position(), offset, (h.d/2.0f), cl_b);
             }
         }
-        disp.redrawDisplay();
+
 #endif
 
         // Draw small hex at boundary centroid
@@ -81,12 +78,12 @@ int main()
         disp.drawHex (c, offset, (hg.hexen.begin()->d/2.0f), cl_a);
         cout << "boundaryCentroid x,y: " << c[0] << "," << c[1] << endl;
 
-        disp.redrawDisplay();
-
         // red hex at zero
         array<float,3> cl_aa = morph::Tools::getJetColorF (0.98);
         array<float,3> pos = { { 0, 0, 0} };
         disp.drawHex (pos, 0.05, cl_aa);
+
+        usleep (100000);
         disp.redrawDisplay();
 
         unsigned int sleep_seconds = 3;

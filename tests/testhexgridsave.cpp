@@ -57,7 +57,6 @@ int main()
         double rhoInit = 1.7;
         morph::Gdisplay disp(800, 600, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
         disp.resetDisplay (fix, eye, rot);
-        disp.redrawDisplay();
 
         // plot stuff here.
         array<float,3> cl_a = morph::Tools::getJetColorF (0.78);
@@ -70,6 +69,8 @@ int main()
                 disp.drawHex (h.position(), offset, (h.d/2.0f), cl_b);
             }
         }
+
+        usleep (100000);
         disp.redrawDisplay();
 
         unsigned int sleep_seconds = 3;
