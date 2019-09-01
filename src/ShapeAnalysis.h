@@ -6,8 +6,6 @@
 #include <set>
 #include <limits>
 #include <stdexcept>
-// Note that having morph/include.h will lead to the installed version of the header being
-// preferred. Perhaps these paths should be set up in CMakeLists.txt?
 #include "Hex.h"
 #include "HexGrid.h"
 #include "DirichVtx.h"
