@@ -133,3 +133,7 @@ add_test(testHexVertexPos testHexVertexPos)
 add_executable(testDirichlet testDirichlet.cpp)
 target_link_libraries(testDirichlet morphologica)
 add_test(testDirichlet testDirichlet)
+
+add_executable(testDirichlet2 testDirichlet2.cpp)
+target_link_libraries(testDirichlet2 morphologica)
+add_test(testDirichlet2 testDirichlet2)

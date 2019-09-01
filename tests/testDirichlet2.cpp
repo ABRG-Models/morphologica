@@ -1,5 +1,5 @@
 //
-// Testing/debugging Dirichlet boundary code
+// Testing/debugging Dirichlet boundary code. New pattern
 //
 
 #include "HexGrid.h"
@@ -67,6 +67,7 @@ int main()
         f[hi->vi] = 0.3f;
         f[hi->ne->vi] = 0.3f;
         f[hi->nse->vi] = 0.3f;
+        f[hi->nsw->vi] = 0.3f;
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
