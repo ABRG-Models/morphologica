@@ -923,6 +923,30 @@ namespace morph {
         //@}
 
         /*!
+         * Return true if coord is reasonably close to being in the
+         * same location as the centre of the Hex, with the distance
+         * threshold being set from the Hex to Hex spacing. This is
+         * for distinguishing between vertices and hex centres on a
+         * HexGrid.
+         */
+        //@{
+        bool compare_coord (pair<float, float>& coord) {
+            if (abs(this->x - coord.first) < this->d/100
+                && abs(this->y - coord.second) < this->d/100) {
+                return true;
+            }
+            return false;
+        }
+        bool compare_coord (pair<double, double>& coord) {
+            if (abs(this->x - coord.first) < this->d/100
+                && abs(this->y - coord.second) < this->d/100) {
+                return true;
+            }
+            return false;
+        }
+        //@}
+
+        /*!
          * Un-set the pointers on all my neighbours so that THEY no longer point to ME.
          */
         void disconnectNeighbours (void) {
