@@ -283,8 +283,7 @@ namespace morph {
                      list<pair<Flt, Flt>>& path,
                      pair<Flt, Flt>& edgedoms,
                      Flt& next_neighb_dom,
-                     pair<Flt, Flt>& next_neighb_coord,
-                     pair<Flt, Flt> last_coord) {
+                     pair<Flt, Flt>& next_neighb_coord) {
 
             WALK ("*** Called. edgedoms.first: "
                   << edgedoms.first << ", edgedoms.second: " << edgedoms.second << " ***");
