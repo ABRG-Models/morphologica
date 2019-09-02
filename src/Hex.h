@@ -272,6 +272,15 @@ namespace morph {
         }
 
         /*!
+         * Output (x,y) coordinate string
+         */
+        string outputXY (void) const {
+            string s("(");
+            s += to_string(this->x).substr(0,4) + "," + to_string(this->y).substr(0,4) + ")";
+            return s;
+        }
+
+        /*!
          * Output a string containing just "(ri, gi)"
          */
         string outputRG (void) const {
