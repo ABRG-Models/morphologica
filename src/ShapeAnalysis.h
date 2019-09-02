@@ -478,7 +478,8 @@ namespace morph {
                 }
 
                 if (!found_second) {
-                    throw runtime_error ("Whoop whoop - failed to find the second hex associated with the initial vertex!");
+                    //throw runtime_error ("Whoop whoop - failed to find the second hex associated with the initial vertex!");
+                    return v_init;
                 }
 
                 WALK ("hexit_first: "<< hexit_first->outputRG()
