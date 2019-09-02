@@ -380,8 +380,13 @@ namespace morph {
          * centre of this Hex.
          */
         float distanceFrom (const pair<float, float> cartesianPoint) const {
-            float dx = abs(cartesianPoint.first - x);
-            float dy = abs(cartesianPoint.second - y);
+            float dx = cartesianPoint.first - x;
+            float dy = cartesianPoint.second - y;
+            return sqrt (dx*dx + dy*dy);
+        }
+        float distanceFrom (const pair<double, double> cartesianPoint) const {
+            float dx = cartesianPoint.first - x;
+            float dy = cartesianPoint.second - y;
             return sqrt (dx*dx + dy*dy);
         }
 
@@ -391,8 +396,8 @@ namespace morph {
          * cartesianPoint to the centre of this Hex.
          */
         float distanceFrom (const BezCoord& cartesianPoint) const {
-            float dx = abs(cartesianPoint.x() - x);
-            float dy = abs(cartesianPoint.y() - y);
+            float dx = cartesianPoint.x() - x;
+            float dy = cartesianPoint.y() - y;
             return sqrt (dx*dx + dy*dy);
         }
 
@@ -400,8 +405,8 @@ namespace morph {
          * Compute the distance from another hex to this one.
          */
         float distanceFrom (const Hex& otherHex) const {
-            float dx = abs(otherHex.x - x);
-            float dy = abs(otherHex.y - y);
+            float dx = otherHex.x - x;
+            float dy = otherHex.y - y;
             return sqrt (dx*dx + dy*dy);
         }
 
