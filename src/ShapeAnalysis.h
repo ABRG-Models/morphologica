@@ -240,7 +240,7 @@ namespace morph {
             }
         }
 
-//#define DEBUG_WALK 1
+#define DEBUG_WALK 1
 #ifdef DEBUG_WALK
 # define WALK(s)  DBGSTREAM << "WLK: " << __FUNCTION__ << ": " << s << std::endl;
 #else
@@ -525,7 +525,7 @@ namespace morph {
                 }
             } // end while !partner_found
 
-            DBG ("*********************  returning **********************");
+            WALK ("*********************  returning **********************");
             return next_one;
         }
 
@@ -553,6 +553,7 @@ namespace morph {
             pair<Flt, Flt> edgedoms;
             edgedoms.first = v.f;
             edgedoms.second = v.neighb.first;
+            DBG ("set edgedoms to [" << edgedoms.first << "," << edgedoms.second << "]");
 
             return walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
         }
@@ -610,7 +611,7 @@ namespace morph {
             // On the first call, first_vtx should have been set to vertices.end()
             if (first_vtx.unset()) {
                 // Mark the first vertex in our domain
-                DBG ("Mark first vertex");
+                DBG ("Mark first vertex at (" << v.v.first << "," << v.v.second << ")");
                 first_vtx = v;
                 DBG ("First vertex  has v.f=" << v.f << ", and v.neighb.first/second="
                      << v.neighb.first << "/" << v.neighb.second);
@@ -634,7 +635,6 @@ namespace morph {
                  << "), walk_to_next returned with vertex ("
                  << next_vtx.first << "," << next_vtx.second << ")");
 
-            // FIXME: Something from here isn't right yet.
             dv->closed = true;
             domain.push_back (v);
 

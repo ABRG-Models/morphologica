@@ -68,6 +68,7 @@ int main()
         f[hi->ne->vi] = 0.3f;
         f[hi->nse->vi] = 0.3f;
         f[hi->nsw->vi] = 0.3f;
+        f[hi->nsw->nse->vi] = 0.3f;
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
@@ -111,6 +112,11 @@ int main()
             array<float,3> posn = {{0,0,0.002}};
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
+            if (verti.onBoundary == true) {
+                cl_c = morph::Tools::getJetColorF (0.98);
+            } else {
+                cl_c = morph::Tools::getJetColorF (0.18);
+            }
             disp.drawHex (posn, offset2, (sz/8.0f), cl_c);
         }
 
@@ -139,7 +145,7 @@ int main()
         usleep (100000);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 3;
+        unsigned int sleep_seconds = 300;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second
