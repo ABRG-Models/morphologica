@@ -72,12 +72,15 @@ int main()
         list<morph::DirichVtx<float>> vertices;
         list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
-        for (auto verti : vertices) {
-            DBG ("Vertex: " << verti.v.first << "," << verti.v.second << " " << verti.f << "/" << verti.neighb.first<< "," << verti.neighb.second);
+        // There should be 19 vertices, precisely.
+        unsigned int reqd = 19;
+        if (vertices.size() != reqd) {
+            DBG ("Not correct number of vertices; " << vertices.size() << " instead of " << reqd);
+            rtn -= 1;
         }
 
-        // There should be 19 vertices, precisely.
-        if (vertices.size() != 19) {
+        // Expecting one domain
+        if (domains.size() != 1) {
             rtn -= 1;
         }
 
@@ -138,7 +141,7 @@ int main()
         usleep (100000);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 3;
+        unsigned int sleep_seconds = 1;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second

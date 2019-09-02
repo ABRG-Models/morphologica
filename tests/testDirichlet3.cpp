@@ -1,8 +1,7 @@
 //
-// Testing/debugging Dirichlet boundary code. New pattern
+// Testing/debugging Dirichlet boundary code
 //
-// This test has a domain of 5 hexes surrounded by more of a mixture of IDs, with one ID appearing
-// either side of one of the domain hexes.
+// A single domain of a single hex in this one.
 //
 
 #include "HexGrid.h"
@@ -68,17 +67,13 @@ int main()
 
         hi = hg.hexen.begin();
         f[hi->vi] = 0.3f;
-        f[hi->ne->vi] = 0.3f;
-        f[hi->nse->vi] = 0.3f;
-        f[hi->nsw->vi] = 0.3f;
-        f[hi->nsw->nse->vi] = 0.3f;
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
         list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
-        // There should be 25 vertices, precisely.
-        unsigned int reqd = 25;
+        // There should be 19 vertices, precisely.
+        unsigned int reqd = 19;
         if (vertices.size() != reqd) {
             DBG ("Not correct number of vertices; " << vertices.size() << " instead of " << reqd);
             rtn -= 1;
@@ -88,8 +83,6 @@ int main()
         if (domains.size() != 1) {
             rtn -= 1;
         }
-
-        // To be strict, I should check all the points on the domain paths are in the right places.
 
 #if 1
         // Draw it up.
@@ -120,11 +113,6 @@ int main()
             array<float,3> posn = {{0,0,0.002}};
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
-            if (verti.onBoundary == true) {
-                cl_c = morph::Tools::getJetColorF (0.98);
-            } else {
-                cl_c = morph::Tools::getJetColorF (0.18);
-            }
             disp.drawHex (posn, offset2, (sz/8.0f), cl_c);
         }
 
