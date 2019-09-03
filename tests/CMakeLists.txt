@@ -141,3 +141,7 @@ add_test(testDirichlet2 testDirichlet2)
 add_executable(testDirichlet4 testDirichlet4.cpp)
 target_link_libraries(testDirichlet4 morphologica)
 add_test(testDirichlet4 testDirichlet4)
+
+add_executable(testDirichlet5 testDirichlet5.cpp)
+target_link_libraries(testDirichlet5 morphologica)
+add_test(testDirichlet5 testDirichlet5)

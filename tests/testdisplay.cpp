@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-    unsigned int sleep_seconds = 3;
+    unsigned int sleep_seconds = 1;
     string pwd = morph::Tools::getPwd();
     if (pwd.substr(pwd.length()-11) == "build/tests") {
         sleep_seconds = 0;

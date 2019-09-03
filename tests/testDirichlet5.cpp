@@ -1,7 +1,7 @@
 //
 // Testing/debugging Dirichlet boundary code
 //
-// A single domain of a single hex in this one, surrounded by multiple other hexes
+// Two domains of hexes.
 //
 
 #include "HexGrid.h"
@@ -40,53 +40,51 @@ int main()
 
         // Set values in the variable so that it's an identity variable.
         auto hi = hg.hexen.begin();
-        auto hi2 = hi;
-        while (hi->has_nse) {
-            while (hi2->has_ne) {
-                f[hi2->vi] = 0.2f;
-                hi2 = hi2->ne;
-            }
-            f[hi2->vi] = 0.2f;
-            hi2 = hi->nse;
-            hi = hi->nse;
-        }
-        f[hi2->vi] = 0.2f;
 
-        hi = hg.hexen.begin()->nw;
-        hi2 = hi;
-        while (hi->has_nse) {
-            while (hi2->has_nw) {
-                f[hi2->vi] = 0.4f;
-                hi2 = hi2->nw;
-            }
-            f[hi2->vi] = 0.4f;
-            hi2 = hi->nse;
-            hi = hi->nse;
-        }
-        f[hi2->vi] = 0.4f;
+        f[hi->vi] = 0.2f;
+        f[hi->nne->vi] = 0.2f;
+        f[hi->nnw->vi] = 0.2f;
 
-        hi = hg.hexen.begin();
-        f[hi->vi] = 0.3f;
+        f[hi->ne->vi] = 0.3f;
+        f[hi->nse->vi] = 0.3f;
+        f[hi->nse->ne->vi] = 0.3f;
 
-        f[hi->ne->vi] = 0.55f;
+        f[hi->nw->vi] = 0.4f;
+        f[hi->nw->nw->vi] = 0.4f;
+        f[hi->nw->nw->nw->vi] = 0.4f;
+        f[hi->nsw->vi] = 0.4f;
+        f[hi->nsw->nw->vi] = 0.4f;
+        f[hi->nsw->nw->nw->vi] = 0.4f;
 
-        f[hi->nw->vi] = 0.35f;
+        f[hi->nse->nsw->vi] = 0.5f;
+        f[hi->nse->nsw->nsw->vi] = 0.5f;
+        f[hi->nse->nsw->nsw->nw->vi] = 0.5f;
+        f[hi->nse->nsw->nse->vi] = 0.5f;
+        f[hi->nse->nsw->nw->vi] = 0.5f;
+        f[hi->nse->nsw->nw->nw->vi] = 0.5f;
+        f[hi->nse->nsw->ne->vi] = 0.5f;
+        f[hi->nse->nsw->ne->ne->vi] = 0.5f;
+        f[hi->nse->nsw->nse->ne->vi] = 0.5f;
+
+        f[hi->ne->nne->vi] = 0.6f;
+        f[hi->ne->nne->ne->vi] = 0.6f;
+        f[hi->ne->ne->vi] = 0.6f;
+        f[hi->ne->ne->ne->vi] = 0.6f;
+        f[hi->ne->ne->nse->vi] = 0.6f;
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
-        list<list<morph::DirichVtx<float> > > domains =
-            morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
+        list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
         // There should be precise number of vertices
-        unsigned int reqd = 31;
+        unsigned int reqd = 26;
         if (vertices.size() != reqd) {
             DBG ("Not correct number of vertices; " << vertices.size() << " instead of " << reqd);
             rtn -= 1;
         }
 
         // Expecting one domain
-        if (domains.size() != 3) {
-            DBG ("Not correct number of domains!");
+        if (domains.size() != 2) {
             rtn -= 1;
         }
 
