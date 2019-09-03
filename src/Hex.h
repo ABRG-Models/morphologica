@@ -598,7 +598,7 @@ namespace morph {
             this->has_nne = (flgs & HEX_HAS_NNE) ? true : false;
             this->has_nnw = (flgs & HEX_HAS_NNW) ? true : false;
             this->has_nw = (flgs & HEX_HAS_NW) ? true : false;
-            this->has_nsw = (flgs & HEX_HAS_NSE) ? true : false;
+            this->has_nsw = (flgs & HEX_HAS_NSW) ? true : false;
             this->has_nse = (flgs & HEX_HAS_NSE) ? true : false;
         }
 
