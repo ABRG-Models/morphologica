@@ -554,8 +554,7 @@ namespace morph {
          * Hex references to the hexes on the vertices of the
          * hexagonal grid. Configured during init(). These will become
          * invalid when a new boundary is applied to the original
-         * hexagonal grid. When this occurs, gridReducedToBoundary
-         * should be set false.
+         * hexagonal grid. When this occurs, gridReduced should be set false.
          */
         //@{
         list<Hex>::iterator vertexE;
