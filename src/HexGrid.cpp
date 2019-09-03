@@ -96,6 +96,10 @@ morph::HexGrid::load (const string& path)
     hgdata.read_contained_vals ("/d_nsw", this->d_nsw);
     hgdata.read_contained_vals ("/d_nse", this->d_nse);
 
+    // Assume boundary applied, so set this true:
+    this->gridReduced = true;
+
+    // FIXME: Need to set neighbour relations, as loaded in d_ne, etc.
     unsigned int hcount = 0;
     hgdata.read_val ("/hcount", hcount);
     for (unsigned int i = 0; i < hcount; ++i) {
