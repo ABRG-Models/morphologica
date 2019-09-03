@@ -72,7 +72,6 @@ morph::HexGrid::load (const string& path)
 {
     HdfData hgdata (path, true);
     hgdata.read_val ("/d", this->d);
-    cout << "d is now " << this->d << endl;
     hgdata.read_val ("/v", this->v);
     hgdata.read_val ("/x_span", this->x_span);
     hgdata.read_val ("/z", this->z);
@@ -99,13 +98,120 @@ morph::HexGrid::load (const string& path)
     // Assume boundary applied, so set this true:
     this->gridReduced = true;
 
-    // FIXME: Need to set neighbour relations, as loaded in d_ne, etc.
     unsigned int hcount = 0;
     hgdata.read_val ("/hcount", hcount);
     for (unsigned int i = 0; i < hcount; ++i) {
         string h5path = "/hexen/" + to_string(i);
         Hex h (hgdata, h5path);
         this->hexen.push_back (h);
+    }
+
+    // After creating hexen list, need to set neighbour relations in each Hex, as loaded in d_ne,
+    // etc.
+    for (Hex& _h : this->hexen) {
+        DBG ("Set neighbours for Hex " << _h.outputRG());
+        // For each Hex, six loops through hexen:
+        if (_h.has_ne == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_ne[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.ne = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour E relation...");
+            }
+        }
+
+        if (_h.has_nne == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_nne[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.nne = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour NE relation...");
+            }
+        }
+
+        if (_h.has_nnw == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_nnw[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.nnw = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour NW relation...");
+            }
+        }
+
+        if (_h.has_nw == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_nw[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.nw = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour W relation...");
+            }
+        }
+
+        if (_h.has_nsw == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_nsw[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.nsw = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour SW relation...");
+            }
+        }
+
+        if (_h.has_nse == true) {
+            bool matched = false;
+            unsigned int neighb_it = (unsigned int) this->d_nse[_h.vi];
+            list<Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+                if (hi->vi == neighb_it) {
+                    matched = true;
+                    _h.nse = hi;
+                    break;
+                }
+                ++hi;
+            }
+            if (!matched) {
+                throw runtime_error ("Failed to match hexen neighbour SE relation...");
+            }
+        }
     }
 }
 
