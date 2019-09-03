@@ -26,7 +26,7 @@ using std::pair;
 using morph::BezCoord;
 using morph::HdfData;
 
-#define DEBUG_WITH_COUT 1
+//#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>
 using std::cout;
@@ -902,7 +902,6 @@ namespace morph {
                 return rtn;
             }
             if (ni < 0) {
-                std::cout << "ni < 0 and is " << ni << std::endl;
                 rtn.second = -4.0f;
                 return rtn;
             }
