@@ -95,7 +95,8 @@ morph::HexGrid::load (const string& path)
     hgdata.read_contained_vals ("/d_nsw", this->d_nsw);
     hgdata.read_contained_vals ("/d_nse", this->d_nse);
 
-    // Assume boundary applied, so set this true:
+    // Assume a boundary has been applied so set this true. Also, the HexGrid::save method doesn't
+    // save HexGrid::vertexE, etc
     this->gridReduced = true;
 
     unsigned int hcount = 0;
@@ -233,10 +234,10 @@ morph::HexGrid::save (const string& path)
     hgdata.add_contained_vals ("/boundaryCentroid", boundaryCentroid);
 
     // Don't save BezCurvePath boundary - limit this to the ability to
-    // save which hexes are boun dary hexes and which aren't
+    // save which hexes are boundary hexes and which aren't
 
     // Don't save vertexE, vertexNE etc. Make sure to set gridReduced
-    // = false when calling load()
+    // = true when calling load()
 
     // vector<float>
     hgdata.add_contained_vals ("/d_x", d_x);
@@ -366,8 +367,8 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
     while (bpi != this->hexen.end()) {
         list<Hex>::const_iterator ppi = pHexes.begin();
         while (ppi != pHexes.end()) {
-            // NB: The assumption right now is that the pHexes are
-            // from the same dimension hex grid as this->hexen.
+            // NB: The assumption right now is that the pHexes are from the same dimension hex grid
+            // as this->hexen.
             if (bpi->ri == ppi->ri && bpi->gi == ppi->gi) {
                 // Set h as boundary hex.
                 bpi->boundaryHex = true;
@@ -393,7 +394,8 @@ morph::HexGrid::setBoundary (const list<Hex>& pHexes)
         // Boundary IS contiguous, discard hexes outside the boundary.
         this->discardOutsideBoundary();
     } else {
-        throw runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to do if domain shape is not HexDomainShape::Boundary.");
+        throw runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to "
+                             "do if domain shape is not HexDomainShape::Boundary.");
     }
 
     this->populate_d_vectors();
@@ -439,8 +441,7 @@ void
 morph::HexGrid::setEllipticalBoundary (const float a, const float b)
 {
     DBG ("Applying elliptical boundary...");
-    // Compute the points on the boundary using half of the hex to
-    // hex spacing as the step size.
+    // Compute the points on the boundary using half of the hex to hex spacing as the step size.
     vector<BezCoord> bpoints = ellipseCompute (a, b);
     this->setBoundary (bpoints);
 }
@@ -453,9 +454,9 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
     if (!this->boundary.isNull()) {
         DBG ("Applying boundary...");
 
-        // Compute the points on the boundary using half of the hex to
-        // hex spacing as the step size.
-        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true); // true to invert y axis
+        // Compute the points on the boundary using half of the hex to hex spacing as the step
+        // size. The 'true' argument inverts the y axis.
+        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true);
         this->setBoundary (bpoints);
     }
 }
@@ -485,10 +486,7 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
         list<Hex>::iterator hi = nearbyBoundaryPoint;
         if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
             stringstream ee;
-            //ee << "The boundary which was constructed from "
-            //<< p.name << " is not a contiguous sequence of hexes.";
-            ee << "The constructed boundary "
-               << "is not a contiguous sequence of hexes.";
+            ee << "The constructed boundary is not a contiguous sequence of hexes.";
             throw runtime_error (ee.str());
         }
     }
@@ -500,13 +498,10 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
         this->populate_d_vectors();
 
     } else {
-        // Given that the boundary IS contiguous, can now set a
-        // domain of hexes (rectangular, parallelogram or
-        // hexagonal region, such that computations can be
-        // efficient) and discard hexes outside the domain.
-        // setDomain() will define a regular domain, then discard
-        // those hexes outside the regular domain and populate all
-        // the d_ vectors.
+        // Given that the boundary IS contiguous, can now set a domain of hexes (rectangular,
+        // parallelogram or hexagonal region, such that computations can be efficient) and discard
+        // hexes outside the domain.  setDomain() will define a regular domain, then discard those
+        // hexes outside the regular domain and populate all the d_ vectors.
         this->setDomain();
     }
 }
@@ -514,9 +509,8 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
 list<Hex>::iterator
 morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFrom)
 {
-    // Searching from "startFrom", search out, via neighbours until
-    // the hex closest to the boundary point is located. How to know
-    // if it's closest? When all neighbours are further from the
+    // Searching from "startFrom", search out, via neighbours until the hex closest to the boundary
+    // point is located. How to know if it's closest? When all neighbours are further from the
     // currently closest point?
 
     bool neighbourNearer = true;
@@ -659,7 +653,8 @@ morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::co
     bool rtn = false;
     list<Hex>::const_iterator hi_next;
 
-    DBG2 ("Inserting " << hi->vi << " into seen (and bhexen) which is Hex ("<< hi->ri << "," << hi->gi<<")");
+    DBG2 ("Inserting " << hi->vi
+          << " into seen (and bhexen) which is Hex (" << hi->ri << "," << hi->gi<<")");
     seen.insert (hi->vi);
     // Insert into the list of Hex pointers, too
     this->bhexen.push_back ((Hex*)&(*hi));
@@ -722,8 +717,8 @@ morph::HexGrid::markFromBoundary (list<Hex*>::iterator hi)
 void
 morph::HexGrid::markFromBoundary (Hex* hi)
 {
-    // Find a marked-inside Hex next to this boundary hex. This will
-    // be the first direction to mark a line of inside hexes in.
+    // Find a marked-inside Hex next to this boundary hex. This will be the first direction to mark
+    // a line of inside hexes in.
     list<Hex>::iterator first_inside = this->hexen.begin();
     unsigned short firsti = 0;
     for (unsigned short i = 0; i < 6; ++i) {
@@ -767,8 +762,8 @@ void
 morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti)
 {
     DBG ("Called");
-    // From the "first inside the boundary hex" head in the direction
-    // specified by firsti until a boundary hex is reached.
+    // From the "first inside the boundary hex" head in the direction specified by firsti until a
+    // boundary hex is reached.
     list<Hex>::iterator straight = first_inside;
 
     DBG2 ("First inside:" << first_inside->insideBoundary
@@ -840,7 +835,8 @@ morph::HexGrid::findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::
                 if (cbhi->has_neighbour(j)
                     && cbhi->get_neighbour(j)->insideBoundary==true
                     && cbhi->get_neighbour(j)->boundaryHex==false) {
-                    //DBG ("Candidate boundary hex has a neighbouring inside hex. NEXT BOUND DIR: " << Hex::neighbour_pos(i));
+                    //DBG ("Candidate boundary hex has a neighbouring inside hex. NEXT BOUND DIR: "
+                    //     << Hex::neighbour_pos(i));
                     bhi_last = bhi;
                     bhi = cbhi;
                     gotnextneighbour = true;
@@ -882,13 +878,11 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi)
 void
 morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
 {
-    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.
-    // Use gi to determine whether outside top/bottom region
-    // Add gi contribution to ri to determine whether outside left/right region
+    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.  Use gi to determine whether outside
+    // top/bottom region Add gi contribution to ri to determine whether outside left/right region
 
-    // Is the bottom row's gi even or odd?  extnts[2] is gi for the
-    // bottom row. If it's even, then we add 0.5 to all rows with even
-    // gi. If it's odd then we add 0.5 to all rows with ODD gi.
+    // Is the bottom row's gi even or odd?  extnts[2] is gi for the bottom row. If it's even, then
+    // we add 0.5 to all rows with even gi. If it's odd then we add 0.5 to all rows with ODD gi.
     float even_addn = 0.5f;
     float odd_addn = 0.0f;
     float addleft = 0;
@@ -902,18 +896,16 @@ morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
     }
 
     if (abs(extnts[2]%2) == abs(extnts[4]%2)) {
-        // Left most hex is on a parity-matching line to bottom line,
-        // no need to add left.
+        // Left most hex is on a parity-matching line to bottom line, no need to add left.
         DBG("Left most hex on line matching parity of bottom line")
     } else {
         // Need to add left.
         DBG("Left most hex NOT on line matching parity of bottom line add left to BL hex");
         if (extnts[2]%2 == 0) {
             addleft += 1.0f;
-            // For some reason, only in this case do we addleft (and
-            // not in the case where BR is ODD and Left most hex NOT
-            // matching, which makes addleft = 0.5 + 0.5). I can't
-            // work it out.
+            // For some reason, only in this case do we addleft (and not in the case where BR is
+            // ODD and Left most hex NOT matching, which makes addleft = 0.5 + 0.5). I can't work
+            // it out.
             DBG ("Before: d_rowlen " << d_rowlen << " d_size " << d_size);
             this->d_rowlen += addleft;
             this->d_size = this->d_rowlen * this->d_numrows;
@@ -928,21 +920,22 @@ morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
 
-        // Here, hz is "horizontal index", made up of the ri index,
-        // half the gi index.
+        // Here, hz is "horizontal index", made up of the ri index, half the gi index.
         //
-        // plus a row-varying addition of a half
-        // (the row of hexes above is shifted right by 0.5 a hex
-        // width).
+        // plus a row-varying addition of a half (the row of hexes above is shifted right by 0.5 a
+        // hex width).
         float hz = hi->ri + 0.5*(hi->gi); /*+ (hi->gi%2 ? odd_addn : even_addn)*/;
         float parityhalf = (hi->gi%2 ? odd_addn : even_addn);
 
         if (hz < (extnts[0] - addleft + parityhalf)) {
             // outside
-            DBG2 ("Outside. gi:"<<hi->gi<<". Horz idx: " << hz << " < extnts[0]-addleft+parityhalf: " << extnts[0] <<"-"<< addleft <<"+"<< parityhalf);
+            DBG2 ("Outside. gi:" << hi->gi << ". Horz idx: " << hz
+                  << " < extnts[0]-addleft+parityhalf: " << extnts[0] << "-" << addleft
+                  << "+" << parityhalf);
         } else if (hz > (extnts[1] + parityhalf)) {
             // outside
-            DBG2 ("Outside. gi:"<<hi->gi<<". Horz idx: " << hz << " > extnts[1]+parityhalf: " << extnts[0] <<"+"<< parityhalf);
+            DBG2 ("Outside. gi:" << hi->gi << ". Horz idx: " << hz
+                  << " > extnts[1]+parityhalf: " << extnts[0] << "+" << parityhalf);
         } else if (hi->gi < extnts[2]) {
             // outside
             DBG2 ("Outside. Vert idx: " << hi->gi << " < extnts[2]: " << extnts[2]);
@@ -961,9 +954,8 @@ morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
 void
 morph::HexGrid::markHexesInsideParallelogramDomain (const array<int, 6>& extnts)
 {
-    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.
-    // Use gi to determine whether outside top/bottom region
-    // Add gi contribution to ri to determine whether outside left/right region
+    // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.  Use gi to determine whether outside
+    // top/bottom region Add gi contribution to ri to determine whether outside left/right region
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
         if (hi->ri < extnts[0]
@@ -1053,9 +1045,9 @@ morph::HexGrid::findBoundaryExtents (void)
         }
     }
 
-    // Now compute the ri and gi values that these xmax/xmin/ymax/ymin
-    // correspond to. THIS, if nothing else, should auto-vectorise!
-    // d_ri is the distance moved in ri direction per x, d_gi is distance
+    // Now compute the ri and gi values that these xmax/xmin/ymax/ymin correspond to. THIS, if
+    // nothing else, should auto-vectorise!  d_ri is the distance moved in ri direction per x, d_gi
+    // is distance
     float d_ri = this->hexen.front().getD();
     float d_gi = this->hexen.front().getV();
     rtn[0] = (int)(limits[0] / d_ri);
@@ -1063,9 +1055,10 @@ morph::HexGrid::findBoundaryExtents (void)
     rtn[2] = (int)(limits[2] / d_gi);
     rtn[3] = (int)(limits[3] / d_gi);
 
-    DBG ("ll,lr,lb,lt:     {" << limits[0] << ","  << limits[1] << ","  << limits[2] << ","  << limits[3] << "}");
+    DBG ("ll,lr,lb,lt:     {" << limits[0] << "," << limits[1] << "," << limits[2]
+         << "," << limits[3] << "}");
     DBG ("d_ri: " << d_ri << ", d_gi: " << d_gi);
-    DBG ("ril,rir,gib,git: {" << rtn[0] << ","  << rtn[1] << ","  << rtn[2] << ","  << rtn[3] << "}");
+    DBG ("ril,rir,gib,git: {" << rtn[0] << "," << rtn[1] << "," << rtn[2] << "," << rtn[3] << "}");
 
     // Add 'growth buffer'
     rtn[0] -= this->d_growthbuffer_horz;
@@ -1098,8 +1091,8 @@ morph::HexGrid::d_push_back (list<Hex>::iterator hi)
     d_flags.push_back (hi->getFlags());
     d_distToBoundary.push_back (hi->distToBoundary);
 
-    // record in the Hex the iterator in the d_ vectors so that d_nne
-    // and friends can be set up later.
+    // record in the Hex the iterator in the d_ vectors so that d_nne and friends can be set up
+    // later.
     hi->di = d_x.size()-1;
 }
 
@@ -1170,8 +1163,7 @@ morph::HexGrid::populate_d_neighbours (void)
 void
 morph::HexGrid::setDomain (void)
 {
-    // 1. Find extent of boundary, both left/right and up/down, with
-    // 'buffer region' already added.
+    // 1. Find extent of boundary, both left/right and up/down, with 'buffer region' already added.
     array<int, 6> extnts = this->findBoundaryExtents();
 
     // 1.5 set rowlen and numrows
@@ -1181,14 +1173,12 @@ morph::HexGrid::setDomain (void)
     DBG("Initially, d_rowlen=" << d_rowlen << ", d_numrows=" << d_numrows << ", d_size=" << d_size);
 
     if (this->domainShape == morph::HexDomainShape::Rectangle) {
-        // 2. Mark Hexes inside and outside the domain.
-        // Mark those hexes inside the boundary
+        // 2. Mark Hexes inside and outside the domain.  Mark those hexes inside the boundary
         this->markHexesInsideRectangularDomain (extnts);
     } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
         this->markHexesInsideParallelogramDomain (extnts);
     } else if (this->domainShape == morph::HexDomainShape::Hexagon) {
-        // The original domain was hexagonal, so just mark ALL of them
-        // as being in the domain.
+        // The original domain was hexagonal, so just mark ALL of them as being in the domain.
         this->markAllHexesInsideDomain();
     } else {
         throw runtime_error ("Unknown HexDomainShape");
@@ -1233,8 +1223,8 @@ morph::HexGrid::populate_d_vectors (void)
 void
 morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
 {
-    // First, find the starting hex. For Rectangular and parallelogram
-    // domains, that's the bottom left hex.
+    // First, find the starting hex. For Rectangular and parallelogram domains, that's the bottom
+    // left hex.
     list<Hex>::iterator hi = this->hexen.begin();
     // bottom left hex.
     list<Hex>::iterator blh = this->hexen.end();
@@ -1242,8 +1232,7 @@ morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
     if (this->domainShape == morph::HexDomainShape::Rectangle
         || this->domainShape == morph::HexDomainShape::Parallelogram) {
 
-        // Use neighbour relations to go from bottom left to top right.
-        // Find hex on bottom row.
+        // Use neighbour relations to go from bottom left to top right.  Find hex on bottom row.
         while (hi != this->hexen.end()) {
             if (hi->gi == extnts[2]) {
                 // We're on the bottom row
@@ -1251,11 +1240,13 @@ morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
             }
             ++hi;
         }
-        DBG ("hi is on bottom row, posn xy:" << hi->x << "," << hi->y << " or rg:" << hi->ri << "," << hi->gi);
+        DBG ("hi is on bottom row, posn xy:" << hi->x << "," << hi->y
+             << " or rg:" << hi->ri << "," << hi->gi);
         while (hi->has_nw == true) {
             hi = hi->nw;
         }
-        DBG ("hi is at bottom left posn xy:" << hi->x << "," << hi->y << " or rg:" << hi->ri << "," << hi->gi);
+        DBG ("hi is at bottom left posn xy:" << hi->x << "," << hi->y
+             << " or rg:" << hi->ri << "," << hi->gi);
 
         // hi should now be the bottom left hex.
         blh = hi;
@@ -1285,7 +1276,8 @@ morph::HexGrid::populate_d_vectors (const array<int, 6>& extnts)
 
             this->d_push_back (hi);
 
-            DBG2 ("Pushed back flags: " << hi->getFlags() << " for r/g: " << hi->ri << "," << hi->gi);
+            DBG2 ("Pushed back flags: " << hi->getFlags()
+                  << " for r/g: " << hi->ri << "," << hi->gi);
 
             if (hi->has_ne == false) {
                 if (hi->gi == extnts[3]) {
@@ -1359,8 +1351,7 @@ morph::HexGrid::discardOutsideDomain (void)
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
         if (hi->insideDomain == false) {
-            // When erasing a Hex, I need to update the neighbours of
-            // its neighbours.
+            // When erasing a Hex, I need to update the neighbours of its neighbours.
             hi->disconnectNeighbours();
             // Having disconnected the neighbours, erase the Hex.
             hi = this->hexen.erase (hi);
@@ -1373,9 +1364,8 @@ morph::HexGrid::discardOutsideDomain (void)
     // The Hex::vi indices need to be re-numbered.
     this->renumberVectorIndices();
 
-    // Finally, do something about the hexagonal grid vertices; set
-    // this to true to mark that the iterators to the outermost
-    // vertices are no longer valid and shouldn't be used.
+    // Finally, do something about the hexagonal grid vertices; set this to true to mark that the
+    // iterators to the outermost vertices are no longer valid and shouldn't be used.
     this->gridReduced = true;
 }
 
@@ -1404,8 +1394,8 @@ morph::HexGrid::discardOutsideBoundary (void)
     auto hi = this->hexen.begin();
     while (hi != this->hexen.end()) {
         if (hi->insideBoundary == false) {
-            // Here's the problem I think. When erasing a Hex, I need
-            // to update the neighbours of its neighbours.
+            // Here's the problem I think. When erasing a Hex, I need to update the neighbours of
+            // its neighbours.
             hi->disconnectNeighbours();
             // Having disconnected the neighbours, erase the Hex.
             hi = this->hexen.erase (hi);
@@ -1418,9 +1408,8 @@ morph::HexGrid::discardOutsideBoundary (void)
     // The Hex::vi indices need to be re-numbered.
     this->renumberVectorIndices();
 
-    // Finally, do something about the hexagonal grid vertices; set
-    // this to true to mark that the iterators to the outermost
-    // vertices are no longer valid and shouldn't be used.
+    // Finally, do something about the hexagonal grid vertices; set this to true to mark that the
+    // iterators to the outermost vertices are no longer valid and shouldn't be used.
     this->gridReduced = true;
 }
 
@@ -1440,7 +1429,9 @@ morph::HexGrid::findHexNearest (const pair<float, float>& pos)
         }
         ++hi;
     }
-    DBG("Nearest Hex to " << pos.first << "," << pos.second << " is (r,g):" << nearest->ri << "," << nearest->gi << " (x,y):" << nearest->x << "," << nearest->y);
+    DBG ("Nearest Hex to " << pos.first << "," << pos.second
+         << " is (r,g):" << nearest->ri << "," << nearest->gi
+         << " (x,y):" << nearest->x << "," << nearest->y);
     return nearest;
 }
 
@@ -1599,14 +1590,12 @@ morph::HexGrid::init (void)
 
     DBG ("Creating hexagonal hex grid with maxRing: " << maxRing);
 
-    // The "vector iterator" - this is an identity iterator that is
-    // added to each Hex in the grid.
+    // The "vector iterator" - this is an identity iterator that is added to each Hex in the grid.
     unsigned int vi = 0;
 
-    // Vectors of list-iterators to hexes in this->hexen. Used to keep a
-    // track of nearest neighbours. I'm using vector, rather than a
-    // list as this allows fast random access of elements and I'll not
-    // be inserting or erasing in the middle of the arrays.
+    // Vectors of list-iterators to hexes in this->hexen. Used to keep a track of nearest
+    // neighbours. I'm using vector, rather than a list as this allows fast random access of
+    // elements and I'll not be inserting or erasing in the middle of the arrays.
     vector<list<Hex>::iterator> prevRingEven;
     vector<list<Hex>::iterator> prevRingOdd;
 
@@ -1627,18 +1616,16 @@ morph::HexGrid::init (void)
         prevRing->push_back (h);
     }
 
-    // Now build up the rings around it, setting neighbours as we
-    // go. Each ring has 6 more hexes than the previous one (except
-    // for ring 1, which has 6 instead of 1 in the centre).
+    // Now build up the rings around it, setting neighbours as we go. Each ring has 6 more hexes
+    // than the previous one (except for ring 1, which has 6 instead of 1 in the centre).
     unsigned int numInRing = 6;
 
-    // How many hops in the same direction before turning a corner?
-    // Increases for each ring. Increases by 1 in each ring.
+    // How many hops in the same direction before turning a corner?  Increases for each
+    // ring. Increases by 1 in each ring.
     unsigned int ringSideLen = 1;
 
-    // These are used to iterate along the six sides of the hexagonal
-    // ring that's inside, but adjacent to the hexagonal ring that's
-    // under construction.
+    // These are used to iterate along the six sides of the hexagonal ring that's inside, but
+    // adjacent to the hexagonal ring that's under construction.
     int walkstart = 0;
     int walkinc = 0;
     int walkmin = walkstart-1;
@@ -1648,16 +1635,15 @@ morph::HexGrid::init (void)
 
         DBG2 ("\n\n************** numInRing: " << numInRing << " ******************");
 
-        // Set start ri, gi. This moves up a hex and left a hex onto
-        // the start hex of the new ring.
+        // Set start ri, gi. This moves up a hex and left a hex onto the start hex of the new ring.
         --ri; ++gi;
 
         nextPrevRing->clear();
 
-        // Now walk around the ring, in 6 walks, that will bring us
-        // round to just before we started. walkstart has the starting
-        // iterator number for the vertices of the hexagon.
-        DBG2 ("Before r; walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
+        // Now walk around the ring, in 6 walks, that will bring us round to just before we
+        // started. walkstart has the starting iterator number for the vertices of the hexagon.
+        DBG2 ("Before r; walkinc: " << walkinc << ", walkmin: " << walkmin
+              << ", walkmax: " << walkmax);
 
         // Walk in the r direction first:
         DBG2 ("============ r walk =================");
@@ -1675,14 +1661,15 @@ morph::HexGrid::init (void)
             // 1. Set my W neighbour to be the previous hex in THIS ring, if possible
             if (i > 0) {
                 hi->set_nw (lasthi);
-                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi << ") as E neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as E neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as E neighbour to previous hex in the ring:
                 lasthi->set_ne (hi);
             } else {
-                // i must be 0 in this case, we would set the SW
-                // neighbour now, but as this won't have been added to
-                // the ring, we have to leave it.
-                DBG2 (" r walk: I am (" << hi->ri << "," << hi->gi << "). Omitting SW neighbour of first hex in ring.");
+                // i must be 0 in this case, we would set the SW neighbour now, but as this won't
+                // have been added to the ring, we have to leave it.
+                DBG2 (" r walk: I am (" << hi->ri << "," << hi->gi
+                      << "). Omitting SW neighbour of first hex in ring.");
             }
 
             // 2. SW neighbour
@@ -1692,7 +1679,9 @@ morph::HexGrid::init (void)
                 // Set my SW neighbour:
                 hi->set_nsw ((*prevRing)[j]);
                 // Set me as NE neighbour to those in prevRing:
-                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi << ") as NE neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NE neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nne (hi);
             }
             ++j;
@@ -1702,7 +1691,9 @@ morph::HexGrid::init (void)
             if (j<=walkmax) {
                 hi->set_nse ((*prevRing)[j]);
                 // Set me as NW neighbour:
-                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi << ") as NW neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NW neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nnw (hi);
             }
 
@@ -1714,7 +1705,8 @@ morph::HexGrid::init (void)
         walkmax   += walkinc;
 
         // Walk in -b direction
-        DBG2 ("Before -b; walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
+        DBG2 ("Before -b; walkinc: " << walkinc << ", walkmin: " << walkmin
+              << ", walkmax: " << walkmax);
         DBG2 ("=========== -b walk =================");
         for (unsigned int i = 0; i<ringSideLen; ++i) {
             DBG2 ("Adding hex at " << ri << "," << gi);
@@ -1729,13 +1721,17 @@ morph::HexGrid::init (void)
             // 1. Set my NW neighbour to be the previous hex in THIS ring, if possible
             if (i > 0) {
                 hi->set_nnw (lasthi);
-                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi << ") as SE neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SE neighbour for hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as SE neighbour to previous hex in the ring:
                 lasthi->set_nse (hi);
             } else {
                 // Set my W neighbour for the first hex in the row.
                 hi->set_nw (lasthi);
-                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi << ") as E neighbour for last walk's hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as E neighbour for last walk's hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as E neighbour to previous hex in the ring:
                 lasthi->set_ne (hi);
             }
@@ -1747,7 +1743,9 @@ morph::HexGrid::init (void)
                 // Set my W neighbour:
                 hi->set_nw ((*prevRing)[j]);
                 // Set me as E neighbour to those in prevRing:
-                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi << ") as E neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as E neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_ne (hi);
             }
             ++j;
@@ -1758,7 +1756,9 @@ morph::HexGrid::init (void)
             if (j<=walkmax) {
                 hi->set_nsw ((*prevRing)[j]);
                 // Set me as NE neighbour:
-                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi << ") as NE neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NE neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nne (hi);
             }
 
@@ -1785,13 +1785,17 @@ morph::HexGrid::init (void)
             // 1. Set my NE neighbour to be the previous hex in THIS ring, if possible
             if (i > 0) {
                 hi->set_nne (lasthi);
-                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi << ") as SW neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SW neighbour for hex at (" << lasthi->ri << ","
+                      << lasthi->gi << ")");
                 // Set me as SW neighbour to previous hex in the ring:
                 lasthi->set_nsw (hi);
             } else {
                 // Set my NW neighbour for the first hex in the row.
                 hi->set_nnw (lasthi);
-                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi << ") as SE neighbour for last walk's hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SE neighbour for last walk's hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as SE neighbour to previous hex in the ring:
                 lasthi->set_nse (hi);
             }
@@ -1803,7 +1807,9 @@ morph::HexGrid::init (void)
                 // Set my NW neighbour:
                 hi->set_nnw ((*prevRing)[j]);
                 // Set me as SE neighbour to those in prevRing:
-                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi << ") as SE neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SE neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nse (hi);
             }
             ++j;
@@ -1813,7 +1819,9 @@ morph::HexGrid::init (void)
             if (j<=walkmax) {
                 hi->set_nw ((*prevRing)[j]);
                 // Set me as E neighbour:
-                DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi << ") as E neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-g walk: Set me (" << hi->ri << ","
+                      << hi->gi << ") as E neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_ne (hi);
             }
 
@@ -1841,13 +1849,16 @@ morph::HexGrid::init (void)
             // 1. Set my E neighbour to be the previous hex in THIS ring, if possible
             if (i > 0) {
                 hi->set_ne (lasthi);
-                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi << ") as W neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as W neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as W neighbour to previous hex in the ring:
                 lasthi->set_nw (hi);
             } else {
                 // Set my NE neighbour for the first hex in the row.
                 hi->set_nne (lasthi);
-                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi << ") as SW neighbour for last walk's hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SW neighbour for last walk's hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as SW neighbour to previous hex in the ring:
                 lasthi->set_nsw (hi);
             }
@@ -1859,7 +1870,9 @@ morph::HexGrid::init (void)
                 // Set my NE neighbour:
                 hi->set_nne ((*prevRing)[j]);
                 // Set me as SW neighbour to those in prevRing:
-                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi << ") as SW neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SW neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nsw (hi);
             }
             ++j;
@@ -1869,7 +1882,9 @@ morph::HexGrid::init (void)
             if (j<=walkmax) {
                 hi->set_nnw ((*prevRing)[j]);
                 // Set me as SE neighbour:
-                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi << ") as SE neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SE neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nse (hi);
             }
 
@@ -1895,13 +1910,17 @@ morph::HexGrid::init (void)
             // 1. Set my SE neighbour to be the previous hex in THIS ring, if possible
             if (i > 0) {
                 hi->set_nse (lasthi);
-                DBG2 (" b in-ring: Set me (" << hi->ri << "," << hi->gi << ") as NW neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 (" b in-ring: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NW neighbour for hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as NW neighbour to previous hex in the ring:
                 lasthi->set_nnw (hi);
             } else { // i == 0
                 // Set my E neighbour for the first hex in the row.
                 hi->set_ne (lasthi);
-                DBG2 (" b in-ring: Set me (" << hi->ri << "," << hi->gi << ") as W neighbour for last walk's hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 (" b in-ring: Set me (" << hi->ri << ","
+                      << hi->gi << ") as W neighbour for last walk's hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as W neighbour to previous hex in the ring:
                 lasthi->set_nw (hi);
             }
@@ -1913,7 +1932,9 @@ morph::HexGrid::init (void)
                 // Set my E neighbour:
                 hi->set_ne ((*prevRing)[j]);
                 // Set me as W neighbour to those in prevRing:
-                DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi << ") as W neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as W neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nw (hi);
             }
             ++j;
@@ -1923,7 +1944,9 @@ morph::HexGrid::init (void)
             if (j<=walkmax) {
                 hi->set_nne ((*prevRing)[j]);
                 // Set me as SW neighbour:
-                DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi << ") as SW neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as SW neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nsw (hi);
             }
 
@@ -1950,24 +1973,30 @@ morph::HexGrid::init (void)
             // 1. Set my SW neighbour to be the previous hex in THIS ring, if possible
             DBG2(" g walk: i is " << i << " and ringSideLen-1 is " << (ringSideLen-1));
             if (i == (ringSideLen-1)) {
-                // Special case at end; on last g walk hex, set the NE neighbour
-                // Set my NE neighbour for the first hex in the row.
-                hi->set_nne ((*nextPrevRing)[0]); // (*nextPrevRing)[0] is an iterator to the first hex
+                // Special case at end; on last g walk hex, set the NE neighbour Set my NE neighbour
+                // for the first hex in the row.
+                hi->set_nne ((*nextPrevRing)[0]); // (*nextPrevRing)[0] is an iterator to the first
+                                                  // hex
 
-                DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi << ") as SW neighbour for this ring's first hex at (" << (*nextPrevRing)[0]->ri << "," << (*nextPrevRing)[0]->gi << ")");
+                DBG2 (" g in-ring: Set me (" << hi->ri << ","
+                      << hi->gi << ") as SW neighbour for this ring's first hex at ("
+                      << (*nextPrevRing)[0]->ri << "," << (*nextPrevRing)[0]->gi << ")");
                 // Set me as NW neighbour to previous hex in the ring:
                 (*nextPrevRing)[0]->set_nsw (hi);
 
             }
             if (i > 0) {
                 hi->set_nsw (lasthi);
-                DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi << ") as NE neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NE neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as NE neighbour to previous hex in the ring:
                 lasthi->set_nne (hi);
             } else {
                 // Set my SE neighbour for the first hex in the row.
                 hi->set_nse (lasthi);
-                DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi << ") as NW neighbour for last walk's hex at (" << lasthi->ri << "," << lasthi->gi << ")");
+                DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NW neighbour for last walk's hex at ("
+                      << lasthi->ri << "," << lasthi->gi << ")");
                 // Set me as NW neighbour to previous hex in the ring:
                 lasthi->set_nnw (hi);
             }
@@ -1979,25 +2008,30 @@ morph::HexGrid::init (void)
                 // Set my SE neighbour:
                 hi->set_nse ((*prevRing)[j]);
                 // Set me as NW neighbour to those in prevRing:
-                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi << ") as NW neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as NW neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nnw (hi);
             }
             ++j;
             DBG2 ("i is " << i << ", j is " << j);
 
             // 3. Set my E neighbour:
-            if (j==walkmax) { // We're on the last square and need to
-                              // set the East neighbour of the first
-                              // hex in the last ring.
+            if (j==walkmax) { // We're on the last square and need to set the East neighbour of the
+                              // first hex in the last ring.
                 hi->set_ne ((*prevRing)[0]);
                 // Set me as W neighbour:
-                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi << ") as W neighbour for hex at (" << (*prevRing)[0]->ri << "," << (*prevRing)[0]->gi << ")");
+                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as W neighbour for hex at ("
+                      << (*prevRing)[0]->ri << "," << (*prevRing)[0]->gi << ")");
                 (*prevRing)[0]->set_nw (hi);
 
             } else if (j<walkmax) {
                 hi->set_ne ((*prevRing)[j]);
                 // Set me as W neighbour:
-                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi << ") as W neighbour for hex at (" << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
+                DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
+                      << ") as W neighbour for hex at ("
+                      << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                 (*prevRing)[j]->set_nw (hi);
             }
 
@@ -2006,11 +2040,9 @@ morph::HexGrid::init (void)
         }
         // Should now be on the last hex.
 
-        // Update the walking increments for finding the vertices of
-        // the hexagonal ring. These are for walking around the ring
-        // *inside* the ring of hexes being created and hence note
-        // that I set walkinc to numInRing/6 BEFORE incrementing
-        // numInRing by 6, below.
+        // Update the walking increments for finding the vertices of the hexagonal ring. These are
+        // for walking around the ring *inside* the ring of hexes being created and hence note that
+        // I set walkinc to numInRing/6 BEFORE incrementing numInRing by 6, below.
         walkstart = 0;
         walkinc = numInRing / 6;
         walkmin = walkstart - 1;
