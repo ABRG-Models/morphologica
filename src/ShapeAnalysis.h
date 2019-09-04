@@ -499,7 +499,7 @@ namespace morph {
                 }
 
                 if (!found_second) {
-                    //throw runtime_error ("Whoop whoop - failed to find the second hex associated with the initial vertex!");
+                    // Failed to find the second hex associated with the initial vertex!
                     return v_init;
                 }
 
@@ -753,7 +753,8 @@ namespace morph {
                  << next_vtx.first << "," << next_vtx.second << ")");
 
             DBG ("Closing dv at (" << dv->v.first << "," << dv->v.second
-                 << ") with f=" << dv->f << " [" << dv->neighb.first << "," << dv->neighb.second << "]");
+                 << ") with f=" << dv->f << " ["
+                 << dv->neighb.first << "," << dv->neighb.second << "]");
             dv->closed = true;
             domain.push_back (v);
 
@@ -768,7 +769,7 @@ namespace morph {
                     // Instead of: dv2 = next_vtx;, do:
                     if (dv2->closed == false && dv2->compare (next_vtx) == true) {
                         // vertex has correct coordinate. Check it has correct neighbours.
-                        DBG ("Coordinate match. Is dv2->f == v.f? " << dv2->f << " == " << v.f << "?");
+                        DBG ("Coordinate match. Is dv2->f == v.f? " << dv2->f <<" == "<< v.f << "?");
                         DBG ("Is dv2->neighb.first == next_neighb_dom? " << dv2->neighb.first
                              << " == " << next_neighb_dom << "?");
                         DBG ("Is dv2->neighb.second == v.neighb.first? " << dv2->neighb.second
@@ -787,7 +788,8 @@ namespace morph {
                         }
 #if 0
                     } else if (dv2->closed == true && dv2->compare (next_vtx) == true) {
-                        DBG ("Missing out closed vertex coordinate match. Is dv2->f == v.f? " << dv2->f << " == " << v.f << "?");
+                        DBG ("Missing out closed vertex coordinate match. Is dv2->f == v.f? "
+                             << dv2->f << " == " << v.f << "?");
                         DBG ("Is dv2->neighb.first == next_neighb_dom? " << dv2->neighb.first
                              << " == " << next_neighb_dom << "?");
                         DBG ("Is dv2->neighb.second == v.neighb.first? " << dv2->neighb.second
@@ -918,25 +920,35 @@ namespace morph {
                 dv->compute_line_to_centre (Aim1, dvnext->v);
                 ++dv;
             }
-#if 0
+#if 1
             // Ok, got the lines to Pi for each Dirichlet vertex. Can now find a Pi_best that
             // minimises the distance to each Pi line.
             //
-            // This is amenable to a nice simple gradient descent.
+            // This is amenable to a nice simple gradient descent. Will implement a Nelder-Mead
+            // approach (tomorrow, when my brain is awake)
 
-            pair<Flt, Flt> Pibest; // Start out at average position? centroid of vertices?
-            Pibest.first = mean_x / domain.size();
-            Pibest.second = mean_y / domain.size();
+            pair<Flt, Flt> Pi_best; // Start out at average position? centroid of vertices?
+            Pi_best.first = mean_x / domain.size();
+            Pi_best.second = mean_y / domain.size();
+            DBG ("Pi_best starts as mean of vertices: ("
+                 << Pi_best.first << "," << Pi_best.second << ")");
 
-            // DO a gradient descent to the best Pibest.
+            // DO a gradient descent to the best Pi_best.
             bool finished = false;
             while (!finished) {
                 dv = domain.begin();
+                Flt sos = 0.0;
                 while (dv != domain.end()) {
                     // Compute sum of square distances to the lines.
+                    Flt dist = dv->compute_distance_to_line (Pi_best);
+                    DBG ("distance to line: " << dist);
+                    sos += dist * dist;
+
                     ++dv;
                 }
-                // Decide how to modify Pibest and loop.
+                DBG ("sos: " << sos);
+                // Decide how to modify Pi_best and loop.
+                finished = true;
             }
 #endif
 

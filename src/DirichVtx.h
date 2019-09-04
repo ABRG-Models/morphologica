@@ -87,19 +87,24 @@ namespace morph {
          * the next vertex.
          */
         list<Hex>::iterator hi;
-
+#if 0
         //! Parameters for line between A_i and P_i, as described in Honda 1983.
         Flt m;
         Flt c;
-        //! P_i is a point on the line. In this code, I project A_i+1 onto the line to find the
-        //! actual point P_i.
+#endif
+        /*!
+         * P_i is a point on the line. In this code, I project A_i+1 onto the line to find the
+         * actual point P_i.
+         */
         pair<Flt, Flt> P_i;
 
         //! For marking vertices in a list as finsihed with, rather than erasing from that list.
         bool closed = false;
 
-        //! I mark vertices as being on the boundary, too. This matters for the algorithms in
-        //! ShapeAnalysis.
+        /*!
+         * I mark vertices as being on the boundary, too. This matters for the algorithms in
+         * ShapeAnalysis.
+         */
         bool onBoundary = false;
 
         //! Constructors
@@ -227,7 +232,7 @@ namespace morph {
          */
         Flt line_length (const pair<Flt, Flt>& coord0, const pair<Flt, Flt>& coord1) const {
             Flt c01 = sqrt ((coord0.first - coord1.first) * (coord0.first - coord1.first)
-                              + (coord0.second - coord1.second) * (coord0.second - coord1.second));
+                            + (coord0.second - coord1.second) * (coord0.second - coord1.second));
             return c01;
         }
 
@@ -256,6 +261,19 @@ namespace morph {
             } // else throw error?
 
             return angle;
+        }
+
+        /*!
+         * Find the minimum distance from the point p to the Pi line defined in this object by P_i,
+         * A_i or m and c.
+         */
+        Flt compute_distance_to_line (const pair<Flt, Flt>& p) {
+            // Find angle between Ai--Pi and Ai--p
+            Flt angle = this->compute_angle (p, this->v, this->P_i, 1);
+            // And distance from p to Ai
+            Flt p_to_v = this->line_length (p, this->v);
+            // Return projection of p onto line Ai--Pi
+            return (p_to_v * sin (angle));
         }
 
         /*!
@@ -292,13 +310,12 @@ namespace morph {
             Flt deltay = AiPi * sin (theta + xi);
             DBG ("deltay from Ai to Pi is " << deltay);
 
-            pair<Flt, Flt> Pi = this->v;
-            Pi.first += deltax;
-            Pi.second += deltay;
+            this->P_i = this->v;
+            this->P_i.first += deltax;
+            this->P_i.second += deltay;
+            DBG ("Point P_i: " << P_i.first << "," << P_i.second << ")");
 
-            DBG ("Point Pi: " << Pi.first << "," << Pi.second << ")");
-            this->P_i = Pi;
-
+#if 0 // Don't use m/c as a computational device.
             /*
              * 3. Use A_i and P_i to compute gradient/offset of the line equation that passes
              * through point A_i. Store in this->m and this->c (or whatever is suitable).
@@ -313,6 +330,7 @@ namespace morph {
                 this->c = this->v.second - this->m * this->v.first;
             }
             DBG ("Pi line gradient is m=" << this->m << ", offset is c=" << this->c);
+#endif
         }
     };
 
