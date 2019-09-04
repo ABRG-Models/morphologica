@@ -4,6 +4,7 @@
 #include "MathConst.h"
 #include <cmath>
 using std::sqrt;
+using std::atan2;
 #include <limits>
 using std::numeric_limits;
 #include <utility>
