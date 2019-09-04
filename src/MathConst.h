@@ -18,6 +18,9 @@ namespace morph {
 
     //! PI/2
     const float PI_OVER_2_F = 1.5707963267949;
+
+    //! 2*PI as float
+    const float TWO_PI_F = 6.28318530717959;
 }
 
 #endif // MATHCONST
