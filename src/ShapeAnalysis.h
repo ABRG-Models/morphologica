@@ -877,6 +877,90 @@ namespace morph {
         }
 
         /*!
+         * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
+         * metric for the Dirichlet-ness of the vertices after Honda1983.
+         */
+        static Flt
+        dirichlet_analyse_single_domain (list<DirichVtx<Flt> >& domain) {
+
+            Flt metric = 0.0f;
+
+            typename list<DirichVtx<Flt>>::iterator dv = domain.begin();
+            typename list<DirichVtx<Flt>>::iterator dvnext = dv;
+            typename list<DirichVtx<Flt>>::iterator dvprev = domain.end();
+
+            Flt mean_x = 0.0;
+            Flt mean_y = 0.0;
+
+            // Compute Pi lines for each vertex in the domain, and also (for later use) the mean
+            // position of the vertices.
+            while (dv != domain.end()) {
+
+                dvnext = ++dv;
+                if (dvnext == domain.end()) {
+                    dvnext = domain.begin();
+                }
+
+                pair<Flt, Flt> Aim1;
+                if (dvprev == domain.end()) {
+                    dvprev--;
+                    Aim1 = dvprev->v;
+                    dvprev = domain.begin();
+                } else {
+                    Aim1 = dvprev->v;
+                    ++dvprev;
+                }
+
+                // Reset dv back one now we figured out dvnext and dvprev
+                dv--;
+                mean_x += dv->v.first;
+                mean_y += dv->v.second;
+                dv->compute_line_to_centre (Aim1, dvnext->v);
+                ++dv;
+            }
+#if 0
+            // Ok, got the lines to Pi for each Dirichlet vertex. Can now find a Pi_best that
+            // minimises the distance to each Pi line.
+            //
+            // This is amenable to a nice simple gradient descent.
+
+            pair<Flt, Flt> Pibest; // Start out at average position? centroid of vertices?
+            Pibest.first = mean_x / domain.size();
+            Pibest.second = mean_y / domain.size();
+
+            // DO a gradient descent to the best Pibest.
+            bool finished = false;
+            while (!finished) {
+                dv = domain.begin();
+                while (dv != domain.end()) {
+                    // Compute sum of square distances to the lines.
+                    ++dv;
+                }
+                // Decide how to modify Pibest and loop.
+            }
+#endif
+
+            Flt num_vtx = static_cast<Flt>(domain.size());
+            return metric/num_vtx;
+        }
+
+        /*!
+         * Take a list of Dirichlet domains and compute a metric for the Dirichlet-ness of the
+         * vertices after Honda1983.
+         */
+        static Flt
+        dirichlet_analyse (list<list<DirichVtx<Flt> > >& doms) {
+            Flt metric = 0.0;
+            auto di = doms.begin();
+            while (di != doms.end()) {
+                metric += ShapeAnalysis<Flt>::dirichlet_analyse_single_domain (*di);
+                ++di;
+            }
+            // return the arithmetic mean Dirichlet-ness measure
+            return metric/static_cast<Flt>(doms.size());
+        }
+
+        /*!
          * Save all the information contained in a set of dirichlet vertices to HDF5 into the
          * HdfData @data. The set(list?) of Dirichlet vertices is for one single Dirichlet domain.
          */
