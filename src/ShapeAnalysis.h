@@ -350,7 +350,18 @@ namespace morph {
             }
 
             // Now the main walking algorithm
+
+            // Include loopcount to catch any infinite loops to debug their reason for existence.
+            unsigned int loopcount = 0;
+
             while (!partner_found) {
+
+                if (loopcount++ > 1000) {
+                    WALK ("UH OH: Breaking out of while loop after " << loopcount << " iterations");
+                    next_one = v_init;
+                    partner_found = true;
+                    break;
+                }
 
                 WLK2 ("===== while loop. partner_found==false ======");
 
@@ -629,7 +640,7 @@ namespace morph {
                 WLK2 ("Finished loop around inner hex");
             } // end while !partner_found
 
-            WALK ("*********************  returning **********************");
+            WALK ("*** returning. loopcount is " << loopcount);
             return next_one;
         }
 
@@ -801,9 +812,9 @@ namespace morph {
                 return true;
             }
 
-            // Now move on to the next vertex in the domain, re-calling process_domain recursively,
-            // or exiting if we got to the start of the domain perimeter. We shouldn't get anywhere
-            // close to the recursion limit in this system.
+            // Now move on to the next vertex in the domain, re-calling process_domain
+            // recursively, or exiting if we got to the start of the domain perimeter. We
+            // shouldn't get anywhere close to the recursion limit in this system.
             if (dv->onBoundary == false) {
                 DBG ("Recursively call process_domain...");
                 bool result = process_domain (hg, f, dv, vertices, domain, first_vtx);
@@ -823,8 +834,8 @@ namespace morph {
         static list<list<DirichVtx<Flt> > >
         dirichlet_vertices (HexGrid* hg, vector<Flt>& f, list<DirichVtx<Flt> >& vertices) {
 
-            // 1. Go though and find a list of all vertices, in no particular order.  This will lead
-            // to duplications because >1 domain for a given ID, f, is possible early in
+            // 1. Go though and find a list of all vertices, in no particular order.  This will
+            // lead to duplications because >1 domain for a given ID, f, is possible early in
             // simulations. From this list, I can find vertex sets, whilst deleting from the list
             // until it is empty, and know that I will have discovered all the domain vertex sets.
             // list<DirichVtx<Flt> > vertices;
@@ -837,8 +848,9 @@ namespace morph {
 
             // 2. Delete from the list<DirichVtx> and construct a list<list<DirichVtx>> of all the
             // domains. The list<DirichVtx> for a single domain should be ordered so that the
-            // perimeter of the domain is traversed. I have to do Dirichlet domain boundary walks to
-            // achieve this (to disambiguate between vertices from separate, but same-ID domains).
+            // perimeter of the domain is traversed. I have to do Dirichlet domain boundary walks
+            // to achieve this (to disambiguate between vertices from separate, but same-ID
+            // domains).
             list<list<DirichVtx<Flt>>> dirich_domains;
             typename list<DirichVtx<Flt>>::iterator dv = vertices.begin();
             //unsigned int domcount = 0;
