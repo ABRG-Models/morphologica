@@ -150,3 +150,9 @@ add_test(testDirichlet5 testDirichlet5)
 add_executable(testMathAlgo testMathAlgo.cpp)
 target_link_libraries(testMathAlgo morphologica)
 add_test(testMathAlgo testMathAlgo)
+
+# Test Nelder Mead algorithm
+add_executable(testNMSimplex testNMSimplex.cpp)
+target_compile_definitions(testNMSimplex PUBLIC FLT=float)
+target_link_libraries(testNMSimplex morphologica)
+add_test(testNMSimplex testNMSimplex)
