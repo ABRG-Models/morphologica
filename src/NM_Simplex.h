@@ -12,6 +12,8 @@
 #ifndef _NM_SIMPLEX_H_
 #define _NM_SIMPLEX_H_
 
+#include <utility>
+using std::pair;
 #include <vector>
 using std::vector;
 #include "MathAlgo.h"
@@ -118,6 +120,18 @@ namespace morph {
             for (vector<Flt>& v : this->vertices) {
                 v = initial_vertices[i++];
             }
+            this->state = NM_Simplex_State::NeedToComputeThenOrder;
+        }
+        //! Special constructor for 3 vertices in 2 dimensions
+        NM_Simplex (const pair<Flt, Flt>& v0, const pair<Flt, Flt>& v1, const pair<Flt, Flt>& v2) {
+            this->n = 2;
+            this->allocate();
+            this->vertices[0][0] = v0.first;
+            this->vertices[0][1] = v0.second;
+            this->vertices[1][0] = v1.first;
+            this->vertices[1][1] = v1.second;
+            this->vertices[2][0] = v2.first;
+            this->vertices[2][1] = v2.second;
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! General constructor for n dimensional simplex

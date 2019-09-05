@@ -1,6 +1,7 @@
 #ifndef _SHAPEANALYSIS_H_
 #define _SHAPEANALYSIS_H_
 
+#include <utility>
 #include <vector>
 #include <list>
 #include <set>
@@ -10,9 +11,12 @@
 #include "HexGrid.h"
 #include "DirichVtx.h"
 #include "MorphDbg.h"
+#include "NM_Simplex.h"
 
 using std::vector;
 using std::list;
+using std::pair;
+using std::make_pair;
 using std::set;
 using std::numeric_limits;
 using std::runtime_error;
@@ -21,6 +25,8 @@ using std::exception;
 using morph::Hex;
 using morph::HexGrid;
 using morph::DirichVtx;
+using morph::NM_Simplex;
+using morph::NM_Simplex_State;
 
 namespace morph {
 
@@ -878,14 +884,25 @@ namespace morph {
             return dirich_domains;
         }
 
+        //! This is the objective function for the gradient descent
+        static Flt compute_sos (list<DirichVtx<Flt> >& domain, const Flt& x, const Flt& y) {
+            typename list<DirichVtx<Flt>>::iterator dv = domain.begin();
+            Flt sos = 0.0;
+            while (dv != domain.end()) {
+                // Compute sum of square distances to the lines.
+                Flt dist = dv->compute_distance_to_line (make_pair(x, y));
+                sos += dist * dist;
+                ++dv;
+            }
+            return sos;
+        }
+
         /*!
          * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
          * metric for the Dirichlet-ness of the vertices after Honda1983.
          */
         static Flt
         dirichlet_analyse_single_domain (list<DirichVtx<Flt> >& domain) {
-
-            Flt metric = 0.0f;
 
             typename list<DirichVtx<Flt>>::iterator dv = domain.begin();
             typename list<DirichVtx<Flt>>::iterator dvnext = dv;
@@ -925,31 +942,53 @@ namespace morph {
             // minimises the distance to each Pi line.
             //
             // This is amenable to a nice simple gradient descent. Will implement a Nelder-Mead
-            // approach (tomorrow, when my brain is awake)
+            // approach.
 
-            pair<Flt, Flt> Pi_best; // Start out at average position? centroid of vertices?
+            pair<Flt, Flt> Pi_best; // Start out with a simplex
             Pi_best.first = mean_x / domain.size();
             Pi_best.second = mean_y / domain.size();
             DBG ("Pi_best starts as mean of vertices: ("
                  << Pi_best.first << "," << Pi_best.second << ")");
 
-            // DO a gradient descent to the best Pi_best.
-            bool finished = false;
-            while (!finished) {
-                dv = domain.begin();
-                Flt sos = 0.0;
-                while (dv != domain.end()) {
-                    // Compute sum of square distances to the lines.
-                    Flt dist = dv->compute_distance_to_line (Pi_best);
-                    DBG ("distance to line: " << dist);
-                    sos += dist * dist;
+            // Start with an initial simplex consisting of the centroid of the vertices, and two
+            // other randomly chosen? Opposite? vertices from the domain.
 
-                    ++dv;
+            // So I think a Nelder-Mead Simplex class will be a nice approach:
+            NM_Simplex<Flt> simp (Pi_best, domain.begin()->v, domain.begin()->vn);
+            simp.termination_threshold = numeric_limits<Flt>::epsilon();
+
+            Flt val;
+            unsigned int lcount = 0;
+            while (simp.state != NM_Simplex_State::ReadyToStop) {
+                lcount++;
+                if (simp.state == NM_Simplex_State::NeedToComputeThenOrder) {
+                    // 1. apply objective to each vertex
+                    for (unsigned int i = 0; i <= simp.n; ++i) {
+                        simp.values[i] = ShapeAnalysis<Flt>::compute_sos (domain, simp.vertices[i][0], simp.vertices[i][1]);
+                    }
+                    simp.order();
+
+                } else if (simp.state == NM_Simplex_State::NeedToOrder) {
+                    simp.order();
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeReflection) {
+                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xr[0], simp.xr[1]);
+                    simp.apply_reflection (val);
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
+                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xe[0], simp.xc[1]);
+                    simp.apply_expansion (val);
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
+                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xc[0], simp.xc[1]);
+                    simp.apply_contraction (val);
                 }
-                DBG ("sos: " << sos);
-                // Decide how to modify Pi_best and loop.
-                finished = true;
             }
+            vector<Flt> P = simp.best_vertex();
+            Flt metric = simp.best_value();
+            cout << "FINISHED! lcount=" << lcount
+                 << ". Best approximation: (" << P[0] << "," << P[1] << ") has value " << metric << endl;
+            // We now have a P and a metric
 #endif
 
             Flt num_vtx = static_cast<Flt>(domain.size());
