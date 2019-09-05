@@ -30,7 +30,7 @@ int main()
 
     // Check banana function
     FLT test = banana (1.0, 1.0);
-    cout << "test point on banana function = " << test << endl;
+    cout << "test point on banana function = " << test << " (should be 0)." << endl;
 
     NM_Simplex<FLT> simp(i_vertices);
 
@@ -67,32 +67,41 @@ int main()
 
         } else if (simp.state == NM_Simplex_State::NeedToComputeReflection) {
             val = banana (simp.xr[0], simp.xr[1]);
-            cout << "Compute reflection, which is (" << simp.xr[0] << "," << simp.xr[1] << ") with value " << val << endl;
+            cout << "Compute reflection, which is (" << simp.xr[0] << "," << simp.xr[1]
+                 << ") with value " << val << endl;
             simp.apply_reflection (val);
 
         } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
             val = banana (simp.xe[0], simp.xe[1]);
-            cout << "Compute expansion, which is (" << simp.xe[0] << "," << simp.xe[1] << ") with value " << val << endl;
+            cout << "Compute expansion, which is (" << simp.xe[0] << "," << simp.xe[1]
+                 << ") with value " << val << endl;
             simp.apply_expansion (val);
 
         } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
             val = banana (simp.xc[0], simp.xc[1]);
-            cout << "Compute contraction, which is (" << simp.xc[0] << "," << simp.xc[1] << ") with value " << val << endl;
+            cout << "Compute contraction, which is (" << simp.xc[0] << "," << simp.xc[1]
+                 << ") with value " << val << endl;
             simp.apply_contraction (val);
         }
 
 #if 0
+        // Output in matlab/octave format to plot3() the simplex.
         cout << "simp=[";
         for (unsigned int i = 0; i <= simp.n; ++i) {
-            cout << simp.vertices[i][0] << "," << simp.vertices[i][1] << "," << simp.values[i] << ";";
+            cout << simp.vertices[i][0] << "," << simp.vertices[i][1] << ","
+                 << simp.values[i] << ";";
         }
-        cout << simp.vertices[0][0] << "," << simp.vertices[0][1] << "," << simp.values[0] << "];" << endl;
-        cout << "order:" << simp.vertex_order[0] << ","<< simp.vertex_order[1] << ","<< simp.vertex_order[2] << endl;
+        cout << simp.vertices[0][0] << "," << simp.vertices[0][1] << ","
+             << simp.values[0] << "];" << endl;
+        cout << "order:" << simp.vertex_order[0] << ","<< simp.vertex_order[1]
+             << ","<< simp.vertex_order[2] << endl;
 #endif
     }
     vector<FLT> thebest = simp.best_vertex();
     FLT bestval = simp.best_value();
-    cout << "FINISHED! lcount=" << lcount << ". Best approximation: (" << thebest[0] << "," << thebest[1]<< ") has value " << bestval << endl;
+    cout << "FINISHED! lcount=" << lcount
+         << ". Best approximation: (" << thebest[0] << "," << thebest[1]
+         << ") has value " << bestval << endl;
 
     int rtn = -1;
     if (abs(thebest[0] - 1.0) < 1e-3 // Choose 1e-3 so that this will succeed with floats or doubles
