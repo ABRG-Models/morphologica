@@ -16,13 +16,15 @@ int main()
     vector<float> vec = {{ first, second, third, fourth }};
 
     // SD of the vector:
-    float sd = MathAlgo<float>::compute_sd (vec);
-    cout << "Standard deviation: " << sd << endl << endl;
-    if (abs(sd - 0.454863) > 0.000000406) {
+    float themean = 0.0f;
+    float sd = MathAlgo<float>::compute_mean_sd (vec, themean);
+    cout << "Standard deviation: " << sd << " and mean: " << themean << endl;
+    if (abs(sd - 0.262615053) > numeric_limits<float>::epsilon()) {
         cout << "Wrong SD" << endl;
         rtn--;
     }
-    //cout << "SD error: " << (sd-0.454863) << endl;
+    //cout << "SD differs from expected value by: " << (sd-0.262615053)
+    //     << " (float's epsilon is " << numeric_limits<float>::epsilon() << ")" << endl;
 
     cout << "Before sort";
     for (auto v : vec) {
@@ -53,6 +55,21 @@ int main()
     cout << endl;
 
     if (vec[0] == third && vec[1] == fourth && vec[2] == first && vec[3] == second) {
+        cout << "Order correct" << endl;
+    } else {
+        rtn--;
+    }
+
+    // Reset vec
+    vec = {{ first, second, third, fourth }};
+    vector<unsigned int> indices(vec.size(), 0);
+    MathAlgo<float>::bubble_sort_lo_to_hi (vec, indices);
+
+    cout << "After sort lo to hi of INDICES:" << endl;
+    for (unsigned int i = 0; i < vec.size(); ++i) {
+        cout << "val " << vec[i] << " has index " << indices[i] << endl;
+    }
+    if (vec[indices[0]] == second && vec[indices[1]] == first && vec[indices[2]] == fourth && vec[indices[3]] == third) {
         cout << "Order correct" << endl;
     } else {
         rtn--;
