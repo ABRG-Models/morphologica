@@ -145,3 +145,8 @@ add_test(testDirichlet4 testDirichlet4)
 add_executable(testDirichlet5 testDirichlet5.cpp)
 target_link_libraries(testDirichlet5 morphologica)
 add_test(testDirichlet5 testDirichlet5)
+
+# Test MathAlgo code
+add_executable(testMathAlgo testMathAlgo.cpp)
+target_link_libraries(testMathAlgo morphologica)
+add_test(testMathAlgo testMathAlgo)
