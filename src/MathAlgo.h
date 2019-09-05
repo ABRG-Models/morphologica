@@ -83,6 +83,36 @@ namespace morph {
             }
         }
 
+
+        static void bubble_sort_hi_to_lo (const vector<T>& values, vector<unsigned int>& indices) {
+
+            vector<T> vcopy = values;
+
+            // Init indices to be a sequence
+            for (unsigned int i = 0; i < indices.size(); ++i) {
+                indices[i] = i;
+            }
+
+            T value;
+            unsigned int index;
+            unsigned int jplus;
+            for (unsigned int i = 0; i < vcopy.size(); ++i) {
+                for (unsigned int j = 0; j < vcopy.size()-1; ++j) {
+                    jplus = j+1;
+                    if (vcopy[j] < vcopy[jplus]) {
+                        // Swap value in the copy
+                        value = vcopy[j];
+                        vcopy[j] = vcopy[jplus];
+                        vcopy[jplus] = value;
+                        // Swap index too
+                        index = indices[j];
+                        indices[j] = indices[jplus];
+                        indices[jplus] = index;
+                    }
+                }
+            }
+        }
+
         static void bubble_sort_lo_to_hi (const vector<T>& values, vector<unsigned int>& indices) {
 
             vector<T> vcopy = values;
@@ -111,6 +141,7 @@ namespace morph {
                 }
             }
         }
+
     };
 
 }

@@ -69,6 +69,12 @@ int main()
     for (unsigned int i = 0; i < vec.size(); ++i) {
         cout << "val " << vec[i] << " has index " << indices[i] << endl;
     }
+
+    cout << "Should be in order:" << endl;
+    for (unsigned int i = 0; i < vec.size(); ++i) {
+        cout << i << ": " << vec[indices[i]] << endl;
+    }
+
     if (vec[indices[0]] == second && vec[indices[1]] == first && vec[indices[2]] == fourth && vec[indices[3]] == third) {
         cout << "Order correct" << endl;
     } else {
