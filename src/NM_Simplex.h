@@ -127,34 +127,34 @@ namespace morph {
         }
         //@}
 
+        //! Return the location of the best approximation, given the values of the vertices.
+        vector<Flt> best_vertex (void) {
+            return this->vertices[this->vertex_order[0]];
+        }
+        Flt best_value (void) {
+            return this->values[this->vertex_order[0]];
+        }
+
         //! Order the vertices.
         void order (void) {
 
-            // if ready to stop, set state and return (no need to order yet)
-            //Flt sd = this->compute_sd_values(); // SD of this->values
+            // Order the vertices so that the first vertex is the best and the last one is the worst
+            if (this->downhill) {
+                // Best is lowest
+                MathAlgo<Flt>::bubble_sort_lo_to_hi (this->values, this->vertex_order);
+            } else {
+                MathAlgo<Flt>::bubble_sort_hi_to_lo (this->values, this->vertex_order);
+            }
+
+            // if ready to stop, set state and return (we order before testing if we stop, as the
+            // returning of the best value relies on the vertices being ordered).
             Flt sd = MathAlgo<Flt>::compute_sd (this->values);
             if (sd < this->termination_threshold) {
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             }
 
-            // Order the vertices so that the first vertex is the best and the last one is the worst
-            if (this->downhill) {
-                // Best is lowest
-                MathAlgo<float>::bubble_sort_lo_to_hi (this->values, this->vertex_order);
-            } else {
-                MathAlgo<float>::bubble_sort_hi_to_lo (this->values, this->vertex_order);
-            }
-            cout << "After order, the order of values is " << endl;
-            for (auto va : values) {
-                cout << ", " << va;
-            }
-            cout << endl;
-           cout << "...and the order of vertex_order is " << endl;
-            for (auto vo : vertex_order) {
-                cout << ", " << vo;
-            }
-            cout << endl;
+            this->compute_x0();
 
             this->reflect();
         }
@@ -165,7 +165,6 @@ namespace morph {
             unsigned int worst = this->vertex_order[this->n];
             for (unsigned int j = 0; j < this->n; ++j) {
                 this->xr[j] = this->x0[j] + this->alpha * (this->x0[j] - this->vertices[worst][j]);
-                cout << "Set xr[" << j << "] to x0[j]=" << x0[j] << " + " << alpha << " * " << x0[j] << " - " << vertices[worst][j] << " (the worst vertex)" << endl;
             }
             this->state = NM_Simplex_State::NeedToComputeReflection;
         }
@@ -177,16 +176,10 @@ namespace morph {
 
             this->xr_value = _xr_value;
 
-            if (this->downhill) {
-                cout << "Downhill.." << endl;
-            }
-
             if (this->downhill
                 && this->xr_value < this->values[vertex_order[n-1]]
                 && this->xr_value >= this->values[vertex_order[0]]) {
-                cout << "reflected (" << xr_value << ") is better (<) than 2nd worst (" << values[vertex_order[n-1]]
-                     << ") but not better than the best (" << values[vertex_order[0]] << ")" << endl;
-                cout << "replace worst point (" << values[vertex_order[n]]  << ") with reflected point (" << xr_value << ")" << endl;
+
                 this->values[vertex_order[n]] = this->xr_value;
                 this->vertices[vertex_order[n]] = this->xr;
                 this->state = NM_Simplex_State::NeedToOrder;
@@ -194,7 +187,7 @@ namespace morph {
                 // Replace vertices[n] with xr and then next step is order().
             } else if (this->downhill
                        && this->xr_value < this->values[vertex_order[0]]) {
-                cout << "reflected is better (<) than best point so far; expand" << endl;
+                // reflected is better (>) than best point so far; expand
                 this->expand();
 
             } else if (this->downhill == false
@@ -282,14 +275,18 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
 
-        //! Compute x0, the centroid of all points except vertex n
+        //! Compute x0, the centroid of all points except vertex n, or, put another way, the
+        //! centroid of the best side.
         void compute_x0 (void) {
+
             // Zero x0
             for (Flt& x0i : this->x0) { x0i = 0.0; }
-            // For each simplex vertex:
-            for (unsigned int i = 0; i<=this->n; ++i) {
+
+            // For each simplex vertex except the worst vertex
+            for (unsigned int i = 0; i<this->n; ++i) { // *excluding* i==n
                 for (unsigned int j = 0; j<this->n; ++j) {
-                    this->x0[j] += this->vertices[i][j];
+                    // The worst vertex would be vertex_order[i==n]
+                    this->x0[j] += this->vertices[this->vertex_order[i]][j];
                 }
             }
             for (unsigned int j = 0; j<this->n; ++j) {
