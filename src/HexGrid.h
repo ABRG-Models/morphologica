@@ -317,6 +317,11 @@ namespace morph {
         float getVtoNE (void) const;
 
         /*!
+         * Compute and return the area of one hex in the grid.
+         */
+        float getHexArea (void) const;
+
+        /*!
          * Find the minimum or maximum value of x' on the HexGrid,
          * where x' is the x axis rotated by phi degrees.
          */

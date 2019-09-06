@@ -9,9 +9,9 @@
 #include <stdexcept>
 #include "Hex.h"
 #include "HexGrid.h"
+#include "DirichDom.h"
 #include "DirichVtx.h"
 #include "MorphDbg.h"
-#include "NM_Simplex.h"
 
 using std::vector;
 using std::list;
@@ -25,8 +25,7 @@ using std::exception;
 using morph::Hex;
 using morph::HexGrid;
 using morph::DirichVtx;
-using morph::NM_Simplex;
-using morph::NM_Simplex_State;
+using morph::DirichDom;
 
 namespace morph {
 
@@ -722,7 +721,7 @@ namespace morph {
         process_domain (HexGrid* hg, vector<Flt>& f,
                         typename list<DirichVtx<Flt>>::iterator dv,
                         list<DirichVtx<Flt>>& vertices,
-                        list<DirichVtx<Flt>>& domain,
+                        DirichDom<Flt>& domain,
                         DirichVtx<Flt> first_vtx) {
 
             DBG ("Called");
@@ -762,7 +761,7 @@ namespace morph {
                  << ") with f=" << dv->f << " ["
                  << dv->neighb.first << "," << dv->neighb.second << "]");
             dv->closed = true;
-            domain.push_back (v);
+            domain.vertices.push_back (v);
 
             typename list<DirichVtx<Flt>>::iterator dv2 = vertices.begin();
             if (first_vtx.compare (next_vtx) == false) {
@@ -839,8 +838,8 @@ namespace morph {
          * different values of @f. @f is indexed by the HexGrid @hg. Return a list containing lists
          * of the vertices, each of which define a domain.
          */
-        static list<list<DirichVtx<Flt> > >
-        dirichlet_vertices (HexGrid* hg, vector<Flt>& f, list<DirichVtx<Flt> >& vertices) {
+        static list<DirichDom<Flt>>
+        dirichlet_vertices (HexGrid* hg, vector<Flt>& f, list<DirichVtx<Flt>>& vertices) {
 
             // 1. Go though and find a list of all vertices, in no particular order.  This will
             // lead to duplications because >1 domain for a given ID, f, is possible early in
@@ -859,11 +858,11 @@ namespace morph {
             // perimeter of the domain is traversed. I have to do Dirichlet domain boundary walks
             // to achieve this (to disambiguate between vertices from separate, but same-ID
             // domains).
-            list<list<DirichVtx<Flt>>> dirich_domains;
+            list<DirichDom<Flt>> dirich_domains;
             typename list<DirichVtx<Flt>>::iterator dv = vertices.begin();
             //unsigned int domcount = 0;
             while (dv != vertices.end() /* && domcount++ < 3 */) {
-                list<DirichVtx<Flt>> one_domain;
+                DirichDom<Flt> one_domain;
                 DirichVtx<Flt> first_vtx;
                 if (dv->hi->boundaryHex == true) {
                     DBG ("Don't process hexes on the boundary");
@@ -873,6 +872,12 @@ namespace morph {
                     bool success = process_domain (hg, f, dv, vertices, one_domain, first_vtx);
                     dv++;
                     if (success) {
+                        // Set the identity, f of the domain
+                        one_domain.f = first_vtx.f;
+                        // Calculate the area of the domain
+                        unsigned int hexcount = ShapeAnalysis<Flt>::count_up (f, one_domain.f);
+                        one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());
+                        // Add the domain
                         dirich_domains.push_back (one_domain);
                     } else {
                         DBG ("process_domain failed to find the outline of a domain");
@@ -884,115 +889,12 @@ namespace morph {
             return dirich_domains;
         }
 
-        //! This is the objective function for the gradient descent
-        static Flt compute_sos (list<DirichVtx<Flt> >& domain, const Flt& x, const Flt& y) {
-            typename list<DirichVtx<Flt>>::iterator dv = domain.begin();
-            Flt sos = 0.0;
-            while (dv != domain.end()) {
-                // Compute sum of square distances to the lines.
-                Flt dist = dv->compute_distance_to_line (make_pair(x, y));
-                sos += dist * dist;
-                ++dv;
-            }
-            return sos;
-        }
-
-        /*!
-         * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
-         * metric for the Dirichlet-ness of the vertices after Honda1983.
-         */
-        static Flt
-        dirichlet_analyse_single_domain (list<DirichVtx<Flt> >& domain) {
-
-            typename list<DirichVtx<Flt>>::iterator dv = domain.begin();
-            typename list<DirichVtx<Flt>>::iterator dvnext = dv;
-            typename list<DirichVtx<Flt>>::iterator dvprev = domain.end();
-
-            Flt mean_x = 0.0;
-            Flt mean_y = 0.0;
-
-            // Compute Pi lines for each vertex in the domain, and also (for later use) the mean
-            // position of the vertices.
-            while (dv != domain.end()) {
-
-                dvnext = ++dv;
-                if (dvnext == domain.end()) {
-                    dvnext = domain.begin();
-                }
-
-                pair<Flt, Flt> Aim1;
-                if (dvprev == domain.end()) {
-                    dvprev--;
-                    Aim1 = dvprev->v;
-                    dvprev = domain.begin();
-                } else {
-                    Aim1 = dvprev->v;
-                    ++dvprev;
-                }
-
-                // Reset dv back one now we figured out dvnext and dvprev
-                dv--;
-                mean_x += dv->v.first;
-                mean_y += dv->v.second;
-                dv->compute_line_to_centre (Aim1, dvnext->v);
-                ++dv;
-            }
-#if 1
-            // Ok, got the lines to Pi for each Dirichlet vertex. Can now find a Pi_best that
-            // minimises the distance to each Pi line.
-            //
-            // This is amenable to a nice simple gradient descent. Will implement a Nelder-Mead
-            // approach.
-
-            pair<Flt, Flt> Pi_best; // Start out with a simplex
-            Pi_best.first = mean_x / domain.size();
-            Pi_best.second = mean_y / domain.size();
-            DBG ("Pi_best starts as mean of vertices: ("
-                 << Pi_best.first << "," << Pi_best.second << ")");
-
-            // Start with an initial simplex consisting of the centroid of the vertices, and two
-            // other randomly chosen? Opposite? vertices from the domain.
-
-            // So I think a Nelder-Mead Simplex class will be a nice approach:
-            NM_Simplex<Flt> simp (Pi_best, domain.begin()->v, domain.begin()->vn);
-            simp.termination_threshold = numeric_limits<Flt>::epsilon();
-
-            Flt val;
-            unsigned int lcount = 0;
-            while (simp.state != NM_Simplex_State::ReadyToStop) {
-                lcount++;
-                if (simp.state == NM_Simplex_State::NeedToComputeThenOrder) {
-                    // 1. apply objective to each vertex
-                    for (unsigned int i = 0; i <= simp.n; ++i) {
-                        simp.values[i] = ShapeAnalysis<Flt>::compute_sos (domain, simp.vertices[i][0], simp.vertices[i][1]);
-                    }
-                    simp.order();
-
-                } else if (simp.state == NM_Simplex_State::NeedToOrder) {
-                    simp.order();
-
-                } else if (simp.state == NM_Simplex_State::NeedToComputeReflection) {
-                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xr[0], simp.xr[1]);
-                    simp.apply_reflection (val);
-
-                } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
-                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xe[0], simp.xc[1]);
-                    simp.apply_expansion (val);
-
-                } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
-                    val = ShapeAnalysis<Flt>::compute_sos (domain, simp.xc[0], simp.xc[1]);
-                    simp.apply_contraction (val);
-                }
-            }
-            vector<Flt> P = simp.best_vertex();
-            Flt metric = simp.best_value();
-            cout << "FINISHED! lcount=" << lcount
-                 << ". Best approximation: (" << P[0] << "," << P[1] << ") has value " << metric << endl;
-            // We now have a P and a metric
-#endif
-
-            Flt num_vtx = static_cast<Flt>(domain.size());
-            return metric/num_vtx;
+        //! Count number of instances of the value @val in the vector of values @vec.
+        static unsigned int
+        count_up (const vector<Flt>& vec, const Flt val) {
+            unsigned int count = 0;
+            for (auto v : vec) { count += (v == val) ? 1 : 0; }
+            return count;
         }
 
         /*!
@@ -1000,15 +902,27 @@ namespace morph {
          * vertices after Honda1983.
          */
         static Flt
-        dirichlet_analyse (list<list<DirichVtx<Flt> > >& doms) {
-            Flt metric = 0.0;
+        dirichlet_analyse (list<DirichDom<Flt>>& doms, vector<pair<Flt, Flt>>& d_centres) {
+            Flt sum_delta_j = 0.0;
+            Flt sum_areas = 0.0;
+            d_centres.clear();
             auto di = doms.begin();
             while (di != doms.end()) {
-                metric += ShapeAnalysis<Flt>::dirichlet_analyse_single_domain (*di);
+                pair<Flt, Flt> P;
+                // metric returns is delta_j, the mean_sos_per_vertex
+                Flt delta_j = di->dirichlet_analyse_single_domain (P);
+                //cout << "Domain delta_j = " << delta_j << endl;
+                sum_delta_j += delta_j;
+                d_centres.push_back (P);
+                // Sum up area too.
+                sum_areas += di->area;
                 ++di;
             }
-            // return the arithmetic mean Dirichlet-ness measure
-            return metric/static_cast<Flt>(doms.size());
+
+            Flt delta_top = sum_delta_j/static_cast<Flt>(doms.size());
+            Flt delta_bottom = sum_areas/static_cast<Flt>(doms.size());
+
+            return delta_top/delta_bottom;
         }
 
         /*!

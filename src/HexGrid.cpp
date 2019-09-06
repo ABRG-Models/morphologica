@@ -1531,6 +1531,15 @@ morph::HexGrid::getVtoNE (void) const
 }
 
 float
+morph::HexGrid::getHexArea (void) const
+{
+    // Area is the area of 6 triangles: (1/2 LR * d/2) * 6
+    // or (d*d*3)/(2*sqrt(3)) = d * d * sqrt(3)/2
+    float ha = this->d * this->d * morph::SQRT_OF_3_OVER_2_F;
+    return ha;
+}
+
+float
 morph::HexGrid::getXmin (float phi) const
 {
     float xmin = 0.0f;

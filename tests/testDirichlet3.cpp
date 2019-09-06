@@ -70,7 +70,7 @@ int main()
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
-        list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
+        list<morph::DirichDom<float>> domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
         // There should be 19 vertices, precisely.
         unsigned int reqd = 19;

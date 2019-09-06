@@ -21,13 +21,9 @@ namespace morph {
     /*!
      * Dirichlet domain vertex class.
      *
-     * This is a class that can be used with an std::set. It's a container for a pair of Flts
-     * (representing a pair of coordinates in 2D cartesian space) and a comparison operation which
-     * ensures that coordinate pairs which are similar are treated as being equal.
-     *
-     * It has developed into a class which holds a vertex, and its vertex neighbour so that a
-     * group of objects of this class type can define a single domain for Dirichlet-ness analysis
-     * (after Honda 1983).
+     * This is a class which holds a vertex of a Dirichlet domain, and its vertex neighbour so that
+     * a group of objects of this class type can define a single domain for Dirichlet-ness analysis
+     * (after Honda 1983). You'll find a list<> of these in a morph::DirichDom.
      */
     template <class Flt>
     class DirichVtx {
@@ -59,6 +55,12 @@ namespace morph {
         Flt f;
 
         /*!
+         * The area of the domain of which this vertex is a part. A little hacky to have this here,
+         * as the information is repeated n_vertices times for each domain.
+         */
+        //Flt area = 0.0;
+
+        /*!
          * A distance threshold that makes sense within the problem - probably some fraction of
          * the hex-to-hex distance, d is correct, because I'm using this to find hex vertices, and
          * they are spaced exactly one side length of a hex apart. Basing threshold upon this
@@ -87,11 +89,7 @@ namespace morph {
          * the next vertex.
          */
         list<Hex>::iterator hi;
-#if 0
-        //! Parameters for line between A_i and P_i, as described in Honda 1983.
-        Flt m;
-        Flt c;
-#endif
+
         /*!
          * P_i is a point on the line. In this code, I project A_i+1 onto the line to find the
          * actual point P_i.
@@ -212,12 +210,6 @@ namespace morph {
             return false;
         }
 
-#if 0
-        static pair<Flt, Flt> default_coord (void) {
-            return pair<Flt, Flt>(numeric_limits<Flt>::max(), numeric_limits<Flt>::max());
-        }
-#endif
-
         //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
         bool unset (void) {
             if (this->v.first == numeric_limits<Flt>::max()
@@ -267,7 +259,7 @@ namespace morph {
          * Find the minimum distance from the point p to the Pi line defined in this object by P_i,
          * A_i or m and c.
          */
-        Flt compute_distance_to_line (const pair<Flt, Flt>& p) {
+        Flt compute_distance_to_line (const pair<Flt, Flt>& p) const {
             // Find angle between Ai--Pi and Ai--p
             Flt angle = this->compute_angle (p, this->v, this->P_i, 1);
             // And distance from p to Ai
@@ -314,23 +306,6 @@ namespace morph {
             this->P_i.first += deltax;
             this->P_i.second += deltay;
             DBG ("Point P_i: " << P_i.first << "," << P_i.second << ")");
-
-#if 0 // Don't use m/c as a computational device.
-            /*
-             * 3. Use A_i and P_i to compute gradient/offset of the line equation that passes
-             * through point A_i. Store in this->m and this->c (or whatever is suitable).
-             */
-            if (this->P_i.first == this->v.first) {
-                this->m = this->P_i.second < this->v.second ? numeric_limits<Flt>::lowest() : numeric_limits<Flt>::max();
-                this->c = numeric_limits<Flt>::max();
-                // And if c is max(), then it's a vertical line from A_i through P_i which means
-                // that P_i.first == A_i.first and P_i.second can be anything.
-            } else {
-                this->m = (this->P_i.second - this->v.second) / (this->P_i.first - this->v.first);
-                this->c = this->v.second - this->m * this->v.first;
-            }
-            DBG ("Pi line gradient is m=" << this->m << ", offset is c=" << this->c);
-#endif
         }
     };
 

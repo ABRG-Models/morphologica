@@ -70,7 +70,7 @@ int main()
 
         // The code to actually test:
         list<morph::DirichVtx<float>> vertices;
-        list<list<morph::DirichVtx<float> > > domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
+        list<morph::DirichDom<float>> domains = morph::ShapeAnalysis<float>::dirichlet_vertices (&hg, f, vertices);
 
         // There should be 19 vertices, precisely.
         unsigned int reqd = 19;
@@ -120,7 +120,7 @@ int main()
         array<float,3> cl_d = morph::Tools::getJetColorF (0.7);
         array<float,3> cl_e = morph::Tools::getJetColorF (0.01);
         for (auto dom_outer : domains) {
-            for (auto dom_inner : dom_outer) {
+            for (auto dom_inner : dom_outer.vertices) {
                 // Draw the paths
                 for (auto path : dom_inner.pathto_next) {
                     array<float,3> posn = {{0,0,0.003}};
