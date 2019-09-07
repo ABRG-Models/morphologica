@@ -6,10 +6,12 @@
 
 #include <hdf5.h>
 #include <vector>
+#include <list>
 #include <string>
 #include <utility>
 
 using std::vector;
+using std::list;
 using std::string;
 using std::pair;
 
@@ -67,7 +69,21 @@ namespace morph {
         void read_contained_vals (const char* path, vector<long long int>& vals);
         void read_contained_vals (const char* path, vector<unsigned long long int>& vals);
 
+        /*!
+         * Read pairs
+         */
+        //@{
         void read_contained_vals (const char* path, pair<float, float>& vals);
+        void read_contained_vals (const char* path, pair<double, double>& vals);
+        //@}
+
+        /*!
+         * Read lists of pairs
+         */
+        //@{
+        void read_contained_vals (const char* path, list<pair<float, float>>& vals);
+        void read_contained_vals (const char* path, list<pair<double, double>>& vals);
+        //@}
 
         void read_val (const char* path, double& val);
         void read_val (const char* path, float& val);
@@ -75,6 +91,7 @@ namespace morph {
         void read_val (const char* path, unsigned int& val);
         void read_val (const char* path, long long int& val);
         void read_val (const char* path, unsigned long long int& val);
+        void read_val (const char* path, bool& val);
         //@} // reading methods
 
         /*!
@@ -107,6 +124,7 @@ namespace morph {
         void add_val (const char* path, const unsigned int& val);
         void add_val (const char* path, const long long int& val);
         void add_val (const char* path, const unsigned long long int& val);
+        void add_val (const char* path, const bool& val);
         //@}
 
         /*!
@@ -136,6 +154,15 @@ namespace morph {
          */
         //@{
         void add_contained_vals (const char* path, const pair<float, float>& vals);
+        void add_contained_vals (const char* path, const pair<double, double>& vals);
+        //@}
+
+        /*!
+         * Add lists of pairs
+         */
+        //@{
+        void add_contained_vals (const char* path, const list<pair<float, float>>& vals);
+        void add_contained_vals (const char* path, const list<pair<double, double>>& vals);
         //@}
 
         /*!

@@ -15,6 +15,8 @@ using std::list;
 using std::vector;
 #include "HexGrid.h"
 using morph::Hex;
+#include "HdfData.h"
+using morph::HdfData;
 
 namespace morph {
 
@@ -53,12 +55,6 @@ namespace morph {
          * domain's identity.
          */
         Flt f;
-
-        /*!
-         * The area of the domain of which this vertex is a part. A little hacky to have this here,
-         * as the information is repeated n_vertices times for each domain.
-         */
-        //Flt area = 0.0;
 
         /*!
          * A distance threshold that makes sense within the problem - probably some fraction of
@@ -306,6 +302,28 @@ namespace morph {
             this->P_i.first += deltax;
             this->P_i.second += deltay;
             DBG ("Point P_i: " << P_i.first << "," << P_i.second << ")");
+        }
+
+        //! Save data from the DirichVtx. Not saving ALL members of this class (e.g. omitting threshold)
+        void save (HdfData& data, const string& pathroot) const {
+            string p("");
+            p = pathroot + "/v";
+            data.add_contained_vals (p.c_str(), this->v);
+            p = pathroot + "/vn";
+            data.add_contained_vals (p.c_str(), this->vn);
+            p = pathroot + "/f";
+            data.add_val (p.c_str(), this->f);
+            p = pathroot + "/neighb";
+            data.add_contained_vals (p.c_str(), this->neighb);
+            p = pathroot + "/P_i";
+            data.add_contained_vals (p.c_str(), this->P_i);
+            p = pathroot + "/onBoundary";
+            data.add_val (p.c_str(), this->onBoundary);
+            // Finally,
+            p = pathroot + "/pathto_neighbour";
+            data.add_contained_vals (p.c_str(), this->pathto_neighbour);
+            p = pathroot + "/pathto_next";
+            data.add_contained_vals (p.c_str(), this->pathto_next);
         }
     };
 

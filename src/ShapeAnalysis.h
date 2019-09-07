@@ -873,7 +873,7 @@ namespace morph {
                     dv++;
                     if (success) {
                         // Set the identity, f of the domain
-                        one_domain.f = first_vtx.f;
+                        one_domain.f = one_domain.vertices.front().f;
                         // Calculate the area of the domain
                         unsigned int hexcount = ShapeAnalysis<Flt>::count_up (f, one_domain.f);
                         one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());

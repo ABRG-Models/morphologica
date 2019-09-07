@@ -15,6 +15,7 @@ using std::string;
 using std::runtime_error;
 using std::stringstream;
 using std::pair;
+using std::make_pair;
 
 #include <iostream>
 using std::cout;
@@ -192,6 +193,70 @@ morph::HdfData::read_contained_vals (const char* path, pair<float, float>& vals)
 }
 
 void
+morph::HdfData::read_contained_vals (const char* path, pair<double, double>& vals)
+{
+    vector<double> vvals;
+    this->read_contained_vals (path, vvals);
+    if (vvals.size() != 2) {
+        stringstream ee;
+        ee << "Error. Expected pair<double, double> data to be stored in a vector of size 2";
+        throw runtime_error (ee.str());
+    }
+    vals.first = vvals[0];
+    vals.second = vvals[1];
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, list<pair<float, float>>& vals)
+{
+    string p1(path);
+    p1 += "_first";
+    string p2(path);
+    p2 += "_second";
+
+    vector<float> first;
+    this->read_contained_vals (p1.c_str(), first);
+    vector<float> second;
+    this->read_contained_vals (p2.c_str(), second);
+
+    if (first.size() != second.size()) {
+        stringstream ee;
+        ee << "Error. Expected two vectors *_first and *_second of same length.";
+        throw runtime_error (ee.str());
+    }
+
+    vals.clear();
+    for (unsigned int i = 0; i < first.size(); ++i) {
+        vals.push_back (make_pair (first[i], second[i]));
+    }
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, list<pair<double, double>>& vals)
+{
+    string p1(path);
+    p1 += "_first";
+    string p2(path);
+    p2 += "_second";
+
+    vector<double> first;
+    this->read_contained_vals (p1.c_str(), first);
+    vector<double> second;
+    this->read_contained_vals (p2.c_str(), second);
+
+    if (first.size() != second.size()) {
+        stringstream ee;
+        ee << "Error. Expected two vectors *_first and *_second of same length.";
+        throw runtime_error (ee.str());
+    }
+
+    vals.clear();
+    for (unsigned int i = 0; i < first.size(); ++i) {
+        vals.push_back (make_pair (first[i], second[i]));
+    }
+}
+
+void
 morph::HdfData::read_val (const char* path, double& val)
 {
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
@@ -249,6 +314,19 @@ morph::HdfData::read_val (const char* path, unsigned long long int& val)
     this->handle_error (status, "Error. status after H5Dread: ");
     status = H5Dclose (dataset_id);
     this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_val (const char* path, bool& val)
+{
+    unsigned int uival = 0;
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &uival);
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    // Copy unsigned int value into bool:
+    val = uival > 0 ? true : false;
 }
 //@}
 
@@ -382,6 +460,27 @@ morph::HdfData::add_val (const char* path, const unsigned long long int& val)
     status = H5Sclose (dataspace_id);
     this->handle_error (status, "Error. status after H5Sclose: ");
 }
+
+void
+morph::HdfData::add_val (const char* path, const bool& val)
+{
+    unsigned int uival = 0;
+    if (val == true) {
+        uival = 1;
+    }
+    this->process_groups (path);
+    hsize_t dim_singleparam[1];
+    dim_singleparam[0] = 1;
+    hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &uival);
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
 //@} // add_val overloads
 
 /*!
@@ -458,6 +557,48 @@ morph::HdfData::add_contained_vals (const char* path, const vector<float>& vals)
 }
 
 void
+morph::HdfData::add_contained_vals (const char* path, const list<pair<float, float>>& vals)
+{
+    // A list of pairs is two cols. Write into two vectors, first and second, then
+    // add_contained_vals from that.
+    vector<float> first (vals.size(), 0.0f);
+    vector<float> second (vals.size(), 0.0f);
+    unsigned int i = 0;
+    for (pair<float, float> p : vals) {
+        first[i] = p.first;
+        second[i] = p.second;
+        ++i;
+    }
+    string p1(path);
+    p1 += "_first";
+    string p2(path);
+    p2 += "_second";
+    this->add_contained_vals (p1.c_str(), first);
+    this->add_contained_vals (p2.c_str(), second);
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const list<pair<double, double>>& vals)
+{
+    // A list of pairs is two cols. Write into two vectors, first and second, then
+    // add_contained_vals from that.
+    vector<double> first (vals.size(), 0.0f);
+    vector<double> second (vals.size(), 0.0f);
+    unsigned int i = 0;
+    for (pair<double, double> p : vals) {
+        first[i] = p.first;
+        second[i] = p.second;
+        ++i;
+    }
+    string p1(path);
+    p1 += "_first";
+    string p2(path);
+    p2 += "_second";
+    this->add_contained_vals (p1.c_str(), first);
+    this->add_contained_vals (p2.c_str(), second);
+}
+
+void
 morph::HdfData::add_contained_vals (const char* path, const vector<int>& vals)
 {
     this->process_groups (path);
@@ -525,6 +666,15 @@ void
 morph::HdfData::add_contained_vals (const char* path, const pair<float, float>& vals)
 {
     vector<float> vf;
+    vf.push_back (vals.first);
+    vf.push_back (vals.second);
+    this->add_contained_vals (path, vf);
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const pair<double, double>& vals)
+{
+    vector<double> vf;
     vf.push_back (vals.first);
     vf.push_back (vals.second);
     this->add_contained_vals (path, vf);

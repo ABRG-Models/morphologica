@@ -8,11 +8,15 @@ using std::vector;
 #include <utility>
 using std::pair;
 using std::make_pair;
+#include <sstream>
+using std::stringstream;
 #include "DirichVtx.h"
 using morph::DirichVtx;
 #include "NM_Simplex.h"
 using morph::NM_Simplex;
 using morph::NM_Simplex_State;
+#include "HdfData.h"
+using morph::HdfData;
 
 namespace morph {
 
@@ -143,14 +147,14 @@ namespace morph {
             }
             vector<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
-            cout << "FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos << endl;
+            DBG ("FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos);
             // We now have a P and a metric
 
             // Write P into the ref in the arg
             P.first = vP[0];
             P.second = vP[1];
 
-            // Return the metric. In Honda 1983, this is $\delta_j$
+            // Return the metric. In Honda 1983, this is $\Delta_j$
             Flt mean_sos_per_vertex = min_sos/static_cast<Flt>(this->numVertices());
 
             this->honda = mean_sos_per_vertex;
@@ -158,6 +162,28 @@ namespace morph {
             return mean_sos_per_vertex;
         }
 
+        //! Save this domain data in HdfData& @data under path @pathroot
+        void save (HdfData& data, const string& pathroot) const {
+            string p("");
+            p = pathroot + "/f";
+            data.add_val (p.c_str(), this->f);
+            p = pathroot + "/area";
+            data.add_val (p.c_str(), this->area);
+            p = pathroot + "/honda";
+            data.add_val (p.c_str(), this->honda);
+            p = pathroot + "/edgedev";
+            data.add_val (p.c_str(), this->edge_deviation);
+
+            unsigned int vcount = 0;
+            for (auto dv : this->vertices) {
+                stringstream vname;
+                vname << pathroot << "/vtx";
+                vname.width(3);
+                vname.fill('0');
+                vname << vcount++;
+                dv.save (data, vname.str());
+            }
+        }
     };
 
 } // namespace morph
