@@ -37,35 +37,54 @@ using std::endl;
  * Flags
  */
 //@{
+/*!
+ * Set true when ne has been set. Use of iterators (Hex::ne etc) rather than pointers for
+ * neighbouring hexes means we can't do any kind of check to see if the iterator is valid, so we
+ * have to keep separate boolean flags for whether or not each Hex has a neighbour. Those flags are
+ * kept in Hex::flags.
+ */
+
 #define HEX_HAS_NE        0x1
 #define HEX_HAS_NNE       0x2
 #define HEX_HAS_NNW       0x4
 #define HEX_HAS_NW        0x8
 #define HEX_HAS_NSW      0x10
 #define HEX_HAS_NSE      0x20
+#define HEX_HAS_NEIGHB_ALL 0x3f // HEX_HAS_NE | HEX_HAS_NNE | ...etc
 
-// Neighbour (or edge, or side) positions
+//! All hexes marked as boundary hexes, including some that are additional to requirements:
+#define HEX_IS_BOUNDARY      0x40
+//! All hexes inside boundary plus as much of the boundary as needed to make a contiguous boundary:
+#define HEX_INSIDE_BOUNDARY  0x80
+//! All hexes inside the domain of computation:
+#define HEX_INSIDE_DOMAIN   0x100
+//! Four flags for client code to use for its own devices. For an example of use, see DirichDom.h
+//@{
+#define HEX_USER_FLAG_1    0x10000000
+#define HEX_USER_FLAG_2    0x20000000
+#define HEX_USER_FLAG_3    0x40000000
+#define HEX_USER_FLAG_4    0x80000000
+//@}
+//@} // Flags
+
+//! Neighbour (or edge, or side) positions
+//@{
 #define HEX_NEIGHBOUR_POS_E   0x0
 #define HEX_NEIGHBOUR_POS_NE  0x1
 #define HEX_NEIGHBOUR_POS_NW  0x2
 #define HEX_NEIGHBOUR_POS_W   0x3
 #define HEX_NEIGHBOUR_POS_SW  0x4
 #define HEX_NEIGHBOUR_POS_SE  0x5
+//@}
 
-// Vertex positions
+//! Vertex positions
+//@{
 #define HEX_VERTEX_POS_NE     0x0
 #define HEX_VERTEX_POS_N      0x1
 #define HEX_VERTEX_POS_NW     0x2
 #define HEX_VERTEX_POS_SW     0x3
 #define HEX_VERTEX_POS_S      0x4
 #define HEX_VERTEX_POS_SE     0x5
-
-// All hexes marked as boundary hexes, including some that are additional to requirements:
-#define HEX_IS_BOUNDARY      0x40
-// All hexes inside boundary plus as much of the boundary as needed to make a contiguous boundary:
-#define HEX_INSIDE_BOUNDARY  0x80
-// All hexes inside the domain of computation:
-#define HEX_INSIDE_DOMAIN   0x100
 //@}
 
 namespace morph {
@@ -232,25 +251,25 @@ namespace morph {
             s += to_string(this->ri).substr(0,4) + ",";
             s += to_string(this->gi).substr(0,4) + "). ";
 
-            if (this->has_ne) {
-                s += "E: (" + to_string(this->ne->ri).substr(0,4) + "," + to_string(this->ne->gi).substr(0,4) + ") " + (this->ne->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_ne()) {
+                s += "E: (" + to_string(this->ne->ri).substr(0,4) + "," + to_string(this->ne->gi).substr(0,4) + ") " + (this->ne->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->has_nse) {
-                s += "SE: (" + to_string(this->nse->ri).substr(0,4) + "," + to_string(this->nse->gi).substr(0,4) + ") " + (this->nse->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_nse()) {
+                s += "SE: (" + to_string(this->nse->ri).substr(0,4) + "," + to_string(this->nse->gi).substr(0,4) + ") " + (this->nse->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->has_nsw) {
-                s += "SW: (" + to_string(this->nsw->ri).substr(0,4) + "," + to_string(this->nsw->gi).substr(0,4) + ") " + (this->nsw->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_nsw()) {
+                s += "SW: (" + to_string(this->nsw->ri).substr(0,4) + "," + to_string(this->nsw->gi).substr(0,4) + ") " + (this->nsw->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->has_nw) {
-                s += "W: (" + to_string(this->nw->ri).substr(0,4) + "," + to_string(this->nw->gi).substr(0,4) + ") " + (this->nw->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_nw()) {
+                s += "W: (" + to_string(this->nw->ri).substr(0,4) + "," + to_string(this->nw->gi).substr(0,4) + ") " + (this->nw->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->has_nnw) {
-                s += "NW: (" + to_string(this->nnw->ri).substr(0,4) + "," + to_string(this->nnw->gi).substr(0,4) + ") " + (this->nnw->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_nnw()) {
+                s += "NW: (" + to_string(this->nnw->ri).substr(0,4) + "," + to_string(this->nnw->gi).substr(0,4) + ") " + (this->nnw->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->has_nne) {
-                s += "NE: (" + to_string(this->nne->ri).substr(0,4) + "," + to_string(this->nne->gi).substr(0,4) + ") " + (this->nne->boundaryHex == true ? "OB":"") + " ";
+            if (this->has_nne()) {
+                s += "NE: (" + to_string(this->nne->ri).substr(0,4) + "," + to_string(this->nne->gi).substr(0,4) + ") " + (this->nne->boundaryHex() == true ? "OB":"") + " ";
             }
-            if (this->boundaryHex) {
+            if (this->boundaryHex()) {
                 s += "(ON boundary)";
             } else  {
                 s += "(not boundary)";
@@ -549,11 +568,11 @@ namespace morph {
         //@}
 
         /*!
-         * Get all the flags packed into an unsigned int. Only uses 9
-         * bits of the 32 bits available.
+         * Get all the flags packed into an unsigned int.
          */
         unsigned int getFlags (void) const {
-
+            return this->flags;
+#if 0
             unsigned int flgs = 0x0;
 
             if (boundaryHex == true) {
@@ -585,12 +604,15 @@ namespace morph {
             }
 
             return flgs;
+#endif
         }
 
         /*!
          * Set the various booleans from the passed in unsigned int.
          */
         void setFromFlags (unsigned int flgs) {
+            this->flags = flgs;
+#if 0
             this->boundaryHex = (flgs & HEX_IS_BOUNDARY) ? true : false;
             this->insideBoundary = (flgs & HEX_INSIDE_BOUNDARY) ? true : false;
             this->insideDomain = (flgs & HEX_INSIDE_DOMAIN) ? true : false;
@@ -600,26 +622,57 @@ namespace morph {
             this->has_nw = (flgs & HEX_HAS_NW) ? true : false;
             this->has_nsw = (flgs & HEX_HAS_NSW) ? true : false;
             this->has_nse = (flgs & HEX_HAS_NSE) ? true : false;
+#endif
+        }
+        void setFlags (unsigned int flgs) {
+            this->flags = flgs;
         }
 
         /*!
-         * Set to true if this Hex has been marked as being on a
-         * boundary. It is expected that client code will then re-set
-         * the neighbour relations so that onBoundary() would return
+         * Set to true if this Hex has been marked as being on a boundary. It is expected that
+         * client code will then re-set the neighbour relations so that onBoundary() would return
          * true.
          */
-        bool boundaryHex = false;
+        bool boundaryHex (void) const {
+            return this->flags & HEX_IS_BOUNDARY ? true : false;
+        }
+        /*!
+         * Mark the hex as a boundary hex. Boundary hexes are also, by definition, inside the
+         * boundary.
+         */
+        void setBoundaryHex (void) {
+            this->flags |= (HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY);
+        }
+        void unsetBoundaryHex (void) {
+            this->flags ^= (HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY);
+        }
 
         /*!
          * Set true if this Hex is known to be inside the boundary.
          */
-        bool insideBoundary = false;
+        bool insideBoundary (void) const {
+            return this->flags & HEX_INSIDE_BOUNDARY ? true : false;
+        }
+        void setInsideBoundary (void) {
+            this->flags |= HEX_INSIDE_BOUNDARY;
+        }
+        void unsetInsideBoundary (void) {
+            this->flags ^= HEX_INSIDE_BOUNDARY;
+        }
 
         /*!
          * Set true if this Hex is known to be inside a
          * rectangular, parallelogram or hexagonal 'domain'.
          */
-        bool insideDomain = false;
+        bool insideDomain (void) const {
+            return this->flags & HEX_INSIDE_DOMAIN ? true : false;
+        }
+        void setInsideDomain (void) {
+            this->flags |= HEX_INSIDE_DOMAIN;
+        }
+        void unsetInsideDomain (void) {
+            this->flags ^= HEX_INSIDE_DOMAIN;
+        }
 
         /*!
          * This can be populated with the distance to the nearest
@@ -629,10 +682,13 @@ namespace morph {
         float distToBoundary = -1.0f;
 
         /*!
-         * Return true if this is a boundary hex - one on the outside
-         * edge of a hex grid.
+         * Return true if this is a boundary hex - one on the outside edge of a hex grid. The result
+         * is based on testing neihgbour relations, rather than examining the value of the
+         * HEX_IS_BOUNDARY flag.
          */
         bool onBoundary() {
+            return ((this->flags & HEX_HAS_NEIGHB_ALL) == HEX_HAS_NEIGHB_ALL) ? false : true;
+#if 0
             if (this->has_ne == false
                 || this->has_nne == false
                 || this->has_nnw == false
@@ -642,6 +698,7 @@ namespace morph {
                 return true;
             }
             return false;
+#endif
         }
 
         /*!
@@ -650,51 +707,72 @@ namespace morph {
         //@{
         void set_ne (list<Hex>::iterator it) {
             this->ne = it;
-            this->has_ne = true;
+            this->flags |= HEX_HAS_NE;
         }
         void set_nne (list<Hex>::iterator it) {
             this->nne = it;
-            this->has_nne = true;
+            this->flags |= HEX_HAS_NNE;
         }
         void set_nnw (list<Hex>::iterator it) {
             this->nnw = it;
-            this->has_nnw = true;
+            this->flags |= HEX_HAS_NNW;
         }
         void set_nw (list<Hex>::iterator it) {
             this->nw = it;
-            this->has_nw = true;
+            this->flags |= HEX_HAS_NW;
         }
         void set_nsw (list<Hex>::iterator it) {
             this->nsw = it;
-            this->has_nsw = true;
+            this->flags |= HEX_HAS_NSW;
         }
         void set_nse (list<Hex>::iterator it) {
             this->nse = it;
-            this->has_nse = true;
+            this->flags |= HEX_HAS_NSE;
         }
         //@}
+
+        //! Replacing bool members has_ne, has_nne etc.
+        bool has_ne (void) const {
+            return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE);
+        }
+        bool has_nne (void) const {
+            return ((this->flags & HEX_HAS_NNE) == HEX_HAS_NNE);
+        }
+        bool has_nnw (void) const {
+            return ((this->flags & HEX_HAS_NNW) == HEX_HAS_NNW);
+        }
+        bool has_nw (void) const {
+            return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW);
+        }
+        bool has_nsw (void) const {
+            return ((this->flags & HEX_HAS_NSW) == HEX_HAS_NSW);
+        }
+        bool has_nse (void) const {
+            return ((this->flags & HEX_HAS_NSE) == HEX_HAS_NSE);
+        }
 
         /*!
          * Un-set neighbour iterators
          */
         //@{
         void unset_ne (void) {
-            this->has_ne = false;
+            this->flags ^= HEX_HAS_NE;
         }
         void unset_nne (void) {
-            this->has_nne = false;
+            this->flags ^= HEX_HAS_NNE;
         }
         void unset_nnw (void) {
-            this->has_nnw = false;
+            this->flags ^= HEX_HAS_NNW;
         }
         void unset_nw (void) {
-            this->has_nw = false;
+            this->flags ^= HEX_HAS_NW;
         }
         void unset_nsw (void) {
-            this->has_nsw = false;
+            //this->has_nsw = false;
+            this->flags ^= HEX_HAS_NSW;
         }
         void unset_nse (void) {
-            this->has_nse = false;
+            this->flags ^= HEX_HAS_NSE;
         }
         //@}
 
@@ -704,36 +782,35 @@ namespace morph {
          * West: 3, South-West: 4, South-East: 5
          */
         bool has_neighbour (unsigned short ni) {
-            unsigned int flags = this->getFlags();
             switch (ni) {
             case HEX_NEIGHBOUR_POS_E:
             {
-                return (flags & HEX_HAS_NE) ? true : false;
+                return (this->flags & HEX_HAS_NE) ? true : false;
                 break;
             }
             case HEX_NEIGHBOUR_POS_NE:
             {
-                return (flags & HEX_HAS_NNE) ? true : false;
+                return (this->flags & HEX_HAS_NNE) ? true : false;
                 break;
             }
             case HEX_NEIGHBOUR_POS_NW:
             {
-                return (flags & HEX_HAS_NNW) ? true : false;
+                return (this->flags & HEX_HAS_NNW) ? true : false;
                 break;
             }
             case HEX_NEIGHBOUR_POS_W:
             {
-                return (flags & HEX_HAS_NW) ? true : false;
+                return (this->flags & HEX_HAS_NW) ? true : false;
                 break;
             }
             case HEX_NEIGHBOUR_POS_SW:
             {
-                return (flags & HEX_HAS_NSW) ? true : false;
+                return (this->flags & HEX_HAS_NSW) ? true : false;
                 break;
             }
             case HEX_NEIGHBOUR_POS_SE:
             {
-                return (flags & HEX_HAS_NSE) ? true : false;
+                return (this->flags & HEX_HAS_NSE) ? true : false;
                 break;
             }
             default:
@@ -936,6 +1013,22 @@ namespace morph {
         //@}
 
         /*!
+         * Return true if the Hex contains the vertex
+         */
+        template <typename LFlt>
+        bool contains_vertex (pair<LFlt, LFlt>& coord) {
+            // check each of my vertices, if any match coord, then return true.
+            bool rtn = false;
+            for (unsigned int ni = 0; ni < 6; ++ni) {
+                if (this->compare_vertex_coord (ni, coord) == true) {
+                    rtn = true;
+                    break;
+                }
+            }
+            return rtn;
+        }
+
+        /*!
          * Return true if coord is reasonably close to being in the
          * same location as the centre of the Hex, with the distance
          * threshold being set from the Hex to Hex spacing. This is
@@ -963,39 +1056,45 @@ namespace morph {
          * Un-set the pointers on all my neighbours so that THEY no longer point to ME.
          */
         void disconnectNeighbours (void) {
-            if (this->has_ne) {
-                if (this->ne->has_nw) {
+            if (this->has_ne()) {
+                if (this->ne->has_nw()) {
                     this->ne->unset_nw();
                 }
             }
-            if (this->has_nne) {
-                if (this->nne->has_nsw) {
+            if (this->has_nne()) {
+                if (this->nne->has_nsw()) {
                     this->nne->unset_nsw();
                 }
             }
-            if (this->has_nnw) {
-                if (this->nnw->has_nse) {
+            if (this->has_nnw()) {
+                if (this->nnw->has_nse()) {
                     this->nnw->unset_nse();
                 }
             }
-            if (this->has_nw) {
-                if (this->nw->has_ne) {
+            if (this->has_nw()) {
+                if (this->nw->has_ne()) {
                     this->nw->unset_ne();
                 }
             }
-            if (this->has_nsw) {
-                if (this->nsw->has_nne) {
+            if (this->has_nsw()) {
+                if (this->nsw->has_nne()) {
                     this->nsw->unset_nne();
                 }
             }
-            if (this->has_nse) {
-                if (this->nse->has_nnw) {
+            if (this->has_nse()) {
+                if (this->nse->has_nnw()) {
                     this->nse->unset_nnw();
                 }
             }
         }
 
         //private:??
+
+        /*!
+         * The flags for this Hex.
+         */
+        unsigned int flags = 0x0;
+
         /*!
          * Nearest neighbours
          */
@@ -1010,7 +1109,7 @@ namespace morph {
          * iterator is valid, so we have to keep a separate boolean
          * value.
          */
-        bool has_ne = false;
+        //bool has_ne = false;
 
         /*!
          * Nearest neighbour to the NorthEast; in the plus g
@@ -1018,7 +1117,7 @@ namespace morph {
          */
         //@{
         list<Hex>::iterator nne;
-        bool has_nne = false;
+        //bool has_nne = false;
         //@}
 
         /*!
@@ -1027,7 +1126,7 @@ namespace morph {
          */
         //@{
         list<Hex>::iterator nnw;
-        bool has_nnw = false;
+        //bool has_nnw = false;
         //@}
 
         /*!
@@ -1035,7 +1134,7 @@ namespace morph {
          */
         //@{
         list<Hex>::iterator nw;
-        bool has_nw = false;
+        //bool has_nw = false;
         //@}
 
         /*!
@@ -1044,7 +1143,7 @@ namespace morph {
          */
         //@{
         list<Hex>::iterator nsw;
-        bool has_nsw = false;
+        //bool has_nsw = false;
         //@}
 
         /*!
@@ -1053,7 +1152,7 @@ namespace morph {
          */
         //@{
         list<Hex>::iterator nse;
-        bool has_nse = false;
+        //bool has_nse = false;
         //@}
 
         //@}

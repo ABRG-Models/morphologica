@@ -93,12 +93,12 @@ namespace morph {
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {
                         if (norm_f[i][h.vi] > threshold) {
-                            if ( (h.has_ne && norm_f[i][h.ne->vi] < threshold)
-                                 || (h.has_nne && norm_f[i][h.nne->vi] < threshold)
-                                 || (h.has_nnw && norm_f[i][h.nnw->vi] < threshold)
-                                 || (h.has_nw && norm_f[i][h.nw->vi] < threshold)
-                                 || (h.has_nsw && norm_f[i][h.nsw->vi] < threshold)
-                                 || (h.has_nse && norm_f[i][h.nse->vi] < threshold) ) {
+                            if ( (h.has_ne() && norm_f[i][h.ne->vi] < threshold)
+                                 || (h.has_nne() && norm_f[i][h.nne->vi] < threshold)
+                                 || (h.has_nnw() && norm_f[i][h.nnw->vi] < threshold)
+                                 || (h.has_nw() && norm_f[i][h.nw->vi] < threshold)
+                                 || (h.has_nsw() && norm_f[i][h.nsw->vi] < threshold)
+                                 || (h.has_nse() && norm_f[i][h.nse->vi] < threshold) ) {
                                 rtn[i].push_back (h);
                             }
                         }
@@ -162,14 +162,14 @@ namespace morph {
 
             // n_ids is WRONG. Need to test for n_ids that are adjoining each vertex. This number
             // will be 1, 2 or 3.
-            DBG2 (h->outputRG() << ": boundaryHex:" << h->boundaryHex << ", n_ids.size():" << n_ids_sz);
+            DBG2 (h->outputRG() << ": boundaryHex:" << h->boundaryHex() << ", n_ids.size():" << n_ids_sz);
 
             if (n_ids_sz >= 2) {
 
                 // Then there's the possibility of a vertex on this hex.
                 DBG2 (h->outputRG() << ": Possibility of boundary or internal vertex...");
 
-                if (h->boundaryHex == true) { // 1. Test for boundary vertices. n_ids size >= 2.
+                if (h->boundaryHex() == true) { // 1. Test for boundary vertices. n_ids size >= 2.
 
                     DBG2 (h->outputRG() << ": Possibility of boundary vertex...");
 
@@ -864,7 +864,7 @@ namespace morph {
             while (dv != vertices.end() /* && domcount++ < 3 */) {
                 DirichDom<Flt> one_domain;
                 DirichVtx<Flt> first_vtx;
-                if (dv->hi->boundaryHex == true) {
+                if (dv->hi->boundaryHex() == true) {
                     DBG ("Don't process hexes on the boundary");
                     dv->closed = true;
                     dv++;
@@ -874,9 +874,12 @@ namespace morph {
                     if (success) {
                         // Set the identity, f of the domain
                         one_domain.f = one_domain.vertices.front().f;
-                        // Calculate the area of the domain
-                        unsigned int hexcount = ShapeAnalysis<Flt>::count_up (f, one_domain.f);
-                        one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());
+
+                        // Calculate the area of the domain. This will give wrong number in early part of program.
+                        //unsigned int hexcount = ShapeAnalysis<Flt>::count_up (f, one_domain.f);
+                        //one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());
+                        one_domain.compute_area (hg, f);
+
                         // Add the domain
                         dirich_domains.push_back (one_domain);
                     } else {

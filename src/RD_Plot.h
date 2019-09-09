@@ -202,22 +202,22 @@ namespace morph {
                 }
 #endif
                 if (h.onBoundary() == true) {
-                    if (!h.has_ne) {
+                    if (!h.has_ne()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 0);
                     }
-                    if (!h.has_nne) {
+                    if (!h.has_nne()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 1);
                     }
-                    if (!h.has_nnw) {
+                    if (!h.has_nnw()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 2);
                     }
-                    if (!h.has_nw) {
+                    if (!h.has_nw()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 3);
                     }
-                    if (!h.has_nsw) {
+                    if (!h.has_nsw()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 4);
                     }
-                    if (!h.has_nse) {
+                    if (!h.has_nse()) {
                         disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 5);
                     }
                 }
@@ -273,44 +273,44 @@ namespace morph {
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {
                         if (norm_f[i][h.vi]<threshold) {
-                            if (norm_f[i][h.ne->vi] > threshold && h.has_ne) {
+                            if (h.has_ne() && norm_f[i][h.ne->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 0);
                             }
-                            if (norm_f[i][h.nne->vi] > threshold && h.has_nne) {
+                            if (h.has_nne() && norm_f[i][h.nne->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 1);
                             }
-                            if (norm_f[i][h.nnw->vi] > threshold && h.has_nnw) {
+                            if (h.has_nnw() && norm_f[i][h.nnw->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 2);
                             }
-                            if (norm_f[i][h.nw->vi] > threshold && h.has_nw) {
+                            if (h.has_nw() && norm_f[i][h.nw->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 3);
                             }
-                            if (norm_f[i][h.nsw->vi] > threshold && h.has_nsw) {
+                            if (h.has_nsw() && norm_f[i][h.nsw->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 4);
                             }
-                            if (norm_f[i][h.nse->vi] > threshold && h.has_nse) {
+                            if (h.has_nse() && norm_f[i][h.nse->vi] > threshold) {
                                 disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_b, 5);
                             }
                         }
 
                     } else { // h.onBoundary() is true
 
-                        if (!h.has_ne) {
+                        if (!h.has_ne()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 0);
                         }
-                        if (!h.has_nne) {
+                        if (!h.has_nne()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 1);
                         }
-                        if (!h.has_nnw) {
+                        if (!h.has_nnw()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 2);
                         }
-                        if (!h.has_nw) {
+                        if (!h.has_nw()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 3);
                         }
-                        if (!h.has_nsw) {
+                        if (!h.has_nsw()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 4);
                         }
-                        if (!h.has_nse) {
+                        if (!h.has_nse()) {
                             disp.drawHexSeg (h.position(), zero_offset, (h.d/2.0f), cl_blk, 5);
                         }
                     }

@@ -39,8 +39,8 @@ int main()
         // Set values in the variable so that it's an identity variable.
         auto hi = hg.hexen.begin();
         auto hi2 = hi;
-        while (hi->has_nse) {
-            while (hi2->has_ne) {
+        while (hi->has_nse()) {
+            while (hi2->has_ne()) {
                 f[hi2->vi] = 0.2f;
                 hi2 = hi2->ne;
             }
@@ -52,8 +52,8 @@ int main()
 
         hi = hg.hexen.begin()->nw;
         hi2 = hi;
-        while (hi->has_nse) {
-            while (hi2->has_nw) {
+        while (hi->has_nse()) {
+            while (hi2->has_nw()) {
                 f[hi2->vi] = 0.4f;
                 hi2 = hi2->nw;
             }
@@ -103,7 +103,7 @@ int main()
         for (auto h : hg.hexen) {
             array<float,3> cl_a = morph::Tools::getJetColorF (f[h.vi]);
             disp.drawHex (h.position(), offset, (sz/2.0f), cl_a);
-            if (h.boundaryHex) {
+            if (h.boundaryHex()) {
                 disp.drawHex (h.position(), offset2, (sz/12.0f), cl_b);
             }
         }

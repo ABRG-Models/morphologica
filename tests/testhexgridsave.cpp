@@ -63,7 +63,7 @@ int main()
         array<float,3> cl_b = morph::Tools::getJetColorF (0.58);
         array<float,3> offset = {{0, 0, 0}};
         for (auto h : hg.hexen) {
-            if (h.boundaryHex) {
+            if (h.boundaryHex()) {
                 disp.drawHex (h.position(), (h.d/2.0f), cl_a);
             } else {
                 disp.drawHex (h.position(), offset, (h.d/2.0f), cl_b);

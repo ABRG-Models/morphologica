@@ -17,6 +17,10 @@ using morph::NM_Simplex;
 using morph::NM_Simplex_State;
 #include "HdfData.h"
 using morph::HdfData;
+#include "Hex.h"
+using morph::Hex;
+#include "HexGrid.h"
+using morph::HexGrid;
 
 namespace morph {
 
@@ -46,6 +50,80 @@ namespace morph {
         //! Return the number of vertices
         unsigned int numVertices (void) const {
             return this->vertices.size();
+        }
+
+        /*!
+         * Using passed-in HexGrid (@hg) and identity map (@f), compute the area of this domain. Can
+         * use the paths of the DirichVtx members to determine which hexes are inside and which are
+         * outside the domain.
+         */
+        void compute_area (const HexGrid* hg, const vector<Flt>& f) {
+#if 0
+            // Start at one of the vertices. Follow the edge of one vertex, counting/marking hexes
+            // as you go. Continue around the perimeter until you get back to the start. Now fill in
+            // the region until all hexes in the domain are marked.
+            typename list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
+            pair<Flt, Flt> firstborder = dv->pathto_next.front();
+            // Got a point. Now find a hex in hg that a) has this point on it as a vertex and b) has
+            // the correct ID.
+            typename list<Hex>::const_iterator hi = hg->hexen.begin();
+            typename list<Hex>::const_iterator firsthex = hi;
+            while (hi != hg->hexen.end()) {
+                if (hi->contains_vertex (firstborder) && f[hi->vi] == this->f) {
+                    // This hex is on the border of this domain. Now fill in the area, using identity.
+                    firsthex = hi;
+                    break;
+                }
+                ++hi;
+            }
+
+            set<list<Hex>::iterator> insideHexes;
+            insideHexes.insert (firsthex);
+            // Walk around hexes, setting a userflag in the Hex, as below
+#if 0
+            while (hi->has_nne) {
+                hi = hi->nne;
+            }
+            //hi->boundaryHex = true;
+            //hi->insideBoundary = true;
+
+            while (hi->has_ne) {
+                hi = hi->ne;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_nse) {
+                hi = hi->nse;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_nsw) {
+                hi = hi->nsw;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_nw) {
+                hi = hi->nw;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_nnw) {
+                hi = hi->nnw;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_nne) {
+                hi = hi->nne;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+            while (hi->has_ne && hi->ne->boundaryHex == false) {
+                hi = hi->ne;
+                //hi->boundaryHex = true;
+                //hi->insideBoundary = true;
+            }
+#endif
+#endif
         }
 
         //! This is the objective function for the gradient descent. Put it in DirichDom

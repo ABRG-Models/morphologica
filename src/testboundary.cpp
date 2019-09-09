@@ -84,13 +84,13 @@ int main(int argc, char** argv)
         array<float,3> cl_inside = morph::Tools::getJetColorF (0.15);
         array<float,3> offset = {{0, 0, 0}};
         for (auto h : hg.hexen) {
-            if (h.boundaryHex && h.insideBoundary) {
+            if (h.boundaryHex() && h.insideBoundary()) {
                 // red is boundary hex AND inside boundary
                 disp.drawHex (h.position(), (h.d/2.0f), cl_boundary_and_in);
-            } else if (h.boundaryHex) {
+            } else if (h.boundaryHex()) {
                 // orange is boundary ONLY
                 disp.drawHex (h.position(), (h.d/2.0f), cl_bndryonly);
-            } else if (h.insideBoundary) {
+            } else if (h.insideBoundary()) {
                 // Inside boundary -  blue
                 disp.drawHex (h.position(), (h.d/2.0f), cl_inside);
             } else {
