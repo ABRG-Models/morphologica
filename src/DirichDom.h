@@ -21,6 +21,8 @@ using morph::HdfData;
 using morph::Hex;
 #include "HexGrid.h"
 using morph::HexGrid;
+#define DEBUG 1
+#include "MorphDbg.h"
 
 namespace morph {
 
@@ -56,74 +58,213 @@ namespace morph {
          * Using passed-in HexGrid (@hg) and identity map (@f), compute the area of this domain. Can
          * use the paths of the DirichVtx members to determine which hexes are inside and which are
          * outside the domain.
+         *
+         * The way to solve this is to use the solution I used in HexGrid::markHexesInside. This
+         * means we go around the boundary, marking hexes in straight lines in all possible inward
+         * directions from each boundary hex. Simples.
          */
-        void compute_area (const HexGrid* hg, const vector<Flt>& f) {
-#if 0
+        void compute_area (HexGrid* hg, const vector<Flt>& f) {
+
             // Start at one of the vertices. Follow the edge of one vertex, counting/marking hexes
             // as you go. Continue around the perimeter until you get back to the start. Now fill in
-            // the region until all hexes in the domain are marked.
+            // the region (with 'laser beams') until all hexes in the domain are marked.
+
+            // Find a coordinate that is situated on the border of the domain
             typename list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
             pair<Flt, Flt> firstborder = dv->pathto_next.front();
-            // Got a point. Now find a hex in hg that a) has this point on it as a vertex and b) has
-            // the correct ID.
-            typename list<Hex>::const_iterator hi = hg->hexen.begin();
-            typename list<Hex>::const_iterator firsthex = hi;
-            while (hi != hg->hexen.end()) {
-                if (hi->contains_vertex (firstborder) && f[hi->vi] == this->f) {
-                    // This hex is on the border of this domain. Now fill in the area, using identity.
-                    firsthex = hi;
+
+            // Now find a hex in hg that a) has this coordinate on it as a vertex and b) has the
+            // correct ID. This will be the first hex on the boundary.
+            list<Hex>::iterator firsthex = hg->hexen.begin();
+            while (firsthex != hg->hexen.end()) {
+                if (firsthex->contains_vertex (firstborder) && f[firsthex->vi] == this->f) {
+                    // This hex is on the border of this domain.
                     break;
                 }
-                ++hi;
+                ++firsthex;
             }
 
-            set<list<Hex>::iterator> insideHexes;
-            insideHexes.insert (firsthex);
-            // Walk around hexes, setting a userflag in the Hex, as below
-#if 0
-            while (hi->has_nne) {
-                hi = hi->nne;
-            }
-            //hi->boundaryHex = true;
-            //hi->insideBoundary = true;
+            // Now walk around the border, setting HEX_USER_FLAG_0/1 for every domain boundary hex
+            // and HEX_USER_FLAG_0 for every domain hex.
 
-            while (hi->has_ne) {
-                hi = hi->ne;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
+            // Boundary hex iterator
+            list<Hex>::iterator bhi = firsthex;
+            // Previous boundary hex iterator
+            list<Hex>::iterator bhi_prev = firsthex;
+            // Neighbour hex iterator
+            list<Hex>::iterator nhi = firsthex;
+            // A vector of Hex iterators to be filled with the hexes on the domain boundary
+            vector< list<Hex>::iterator > domBoundary;
+
+            // Set flags on first hex and add it to domBoundary
+            firsthex->setUserFlags(HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
+            domBoundary.push_back(firsthex);
+
+            // Before the main while() loop, find a neighbouring hex that is also on the boundary
+            for (unsigned int i = 0; i<6; ++i) {
+                if (bhi->has_neighbour(i)) {
+                    // Might be a boundary hex:
+                    nhi = bhi->get_neighbour(i);
+                    if (f[nhi->vi] == this->f) {
+                        // Is a boundary hex if some of neighbours have id != f.
+                        set<Flt> neighbid;
+                        for (unsigned int j = 0; j<6; ++j) {
+                            if (nhi->has_neighbour(j)) {
+                                neighbid.insert (f[nhi->get_neighbour(j)->vi]);
+                            }
+                        }
+                        if (neighbid.size() > 1 && nhi != bhi_prev) {
+                            bhi_prev = bhi;
+                            bhi = nhi;
+                            break; // out of for
+                        }
+                    }
+                }
             }
-            while (hi->has_nse) {
-                hi = hi->nse;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
+
+            // Now bhi_prev and bhi are set, should be able while through all the hexes on the
+            // boundary of this domain, using the f ID to guide us...
+            DBG2 ("while loop to find boundary...");
+            bool gotnext = false;
+            while (bhi->getUserFlag(1) == false && bhi != hg->hexen.end()) {
+                DBG2 ("gotnext set to false, now do stuff");
+                gotnext = false;
+                for (unsigned int i = 0; i<6; ++i) {
+                    if (bhi->has_neighbour(i)) {
+                        DBG2 ("neighbour in " << Hex::neighbour_pos(i) << " dirn");
+                        // Might be a boundary hex:
+                        nhi = bhi->get_neighbour(i);
+                        if (f[nhi->vi] == this->f) {
+                            DBG2 ("this neighbour matches ID");
+                            // nhi is also a boundary hex if some of its neighbours have id != f.
+                            set<Flt> neighbid;
+                            neighbid.insert(f[nhi->vi]);
+                            for (unsigned int j = 0; j<6; ++j) {
+                                if (nhi->has_neighbour(j)) {
+                                    neighbid.insert (f[nhi->get_neighbour(j)->vi]);
+                                }
+                            }
+                            DBG2 ("number of IDs next to this neighbour is " << neighbid.size());
+                            if (neighbid.size() > 1 && nhi != bhi_prev && nhi->getUserFlag(1) == false) {
+                                DBG2 ("Setting flags on bhi " << bhi->outputRG());
+                                // FLAG_1 Marks the hex as being 'just inside' the domain boundary
+                                // FLAG_0 Marks the hex as being inside the domain boundary
+                                bhi->setUserFlags(HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
+                                domBoundary.push_back (bhi);
+                                bhi_prev = bhi;
+                                bhi = nhi;
+                                DBG2 ("Next hex is " << bhi->outputRG());
+                                gotnext = true;
+                                break; // out of for, but not while
+                            }
+                        }
+                    }
+                }
+                if (gotnext == false) {
+                    break;
+                }
             }
-            while (hi->has_nsw) {
-                hi = hi->nsw;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
+
+            // Mark the last one...
+            DBG2 ("Mark last hex on boundary " << bhi->outputRG());
+            bhi->setUserFlags (HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
+            domBoundary.push_back (bhi);
+
+            // It's possible to miss out a hex on the boundary, when there are two hexes next to
+            // each other which are both on the boundary and a third hex protruding out - a sort of
+            // boundary pimple. So, run through domBoundary to catch these cases and ensure that the
+            // area measurement is accurate.
+            for (list<Hex>::iterator hi : domBoundary) {
+                for (unsigned int i = 0; i<6; ++i) {
+                    if (hi->has_neighbour(i)) {
+                        nhi = hi->get_neighbour(i);
+                        if (f[nhi->vi] == this->f && nhi->getUserFlag(0) == false) {
+                            // Simply set neighbouring hexes that have the correct ID as being in the domain.
+                            nhi->setUserFlag(0);
+                        }
+                    }
+                }
             }
-            while (hi->has_nw) {
-                hi = hi->nw;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
+
+            DBG ("foreach hex in domBoundary");
+            // Now the domain boundary should have been found.
+            list<Hex>::iterator innerhex = hg->hexen.end();
+            for (list<Hex>::iterator hi : domBoundary) {
+
+                DBG2 ("boundary hex " << hi->outputRG());
+                // Mark inwards in all possible directions from nh.
+                unsigned short firsti = 0;
+                for (unsigned short i = 0; i < 6; ++i) {
+                    if (hi->has_neighbour(i)
+                        && f[hi->get_neighbour(i)->vi] == this->f
+                        && hi->get_neighbour(i)->getUserFlag(1) == false) {
+                        innerhex = hi->get_neighbour(i);
+                        innerhex->setUserFlag(0);
+                        firsti = i;
+                        break;
+                    }
+                }
+
+                // It's possible that the starting hex has no "inner hex" next to it, so continue on
+                // to the next hex on the boundary.
+                if (innerhex == hg->hexen.end()) { continue; }
+
+                DBG2 ("firsti is " << firsti);
+                // mark in a straight line in direction firsti
+                while (innerhex->has_neighbour(firsti)
+                       && f[innerhex->get_neighbour(firsti)->vi] == this->f
+                       && innerhex->get_neighbour(firsti)->getUserFlag(1) == false) {
+                    innerhex = innerhex->get_neighbour(firsti);
+                    innerhex->setUserFlag(0);
+                }
+
+                // First count upwards until we hit a boundary hex
+                short diri = (firsti + 1) % 6;
+                while (hi->has_neighbour (diri)
+                       && diri != firsti
+                       && f[hi->get_neighbour(diri)->vi] == this->f
+                       && hi->get_neighbour(diri)->getUserFlag(1) == false) {
+                    innerhex = hi->get_neighbour (diri);
+                    innerhex->setUserFlag(0);
+                    // mark in dirn diri
+                    while (innerhex->has_neighbour(diri)
+                           && f[innerhex->get_neighbour(diri)->vi] == this->f
+                           && innerhex->get_neighbour(diri)->getUserFlag(1) == false) {
+                        innerhex = innerhex->get_neighbour(diri);
+                        innerhex->setUserFlag(0);
+                    }
+                    diri = (diri + 1) % 6;
+                }
+                // Then count downwards until we hit the other boundary hex
+                diri = firsti>0 ? firsti-1 : 5;
+                while (hi->has_neighbour (diri)
+                       && diri != firsti
+                       && f[hi->get_neighbour(diri)->vi] == this->f
+                       && hi->get_neighbour(diri)->getUserFlag(1) == false) {
+                    innerhex = hi->get_neighbour (diri);
+                    innerhex->setUserFlag(0);
+                    // mark the hexes...
+                    while (innerhex->has_neighbour(diri)
+                           && f[innerhex->get_neighbour(diri)->vi] == this->f
+                           && innerhex->get_neighbour(diri)->getUserFlag(1) == false) {
+                        innerhex = innerhex->get_neighbour(diri);
+                        innerhex->setUserFlag(0);
+                    }
+                    diri = diri>0 ? diri-1 : 5;
+                }
+
+                // Find the next hex along the boundary.
             }
-            while (hi->has_nnw) {
-                hi = hi->nnw;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
+
+            // Now count the area up, resetting the flags as we go
+            unsigned int hcount = 0;
+            for (Hex& h : hg->hexen) {
+                hcount += (h.getUserFlag(0) == true) ? 1 : 0;
+                h.resetUserFlags();
             }
-            while (hi->has_nne) {
-                hi = hi->nne;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
-            }
-            while (hi->has_ne && hi->ne->boundaryHex == false) {
-                hi = hi->ne;
-                //hi->boundaryHex = true;
-                //hi->insideBoundary = true;
-            }
-#endif
-#endif
+            DBG ("hcount = " << hcount);
+            this->area = hg->getHexArea() * hcount;
+            DBG ("Area = " << this->area);
         }
 
         //! This is the objective function for the gradient descent. Put it in DirichDom
@@ -185,16 +326,11 @@ namespace morph {
             // This is amenable to a nice simple gradient descent. Will implement a Nelder-Mead
             // approach.
 
-            pair<Flt, Flt> Pi_best; // Start out with a simplex
+            // Start out with a simplex with a vertex at the centroid of the domain vertices, and
+            // then two other vertices at the first domain vertex (v) and its neighbour (vn).
+            pair<Flt, Flt> Pi_best;
             Pi_best.first = mean_x / this->vertices.size();
             Pi_best.second = mean_y / this->vertices.size();
-            DBG ("Pi_best starts as mean of vertices: ("
-                 << Pi_best.first << "," << Pi_best.second << ")");
-
-            // Start with an initial simplex consisting of the centroid of the vertices, and two
-            // other randomly chosen? Opposite? vertices from the domain.
-
-            // So I think a Nelder-Mead Simplex class will be a nice approach:
             NM_Simplex<Flt> simp (Pi_best, this->vertices.begin()->v, this->vertices.begin()->vn);
             simp.termination_threshold = numeric_limits<Flt>::epsilon();
 

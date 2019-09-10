@@ -129,6 +129,11 @@ add_executable(testHexVertexPos testHexVertexPos.cpp)
 target_link_libraries(testHexVertexPos morphologica)
 add_test(testHexVertexPos testHexVertexPos)
 
+# Test Hex user flags code
+add_executable(testHexUserFlags testHexUserFlags.cpp)
+target_link_libraries(testHexUserFlags morphologica)
+add_test(testHexUserFlags testHexUserFlags)
+
 # Test Dirichlet code
 add_executable(testDirichlet testDirichlet.cpp)
 target_link_libraries(testDirichlet morphologica)

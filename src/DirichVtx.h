@@ -279,7 +279,6 @@ namespace morph {
              */
             Flt phi = this->compute_angle (vn, v, Aim1, 1);
             Flt theta = morph::PI_F - phi;
-            DBG ("phi = " << phi << " and theta = " << theta);
 
             /*
              * 2. Compute the line P_i wrt to Ai and Ai+1
@@ -291,17 +290,13 @@ namespace morph {
             // 2b Determine the coordinates of point Pi using theta and the angle from the x axis
             // to Aip1.
             Flt xi = atan2 ((Aip1.second - this->v.second), (Aip1.first - this->v.first));
-            DBG ("xi is " << xi);
 
             Flt deltax = AiPi * cos (theta + xi);
-            DBG ("deltax from Ai to Pi is " << deltax);
             Flt deltay = AiPi * sin (theta + xi);
-            DBG ("deltay from Ai to Pi is " << deltay);
 
             this->P_i = this->v;
             this->P_i.first += deltax;
             this->P_i.second += deltay;
-            DBG ("Point P_i: " << P_i.first << "," << P_i.second << ")");
         }
 
         //! Save data from the DirichVtx. Not saving ALL members of this class (e.g. omitting threshold)

@@ -757,8 +757,9 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
 
     DBG2 ("First inside:" << first_inside->insideBoundary()
           << ", on boundary: " << first_inside->boundaryHex());
-
+#ifdef DO_WARNINGS
     bool warning_given = false;
+#endif
     while (straight->boundaryHex() == false) {
         DBG2 ("Set insideBoundary true");
         straight->setInsideBoundary();
@@ -768,11 +769,13 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
         } else {
             // no further neighbour in this direction
             if (straight->boundaryHex() == false) {
+#ifdef DO_WARNINGS
                 if (!warning_given) {
-                    //cerr << "WARNING: Got to edge of region (dirn " << firsti
-                    //     << ") without encountering a boundary Hex.\n";
+                    cerr << "WARNING: Got to edge of region (dirn " << firsti
+                         << ") without encountering a boundary Hex.\n";
                     warning_given = true;
                 }
+#endif
                 break;
             }
         }
