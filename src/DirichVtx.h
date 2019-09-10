@@ -218,7 +218,7 @@ namespace morph {
         /*!
          * Compute line length of the line between coordinates @coord0 and @coord1
          */
-        Flt line_length (const pair<Flt, Flt>& coord0, const pair<Flt, Flt>& coord1) const {
+        static Flt line_length (const pair<Flt, Flt>& coord0, const pair<Flt, Flt>& coord1) {
             Flt c01 = sqrt ((coord0.first - coord1.first) * (coord0.first - coord1.first)
                             + (coord0.second - coord1.second) * (coord0.second - coord1.second));
             return c01;
@@ -230,10 +230,10 @@ namespace morph {
          *
          * Could go into morph::tools or morph::maths or something.
          */
-        Flt compute_angle (const pair<Flt, Flt>& c0,
-                           const pair<Flt, Flt>& c1,
-                           const pair<Flt, Flt>& c2,
-                           const unsigned int angleFor) const {
+        static Flt compute_angle (const pair<Flt, Flt>& c0,
+                                  const pair<Flt, Flt>& c1,
+                                  const pair<Flt, Flt>& c2,
+                                  const unsigned int angleFor) {
             Flt angle = -1.0f;
             if (angleFor == 0) {
                 angle = atan2 (c2.second - c0.second, c2.first - c0.first)
@@ -253,13 +253,13 @@ namespace morph {
 
         /*!
          * Find the minimum distance from the point p to the Pi line defined in this object by P_i,
-         * A_i or m and c.
+         * A_i (aka v).
          */
         Flt compute_distance_to_line (const pair<Flt, Flt>& p) const {
             // Find angle between Ai--Pi and Ai--p
-            Flt angle = this->compute_angle (p, this->v, this->P_i, 1);
+            Flt angle = DirichVtx<Flt>::compute_angle (p, this->v, this->P_i, 1);
             // And distance from p to Ai
-            Flt p_to_v = this->line_length (p, this->v);
+            Flt p_to_v = DirichVtx<Flt>::line_length (p, this->v);
             // Return projection of p onto line Ai--Pi
             return (p_to_v * sin (angle));
         }

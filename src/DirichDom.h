@@ -55,6 +55,47 @@ namespace morph {
         }
 
         /*!
+         * Compute the perpendicular distance from point p to the line defined by points a and b.
+         */
+        static Flt compute_distance_to_line (const pair<Flt, Flt>& p,
+                                             const pair<Flt, Flt>& a, const pair<Flt, Flt>& b) {
+            // Find angle between Ai--Pi and Ai--p
+            Flt angle = DirichVtx<Flt>::compute_angle (p, a, b, 1);
+            // And distance from p to Ai
+            Flt p_to_a = DirichVtx<Flt>::line_length (p, a);
+            // Return projection of p onto line Ai--Pi
+            return (p_to_a * sin (angle));
+        }
+
+        /*!
+         * Compute the root of the mean of the sum of the squared distances of the edges from the
+         * straight line segments that join the vertices of this domain.
+         */
+        void compute_edge_deviation (void) {
+
+            DirichVtx<Flt>& lastvtx = this->vertices.back();
+
+            Flt d2sum = 0.0;
+            Flt dcount = 0.0;
+            for (DirichVtx<Flt>& vtx : this->vertices) {
+                // vtx.v is the current coord, lastvtx.v is the prev coord. These mark the two ends of the line.
+                for (pair<Flt, Flt> xi : vtx.pathto_next) {
+                    // Find perp. distance from xi to x0-x1 line.
+                    Flt dist = DirichDom<Flt>::compute_distance_to_line (xi, vtx.v, lastvtx.v);
+                    dist *= dist;
+                    d2sum += dist;
+                    dcount += 1.0;
+                }
+                // Update the last vtx
+                lastvtx = vtx;
+            }
+
+            Flt d2mean = d2sum / dcount;
+            this->edge_deviation = sqrt (d2mean);
+            DBG ("Edge deviation is " << this->edge_deviation);
+        }
+
+        /*!
          * Using passed-in HexGrid (@hg) and identity map (@f), compute the area of this domain. Can
          * use the paths of the DirichVtx members to determine which hexes are inside and which are
          * outside the domain.

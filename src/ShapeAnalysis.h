@@ -843,6 +843,7 @@ namespace morph {
                         //one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());
                         DBG ("call compute_area()...");
                         one_domain.compute_area (hg, f);
+                        one_domain.compute_edge_deviation();
                         // Add the domain
                         dirich_domains.push_back (one_domain);
                     } // process_domain failed to find the outline of a domain
