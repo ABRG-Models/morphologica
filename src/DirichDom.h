@@ -49,6 +49,9 @@ namespace morph {
         //! A metric of how much the edges deviate from the straight lines that are defined by the vertices.
         Flt edge_deviation = 0.0;
 
+        //! The best centre for the domain. Called P in Honda 1983.
+        pair<Flt, Flt> centre;
+
         //! Return the number of vertices
         unsigned int numVertices (void) const {
             return this->vertices.size();
@@ -408,6 +411,7 @@ namespace morph {
             // Write P into the ref in the arg
             P.first = vP[0];
             P.second = vP[1];
+            this->centre = P;
 
             // Return the metric. In Honda 1983, this is $\Delta_j$
             Flt mean_sos_per_vertex = min_sos/static_cast<Flt>(this->numVertices());
@@ -428,6 +432,8 @@ namespace morph {
             data.add_val (p.c_str(), this->honda);
             p = pathroot + "/edgedev";
             data.add_val (p.c_str(), this->edge_deviation);
+            p = pathroot + "/P";
+            data.add_contained_vals (p.c_str(), this->centre);
 
             unsigned int vcount = 0;
             for (auto dv : this->vertices) {
