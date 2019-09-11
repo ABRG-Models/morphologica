@@ -884,19 +884,9 @@ namespace morph {
                 ++di;
             }
 
-            Flt delta_top = sum_delta_j/static_cast<Flt>(doms.size());
-            Flt delta_bottom = sum_areas/static_cast<Flt>(doms.size());
-
-            return delta_top/delta_bottom;
-        }
-
-        /*!
-         * Save all the information contained in a set of dirichlet vertices to HDF5 into the
-         * HdfData @data. The set(list?) of Dirichlet vertices is for one single Dirichlet domain.
-         */
-        static void
-        dirichlet_save_vertex_set (HdfData& data /* container of domains */) {
-
+            // The Ns cancel out of the equation given in Honda1983 as "For practical calculation."
+            // on p196.
+            return sum_delta_j/sum_areas;
         }
 
     }; // ShapeAnalysis
