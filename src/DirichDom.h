@@ -73,11 +73,11 @@ namespace morph {
          */
         void compute_edge_deviation (void) {
 
-            DirichVtx<Flt>& lastvtx = this->vertices.back();
+            DirichVtx<Flt> lastvtx = this->vertices.back();
 
             Flt d2sum = 0.0;
             Flt dcount = 0.0;
-            for (DirichVtx<Flt>& vtx : this->vertices) {
+            for (DirichVtx<Flt> vtx : this->vertices) {
                 // vtx.v is the current coord, lastvtx.v is the prev coord. These mark the two ends of the line.
                 for (pair<Flt, Flt> xi : vtx.pathto_next) {
                     // Find perp. distance from xi to x0-x1 line.
