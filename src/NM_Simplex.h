@@ -174,7 +174,8 @@ namespace morph {
         }
 
     private:
-        //! Find the reflected point, xr.
+        //! Find the reflected point, xr, which is the reflection of the worst point about the
+        //! centroid of the simplex.
         void reflect (void) {
             unsigned int worst = this->vertex_order[this->n];
             for (unsigned int j = 0; j < this->n; ++j) {
@@ -193,32 +194,33 @@ namespace morph {
             if (this->downhill
                 && this->xr_value < this->values[vertex_order[n-1]]
                 && this->xr_value >= this->values[vertex_order[0]]) {
-
+                // reflected is better (<) than 2nd worst but not better than the best, so replace
+                // the worst point in the simplex with the relected point.
                 this->values[vertex_order[n]] = this->xr_value;
                 this->vertices[vertex_order[n]] = this->xr;
                 this->state = NM_Simplex_State::NeedToOrder;
 
-                // Replace vertices[n] with xr and then next step is order().
-            } else if (this->downhill
-                       && this->xr_value < this->values[vertex_order[0]]) {
-                // reflected is better (>) than best point so far; expand
+            } else if (this->downhill && this->xr_value < this->values[vertex_order[0]]) {
+                // reflected is better (<) than best point so far; expand the reflected point to try
+                // to get an EVEN better result
                 this->expand();
 
             } else if (this->downhill == false
                        && this->xr_value > this->values[vertex_order[n-1]]
                        && this->xr_value <= this->values[vertex_order[0]]) {
-                // reflected is better (>) than 2nd worst but not better than the best
+                // reflected is better (>) than 2nd worst but not better than the best, so replace
+                // the worst point in the simplex with the relected point.
                 this->values[vertex_order[n]] = this->xr_value;
                 this->vertices[vertex_order[n]] = this->xr;
                 this->state = NM_Simplex_State::NeedToOrder;
 
-            } else if (this->downhill == false
-                       && this->xr_value > this->values[vertex_order[0]]) {
+            } else if (this->downhill == false && this->xr_value > this->values[vertex_order[0]]) {
                 // reflected is better (>) than best point so far; expand
                 this->expand();
 
             } else {
-                // reflected is worse than (or equal to) the 2nd worst, so contract
+                // reflected is worse than (or equal to) the 2nd worst, so contract the worst point
+                // towards the centroid
                 this->contract();
             }
         }
