@@ -424,6 +424,7 @@ namespace morph {
             stringstream fname;
             fname << this->logpath << "/positions.h5";
             HdfData data(fname.str());
+            data.add_val ("/area", this->hg->num() * this->hg->getHexArea());
             this->saveHexPositions (data);
         }
 
