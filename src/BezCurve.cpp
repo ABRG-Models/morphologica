@@ -25,6 +25,8 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->beztype = morph::BEZCUBIC;
     this->p0 = ip;
     this->p1 = fp;
+    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
+                              + (p1.second-p0.second)*(p1.second-p0.second) );
     this->control1 = c1;
     this->control2 = c2;
 }
@@ -36,6 +38,8 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->beztype = morph::BEZQUADRATIC;
     this->p0 = ip;
     this->p1 = fp;
+    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
+                              + (p1.second-p0.second)*(p1.second-p0.second) );
     this->control1 = c1;
 }
 
@@ -45,6 +49,8 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->beztype = morph::BEZLINEAR;
     this->p0 = ip;
     this->p1 = fp;
+    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
+                              + (p1.second-p0.second)*(p1.second-p0.second) );
 }
 
 vector<BezCoord>
@@ -148,8 +154,7 @@ morph::BezCurve::computePointLinear (float t, float l) const
         return rtn;
     }
     // Compute new t from l.
-    float denom = sqrtf ( (p1.first-p0.first)*(p1.first-p0.first) + (p1.second-p0.second)*(p1.second-p0.second) );
-    float dt = l/denom;
+    float dt = l/this->linlengthscaled;
     t = t+dt;
     return this->computePointLinear (t);
 }
@@ -188,6 +193,7 @@ void
 morph::BezCurve::setScale (const float s)
 {
     this->scale = s;
+    this->linlengthscaled = this->scale * this->linlength;
 }
 
 void

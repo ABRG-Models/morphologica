@@ -223,6 +223,17 @@ namespace morph
         float lthresh = 0.000001;
 
         /*!
+         * The as-the-crow-flies distance from p0 to p1. Use for for BEZLINEAR to avoid repeat
+         * computations. See, especially, computePointLinear (float t, float l) const
+         */
+        float linlength = 0.0f;
+
+        /*!
+         * Scaled version of linlength
+         */
+        float linlengthscaled = 0.0f;
+
+        /*!
          * The type of the bezier curve.
          */
         BezCurveType beztype = BEZCUBIC;
