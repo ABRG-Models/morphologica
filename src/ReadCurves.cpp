@@ -284,7 +284,15 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
         } else if (s[p1] == ' ') {
             p0 = p1+1;
         } else if (s[p1] == '-') {
-            p0 = p1; // Not +1 so that we include the - in the next one
+            if (false == (p1>0 && s[p1-1] == 'e')) {
+                p0 = p1; // Not +1 so that we include the - in the next one
+            } else {
+                // This '-' character followed an exponent 'e' character, so it does not denote a
+                // delimiter between values in the string s. So pop off the incomplete number
+                // string which will just have been pushed back, decrement numnum and carry on.
+                numbers.pop_back();
+                --numnum;
+            }
         }
 
         if (numnum < numParams) {
