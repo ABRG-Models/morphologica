@@ -24,22 +24,22 @@ namespace morph {
      * morph/display.h code.
      */
     template <class Flt>
-    class RD_plot
+    class RD_Plot
     {
     public:
         /*!
          * Constructors ensure fix, eye and rot are set up.
          */
         //@{
-        RD_plot (void) {}
+        RD_Plot (void) {}
 
-        RD_plot (double f, double e, double r) {
+        RD_Plot (double f, double e, double r) {
             this->fix = {3, f};
             this->eye = {3, e};
             this->rot = {3, r};
         }
 
-        RD_plot (vector<double>& f, vector<double>& e, vector<double>& r) {
+        RD_Plot (vector<double>& f, vector<double>& e, vector<double>& r) {
             this->fix = f;
             this->eye = e;
             this->rot = r;
