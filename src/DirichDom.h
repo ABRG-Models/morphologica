@@ -95,7 +95,7 @@ namespace morph {
 
             Flt d2mean = d2sum / dcount;
             this->edge_deviation = sqrt (d2mean);
-            DBG ("Edge deviation is " << this->edge_deviation);
+            DBG2 ("Edge deviation is " << this->edge_deviation);
         }
 
         /*!
@@ -230,7 +230,7 @@ namespace morph {
                 }
             }
 
-            DBG ("foreach hex in domBoundary");
+            DBG2 ("foreach hex in domBoundary");
             // Now the domain boundary should have been found.
             list<Hex>::iterator innerhex = hg->hexen.end();
             for (list<Hex>::iterator hi : domBoundary) {
@@ -306,9 +306,9 @@ namespace morph {
                 hcount += (h.getUserFlag(0) == true) ? 1 : 0;
                 h.resetUserFlags();
             }
-            DBG ("hcount = " << hcount);
+            DBG2 ("hcount = " << hcount);
             this->area = hg->getHexArea() * hcount;
-            DBG ("Area = " << this->area);
+            DBG2 ("Area = " << this->area);
         }
 
         //! This is the objective function for the gradient descent. Put it in DirichDom
@@ -405,7 +405,7 @@ namespace morph {
             }
             vector<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
-            DBG ("FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos);
+            DBG2 ("FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos);
             // We now have a P and a metric
 
             // Write P into the ref in the arg
