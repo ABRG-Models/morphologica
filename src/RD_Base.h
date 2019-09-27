@@ -230,6 +230,28 @@ namespace morph {
         //@}
 
         /*!
+         * Resize/zero M vectors of N vectors of nhex Flts.
+         */
+        //@{
+        void resize_vector_vector_vector (vector<vector<vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
+            vvv.resize (M);
+            for (unsigned int m=0; m<M; ++m) {
+                vvv[m].resize (N);
+                for (unsigned int i=0; i<N; ++i) {
+                    vvv[m][i].resize (this->nhex, 0.0);
+                }
+            }
+        }
+        void zero_vector_vector_vector (vector<vector<vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
+            for (unsigned int m=0; m<M; ++m) {
+                for (unsigned int i=0; i<N; ++i) {
+                    vvv[m][i].assign (M, 0.0);
+                }
+            }
+        }
+        //@}
+
+        /*!
          * Resize/zero a variable that'll be nhex elements long
          */
         //@{
@@ -300,6 +322,30 @@ namespace morph {
         void zero_vector_array_vector (vector<array<vector<Flt>, 2> >& vav, unsigned int N) {
             for (unsigned int i = 0; i<N; ++i) {
                 this->zero_gradient_field (vav[i]);
+            }
+        }
+        //@}
+
+        /*!
+         * Resize/zero a vector M containing vectors of size N containing arrays of
+         * two vector<Flt>s which are the x and y components of a (mathematical)
+         * vector field.
+         */
+        //@{
+        void resize_vector_vector_array_vector (vector<vector<array<vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
+            vvav.resize (M);
+            for (unsigned int j = 0; j<M; ++j) {
+                vvav[j].resize (N);
+                for (unsigned int n = 0; n<N; ++n) {
+                    this->resize_gradient_field (vvav[j][n]);
+                }
+            }
+        }
+        void zero_vector_vector_array_vector (vector<vector<array<vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
+            for (unsigned int j = 0; j<M; ++j) {
+                for (unsigned int i = 0; i<N; ++i) {
+                    this->zero_gradient_field (vvav[j][i]);
+                }
             }
         }
         //@}
