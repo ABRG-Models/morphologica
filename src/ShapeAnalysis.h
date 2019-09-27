@@ -836,12 +836,9 @@ namespace morph {
                     if (success) {
                         // Set the identity, f of the domain
                         one_domain.f = one_domain.vertices.front().f;
-                        DBG ("Found outline of a domain (ID " << one_domain.f << ")");
+                        DBG2 ("Found outline of a domain (ID " << one_domain.f << ")");
 
-                        // Calculate the area of the domain. This will give wrong number in early part of program.
-                        //unsigned int hexcount = ShapeAnalysis<Flt>::count_up (f, one_domain.f);
-                        //one_domain.area = static_cast<Flt>(hexcount) * static_cast<Flt>(hg->getHexArea());
-                        DBG ("call compute_area()...");
+                        // Calculate the area of the domain.
                         one_domain.compute_area (hg, f);
                         one_domain.compute_edge_deviation();
                         // Add the domain
@@ -850,7 +847,6 @@ namespace morph {
                 }
             }
 
-            DBG ("Returning dirich_domains, which has size " << dirich_domains.size());
             return dirich_domains;
         }
 
