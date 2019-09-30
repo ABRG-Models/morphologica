@@ -143,6 +143,30 @@ namespace morph {
         }
 
         /*!
+         * @regions is a vector of a size specified in the HexGrid @hg containing N
+         * unique IDs. For each unique ID, compute the centroid of all the hexes
+         * having that ID. Return a map keyed by ID, containing the coordinates of
+         * each centroid.
+         */
+        static map<Flt, pair<Flt, Flt> >
+        region_centroids (HexGrid* hg, const vector<Flt>& regions) {
+            map<Flt, pair<Flt, Flt> > centroids;
+            map<Flt, Flt> counts;
+            for (unsigned int h = 0; h<regions.size(); ++h) {
+                centroids[regions[h]].first += hg->d_x[h];
+                centroids[regions[h]].second += hg->d_y[h];
+                counts[regions[h]] += 1.0;
+            }
+            auto ci = centroids.begin();
+            while (ci != centroids.end()) {
+                ci->second.first /= counts[ci->first];
+                ci->second.second /= counts[ci->first];
+                ++ci;
+            }
+            return centroids;
+        }
+
+        /*!
          * A method to test the hex give by @h, which must live on the HexGrid pointed to by @hg, to
          * see if it is a Dirichlet vertex. If so, a vertex should be created in @vertices.
          */

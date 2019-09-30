@@ -326,7 +326,7 @@ namespace morph {
 
         /*!
          * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
-         * metric for the Dirichlet-ness of the vertices after Honda1983. Fixme: move into DirichDom.
+         * metric for the Dirichlet-ness of the vertices after Honda1983.
          */
         Flt dirichlet_analyse_single_domain (pair<Flt, Flt>& P) {
 
