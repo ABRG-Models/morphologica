@@ -1,6 +1,4 @@
 #include "HexGrid.h"
-#define DEBUG 1
-#define DEBUG2 1
 #include "BezCurve.h"
 #include <utility>
 #include <iostream>
