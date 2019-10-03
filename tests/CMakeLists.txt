@@ -14,6 +14,13 @@ add_executable(${TARGETTEST1} ${SOURCETEST1})
 target_link_libraries(${TARGETTEST1} morphologica)
 add_test(testbez ${TARGETTEST1})
 
+# BezCurve class
+set(TARGETTEST1_1 testbez2 CACHE TYPE STRING)
+set(SOURCETEST1_1 testbez2.cpp)
+add_executable(${TARGETTEST1_1} ${SOURCETEST1_1})
+target_link_libraries(${TARGETTEST1_1} morphologica)
+add_test(testbez ${TARGETTEST1_1})
+
 # Test two curves connected together
 set(TARGETTEST2 twocurves CACHE TYPE STRING)
 set(SOURCETEST2 twocurves.cpp)
