@@ -144,6 +144,9 @@ namespace morph
 
         static vector<double> getGrayScaleColor (double gray);
 
+        /*!
+         * Hue-Saturation-Value to Red-Green-Blue.
+         */
         static array<float,3> HSVtoRGB (double, double, double);
 
         /*!

@@ -234,7 +234,6 @@ morph::Tools::getGrayScaleColor(double gray)
     return col;
 }
 
-//vector<double>
 array<float,3>
 morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
 {
@@ -253,14 +252,10 @@ morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
     case 4: r = t, g = p, b = v; break;
     case 5: r = v, g = p, b = q; break;
     }
-    //vector<double> rgb;
     array<float, 3> rgb;
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
-    //rgb.push_back(r);
-    //rgb.push_back(g);
-    //rgb.push_back(b);
     return rgb;
 }
 
