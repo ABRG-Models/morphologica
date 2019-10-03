@@ -99,7 +99,7 @@ namespace morph {
         void scalarfields (Gdisplay& disp,
                            HexGrid* hg,
                            vector<vector<Flt> >& f,
-                           Flt mina = +1e7, Flt maxa = -1e7) {
+                           Flt mina = +1e7, Flt maxa = -1e7, Flt overallOffset = 0.0) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
 
@@ -139,7 +139,7 @@ namespace morph {
             // Need to correctly apply N/2 depending on whether N is even or odd.
             float w = hgwidth+(hgwidth/20.0f);
             array<float,3> offset = { 0.0f , 0.0f, 0.0f };
-            float half_minus_half_N = 0.5f - ((float)N/2.0f);
+            float half_minus_half_N = 0.5f - ((float)N/2.0f) + overallOffset;
             for (unsigned int i = 0; i<N; ++i) {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
@@ -155,6 +155,64 @@ namespace morph {
                 }
             }
             disp.redrawDisplay();
+        }
+
+        void scalarfields_noreset (Gdisplay& disp,
+                                   HexGrid* hg,
+                                   vector<vector<Flt> >& f,
+                                   Flt mina = +1e7, Flt maxa = -1e7, Flt overallOffset = 0.0) {
+
+            unsigned int N = f.size();
+            unsigned int nhex = hg->num();
+
+            // Determines min and max
+            for (unsigned int hi=0; hi<nhex; ++hi) {
+                Hex* h = hg->vhexen[hi];
+                if (h->onBoundary() == false) {
+                    for (unsigned int i = 0; i<N; ++i) {
+                        if (f[i][h->vi]>maxa) { maxa = f[i][h->vi]; }
+                        if (f[i][h->vi]<mina) { mina = f[i][h->vi]; }
+                    }
+                }
+            }
+
+            Flt scalea = 1.0 / (maxa-mina);
+
+            // Determine a colour from min, max and current value
+            vector<vector<Flt> > norm_a;
+            norm_a.resize (N);
+            for (unsigned int i=0; i<N; ++i) {
+                norm_a[i].resize (nhex, 0.0);
+            }
+            for (unsigned int i = 0; i<N; ++i) {
+                for (unsigned int h=0; h<nhex; h++) {
+                    norm_a[i][h] = fmin (fmax (((f[i][h]) - mina) * scalea, 0.0), 1.0);
+                }
+            }
+
+            // Create an offset which we'll increment by the width of the
+            // map, starting from the left-most map (f[0])
+
+            float hgwidth = hg->getXmax() - hg->getXmin();
+
+            // Need to correctly apply N/2 depending on whether N is even or odd.
+            float w = hgwidth+(hgwidth/20.0f);
+            array<float,3> offset = { 0.0f , 0.0f, 0.0f };
+            float half_minus_half_N = 0.5f - ((float)N/2.0f) + overallOffset;
+            for (unsigned int i = 0; i<N; ++i) {
+                offset[0] = (half_minus_half_N + (float)i) * w;
+                // Note: OpenGL isn't thread-safe, so no omp parallel for here.
+                for (auto h : hg->hexen) {
+// Here, perhaps I'll have a class member that says what kind of colour maps to use.
+#ifdef monochrome
+                    array<float,3> cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N,
+                                                                  norm_a[i][h.vi], 1.0);
+#else
+                    array<float,3> cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
+#endif
+                    disp.drawHex (h.position(), offset, (h.d/2.0f), cl_a);
+                }
+            }
         }
 
         /*!
@@ -177,12 +235,39 @@ namespace morph {
         }
 
         /*!
+         * Plot the contour described by contourHexes, with these hexes coloured in
+         * AND a scalarfield graph. Next door to each other.
+         */
+        void plot_contour_and_scalar (Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, vector<Flt>& f) {
+
+            disp.resetDisplay (this->fix, this->eye, this->rot);
+
+            // "Research code" alert! This is rather hacky, coded to work for one
+            // window to get a job done.
+            Flt shift = 0.65;
+            Flt shift_r = 0.2;
+
+            this->add_contour_plot (disp, hg, contourHexes, +shift+shift_r);
+
+            vector<vector<Flt> > vf;
+            vf.push_back (f);
+            Flt mina = +1e7;
+            Flt maxa = -1e7;
+            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -shift+shift_r);
+
+            disp.redrawDisplay();
+        }
+
+        /*!
          * Add a contour plot to the Gdisplay @disp for HexGrid hg. The
          * contourHexes are provided in contourHexes.
          */
-        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes) {
+        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, Flt overallOffset = 0.0) {
 
             unsigned int N = contourHexes.size();
+
+            array<float,3> offset_ar = {0.0f, 0.0f, 0.0f};
+            offset_ar[0] += overallOffset;
 
             // Coloured boundaries
             float r = hg->hexen.begin()->getSR();
@@ -193,7 +278,7 @@ namespace morph {
                 array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
 #endif
                 for (auto h : contourHexes[i]) {
-                    disp.drawHex (h.position(), r, cl_b);
+                    disp.drawHex (h.position(), offset_ar, r, cl_b);
                 }
             }
 
@@ -207,22 +292,22 @@ namespace morph {
 #endif
                 if (h.onBoundary() == true) {
                     if (!h.has_ne()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 0);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 0);
                     }
                     if (!h.has_nne()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 1);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 1);
                     }
                     if (!h.has_nnw()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 2);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 2);
                     }
                     if (!h.has_nw()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 3);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 3);
                     }
                     if (!h.has_nsw()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 4);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 4);
                     }
                     if (!h.has_nse()) {
-                        disp.drawHexSeg (h.position(), zero_ar, r, zero_ar, 5);
+                        disp.drawHexSeg (h.position(), offset_ar, r, zero_ar, 5);
                     }
                 }
             }
