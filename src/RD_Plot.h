@@ -187,7 +187,11 @@ namespace morph {
             // Coloured boundaries
             float r = hg->hexen.begin()->getSR();
             for (unsigned int i = 0; i<N; ++i) {
+#ifdef _OLD_
                 array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
+#else
+                array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
+#endif
                 for (auto h : contourHexes[i]) {
                     disp.drawHex (h.position(), r, cl_b);
                 }
@@ -269,7 +273,11 @@ namespace morph {
             array<float,3> zero_offset = {0.0f, 0.0f, 0.0f};
 
             for (unsigned int i = 0; i<N; ++i) {
+#ifdef _OLD_
                 array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
+#else
+                array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
+#endif
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {
                         if (norm_f[i][h.vi]<threshold) {
