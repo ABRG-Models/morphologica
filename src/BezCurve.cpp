@@ -27,6 +27,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
                               + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlengthscaled = this->scale * this->linlength;
     this->control1 = c1;
     this->control2 = c2;
 }
@@ -40,6 +41,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
                               + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlengthscaled = this->scale * this->linlength;
     this->control1 = c1;
 }
 
@@ -51,6 +53,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
                               + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlengthscaled = this->scale * this->linlength;
 }
 
 vector<BezCoord>
@@ -127,7 +130,7 @@ morph::BezCurve::computePoint (float t) const
 BezCoord
 morph::BezCurve::computePoint (float t, float l) const
 {
-    DBG2 ("Called computePoint(float t, float l)");
+    DBG2 ("Called computePoint(float t="<<t<<", float l="<<l<<")");
     switch (this->beztype) {
     case morph::BEZLINEAR:
         return this->computePointLinear (t, l);
