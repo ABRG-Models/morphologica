@@ -46,6 +46,11 @@ namespace morph {
         }
         //@}
 
+        //! Set to true to use single colours for the scalar fields.
+        bool scalarFieldsSingleColour = false;
+        //! A single colour for the hue. Set >= 0.0 to specify the hue.
+        double singleColourHue = -1.0;
+
         /*!
          * Used by plotting functions
          */
@@ -76,12 +81,6 @@ namespace morph {
                                                   unsigned int arrayIdx) {
             vector<vector<Flt> > vf;
             for (array<vector<Flt>, 2> fia : f) {
-#if 0
-                cout << "vector length is " << fia[arrayIdx].size() << endl;
-                for (Flt ff : fia[arrayIdx]) {
-                    cout << "value: " << ff << endl;
-                }
-#endif
                 vector<Flt> tmpv = fia[arrayIdx];
                 vf.push_back (tmpv);
             }
@@ -95,6 +94,9 @@ namespace morph {
          * the Gdisplay.
          *
          * Optionally pass in a min and a max to help scale the gradients
+         *
+         * @overallOffset can be optonally set to shift the fields in the horizontal
+         * axis.
          */
         void scalarfields (Gdisplay& disp,
                            HexGrid* hg,
@@ -144,13 +146,18 @@ namespace morph {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
                 for (auto h : hg->hexen) {
-// Here, perhaps I'll have a class member that says what kind of colour maps to use.
-#ifdef monochrome
-                    array<float,3> cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N,
-                                                                  norm_a[i][h.vi], 1.0);
-#else
-                    array<float,3> cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
-#endif
+
+                    // Colour can be single colour or red through to blue.
+                    array<float,3> cl_a = {{0,0,0}};
+                    if (this->scalarFieldsSingleColour == true) {
+                        if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
+                            cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
+                        } else {
+                            cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                        }
+                    } else {
+                        cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
+                    }
                     disp.drawHex (h.position(), offset, (h.d/2.0f), cl_a);
                 }
             }
@@ -203,13 +210,16 @@ namespace morph {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
                 for (auto h : hg->hexen) {
-// Here, perhaps I'll have a class member that says what kind of colour maps to use.
-#ifdef monochrome
-                    array<float,3> cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N,
-                                                                  norm_a[i][h.vi], 1.0);
-#else
-                    array<float,3> cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
-#endif
+                    array<float,3> cl_a = {{0,0,0}};
+                    if (this->scalarFieldsSingleColour == true) {
+                        if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
+                            cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
+                        } else {
+                            cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                        }
+                    } else {
+                        cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
+                    }
                     disp.drawHex (h.position(), offset, (h.d/2.0f), cl_a);
                 }
             }
