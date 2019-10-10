@@ -167,7 +167,8 @@ namespace morph {
         void scalarfields_noreset (Gdisplay& disp,
                                    HexGrid* hg,
                                    vector<vector<Flt> >& f,
-                                   Flt mina = +1e7, Flt maxa = -1e7, Flt overallOffset = 0.0) {
+                                   Flt mina = +1e7, Flt maxa = -1e7,
+                                   Flt hOffset = 0.0, Flt vOffset = 0.0, Flt spacescale = 1.0) {
 
             unsigned int N = f.size();
             unsigned int nhex = hg->num();
@@ -203,9 +204,10 @@ namespace morph {
             float hgwidth = hg->getXmax() - hg->getXmin();
 
             // Need to correctly apply N/2 depending on whether N is even or odd.
-            float w = hgwidth+(hgwidth/20.0f);
+            float w = (hgwidth + (hgwidth*0.05f)) * spacescale;
             array<float,3> offset = { 0.0f , 0.0f, 0.0f };
-            float half_minus_half_N = 0.5f - ((float)N/2.0f) + overallOffset;
+            offset[1] = vOffset;
+            float half_minus_half_N = 0.5f*spacescale - ((float)N/2.0f)*spacescale + hOffset;
             for (unsigned int i = 0; i<N; ++i) {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
@@ -215,12 +217,20 @@ namespace morph {
                         if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
                             cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
                         } else {
-                            cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                            if (f[i][h.vi] == -1) {
+                                cl_a = {{1.0,1.0,1.0}};
+                            } else {
+                                cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                            }
                         }
                     } else {
                         cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
                     }
-                    disp.drawHex (h.position(), offset, (h.d/2.0f), cl_a);
+                    array<float,3> pn = h.position();
+                    pn[0] *= spacescale;
+                    pn[1] *= spacescale;
+                    pn[2] *= spacescale;
+                    disp.drawHex (pn, offset, (h.d/2.0f), cl_a);
                 }
             }
         }
@@ -269,15 +279,62 @@ namespace morph {
         }
 
         /*!
+         * Plot the contour described by contourHexes, with these hexes coloured in
+         * AND a scalarfield graph. Next door to each other.
+         */
+        void plot_contour_and_scalar_and_guide (Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, vector<Flt>& f,
+                                                vector<vector<Flt> >& rho, vector<bool>& onstates) {
+
+            disp.resetDisplay (this->fix, this->eye, this->rot);
+
+            // "Research code" alert! This is really hacky, coded to work for one
+            // window to get a job done.
+            Flt shift = 0.65;
+            Flt shift_r = 0.2;
+            Flt hshift = 0.35;
+
+            this->add_contour_plot (disp, hg, contourHexes, +shift+shift_r, hshift);
+
+            vector<vector<Flt> > vf;
+            vf.push_back (f);
+            Flt mina = +1e7;
+            Flt maxa = -1e7;
+
+            bool originalState = this->scalarFieldsSingleColour;
+
+            this->scalarFieldsSingleColour = false;
+            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -shift+shift_r, hshift);
+
+            // Draw the guidance stuff
+            vector<vector<Flt>> rhocopy = rho;
+            for (unsigned int i = 0; i<onstates.size(); ++i) {
+                if (onstates[i] == false) {
+                    cout << "zero rhocopy[i="<<i<<"]" << endl;
+                    for (unsigned int j = 0; j<rhocopy[i].size(); ++j) {
+                        rhocopy[i][j] = -1.0;
+                    }
+                }
+            }
+            this->scalarFieldsSingleColour = true;
+            mina = 0.0;
+            this->scalarfields_noreset (disp, hg, rhocopy, mina, maxa, -0.4, -0.55, 0.5);
+
+            this->scalarFieldsSingleColour = originalState;
+
+            disp.redrawDisplay();
+        }
+
+        /*!
          * Add a contour plot to the Gdisplay @disp for HexGrid hg. The
          * contourHexes are provided in contourHexes.
          */
-        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, Flt overallOffset = 0.0) {
+        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, Flt hOffset = 0.0, Flt vOffset = 0.0) {
 
             unsigned int N = contourHexes.size();
 
             array<float,3> offset_ar = {0.0f, 0.0f, 0.0f};
-            offset_ar[0] += overallOffset;
+            offset_ar[0] += hOffset;
+            offset_ar[1] = vOffset;
 
             // Coloured boundaries
             float r = hg->hexen.begin()->getSR();
