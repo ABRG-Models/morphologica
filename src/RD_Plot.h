@@ -207,7 +207,7 @@ namespace morph {
             float w = (hgwidth + (hgwidth*0.05f)) * spacescale;
             array<float,3> offset = { 0.0f , 0.0f, 0.0f };
             offset[1] = vOffset;
-            float half_minus_half_N = 0.5f*spacescale - ((float)N/2.0f)*spacescale + hOffset;
+            float half_minus_half_N = 0.5f - ((float)N/2.0f)*w + hOffset;
             for (unsigned int i = 0; i<N; ++i) {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
@@ -258,22 +258,25 @@ namespace morph {
          * Plot the contour described by contourHexes, with these hexes coloured in
          * AND a scalarfield graph. Next door to each other.
          */
-        void plot_contour_and_scalar (Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, vector<Flt>& f) {
+        void plot_contour_and_scalar (Gdisplay& disp, HexGrid* hg,
+                                      vector<list<Hex> >& contourHexes, vector<Flt>& f,
+                                      Flt hshift = 0.5, Flt hshift2 = 0.2) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
 
             // "Research code" alert! This is rather hacky, coded to work for one
             // window to get a job done.
-            Flt shift = 0.65;
-            Flt shift_r = 0.2;
 
-            this->add_contour_plot (disp, hg, contourHexes, +shift+shift_r);
+            this->add_contour_plot (disp, hg, contourHexes, +hshift+hshift2);
 
             vector<vector<Flt> > vf;
             vf.push_back (f);
             Flt mina = +1e7;
             Flt maxa = -1e7;
-            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -shift+shift_r);
+            bool originalState = this->scalarFieldsSingleColour;
+            this->scalarFieldsSingleColour = false;
+            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -hshift+hshift2);
+            this->scalarFieldsSingleColour = originalState;
 
             disp.redrawDisplay();
         }
@@ -281,19 +284,22 @@ namespace morph {
         /*!
          * Plot the contour described by contourHexes, with these hexes coloured in
          * AND a scalarfield graph. Next door to each other.
+         *
+         * hshift: how far to shift (left and right) the contour and maxval plots
+         * vshift: how far up to shift contour and maxval plots
+         * g_hshift, g_vshift: horz vert shifts for the guidance molecules
          */
-        void plot_contour_and_scalar_and_guide (Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, vector<Flt>& f,
-                                                vector<vector<Flt> >& rho, vector<bool>& onstates) {
+        void plot_contour_and_scalar_and_guide (Gdisplay& disp, HexGrid* hg,
+                                                vector<list<Hex> >& contourHexes, vector<Flt>& f,
+                                                vector<vector<Flt> >& rho, vector<bool>& onstates,
+                                                Flt hshift, Flt vshift, Flt g_hshift, Flt g_vshift) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
 
             // "Research code" alert! This is really hacky, coded to work for one
             // window to get a job done.
-            Flt shift = 0.65;
-            Flt shift_r = 0.2;
-            Flt hshift = 0.35;
 
-            this->add_contour_plot (disp, hg, contourHexes, +shift+shift_r, hshift);
+            this->add_contour_plot (disp, hg, contourHexes, +hshift, vshift);
 
             vector<vector<Flt> > vf;
             vf.push_back (f);
@@ -303,7 +309,7 @@ namespace morph {
             bool originalState = this->scalarFieldsSingleColour;
 
             this->scalarFieldsSingleColour = false;
-            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -shift+shift_r, hshift);
+            this->scalarfields_noreset (disp, hg, vf, mina, maxa, -hshift, vshift);
 
             // Draw the guidance stuff
             vector<vector<Flt>> rhocopy = rho;
@@ -317,7 +323,7 @@ namespace morph {
             }
             this->scalarFieldsSingleColour = true;
             mina = 0.0;
-            this->scalarfields_noreset (disp, hg, rhocopy, mina, maxa, -0.4, -0.55, 0.5);
+            this->scalarfields_noreset (disp, hg, rhocopy, mina, maxa, g_hshift, g_vshift, 0.5);
 
             this->scalarFieldsSingleColour = originalState;
 
