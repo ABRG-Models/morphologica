@@ -92,7 +92,7 @@ namespace morph {
             for (unsigned int i = 0; i<N; ++i) {
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {
-                        if (norm_f[i][h.vi] > threshold) {
+                        if (norm_f[i][h.vi] >= threshold) {
                             if ( (h.has_ne() && norm_f[i][h.ne->vi] < threshold)
                                  || (h.has_nne() && norm_f[i][h.nne->vi] < threshold)
                                  || (h.has_nnw() && norm_f[i][h.nnw->vi] < threshold)
@@ -103,7 +103,7 @@ namespace morph {
                             }
                         }
                     } else { // h.onBoundary() is true
-                        if (norm_f[i][h.vi] > threshold) {
+                        if (norm_f[i][h.vi] >= threshold) {
                             rtn[i].push_back (h);
                         }
                     }
