@@ -21,7 +21,7 @@ using std::runtime_error;
 using std::stringstream;
 using std::make_pair;
 using std::vector;
-using std::cout;
+using std::cerr;
 using std::endl;
 
 using std::atof;
@@ -43,10 +43,8 @@ morph::ReadCurves::ReadCurves (const string& svgpath)
     // Read the curves:
     this->read();
     if (this->gotCortex == false) {
-        cout << "WARNING: No object in SVG with id \"cortex\". Cortical boundary will be null." << endl;
-    } else {
-        cout << "Got a cortex id" << endl;
-    }
+        cerr << "WARNING: No object in SVG with id \"cortex\". Cortical boundary will be null." << endl;
+    } // else DID get cortex ID
 }
 
 void
@@ -191,7 +189,7 @@ morph::ReadCurves::readG (xml_node<>* g_node)
     xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
     if (line_node != (xml_node<>*)0) {
         if (this->foundLine == true) {
-            cout << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)" << endl;
+            cerr << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)" << endl;
         }
         this->readLine (line_node, g_id);
         this->foundLine = true;
