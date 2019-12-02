@@ -382,6 +382,12 @@ namespace morph {
          */
         pair<float, float> boundaryCentroid;
 
+        /*!
+         * Holds the centroid of the boundary before all points on the boundary were translated so
+         * that the centroid of the boundary would be 0,0
+         */
+        pair<float, float> originalBoundaryCentroid;
+
     private:
         /*!
          * Initialise a grid of hexes in a hex spiral, setting

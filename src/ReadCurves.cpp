@@ -92,6 +92,13 @@ morph::ReadCurves::read (void)
         } // else failed to get p_id
     }
 
+    // Search circles, and make up a table of all the circles along with their IDs
+    for (xml_node<>* circ_node = this->root_node->first_node("circle");
+         circ_node;
+         circ_node = circ_node->next_sibling("circle")) {
+        this->readCircle (circ_node);
+    }
+
     // Now the file is read, set the scaling:
     this->setScale();
 }
@@ -118,6 +125,35 @@ morph::ReadCurves::findNodeRecursive (xml_node<>* a_node, const string& tagname)
     }
 
     return (xml_node<>*)0;
+}
+
+void
+morph::ReadCurves::readCircle (xml_node<>* circ_node)
+{
+    // Within each <circle>: Read the id attribute
+    string circ_id("");
+    xml_attribute<>* _attr;
+    if ((_attr = circ_node->first_attribute ("id"))) {
+        circ_id = _attr->value();
+        bool gotx = false;
+        bool goty = false;
+        float cx = 0.0;
+        float cy = 0.0;
+        // Now, get the x and y attributes, cx and cy
+        if ((_attr = circ_node->first_attribute ("cx"))) {
+            gotx = true;
+            cx = atof (_attr->value());
+        }
+        if ((_attr = circ_node->first_attribute ("cy"))) {
+            goty = true;
+            cy = atof (_attr->value());
+        }
+        if (gotx && goty) {
+            DBG("Added circle " << circ_id << " with centre (" << cx << "," << cy << ")");
+            this->circles[circ_id] = make_pair(cx, cy);
+        }
+
+    } // else failed to get circ_id
 }
 
 void
@@ -677,6 +713,12 @@ morph::ReadCurves::setScale (void)
     while (ei != this->enclosedRegions.end()) {
         ei->setScale (this->lineToMillimetres.second);
         ++ei;
+    }
+    // Scale the centre points of the circles:
+    for (auto& c : this->circles) {
+        c.second.first *= this->lineToMillimetres.second;
+        c.second.second *= this->lineToMillimetres.second;
+        DBG ("ID " << c.first << " (" << c.second.first << "," << c.second.second << ")");
     }
 }
 

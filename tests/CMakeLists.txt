@@ -35,6 +35,13 @@ add_executable(${TARGETTEST3} ${SOURCETEST3})
 target_link_libraries(${TARGETTEST3} morphologica)
 add_test(testreadcurves ${TARGETTEST3})
 
+# Test reading whiskerbarrels_withcentres.svg
+set(TARGETTEST31 testreadcurves_circles CACHE TYPE STRING)
+set(SOURCETEST31 testreadcurves_circles.cpp)
+add_executable(${TARGETTEST31} ${SOURCETEST31})
+target_link_libraries(${TARGETTEST31} morphologica)
+add_test(testreadcurves_circles ${TARGETTEST31})
+
 # Test display. Note also linking to static library here, to prove it works.
 set(TARGETTEST4 testdisplay CACHE TYPE STRING)
 set(SOURCETEST4 testdisplay.cpp)

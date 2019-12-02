@@ -12,6 +12,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <map>
 #include <utility>
 #include "rapidxml.hpp"
 #include "BezCurvePath.h"
@@ -20,6 +21,7 @@
 using std::string;
 using std::list;
 using std::vector;
+using std::map;
 using std::pair;
 using rapidxml::xml_node;
 using rapidxml::xml_document;
@@ -77,6 +79,14 @@ namespace morph
          */
         float getScale_svgpermm (void);
 
+        /*!
+         * A key-value list of coordinates, obtained from reading any circles in the
+         * SVG. The ID of the circle is the key, the location of its centre gives the
+         * coordinate. I dreamed this scheme up so that I could incorporate a set of
+         * coordinates marking out structures in the cortex (specifically, barrels).
+         */
+        map<string, pair<float, float>> circles;
+
     private:
 
         /*!
@@ -95,6 +105,11 @@ namespace morph
          * <path> or <line> element.
          */
         void readG (xml_node<>* g_node);
+
+        /*!
+         * Read a circle element and store it in circles.
+         */
+        void readCircle (xml_node<>* circ_node);
 
         /*!
          * Recursively search in a_node until a node with the tag name

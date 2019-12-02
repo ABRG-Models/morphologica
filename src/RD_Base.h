@@ -9,6 +9,8 @@
 #include <sstream>
 #include <vector>
 #include <array>
+#include <map>
+#include <utility>
 #include <iomanip>
 #include <cmath>
 #include <hdf5.h>
@@ -20,6 +22,8 @@
 
 using std::vector;
 using std::array;
+using std::map;
+using std::pair;
 using std::string;
 using std::stringstream;
 using std::cerr;
@@ -165,6 +169,11 @@ namespace morph {
          * The HexGrid "background" for the Reaction Diffusion system.
          */
         HexGrid* hg;
+
+        /*!
+         * Key-mapped coordinates
+         */
+        map<string, pair<float, float>> identified_coords;
 
         /*!
          * The logpath for this model. Used when saving data out.
@@ -382,6 +391,8 @@ namespace morph {
             ReadCurves r(this->svgpath);
             // Set the boundary in the HexGrid
             this->hg->setBoundary (r.getCorticalPath());
+            // Copy the list of circles from ReadCurves
+            this->identified_coords = r.circles;
             // Compute the distances from the boundary
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid

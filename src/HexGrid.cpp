@@ -462,6 +462,9 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
         bpi->subtract (this->boundaryCentroid);
         ++bpi;
     }
+    // Copy the centroid
+    this->originalBoundaryCentroid = this->boundaryCentroid;
+    // Zero out the centroid, as the boundary is now centred on 0,0
     this->boundaryCentroid = make_pair (0.0, 0.0);
 
     list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
