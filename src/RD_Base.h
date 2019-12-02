@@ -398,6 +398,11 @@ namespace morph {
             this->hg->setBoundary (r.getCorticalPath());
             // Copy the list of circles from ReadCurves
             this->identified_coords = r.circles;
+            // Invert the y axis of these coordinates, just as the y axis is inverted in void
+            // morph::HexGrid::setBoundary (const BezCurvePath& p)
+            for (auto& c : this->identified_coords) {
+                c.second.second = -c.second.second;
+            }
             // Compute the distances from the boundary
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid
