@@ -103,6 +103,11 @@ namespace morph {
         alignas(float) float hextohex_d = 0.01;
 
         /*!
+         * The 'span' of the initial hex of hexes that is created, onto which the boundary is then drawn.
+         */
+        alignas(float) float hexspan = 4;
+
+        /*!
          * Holds the number of hexes in the populated HexGrid
          */
         alignas(Flt) unsigned int nhex = 0;
@@ -386,7 +391,7 @@ namespace morph {
         virtual void allocate (void) {
             // Create a HexGrid. 3 is the 'x span' which determines how
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
-            this->hg = new HexGrid (this->hextohex_d, 3, 0, morph::HexDomainShape::Boundary);
+            this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
             // Read the curves which make a boundary
             ReadCurves r(this->svgpath);
             // Set the boundary in the HexGrid
