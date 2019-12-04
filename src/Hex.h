@@ -58,6 +58,11 @@ using std::endl;
 #define HEX_INSIDE_BOUNDARY      0x80
 //! All hexes inside the domain of computation:
 #define HEX_INSIDE_DOMAIN       0x100
+//! Hex is a 'region boundary hex'. Regions are intended to be temporary to aid client code.
+#define HEX_IS_REGION_BOUNDARY  0x200
+//! Hex is inside the region
+#define HEX_INSIDE_REGION       0x400
+
 //! Four flags for client code to use for its own devices. For an example of use, see DirichDom.h
 //@{
 #define HEX_USER_FLAG_0    0x10000000
@@ -532,6 +537,24 @@ namespace morph {
         }
         void setFlags (unsigned int flgs) {
             this->flags = flgs;
+        }
+        /*!
+         * Set one or more flags, defined by flg, true
+         */
+        void setFlag (unsigned int flg) {
+            this->flags |= flg;
+        }
+        /*!
+         * Unset one or more flags, defined by flg, i.e. set false
+         */
+        void unsetFlag (unsigned int flg) {
+            this->flags &= ~(flg);
+        }
+        /*!
+         * If flags match flg, then return true
+         */
+        bool testFlags (unsigned int flg) const {
+            return (this->flags & flg) == flg ? true : false;
         }
 
         /*!

@@ -348,6 +348,26 @@ namespace morph {
         void populate_d_vectors (const array<int, 6>& extnts);
 
         /*!
+         * Get a vector of Hex pointers for all hexes that are inside/on the path defined by the
+         * BezCurvePath @p, thus this gets a 'region of hexes'. The Hex flags "region" and
+         * "regionBoundary" are used, temporarily to mark out the region. The idea is that client
+         * code will then use the vector of Hex* to work with the region however it needs to.
+         *
+         * It's assumed that the BezCurvePath defines a closed region.
+         */
+        //@{
+        vector<list<Hex>::iterator> getRegion (const BezCurvePath& p,
+                                               bool applyOriginalBoundaryCentroid = true);
+        vector<list<Hex>::iterator> getRegion (vector<BezCoord>& bpoints,
+                                               bool applyOriginalBoundaryCentroid = true);
+        //@}
+
+        /*!
+         * For every hex in hexen, unset the flags HEX_IS_REGION_BOUNDARY and HEX_INSIDE_REGION
+         */
+        void clearRegionBoundaryFlags (void);
+
+        /*!
          * What shape domain to set? Set this to the non-default
          * BEFORE calling HexGrid::setBoundary (const BezCurvePath& p)
          * - that's where the domainShape is applied.
@@ -426,6 +446,20 @@ namespace morph {
         //@}
 
         /*!
+         * Set the hex closest to point as being on the region boundary. Region boundaries are
+         * supposed to be temporary, so that client code can find a region, extract the pointers to
+         * all the Hexes in that region and store that information for later use.
+         */
+        list<Hex>::iterator setRegionBoundary (const BezCoord& point, list<Hex>::iterator startFrom);
+
+        /*!
+         * Determine whether the region boundary is contiguous, starting from the boundary Hex
+         * iterator #bhi.
+         */
+        bool regionBoundaryContiguous (list<Hex>::const_iterator bhi,
+                                       list<Hex>::const_iterator hi, set<unsigned int>& seen);
+
+        /*!
          * Find a hex, any hex, that's on the boundary specified by
          * #boundary. This assumes that setBoundary (const
          * BezCurvePath&) has been called to mark the Hexes that lie
@@ -434,22 +468,37 @@ namespace morph {
         bool findBoundaryHex (list<Hex>::const_iterator& hi) const;
 
         /*!
-         * Mark hexes as being inside the boundary given that @hi
-         * refers to a boundary Hex and at least one adjacent hex to
-         * @hi has already been marked as inside the boundary (thus
-         * allowing the algorithm to know which side of the boundary
-         * hex is the inside)
+         * Find the hex near @point, starting from startFrom, which should be as close as possible
+         * to point in order to reduce computation time.
+         */
+        list<Hex>::iterator findHexNearPoint (const BezCoord& point, list<Hex>::iterator startFrom);
+
+        /*!
+         * Mark hexes as being inside the boundary given that @hi refers to a boundary Hex and at
+         * least one adjacent hex to @hi has already been marked as inside the boundary (thus
+         * allowing the algorithm to know which side of the boundary hex is the inside)
+         *
+         * By changing bdryFlag and insideFlag, it's possible to use this method with region
+         * boundaries.
          */
         //@{
-        void markFromBoundary (list<Hex*>::iterator hi);
-        void markFromBoundary (list<Hex>::iterator hi);
-        void markFromBoundary (Hex* hi);
+        void markFromBoundary (list<Hex*>::iterator hi,
+                               unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                               unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
+        void markFromBoundary (list<Hex>::iterator hi,
+                               unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                               unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
+        void markFromBoundary (Hex* hi,
+                               unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                               unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
         //@}
 
         /*!
          * Common code used by markFromBoundary()
          */
-        void markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti);
+        void markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti,
+                                     unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                                     unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
 
         /*!
          * Given the current boundary hex iterator, bhi and the last
@@ -457,14 +506,18 @@ namespace morph {
          * had all its adjacent inside hexes marked as insideBoundary,
          * find the next boundary hex.
          */
-        bool findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::iterator& bhi_last) const;
+        bool findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::iterator& bhi_last,
+                                        unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                                        unsigned int insideFlag = HEX_INSIDE_BOUNDARY) const;
 
         /*!
          * Mark hexes as insideBoundary if they are inside the
          * boundary. Starts from @hi which is assumed to already be
          * known to refer to a hex lying inside the boundary.
          */
-        void markHexesInside (list<Hex>::iterator hi);
+        void markHexesInside (list<Hex>::iterator hi,
+                              unsigned int bdryFlag = HEX_IS_BOUNDARY,
+                              unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
 
         /*!
          * Recursively mark hexes to be kept if they are inside the
