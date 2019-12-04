@@ -171,14 +171,14 @@ namespace morph {
          */
 
         /*!
+         * Hold on to the ReadCurves object, so that the additional contours are available.
+         */
+        ReadCurves r;
+
+        /*!
          * The HexGrid "background" for the Reaction Diffusion system.
          */
         HexGrid* hg;
-
-        /*!
-         * Key-mapped coordinates
-         */
-        map<string, pair<float, float>> identified_coords;
 
         /*!
          * The logpath for this model. Used when saving data out.
@@ -393,16 +393,9 @@ namespace morph {
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
             this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
             // Read the curves which make a boundary
-            ReadCurves r(this->svgpath);
+            this->r.init (this->svgpath);
             // Set the boundary in the HexGrid
-            this->hg->setBoundary (r.getCorticalPath());
-            // Copy the list of circles from ReadCurves
-            this->identified_coords = r.circles;
-            // Invert the y axis of these coordinates, just as the y axis is inverted in void
-            // morph::HexGrid::setBoundary (const BezCurvePath& p)
-            for (auto& c : this->identified_coords) {
-                c.second.second = -c.second.second;
-            }
+            this->hg->setBoundary (this->r.getCorticalPath());
             // Compute the distances from the boundary
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid

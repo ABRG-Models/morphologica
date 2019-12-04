@@ -48,6 +48,19 @@ morph::ReadCurves::ReadCurves (const string& svgpath)
 }
 
 void
+morph::ReadCurves::init (const string& svgpath)
+{
+    // Read (without parsing) the svg file text into memory:
+    this->modeldata.read (svgpath);
+    // Parse the XML and find the root node:
+    this->init();
+    this->read();
+    if (this->gotCortex == false) {
+        cerr << "WARNING: No object in SVG with id \"cortex\". Cortical boundary will be null." << endl;
+    } // else DID get cortex ID
+}
+
+void
 morph::ReadCurves::init (void)
 {
     if (!this->root_node) {
