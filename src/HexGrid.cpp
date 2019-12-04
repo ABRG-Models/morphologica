@@ -458,7 +458,7 @@ morph::HexGrid::getRegion (vector<BezCoord>& bpoints, bool applyOriginalBoundary
     // First clear all region boundary flags, as we'll be defining a new region boundary
     this->clearRegionBoundaryFlags();
 
-    // FIXME: Compute region centroid from bpoints
+    // Compute region centroid from bpoints
     pair<float, float> regionCentroid = BezCurvePath::getCentroid (bpoints);;
 
     // A return object
@@ -470,11 +470,11 @@ morph::HexGrid::getRegion (vector<BezCoord>& bpoints, bool applyOriginalBoundary
             bpi->subtract (this->originalBoundaryCentroid);
             ++bpi;
         }
-    }
 
-    // Subtract originalBoundaryCentroid from region centroid so that region centroid is translated
-    regionCentroid.first = regionCentroid.first - this->originalBoundaryCentroid.first;
-    regionCentroid.second = regionCentroid.second - this->originalBoundaryCentroid.second;
+        // Subtract originalBoundaryCentroid from region centroid so that region centroid is translated
+        regionCentroid.first = regionCentroid.first - this->originalBoundaryCentroid.first;
+        regionCentroid.second = regionCentroid.second - this->originalBoundaryCentroid.second;
+    }
 
     // Now find the hexes on the boundary of the region
     list<Hex>::iterator nearbyRegionBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
