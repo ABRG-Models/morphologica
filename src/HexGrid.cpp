@@ -437,13 +437,6 @@ morph::HexGrid::setEllipticalBoundary (const float a, const float b)
     this->setBoundary (bpoints);
 }
 
-vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (const BezCurvePath& p, bool applyOriginalBoundaryCentroid)
-{
-    vector<BezCoord> bpoints = p.getPoints (this->d/2.0f, true);
-    return this->getRegion (bpoints);
-}
-
 void
 morph::HexGrid::clearRegionBoundaryFlags (void)
 {
@@ -453,13 +446,20 @@ morph::HexGrid::clearRegionBoundaryFlags (void)
 }
 
 vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (vector<BezCoord>& bpoints, bool applyOriginalBoundaryCentroid)
+morph::HexGrid::getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
+{
+    vector<BezCoord> bpoints = p.getPoints (this->d/2.0f, true);
+    return this->getRegion (bpoints, regionCentroid, applyOriginalBoundaryCentroid);
+}
+
+vector<list<Hex>::iterator>
+morph::HexGrid::getRegion (vector<BezCoord>& bpoints, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
 {
     // First clear all region boundary flags, as we'll be defining a new region boundary
     this->clearRegionBoundaryFlags();
 
     // Compute region centroid from bpoints
-    pair<float, float> regionCentroid = BezCurvePath::getCentroid (bpoints);;
+    regionCentroid = BezCurvePath::getCentroid (bpoints);
 
     // A return object
     vector<list<Hex>::iterator> theRegion;

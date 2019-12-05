@@ -353,12 +353,21 @@ namespace morph {
          * "regionBoundary" are used, temporarily to mark out the region. The idea is that client
          * code will then use the vector of Hex* to work with the region however it needs to.
          *
+         * The centroid of the region is placed in @regionCentroid (i.e. @regionCentroid is a return
+         * argument)
+         *
          * It's assumed that the BezCurvePath defines a closed region.
+         *
+         * If applyOriginalBoundaryCentroid is true, then the region is translated by the same
+         * amount that the overall boundary was translated to ensure that the boundary's centroid is
+         * at 0,0.
+         *
+         * Returns a vector of iterators to the Hexes that make up the region.
          */
         //@{
-        vector<list<Hex>::iterator> getRegion (const BezCurvePath& p,
+        vector<list<Hex>::iterator> getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
-        vector<list<Hex>::iterator> getRegion (vector<BezCoord>& bpoints,
+        vector<list<Hex>::iterator> getRegion (vector<BezCoord>& bpoints, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
         //@}
 
