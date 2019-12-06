@@ -376,7 +376,10 @@ namespace morph {
             Pi_best.first = mean_x / this->vertices.size();
             Pi_best.second = mean_y / this->vertices.size();
             NM_Simplex<Flt> simp (Pi_best, this->vertices.begin()->v, this->vertices.begin()->vn);
-            simp.termination_threshold = numeric_limits<Flt>::epsilon();
+            // Set a termination threshold for the SD of the vertices of the simplex
+            simp.termination_threshold = 2.0 * numeric_limits<Flt>::epsilon();
+            // Set a 10000 operation limit, in case the above threshold can't be reached
+            simp.too_many_operations = 10000;
 
             while (simp.state != NM_Simplex_State::ReadyToStop) {
 
