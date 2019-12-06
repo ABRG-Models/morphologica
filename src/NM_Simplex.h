@@ -16,6 +16,9 @@
 using std::pair;
 #include <vector>
 using std::vector;
+#include <iostream>
+using std::cerr;
+using std::endl;
 #include "MathAlgo.h"
 using morph::MathAlgo;
 
@@ -68,7 +71,12 @@ namespace morph {
 
         //! Increment every time the algorithm performs an operation of some sort. FOr
         //! this NM algorithm, I increment every time the simplex changes shape.
-        unsigned int operation_count = 0;
+        unsigned long long int operation_count = 0;
+
+        //! If set >0, then if operation_count exceeds too_many_operations, then
+        //! ReadyToStop is set (and a warning emitted). Arriving at
+        //! too_many_operations probably means termination_threshold was set too low.
+        unsigned long long int too_many_operations = 0;
 
         //! Client code should set the termination threshold to be suitable for the problem. When
         //! the standard deviation of the values of the objective function at the vertices of the
@@ -168,6 +176,12 @@ namespace morph {
             // returning of the best value relies on the vertices being ordered).
             Flt sd = MathAlgo<Flt>::compute_sd (this->values);
             if (sd < this->termination_threshold) {
+                this->state = NM_Simplex_State::ReadyToStop;
+                return;
+            } else if (this->too_many_operations > 0
+                       && this->operation_count > this->too_many_operations) {
+                // If this is emitted, check your termination_threshold
+                cerr << "Warning: Reached too_many_operation. Setting state 'ReadyToStop'." << endl;
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             }
