@@ -66,6 +66,10 @@ namespace morph {
         //! default we DO. Set this to false to instead ascend to the maximum metric value.
         bool downhill = true;
 
+        //! Increment every time the algorithm performs an operation of some sort. FOr
+        //! this NM algorithm, I increment every time the simplex changes shape.
+        unsigned int operation_count = 0;
+
         //! Client code should set the termination threshold to be suitable for the problem. When
         //! the standard deviation of the values of the objective function at the vertices of the
         //! simplex drop below this value, the algorithm will be deemed to be finished.
@@ -177,6 +181,7 @@ namespace morph {
         //! Find the reflected point, xr, which is the reflection of the worst point about the
         //! centroid of the simplex.
         void reflect (void) {
+            this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
             for (unsigned int j = 0; j < this->n; ++j) {
                 this->xr[j] = this->x0[j] + this->alpha * (this->x0[j] - this->vertices[worst][j]);
@@ -229,6 +234,7 @@ namespace morph {
         //! Compute the expanded point and then set the state to tell the client code that it needs
         //! to compute the objective function for the expanded point.
         void expand (void) {
+            this->operation_count++;
             for (unsigned int j = 0; j < this->n; ++j) {
                 this->xe[j] = this->x0[j] + this->gamma * (this->xr[j] - this->x0[j]);
             }
@@ -258,6 +264,7 @@ namespace morph {
 
     private:
         void contract (void) {
+            this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
             for (unsigned int j = 0; j < this->n; ++j) {
                 this->xc[j] = this->x0[j] + this->rho * (this->vertices[worst][j] - this->x0[j]);
@@ -282,6 +289,7 @@ namespace morph {
 
     private:
         void shrink (void) {
+            this->operation_count++;
             for (unsigned int i = 1; i <= this->n; ++i) {
                 for (unsigned int j = 0; j < this->n; ++j) {
                     this->vertices[i][j] = this->vertices[0][j]
