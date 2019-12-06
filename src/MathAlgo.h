@@ -83,7 +83,7 @@ namespace morph {
             }
         }
 
-
+        //! Bubble sort, high to low, order is returned in indices, values are left unchanged
         static void bubble_sort_hi_to_lo (const vector<T>& values, vector<unsigned int>& indices) {
 
             vector<T> vcopy = values;
@@ -113,6 +113,7 @@ namespace morph {
             }
         }
 
+        //! Bubble sort, low to high, order is returned in indices, values are left unchanged
         static void bubble_sort_lo_to_hi (const vector<T>& values, vector<unsigned int>& indices) {
 
             vector<T> vcopy = values;
