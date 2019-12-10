@@ -12,8 +12,39 @@ using std::ios;
 using std::stringstream;
 #include <string>
 using std::string;
+#include <iostream>
+using std::cout;
+using std::endl;
+
+#include "Process.h"
 
 namespace morph {
+
+    /*!
+     * Callbacks class extends ProcessCallbacks
+     */
+    class ConfigProcessCallbacks : public ProcessCallbacks
+    {
+    public:
+        ConfigProcessCallbacks (ProcessData* p) {
+            this->parent = p;
+        }
+        void startedSignal (std::string msg) {}
+        void errorSignal (int err) {
+            this->parent->setErrorNum (err);
+        }
+        void processFinishedSignal (std::string msg) {
+            this->parent->setProcessFinishedMsg (msg);
+        }
+        void readyReadStandardOutputSignal (void) {
+            this->parent->setStdOutReady (true);
+        }
+        void readyReadStandardErrorSignal (void) {
+            this->parent->setStdErrReady (true);
+        }
+    private:
+        ProcessData* parent;
+    };
 
     /*!
      * A configuration file class to help read simulation parameters from a JSON file.
@@ -26,7 +57,11 @@ namespace morph {
      * simulation data.
      */
     class Config {
+
     public:
+        /*!
+         * Just one constructor, which takes the path to the file that contains the JSON.
+         */
         Config (const string& configfile) {
             stringstream ess;
             // Test for existence of the JSON file.
@@ -66,12 +101,151 @@ namespace morph {
             this->ready = true;
         }
 
+        /*!
+         * Launch git sub-processes to determine info about the
+         * current repository. Intended for use with code that will
+         * save a Json formatted log of a simulation run.
+         *
+         * @codedir The name of the directory in which significant
+         * code is located. If git status detects changes in this
+         * directory, then information to this effect will be inserted
+         * into this->root.
+         */
+        void insertGitInfo (const string& codedir) {
+            ProcessData pD;
+            ConfigProcessCallbacks cb(&pD);
+            Process p;
+            string command ("/usr/bin/git");
+
+            list<string> args1;
+            args1.push_back ("git");
+            args1.push_back ("rev-parse");
+            args1.push_back ("HEAD");
+
+            try {
+                p.setCallbacks (&cb);
+                p.start (command, args1);
+                p.probeProcess ();
+                if (!p.waitForStarted()) {
+                    throw runtime_error ("Process failed to start");
+                }
+                while (p.running() == true) {
+                    p.probeProcess();
+                }
+
+                stringstream theOutput;
+                theOutput << p.readAllStandardOutput();
+                string line = "";
+                int nlines = 0;
+                while (getline (theOutput, line, '\n')) {
+                    cout << "Current git HEAD: " << line << endl;
+                    if (nlines++ > 0) {
+                        break;
+                    }
+                    this->root["git_head"] = line; // Should be one line only
+                }
+
+            } catch (const exception& e) {
+                cerr << "Exception: " << e.what() << endl;
+                this->root["git_head"] = "unknown";
+            }
+
+            // Reset Process with arg true to keep callbacks
+            p.reset (true);
+
+            list<string> args2;
+            args2.push_back ("git");
+            args2.push_back ("status");
+
+            try {
+                p.start (command, args2);
+                p.probeProcess ();
+                if (!p.waitForStarted()) {
+                    throw runtime_error ("Process failed to start");
+                }
+                while (p.running() == true) {
+                    p.probeProcess();
+                }
+
+                stringstream theOutput;
+                theOutput << p.readAllStandardOutput();
+                string line = "";
+                bool lm = false;
+                bool ut = false;
+                while (getline (theOutput, line, '\n')) {
+                    if (line.find("modified:") != string::npos) {
+                        if (line.find(codedir) != string::npos) {
+                            if (!lm) {
+                                this->root["git_modified_sim"] = true;
+                                cout << "Repository has local modifications in " << codedir << " dir" << endl;
+                            }
+                            lm = true;
+                        }
+                    }
+                    if (line.find("Untracked files:") != string::npos) {
+                        if (line.find(codedir) != string::npos) {
+                            if (!ut) {
+                                this->root["git_untracked_sim"] = true;
+                                cout << "Repository has untracked files present in " << codedir << " dir" << endl;
+                            }
+                            ut = true;
+                        }
+                    }
+                }
+
+            } catch (const exception& e) {
+                stringstream ee;
+                ee << "Exception: " << e.what();
+                this->emsg = ee.str();
+                this->root["git_status"] = "unknown";
+            }
+
+            // Reset for third call
+            p.reset (true);
+
+            // This gets the git branch name
+            list<string> args3;
+            args3.push_back ("git");
+            args3.push_back ("rev-parse");
+            args3.push_back ("--abbrev-ref");
+            args3.push_back ("HEAD");
+
+            try {
+                p.start (command, args3);
+                p.probeProcess ();
+                if (!p.waitForStarted()) {
+                    throw runtime_error ("Process failed to start");
+                }
+                while (p.running() == true) {
+                    p.probeProcess();
+                }
+
+                stringstream theOutput;
+                theOutput << p.readAllStandardOutput();
+                string line = "";
+                int nlines = 0;
+                while (getline (theOutput, line, '\n')) {
+                    cout << "Current git branch: " << line << endl;
+                    if (nlines++ > 0) {
+                        break;
+                    }
+                    this->root["git_branch"] = line; // Should be one line only
+                }
+
+            } catch (const exception& e) {
+                stringstream ee;
+                ee << "Exception: " << e.what();
+                this->emsg = ee.str();
+                this->root["git_branch"] = "unknown";
+            }
+        }
+
         //! Write out the JSON to file.
         void write (const string& outfile) {
             ofstream configout;
             configout.open (outfile.c_str(), ios::out|ios::trunc);
             if (configout.is_open()) {
-                configout << root;
+                configout << this->root;
                 configout.close();
             } else {
                 this->emsg = "Failed to open file '" + outfile + "' for writing";
