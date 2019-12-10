@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <set>
+#include <map>
 #include <limits>
 #include <stdexcept>
 #include "Hex.h"
@@ -18,6 +19,7 @@ using std::list;
 using std::pair;
 using std::make_pair;
 using std::set;
+using std::map;
 using std::numeric_limits;
 using std::runtime_error;
 using std::exception;
