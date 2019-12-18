@@ -392,6 +392,7 @@ namespace morph {
             // Create a HexGrid. 3 is the 'x span' which determines how
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
             this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
+            DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
             // Read the curves which make a boundary
             this->r.init (this->svgpath);
             // Set the boundary in the HexGrid
@@ -400,7 +401,7 @@ namespace morph {
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid
             this->nhex = this->hg->num();
-            DBG ("HexGrid says num hexes = " << this->nhex);
+            DBG ("After setting boundary, HexGrid has " << this->nhex << " hexes");
             // Spatial d comes from the HexGrid, too.
             this->set_d(this->hg->getd());
             DBG ("HexGrid says d = " << this->d);
