@@ -25,6 +25,7 @@ using std::ostream;
 #include <stdlib.h>
 
 #include <json/json.h>
+#include "Process.h"
 
 /*!
  * Character sets useful when calling util::sanitize().
@@ -62,6 +63,32 @@ using std::ostream;
 namespace morph
 {
     /*!
+     * Callbacks class extends ProcessCallbacks
+     */
+    class ToolsProcessCallbacks : public ProcessCallbacks
+    {
+    public:
+        ToolsProcessCallbacks (ProcessData* p) {
+            this->parent = p;
+        }
+        void startedSignal (std::string msg) {}
+        void errorSignal (int err) {
+            this->parent->setErrorNum (err);
+        }
+        void processFinishedSignal (std::string msg) {
+            this->parent->setProcessFinishedMsg (msg);
+        }
+        void readyReadStandardOutputSignal (void) {
+            this->parent->setStdOutReady (true);
+        }
+        void readyReadStandardErrorSignal (void) {
+            this->parent->setStdErrReady (true);
+        }
+    private:
+        ProcessData* parent;
+    };
+
+    /*!
      * Allows the use of transform and tolower() on strings with
      * GNU compiler
      */
@@ -94,6 +121,20 @@ namespace morph
     class Tools
     {
     public:
+        /*!
+         * Launch git sub-processes to determine info about the
+         * current repository. Intended for use with code that will
+         * save a Json formatted log of a simulation run.
+         *
+         * @root Insert the git tags into this Json object.
+         *
+         * @codedir The name of the directory in which significant
+         * code is located. If git status detects changes in this
+         * directory, then information to this effect will be inserted
+         * into @root.
+         */
+        static void insertGitInfo (Json::Value& root, const string& codedir);
+
         static vector<double> getJetColor (double gray);
 
         /*!
