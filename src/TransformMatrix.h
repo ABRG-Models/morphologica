@@ -93,8 +93,259 @@ namespace morph {
             this->mat[14] += z;
         }
 
-        //! Invert this matrix and return the inverted copy.
+        //! Compute determinant for 3x3 matrix @cm
+        Flt determinant (array<Flt, 9> cm) const {
+            //cout << "3x3 determinant computation..." << endl;
+            Flt det = (cm[0]*cm[4]*cm[8])
+                + (cm[3]*cm[7]*cm[2])
+                + (cm[6]*cm[1]*cm[5])
+                - (cm[6]*cm[4]*cm[2])
+                - (cm[0]*cm[7]*cm[5])
+                - (cm[3]*cm[1]*cm[8]);
+            cout << "Determinant of \n"
+                 << "| " << cm[0] << " , " << cm[3] << " , " << cm[6] << " |\n"
+                 << "| " << cm[1] << " , " << cm[4] << " , " << cm[7] << " |\n"
+                 << "| " << cm[2] << " , " << cm[5] << " , " << cm[8] << " | is...\n"
+                 << det << endl;
+            return det;
+        }
+
+        //! Compute determinant for 4x4 matrix @cm
+        Flt determinant (array<Flt, 16> cm) const {
+            //cout << "4x4 determinant computation..." << endl;
+            // Configure the 3x3 matrices that have to be evaluated to get the 4x4 det.
+            array<Flt, 9> cm00;
+            cm00[0] = cm[5];
+            cm00[1] = cm[6];
+            cm00[2] = cm[7];
+            cm00[3] = cm[9];
+            cm00[4] = cm[10];
+            cm00[5] = cm[11];
+            cm00[6] = cm[13];
+            cm00[7] = cm[14];
+            cm00[8] = cm[15];
+
+            array<Flt, 9> cm01;
+            cm01[0] = cm[1];
+            cm01[1] = cm[2];
+            cm01[2] = cm[3];
+            cm01[3] = cm[9];
+            cm01[4] = cm[10];
+            cm01[5] = cm[11];
+            cm01[6] = cm[13];
+            cm01[7] = cm[14];
+            cm01[8] = cm[15];
+
+            array<Flt, 9> cm02;
+            cm02[0] = cm[1];
+            cm02[1] = cm[2];
+            cm02[2] = cm[3];
+            cm02[3] = cm[5];
+            cm02[4] = cm[6];
+            cm02[5] = cm[7];
+            cm02[6] = cm[13];
+            cm02[7] = cm[14];
+            cm02[8] = cm[15];
+
+            array<Flt, 9> cm03;
+            cm03[0] = cm[1];
+            cm03[1] = cm[2];
+            cm03[2] = cm[3];
+            cm03[3] = cm[5];
+            cm03[4] = cm[6];
+            cm03[5] = cm[7];
+            cm03[6] = cm[9];
+            cm03[7] = cm[10];
+            cm03[8] = cm[11];
+
+            Flt det = cm[0] * this->determinant (cm00)
+                - cm[4] * this->determinant (cm01)
+                + cm[8] * this->determinant (cm02)
+                - cm[12] * this->determinant (cm03);
+
+            cout << "Determinant of \n"
+                 << "| " << cm[0] << " , " << cm[4] << " , " << cm[8] << " , " << cm[12] << " |\n"
+                 << "| " << cm[1] << " , " << cm[5] << " , " << cm[9] << " , " << cm[13] << " |\n"
+                 << "| " << cm[2] << " , " << cm[6] << " , " << cm[10] << " , " << cm[14] << " |\n"
+                 << "| " << cm[3] << " , " << cm[7] << " , " << cm[11] << " , " << cm[15] << " |\n"
+                 << det << endl;
+
+            return det;
+        }
+
+        //! The adjugate is the transpose of the cofactor matrix
+        array<Flt, 16> adjugate (void) const {
+            array<Flt, 16> adj = this->transpose (this->cofactor());
+            return adj;
+        }
+
+        //! Compute the cofactor matrix of this->mat
+        array<Flt, 16> cofactor (void) const {
+            array<Flt, 16> cofac;
+
+            // Keep to column-major format for all matrices. The cofactor matrix is
+            // actually populated, applying the alternating pattern of +/- as we go.
+
+            // 0.
+            array<Flt, 9> minorElem;
+            minorElem[0] = this->mat[5];
+            minorElem[3] = this->mat[9];
+            minorElem[6] = this->mat[13];
+
+            minorElem[1] = this->mat[6];
+            minorElem[4] = this->mat[10];
+            minorElem[7] = this->mat[14];
+
+            minorElem[2] = this->mat[7];
+            minorElem[5] = this->mat[11];
+            minorElem[8] = this->mat[15];
+
+            cofac[0] = this->determinant (minorElem);
+
+            // 1. Next minor elem matrix has only 3 elements changed
+            minorElem[0] = this->mat[4];
+            minorElem[3] = this->mat[8];
+            minorElem[6] = this->mat[12];
+            cofac[1] = -this->determinant (minorElem);
+
+            // 2
+            minorElem[1] = this->mat[5];
+            minorElem[4] = this->mat[9];
+            minorElem[7] = this->mat[13];
+            cofac[2] = this->determinant (minorElem);
+
+            // 3
+            minorElem[2] = this->mat[6];
+            minorElem[5] = this->mat[10];
+            minorElem[8] = this->mat[14];
+            cofac[3] = -this->determinant (minorElem);
+
+            // 4.
+            minorElem[0] = this->mat[1];
+            minorElem[3] = this->mat[9];
+            minorElem[6] = this->mat[13];
+
+            minorElem[1] = this->mat[2];
+            minorElem[4] = this->mat[10];
+            minorElem[7] = this->mat[14];
+
+            minorElem[2] = this->mat[3];
+            minorElem[5] = this->mat[11];
+            minorElem[8] = this->mat[15];
+
+            cofac[4] = -this->determinant (minorElem);
+
+            // 5.
+            minorElem[0] = this->mat[0];
+            minorElem[3] = this->mat[8];
+            minorElem[6] = this->mat[12];
+            cofac[5] = this->determinant (minorElem);
+
+            // 6.
+            minorElem[1] = this->mat[1];
+            minorElem[4] = this->mat[9];
+            minorElem[7] = this->mat[13];
+            cofac[6] = -this->determinant (minorElem);
+
+            // 7.
+            minorElem[2] = this->mat[2];
+            minorElem[5] = this->mat[10];
+            minorElem[8] = this->mat[14];
+            cofac[7] = this->determinant (minorElem);
+
+            // 8.
+            minorElem[0] = this->mat[1];
+            minorElem[3] = this->mat[5];
+            minorElem[6] = this->mat[13];
+
+            minorElem[1] = this->mat[2];
+            minorElem[4] = this->mat[6];
+            minorElem[7] = this->mat[14];
+
+            minorElem[2] = this->mat[3];
+            minorElem[5] = this->mat[7];
+            minorElem[8] = this->mat[15];
+
+            cofac[8] = this->determinant (minorElem);
+
+            // 9.
+            minorElem[0] = this->mat[0];
+            minorElem[3] = this->mat[4];
+            minorElem[6] = this->mat[12];
+            cofac[9] = -this->determinant (minorElem);
+
+            // 10.
+            minorElem[1] = this->mat[1];
+            minorElem[4] = this->mat[5];
+            minorElem[7] = this->mat[13];
+            cofac[10] = this->determinant (minorElem);
+
+            // 11.
+            minorElem[2] = this->mat[2];
+            minorElem[5] = this->mat[6];
+            minorElem[8] = this->mat[14];
+            cofac[11] = -this->determinant (minorElem);
+
+            // 12.
+            minorElem[0] = this->mat[1];
+            minorElem[3] = this->mat[5];
+            minorElem[6] = this->mat[9];
+
+            minorElem[1] = this->mat[2];
+            minorElem[4] = this->mat[6];
+            minorElem[7] = this->mat[10];
+
+            minorElem[2] = this->mat[3];
+            minorElem[5] = this->mat[7];
+            minorElem[8] = this->mat[11];
+
+            cofac[12] = -this->determinant (minorElem);
+
+            // 13.
+            minorElem[0] = this->mat[0];
+            minorElem[3] = this->mat[4];
+            minorElem[6] = this->mat[8];
+            cofac[13] = this->determinant (minorElem);
+
+            // 14.
+            minorElem[1] = this->mat[1];
+            minorElem[4] = this->mat[5];
+            minorElem[7] = this->mat[9];
+            cofac[14] = -this->determinant (minorElem);
+
+            // 15.
+            minorElem[2] = this->mat[2];
+            minorElem[5] = this->mat[6];
+            minorElem[8] = this->mat[10];
+            cofac[15] = this->determinant (minorElem);
+
+            return cofac;
+        }
+
+        // Implement inversion using determinant method.
         TransformMatrix<Flt> invert (void) {
+            // 1. Create matrix of minors
+            // array<Flt, 16> minors = this->makeminors();
+            // 2. Multiply mofminors by a checkerboard pattern to give the cofactor matrix
+            // 3. Compute determinant of this->mat (if 0, there's no inverse)
+            // 4. multiply 1/determinant of mat by the adjugate of mat (transpose of
+            //    cofactor matrix) to get inverse.
+            Flt det = this->determinant (this->mat);
+            TransformMatrix<Flt> rtn;
+            if (det == static_cast<Flt>(0.0)) {
+                // Then there's no inverse
+                rtn.mat.fill (static_cast<Flt>(0.0));
+            } else {
+                array<Flt, 16> adjugate = this->adjugate();
+                rtn.mat = adjugate;
+                rtn *= (static_cast<Flt>(1.0)/det);
+            }
+            return rtn;
+        }
+
+        //! First attempt at inverting this matrix and return the inverted
+        //! copy. Computational implementation of Gauss-Jordan elimination.
+        TransformMatrix<Flt> invertGJ (void) {
 
             // 1. Create adjunct matrix |AI| *in row-major format* (where this->mat is in col-major)
             array<Flt, 32> adj;
@@ -144,8 +395,11 @@ namespace morph {
             // Perform Gauss-Jordan elimination
             this->gaussJordan (adj);
 
-            // Now test whether the matrix was invertible (by looking at left most
+            // FIXME: Now test whether the matrix was invertible (by looking at left most
             // matrix, and seeing if it's the identity)
+
+            // Finally, select the right hand 4x4, which should be the inverse matrix
+            // and return it.
             TransformMatrix<Flt> invm;
             invm.mat[0] = adj[4];
             invm.mat[4] = adj[5];
@@ -777,6 +1031,12 @@ namespace morph {
             }
         }
 
+        void operator*= (const double& f) {
+            for (unsigned int i = 0; i<16; ++i) {
+                this->mat[i] *= f;
+            }
+        }
+
         //! Transpose this matrix
         void transpose (void) {
             array<Flt, 6> a;
@@ -800,6 +1060,28 @@ namespace morph {
             this->mat[6] = a[2];  // mat[9]
             this->mat[7] = a[4];  // mat[13]
             this->mat[11] = a[5]; // mat[14]
+        }
+
+        //! Transpose the matrix @matrx, returning the transposed version.
+        array<Flt, 16> transpose (const array<Flt, 16>& matrx) const {
+            array<Flt, 16> tposed;
+            tposed[0] = matrx[0];
+            tposed[4] = matrx[1];
+            tposed[8] = matrx[2];
+            tposed[12] = matrx[3];
+            tposed[1] = matrx[4];
+            tposed[5] = matrx[5];
+            tposed[9] = matrx[6];
+            tposed[13] = matrx[7];
+            tposed[2] = matrx[8];
+            tposed[6] = matrx[9];
+            tposed[10] = matrx[10];
+            tposed[14] = matrx[11];
+            tposed[3] = matrx[12];
+            tposed[7] = matrx[13];
+            tposed[11] = matrx[14];
+            tposed[15] = matrx[15];
+            return tposed;
         }
 
         //! Make a perspective projection

@@ -110,6 +110,23 @@ int main()
         ++rtn;
     }
 
+    // Test 3x3 determinant
+    TransformMatrix<float> td;
+    array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
+    float det_td = td.determinant (threethree);
+    cout << "Determinant = " << det_td << " (expect 111)" << endl;
+    if (det_td != 111.0f) {
+        ++rtn;
+    }
+
+    // Test 4x4 determinant
+    array<float, 16> fourfour = { 2.0f, 7.0f, 5.0f, 6.0f, 8.0f, 1.0f, 3.0f, 6.0f, 2.0f, 8.0f, -1.0f, 7.0f, 7.0f, 0.0f, 1.0f, 7.0f };
+    float det_td2 = td.determinant (fourfour);
+    cout << "Determinant = " << det_td2 << " (expect 816)" << endl;
+    if (det_td2 != 816.0f) {
+        ++rtn;
+    }
+
     // Test matrix inversion
     TransformMatrix<float> mult4;
     mult4.mat[0] = 15;
@@ -128,6 +145,7 @@ int main()
     mult4.mat[13] = 0;
     mult4.mat[14] = 1;
     mult4.mat[15] = 0;
+#if 1
     TransformMatrix<float> mult4inv = mult4.invert();
     cout << "mult4\n";
     mult4.output();
@@ -144,9 +162,15 @@ int main()
          << "," << v1[1]
          << "," << v1[2]
          << "," << v1[3] << ")" << endl;
-    cout << "v3 = (" << v3[0]
+    cout << "v2 = mult4 * v1 = (" << v2[0]
+         << "," << v2[1]
+         << "," << v2[2]
+         << "," << v2[3] << ")" << endl;
+    cout << "v3 = mult4inv * v2 = (" << v3[0]
          << "," << v3[1]
          << "," << v3[2]
-         << "," << v3[3] << ")" << endl;
+         << "," << v3[3] << ") (should be equal to v1)" << endl;
+#endif
+
     return rtn;
 }
