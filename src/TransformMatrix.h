@@ -95,24 +95,24 @@ namespace morph {
 
         //! Compute determinant for 3x3 matrix @cm
         Flt determinant (array<Flt, 9> cm) const {
-            //cout << "3x3 determinant computation..." << endl;
             Flt det = (cm[0]*cm[4]*cm[8])
                 + (cm[3]*cm[7]*cm[2])
                 + (cm[6]*cm[1]*cm[5])
                 - (cm[6]*cm[4]*cm[2])
                 - (cm[0]*cm[7]*cm[5])
                 - (cm[3]*cm[1]*cm[8]);
+#ifdef DEBUG__
             cout << "Determinant of \n"
                  << "| " << cm[0] << " , " << cm[3] << " , " << cm[6] << " |\n"
                  << "| " << cm[1] << " , " << cm[4] << " , " << cm[7] << " |\n"
                  << "| " << cm[2] << " , " << cm[5] << " , " << cm[8] << " | is...\n"
                  << det << endl;
+#endif
             return det;
         }
 
         //! Compute determinant for 4x4 matrix @cm
         Flt determinant (array<Flt, 16> cm) const {
-            //cout << "4x4 determinant computation..." << endl;
             // Configure the 3x3 matrices that have to be evaluated to get the 4x4 det.
             array<Flt, 9> cm00;
             cm00[0] = cm[5];
@@ -162,14 +162,14 @@ namespace morph {
                 - cm[4] * this->determinant (cm01)
                 + cm[8] * this->determinant (cm02)
                 - cm[12] * this->determinant (cm03);
-
+#ifdef DEBUG__
             cout << "Determinant of \n"
                  << "| " << cm[0] << " , " << cm[4] << " , " << cm[8] << " , " << cm[12] << " |\n"
                  << "| " << cm[1] << " , " << cm[5] << " , " << cm[9] << " , " << cm[13] << " |\n"
                  << "| " << cm[2] << " , " << cm[6] << " , " << cm[10] << " , " << cm[14] << " |\n"
                  << "| " << cm[3] << " , " << cm[7] << " , " << cm[11] << " , " << cm[15] << " |\n"
                  << det << endl;
-
+#endif
             return det;
         }
 
@@ -387,6 +387,7 @@ namespace morph {
             *this *= m;
         }
 
+        //! Rotate, but this time with a Quaternion made of doubles, rather than floats.
         void rotate (const Quaternion<double>& q) {
 
             array<Flt, 16> m;
@@ -424,6 +425,7 @@ namespace morph {
             *this *= m;
         }
 
+        //! Right-multiply this->mat with m2.
         void operator*= (const array<Flt, 16>& m2) {
 
             array<Flt, 16> result;
@@ -502,6 +504,7 @@ namespace morph {
             this->mat.swap (result);
         }
 
+        //! Right-multiply this->mat with m2.mat.
         void operator*= (const TransformMatrix<Flt>& m2) {
 
             array<Flt, 16> result;
@@ -658,6 +661,7 @@ namespace morph {
             return result;
         }
 
+        //! Right multiply this->mat with m2.mat.
         TransformMatrix<Flt> operator* (const TransformMatrix<Flt>& m2) const {
 
             TransformMatrix<Flt> result;
@@ -736,7 +740,7 @@ namespace morph {
             return result;
         }
 
-        //! Do v = mat * v1
+        //! Do matrix times vector multiplication, v = mat * v1
         array<Flt, 4> operator* (const array<Flt, 4>& v1) const {
             array<Flt, 4> v;
             v[0] = this->mat[0] * v1[0]
