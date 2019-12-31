@@ -110,5 +110,29 @@ int main()
         ++rtn;
     }
 
+    // Test matrix inversion
+    TransformMatrix<float> mult4;
+    mult4.mat[0] = 15;
+    mult4.mat[1] = 17;
+    mult4.mat[2] = 0;
+    mult4.mat[3] = 0;
+    mult4.mat[4] = 2;
+    mult4.mat[5] = 10;
+    mult4.mat[6] = 0;
+    mult4.mat[7] = 0;
+    mult4.mat[8] = 0;
+    mult4.mat[9] = 0;
+    mult4.mat[10] = 5;
+    mult4.mat[11] = 4;
+    mult4.mat[12] = 0;
+    mult4.mat[13] = 0;
+    mult4.mat[14] = 1;
+    mult4.mat[15] = 0;
+    TransformMatrix<float> mult4inv = mult4.invert();
+    cout << "mult4\n";
+    mult4.output();
+    cout << "mult4.invert():\n";
+    mult4inv.output();
+
     return rtn;
 }
