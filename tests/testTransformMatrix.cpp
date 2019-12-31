@@ -145,7 +145,7 @@ int main()
     mult4.mat[13] = 0;
     mult4.mat[14] = 1;
     mult4.mat[15] = 0;
-#if 1
+
     TransformMatrix<float> mult4inv = mult4.invert();
     cout << "mult4\n";
     mult4.output();
@@ -170,7 +170,21 @@ int main()
          << "," << v3[1]
          << "," << v3[2]
          << "," << v3[3] << ") (should be equal to v1)" << endl;
-#endif
+
+    cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
+         << abs(v1[1]-v3[1]) << ", "
+         << abs(v1[2]-v3[2]) << ", "
+         << abs(v1[3]-v3[3]) << endl;
+
+    float esum = abs(v1[0]-v3[0])
+        + abs(v1[1]-v3[1])
+        + abs(v1[2]-v3[2])
+        + abs(v1[3]-v3[3]);
+
+    if (esum > 1e-5) {
+        cout << "Inverse failed to re-create the vector" << endl;
+        ++rtn;
+    }
 
     return rtn;
 }
