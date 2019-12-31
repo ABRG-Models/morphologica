@@ -593,28 +593,6 @@ namespace morph {
             this->mat.swap (result);
         }
 
-        //! Do v = mat * v1
-        array<Flt, 4> operator* (const array<Flt, 4>& v1) const {
-            array<Flt, 4> v;
-            v[0] = this->mat[0] * v1[0]
-                + this->mat[4] * v1[1]
-                + this->mat[8] * v1[2]
-                + this->mat[12] * v1[3];
-            v[1] = this->mat[1] * v1[0]
-                + this->mat[5] * v1[1]
-                + this->mat[9] * v1[2]
-                + this->mat[13] * v1[3];
-            v[2] = this->mat[2] * v1[0]
-                + this->mat[6] * v1[1]
-                + this->mat[10] * v1[2]
-                + this->mat[14] * v1[3];
-            v[3] = this->mat[3] * v1[0]
-                + this->mat[7] * v1[1]
-                + this->mat[11] * v1[2]
-                + this->mat[15] * v1[3];
-            return v;
-        }
-
         TransformMatrix<Flt> operator* (const array<Flt, 16>& m2) const {
 
             TransformMatrix<Flt> result;
@@ -769,6 +747,28 @@ namespace morph {
                 + this->mat[15] * m2.mat[15];
 
             return result;
+        }
+
+        //! Do v = mat * v1
+        array<Flt, 4> operator* (const array<Flt, 4>& v1) const {
+            array<Flt, 4> v;
+            v[0] = this->mat[0] * v1[0]
+                + this->mat[4] * v1[1]
+                + this->mat[8] * v1[2]
+                + this->mat[12] * v1[3];
+            v[1] = this->mat[1] * v1[0]
+                + this->mat[5] * v1[1]
+                + this->mat[9] * v1[2]
+                + this->mat[13] * v1[3];
+            v[2] = this->mat[2] * v1[0]
+                + this->mat[6] * v1[1]
+                + this->mat[10] * v1[2]
+                + this->mat[14] * v1[3];
+            v[3] = this->mat[3] * v1[0]
+                + this->mat[7] * v1[1]
+                + this->mat[11] * v1[2]
+                + this->mat[15] * v1[3];
+            return v;
         }
 
         void operator*= (const float& f) {
