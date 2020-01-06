@@ -84,8 +84,9 @@ morph::Visual::setPerspective (void)
 {
     // Calculate aspect ratio
     float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
+    //cout << "aspect = " << aspect << endl;
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const float zNear = 1.5, zFar = 5.0, fov = 45.0;
+    const float zNear = 1.0, zFar = 8.0, fov = 90.0;
     // Reset projection
     this->projection.setToIdentity();
     // Set perspective projection
@@ -103,13 +104,14 @@ morph::Visual::render (void)
     // Set the perspective from the width/height
     this->setPerspective();
 
-    // Calculate model view transformation
-    //TransformMatrix<float> rotmat;
+    // Calculate model view transformation - transforming from "model space" to "worldspace".
     this->rotmat.setToIdentity();
     this->rotmat.translate (this->scenetrans); // send backwards into distance
     this->rotmat.rotate (this->rotation);
     //cout << "Rotation quaternion: ";
     //this->rotation.output();
+    //cout << "rotmat:" << endl;
+    //this->rotmat.output();
 
     // Set modelview-projection matrix
     this->viewproj = this->projection * this->rotmat;
@@ -242,7 +244,8 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         if (compiled != GL_TRUE) {
             GLsizei len = 0;
             glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &len);
-            cout << "compiled is GL_FALSE. log length is " << len << " compiled has value " << compiled <<  endl;
+            cout << "compiled is GL_FALSE. log length is " << len
+                 << " compiled has value " << compiled <<  endl;
             if (len > 0) {
                 GLchar* log = new GLchar[len+1];
                 glGetShaderInfoLog (shader, len, &len, log);
@@ -343,9 +346,15 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.x = static_cast<float>(x);
     this->cursorpos.y = static_cast<float>(y);
 
-    Vector2<float> diff = this->cursorpos;
+    // The difference between the cursor when the mouse was pressed, and now.
+    Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
     diff -= this->mousePressPosition;
+    if (diff.length() < 3) {
+        //cout << "diff length: " << diff.length() << ", return early." << endl;
+        return;
+    }
 
+    // Now use mousePressPosition as a record of the last cursor position.
     this->mousePressPosition = this->cursorpos;
 
     if (this->rotateMode) {
@@ -365,26 +374,43 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     }
 
     if (this->translateMode) {
+        // Convert cursor pos in screen coords into object:
+        // Multiply (ScreenX,ScreenY,Near,1) by the full transformation to get the right vector in world space.
+
         // Need to apply the inverse transforms here to automatically compute
-        // scenetrans_mousestepsize
-        array<float, 4> trans = { diff.x/static_cast<float>(this->window_w), diff.y/static_cast<float>(this->window_h), 0.0, 0.0 };
-        //array<float, 4> trans = { diff.x, diff.y, 0.0, 0.0 };
-        //array<float, 4> pos = { this->cursorpos.x, this->cursorpos.y, 0.0, 0.0 };
+        // scenetrans_mousestepsize. There's a factor here which is the units in the
+        // 3D space which w x h pixels span.
+        array<float, 4> trans = { 2.0*diff.x/static_cast<float>(this->window_w), // -1 to 1 is 2
+                                  2.0*diff.y/static_cast<float>(this->window_h),
+                                  1.0, // zNear
+                                  1.0 };
         // Compute the inverse projection
-        TransformMatrix<float> invproj = this->viewproj.invert();
+        TransformMatrix<float> invproj = this->viewproj.invert(); // not view proj?
+        cout << "------------------------"<<endl;
+        //cout << "Projection matrix: " << endl;
+        //this->projection.output();
+        //cout << "View-projection matrix:" << endl;
+        //this->viewproj.output();
+        //cout << "View-projection inverse:" << endl;
+        //invproj.output();
         array<float, 4> v;
         v = invproj * trans;
-        cout << "trans x, trans y:         ("<<trans[0]<<","<<trans[1]<<")"<<endl;
-        //cout << "cursorpos.x, cursorpos.y:         ("<<this->cursorpos.x<<","<<this->cursorpos.y<<")"<<endl;
+        cout << "trans:            ("
+             << trans[0]<<","<<trans[1]<<","<<trans[2]<<","<<trans[3]<<")" <<endl;
+        cout << "abs cursor x, y:  ("
+             << x <<","<< y <<") with window width " << this->window_w <<endl;
 
-        cout << "invproj * translation:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
-        /// Ahhh, want the diff between scenetrans at the mouse press position and the
-        /// current cursor position.
-        this->scenetrans.x += v[0]; // diff.x * this->scenetrans_mousestepsize;
-        this->scenetrans.y -= v[1]; // diff.y * this->scenetrans_mousestepsize;
+        cout << "invproj * trans:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
+
+        this->scenetrans.x += v[0];
+        this->scenetrans.y -= v[1];
+        cout << "scenetrans:        ("
+             << this->scenetrans.x << ","
+             << this->scenetrans.y << ","
+             << this->scenetrans.z << ")" << endl;
     }
 
-    this->render();
+    this->render(); // updates viewproj
 }
 
 void
@@ -400,7 +426,12 @@ morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffs
 {
     // x and y can be +/- 1
     this->scenetrans.x -= xoffset * this->scenetrans_stepsize;
-    this->scenetrans.z += yoffset * this->scenetrans_stepsize;
+    if (this->translateMode) {
+        this->scenetrans.y/*z really*/ += yoffset * this->scenetrans_stepsize;
+        cout << "scenetrans.y = " << this->scenetrans.y << endl;
+    } else {
+        this->scenetrans.z += yoffset * this->scenetrans_stepsize;
+    }
     this->render();
 }
 //@}
