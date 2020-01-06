@@ -45,18 +45,18 @@ namespace morph {
 
         //! Output to stdout
         void output (void) const {
-            cout <<"| "<< mat[0]<<" , "<<mat[4]<<" , "<<mat[8]<<" , "<<mat[12]<<" |\n";
-            cout <<"| "<< mat[1]<<" , "<<mat[5]<<" , "<<mat[9]<<" , "<<mat[13]<<" |\n";
-            cout <<"| "<< mat[2]<<" , "<<mat[6]<<" , "<<mat[10]<<" , "<<mat[14]<<" |\n";
-            cout <<"| "<< mat[3]<<" , "<<mat[7]<<" , "<<mat[11]<<" , "<<mat[15]<<" |\n";
+            cout <<"[ "<< mat[0]<<" , "<<mat[4]<<" , "<<mat[8]<<" , "<<mat[12]<<" ;\n";
+            cout <<"  "<< mat[1]<<" , "<<mat[5]<<" , "<<mat[9]<<" , "<<mat[13]<<" ;\n";
+            cout <<"  "<< mat[2]<<" , "<<mat[6]<<" , "<<mat[10]<<" , "<<mat[14]<<" ;\n";
+            cout <<"  "<< mat[3]<<" , "<<mat[7]<<" , "<<mat[11]<<" , "<<mat[15]<<" ]\n";
         }
 
         //! Output array to stdout
         static void output (const array<Flt, 16>& arr) {
-            cout<<"| "<<arr[0]<<" , "<<arr[4]<<" , "<<arr[8]<<" , "<<arr[12]<<" |\n";
-            cout<<"| "<<arr[1]<<" , "<<arr[5]<<" , "<<arr[9]<<" , "<<arr[13]<<" |\n";
-            cout<<"| "<<arr[2]<<" , "<<arr[6]<<" , "<<arr[10]<<" , "<<arr[14]<<" |\n";
-            cout<<"| "<<arr[3]<<" , "<<arr[7]<<" , "<<arr[11]<<" , "<<arr[15]<<" |\n";
+            cout<<"[ "<<arr[0]<<" , "<<arr[4]<<" , "<<arr[8]<<" , "<<arr[12]<<" ;\n";
+            cout<<"  "<<arr[1]<<" , "<<arr[5]<<" , "<<arr[9]<<" , "<<arr[13]<<" ;\n";
+            cout<<"  "<<arr[2]<<" , "<<arr[6]<<" , "<<arr[10]<<" , "<<arr[14]<<" ;\n";
+            cout<<"  "<<arr[3]<<" , "<<arr[7]<<" , "<<arr[11]<<" , "<<arr[15]<<" ]\n";
         }
 
         //! Output adj array (in row-major format) to stdout
@@ -891,7 +891,7 @@ namespace morph {
             return tposed;
         }
 
-        //! Make a perspective projection
+        //! Make a (frustrum) perspective projection
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
 
             // Bail out if the projection volume is zero-sized.
