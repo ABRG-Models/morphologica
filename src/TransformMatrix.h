@@ -173,18 +173,82 @@ namespace morph {
             return det;
         }
 
-        //! The adjugate is the transpose of the cofactor matrix
+        //! Compute determinant for this->mat
+        Flt determinant (void) const {
+            // Configure the 3x3 matrices that have to be evaluated to get the 4x4 det.
+            array<Flt, 9> cm00;
+            cm00[0] = this->mat[5];
+            cm00[1] = this->mat[6];
+            cm00[2] = this->mat[7];
+            cm00[3] = this->mat[9];
+            cm00[4] = this->mat[10];
+            cm00[5] = this->mat[11];
+            cm00[6] = this->mat[13];
+            cm00[7] = this->mat[14];
+            cm00[8] = this->mat[15];
+
+            array<Flt, 9> cm01;
+            cm01[0] = this->mat[1];
+            cm01[1] = this->mat[2];
+            cm01[2] = this->mat[3];
+            cm01[3] = this->mat[9];
+            cm01[4] = this->mat[10];
+            cm01[5] = this->mat[11];
+            cm01[6] = this->mat[13];
+            cm01[7] = this->mat[14];
+            cm01[8] = this->mat[15];
+
+            array<Flt, 9> cm02;
+            cm02[0] = this->mat[1];
+            cm02[1] = this->mat[2];
+            cm02[2] = this->mat[3];
+            cm02[3] = this->mat[5];
+            cm02[4] = this->mat[6];
+            cm02[5] = this->mat[7];
+            cm02[6] = this->mat[13];
+            cm02[7] = this->mat[14];
+            cm02[8] = this->mat[15];
+
+            array<Flt, 9> cm03;
+            cm03[0] = this->mat[1];
+            cm03[1] = this->mat[2];
+            cm03[2] = this->mat[3];
+            cm03[3] = this->mat[5];
+            cm03[4] = this->mat[6];
+            cm03[5] = this->mat[7];
+            cm03[6] = this->mat[9];
+            cm03[7] = this->mat[10];
+            cm03[8] = this->mat[11];
+
+            Flt det = this->mat[0] * this->determinant (cm00)
+                - this->mat[4] * this->determinant (cm01)
+                + this->mat[8] * this->determinant (cm02)
+                - this->mat[12] * this->determinant (cm03);
+
+            return det;
+        }
+
+        /*!
+         * The adjugate is the transpose of the cofactor matrix. Recipe:
+         * 1. Get the cofactor matrix (with this->cofactor())
+         * 2. Obtain the adjugate matrix by transposing the cofactor matrix
+         */
         array<Flt, 16> adjugate (void) const {
             array<Flt, 16> adj = this->transpose (this->cofactor());
             return adj;
         }
 
-        //! Compute the cofactor matrix of this->mat
+        /*!
+         * Compute the cofactor matrix of this->mat. Recipe:
+         * 1. Create matrix of minors
+         * 2. Multiply matrix of minors by a checkerboard pattern to give the cofactor matrix
+         */
         array<Flt, 16> cofactor (void) const {
             array<Flt, 16> cofac;
 
-            // Keep to column-major format for all matrices. The cofactor matrix is
-            // actually populated, applying the alternating pattern of +/- as we go.
+            // Keep to column-major format for all matrices. The elements of the matrix
+            // of minors is found, but the cofactor matrix is populated, applying the
+            // alternating pattern of +/- as we go.
 
             // 0.
             array<Flt, 9> minorElem;
@@ -325,22 +389,19 @@ namespace morph {
         /*!
          * Implement inversion using determinant method. inverse is (1/det) x adjugate
          * matrix.
+         *
+         * 1. Compute determinant of this->mat (if 0, then there's no inverse)
+         * 2. Obtain the adjugate matrix
+         * 3. Get the inverse by multiplying 1/determinant by the adjugate
          */
         TransformMatrix<Flt> invert (void) {
-            // 1. Create matrix of minors
-            // array<Flt, 16> minors = this->makeminors();
-            // 2. Multiply mofminors by a checkerboard pattern to give the cofactor matrix
-            // 3. Compute determinant of this->mat (if 0, there's no inverse)
-            // 4. multiply 1/determinant of mat by the adjugate of mat (transpose of
-            //    cofactor matrix) to get inverse.
-            Flt det = this->determinant (this->mat);
+            Flt det = this->determinant();
             TransformMatrix<Flt> rtn;
             if (det == static_cast<Flt>(0.0)) {
-                // Then there's no inverse
+                cout << "NB: The transform matrix has no inverse (determinant is 0)" << endl;
                 rtn.mat.fill (static_cast<Flt>(0.0));
             } else {
-                array<Flt, 16> adjugate = this->adjugate();
-                rtn.mat = adjugate;
+                rtn.mat = this->adjugate();
                 rtn *= (static_cast<Flt>(1.0)/det);
             }
             return rtn;
@@ -423,6 +484,15 @@ namespace morph {
             m[15] = 1.0;
 
             *this *= m;
+        }
+
+        //! A copy constructor
+        TransformMatrix<Flt>& operator= (const TransformMatrix<Flt> m) {
+            if (this == &m) {
+                return *this;
+            }
+            this->mat = m.mat;
+            return *this;
         }
 
         //! Right-multiply this->mat with m2.
