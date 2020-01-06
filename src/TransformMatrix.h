@@ -918,6 +918,12 @@ namespace morph {
 
             (*this) *= persMat;
         }
+
+#ifdef WRITTEN
+        //! Make an orthographic projection
+        void orthographic () {}
+#endif
+
     };
 
 } // namespace morph
