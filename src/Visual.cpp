@@ -104,21 +104,22 @@ morph::Visual::render (void)
     this->setPerspective();
 
     // Calculate model view transformation
-    TransformMatrix<float> rotmat;
-    rotmat.translate (this->scenetrans); // send backwards into distance
-    rotmat.rotate (this->rotation);
+    //TransformMatrix<float> rotmat;
+    this->rotmat.setToIdentity();
+    this->rotmat.translate (this->scenetrans); // send backwards into distance
+    this->rotmat.rotate (this->rotation);
     //cout << "Rotation quaternion: ";
     //this->rotation.output();
 
     // Set modelview-projection matrix
-    TransformMatrix<float> pr = this->projection * rotmat;
+    this->viewproj = this->projection * this->rotmat;
     //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
     if (loc == -1) {
         cout << "No mvp_matrix? loc: " << loc << endl;
     } else {
         // Set the uniform:
-        glUniformMatrix4fv (loc, 1, GL_FALSE, pr.mat.data());
+        glUniformMatrix4fv (loc, 1, GL_FALSE, this->viewproj.mat.data());
     }
 
     // Clear color buffer and **also depth buffer**
@@ -345,6 +346,8 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     Vector2<float> diff = this->cursorpos;
     diff -= this->mousePressPosition;
 
+    this->mousePressPosition = this->cursorpos;
+
     if (this->rotateMode) {
         //cout << "diff: " << diff.x << "," << diff.y << endl;
         // Rotation axis is perpendicular to the mouse position difference vector
@@ -362,8 +365,23 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     }
 
     if (this->translateMode) {
-        this->scenetrans.x += diff.x * this->scenetrans_mousestepsize;
-        this->scenetrans.y -= diff.y * this->scenetrans_mousestepsize;
+        // Need to apply the inverse transforms here to automatically compute
+        // scenetrans_mousestepsize
+        array<float, 4> trans = { diff.x/static_cast<float>(this->window_w), diff.y/static_cast<float>(this->window_h), 0.0, 0.0 };
+        //array<float, 4> trans = { diff.x, diff.y, 0.0, 0.0 };
+        //array<float, 4> pos = { this->cursorpos.x, this->cursorpos.y, 0.0, 0.0 };
+        // Compute the inverse projection
+        TransformMatrix<float> invproj = this->viewproj.invert();
+        array<float, 4> v;
+        v = invproj * trans;
+        cout << "trans x, trans y:         ("<<trans[0]<<","<<trans[1]<<")"<<endl;
+        //cout << "cursorpos.x, cursorpos.y:         ("<<this->cursorpos.x<<","<<this->cursorpos.y<<")"<<endl;
+
+        cout << "invproj * translation:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
+        /// Ahhh, want the diff between scenetrans at the mouse press position and the
+        /// current cursor position.
+        this->scenetrans.x += v[0]; // diff.x * this->scenetrans_mousestepsize;
+        this->scenetrans.y -= v[1]; // diff.y * this->scenetrans_mousestepsize;
     }
 
     this->render();

@@ -181,7 +181,14 @@ namespace morph {
         Vector3<float> rotationAxis;
         float angularSpeed;
         Quaternion<float> rotation;
+        //! The scene translation/rotation aka view matrix
+        TransformMatrix<float> rotmat;
+        //! Inversion of rotation matrix
+        //TransformMatrix<float> invrot;
+        //! The projection matrix
         TransformMatrix<float> projection;
+        //! projection * rotmat:
+        TransformMatrix<float> viewproj;
         //@}
 
         /*!
