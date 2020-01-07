@@ -356,10 +356,6 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         p1_coord.y /= this->window_h/2.0;
 
         cout << "------------------------"<<endl;
-        cout << "scenetrans:        ("
-             << this->scenetrans.x << ","
-             << this->scenetrans.y << ","
-             << this->scenetrans.z << ")" << endl;
 
         // Extents on the near plane of the frustrum.
         array<float, 4> near_right =  { 1.0, 0.0, -1.0, 1.0 };
@@ -372,32 +368,36 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         array<float, 4> far_bottom = { 0.0,-1.0, 1.0, 1.0 };
 
         // Add the depth at which the object lies.  Use forward projection to
-        // determine the correct z for the inverse projection
-        array<float, 4> point =  { 1.0, 0.0, this->scenetrans.z, 1.0 };
+        // determine the correct z coordinate for the inverse projection
+        array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
         array<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
+        // Construct two points for the start and end of the mouse movement
         array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
         array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
         cout << "p0: (" << p0[0] << "," << p0[1] << "," << p0[2] << "," << p0[3] << ")" << endl;
         cout << "p1: (" << p1[0] << "," << p1[1] << "," << p1[2] << "," << p1[3] << ")" << endl;
-        // Compute the inverse projection of both points
-        TransformMatrix<float> invviewproj = this->viewproj.invert();
+
+        // Compute the inverse projection of both points:
+        //TransformMatrix<float> invviewproj = this->viewproj.invert();
         TransformMatrix<float> invproj = this->projection.invert();
+#if 0
         cout << "Projection matrix: " << endl;
         this->projection.output();
         cout << "View matrix:" << endl;
         this->rotmat.output();
         cout << "View-projection matrix:" << endl;
         this->viewproj.output();
+#endif
 
-        array<float, 4> v0;
-        v0 = invproj * p0;
-        array<float, 4> v1;
-        v1 = invproj * p1;
+        // Apply the inverse projection to get two points in the world frame of reference:
+        array<float, 4> v0 = invproj * p0;
+        array<float, 4> v1 = invproj * p1;
         cout << "invproj * p0:  ("<< v0[0]/v0[3] <<","<< v0[1]/v0[3]<<","<< v0[2]/v0[3]<<","<< v0[3]/v0[3]<<")" << endl;
         cout << "invproj * p1:  ("<< v1[0]/v1[3]<<","<< v1[1]/v1[3]<<","<< v1[2]/v1[3]<<","<< v1[3]/v1[3]<<")" << endl;
 
+#if 0
         array<float, 4> nr = invproj * near_right;
         array<float, 4> fr = invproj * far_right;
         for (unsigned int i = 0; i < 4; ++i) {
@@ -406,6 +406,7 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         }
         cout << "invproj * near_right:  ("<< nr[0]<<","<< nr[1]<<","<< nr[2]<<","<< nr[3]<<")" << endl;
         cout << "invproj * far_right:  ("<< fr[0]<<","<< fr[1]<<","<< fr[2]<<","<< fr[3]<<")" << endl;
+#endif
 
 #if 0
         // Advance a point from near to far to plot the transform from z in world, to
@@ -434,20 +435,20 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         }
 #endif
 
-
+#if 0
         cout << "x coordinate change: " << (p1_coord.x - p0_coord.x) << endl;
         cout << "y coordinate change: " << (p1_coord.y - p0_coord.y) << endl;
 
         cout << "x change from: " << (v0[0]/v0[3]) << " to " << (v1[0]/v1[3]) << endl;
         cout << "y change from: " << (v0[1]/v0[3]) << " to " << (v1[1]/v1[3]) << endl;
+#endif
 
-        // Get viewport from GL?
-        int vp[4];
-        glGetIntegerv (GL_VIEWPORT, vp);
-        cout << "GL viewport x,y,w,h: " << vp[0] << "," << vp[1] << "," << vp[2] << "," << vp[3] << ")\n";
+        float deltax = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+        float deltay = (v1[1]/v1[3]) - (v0[1]/v0[3]);
 
-
-        //this->scenetrans.x += 0.5;
+        //cout << "dx = " << deltax << ", dy = " << deltay << endl;
+        this->scenetrans.x += deltax;
+        this->scenetrans.y -= deltay;
 
         this->render(); // updates viewproj
     }
