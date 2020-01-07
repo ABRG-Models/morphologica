@@ -329,7 +329,7 @@ void
 morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action, int mods)
 {
     // button is the button number, action is either key press (1) or key release (0)
-    cout << "button: " << button << " action: " << (action==1?("press"):("release")) << endl;
+    // cout << "button: " << button << " action: " << (action==1?("press"):("release")) << endl;
 
     // Record the position at which the button was pressed
     if (action == 1) { // Button down
@@ -337,38 +337,24 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
     }
 
     if (action == 0 && button == 1) {
+
         // This is release of the translation button
 
-        // The difference between the cursor when the mouse was pressed, and now, in pixels.
-        Vector2<float> p0_crsr = this->mousePressPosition;
-        Vector2<float> p1_crsr = this->cursorpos;
-
-        // Convert to the range -1 -> 1:
-        Vector2<float> p0_coord = p0_crsr;
+        // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
+        Vector2<float> p0_coord = this->mousePressPosition;
         p0_coord.x -= this->window_w/2.0;
         p0_coord.x /= this->window_w/2.0;
         p0_coord.y -= this->window_h/2.0;
         p0_coord.y /= this->window_h/2.0;
-        Vector2<float> p1_coord = p1_crsr;
+        Vector2<float> p1_coord = this->cursorpos;
         p1_coord.x -= this->window_w/2.0;
         p1_coord.x /= this->window_w/2.0;
         p1_coord.y -= this->window_h/2.0;
         p1_coord.y /= this->window_h/2.0;
 
-        cout << "------------------------"<<endl;
-
-        // Extents on the near plane of the frustrum.
-        array<float, 4> near_right =  { 1.0, 0.0, -1.0, 1.0 };
-        array<float, 4> near_left =   {-1.0, 0.0, -1.0, 1.0 };
-        array<float, 4> near_top =    { 0.0, 1.0, -1.0, 1.0 };
-        array<float, 4> near_bottom = { 0.0,-1.0, -1.0, 1.0 };
-        array<float, 4> far_right =  { 1.0, 0.0, 1.0, 1.0 };
-        array<float, 4> far_left =   {-1.0, 0.0, 1.0, 1.0 };
-        array<float, 4> far_top =    { 0.0, 1.0, 1.0, 1.0 };
-        array<float, 4> far_bottom = { 0.0,-1.0, 1.0, 1.0 };
-
-        // Add the depth at which the object lies.  Use forward projection to
-        // determine the correct z coordinate for the inverse projection
+        // Add the depth at which the object lies.  Use forward projection to determine
+        // the correct z coordinate for the inverse projection. This assumes only one
+        // object.
         array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
         array<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
@@ -376,77 +362,17 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         // Construct two points for the start and end of the mouse movement
         array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
         array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
-        cout << "p0: (" << p0[0] << "," << p0[1] << "," << p0[2] << "," << p0[3] << ")" << endl;
-        cout << "p1: (" << p1[0] << "," << p1[1] << "," << p1[2] << "," << p1[3] << ")" << endl;
 
         // Compute the inverse projection of both points:
-        //TransformMatrix<float> invviewproj = this->viewproj.invert();
         TransformMatrix<float> invproj = this->projection.invert();
-#if 0
-        cout << "Projection matrix: " << endl;
-        this->projection.output();
-        cout << "View matrix:" << endl;
-        this->rotmat.output();
-        cout << "View-projection matrix:" << endl;
-        this->viewproj.output();
-#endif
 
         // Apply the inverse projection to get two points in the world frame of reference:
         array<float, 4> v0 = invproj * p0;
         array<float, 4> v1 = invproj * p1;
-        cout << "invproj * p0:  ("<< v0[0]/v0[3] <<","<< v0[1]/v0[3]<<","<< v0[2]/v0[3]<<","<< v0[3]/v0[3]<<")" << endl;
-        cout << "invproj * p1:  ("<< v1[0]/v1[3]<<","<< v1[1]/v1[3]<<","<< v1[2]/v1[3]<<","<< v1[3]/v1[3]<<")" << endl;
-
-#if 0
-        array<float, 4> nr = invproj * near_right;
-        array<float, 4> fr = invproj * far_right;
-        for (unsigned int i = 0; i < 4; ++i) {
-            nr[i] = nr[i]/nr[3];
-            fr[i] = fr[i]/fr[3];
-        }
-        cout << "invproj * near_right:  ("<< nr[0]<<","<< nr[1]<<","<< nr[2]<<","<< nr[3]<<")" << endl;
-        cout << "invproj * far_right:  ("<< fr[0]<<","<< fr[1]<<","<< fr[2]<<","<< fr[3]<<")" << endl;
-#endif
-
-#if 0
-        // Advance a point from near to far to plot the transform from z in world, to
-        // z in projection coords (it's non-linear)
-        for (float normz = -1.0f; normz<=1.05f; normz += 0.1f) {
-            array<float, 4> point =  { 1.0, 0.0, normz, 1.0 };
-            array<float, 4> point1 =  { 0.0, 0.0, normz, 1.0 };
-            array<float, 4> invp = invproj * point;
-            array<float, 4> invp1 = invproj * point1;
-            // Table form output:
-            cout << normz << "," << (invp[2]/invp[3]) << "," << (invp1[2]/invp1[3]) << endl;
-            //cout << "normz = " << normz << endl
-            //     << " invproj * point (div by w):  ("<< invp[0]/invp[3] <<","<< invp[1]/invp[3]<<","<< invp[2]/invp[3]<<","<< invp[3]/invp[3]<<")" << endl;
-        }
-#endif
-#if 0
-        // Advance a point from near to far to plot the transform from z in world, to
-        // z in projection coords (it's non-linear)
-        for (float normz = -1.0f; normz>=-3.05f; normz -= 0.1f) {
-            array<float, 4> point =  { 1.0, 0.0, normz, 1.0 };
-            //array<float, 4> point1 =  { 0.0, 0.0, normz, 1.0 };
-            array<float, 4> pp = this->projection * point;
-            //array<float, 4> invp1 = invproj * point1;
-            // Table form output:
-            cout << normz << "," << (pp[2]/pp[3]) << endl;
-        }
-#endif
-
-#if 0
-        cout << "x coordinate change: " << (p1_coord.x - p0_coord.x) << endl;
-        cout << "y coordinate change: " << (p1_coord.y - p0_coord.y) << endl;
-
-        cout << "x change from: " << (v0[0]/v0[3]) << " to " << (v1[0]/v1[3]) << endl;
-        cout << "y change from: " << (v0[1]/v0[3]) << " to " << (v1[1]/v1[3]) << endl;
-#endif
 
         float deltax = (v1[0]/v1[3]) - (v0[0]/v0[3]);
         float deltay = (v1[1]/v1[3]) - (v0[1]/v0[3]);
 
-        //cout << "dx = " << deltax << ", dy = " << deltay << endl;
         this->scenetrans.x += deltax;
         this->scenetrans.y -= deltay;
 

@@ -188,7 +188,7 @@ namespace morph {
 
         // Potentially user-settable projection values
         float zNear = 1.0;
-        float zFar = 3.0;
+        float zFar = 15.0;
         float fov = 45.0;
 
         //! The projection matrix
