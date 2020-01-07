@@ -88,6 +88,8 @@ morph::Visual::setPerspective (void)
     this->projection.setToIdentity();
     // Set perspective projection
     this->projection.perspective (this->fov, aspect, this->zNear, this->zFar);
+    // Compute the inverse projection matrix
+    this->invproj = this->projection.invert();
 }
 
 void
@@ -336,48 +338,11 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         this->mousePressPosition = this->cursorpos;
     }
 
+#ifdef SOME_ACTION_ON_RELEASE_REQUIRED
     if (action == 0 && button == 1) {
-
         // This is release of the translation button
-
-        // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
-        Vector2<float> p0_coord = this->mousePressPosition;
-        p0_coord.x -= this->window_w/2.0;
-        p0_coord.x /= this->window_w/2.0;
-        p0_coord.y -= this->window_h/2.0;
-        p0_coord.y /= this->window_h/2.0;
-        Vector2<float> p1_coord = this->cursorpos;
-        p1_coord.x -= this->window_w/2.0;
-        p1_coord.x /= this->window_w/2.0;
-        p1_coord.y -= this->window_h/2.0;
-        p1_coord.y /= this->window_h/2.0;
-
-        // Add the depth at which the object lies.  Use forward projection to determine
-        // the correct z coordinate for the inverse projection. This assumes only one
-        // object.
-        array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
-        array<float, 4> pp = this->projection * point;
-        float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-
-        // Construct two points for the start and end of the mouse movement
-        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
-        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
-
-        // Compute the inverse projection of both points:
-        TransformMatrix<float> invproj = this->projection.invert();
-
-        // Apply the inverse projection to get two points in the world frame of reference:
-        array<float, 4> v0 = invproj * p0;
-        array<float, 4> v1 = invproj * p1;
-
-        float deltax = (v1[0]/v1[3]) - (v0[0]/v0[3]);
-        float deltay = (v1[1]/v1[3]) - (v0[1]/v0[3]);
-
-        this->scenetrans.x += deltax;
-        this->scenetrans.y -= deltay;
-
-        this->render(); // updates viewproj
     }
+#endif
 
     if (button == 0) { // Primary button means rotate
         this->rotateMode = (action == 1);
@@ -392,21 +357,21 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.x = static_cast<float>(x);
     this->cursorpos.y = static_cast<float>(y);
 
-#if 0
-    // The difference between the cursor when the mouse was pressed, and now.
-    Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
-    diff -= this->mousePressPosition;
-
-    // Now use mousePressPosition as a record of the last cursor position.
-    this->mousePressPosition = this->cursorpos;
-
     if (this->rotateMode) {
+
+        // The difference between the cursor when the mouse was pressed, and now.
+        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
+        diff -= this->mousePressPosition;
+
+        // Now use mousePressPosition as a record of the last cursor position.
+        this->mousePressPosition = this->cursorpos;
+
         //cout << "diff: " << diff.x << "," << diff.y << endl;
         // Rotation axis is perpendicular to the mouse position difference vector
         Vector3<float> n(diff.y, diff.x, 0.0f);
         n.renormalize();
         // Accelerate angular speed relative to the length of the mouse sweep
-        float rotamount = diff.length() / 100.0;
+        float rotamount = diff.length() / 10.0;
         // Calculate new rotation axis as weighted sum
         this->rotationAxis = this->rotationAxis + (n * rotamount);
         this->rotationAxis.renormalize();
@@ -414,47 +379,57 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         Quaternion<float> rotationQuaternion;
         rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
         this->rotation.premultiply (rotationQuaternion);
+
+        this->render(); // updates viewproj
     }
 
     if (this->translateMode) {
-        // Convert cursor pos in screen coords into object:
-        // Multiply (ScreenX,ScreenY,Near,1) by the full transformation to get the right vector in world space.
 
-        // Need to apply the inverse transforms here to automatically compute
-        // scenetrans_mousestepsize. There's a factor here which is the units in the
-        // 3D space which w x h pixels span.
-        array<float, 4> trans = { 2.0*diff.x/static_cast<float>(this->window_w), // -1 to 1 is 2
-                                  2.0*diff.y/static_cast<float>(this->window_h),
-                                  this->scenetrans.z,//1.0, // zNear
-                                  0.0 }; // or 1.0?
-        // Compute the inverse projection
-        TransformMatrix<float> invproj = this->viewproj.invert(); // not view proj?
-        cout << "------------------------"<<endl;
-        //cout << "Projection matrix: " << endl;
-        //this->projection.output();
-        //cout << "View-projection matrix:" << endl;
-        //this->viewproj.output();
-        //cout << "View-projection inverse:" << endl;
-        //invproj.output();
-        array<float, 4> v;
-        v = invproj * trans;
-        cout << "trans:            ("
-             << trans[0]<<","<<trans[1]<<","<<trans[2]<<","<<trans[3]<<")" <<endl;
-        cout << "abs cursor x, y:  ("
-             << x <<","<< y <<") with window width " << this->window_w <<endl;
+        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
+        diff -= this->mousePressPosition;
+        if (diff.length() < 8.0) {
+            cout << "return, haven't gone far enough..." << endl;
+            return;
+        }
+        cout << "translating..." << endl;
 
-        cout << "invproj * trans:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
+        // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
+        Vector2<float> p0_coord = this->mousePressPosition;
+        p0_coord.x -= this->window_w/2.0;
+        p0_coord.x /= this->window_w/2.0;
+        p0_coord.y -= this->window_h/2.0;
+        p0_coord.y /= this->window_h/2.0;
+        Vector2<float> p1_coord = this->cursorpos;
+        p1_coord.x -= this->window_w/2.0;
+        p1_coord.x /= this->window_w/2.0;
+        p1_coord.y -= this->window_h/2.0;
+        p1_coord.y /= this->window_h/2.0;
 
-        this->scenetrans.x += v[0];
-        this->scenetrans.y -= v[1];
-        cout << "scenetrans:        ("
-             << this->scenetrans.x << ","
-             << this->scenetrans.y << ","
-             << this->scenetrans.z << ")" << endl;
+        this->mousePressPosition = this->cursorpos;
+
+        // Add the depth at which the object lies.  Use forward projection to determine
+        // the correct z coordinate for the inverse projection. This assumes only one
+        // object.
+        array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
+        array<float, 4> pp = this->projection * point;
+        float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+        // Construct two points for the start and end of the mouse movement
+        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+
+        // Apply the inverse projection to get two points in the world frame of reference:
+        array<float, 4> v0 = this->invproj * p0;
+        array<float, 4> v1 = this->invproj * p1;
+
+        float deltax = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+        float deltay = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+
+        this->scenetrans.x += deltax;
+        this->scenetrans.y -= deltay;
+
+        this->render(); // updates viewproj
     }
-
-    this->render(); // updates viewproj
-#endif
 }
 
 void

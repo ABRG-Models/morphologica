@@ -168,8 +168,7 @@ namespace morph {
         const Vector3<float> scenetrans_default = {0.0, 0.0, -2};
 
         //! How big should the steps in scene translation be when scrolling?
-        float scenetrans_stepsize = 0.05;
-        float scenetrans_mousestepsize = 0.001;
+        float scenetrans_stepsize = 0.1;
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
@@ -193,6 +192,8 @@ namespace morph {
 
         //! The projection matrix
         TransformMatrix<float> projection;
+        //! The inverse of the projection
+        TransformMatrix<float> invproj;
         //! projection * rotmat:
         TransformMatrix<float> viewproj;
         //@}
