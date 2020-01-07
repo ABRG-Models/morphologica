@@ -79,18 +79,18 @@ namespace morph {
             this->mat[15] = static_cast<Flt>(1.0);
         }
 
-        //! Apply translation specified by vector @v
-        void translate (const Vector3<Flt>& v) {
-            this->mat[12] += v.x;
-            this->mat[13] += v.y;
-            this->mat[14] += v.z;
+        //! Apply translation specified by vector @dv
+        void translate (const Vector3<Flt>& dv) {
+            this->mat[12] += dv.x;
+            this->mat[13] += dv.y;
+            this->mat[14] += dv.z;
         }
 
-        //! Apply translation specified by coordinates @x, @y and @z.
-        void translate (const Flt& x, const Flt& y, const Flt& z) {
-            this->mat[12] += x;
-            this->mat[13] += y;
-            this->mat[14] += z;
+        //! Apply translation specified by coordinates @dx, @dy and @dz.
+        void translate (const Flt& dx, const Flt& dy, const Flt& dz) {
+            this->mat[12] += dx;
+            this->mat[13] += dy;
+            this->mat[14] += dz;
         }
 
         //! Compute determinant for 3x3 matrix @cm
@@ -891,27 +891,47 @@ namespace morph {
             return tposed;
         }
 
-        //! Make a (frustrum) perspective projection
+        /*!
+         * Make a (frustrum) perspective projection
+         *
+         * @fovDeg Field of view, in degrees. Measured from the top of the field to
+         * the bottom of the field (rather than from the left to the right).
+         *
+         * @aspect The field's aspect ratio. For a field which is wider than it is
+         * high, this will be >1. That is, this is "the number of multiples of the
+         * height that the width is"
+         *
+         * @zNear The near/projection plane.
+         *
+         * @zFar The far plane.
+         */
         void perspective (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
+
+            // Aspect is going to be about 1.33 for a typical rectangular window wider
+            // than it is high.
 
             // Bail out if the projection volume is zero-sized.
             if (zNear == zFar || aspect == 0.0f) {
                 return;
             }
 
-            Flt fovRad = fovDeg * piOver360; // fovDeg/2 converted to radians
-            Flt sineFov = std::sin (fovRad);
+            Flt fovRad_ov2 = fovDeg * piOver360; // fovDeg/2 converted to radians
+
+            Flt sineFov = std::sin (fovRad_ov2);
             if (sineFov == static_cast<Flt>(0.0)) {
                 return;
             }
-            Flt cotanFov = std::cos (fovRad) / sineFov;
+            Flt cotanFov = std::cos (fovRad_ov2) / sineFov;
             Flt clip = zFar - zNear;
 
             // Perspective matrix to multiply self by
             array<Flt, 16> persMat;
             persMat.fill (0.0);
-            persMat[0] = cotanFov/aspect;
-            persMat[5] = cotanFov;
+            persMat[0] = cotanFov/aspect; // n/(width/2) = 2n/width, or generally 2n/r-l
+            persMat[5] = cotanFov;        // n/(height/2) = 2n/height, or generally 2n/t-b
+            // For fully general frustrum not centered on the z axis, we would add these:
+            //persMat[8] = r+l/r-l
+            //persMat[9] = t+b/t-b
             persMat[10] = -(zNear+zFar)/clip;
             persMat[11] = -1.0;
             persMat[14] = -(2.0 * zNear * zFar)/clip;
@@ -921,7 +941,8 @@ namespace morph {
 
 #ifdef WRITTEN
         //! Make an orthographic projection
-        void orthographic () {}
+        void orthographic (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {
+        }
 #endif
 
     };

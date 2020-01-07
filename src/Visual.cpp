@@ -84,13 +84,10 @@ morph::Visual::setPerspective (void)
 {
     // Calculate aspect ratio
     float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
-    //cout << "aspect = " << aspect << endl;
-    // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const float zNear = 1.0, zFar = 8.0, fov = 90.0;
     // Reset projection
     this->projection.setToIdentity();
     // Set perspective projection
-    this->projection.perspective (fov, aspect, zNear, zFar);
+    this->projection.perspective (this->fov, aspect, this->zNear, this->zFar);
 }
 
 void
@@ -106,7 +103,11 @@ morph::Visual::render (void)
 
     // Calculate model view transformation - transforming from "model space" to "worldspace".
     this->rotmat.setToIdentity();
+    // This line translates from model space to world space
     this->rotmat.translate (this->scenetrans); // send backwards into distance
+    //cout << "rotmat after translate:" << endl;
+    //this->rotmat.output();
+    // And this rotation completes the transition from model to world
     this->rotmat.rotate (this->rotation);
     //cout << "Rotation quaternion: ";
     //this->rotation.output();
@@ -115,6 +116,8 @@ morph::Visual::render (void)
 
     // Set modelview-projection matrix
     this->viewproj = this->projection * this->rotmat;
+    //this->viewproj = this->rotmat * this->projection;
+
     //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
     if (loc == -1) {
@@ -336,37 +339,115 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
     if (action == 0 && button == 1) {
         // This is release of the translation button
 
-        // The difference between the cursor when the mouse was pressed, and now.
-        Vector2<float> diff = this->cursorpos;
-        diff -= this->mousePressPosition;
-        array<float, 4> trans = { 2.0*diff.x/static_cast<float>(this->window_w), // -1 to 1 is 2
-                                  2.0*diff.y/static_cast<float>(this->window_h),
-                                  this->scenetrans.z,//1.0, // zNear
-                                  0.0 }; // or 1.0?
-        // Compute the inverse projection
-        TransformMatrix<float> invproj = this->viewproj.invert(); // not view proj?
+        // The difference between the cursor when the mouse was pressed, and now, in pixels.
+        Vector2<float> p0_crsr = this->mousePressPosition;
+        Vector2<float> p1_crsr = this->cursorpos;
+
+        // Convert to the range -1 -> 1:
+        Vector2<float> p0_coord = p0_crsr;
+        p0_coord.x -= this->window_w/2.0;
+        p0_coord.x /= this->window_w/2.0;
+        p0_coord.y -= this->window_h/2.0;
+        p0_coord.y /= this->window_h/2.0;
+        Vector2<float> p1_coord = p1_crsr;
+        p1_coord.x -= this->window_w/2.0;
+        p1_coord.x /= this->window_w/2.0;
+        p1_coord.y -= this->window_h/2.0;
+        p1_coord.y /= this->window_h/2.0;
+
         cout << "------------------------"<<endl;
-        //cout << "Projection matrix: " << endl;
-        //this->projection.output();
-        //cout << "View-projection matrix:" << endl;
-        //this->viewproj.output();
-        //cout << "View-projection inverse:" << endl;
-        //invproj.output();
-        array<float, 4> v;
-        v = invproj * trans;
-        cout << "trans:            ("
-             << trans[0]<<","<<trans[1]<<","<<trans[2]<<","<<trans[3]<<")" <<endl;
-        //cout << "abs cursor x, y:  ("
-        //     << x <<","<< y <<") with window width " << this->window_w <<endl;
-
-        cout << "invproj * trans:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
-
-        this->scenetrans.x += v[0];
-        this->scenetrans.y -= v[1];
         cout << "scenetrans:        ("
              << this->scenetrans.x << ","
              << this->scenetrans.y << ","
              << this->scenetrans.z << ")" << endl;
+
+        // Extents on the near plane of the frustrum.
+        array<float, 4> near_right =  { 1.0, 0.0, -1.0, 1.0 };
+        array<float, 4> near_left =   {-1.0, 0.0, -1.0, 1.0 };
+        array<float, 4> near_top =    { 0.0, 1.0, -1.0, 1.0 };
+        array<float, 4> near_bottom = { 0.0,-1.0, -1.0, 1.0 };
+        array<float, 4> far_right =  { 1.0, 0.0, 1.0, 1.0 };
+        array<float, 4> far_left =   {-1.0, 0.0, 1.0, 1.0 };
+        array<float, 4> far_top =    { 0.0, 1.0, 1.0, 1.0 };
+        array<float, 4> far_bottom = { 0.0,-1.0, 1.0, 1.0 };
+
+        // Add the depth at which the object lies.  Use forward projection to
+        // determine the correct z for the inverse projection
+        array<float, 4> point =  { 1.0, 0.0, this->scenetrans.z, 1.0 };
+        array<float, 4> pp = this->projection * point;
+        float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+        cout << "p0: (" << p0[0] << "," << p0[1] << "," << p0[2] << "," << p0[3] << ")" << endl;
+        cout << "p1: (" << p1[0] << "," << p1[1] << "," << p1[2] << "," << p1[3] << ")" << endl;
+        // Compute the inverse projection of both points
+        TransformMatrix<float> invviewproj = this->viewproj.invert();
+        TransformMatrix<float> invproj = this->projection.invert();
+        cout << "Projection matrix: " << endl;
+        this->projection.output();
+        cout << "View matrix:" << endl;
+        this->rotmat.output();
+        cout << "View-projection matrix:" << endl;
+        this->viewproj.output();
+
+        array<float, 4> v0;
+        v0 = invproj * p0;
+        array<float, 4> v1;
+        v1 = invproj * p1;
+        cout << "invproj * p0:  ("<< v0[0]/v0[3] <<","<< v0[1]/v0[3]<<","<< v0[2]/v0[3]<<","<< v0[3]/v0[3]<<")" << endl;
+        cout << "invproj * p1:  ("<< v1[0]/v1[3]<<","<< v1[1]/v1[3]<<","<< v1[2]/v1[3]<<","<< v1[3]/v1[3]<<")" << endl;
+
+        array<float, 4> nr = invproj * near_right;
+        array<float, 4> fr = invproj * far_right;
+        for (unsigned int i = 0; i < 4; ++i) {
+            nr[i] = nr[i]/nr[3];
+            fr[i] = fr[i]/fr[3];
+        }
+        cout << "invproj * near_right:  ("<< nr[0]<<","<< nr[1]<<","<< nr[2]<<","<< nr[3]<<")" << endl;
+        cout << "invproj * far_right:  ("<< fr[0]<<","<< fr[1]<<","<< fr[2]<<","<< fr[3]<<")" << endl;
+
+#if 0
+        // Advance a point from near to far to plot the transform from z in world, to
+        // z in projection coords (it's non-linear)
+        for (float normz = -1.0f; normz<=1.05f; normz += 0.1f) {
+            array<float, 4> point =  { 1.0, 0.0, normz, 1.0 };
+            array<float, 4> point1 =  { 0.0, 0.0, normz, 1.0 };
+            array<float, 4> invp = invproj * point;
+            array<float, 4> invp1 = invproj * point1;
+            // Table form output:
+            cout << normz << "," << (invp[2]/invp[3]) << "," << (invp1[2]/invp1[3]) << endl;
+            //cout << "normz = " << normz << endl
+            //     << " invproj * point (div by w):  ("<< invp[0]/invp[3] <<","<< invp[1]/invp[3]<<","<< invp[2]/invp[3]<<","<< invp[3]/invp[3]<<")" << endl;
+        }
+#endif
+#if 0
+        // Advance a point from near to far to plot the transform from z in world, to
+        // z in projection coords (it's non-linear)
+        for (float normz = -1.0f; normz>=-3.05f; normz -= 0.1f) {
+            array<float, 4> point =  { 1.0, 0.0, normz, 1.0 };
+            //array<float, 4> point1 =  { 0.0, 0.0, normz, 1.0 };
+            array<float, 4> pp = this->projection * point;
+            //array<float, 4> invp1 = invproj * point1;
+            // Table form output:
+            cout << normz << "," << (pp[2]/pp[3]) << endl;
+        }
+#endif
+
+
+        cout << "x coordinate change: " << (p1_coord.x - p0_coord.x) << endl;
+        cout << "y coordinate change: " << (p1_coord.y - p0_coord.y) << endl;
+
+        cout << "x change from: " << (v0[0]/v0[3]) << " to " << (v1[0]/v1[3]) << endl;
+        cout << "y change from: " << (v0[1]/v0[3]) << " to " << (v1[1]/v1[3]) << endl;
+
+        // Get viewport from GL?
+        int vp[4];
+        glGetIntegerv (GL_VIEWPORT, vp);
+        cout << "GL viewport x,y,w,h: " << vp[0] << "," << vp[1] << "," << vp[2] << "," << vp[3] << ")\n";
+
+
+        //this->scenetrans.x += 0.5;
 
         this->render(); // updates viewproj
     }

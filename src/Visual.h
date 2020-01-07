@@ -162,10 +162,10 @@ namespace morph {
         Vector2<float> cursorpos;
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, -3.5};
+        Vector3<float> scenetrans = {0.0, 0.0, -2};
 
         //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, -3.5};
+        const Vector3<float> scenetrans_default = {0.0, 0.0, -2};
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.05;
@@ -185,6 +185,12 @@ namespace morph {
         TransformMatrix<float> rotmat;
         //! Inversion of rotation matrix
         //TransformMatrix<float> invrot;
+
+        // Potentially user-settable projection values
+        float zNear = 1.0;
+        float zFar = 3.0;
+        float fov = 45.0;
+
         //! The projection matrix
         TransformMatrix<float> projection;
         //! projection * rotmat:
