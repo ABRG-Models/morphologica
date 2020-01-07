@@ -333,6 +333,44 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
         this->mousePressPosition = this->cursorpos;
     }
 
+    if (action == 0 && button == 1) {
+        // This is release of the translation button
+
+        // The difference between the cursor when the mouse was pressed, and now.
+        Vector2<float> diff = this->cursorpos;
+        diff -= this->mousePressPosition;
+        array<float, 4> trans = { 2.0*diff.x/static_cast<float>(this->window_w), // -1 to 1 is 2
+                                  2.0*diff.y/static_cast<float>(this->window_h),
+                                  this->scenetrans.z,//1.0, // zNear
+                                  0.0 }; // or 1.0?
+        // Compute the inverse projection
+        TransformMatrix<float> invproj = this->viewproj.invert(); // not view proj?
+        cout << "------------------------"<<endl;
+        //cout << "Projection matrix: " << endl;
+        //this->projection.output();
+        //cout << "View-projection matrix:" << endl;
+        //this->viewproj.output();
+        //cout << "View-projection inverse:" << endl;
+        //invproj.output();
+        array<float, 4> v;
+        v = invproj * trans;
+        cout << "trans:            ("
+             << trans[0]<<","<<trans[1]<<","<<trans[2]<<","<<trans[3]<<")" <<endl;
+        //cout << "abs cursor x, y:  ("
+        //     << x <<","<< y <<") with window width " << this->window_w <<endl;
+
+        cout << "invproj * trans:  ("<< v[0]<<","<< v[1]<<","<< v[2]<<","<< v[3]<<")"<<endl;
+
+        this->scenetrans.x += v[0];
+        this->scenetrans.y -= v[1];
+        cout << "scenetrans:        ("
+             << this->scenetrans.x << ","
+             << this->scenetrans.y << ","
+             << this->scenetrans.z << ")" << endl;
+
+        this->render(); // updates viewproj
+    }
+
     if (button == 0) { // Primary button means rotate
         this->rotateMode = (action == 1);
     } else if (button == 1) { // Secondary button means translate
@@ -346,13 +384,10 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.x = static_cast<float>(x);
     this->cursorpos.y = static_cast<float>(y);
 
+#if 0
     // The difference between the cursor when the mouse was pressed, and now.
     Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
     diff -= this->mousePressPosition;
-    if (diff.length() < 3) {
-        //cout << "diff length: " << diff.length() << ", return early." << endl;
-        return;
-    }
 
     // Now use mousePressPosition as a record of the last cursor position.
     this->mousePressPosition = this->cursorpos;
@@ -382,8 +417,8 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // 3D space which w x h pixels span.
         array<float, 4> trans = { 2.0*diff.x/static_cast<float>(this->window_w), // -1 to 1 is 2
                                   2.0*diff.y/static_cast<float>(this->window_h),
-                                  1.0, // zNear
-                                  1.0 };
+                                  this->scenetrans.z,//1.0, // zNear
+                                  0.0 }; // or 1.0?
         // Compute the inverse projection
         TransformMatrix<float> invproj = this->viewproj.invert(); // not view proj?
         cout << "------------------------"<<endl;
@@ -411,6 +446,7 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     }
 
     this->render(); // updates viewproj
+#endif
 }
 
 void
