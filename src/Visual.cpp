@@ -147,10 +147,15 @@ morph::Visual::render (void)
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
-    vector<HexGridVisual*>::iterator hgvi = this->hexGridVis.begin();
-    while (hgvi != this->hexGridVis.end()) {
-        (*hgvi)->render();
-        ++hgvi;
+    typename vector<HexGridVisual<float>*>::iterator hgvf = this->hgv_float.begin();
+    while (hgvf != this->hgv_float.end()) {
+        (*hgvf)->render();
+        ++hgvf;
+    }
+    typename vector<HexGridVisual<double>*>::iterator hgvd = this->hgv_double.begin();
+    while (hgvd != this->hgv_double.end()) {
+        (*hgvd)->render();
+        ++hgvd;
     }
 
     glfwSwapBuffers (this->window);
@@ -167,6 +172,15 @@ morph::Visual::updateHexGridVisual (const unsigned int gridId,
                                     const vector<float>& data)
 {
     // Replace grids[gridId].data
+    cout << "Writeme" << endl;
+}
+
+void
+morph::Visual::updateHexGridVisual (const unsigned int gridId,
+                                    const vector<double>& data)
+{
+    // Replace grids[gridId].data
+    cout << "Writeme" << endl;
 }
 
 unsigned int
@@ -175,9 +189,19 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
                                  const array<float, 3> offset)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    HexGridVisual* hgv1 = new HexGridVisual(this->shaderprog, hg, &data, offset);
-    this->hexGridVis.push_back (hgv1);
+    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, &data, offset);
+    this->hgv_float.push_back (hgv1);
+    return 0;
+}
 
+unsigned int
+morph::Visual::addHexGridVisual (const HexGrid* hg,
+                                 const vector<double>& data,
+                                 const array<float, 3> offset)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, &data, offset);
+    this->hgv_double.push_back (hgv1);
     return 0;
 }
 

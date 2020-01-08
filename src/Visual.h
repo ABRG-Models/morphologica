@@ -88,17 +88,20 @@ namespace morph {
          * HexGrid @hg to the visual. Offset every vertex using
          * @offset.
          */
-        void updateHexGridVisual (const unsigned int gridId,
-                                  const vector<float>& data);
+        //@{
+        void updateHexGridVisual (const unsigned int gridId, const vector<float>& data);
+        void updateHexGridVisual (const unsigned int gridId, const vector<double>& data);
+        //@}
 
         /*!
          * Add the vertices for the data in @dat, defined on the
          * HexGrid @hg to the visual. Offset every vertex using
          * @offset.
          */
-        unsigned int addHexGridVisual (const HexGrid* hg,
-                                       const vector<float>& data,
-                                       const array<float, 3> offset);
+        //@{
+        unsigned int addHexGridVisual (const HexGrid* hg, const vector<float>& data, const array<float, 3> offset);
+        unsigned int addHexGridVisual (const HexGrid* hg, const vector<double>& data, const array<float, 3> offset);
+        //@}
 
 #ifdef TRIANGLE_VIS_TESTING
         /*!
@@ -151,9 +154,12 @@ namespace morph {
         //@}
 
         /*!
-         * This Visual is going to render some HexGridVisuals for us. 1 or more.
+         * This Visual is going to render some HexGridVisuals for us. 1 or
+         * more. Various data types are possible.
          */
-        vector<HexGridVisual*> hexGridVis;
+        vector<HexGridVisual<float>*> hgv_float;
+        vector<HexGridVisual<double>*> hgv_double;
+        // Plus int/unsigned int.
 
 #ifdef TRIANGLE_VIS_TESTING
         //! Simple triangle visual for testing
