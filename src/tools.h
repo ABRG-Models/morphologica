@@ -702,7 +702,7 @@ namespace morph
         static unsigned int monthNow (void);
 
         /*!
-         * Return the current date.
+         * Return the current 'day of month' (the tm_mday field of a struct tm).
          */
         static unsigned int dateNow (void);
 
