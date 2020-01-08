@@ -13,7 +13,9 @@
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"
-#include "TriangleVisual.h"
+#ifdef TRIANGLE_VIS_TESTING
+# include "TriangleVisual.h"
+#endif
 #include "Quaternion.h"
 #include "TransformMatrix.h"
 #include "Vector2.h"
@@ -81,8 +83,6 @@ namespace morph {
         //void setTitle(const string& s);
         //void saveImage (const string& s);
 
-        //void addHex (array<float, 3> coords, float radius, array<float, 3> colour);
-
         /*!
          * Add the vertices for the data in @dat, defined on the
          * HexGrid @hg to the visual. Offset every vertex using
@@ -99,8 +99,13 @@ namespace morph {
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const vector<float>& data,
                                        const array<float, 3> offset);
-        unsigned int addTriangleVisual (void);
 
+#ifdef TRIANGLE_VIS_TESTING
+        /*!
+         * I used a simpler triangle visual during code development.
+         */
+        unsigned int addTriangleVisual (void);
+#endif
         /*!
          * Render the scene
          */
@@ -150,9 +155,10 @@ namespace morph {
          */
         vector<HexGridVisual*> hexGridVis;
 
-        //! Simple triangle visual for hopefully simple testing
+#ifdef TRIANGLE_VIS_TESTING
+        //! Simple triangle visual for testing
         vector<TriangleVisual*> triangleVis;
-
+#endif
         /*!
          * Variables to manage projection and rotation of the object
          */

@@ -44,21 +44,19 @@ int main()
         unsigned int nhex = hg.num();
         data.resize(nhex, 0.0);
 
-        // Make some dummy data
+        // Make some dummy data (a sine wave)
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.1 * std::sin(10*hg.d_x[hi]);
-            //cout << "Hex " << hi << " data[] = " << data[hi] << endl;
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
         cout << "Added HexGridVisual with gridId " << gridId << endl;
-        v.addTriangleVisual();
         v.render();
 
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout(2.5);
+            glfwWaitEventsTimeout (2.5);
             v.render();
         }
 

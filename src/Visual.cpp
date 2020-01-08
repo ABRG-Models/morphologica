@@ -57,9 +57,6 @@ morph::Visual::Visual(int width, int height, const string& title)
     // Swap as fast as possible (fixes lag of scene with mouse movements)
     glfwSwapInterval (0);
 
-    // Can set wait events timeout to 120 Hz or 0.00833 s.
-    // glfwWaitEventsTimeout (0.00833);
-
     // Load up the shaders
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Visual.vert.glsl" },
@@ -120,6 +117,8 @@ morph::Visual::render (void)
     // Set the perspective from the width/height
     this->setPerspective();
 
+    // for each hexgrid...
+    //
     // Calculate model view transformation - transforming from "model space" to "worldspace".
     this->rotmat.setToIdentity();
     // This line translates from model space to world space. In future may need one
@@ -182,6 +181,7 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     return 0;
 }
 
+#ifdef TRIANGLE_VIS_TESTING
 unsigned int
 morph::Visual::addTriangleVisual (void)
 {
@@ -191,6 +191,7 @@ morph::Visual::addTriangleVisual (void)
 
     return 0;
 }
+#endif
 
 const GLchar*
 morph::Visual::ReadShader (const char* filename)
@@ -374,6 +375,7 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.x = static_cast<float>(x);
     this->cursorpos.y = static_cast<float>(y);
 
+    // This is "rotate the scene" model. Will need "rotate one visual" mode.
     if (this->rotateMode) {
 
         // The difference between the cursor when the mouse was pressed, and now.
@@ -400,6 +402,8 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         this->render(); // updates viewproj
     }
 
+    // This is "translate the scene" mode. Could also have a "translate one
+    // HexGridVisual" mode, to adjust relative positions.
     if (this->translateMode) {
 
         // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
