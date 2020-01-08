@@ -54,6 +54,12 @@ morph::Visual::Visual(int width, int height, const string& title)
 
     glfwMakeContextCurrent (this->window);
 
+    // Swap as fast as possible (fixes lag of scene with mouse movements)
+    glfwSwapInterval (0);
+
+    // Can set wait events timeout to 120 Hz or 0.00833 s.
+    // glfwWaitEventsTimeout (0.00833);
+
     // Load up the shaders
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Visual.vert.glsl" },
@@ -92,9 +98,20 @@ morph::Visual::setPerspective (void)
     this->invproj = this->projection.invert();
 }
 
+#ifdef PROFILE_RENDER
+// Rendering takes 16 ms if (that's 60 Hz). With no vsync it's <200 us and typically
+// 130 us on corebeast (i9 and GTX1080).
+#include <chrono>
+using namespace std::chrono;
+using std::chrono::steady_clock;
+#endif
+
 void
 morph::Visual::render (void)
 {
+#ifdef PROFILE_RENDER
+    steady_clock::time_point renderstart = steady_clock::now();
+#endif
     // Can avoid this by getting window size into members only when window size changes.
     const double retinaScale = 1; // devicePixelRatio()?
 
@@ -105,20 +122,14 @@ morph::Visual::render (void)
 
     // Calculate model view transformation - transforming from "model space" to "worldspace".
     this->rotmat.setToIdentity();
-    // This line translates from model space to world space
+    // This line translates from model space to world space. In future may need one
+    // model->world for each HexGridVisual.
     this->rotmat.translate (this->scenetrans); // send backwards into distance
-    //cout << "rotmat after translate:" << endl;
-    //this->rotmat.output();
     // And this rotation completes the transition from model to world
     this->rotmat.rotate (this->rotation);
-    //cout << "Rotation quaternion: ";
-    //this->rotation.output();
-    //cout << "rotmat:" << endl;
-    //this->rotmat.output();
 
     // Set modelview-projection matrix
     this->viewproj = this->projection * this->rotmat;
-    //this->viewproj = this->rotmat * this->projection;
 
     //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
@@ -144,6 +155,12 @@ morph::Visual::render (void)
     }
 
     glfwSwapBuffers (this->window);
+
+#ifdef PROFILE_RENDER
+    steady_clock::time_point renderend = steady_clock::now();
+    steady_clock::duration time_span = renderend - renderstart;
+    cout << "Render took " << duration_cast<microseconds>(time_span).count() << " us" << endl;
+#endif
 }
 
 void
@@ -384,14 +401,6 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     }
 
     if (this->translateMode) {
-
-        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
-        diff -= this->mousePressPosition;
-        if (diff.length() < 8.0) {
-            cout << "return, haven't gone far enough..." << endl;
-            return;
-        }
-        cout << "translating..." << endl;
 
         // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
         Vector2<float> p0_coord = this->mousePressPosition;
