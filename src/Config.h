@@ -15,6 +15,8 @@ using std::string;
 #include <iostream>
 using std::cout;
 using std::endl;
+#include <stdexcept>
+using std::exception;
 
 #include "Process.h"
 
