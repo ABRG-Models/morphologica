@@ -1206,6 +1206,25 @@ morph::HexGrid::findBoundaryExtents (void)
     return rtn;
 }
 
+float
+morph::HexGrid::width (void)
+{
+    // {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
+    array<int, 6> extents = this->findBoundaryExtents();
+    float xmin = this->d * float(extents[0]);
+    float xmax = this->d * float(extents[1]);
+    return (xmax - xmin);
+}
+
+float
+morph::HexGrid::depth (void)
+{
+    array<int, 6> extents = this->findBoundaryExtents();
+    float ymin = this->v * float(extents[2]);
+    float ymax = this->v * float(extents[3]);
+    return (ymax - ymin);
+}
+
 void
 morph::HexGrid::d_clear (void)
 {

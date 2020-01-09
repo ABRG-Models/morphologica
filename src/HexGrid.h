@@ -289,6 +289,16 @@ namespace morph {
         string extent (void) const;
 
         /*!
+         * Returns the width of the HexGrid (from -x to +x)
+         */
+        float width (void);
+
+        /*!
+         * Returns the 'depth' of the HexGrid (from -y to +y)
+         */
+        float depth (void);
+
+        /*!
          * Getter for d.
          */
         float getd (void) const;

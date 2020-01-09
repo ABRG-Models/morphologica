@@ -8,6 +8,9 @@
 
 #include "HexGrid.h"
 
+#include "TransformMatrix.h"
+using morph::TransformMatrix;
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -79,6 +82,7 @@ namespace morph {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
+            this->viewmatrix.translate (this->offset);
             this->scale = _scale;
             this->hg = _hg;
             this->data = _data;
@@ -363,15 +367,34 @@ namespace morph {
             glBindVertexArray(0);
         }
 
-        //! The offset of this HexGridVisual
-        array<float, 3> offset;
+        //! The model-specific view matrix.
+        TransformMatrix<float> viewmatrix;
 
-        //! Linear scaling which should be applied to the data. y = mx + c, with
-        //! scale[0] == m and scale[1] == c. The linear scaling for the colour is y1
-        //! = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
+        //! Linear scaling which should be applied to the (scalar value of the)
+        //! data. y = mx + c, with scale[0] == m and scale[1] == c. The linear scaling
+        //! for the colour is y1 = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
         array<Flt, 4> scale;
 
+        //! Setter for offset, also updates viewmatrix.
+        void setOffset (const array<float, 3>& _offset) {
+            this->offset = _offset;
+            this->viewmatrix.setIdentity();
+            this->viewmatrix.translate (this->offset);
+        }
+
+        //! Shift the offset, also updates viewmatrix.
+        void shiftOffset (const array<float, 3>& _offset) {
+            this->offset += _offset; // Why do I need the offset member? I don't
+            this->viewmatrix.translate (this->offset);
+        }
+
     private:
+
+        //! The offset of this HexGridVisual. Note that this is not incorporated into
+        //! the computation of the vertices, but is instead applied when the object is
+        //! rendered as part of the model->world transformation.
+        array<float, 3> offset;
+
         //! This enum contains the positions within the vbo array of the different vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
 

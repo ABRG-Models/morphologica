@@ -86,6 +86,13 @@ namespace morph {
             this->mat[14] += dv.z;
         }
 
+        //! Apply translation specified by vector @dv provided as array of three coordinates
+        void translate (const array<Flt, 3>& dv) {
+            this->mat[12] += dv[0];
+            this->mat[13] += dv[1];
+            this->mat[14] += dv[2];
+        }
+
         //! Apply translation specified by coordinates @dx, @dy and @dz.
         void translate (const Flt& dx, const Flt& dy, const Flt& dz) {
             this->mat[12] += dx;

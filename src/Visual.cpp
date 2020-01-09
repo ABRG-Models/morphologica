@@ -122,18 +122,19 @@ morph::Visual::render (void)
     // Set the perspective from the width/height
     this->setPerspective();
 
-    // for each hexgrid...
+    // rotmat is the translation/rotation for the entire scene.
     //
     // Calculate model view transformation - transforming from "model space" to "worldspace".
-    this->rotmat.setToIdentity();
+    TransformMatrix<float> sceneview;
     // This line translates from model space to world space. In future may need one
     // model->world for each HexGridVisual.
-    this->rotmat.translate (this->scenetrans); // send backwards into distance
+    sceneview.translate (this->scenetrans); // send backwards into distance
     // And this rotation completes the transition from model to world
-    this->rotmat.rotate (this->rotation);
+    sceneview.rotate (this->rotation);
 
+#if 0
     // Set modelview-projection matrix
-    this->viewproj = this->projection * this->rotmat;
+    TransformMatrix<float> viewproj = this->projection * sceneview;
 
     //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
@@ -143,7 +144,7 @@ morph::Visual::render (void)
         // Set the uniform:
         glUniformMatrix4fv (loc, 1, GL_FALSE, this->viewproj.mat.data());
     }
-
+#endif
     // Clear color buffer and **also depth buffer**
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -154,11 +155,29 @@ morph::Visual::render (void)
     // Render it.
     typename vector<HexGridVisual<float>*>::iterator hgvf = this->hgv_float.begin();
     while (hgvf != this->hgv_float.end()) {
+        // For each different HexGridVisual, I can CHANGE the uniform. Right? Right.
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*hgvf)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+
         (*hgvf)->render();
         ++hgvf;
     }
     typename vector<HexGridVisual<double>*>::iterator hgvd = this->hgv_double.begin();
     while (hgvd != this->hgv_double.end()) {
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*hgvd)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
         (*hgvd)->render();
         ++hgvd;
     }

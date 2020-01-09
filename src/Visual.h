@@ -218,7 +218,7 @@ namespace morph {
         float angularSpeed;
         Quaternion<float> rotation;
         //! The scene translation/rotation aka view matrix
-        TransformMatrix<float> rotmat;
+        //TransformMatrix<float> rotmat;
         //! Inversion of rotation matrix
         //TransformMatrix<float> invrot;
 
@@ -231,8 +231,8 @@ namespace morph {
         TransformMatrix<float> projection;
         //! The inverse of the projection
         TransformMatrix<float> invproj;
-        //! projection * rotmat:
-        TransformMatrix<float> viewproj;
+        //! projection * rotmat: DOesn't need/want to be a member.
+        //TransformMatrix<float> viewproj;
         //@}
 
         /*!
