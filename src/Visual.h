@@ -84,23 +84,39 @@ namespace morph {
         //void saveImage (const string& s);
 
         /*!
-         * Add the vertices for the data in @dat, defined on the
-         * HexGrid @hg to the visual. Offset every vertex using
-         * @offset.
+         * Add the vertices for the data in @dat, defined on the HexGrid @hg to the
+         * visual. Offset (spatially) every vertex using @offset. Scale the data
+         * linearly using @scale, which defines a y=mx+c type of scaling, with
+         * scale[0]='m' and scale[1]='c'. (plus a colour scaling defined in scale[2]
+         * and scale[3] in the same way).
          */
         //@{
-        void updateHexGridVisual (const unsigned int gridId, const vector<float>& data);
-        void updateHexGridVisual (const unsigned int gridId, const vector<double>& data);
+        void updateHexGridVisual (const unsigned int gridId,
+                                  const vector<float>& data,
+                                  const array<float, 4> scale);
+        void updateHexGridVisual (const unsigned int gridId,
+                                  const vector<double>& data,
+                                  const array<double, 4> scale);
         //@}
 
         /*!
-         * Add the vertices for the data in @dat, defined on the
-         * HexGrid @hg to the visual. Offset every vertex using
-         * @offset.
+         * Add the vertices for the data in @dat, defined on the HexGrid @hg to the
+         * visual. Spatially offset every vertex using @offset. A scaling must be
+         * applied to the data; otherwise, the scalar values of data should be of the
+         * same order as the positions of the hexes. Only the client code can
+         * determine this, so the scaling has to be supplied, and could be modified
+         * during visualization. Scale the data linearly using @scale, which defines a
+         * y=mx+c type of scaling, with scale[0]='m' and scale[1]='c'.
          */
         //@{
-        unsigned int addHexGridVisual (const HexGrid* hg, const vector<float>& data, const array<float, 3> offset);
-        unsigned int addHexGridVisual (const HexGrid* hg, const vector<double>& data, const array<float, 3> offset);
+        unsigned int addHexGridVisual (const HexGrid* hg,
+                                       const array<float, 3> offset,
+                                       const vector<float>& data,
+                                       const array<float, 4> scale);
+        unsigned int addHexGridVisual (const HexGrid* hg,
+                                       const array<float, 3> offset,
+                                       const vector<double>& data,
+                                       const array<double, 4> scale);
         //@}
 
 #ifdef TRIANGLE_VIS_TESTING
@@ -180,10 +196,10 @@ namespace morph {
         Vector2<float> cursorpos;
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, -2};
+        Vector3<float> scenetrans = {0.0, 0.0, -5};
 
         //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, -2};
+        const Vector3<float> scenetrans_default = {0.0, 0.0, -5};
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
@@ -206,7 +222,7 @@ namespace morph {
         // Potentially user-settable projection values
         float zNear = 1.0;
         float zFar = 15.0;
-        float fov = 45.0;
+        float fov = 30.0;
 
         //! The projection matrix
         TransformMatrix<float> projection;

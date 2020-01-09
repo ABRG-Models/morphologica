@@ -46,12 +46,13 @@ int main()
 
         // Make some dummy data (a sine wave)
         for (unsigned int hi=0; hi<nhex; ++hi) {
-            data[hi] = 0.1 * std::sin(10*hg.d_x[hi]);
+            data[hi] = 0.5 + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        unsigned int gridId = v.addHexGridVisual (&hg, data, offset);
+        array<float, 4> scale = { 0.1, 0.0, 1.0, 0.0};
+        unsigned int gridId = v.addHexGridVisual (&hg, offset, data, scale);
         cout << "Added HexGridVisual with gridId " << gridId << endl;
         v.render();
 

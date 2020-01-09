@@ -73,11 +73,13 @@ namespace morph {
     public:
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
+                      const array<float, 3> _offset,
                       const vector<Flt>* _data,
-                      const array<float, 3> _offset) {
+                      const array<Flt, 4> _scale) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
+            this->scale = _scale;
             this->hg = _hg;
             this->data = _data;
 
@@ -150,6 +152,11 @@ namespace morph {
             }
         }
 
+        //! Apply scaling for Z position
+        inline Flt sc (const Flt& datum) {
+            return (datum * this->scale[0] + this->scale[1]);
+        }
+
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
@@ -161,98 +168,119 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
-            float datum = 0.0f;
-            float third = 0.33333333333333f;
-            float half = 0.5f;
+            Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
+            Flt datumNE = static_cast<Flt>(0.0);  // datum at the hex to the east.
+            Flt datumNNE = static_cast<Flt>(0.0); // etc
+            Flt datumNNW = static_cast<Flt>(0.0);
+            Flt datumNW = static_cast<Flt>(0.0);
+            Flt datumNSW = static_cast<Flt>(0.0);
+            Flt datumNSE = static_cast<Flt>(0.0);
+
+            Flt datum = static_cast<Flt>(0.0);
+            Flt third = static_cast<Flt>(0.33333333333333);
+            Flt half = static_cast<Flt>(0.5);
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
-                // Use a single colour for each hex, even though hex z positions are interpolated
-                array<float, 3> clr = morph::Tools::getJetColorF((double)(*this->data)[hi]+0.5);
+                // Compute the linear scalings. Could do this once only and have a this->scaledData member
+                datumC = this->sc((*this->data)[hi]);
+                datumNE = this->sc((*this->data)[NE(hi)]);   // datum Neighbour East
+                datumNNE = this->sc((*this->data)[NNE(hi)]); // datum Neighbour North East
+                datumNNW = this->sc((*this->data)[NNW(hi)]); // etc
+                datumNW = this->sc((*this->data)[NW(hi)]);
+                datumNSW = this->sc((*this->data)[NSW(hi)]);
+                datumNSE = this->sc((*this->data)[NSE(hi)]);
+
+                // Use a single colour for each hex, even though hex z positions are
+                // interpolated. Do the _colour_ scaling:
+                datum = (*this->data)[hi] * this->scale[2] + this->scale[3];
+                // And turn it into a colour:
+                array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], (*this->data)[hi], this->vertexPositions);
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
 
+                // NE vertex
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
                     // Compute mean of this->data[hi] and NE and E hexes
-                    datum = third * ((*this->data)[hi] + (*this->data)[NNE(hi)] + (*this->data)[NE(hi)]);
+                    datum = third * (datumC + datumNNE + datumNE);
                 } else if (HAS_NNE(hi) || HAS_NE(hi)) {
                     if (HAS_NNE(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NNE(hi)]);
+                        datum = half * (datumC + datumNNE);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NE(hi)]);
+                        datum = half * (datumC + datumNE);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
 
-                // SE
+                // SE vertex
                 if (HAS_NE(hi) && HAS_NSE(hi)) {
-                    datum = third * ((*this->data)[hi] + (*this->data)[NE(hi)] + (*this->data)[NSE(hi)]);
+                    datum = third * (datumC + datumNE + datumNSE);
                 } else if (HAS_NE(hi) || HAS_NSE(hi)) {
                     if (HAS_NE(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NE(hi)]);
+                        datum = half * (datumC + datumNE);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NSE(hi)]);
+                        datum = half * (datumC + datumNSE);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
 
                 // S
                 if (HAS_NSE(hi) && HAS_NSW(hi)) {
-                    datum = third * ((*this->data)[hi] + (*this->data)[NSE(hi)] + (*this->data)[NSW(hi)]);
+                    datum = third * (datumC + datumNSE + datumNSW);
                 } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
                     if (HAS_NSE(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NSE(hi)]);
+                        datum = half * (datumC + datumNSE);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NSW(hi)]);
+                        datum = half * (datumC + datumNSW);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
 
                 // SW
                 if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    datum = third * ((*this->data)[hi] + (*this->data)[NW(hi)] + (*this->data)[NSW(hi)]);
+                    datum = third * (datumC + datumNW + datumNSW);
                 } else if (HAS_NW(hi) || HAS_NSW(hi)) {
                     if (HAS_NW(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NW(hi)]);
+                        datum = half * (datumC + datumNW);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NSW(hi)]);
+                        datum = half * (datumC + datumNSW);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
 
                 // NW
                 if (HAS_NNW(hi) && HAS_NW(hi)) {
-                    datum = third * ((*this->data)[hi] + (*this->data)[NNW(hi)] + (*this->data)[NW(hi)]);
+                    datum = third * (datumC + datumNNW + datumNW);
                 } else if (HAS_NNW(hi) || HAS_NW(hi)) {
                     if (HAS_NNW(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NNW(hi)]);
+                        datum = half * (datumC + datumNNW);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NW(hi)]);
+                        datum = half * (datumC + datumNW);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
 
                 // N
                 if (HAS_NNW(hi) && HAS_NNE(hi)) {
-                    datum = third * ((*this->data)[hi] + (*this->data)[NNW(hi)] + (*this->data)[NNE(hi)]);
+                    datum = third * (datumC + datumNNW + datumNNE);
                 } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
                     if (HAS_NNW(hi)) {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NNW(hi)]);
+                        datum = half * (datumC + datumNNW);
                     } else {
-                        datum = half * ((*this->data)[hi] + (*this->data)[NNE(hi)]);
+                        datum = half * (datumC + datumNNE);
                     }
                 } else {
-                    datum = (*this->data)[hi];
+                    datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
 
@@ -330,6 +358,11 @@ namespace morph {
         //! The offset of this HexGridVisual
         array<float, 3> offset;
 
+        //! Linear scaling which should be applied to the data. y = mx + c, with
+        //! scale[0] == m and scale[1] == c. The linear scaling for the colour is y1
+        //! = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
+        array<Flt, 4> scale;
+
     private:
         //! This enum contains the positions within the vbo array of the different vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
@@ -340,7 +373,8 @@ namespace morph {
         //! The HexGrid to visualize
         const HexGrid* hg;
 
-        //! The data to visualize as z/colour
+        //! The data to visualize as z/colour (modulated by the linear scaling
+        //! provided in this->scale)
         const vector<Flt>* data;
 
         //! A copy of the reference to the shader program

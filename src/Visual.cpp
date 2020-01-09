@@ -174,7 +174,8 @@ morph::Visual::render (void)
 
 void
 morph::Visual::updateHexGridVisual (const unsigned int gridId,
-                                    const vector<float>& data)
+                                    const vector<float>& data,
+                                    const array<float, 4> scale)
 {
     // Replace grids[gridId].data
     cout << "Writeme" << endl;
@@ -182,30 +183,34 @@ morph::Visual::updateHexGridVisual (const unsigned int gridId,
 
 void
 morph::Visual::updateHexGridVisual (const unsigned int gridId,
-                                    const vector<double>& data)
+                                    const vector<double>& data,
+                                    const array<double, 4> scale)
 {
     // Replace grids[gridId].data
     cout << "Writeme" << endl;
+    // this->hgv_double[gridId]->updateData (data, scale);
 }
 
 unsigned int
 morph::Visual::addHexGridVisual (const HexGrid* hg,
+                                 const array<float, 3> offset,
                                  const vector<float>& data,
-                                 const array<float, 3> offset)
+                                 const array<float, 4> scale)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, &data, offset);
+    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, offset, &data, scale);
     this->hgv_float.push_back (hgv1);
     return 0;
 }
 
 unsigned int
 morph::Visual::addHexGridVisual (const HexGrid* hg,
+                                 const array<float, 3> offset,
                                  const vector<double>& data,
-                                 const array<float, 3> offset)
+                                 const array<double, 4> scale)
 {
-    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, &data, offset);
+    // Double precision version of the above
+    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale);
     this->hgv_double.push_back (hgv1);
     return 0;
 }
