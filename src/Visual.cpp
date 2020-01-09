@@ -14,7 +14,12 @@ using std::strlen;
 #include "Quaternion.h"
 using morph::Quaternion;
 
+#include "tools.h"
+
 using morph::ShaderInfo;
+
+// Include the character constants containing the default shaders
+#include "VisualDefaultShaders.h"
 
 morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
@@ -241,6 +246,17 @@ morph::Visual::ReadShader (const char* filename)
     return const_cast<const GLchar*>(source);
 }
 
+const GLchar*
+morph::Visual::ReadDefaultShader (const char* shadercontent)
+{
+    int len = strlen (shadercontent);
+    GLchar* source = new GLchar[len+1];
+
+    memcpy ((void*)source, (void*)shadercontent, len);
+    source[len] = 0;
+    return const_cast<const GLchar*>(source);
+}
+
 GLuint
 morph::Visual::LoadShaders (ShaderInfo* shaders)
 {
@@ -260,8 +276,24 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
     while (entry->type != GL_NONE) {
         GLuint shader = glCreateShader (entry->type);
         entry->shader = shader;
-
-        const GLchar* source = morph::Visual::ReadShader (entry->filename);
+        // Test entry->filename. If this GLSL file can be read, then do so, otherwise,
+        // compile the default version from VisualDefaultShaders.h
+        const GLchar* source;
+        if (morph::Tools::fileExists (string(entry->filename))) {
+            cout << "Using shader from the file " << entry->filename << endl;
+            source = morph::Visual::ReadShader (entry->filename);
+        } else {
+            if (entry->type == GL_VERTEX_SHADER) {
+                cout << "Using compiled-in vertex shader" << endl;
+                source = morph::Visual::ReadDefaultShader (defaultVtxShader);
+            } else if (entry->type == GL_FRAGMENT_SHADER) {
+                cout << "Using compiled-in fragment shader" << endl;
+                source = morph::Visual::ReadDefaultShader (defaultFragShader);
+            } else {
+                cerr << "Visual::LoadShaders: Unknown shader entry->type..." << endl;
+                source = NULL;
+            }
+        }
         if (source == NULL) {
             for (entry = shaders; entry->type != GL_NONE; ++entry) {
                 glDeleteShader (entry->shader);

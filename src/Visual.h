@@ -136,6 +136,12 @@ namespace morph {
         const GLchar* ReadShader (const char* filename);
 
         /*!
+         * Read a default shader like ReadShader; allocate some memory, copy the text
+         * into the new memory and then return a pointer to the memory.
+         */
+        const GLchar* ReadDefaultShader (const char* shadercontent);
+
+        /*!
          * Shader loading code
          */
         GLuint LoadShaders (ShaderInfo* si);
