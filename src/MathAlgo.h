@@ -9,6 +9,9 @@ using std::list;
 using std::numeric_limits;
 #include <cmath>
 using std::sqrt;
+#include <utility>
+using std::pair;
+using std::make_pair;
 
 #include <iostream>
 using std::endl;
@@ -143,6 +146,30 @@ namespace morph {
             }
         }
 
+        // Fixme: Use traits to make it possible to generalise the container in these...
+        //@{
+        //! Return the max and min of the vector of values
+        static pair<T, T> maxmin (const vector<T>& values) {
+            T max = numeric_limits<T>::lowest();
+            T min = numeric_limits<T>::max();
+            for (auto v : values) {
+                max = v > max ? v : max;
+                min = v < min ? v : min;
+            }
+            return make_pair (max, min);
+        }
+
+        //! Return the max and min of the list of values
+        static pair<T, T> maxmin (const list<T>& values) {
+            T max = numeric_limits<T>::lowest();
+            T min = numeric_limits<T>::max();
+            for (auto v : values) {
+                max = v > max ? v : max;
+                min = v < min ? v : min;
+            }
+            return make_pair (max, min);
+        }
+        //@}
     };
 
 }

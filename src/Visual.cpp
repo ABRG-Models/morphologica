@@ -177,8 +177,8 @@ morph::Visual::updateHexGridVisual (const unsigned int gridId,
                                     const vector<float>& data,
                                     const array<float, 4> scale)
 {
-    // Replace grids[gridId].data
-    cout << "Writeme" << endl;
+    unsigned int idx = gridId & 0xffff;
+    this->hgv_float[idx]->updateData (&data, scale);
 }
 
 void
@@ -186,9 +186,8 @@ morph::Visual::updateHexGridVisual (const unsigned int gridId,
                                     const vector<double>& data,
                                     const array<double, 4> scale)
 {
-    // Replace grids[gridId].data
-    cout << "Writeme" << endl;
-    // this->hgv_double[gridId]->updateData (data, scale);
+    unsigned int idx = gridId & 0xffff;
+    this->hgv_double[idx]->updateData (&data, scale);
 }
 
 unsigned int
@@ -200,7 +199,10 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
     HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, offset, &data, scale);
     this->hgv_float.push_back (hgv1);
-    return 0;
+    // Create the return ID
+    unsigned int rtn = 0x10000; // 0x10000 denotes "member of hgv_float"
+    rtn |= (this->hgv_float.size()-1);
+    return rtn;
 }
 
 unsigned int
@@ -212,7 +214,9 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     // Double precision version of the above
     HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale);
     this->hgv_double.push_back (hgv1);
-    return 0;
+    unsigned int rtn = 0x20000; // 0x10000 denotes "member of hgv_double"
+    rtn |= (this->hgv_double.size()-1);
+    return rtn;
 }
 
 #ifdef TRIANGLE_VIS_TESTING

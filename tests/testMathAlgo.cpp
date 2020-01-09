@@ -81,5 +81,14 @@ int main()
         rtn--;
     }
 
+    vector<float> vf = {0.1f, 0.2f, 0.9f, -0.4f};
+    pair<float, float> mmvf = MathAlgo<float>::maxmin (vf);
+    cout << "vector has max: " << mmvf.first << " and min/lowest: " << mmvf.second << endl;
+    if (mmvf.first == 0.9f && mmvf.second == -0.4f) {
+        cout << "Max/min correct" << endl;
+    } else {
+        rtn--;
+    }
+
     return rtn;
 }

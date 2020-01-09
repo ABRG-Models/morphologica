@@ -107,6 +107,9 @@ namespace morph {
          * determine this, so the scaling has to be supplied, and could be modified
          * during visualization. Scale the data linearly using @scale, which defines a
          * y=mx+c type of scaling, with scale[0]='m' and scale[1]='c'.
+         *
+         * Returns a numeric ID which identifies where the HexGridVisual object lives
+         * (hgv_float or hgv_double and which index therein).
          */
         //@{
         unsigned int addHexGridVisual (const HexGrid* hg,

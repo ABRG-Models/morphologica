@@ -157,6 +157,23 @@ namespace morph {
             return (datum * this->scale[0] + this->scale[1]);
         }
 
+        //! Update the data and re-compute the vertices.
+        void updateData (const vector<Flt>* _data, const array<Flt, 4> _scale) {
+            this->scale = _scale;
+            this->data = _data;
+            // Fixme: Better not to clear, then repeatedly pushback here:
+            this->vertexPositions.clear();
+            this->vertexNormals.clear();
+            this->vertexColors.clear();
+            this->initializeVerticesHexesInterpolated();
+            // Now re-set up the VBOs
+            int sz = this->indices.size() * sizeof(VBOint);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
+        }
+
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
@@ -193,6 +210,8 @@ namespace morph {
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
                 datum = (*this->data)[hi] * this->scale[2] + this->scale[3];
+                datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
+                datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
                 array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
 
@@ -328,18 +347,7 @@ namespace morph {
                 this->indices.push_back (idx+1);
 
                 idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
-
-#if 0
-                cout << "vertexPositions size: " << vertexPositions.size() << endl;
-                cout << "vertexNormals size: " << vertexNormals.size() << endl;
-                cout << "vertexColors size: " << vertexPositions.size() << endl;
-                cout << "indices size: " << indices.size() << " elements" << endl;
-#endif
             }
-            cout << "vertexPositions size: " << vertexPositions.size() << " elements" << endl;
-            cout << "vertexNormals size: " << vertexNormals.size() << " elements" << endl;
-            cout << "vertexColors size: " << vertexPositions.size() << " elements" << endl;
-            cout << "indices size: " << indices.size() << " elements" << endl;
         }
 
         //! Initialize as hexes, with a step quad between each
