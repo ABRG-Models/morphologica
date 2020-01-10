@@ -128,6 +128,13 @@ namespace morph {
          */
         unsigned int addTriangleVisual (void);
 #endif
+
+        /*!
+         * Keep on rendering until readToFinish is set true. Used to keep a window
+         * open, and responsive, while displaying the result of a simulation.
+         */
+        void keepOpen (void);
+
         /*!
          * Render the scene
          */

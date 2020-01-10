@@ -109,6 +109,15 @@ using std::chrono::steady_clock;
 #endif
 
 void
+morph::Visual::keepOpen (void)
+{
+    while (this->readyToFinish == false) {
+        glfwWaitEventsTimeout (2.5);
+        this->render();
+    }
+}
+
+void
 morph::Visual::render (void)
 {
 #ifdef PROFILE_RENDER
@@ -117,6 +126,7 @@ morph::Visual::render (void)
     // Can avoid this by getting window size into members only when window size changes.
     const double retinaScale = 1; // devicePixelRatio()?
 
+    // Can't do this in a new thread:
     glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
     // Set the perspective from the width/height
