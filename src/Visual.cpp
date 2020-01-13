@@ -112,7 +112,7 @@ void
 morph::Visual::keepOpen (void)
 {
     while (this->readyToFinish == false) {
-        glfwWaitEventsTimeout (2.5);
+        glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
         this->render();
     }
 }
@@ -436,6 +436,29 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->rotation = rt;
 
         this->render();
+    }
+
+    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+        this->fov -= 2;
+        if (this->fov < 1.0) {
+            this->fov = 2.0;
+        }
+        cout << "FOV reduced to " << this->fov << endl;
+    }
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        this->fov += 2;
+        if (this->fov > 179.0) {
+            this->fov = 178.0;
+        }
+        cout << "FOV increased to " << this->fov << endl;
+    }
+    if (key == GLFW_KEY_U && action == GLFW_PRESS) {
+        this->zNear /= 2;
+        cout << "zNear reduced to " << this->zNear << endl;
+    }
+    if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+        this->zNear *= 2;
+        cout << "zNear increased to " << this->zNear << endl;
     }
 }
 
