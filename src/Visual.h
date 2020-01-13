@@ -161,7 +161,18 @@ namespace morph {
         float fov = 30.0;
         //@}
 
+        //! How big should the steps in scene translation be when scrolling?
+        float scenetrans_stepsize = 0.1;
+
+        //! Setter for zDefault
+        void setZDefault (float f) {
+            this->zDefault = f;
+            this->scenetrans.z = -f;
+        }
+
     private:
+
+        float zDefault = 5.0;
 
         /*!
          * Read a shader from a file.
@@ -218,9 +229,6 @@ namespace morph {
 
         //! Default for scenetrans
         const Vector3<float> scenetrans_default = {0.0, 0.0, -5};
-
-        //! How big should the steps in scene translation be when scrolling?
-        float scenetrans_stepsize = 0.1;
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
