@@ -151,19 +151,27 @@ namespace morph {
         //! Set to true when the program should end
         bool readyToFinish = false;
 
+        /*!
+         * User-settable projection values for the near clipping distance, the far
+         * clipping distance and the field of view of the camera.
+         */
+        //@{
+        float zNear = 1.0;
+        float zFar = 15.0;
+        float fov = 30.0;
+        //@}
+
     private:
-#if 0 // Used only in some test code
-        unsigned long long int count = 0;
-#endif
 
         /*!
-         * Read a shader
+         * Read a shader from a file.
          */
         const GLchar* ReadShader (const char* filename);
 
         /*!
-         * Read a default shader like ReadShader; allocate some memory, copy the text
-         * into the new memory and then return a pointer to the memory.
+         * Read a default shader, stored as a const char* like ReadShader reads a
+         * file: allocate some memory, copy the text into the new memory and then
+         * return a (GLchar*) pointer to the memory.
          */
         const GLchar* ReadDefaultShader (const char* shadercontent);
 
@@ -228,11 +236,6 @@ namespace morph {
         //TransformMatrix<float> rotmat;
         //! Inversion of rotation matrix
         //TransformMatrix<float> invrot;
-
-        // Potentially user-settable projection values
-        float zNear = 1.0;
-        float zFar = 15.0;
-        float fov = 30.0;
 
         //! The projection matrix
         TransformMatrix<float> projection;
