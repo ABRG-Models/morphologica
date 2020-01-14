@@ -17,6 +17,13 @@ using std::array;
 using std::cout;
 using std::endl;
 
+#include <string>
+using std::string;
+#include <sstream>
+using std::stringstream;
+
+#include "tools.h"
+
 namespace morph {
 
     template <class Flt>
@@ -24,7 +31,7 @@ namespace morph {
     {
     public:
         /*!
-         * The vectors 3 components
+         * The vector's 3 components
          */
         //@{
         alignas(Flt) Flt x;
@@ -50,6 +57,11 @@ namespace morph {
             , y(_y)
             , z(_z) {}
 
+        Vector3 (const array<Flt, 3> v)
+            : x(v[0])
+            , y(v[1])
+            , z(v[2]) {}
+
         //! Copy constructor
         Vector3 (const Vector3<Flt>& other) {
             this->x = other.x;
@@ -57,8 +69,19 @@ namespace morph {
             this->z = other.z;
         }
 
+        //! Return the vector as an array
+        array<Flt, 3> asArray (void) const {
+            array<Flt, 3> v = {x, y, z};
+            return v;
+        }
+
         void output (void) const {
             cout << "Vector3(" << x << "," << y << "," << z << ")" << endl;
+        }
+        string asString (void) const {
+            stringstream ss;
+            ss << "(" << x << "," << y << "," << z << ")";
+            return ss.str();
         }
 
         /*!
@@ -72,6 +95,15 @@ namespace morph {
                 this->y *= oneovermag;
                 this->z *= oneovermag;
             }
+        }
+
+        /*!
+         * Randomize the vector.
+         */
+        void randomize (void) {
+            this->x = Tools::randF<Flt>();
+            this->y = Tools::randF<Flt>();
+            this->z = Tools::randF<Flt>();
         }
 
         /*!
@@ -119,7 +151,7 @@ namespace morph {
             return (this->length() == static_cast<Flt>(0.0)) ? true : false;
         }
 
-        //! Vector multiply. Cross product.
+        //! Vector multiply. Cross product of this with another vector v2.
         Vector3<Flt> operator* (const Vector3<Flt>& v2) const {
             Vector3<Flt> v;
             v.x = this->y * v2.z - this->z * v2.y;
@@ -135,6 +167,12 @@ namespace morph {
             this->x = v.x;
             this->y = v.y;
             this->z = v.z;
+        }
+
+        //! Scalar product of this with another vector, v2.
+        Flt dot (const Vector3<Flt>& v2) const {
+            Flt rtn = this->x * v2.x + this->y * v2.y + this->z * v2.z;
+            return rtn;
         }
 
         //! Scalar multiply.

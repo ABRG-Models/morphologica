@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"
+#include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
 #endif
@@ -211,6 +212,8 @@ namespace morph {
         vector<HexGridVisual<float>*> hgv_float;
         vector<HexGridVisual<double>*> hgv_double;
         // Plus int/unsigned int.
+
+        CoordArrows* coordArrows;
 
 #ifdef TRIANGLE_VIS_TESTING
         //! Simple triangle visual for testing

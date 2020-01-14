@@ -57,7 +57,7 @@ int main()
         v.render();
 
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (2.5);
+            glfwWaitEventsTimeout (0.018);
             v.render();
         }
 

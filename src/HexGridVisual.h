@@ -6,10 +6,9 @@
 
 #include "tools.h"
 
-#include "HexGrid.h"
+#include "VisualModel.h"
 
-#include "TransformMatrix.h"
-using morph::TransformMatrix;
+#include "HexGrid.h"
 
 #include <iostream>
 using std::cout;
@@ -19,9 +18,6 @@ using std::endl;
 using std::vector;
 #include <array>
 using std::array;
-
-typedef GLuint VBOint;
-#define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
 /*!
  * Macros for testing neighbours. The step along for neighbours on the
@@ -63,15 +59,9 @@ typedef GLuint VBOint;
 
 namespace morph {
 
-    //! Forward declaration of a templated Visual class
-    class Visual;
-
-    //! The locations for the position, normal and colour vertex attributes in the GLSL program
-    enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2 };
-
     //! The template arguemnt Flt is the type of the data which this HexGridVisual will visualize.
     template <class Flt>
-    class HexGridVisual
+    class HexGridVisual : public VisualModel
     {
     public:
         HexGridVisual(GLuint sp,
@@ -87,43 +77,16 @@ namespace morph {
             this->hg = _hg;
             this->data = _data;
 
-            // Do the computations to initialize the vertices that well
-            // represent the HexGrid.
-            this->initializeVerticesHexesInterpolated();
-            //this->initializeVerticesTris();
-
-            // Create vertex array object
-            glCreateVertexArrays (1, &this->vao);
-            glBindVertexArray (this->vao);
-
-            // Allocate/create the vertex buffer objects
-            this->vbos = new GLuint[numVBO];
-            glCreateBuffers (numVBO, this->vbos);
-
-            // Set up the indices buffer
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            int sz = this->indices.size() * sizeof(VBOint);
-            cout << "indices sz = " << sz << " bytes" << endl;
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-
-            // Binds data from the "C++ world" to the OpenGL shader world for
-            // "position", "normalin" and "color"
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
-
-            // Possibly release (unbind) the vertex buffers (but not index buffer)
-            // Possible glVertexAttribPointer and glEnableVertexAttribArray?
-            glUseProgram (shaderprog);
-
-            // Here's how to unbind the VAO
-            //glBindVertexArray(0);
+            this->initializeVertices();
+            this->postVertexInit();
         }
 
-        ~HexGridVisual() {
-            // destroy buffers
-            glDeleteBuffers (4, vbos);
-            delete (this->vbos);
+        //! Do the computations to initialize the vertices that will represent the
+        //! HexGrid.
+        void initializeVertices (void) {
+            this->initializeVerticesHexesInterpolated();
+            // or:
+            // this->initializeVerticesTris();
         }
 
         //! Initialize vertex buffer objects and vertex array object.
@@ -359,47 +322,12 @@ namespace morph {
         void initializeVerticesHexesStepped (void) {}
         //@}
 
-        //! Render the HexGridVisual
-        void render (void) {
-            glBindVertexArray (this->vao);
-            //cout << "Render " << this->indices.size() << " vertices" << endl;
-            glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            glBindVertexArray(0);
-        }
-
-        //! The model-specific view matrix.
-        TransformMatrix<float> viewmatrix;
-
         //! Linear scaling which should be applied to the (scalar value of the)
         //! data. y = mx + c, with scale[0] == m and scale[1] == c. The linear scaling
         //! for the colour is y1 = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
         array<Flt, 4> scale;
 
-        //! Setter for offset, also updates viewmatrix.
-        void setOffset (const array<float, 3>& _offset) {
-            this->offset = _offset;
-            this->viewmatrix.setIdentity();
-            this->viewmatrix.translate (this->offset);
-        }
-
-        //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const array<float, 3>& _offset) {
-            this->offset += _offset; // Why do I need the offset member? I don't
-            this->viewmatrix.translate (this->offset);
-        }
-
     private:
-
-        //! The offset of this HexGridVisual. Note that this is not incorporated into
-        //! the computation of the vertices, but is instead applied when the object is
-        //! rendered as part of the model->world transformation.
-        array<float, 3> offset;
-
-        //! This enum contains the positions within the vbo array of the different vertex buffer objects
-        enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
-
-        //! The parent Visual object - provides access to the shader prog
-        const Visual* parent;
 
         //! The HexGrid to visualize
         const HexGrid* hg;
@@ -407,59 +335,6 @@ namespace morph {
         //! The data to visualize as z/colour (modulated by the linear scaling
         //! provided in this->scale)
         const vector<Flt>* data;
-
-        //! A copy of the reference to the shader program
-        GLuint shaderprog;
-
-        // Add a way to control the scaling scheme here.
-
-        /*!
-         * Compute positions and colours of vertices for the hexes and
-         * store in these:
-         */
-        //@{
-        //! The OpenGL Vertex Array Object
-        GLuint vao;
-
-        //! Vertex Buffer Objects stored in an array
-        GLuint* vbos;
-
-        //! CPU-side data for indices
-        vector<VBOint> indices;
-        //! CPU-side data for vertex positions
-        vector<float> vertexPositions;
-        //! CPU-side data for vertex normals
-        vector<float> vertexNormals;
-        //! CPU-side data for vertex colours
-        vector<float> vertexColors;
-        //@}
-
-        //! I guess we'll need a shader program.
-        GLuint* shaderProgram;
-
-        //! Push three floats onto the vector of floats @vp
-        //@{
-        void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp) {
-            vp.push_back (x);
-            vp.push_back (y);
-            vp.push_back (z);
-        }
-        void vertex_push (const array<float, 3>& arr, vector<float>& vp) {
-            vp.push_back (arr[0]);
-            vp.push_back (arr[1]);
-            vp.push_back (arr[2]);
-        }
-        //@}
-
-        //! Set up a vertex buffer object
-        void setupVBO (GLuint& buf, vector<float>& dat, unsigned int bufferAttribPosition) {
-            int sz = dat.size() * sizeof(float);
-            glBindBuffer (GL_ARRAY_BUFFER, buf);
-            glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
-            glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-            glEnableVertexAttribArray (bufferAttribPosition);
-        }
-
     };
 
 } // namespace morph

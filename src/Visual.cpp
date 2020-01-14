@@ -79,10 +79,14 @@ morph::Visual::Visual(int width, int height, const string& title)
     //glEnable(GL_CULL_FACE);
     //glDisable(GL_DEPTH_TEST);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->coordArrows = new CoordArrows(this->shaderprog, {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0});
 }
 
 morph::Visual::~Visual()
 {
+    // FIXME: delete hgv_float, hgv_double and coordArrows.
+    delete this->coordArrows;
     glfwDestroyWindow (this->window);
     glfwTerminate();
 }
@@ -163,6 +167,15 @@ morph::Visual::render (void)
     //glClearBufferfv (GL_COLOR, 0, white); // This line works...
 
     // Render it.
+
+    // First, the coordinates thing.
+    TransformMatrix<float> vp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
+    GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+    if (loc != -1) {
+        glUniformMatrix4fv (loc, 1, GL_FALSE, vp_coords.mat.data());
+    }
+    this->coordArrows->render();
+
     typename vector<HexGridVisual<float>*>::iterator hgvf = this->hgv_float.begin();
     while (hgvf != this->hgv_float.end()) {
         // For each different HexGridVisual, I can CHANGE the uniform. Right? Right.
@@ -502,15 +515,17 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Now use mousePressPosition as a record of the last cursor position.
         this->mousePressPosition = this->cursorpos;
 
-        //cout << "diff: " << diff.x << "," << diff.y << endl;
         // Rotation axis is perpendicular to the mouse position difference vector
+        // BUT we have to project into the world to determine how to rotate the model!
         Vector3<float> n(diff.y, diff.x, 0.0f);
+
         n.renormalize();
         // Accelerate angular speed relative to the length of the mouse sweep
         float rotamount = diff.length() / 10.0;
         // Calculate new rotation axis as weighted sum
         this->rotationAxis = this->rotationAxis + (n * rotamount);
         this->rotationAxis.renormalize();
+
         // Update rotation
         Quaternion<float> rotationQuaternion;
         rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
