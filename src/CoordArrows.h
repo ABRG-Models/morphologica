@@ -112,7 +112,7 @@ namespace morph {
          * @segments Number of segments used to render the tube
          */
         void computeTube (GLushort& idx, array<float, 3> start, array<float, 3> end, array<float, 3> col,
-                          float r = 1.0f, int segments = 12) {
+                          float r = 1.0f, int segments = 6) {
 
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
@@ -151,20 +151,23 @@ namespace morph {
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
+                //cout << "t is " << t << endl;
                 Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
-                cout << "point on vstart cap is " << c.asString() << endl;
+                cout << "point on vstart cap is " << (vstart+c).asString() << endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (col, this->vertexColors);
             }
 
+            array<float, 3> blue = {0.0,0.0,0.7};
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = (float)j * morph::TWO_PI_F/(float)segments;
+                //cout << "t is " << t << endl;
                 Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
-                cout << "point on vend cap is " << c.asString() << endl;
+                cout << "point on vend cap is " << (vend+c).asString() << endl;
                 this->vertex_push (v, this->vertexNormals); // +v
-                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (blue, this->vertexColors);
             }
 
             // Bottom cap. Push centre vertex as the last vertex.
@@ -174,46 +177,82 @@ namespace morph {
             this->vertex_push (col, this->vertexColors);
 
             // Note: number of vertices = segments * 2 + 2.
-            int nverts = segments * 2 + 2;
+            int nverts = (segments * 2) + 2;
+            cout << "nverts = " << nverts << endl;
 
             // After creating vertices, push all the indices.
             GLushort capMiddle = idx;
             GLushort capStartIdx = idx + 1;
-            GLushort endMiddle = idx + (GLushort)nverts;
-            GLushort endStartIdx = endMiddle + 1;
+            GLushort endMiddle = idx + (GLushort)nverts - 1;
+            GLushort endStartIdx = capStartIdx + segments;
 
+            //cout << "start cap" << endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
+                //cout << "add " << capMiddle << " to indices\n";
                 this->indices.push_back (capStartIdx + j);
+                //cout << "add " << (capStartIdx+j) << " to indices\n";
                 this->indices.push_back (capStartIdx + 1 + j);
+                //cout << "add " << (capStartIdx+1+j) << " to indices\n";
             }
             // Last one
             this->indices.push_back (capMiddle);
+            //cout << "add " << capMiddle << " to indices\n";
             this->indices.push_back (capStartIdx + segments - 1);
+            //cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
             this->indices.push_back (capStartIdx);
+            //cout << "add " << (capStartIdx) << " to indices\n";
 
+            //cout << "sides" << endl;
             for (int j = 0; j < segments; j++) {
                 // Two triangles per side; 1:
                 this->indices.push_back (capStartIdx + j);
-                this->indices.push_back (capStartIdx + 1 + j);
+                //cout << "1. add " << (capStartIdx + j) << " to indices\n";
+                if (j == (segments-1)) {
+                    this->indices.push_back (capStartIdx);
+                    //cout << "1. add " << (capStartIdx) << " to indices\n";
+                } else {
+                    this->indices.push_back (capStartIdx + 1 + j);
+                    //cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
+                }
                 this->indices.push_back (endStartIdx + j);
+                //cout << "1. add " << (endStartIdx + j) << " to indices\n";
                 // 2:
                 this->indices.push_back (endStartIdx + j);
-                this->indices.push_back (capStartIdx + j);
-                this->indices.push_back (endStartIdx + 1 + j);
+                //cout << "2. add " << (endStartIdx + j) << " to indices\n";
+                if (j == (segments-1)) {
+                    this->indices.push_back (endStartIdx);
+                    //cout << "2. add " << (endStartIdx) << " to indices\n";
+                } else {
+                    this->indices.push_back (endStartIdx + 1 + j);
+                    //cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
+                }
+                if (j == (segments-1)) {
+                    this->indices.push_back (capStartIdx);
+                    //cout << "2. add " << (capStartIdx) << " to indices\n";
+                } else {
+                    this->indices.push_back (capStartIdx + j + 1);
+                    //cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
+                }
             }
 
             // bottom cap
+            //cout << "vend cap" << endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
+                //cout << "add " << (endMiddle) << " to indices\n";
                 this->indices.push_back (endStartIdx + j);
+                //cout << "add " << (endStartIdx + j) << " to indices\n";
                 this->indices.push_back (endStartIdx + 1 + j);
+                //cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
             }
             // Last one
             this->indices.push_back (endMiddle);
+            //cout << "add " << (endMiddle) << " to indices\n";
             this->indices.push_back (endStartIdx + segments - 1);
+            //cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
             this->indices.push_back (endStartIdx);
-
+            //cout << "add " << (endStartIdx) << " to indices\n";
 
             // Update idx
             idx += nverts;
