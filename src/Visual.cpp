@@ -21,6 +21,9 @@ using morph::ShaderInfo;
 // Include the character constants containing the default shaders
 #include "VisualDefaultShaders.h"
 
+#include "Vector4.h"
+using morph::Vector4;
+
 morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
     , window_h(height)
@@ -146,19 +149,6 @@ morph::Visual::render (void)
     // And this rotation completes the transition from model to world
     sceneview.rotate (this->rotation);
 
-#if 0
-    // Set modelview-projection matrix
-    TransformMatrix<float> viewproj = this->projection * sceneview;
-
-    //cout << "Query shaderprog "  << this->shaderprog << " for mvp_matrix location" << endl;
-    GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-    if (loc == -1) {
-        cout << "No mvp_matrix? loc: " << loc << endl;
-    } else {
-        // Set the uniform:
-        glUniformMatrix4fv (loc, 1, GL_FALSE, this->viewproj.mat.data());
-    }
-#endif
     // Clear color buffer and **also depth buffer**
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -260,18 +250,6 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     rtn |= (this->hgv_double.size()-1);
     return rtn;
 }
-
-#ifdef TRIANGLE_VIS_TESTING
-unsigned int
-morph::Visual::addTriangleVisual (void)
-{
-    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    TriangleVisual* tv1 = new TriangleVisual(this->shaderprog);
-    this->triangleVis.push_back (tv1);
-
-    return 0;
-}
-#endif
 
 const GLchar*
 morph::Visual::ReadShader (const char* filename)
@@ -505,39 +483,8 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.x = static_cast<float>(x);
     this->cursorpos.y = static_cast<float>(y);
 
-    // This is "rotate the scene" model. Will need "rotate one visual" mode.
-    if (this->rotateMode) {
-
-        // The difference between the cursor when the mouse was pressed, and now.
-        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
-        diff -= this->mousePressPosition;
-
-        // Now use mousePressPosition as a record of the last cursor position.
-        this->mousePressPosition = this->cursorpos;
-
-        // Rotation axis is perpendicular to the mouse position difference vector
-        // BUT we have to project into the world to determine how to rotate the model!
-        Vector3<float> n(diff.y, diff.x, 0.0f);
-
-        n.renormalize();
-        // Accelerate angular speed relative to the length of the mouse sweep
-        float rotamount = diff.length() / 10.0;
-        // Calculate new rotation axis as weighted sum
-        this->rotationAxis = this->rotationAxis + (n * rotamount);
-        this->rotationAxis.renormalize();
-
-        // Update rotation
-        Quaternion<float> rotationQuaternion;
-        rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
-        this->rotation.premultiply (rotationQuaternion);
-
-        this->render(); // updates viewproj
-    }
-
-    // This is "translate the scene" mode. Could also have a "translate one
-    // HexGridVisual" mode, to adjust relative positions.
-    if (this->translateMode) {
-
+    Vector3<float> mouseMoveWorld;
+    if (this->rotateMode || this->translateMode) {
         // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
         Vector2<float> p0_coord = this->mousePressPosition;
         p0_coord.x -= this->window_w/2.0;
@@ -552,6 +499,11 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
 
         this->mousePressPosition = this->cursorpos;
 
+        // Rotate mode:
+        //Vector2<float> diff = p1_coord - p0_coord;
+        //Vector3<float> n(diff.y, diff.x, 0.0f);
+        //n.renormalize();
+
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
@@ -560,20 +512,71 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
         // Construct two points for the start and end of the mouse movement
-        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
-        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+        array<float, 4> p0;
+        array<float, 4> p1;
+        if (this->rotateMode) {
+            p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+            p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+            // rotation axis is perpendicular to mouse movement:
+            Vector4<float> vp0(p0);
+            Vector4<float> vp1(p1);
+            Vector4<float> vdiff = p1 - p0;
+            Vector4<float> n (vdiff.y, vdiff.x, vdiff.z, vdiff.w);
 
-        // Apply the inverse projection to get two points in the world frame of reference:
-        array<float, 4> v0 = this->invproj * p0;
-        array<float, 4> v1 = this->invproj * p1;
+            array<float, 4> v0 = this->invproj * n.asArray();
 
-        float deltax = (v1[0]/v1[3]) - (v0[0]/v0[3]);
-        float deltay = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+            // FIXME: Finish.
 
-        this->scenetrans.x += deltax;
-        this->scenetrans.y -= deltay;
+        } else {
+            p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+            p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
 
-        this->render(); // updates viewproj
+            // Apply the inverse projection to get two points in the world frame of reference:
+            array<float, 4> v0 = this->invproj * p0;
+            array<float, 4> v1 = this->invproj * p1;
+
+            mouseMoveWorld.x = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+            mouseMoveWorld.y = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+            mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);
+        }
+    }
+
+    // This is "rotate the scene" model. Will need "rotate one visual" mode.
+    if (this->rotateMode) {
+
+        // Rotation axis is perpendicular to the mouse position difference vector
+        // BUT we have to project into the world to determine how to rotate the model!
+
+        // The difference between the cursor when the mouse was pressed, and now.
+#if 0
+        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
+        diff -= this->mousePressPosition;
+        this->mousePressPosition = this->cursorpos;
+        Vector3<float> n(diff.y, diff.x, 0.0f);
+        n.renormalize();
+#endif
+        //mouseMoveWorld.renormalize();
+
+        // Accelerate angular speed relative to the length of the mouse sweep
+        float rotamount = 1.0;
+        // Calculate new rotation axis as weighted sum
+        this->rotationAxis = this->rotationAxis + (mouseMoveWorld * rotamount);
+        this->rotationAxis.renormalize();
+
+        // Update rotation
+        Quaternion<float> rotationQuaternion;
+        rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
+        this->rotation.premultiply (rotationQuaternion);
+
+        this->render(); // updates viewproj; uses this->rotation
+
+    } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
+
+        // This is "translate the scene" mode. Could also have a "translate one
+        // HexGridVisual" mode, to adjust relative positions.
+        this->scenetrans.x += mouseMoveWorld.x;
+        this->scenetrans.y -= mouseMoveWorld.y;
+        this->render(); // updates viewproj; uses this->scenetrans
     }
 }
 
