@@ -31,12 +31,13 @@ namespace morph {
     {
     public:
         /*!
-         * The vector's 3 components
+         * The vector's 4 components
          */
         //@{
         alignas(Flt) Flt x;
         alignas(Flt) Flt y;
         alignas(Flt) Flt z;
+        alignas(Flt) Flt w;
         //@}
 
         /*!

@@ -258,7 +258,6 @@ namespace morph {
 
             // Note: number of vertices = segments * 2 + 2.
             int nverts = (segments * 2) + 2;
-            cout << "nverts = " << nverts << endl;
 
             // After creating vertices, push all the indices.
             GLushort capMiddle = idx;

@@ -244,6 +244,13 @@ namespace morph {
         //! The inverse of the projection
         TransformMatrix<float> invproj;
 
+        //! A scene transformation and associated inverse
+        //@{
+        TransformMatrix<float> scene;
+        TransformMatrix<float> invscene;
+        //@}
+        Quaternion<float> savedRotation;
+
         //@}
 
         /*!

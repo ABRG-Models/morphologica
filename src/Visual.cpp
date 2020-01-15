@@ -462,11 +462,18 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
     // Record the position at which the button was pressed
     if (action == 1) { // Button down
         this->mousePressPosition = this->cursorpos;
+        // Save the rotation at the start of the mouse movement
+        this->savedRotation = this->rotation;
+        // Get the scene's rotation at the start of the mouse movement:
+        this->scene.setToIdentity();
+        this->scene.rotate (this->savedRotation);
+        this->invscene = this->scene.invert();
     }
 
-#ifdef SOME_ACTION_ON_RELEASE_REQUIRED
-    if (action == 0 && button == 1) {
-        // This is release of the translation button
+#if 0
+    if (action == 0 && button == 0) {
+        // This is release of the rotation button
+        this->mousePressPosition = this->cursorpos;
     }
 #endif
 
@@ -484,7 +491,79 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos.y = static_cast<float>(y);
 
     Vector3<float> mouseMoveWorld;
-    if (this->rotateMode || this->translateMode) {
+
+    // This is "rotate the scene" model. Will need "rotate one visual" mode.
+    if (this->rotateMode) {
+        // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
+        Vector2<float> p0_coord = this->mousePressPosition;
+        p0_coord.x -= this->window_w/2.0;
+        p0_coord.x /= this->window_w/2.0;
+        p0_coord.y -= this->window_h/2.0;
+        p0_coord.y /= this->window_h/2.0;
+        Vector2<float> p1_coord = this->cursorpos;
+        p1_coord.x -= this->window_w/2.0;
+        p1_coord.x /= this->window_w/2.0;
+        p1_coord.y -= this->window_h/2.0;
+        p1_coord.y /= this->window_h/2.0;
+
+        // DON'T update mousePressPosition until user releases button.
+        // this->mousePressPosition = this->cursorpos;
+
+        // Add the depth at which the object lies.  Use forward projection to determine
+        // the correct z coordinate for the inverse projection. This assumes only one
+        // object.
+        array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
+        array<float, 4> pp = this->projection * point;
+        float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+        // Construct two points for the start and end of the mouse movement
+        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+        cout << "p0->p1: ("  << p0[0] << "," << p0[1]
+             << ") -> (" << p1[0] << ","  << p1[1] << ")" << endl;
+        // Apply the inverse projection AND VIEW  to get two points in the world frame of reference:
+
+        array<float, 4> v0 = this->invproj * p0;
+        array<float, 4> v1 = this->invproj * p1;
+        cout << "v0->v1: ("  << v0[0] << "," << v0[1]
+             << ") -> (" << v1[0] << ","  << v1[1] << ")" << endl;
+
+        // This computes the difference betwen v0 and v1, the 2 mouse positions in the world space. Note the swap between x and y
+        mouseMoveWorld.y = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+        mouseMoveWorld.x = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+        mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);
+
+        cout << "mouseMoveWorld: ";
+        mouseMoveWorld.output();
+
+        // Now, the amount by which the model should be rotated has to go through the scene inverse projection, right?
+
+
+        // Rotation axis is perpendicular to the mouse position difference vector
+        // BUT we have to project into the world to determine how to rotate the model!
+        float rotamount = mouseMoveWorld.length() * 40.0;
+        // Calculate new rotation axis as weighted sum
+        this->rotationAxis = (mouseMoveWorld * rotamount);
+        this->rotationAxis.renormalize();
+
+        // Now inverse apply the rotation of the scene to the rotation axis
+        array<float, 4> ra = {this->rotationAxis.x, this->rotationAxis.y, this->rotationAxis.z, 1.0};
+        array<float, 4> ra2 = this->invscene * ra;
+        this->rotationAxis.x = ra2[0];
+        this->rotationAxis.y = ra2[1];
+        this->rotationAxis.z = ra2[2];
+
+        // Update rotation from the saved position.
+        this->rotation = this->savedRotation;
+        Quaternion<float> rotationQuaternion;
+        rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
+        rotationQuaternion.output();
+        this->rotation.premultiply (rotationQuaternion); // combines rotations
+        this->rotation.output();
+        this->render(); // updates viewproj; uses this->rotation
+
+    } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
+
         // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
         Vector2<float> p0_coord = this->mousePressPosition;
         p0_coord.x -= this->window_w/2.0;
@@ -499,11 +578,6 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
 
         this->mousePressPosition = this->cursorpos;
 
-        // Rotate mode:
-        //Vector2<float> diff = p1_coord - p0_coord;
-        //Vector3<float> n(diff.y, diff.x, 0.0f);
-        //n.renormalize();
-
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
@@ -512,65 +586,15 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
         // Construct two points for the start and end of the mouse movement
-        array<float, 4> p0;
-        array<float, 4> p1;
-        if (this->rotateMode) {
-            p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
-            p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
-            // rotation axis is perpendicular to mouse movement:
-            Vector4<float> vp0(p0);
-            Vector4<float> vp1(p1);
-            Vector4<float> vdiff = p1 - p0;
-            Vector4<float> n (vdiff.y, vdiff.x, vdiff.z, vdiff.w);
-
-            array<float, 4> v0 = this->invproj * n.asArray();
-
-            // FIXME: Finish.
-
-        } else {
-            p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
-            p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
-
-            // Apply the inverse projection to get two points in the world frame of reference:
-            array<float, 4> v0 = this->invproj * p0;
-            array<float, 4> v1 = this->invproj * p1;
-
-            mouseMoveWorld.x = (v1[0]/v1[3]) - (v0[0]/v0[3]);
-            mouseMoveWorld.y = (v1[1]/v1[3]) - (v0[1]/v0[3]);
-            mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);
-        }
-    }
-
-    // This is "rotate the scene" model. Will need "rotate one visual" mode.
-    if (this->rotateMode) {
-
-        // Rotation axis is perpendicular to the mouse position difference vector
-        // BUT we have to project into the world to determine how to rotate the model!
-
-        // The difference between the cursor when the mouse was pressed, and now.
-#if 0
-        Vector2<float> diff(static_cast<float>(x), static_cast<float>(y));
-        diff -= this->mousePressPosition;
-        this->mousePressPosition = this->cursorpos;
-        Vector3<float> n(diff.y, diff.x, 0.0f);
-        n.renormalize();
-#endif
-        //mouseMoveWorld.renormalize();
-
-        // Accelerate angular speed relative to the length of the mouse sweep
-        float rotamount = 1.0;
-        // Calculate new rotation axis as weighted sum
-        this->rotationAxis = this->rotationAxis + (mouseMoveWorld * rotamount);
-        this->rotationAxis.renormalize();
-
-        // Update rotation
-        Quaternion<float> rotationQuaternion;
-        rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
-        this->rotation.premultiply (rotationQuaternion);
-
-        this->render(); // updates viewproj; uses this->rotation
-
-    } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
+        array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+        array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
+        // Apply the inverse projection to get two points in the world frame of reference:
+        array<float, 4> v0 = this->invproj * p0;
+        array<float, 4> v1 = this->invproj * p1;
+        // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
+        mouseMoveWorld.x = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+        mouseMoveWorld.y = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+        //mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);// unmodified
 
         // This is "translate the scene" mode. Could also have a "translate one
         // HexGridVisual" mode, to adjust relative positions.
