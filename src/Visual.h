@@ -34,9 +34,14 @@ using std::array;
 #include <vector>
 using std::vector;
 
+//! The default z=0 position for HexGridVisual models
+#define Z_DEFAULT 5
+
 namespace morph {
 
-    /*
+    /*!
+     * Data structure for shader info.
+     *
      * LoadShaders() takes an array of ShaderFile structures, each of
      * which contains the type of the shader, and a pointer a C-style
      * character string (i.e., a NULL-terminated array of characters)
@@ -48,7 +53,6 @@ namespace morph {
      * LoadShaders() returns the shader program value (as returned by
      * glCreateProgram()) on success, or zero on failure.
      */
-
     typedef struct
     {
         GLenum type;
@@ -81,7 +85,6 @@ namespace morph {
 
         static void errorCallback (int error, const char* description);
 
-        //void setTitle(const string& s);
         //void saveImage (const string& s);
 
         /*!
@@ -123,27 +126,16 @@ namespace morph {
                                        const array<double, 4> scale);
         //@}
 
-#ifdef TRIANGLE_VIS_TESTING
-        /*!
-         * I used a simpler triangle visual during code development.
-         */
-        unsigned int addTriangleVisual (void);
-#endif
-
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
         void keepOpen (void);
 
-        /*!
-         * Render the scene
-         */
-        void render();
+        //! Render the scene
+        void render (void);
 
-        /*!
-         * The OpenGL shader program
-         */
+        //! The OpenGL shader program
         GLuint shaderprog;
 
         //! Set perspective based on window width and height
@@ -173,7 +165,8 @@ namespace morph {
 
     private:
 
-        float zDefault = 5.0;
+        //! The default z=0 position for HexGridVisual models
+        float zDefault = Z_DEFAULT;
 
         /*!
          * Read a shader from a file.
@@ -213,25 +206,22 @@ namespace morph {
         vector<HexGridVisual<double>*> hgv_double;
         // Plus int/unsigned int.
 
+        //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
-#ifdef TRIANGLE_VIS_TESTING
-        //! Simple triangle visual for testing
-        vector<TriangleVisual*> triangleVis;
-#endif
         /*!
          * Variables to manage projection and rotation of the object
          */
         //@{
 
-        //! Cursor position
+        //! Current cursor position
         Vector2<float> cursorpos;
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, -5};
+        Vector3<float> scenetrans = {0.0, 0.0, -Z_DEFAULT};
 
         //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, -5};
+        const Vector3<float> scenetrans_default = {0.0, 0.0, -Z_DEFAULT};
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
@@ -239,21 +229,21 @@ namespace morph {
         //! When true, cursor movements induce translation of scene
         bool translateMode = false;
 
+        //! Screen coordinates of the position of the last mouse press
         Vector2<float> mousePressPosition;
-        Vector3<float> rotationAxis;
-        float angularSpeed;
-        Quaternion<float> rotation;
-        //! The scene translation/rotation aka view matrix
-        //TransformMatrix<float> rotmat;
-        //! Inversion of rotation matrix
-        //TransformMatrix<float> invrot;
 
-        //! The projection matrix
+        //! The current rotation axis. World frame?
+        Vector3<float> rotationAxis;
+
+        //! A rotation quaternion. You could have guessed that, right?
+        Quaternion<float> rotation;
+
+        //! The projection matrix is a member of this class
         TransformMatrix<float> projection;
+
         //! The inverse of the projection
         TransformMatrix<float> invproj;
-        //! projection * rotmat: DOesn't need/want to be a member.
-        //TransformMatrix<float> viewproj;
+
         //@}
 
         /*!
