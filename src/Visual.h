@@ -226,6 +226,9 @@ namespace morph {
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
 
+        //! When true, rotations about the third axis are possible.
+        bool rotateModMode = false;
+
         //! When true, cursor movements induce translation of scene
         bool translateMode = false;
 

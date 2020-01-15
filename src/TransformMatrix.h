@@ -8,6 +8,8 @@
 using morph::Quaternion;
 #include "Vector3.h"
 using morph::Vector3;
+#include "Vector4.h"
+using morph::Vector4;
 
 #include <cmath>
 using std::abs;
@@ -836,6 +838,50 @@ namespace morph {
                 + this->mat[7] * v1[1]
                 + this->mat[11] * v1[2]
                 + this->mat[15] * v1[3];
+            return v;
+        }
+
+        //! Do matrix times vector multiplication, v = mat * v1
+        array<Flt, 4> operator* (const Vector4<Flt>& v1) const {
+            array<Flt, 4> v;
+            v[0] = this->mat[0] * v1.x
+                + this->mat[4] * v1.y
+                + this->mat[8] * v1.z
+                + this->mat[12] * v1.w;
+            v[1] = this->mat[1] * v1.x
+                + this->mat[5] * v1.y
+                + this->mat[9] * v1.z
+                + this->mat[13] * v1.w;
+            v[2] = this->mat[2] * v1.x
+                + this->mat[6] * v1.y
+                + this->mat[10] * v1.z
+                + this->mat[14] * v1.w;
+            v[3] = this->mat[3] * v1.x
+                + this->mat[7] * v1.y
+                + this->mat[11] * v1.z
+                + this->mat[15] * v1.w;
+            return v;
+        }
+
+        //! Do matrix times vector multiplication, v = mat * v1.
+        array<Flt, 4> operator* (const Vector3<Flt>& v1) const {
+            array<Flt, 4> v;
+            v[0] = this->mat[0] * v1.x
+                + this->mat[4] * v1.y
+                + this->mat[8] * v1.z
+                + this->mat[12] * 1.0;
+            v[1] = this->mat[1] * v1.x
+                + this->mat[5] * v1.y
+                + this->mat[9] * v1.z
+                + this->mat[13] * 1.0;
+            v[2] = this->mat[2] * v1.x
+                + this->mat[6] * v1.y
+                + this->mat[10] * v1.z
+                + this->mat[14] * 1.0;
+            v[3] = this->mat[3] * v1.x
+                + this->mat[7] * v1.y
+                + this->mat[11] * v1.z
+                + this->mat[15] * 1.0;
             return v;
         }
 

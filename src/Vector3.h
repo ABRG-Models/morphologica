@@ -62,6 +62,14 @@ namespace morph {
             , y(v[1])
             , z(v[2]) {}
 
+        //! Construct from an array of *four* floats, assuming that this is a 4d vector
+        //! of the sort used with transfomration matrix and that v[3] is 'w', and can be
+        //! discarded.
+        Vector3 (const array<Flt, 4> v)
+            : x(v[0])
+            , y(v[1])
+            , z(v[2]) {}
+
         //! Copy constructor
         Vector3 (const Vector3<Flt>& other) {
             this->x = other.x;
@@ -131,6 +139,12 @@ namespace morph {
             this->z = other.z;
         }
         void operator= (const array<Flt, 3>& other) {
+            this->x = other[0];
+            this->y = other[1];
+            this->z = other[2];
+        }
+        //! Special assignment for array of 4, in form [x,y,z,w]. w is discarded.
+        void operator= (const array<Flt, 4>& other) {
             this->x = other[0];
             this->y = other[1];
             this->z = other[2];

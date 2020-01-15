@@ -417,6 +417,10 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->readyToFinish = true;
     }
 
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+        this->rotateModMode = !this->rotateModMode;
+    }
+
     // Reset view to default
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
         cout << "Reset to default view" << endl;
@@ -519,47 +523,38 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Construct two points for the start and end of the mouse movement
         array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
         array<float, 4> p1 = { p1_coord.x, p1_coord.y, coord_z, 1.0 };
-        cout << "p0->p1: ("  << p0[0] << "," << p0[1]
-             << ") -> (" << p1[0] << ","  << p1[1] << ")" << endl;
-        // Apply the inverse projection AND VIEW  to get two points in the world frame of reference:
 
+        // Apply the inverse projection to get two points in the world frame of
+        // reference for the mouse movement
         array<float, 4> v0 = this->invproj * p0;
         array<float, 4> v1 = this->invproj * p1;
-        cout << "v0->v1: ("  << v0[0] << "," << v0[1]
-             << ") -> (" << v1[0] << ","  << v1[1] << ")" << endl;
 
-        // This computes the difference betwen v0 and v1, the 2 mouse positions in the world space. Note the swap between x and y
-        mouseMoveWorld.y = (v1[0]/v1[3]) - (v0[0]/v0[3]);
-        mouseMoveWorld.x = (v1[1]/v1[3]) - (v0[1]/v0[3]);
-        mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);
-
-        cout << "mouseMoveWorld: ";
-        mouseMoveWorld.output();
-
-        // Now, the amount by which the model should be rotated has to go through the scene inverse projection, right?
-
+        // This computes the difference betwen v0 and v1, the 2 mouse positions in the
+        // world space. Note the swap between x and y
+        if (this->rotateModMode) {
+            // Sort of "rotate the page" mode.
+            mouseMoveWorld.z = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
+        } else {
+            mouseMoveWorld.y = -((v1[0]/v1[3]) - (v0[0]/v0[3]));
+            mouseMoveWorld.x = -((v1[1]/v1[3]) - (v0[1]/v0[3]));
+        }
 
         // Rotation axis is perpendicular to the mouse position difference vector
-        // BUT we have to project into the world to determine how to rotate the model!
+        // BUT we have to project into the model frame to determine how to rotate the model!
         float rotamount = mouseMoveWorld.length() * 40.0;
         // Calculate new rotation axis as weighted sum
         this->rotationAxis = (mouseMoveWorld * rotamount);
         this->rotationAxis.renormalize();
 
-        // Now inverse apply the rotation of the scene to the rotation axis
-        array<float, 4> ra = {this->rotationAxis.x, this->rotationAxis.y, this->rotationAxis.z, 1.0};
-        array<float, 4> ra2 = this->invscene * ra;
-        this->rotationAxis.x = ra2[0];
-        this->rotationAxis.y = ra2[1];
-        this->rotationAxis.z = ra2[2];
+        // Now inverse apply the rotation of the scene to the rotation axis, so that we
+        // rotate the model the right way.
+        this->rotationAxis = this->invscene * this->rotationAxis;
 
         // Update rotation from the saved position.
         this->rotation = this->savedRotation;
         Quaternion<float> rotationQuaternion;
         rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
-        rotationQuaternion.output();
         this->rotation.premultiply (rotationQuaternion); // combines rotations
-        this->rotation.output();
         this->render(); // updates viewproj; uses this->rotation
 
     } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
