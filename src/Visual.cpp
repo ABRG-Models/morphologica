@@ -80,7 +80,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     //glDisable(GL_DEPTH_TEST);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    this->coordArrows = new CoordArrows(this->shaderprog, {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0});
+    this->coordArrows = new CoordArrows(this->shaderprog, {-1.0, 0.0, 0.0}, {0.6, 0.6, 0.6});
 }
 
 morph::Visual::~Visual()

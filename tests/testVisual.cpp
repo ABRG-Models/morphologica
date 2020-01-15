@@ -19,6 +19,7 @@ int main()
     int rtn = -1;
 
     Visual v(800,600,"Test window");
+    v.zNear = 0.001;
 
     try {
         string pwd = Tools::getPwd();

@@ -78,27 +78,31 @@ namespace morph {
             // The indices index
             GLushort idx = 0;
 
+            array<float, 3> white = {1.0,1.0,1.0};
+            array<float, 3> red = {1.0,0.0,0.0};
+            array<float, 3> blue = {0.0,0.0,1.0};
+            array<float, 3> green = {0.0,1.0,0.0};
+
             // Draw four spheres to make up the coord frame
             array<float, 3> reloffset = this->offset;
-            this->computeSphere (idx, this->offset, {1.0,1.0,1.0}, this->scale[0]/20.0);
+            this->computeSphere (idx, this->offset, white, this->scale[0]/20.0);
 
             // x
             reloffset[0] += this->scale[0];
-            this->computeSphere (idx, reloffset, {1.0,0.0,0.0}, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, {1.0,0.0,0.0}, this->scale[0]/80.0);
-#if 0
+            this->computeSphere (idx, reloffset, red, this->scale[0]/40.0);
+            this->computeTube (idx, this->offset, reloffset, white, red, this->scale[0]/80.0);
+
             // y
             reloffset[0] -= this->scale[0];
             reloffset[1] += this->scale[1];
-            this->computeSphere (idx, reloffset, {0.0,1.0,0.0}, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, {0.0,1.0,0.0}, this->scale[0]/80.0);
+            this->computeSphere (idx, reloffset, green, this->scale[0]/40.0);
+            this->computeTube (idx, this->offset, reloffset, white, green, this->scale[0]/80.0);
 
             // z
             reloffset[1] -= this->scale[1];
             reloffset[2] += this->scale[2];
-            this->computeSphere (idx, reloffset, {0.0,0.0,1.0}, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, {0.0,0.0,1.0}, this->scale[0]/80.0);
-#endif
+            this->computeSphere (idx, reloffset, blue, this->scale[0]/40.0);
+            this->computeTube (idx, this->offset, reloffset, white, blue, this->scale[0]/80.0);
         }
 
         /*!
@@ -111,8 +115,9 @@ namespace morph {
          * @r Radius of the tube
          * @segments Number of segments used to render the tube
          */
-        void computeTube (GLushort& idx, array<float, 3> start, array<float, 3> end, array<float, 3> col,
-                          float r = 1.0f, int segments = 6) {
+        void computeTube (GLushort& idx, array<float, 3> start, array<float, 3> end,
+                          array<float, 3> colStart, array<float, 3> colEnd,
+                          float r = 1.0f, int segments = 12) {
 
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
@@ -146,7 +151,7 @@ namespace morph {
             this->vertex_push (vstart, this->vertexPositions);
             cout << "Central point of vstart cap is " << vstart.asString() << endl;
             this->vertex_push (v, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
+            this->vertex_push (colStart, this->vertexColors);
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -156,10 +161,9 @@ namespace morph {
                 this->vertex_push (vstart+c, this->vertexPositions);
                 cout << "point on vstart cap is " << (vstart+c).asString() << endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
-                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (colStart, this->vertexColors);
             }
 
-            array<float, 3> blue = {0.0,0.0,0.7};
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
                 //cout << "t is " << t << endl;
@@ -167,14 +171,14 @@ namespace morph {
                 this->vertex_push (vend+c, this->vertexPositions);
                 cout << "point on vend cap is " << (vend+c).asString() << endl;
                 this->vertex_push (v, this->vertexNormals); // +v
-                this->vertex_push (blue, this->vertexColors);
+                this->vertex_push (colEnd, this->vertexColors);
             }
 
             // Bottom cap. Push centre vertex as the last vertex.
             this->vertex_push (vend, this->vertexPositions);
             cout << "vend cap is " << vend.asString() << endl;
             this->vertex_push (v, this->vertexNormals);
-            this->vertex_push (col, this->vertexColors);
+            this->vertex_push (colEnd, this->vertexColors);
 
             // Note: number of vertices = segments * 2 + 2.
             int nverts = (segments * 2) + 2;
