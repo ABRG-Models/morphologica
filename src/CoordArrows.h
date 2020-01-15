@@ -50,7 +50,7 @@ namespace morph {
             this->init (sp, _offset, _scale);
         }
 
-        ~CoordArrows () {}
+        virtual ~CoordArrows () {}
 
         void init (GLuint sp,
                    const array<float, 3> _offset,
@@ -153,7 +153,6 @@ namespace morph {
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
-            bool firstseg = true;
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
                 //cout << "t is " << t << endl;

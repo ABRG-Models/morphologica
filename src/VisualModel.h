@@ -54,7 +54,7 @@ namespace morph {
             // glBindVertexArray(0);
         }
 
-        ~VisualModel() {
+        virtual ~VisualModel() {
             // destroy buffers
             glDeleteBuffers (4, vbos);
             delete (this->vbos);
