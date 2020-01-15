@@ -92,26 +92,34 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object.
         //@{
         //! Initialize as triangled. Gives a smooth surface with much
-        //! less comput than initializeVerticesHexesInterpolated.
+        //! less compute than initializeVerticesHexesInterpolated.
         void initializeVerticesTris (void) {
             unsigned int nhex = this->hg->num();
             for (unsigned int hi = 0; hi < nhex; ++hi) {
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], (*this->data)[hi], this->vertexPositions);
-                this->vertex_push (morph::Tools::getJetColorF((double)(*this->data)[hi]+0.5), this->vertexColors);
+                // Scale z:
+                Flt datumC = this->sc((*this->data)[hi]);
+                // Scale colour
+                Flt datum = (*this->data)[hi] * this->scale[2] + this->scale[3];
+                datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
+                datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
+                // And turn it into a colour:
+                array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
+                this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
             // Build indices based on neighbour relations in the HexGrid
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
-                    cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << endl;
+                    //cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << endl;
                     this->indices.push_back (hi);
                     this->indices.push_back (NNE(hi));
                     this->indices.push_back (NE(hi));
                 }
 
                 if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << endl;
+                    //cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << endl;
                     this->indices.push_back (hi);
                     this->indices.push_back (NW(hi));
                     this->indices.push_back (NSW(hi));
@@ -132,7 +140,7 @@ namespace morph {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
-            this->initializeVerticesHexesInterpolated();
+            this->initializeVertices();
             // Now re-set up the VBOs
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
