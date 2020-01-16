@@ -90,19 +90,19 @@ namespace morph {
             // x
             reloffset[0] += this->scale[0];
             this->computeSphere (idx, reloffset, red, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, white, red, this->scale[0]/80.0);
+            this->computeTube (idx, this->offset, reloffset, red, red, this->scale[0]/80.0);
 
             // y
             reloffset[0] -= this->scale[0];
             reloffset[1] += this->scale[1];
             this->computeSphere (idx, reloffset, green, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, white, green, this->scale[0]/80.0);
+            this->computeTube (idx, this->offset, reloffset, green, green, this->scale[0]/80.0);
 
             // z
             reloffset[1] -= this->scale[1];
             reloffset[2] += this->scale[2];
             this->computeSphere (idx, reloffset, blue, this->scale[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, white, blue, this->scale[0]/80.0);
+            this->computeTube (idx, this->offset, reloffset, blue, blue, this->scale[0]/80.0);
         }
 
         //! The lengths of the x, y and z arrows.
