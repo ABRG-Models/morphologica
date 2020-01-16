@@ -85,7 +85,7 @@ namespace morph {
 
         static void errorCallback (int error, const char* description);
 
-        //void saveImage (const string& s);
+        void saveImage (const string& s);
 
         /*!
          * Add the vertices for the data in @dat, defined on the HexGrid @hg to the

@@ -24,6 +24,9 @@ using morph::ShaderInfo;
 #include "Vector4.h"
 using morph::Vector4;
 
+// imwrite() from OpenCV is used in saveImage()
+#include <opencv2/opencv.hpp>
+
 morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
     , window_h(height)
@@ -92,6 +95,35 @@ morph::Visual::~Visual()
     delete this->coordArrows;
     glfwDestroyWindow (this->window);
     glfwTerminate();
+}
+
+void
+morph::Visual::saveImage (const string& filename)
+{
+    glfwMakeContextCurrent (this->window);
+    GLubyte* bits; // RGB bits
+    GLint viewport[4]; // current viewport
+    glGetIntegerv (GL_VIEWPORT, viewport);
+    int w = viewport[2];
+    int h = viewport[3];
+    bits = new GLubyte[w*h*3];
+    glFinish(); // finish all commands of OpenGL
+    glPixelStorei (GL_PACK_ALIGNMENT,1);
+    glPixelStorei (GL_PACK_ROW_LENGTH, 0);
+    glPixelStorei (GL_PACK_SKIP_ROWS, 0);
+    glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
+    glReadPixels (0, 0, w, h, GL_BGR_EXT, GL_UNSIGNED_BYTE, bits);
+    IplImage* capImg = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 3);
+    for (int i=0; i<h; ++i) { // Each line
+        for (int j=0; j < w; ++j) { // Each bit
+            capImg->imageData[i*capImg->widthStep + j*3+0] = (unsigned char)(bits[(h-i-1)*3*w + j*3+0]);
+            capImg->imageData[i*capImg->widthStep + j*3+1] = (unsigned char)(bits[(h-i-1)*3*w + j*3+1]);
+            capImg->imageData[i*capImg->widthStep + j*3+2] = (unsigned char)(bits[(h-i-1)*3*w + j*3+2]);
+        }
+    }
+    imwrite (filename.c_str(), cv::cvarrToMat(capImg));
+    cvReleaseImage (&capImg);
+    delete[] bits;
 }
 
 void
@@ -419,6 +451,11 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
 
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         this->rotateModMode = !this->rotateModMode;
+    }
+
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        this->saveImage ("./picture.png");
+        cout << "Took a snap" << endl;
     }
 
     // Reset view to default
