@@ -86,7 +86,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     //glDisable(GL_DEPTH_TEST);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    this->coordArrows = new CoordArrows(this->shaderprog, {-1.0, 0.0, 0.0}, {0.6, 0.6, 0.6});
+    this->coordArrows = new CoordArrows(this->shaderprog, coordArrowsOffset, coordArrowsLength);
 }
 
 morph::Visual::~Visual()
@@ -191,7 +191,38 @@ morph::Visual::render (void)
     // Render it.
 
     // First, the coordinates thing.
+
+#if 0 // Find out the location of the bottom left of the screen and make the coord
+      // arrows stay put there.
+    Vector2<float> p0_coord;
+    p0_coord.x = 0.4f;
+    p0_coord.y = 0.4f;
+
+    // Add the depth at which the object lies.  Use forward projection to determine
+    // the correct z coordinate for the inverse projection. This assumes only one
+    // object.
+    array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
+    array<float, 4> pp = this->projection * point;
+    float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+    cout << "Putting coords at coord-z: " << coord_z << endl;
+
+    // Construct the point for the location of the coord arrows
+    array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+
+    // Inverse project
+    array<float, 4> v0 = this->invproj * p0;
+
+    // Apply to view matrix...
+    this->coordArrows->viewmatrix.setToIdentity();
+    this->coordArrows->viewmatrix.translate (v0);
+    this->coordArrows->viewmatrix.rotate (this->rotation);
+
+    TransformMatrix<float> vp_coords = this->projection * this->coordArrows->viewmatrix;
+#else
     TransformMatrix<float> vp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
+#endif
+
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
     if (loc != -1) {
         glUniformMatrix4fv (loc, 1, GL_FALSE, vp_coords.mat.data());

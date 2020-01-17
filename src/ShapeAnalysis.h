@@ -47,6 +47,7 @@ namespace morph {
     class ShapeAnalysis
     {
     public:
+
         /*!
          * Obtain the contours (as a vector of list<Hex>) in the scalar fields f, where threshold is
          * crossed.
@@ -107,6 +108,69 @@ namespace morph {
                     } else { // h.onBoundary() is true
                         if (norm_f[i][h.vi] >= threshold) {
                             rtn[i].push_back (h);
+                        }
+                    }
+                }
+            }
+
+            return rtn;
+        }
+
+        /*!
+         * Like get_contours, but returns a full hexgrid's worth of Flts instead of
+         * lists of Hexes.
+         */
+        static vector<Flt> get_contour_map (HexGrid* hg,
+                                            vector<vector<Flt> >& f,
+                                            Flt threshold) {
+
+            unsigned int nhex = hg->num();
+            unsigned int N = f.size();
+
+            vector<Flt> rtn (nhex, 0.0);
+
+            Flt maxf = -1e7;
+            Flt minf = +1e7;
+            for (auto h : hg->hexen) {
+                if (h.onBoundary() == false) {
+                    for (unsigned int i = 0; i<N; ++i) {
+                        if (f[i][h.vi] > maxf) { maxf = f[i][h.vi]; }
+                        if (f[i][h.vi] < minf) { minf = f[i][h.vi]; }
+                    }
+                }
+            }
+            Flt scalef = 1.0 / (maxf-minf);
+
+            // Re-normalize
+            vector<vector<Flt> > norm_f;
+            norm_f.resize (N);
+            for (unsigned int i=0; i<N; ++i) {
+                norm_f[i].resize (nhex, 0.0);
+            }
+
+            for (unsigned int i = 0; i<N; ++i) {
+                for (unsigned int h=0; h<nhex; h++) {
+                    norm_f[i][h] = (f[i][h] - minf) * scalef;
+                }
+            }
+
+            // Collate
+            for (unsigned int i = 0; i<N; ++i) {
+                for (auto h : hg->hexen) {
+                    if (h.onBoundary() == false) {
+                        if (norm_f[i][h.vi] >= threshold) {
+                            if ( (h.has_ne() && norm_f[i][h.ne->vi] < threshold)
+                                 || (h.has_nne() && norm_f[i][h.nne->vi] < threshold)
+                                 || (h.has_nnw() && norm_f[i][h.nnw->vi] < threshold)
+                                 || (h.has_nw() && norm_f[i][h.nw->vi] < threshold)
+                                 || (h.has_nsw() && norm_f[i][h.nsw->vi] < threshold)
+                                 || (h.has_nse() && norm_f[i][h.nse->vi] < threshold) ) {
+                                rtn[h.vi] = (Flt)i/(Flt)N;
+                            }
+                        }
+                    } else { // h.onBoundary() is true
+                        if (norm_f[i][h.vi] >= threshold) {
+                            rtn[h.vi] = (Flt)i/(Flt)N;
                         }
                     }
                 }

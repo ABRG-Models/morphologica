@@ -209,6 +209,9 @@ namespace morph {
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
+        array<float, 3> coordArrowsOffset = {-1.5, 0.0, 0.0};
+        array<float, 3> coordArrowsLength = {0.5, 0.5, 0.5};
+
         /*!
          * Variables to manage projection and rotation of the object
          */

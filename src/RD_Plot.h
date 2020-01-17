@@ -1,5 +1,14 @@
+/*
+ * DEPRECATED CODE. DO NOT USE!
+ *
+ * Use morph::Visual instead.
+ *
+ * Seb, Jan 2020.
+ */
 #ifndef _RD_PLOT_H_
 #define _RD_PLOT_H_
+
+#warning "Use of RD_Plot.h is now deprecated in favour of morph::Visual"
 
 #include "morph/display.h"
 #include "morph/HexGrid.h"
