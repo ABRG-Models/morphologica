@@ -46,7 +46,7 @@ add_test(testreadcurves_circles ${TARGETTEST31})
 set(TARGETTEST4 testdisplay CACHE TYPE STRING)
 set(SOURCETEST4 testdisplay.cpp)
 add_executable(${TARGETTEST4} ${SOURCETEST4})
-target_link_libraries(${TARGETTEST4} morphstatic)
+target_link_libraries(${TARGETTEST4} morphstatic ${LAPACK_LIBRARIES})
 add_test(testdisplay ${TARGETTEST4})
 
 # Test hexgrid
