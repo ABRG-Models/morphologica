@@ -96,7 +96,7 @@ morph::BezCurve::computePoints (unsigned int n) const
 vector<BezCoord>
 morph::BezCurve::computePoints (float l, float firstl) const
 {
-    DBG2 ("computePoints (float l, float firstl) called");
+    DBG2 ("computePoints (float l="<<l<<", float firstl="<<firstl<<") called");
     vector<BezCoord> rtn;
     float t = 0.0f;
     bool lastnull = false;
@@ -110,6 +110,8 @@ morph::BezCurve::computePoints (float l, float firstl) const
         lastnull = b.getNullCoordinate();
     }
 
+    // This searches forward to try to find a point which is 'l' further on. If at any
+    // point t exceeds 1.0, we have to break out.
     while (t != 1.0f && lastnull == false) {
         BezCoord b = this->computePoint (t, l);
         rtn.push_back (b);
@@ -284,7 +286,6 @@ morph::BezCurve::binomial_lookup (unsigned int n, unsigned int k) {
 BezCoord
 morph::BezCurve::computePointGeneral (float t) const
 {
-    DBG ("Called");
     if (this->order >= PascalRows) {
         stringstream ee;
         ee << "Limited to Bezier Curves order " << (PascalRows-1)
@@ -345,15 +346,19 @@ morph::BezCurve::computePointBySearch (float t, float l) const
         return rtn;
     }
 
-    // Do a binary search to find the value of dt
+    // On every call, compute a threshold. lthresh is a percentage, so compute the
+    // absolute threshold, lt as a percentage of l.
+    float lt = this->lthresh * 0.01f * l;
+
+    // Do a binary search to find the value of dt which gives a b2 that is l further on
     BezCoord b2 (true);
     bool finished = false;
     while (!finished && ((t+dt) <= 1.0f)) {
 
-        // Compute position of candidate point dt beyound t in param space
+        // Compute position of candidate point dt beyond t in param space
         b2 = this->computePoint (t+dt);
         float dl = b1.distanceTo (b2);
-        if (fabs(l-dl) < lthresh) {
+        if (fabs(l-dl) < lt) {
             // Stop here.
             finished = true;
         } else {
@@ -400,8 +405,8 @@ morph::BezCurve::computePointBySearchHorz (float t, float x) const
         return rtn;
     }
 
-    // How close we need to be to the target l for a given choice of dt.
-    float lthresh = 0.001; // arb. units in position space (not parameter space)
+    // How close we need to be to the target x for a given choice of dt.
+    float lt = this->lthresh * 0.01f * x;
 
     // Do a binary search to find the value of dt
     BezCoord b2 (true);
@@ -413,7 +418,7 @@ morph::BezCurve::computePointBySearchHorz (float t, float x) const
         b2 = this->computePoint (t+dt);
         float dx = b1.horzDistanceTo (b2);
         //cout << "t+dt= " << t+dt << ", dx = " << dx << endl;
-        if (fabs(x-dx) < lthresh) {
+        if (fabs(x-dx) < lt) {
             // Stop here.
             finished = true;
         } else {

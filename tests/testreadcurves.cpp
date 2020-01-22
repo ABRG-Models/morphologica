@@ -23,25 +23,22 @@ int main()
         ReadCurves r("../../tests/trial.svg");
         //r.save (0.001f);
         vector<BezCoord> pts = r.getCorticalPath().getPoints (0.01f);
+        cout << "Got " << pts.size() << " points with getPoints()" << endl;
         auto i = pts.begin();
         while (i != pts.end()) {
             cout << *i << endl;
             ++i;
         }
-        // 0.329062,0.849467,1.00663
+        // 0.329310834408 0.849295854568 1.00672543049
         cout.precision(12);
         cout << "pts[23] =  " << pts[23].t()
              << " " << pts[23].x()
              << " " << pts[23].y()
              << endl;
-        cout << "pts[23] =  " << fabs(pts[23].t() - 0.32906216383)
-             << " " << fabs(pts[23].x() - 0.849467217922)
-             << " " << fabs(pts[23].y()- 1.00663292408)
-             << endl;
-        if ((fabs(pts[23].t() - 0.32906216383) < 0.000001f)
-            && (fabs(pts[23].x() - 0.849467217922) < 0.000001f)
-            && (fabs(pts[23].y()- 1.00663292408) < 0.000001f)) {
-            cout << "rtn IS 0" << endl;
+        if ((fabs(pts[23].t() - 0.329311) < 0.00001f)
+            && (fabs(pts[23].x() - 0.849296) < 0.00001f)
+            && (fabs(pts[23].y()- 1.00673) < 0.00001f)) {
+            cout << "Matches expectation; rtn IS 0" << endl;
             rtn = 0;
         } else {
             cout << "rtn not 0" << endl;

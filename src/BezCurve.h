@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <limits>
 
 #include "BezCoord.h"
 
@@ -12,6 +13,7 @@ using std::pair;
 using std::vector;
 using std::array;
 using std::string;
+using std::numeric_limits;
 
 namespace morph
 {
@@ -136,6 +138,9 @@ namespace morph
          * which is found for parameter value t and extending a
          * (Euclidean) distance l along the curve from the starting
          * position.
+         *
+         * If it is not possible, without exceeding t, to advance a distance l, then
+         * set a null BezCoord and return that.
          */
         BezCoord computePoint (float t, float l) const;
 
@@ -259,8 +264,12 @@ namespace morph
          * How close we need to be to the target l for a given choice
          * of dt. arb. units in position space (not parameter space).
          * This is used in computeBySearch and computeBySearchHorz.
+         *
+         * Should be set as an acceptable percentage error in the target l. So, 1.0
+         * would mean that the threshold for finding a suitable dt to advance a
+         * distance l along the curve would be l/100 * 1.0.
          */
-        float lthresh = 0.000001;
+        float lthresh = 1.0f;
 
         /*!
          * The as-the-crow-flies distance from p0 to p1. Use for for BEZLINEAR to avoid repeat

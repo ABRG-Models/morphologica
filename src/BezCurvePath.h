@@ -3,12 +3,14 @@
 
 #include "BezCurve.h"
 
+#include <limits>
 #include <list>
 #include <vector>
 #include <utility>
 #include <iostream>
 #include <fstream>
 
+using std::numeric_limits;
 using std::pair;
 using std::make_pair;
 using std::list;
@@ -87,6 +89,9 @@ namespace morph
          * Add a curve to this->curves.
          */
         void addCurve (BezCurve& c) {
+            if (this->curves.empty()) {
+                this->initialCoordinate = c.getInitialPointScaled();
+            }
             this->curves.push_back (c);
         }
 
@@ -197,6 +202,75 @@ namespace morph
                 }
                 rtn.insert (rtn.end(), cp.begin(), cp.end());
                 ++i;
+            }
+            return rtn;
+        }
+
+        /*!
+         * Similar to the above, but ensure that there are @nPoints evenly spaced
+         * points along the curve. @invertY has the same meaning as in the other
+         * overload of this function.
+         */
+        vector<BezCoord> getPoints (unsigned int nPoints, bool invertY = false) const {
+            // Get end-to-end distance and compute a candidate step, then call other
+            // overload.
+            vector<BezCoord> rtn;
+            if (nPoints == 0) {
+                cout << "nPoints should be >0, returning empty vector of points" << endl;
+                return rtn;
+            }
+            if (this->curves.empty()) {
+                cout << "Curve is empty, returning empty vector of points" << endl;
+                return rtn;
+            }
+            float etoe = this->getEndToEnd();
+            float step = etoe/(nPoints-1);
+            unsigned int actualPoints = 0;
+            while (actualPoints != nPoints) {
+                rtn.clear();
+                // cout << "Getting points with step size " << step << endl;
+                rtn = this->getPoints (step, invertY);
+                actualPoints = rtn.size();
+                if (actualPoints != nPoints) {
+
+                    // Modify step
+                    float steptrial = 0.0f;
+                    if (actualPoints > nPoints) {
+                        // Increase step size, starting with a doubling, then a half extra, then a quarter extra, etc
+                        actualPoints = 0;
+                        float stepinc = step;
+                        while (actualPoints < nPoints) {
+                            steptrial = step + stepinc;
+                            rtn.clear();
+                            rtn = this->getPoints (steptrial, invertY);
+                            actualPoints = rtn.size();
+                            stepinc /= 2.0f;
+                        }
+
+                        if (fabs(step-steptrial) < numeric_limits<float>::epsilon()) {
+                            cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
+                            return rtn;
+                        }
+                        step = steptrial;
+
+                    } else { // actualPoints < nPoints
+                        // Decrease step size, starting with a halving, then a quartering until we exceed nPoints
+                        actualPoints = 0;
+                        float stepinc = step/2.0f;
+                        while (actualPoints < nPoints) {
+                            steptrial = step - stepinc;
+                            rtn.clear();
+                            rtn = this->getPoints (steptrial, invertY);
+                            actualPoints = rtn.size();
+                            stepinc /= 2.0f;
+                        }
+                        if (fabs(step-steptrial) < numeric_limits<float>::epsilon()) {
+                            cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
+                            return rtn;
+                        }
+                        step = steptrial;
+                    }
+                }
             }
             return rtn;
         }
