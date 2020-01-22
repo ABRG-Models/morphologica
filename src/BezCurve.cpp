@@ -129,7 +129,6 @@ BezCoord
 morph::BezCurve::computePoint (float t) const
 {
     DBG2 ("Called computePoint(float t = "  << t << ")");
-#if 0
     switch (this->order) {
     case 1:
         return this->computePointLinear (t);
@@ -140,8 +139,6 @@ morph::BezCurve::computePoint (float t) const
     default:
         return this->computePointGeneral (t);
     }
-#endif
-    return this->computePointGeneral (t);
 }
 
 BezCoord
