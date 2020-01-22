@@ -1,5 +1,8 @@
 /*!
  * Implementation of BezCurve methods
+ *
+ * See https://pomax.github.io/bezierinfo for a world of Bezier knowledge. I drew on
+ * that page to do the curve fitting algorithm.
  */
 
 // To enable debug cout messages:
@@ -14,8 +17,12 @@
 #include <iostream>
 #include <sstream>
 
+// For matrix representation of a BezCurve, useful when line fitting.
+#include <armadillo>
+
 using namespace std;
 using morph::BezCoord;
+using arma::mat;
 
 morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
 {
@@ -24,6 +31,8 @@ morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
     this->linlength = sqrtf ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
                               + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
     this->linlengthscaled = this->scale * this->linlength;
+
+    this->matrixSetup();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -80,6 +89,49 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->controls.push_back (ip);
     this->controls.push_back (fp);
     this->order = 1;
+}
+
+void
+morph::BezCurve::matrixSetup (void)
+{
+    // Scheme to write out the matrix comes from Cohen & Riesenfeld (1982) General
+    // Matrix Representations...
+
+    // Set up M.
+    int m = (int)this->order;
+    int mp = m+1;
+    int r = 0;
+    this->M.set_size(mp,mp);
+    this->M.zeros();
+    for (int i=0; i<mp; ++i) { // i is column
+        for (r=0; r<mp-i; ++r) { // r is row
+            int element = BezCurve::binomial_lookup (m, i)
+                * BezCurve::binomial_lookup (m-i, m-i-r)
+                * pow (-1, m-i-r);
+            // Ensure the matrix is inverted 'm-i', not just 'i'
+            this->M(m-i, r) = element;
+        }
+    }
+    cout << this->M << endl;
+
+    // Set up C & T
+    this->T.set_size(2,mp);
+    this->T.zeros();
+    this->C.set_size(mp,2);
+    this->C.zeros();
+    r = 0;
+    for (auto c : controls) {
+        cout << c.first << "," << c.second << endl;
+        this->C(r,0) = c.first;
+        this->C(r,1) = c.second;
+
+        this->T(0,r) = r;
+        this->T(1,r) = r;
+        ++r;
+    }
+    cout << "C:" << this->C << endl;
+    cout << "T:" << this->T << endl;
+
 }
 
 vector<BezCoord>

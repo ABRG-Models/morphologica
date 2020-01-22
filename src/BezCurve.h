@@ -6,6 +6,7 @@
 #include <array>
 #include <string>
 #include <limits>
+#include <armadillo>
 
 #include "BezCoord.h"
 
@@ -288,6 +289,20 @@ namespace morph
          * curve does not exist; so the constructor must update this number.
          */
         unsigned int order = 0;
+
+        /*!
+         * Matrix representation
+         */
+        //@{
+        //! Set up T, M and C. Called from constructors.
+        void matrixSetup (void);
+        //! Powers vector
+        arma::Mat<int> T;
+        //! The important one; the coefficients
+        arma::Mat<int> M;
+        //! The control points vector
+        arma::Mat<double> C;
+        //@}
     };
 
 } // namespace morph
