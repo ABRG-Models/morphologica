@@ -17,17 +17,27 @@
 using namespace std;
 using morph::BezCoord;
 
+morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
+{
+    this->controls = cp;
+    this->order = cp.size()-1;
+    this->linlength = sqrtf ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
+                              + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
+    this->linlengthscaled = this->scale * this->linlength;
+}
+
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
                            vector<pair<float,float>> cp)
 {
-    this->order = cp.size()+1;
-    this->p0 = ip;
-    this->p1 = fp;
-    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
-                              + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
+                              + (fp.second-ip.second)*(fp.second-ip.second) );
     this->linlengthscaled = this->scale * this->linlength;
-    this->controls = cp;
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.insert (this->controls.end(), cp.begin(), cp.end());
+    this->controls.push_back (fp);
+    this->order = cp.size()-1;
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -35,47 +45,46 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> c1,
                            pair<float,float> c2)
 {
-    this->order = 3;
-    this->p0 = ip;
-    this->p1 = fp;
-    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
-                              + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
+                              + (fp.second-ip.second)*(fp.second-ip.second) );
     this->linlengthscaled = this->scale * this->linlength;
+    this->controls.clear();
+    this->controls.push_back (ip);
     this->controls.push_back (c1);
     this->controls.push_back (c2);
+    this->controls.push_back (fp);
+    this->order = 3;
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
                            pair<float,float> c1)
 {
-    this->order = 2;
-    this->p0 = ip;
-    this->p1 = fp;
-    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
-                              + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
+                              + (fp.second-ip.second)*(fp.second-ip.second) );
     this->linlengthscaled = this->scale * this->linlength;
+    this->controls.clear();
+    this->controls.push_back (ip);
     this->controls.push_back (c1);
+    this->controls.push_back (fp);
+    this->order = 2;
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp)
 {
-    this->order = 1;
-    this->p0 = ip;
-    this->p1 = fp;
-    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
-                              + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
+                              + (fp.second-ip.second)*(fp.second-ip.second) );
     this->linlengthscaled = this->scale * this->linlength;
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.push_back (fp);
+    this->order = 1;
 }
 
 vector<BezCoord>
 morph::BezCurve::computePoints (unsigned int n) const
 {
-    DBG2 ("Called. i: " << this->p0.first << "," << this->p0.second
-          << " c1: " <<  this->controls[0].first << "," << this->controls[0].second
-          << " c2: " <<  this->controls[1].first << "," << this->controls[1].second
-          << " f: " <<  this->p1.first << "," << this->p1.second);
     vector<BezCoord> rtn;
     for (unsigned int i = 0; i < n; ++i) {
         float t = i/static_cast<float>(n);
@@ -128,7 +137,7 @@ morph::BezCurve::computePointsHorz (float x) const
 BezCoord
 morph::BezCurve::computePoint (float t) const
 {
-    DBG2 ("Called computePoint(float t = "  << t << ")");
+    DBG2 ("Called computePoint(float t = "  << t << ") order=" << this->order);
     switch (this->order) {
     case 1:
         return this->computePointLinear (t);
@@ -225,9 +234,8 @@ morph::BezCurve::computePointLinear (float t) const
     DBG2 ("computePointLinear (t=" << t << ")");
     this->checkt(t);
     pair<float,float> b;
-    // Bug here. scale is 0.
-    b.first = ((1-t) * this->p0.first + t * this->p1.first) * this->scale;
-    b.second = ((1-t) * this->p0.second + t * this->p1.second) * this->scale;
+    b.first = ((1-t) * this->controls[0].first + t * this->controls[1].first) * this->scale;
+    b.second = ((1-t) * this->controls[0].second + t * this->controls[1].second) * this->scale;
     return BezCoord(t, b);
 }
 
@@ -237,12 +245,12 @@ morph::BezCurve::computePointQuadratic (float t) const
     this->checkt (t);
     pair<float,float> b;
     float t_ = 1-t;
-    b.first = (t_ * t_ * this->p0.first
-               + 2 * t_ * t * this->controls[0].first
-               + t * t * this->p1.first) * this->scale;
-    b.second = (t_ * t_ * this->p0.second
-                + 2 * t_ * t * this->controls[0].second
-                + t * t * this->p1.second) * this->scale;
+    b.first = (t_ * t_ * this->controls[0].first
+               + 2 * t_ * t * this->controls[1].first
+               + t * t * this->controls[2].first) * this->scale;
+    b.second = (t_ * t_ * this->controls[0].second
+                + 2 * t_ * t * this->controls[1].second
+                + t * t * this->controls[2].second) * this->scale;
     return BezCoord(t, b);
 }
 
@@ -252,14 +260,14 @@ morph::BezCurve::computePointCubic (float t) const
     this->checkt (t);
     pair<float,float> b;
     float t_ = 1-t;
-    b.first = (t_ * t_ * t_ * this->p0.first
-               + 3 * t_ * t_ * t * this->controls[0].first
-               + 3 * t_ * t * t * this->controls[1].first
-               + t * t * t * this->p1.first) * this->scale;
-    b.second = (t_ * t_ * t_ * this->p0.second
-                + 3 * t_ * t_ * t * this->controls[0].second
-                + 3 * t_ * t * t * this->controls[1].second
-                + t * t * t * this->p1.second) * this->scale;
+    b.first = (t_ * t_ * t_ * this->controls[0].first
+               + 3 * t_ * t_ * t * this->controls[1].first
+               + 3 * t_ * t * t * this->controls[2].first
+               + t * t * t * this->controls[3].first) * this->scale;
+    b.second = (t_ * t_ * t_ * this->controls[0].second
+                + 3 * t_ * t_ * t * this->controls[1].second
+                + 3 * t_ * t * t * this->controls[2].second
+                + t * t * t * this->controls[3].second) * this->scale;
     return BezCoord(t, b);
 }
 
@@ -276,6 +284,7 @@ morph::BezCurve::binomial_lookup (unsigned int n, unsigned int k) {
 BezCoord
 morph::BezCurve::computePointGeneral (float t) const
 {
+    DBG ("Called");
     if (this->order >= PascalRows) {
         stringstream ee;
         ee << "Limited to Bezier Curves order " << (PascalRows-1)
@@ -291,22 +300,21 @@ morph::BezCurve::computePointGeneral (float t) const
     float t_ = 1-t;
     pair<float,float> b;
 
-    // This code would be shorter if p0 and p1 were the first and last elements in controls, but no big deal.
     // x
-    b.first = pow(t_, this->order) * this->p0.first;
+    b.first = pow(t_, this->order) * this->controls[0].first;
     for(unsigned int k=1; k<this->order; k++) {
         b.first += static_cast<float> (BezCurve::binomial_lookup(this->order, k))
-            * pow (t_, this->order-k) * pow (t, k) * this->controls[k-1].first;
+            * pow (t_, this->order-k) * pow (t, k) * this->controls[k].first;
     }
-    b.first += pow(t, this->order) * this->p1.first;
+    b.first += pow(t, this->order) * this->controls[this->order].first;
     b.first *= this->scale;
     // y
-    b.second = pow(t_, this->order) * this->p0.second;
+    b.second = pow(t_, this->order) * this->controls[0].second;
     for(unsigned int k=1; k<this->order; k++) {
         b.second += static_cast<float> (BezCurve::binomial_lookup(this->order, k))
-            * pow (t_, this->order-k) * pow (t, k) * this->controls[k-1].second;
+            * pow (t_, this->order-k) * pow (t, k) * this->controls[k].second;
     }
-    b.second += pow(t, this->order) * this->p1.second;
+    b.second += pow(t, this->order) * this->controls[this->order].second;
     b.second *= this->scale;
 
     return BezCoord(t, b);
@@ -439,19 +447,19 @@ morph::BezCurve::checkt (float t) const
 pair<float,float>
 morph::BezCurve::getInitialPointUnscaled (void) const
 {
-    return this->p0;
+    return this->controls[0];
 }
 
 pair<float,float>
 morph::BezCurve::getFinalPointUnscaled (void) const
 {
-    return this->p1;
+    return this->controls[this->order];
 }
 
 pair<float,float>
 morph::BezCurve::getInitialPointScaled (void) const
 {
-    pair<float,float> rtn = this->p0;
+    pair<float,float> rtn = this->controls[0];
     rtn.first *= this->scale;
     rtn.second *= this->scale;
     return rtn;
@@ -460,7 +468,7 @@ morph::BezCurve::getInitialPointScaled (void) const
 pair<float,float>
 morph::BezCurve::getFinalPointScaled (void) const
 {
-    pair<float,float> rtn = this->p1;
+    pair<float,float> rtn = this->controls[this->order];
     rtn.first *= this->scale;
     rtn.second *= this->scale;
     return rtn;

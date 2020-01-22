@@ -58,6 +58,13 @@ namespace morph
     class BezCurve
     {
     public: // methods
+
+        /*!
+         * Construct a Bezier curve of order cp.size()-1 with the initial and final
+         * points making up part of cp.
+         */
+        BezCurve (vector<pair<float, float>> cp);
+
         /*!
          * Construct a cubic Bezier curve with a specification of
          * the curve as inital and final position with two control
@@ -234,15 +241,8 @@ namespace morph
 
     private: // attributes
         /*!
-         * Initial and final positions
-         */
-        //@{
-        pair<float,float> p0;
-        pair<float,float> p1;
-        //@}
-
-        /*!
-         * Control points
+         * Control points. First control point is the initial position; last is the
+         * final position.
          */
         //@{
         vector<pair<float,float>> controls;
