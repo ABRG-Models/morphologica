@@ -17,13 +17,13 @@ namespace morph
 {
 
     /*!
-     * Store the first N=20 rows of Pascal's triangle in a linear array. To get the
+     * Store the first N=21 rows of Pascal's triangle in a linear array. To get the
      * values from row n, where n starts at 0 (and ends at N-1), you step along a number
      * given by the triangle sequence (n(n+1)/2) and then read n+1 values. The triangle
-     * has a total number of elements given by N(N+1)/2, which for 20 rows is 20(21)/2 =
+     * has a total number of elements given by N(N+1)/2, which for 21 rows is 21(22)/2 =
      * 210.
      */
-    const array<unsigned int, 210> Pascal =
+    const array<unsigned int, 231> Pascal =
     {1,
      1,1,
      1,2,1,
@@ -43,10 +43,10 @@ namespace morph
      1,16,120,560,1820,4368,8008,11440,12870,11440,8008,4368,1820,560,120,16,1,
      1,17,136,680,2380,6188,12376,19448,24310,24310,19448,12376,6188,2380,680,136,17,1,
      1,18,153,816,3060,8568,18564,31824,43758,48620,43758,31824,18564,8568,3060,816,153,18,1,
-     1,19,171,969,3876,11628,27132,50388,75582,92378,92378,75582,50388,27132,11628,3876,969,171,19,1};
-
+     1,19,171,969,3876,11628,27132,50388,75582,92378,92378,75582,50388,27132,11628,3876,969,171,19,1,
+     1,20,190,1140,4845,15504,38760,77520,125970,167960,184756,167960,125970,77520,38760,15504,4845,1140,190,20,1};
     //! How many rows in the table above.
-    const unsigned int PascalRows = 20;
+    const unsigned int PascalRows = 21;
 
     /*!
      * A Bezier curve class which allows the computation of Cartesian
