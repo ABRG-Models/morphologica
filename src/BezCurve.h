@@ -3,26 +3,50 @@
 
 #include <utility>
 #include <vector>
+#include <array>
 #include <string>
 
 #include "BezCoord.h"
 
 using std::pair;
 using std::vector;
+using std::array;
 using std::string;
 
 namespace morph
 {
+
     /*!
-     * An enumerated type to define the algorithm which is used to
-     * compute the points on the curve.
+     * Store the first N=20 rows of Pascal's triangle in a linear array. To get the
+     * values from row n, where n starts at 0 (and ends at N-1), you step along a number
+     * given by the triangle sequence (n(n+1)/2) and then read n+1 values. The triangle
+     * has a total number of elements given by N(N+1)/2, which for 20 rows is 20(21)/2 =
+     * 210.
      */
-    enum BezCurveType {
-        BEZCUBIC,
-        BEZQUADRATIC,
-        BEZLINEAR,
-        N_BEZCURVETYPE
-    };
+    const array<unsigned int, 210> Pascal =
+    {1,
+     1,1,
+     1,2,1,
+     1,3,3,1,
+     1,4,6,4,1,
+     1,5,10,10,5,1,
+     1,6,15,20,15,6,1,
+     1,7,21,35,35,21,7,1,
+     1,8,28,56,70,56,28,8,1,
+     1,9,36,84,126,126,84,36,9,1,
+     1,10,45,120,210,252,210,120,45,10,1,
+     1,11,55,165,330,462,462,330,165,55,11,1,
+     1,12,66,220,495,792,924,792,495,220,66,12,1,
+     1,13,78,286,715,1287,1716,1716,1287,715,286,78,13,1,
+     1,14,91,364,1001,2002,3003,3432,3003,2002,1001,364,91,14,1,
+     1,15,105,455,1365,3003,5005,6435,6435,5005,3003,1365,455,105,15,1,
+     1,16,120,560,1820,4368,8008,11440,12870,11440,8008,4368,1820,560,120,16,1,
+     1,17,136,680,2380,6188,12376,19448,24310,24310,19448,12376,6188,2380,680,136,17,1,
+     1,18,153,816,3060,8568,18564,31824,43758,48620,43758,31824,18564,8568,3060,816,153,18,1,
+     1,19,171,969,3876,11628,27132,50388,75582,92378,92378,75582,50388,27132,11628,3876,969,171,19,1};
+
+    //! How many rows in the table above.
+    const unsigned int PascalRows = 20;
 
     /*!
      * A Bezier curve class which allows the computation of Cartesian
@@ -58,6 +82,13 @@ namespace morph
          */
         BezCurve (pair<float,float> ip,
                   pair<float,float> fp);
+
+        /*!
+         * Construct a Bezier curve of order cp.size()+1
+         */
+        BezCurve (pair<float,float> ip,
+                  pair<float,float> fp,
+                  vector<pair<float, float>> cp);
 
         /*!
          * Compute n points on the curve whose parameters, t, are
@@ -168,6 +199,16 @@ namespace morph
         BezCoord computePointCubic (float t) const;
 
         /*!
+         * Look up the binomial coefficient (n,k) from morph::Pascal.
+         */
+        static unsigned int binomial_lookup (unsigned int n, unsigned int k);
+
+        /*!
+         * Compute a Bezier curve of general order.
+         */
+        BezCoord computePointGeneral (float t) const;
+
+        /*!
          * A computePoint starting from the point for parameter value
          * t and going to a point which is Euclidean distance l from
          * the starting point.
@@ -204,8 +245,7 @@ namespace morph
          * Control points
          */
         //@{
-        pair<float,float> control1;
-        pair<float,float> control2;
+        vector<pair<float,float>> controls;
         //@}
 
         /*!
@@ -234,9 +274,11 @@ namespace morph
         float linlengthscaled = 0.0f;
 
         /*!
-         * The type of the bezier curve.
+         * The order of the Bezier curve. The value of the highest power of t. Thus 3 is
+         * a cubic Bezier, 2 is a quadratic Bezier, etc. Note that 0th order Bezier
+         * curve does not exist; so the constructor must update this number.
          */
-        BezCurveType beztype = BEZCUBIC;
+        unsigned int order = 0;
     };
 
 } // namespace morph

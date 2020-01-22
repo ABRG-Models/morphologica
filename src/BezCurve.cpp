@@ -3,8 +3,8 @@
  */
 
 // To enable debug cout messages:
-//#define DEBUG 1
-//#define DEBUG2 1
+#define DEBUG 1
+#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
 
@@ -19,36 +19,49 @@ using morph::BezCoord;
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
-                           pair<float,float> c1,
-                           pair<float,float> c2)
+                           vector<pair<float,float>> cp)
 {
-    this->beztype = morph::BEZCUBIC;
+    this->order = cp.size()+1;
     this->p0 = ip;
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
                               + (p1.second-p0.second)*(p1.second-p0.second) );
     this->linlengthscaled = this->scale * this->linlength;
-    this->control1 = c1;
-    this->control2 = c2;
+    this->controls = cp;
+}
+
+morph::BezCurve::BezCurve (pair<float,float> ip,
+                           pair<float,float> fp,
+                           pair<float,float> c1,
+                           pair<float,float> c2)
+{
+    this->order = 3;
+    this->p0 = ip;
+    this->p1 = fp;
+    this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
+                              + (p1.second-p0.second)*(p1.second-p0.second) );
+    this->linlengthscaled = this->scale * this->linlength;
+    this->controls.push_back (c1);
+    this->controls.push_back (c2);
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
                            pair<float,float> c1)
 {
-    this->beztype = morph::BEZQUADRATIC;
+    this->order = 2;
     this->p0 = ip;
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
                               + (p1.second-p0.second)*(p1.second-p0.second) );
     this->linlengthscaled = this->scale * this->linlength;
-    this->control1 = c1;
+    this->controls.push_back (c1);
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp)
 {
-    this->beztype = morph::BEZLINEAR;
+    this->order = 1;
     this->p0 = ip;
     this->p1 = fp;
     this->linlength = sqrtf ( (this->p1.first-this->p0.first)*(p1.first-p0.first)
@@ -60,8 +73,8 @@ vector<BezCoord>
 morph::BezCurve::computePoints (unsigned int n) const
 {
     DBG2 ("Called. i: " << this->p0.first << "," << this->p0.second
-          << " c1: " <<  this->control1.first << "," << this->control1.second
-          << " c2: " <<  this->control2.first << "," << this->control2.second
+          << " c1: " <<  this->controls[0].first << "," << this->controls[0].second
+          << " c2: " <<  this->controls[1].first << "," << this->controls[1].second
           << " f: " <<  this->p1.first << "," << this->p1.second);
     vector<BezCoord> rtn;
     for (unsigned int i = 0; i < n; ++i) {
@@ -116,26 +129,30 @@ BezCoord
 morph::BezCurve::computePoint (float t) const
 {
     DBG2 ("Called computePoint(float t = "  << t << ")");
-    switch (this->beztype) {
-    case morph::BEZLINEAR:
+#if 0
+    switch (this->order) {
+    case 1:
         return this->computePointLinear (t);
-    case morph::BEZQUADRATIC:
+    case 2:
         return this->computePointQuadratic (t);
-    case morph::BEZCUBIC:
-    default:
+    case 3:
         return this->computePointCubic (t);
+    default:
+        return this->computePointGeneral (t);
     }
+#endif
+    return this->computePointGeneral (t);
 }
 
 BezCoord
 morph::BezCurve::computePoint (float t, float l) const
 {
     DBG2 ("Called computePoint(float t="<<t<<", float l="<<l<<")");
-    switch (this->beztype) {
-    case morph::BEZLINEAR:
+    switch (this->order) {
+    case 1:
         return this->computePointLinear (t, l);
-    case morph::BEZQUADRATIC:
-    case morph::BEZCUBIC:
+    case 2:
+    case 3:
     default:
         return this->computePointBySearch (t, l);
     }
@@ -224,10 +241,10 @@ morph::BezCurve::computePointQuadratic (float t) const
     pair<float,float> b;
     float t_ = 1-t;
     b.first = (t_ * t_ * this->p0.first
-               + 2 * t_ * t * this->control1.first
+               + 2 * t_ * t * this->controls[0].first
                + t * t * this->p1.first) * this->scale;
     b.second = (t_ * t_ * this->p0.second
-                + 2 * t_ * t * this->control1.second
+                + 2 * t_ * t * this->controls[0].second
                 + t * t * this->p1.second) * this->scale;
     return BezCoord(t, b);
 }
@@ -239,13 +256,62 @@ morph::BezCurve::computePointCubic (float t) const
     pair<float,float> b;
     float t_ = 1-t;
     b.first = (t_ * t_ * t_ * this->p0.first
-               + 3 * t_ * t_ * t * this->control1.first
-               + 3 * t_ * t * t * this->control2.first
+               + 3 * t_ * t_ * t * this->controls[0].first
+               + 3 * t_ * t * t * this->controls[1].first
                + t * t * t * this->p1.first) * this->scale;
     b.second = (t_ * t_ * t_ * this->p0.second
-                + 3 * t_ * t_ * t * this->control1.second
-                + 3 * t_ * t * t * this->control2.second
+                + 3 * t_ * t_ * t * this->controls[0].second
+                + 3 * t_ * t * t * this->controls[1].second
                 + t * t * t * this->p1.second) * this->scale;
+    return BezCoord(t, b);
+}
+
+unsigned int
+morph::BezCurve::binomial_lookup (unsigned int n, unsigned int k) {
+    /* To get the values from row n, where n starts at 0 (and ends at N-1), you step
+       along a number given by the triangle sequence (n(n+1)/2) and then read n+1
+       values. OR to get n,k, step along a number given by the triangle sequence
+       (n(n+1)/2) and then step another k space to the result. */
+    unsigned int idx = (n * (n+1) / 2) + k;
+    return morph::Pascal[idx];
+}
+
+BezCoord
+morph::BezCurve::computePointGeneral (float t) const
+{
+    if (this->order >= PascalRows) {
+        stringstream ee;
+        ee << "Limited to Bezier Curves order " << (PascalRows-1)
+           << " by current size of morph::Pascal lookup table";
+        throw runtime_error (ee.str());
+    }
+
+    if (this->order == 0) {
+        throw runtime_error ("No curve if order=0");
+    }
+
+    this->checkt (t);
+    float t_ = 1-t;
+    pair<float,float> b;
+
+    // This code would be shorter if p0 and p1 were the first and last elements in controls, but no big deal.
+    // x
+    b.first = pow(t_, this->order) * this->p0.first;
+    for(unsigned int k=1; k<this->order; k++) {
+        b.first += static_cast<float> (BezCurve::binomial_lookup(this->order, k))
+            * pow (t_, this->order-k) * pow (t, k) * this->controls[k-1].first;
+    }
+    b.first += pow(t, this->order) * this->p1.first;
+    b.first *= this->scale;
+    // y
+    b.second = pow(t_, this->order) * this->p0.second;
+    for(unsigned int k=1; k<this->order; k++) {
+        b.second += static_cast<float> (BezCurve::binomial_lookup(this->order, k))
+            * pow (t_, this->order-k) * pow (t, k) * this->controls[k-1].second;
+    }
+    b.second += pow(t, this->order) * this->p1.second;
+    b.second *= this->scale;
+
     return BezCoord(t, b);
 }
 
