@@ -201,7 +201,7 @@ morph::BezCurve::computePointsHorz (float x) const
 BezCoord
 morph::BezCurve::computePoint (float t) const
 {
-    DBG2 ("Called computePoint(float t = "  << t << ") order=" << this->order);
+    //DBG2 ("Called computePoint(float t = "  << t << ") order=" << this->order);
     switch (this->order) {
     case 1:
         return this->computePointLinear (t);
@@ -210,7 +210,7 @@ morph::BezCurve::computePoint (float t) const
     case 3:
         return this->computePointCubic (t);
     default:
-        //return this->computePointGeneral (t);
+        // Default to matrix, as this is faster than computePointGeneral
         return this->computePointMatrix (t);
     }
 }
@@ -359,7 +359,7 @@ morph::BezCurve::computePointGeneral (float t) const
         b.first += static_cast<float> (BezCurve::binomial_lookup(this->order, k))
             * pow (t_, this->order-k) * pow (t, k) * this->controls[k].first;
     }
-    b.first += pow(t, this->order) * this->controls[this->order].first;
+    b.first += pow (t, this->order) * this->controls[this->order].first;
     b.first *= this->scale;
     // y
     b.second = pow(t_, this->order) * this->controls[0].second;
@@ -376,6 +376,7 @@ morph::BezCurve::computePointGeneral (float t) const
 BezCoord
 morph::BezCurve::computePointMatrix (float t) const
 {
+    this->checkt(t);
     int mp = this->order+1;
     arma::Mat<float> T(1, mp, arma::fill::ones);// First element is one anyway
     for (int i = 1; i<mp; ++i) {

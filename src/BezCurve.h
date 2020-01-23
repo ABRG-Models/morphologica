@@ -129,10 +129,21 @@ namespace morph
         vector<BezCoord> computePointsHorz (float x) const;
 
         /*!
-         * Compute one point on the curve, distance t along the curve
-         * from the starting position with t in range [0,1]
+         * Compute one point on the curve, distance t along the curve from the
+         * starting position with t in range [0,1]. This chooses either optimzed
+         * quartic/cubic functions, or defaults to the matrix computation method.
          */
         BezCoord computePoint (float t) const;
+
+        /*!
+         * Compute a Bezier curve of general order using the matrix method.
+         */
+        BezCoord computePointMatrix (float t) const;
+
+        /*!
+         * Compute a Bezier curve of general order using the conventional method.
+         */
+        BezCoord computePointGeneral (float t) const;
 
         /*!
          * Compute one point on the curve, starting at the curve point
@@ -180,14 +191,11 @@ namespace morph
         //@}
 
         /*!
-         * Compute a Bezier curve of general order using the matrix method.
+         * Get the order of the curve
          */
-        BezCoord computePointMatrix (float t) const;
-
-        /*!
-         * Compute a Bezier curve of general order using the conventional method.
-         */
-        BezCoord computePointGeneral (float t) const;
+        unsigned int getOrder (void) const {
+            return this->order;
+        }
 
     private: // methods
         /*!
