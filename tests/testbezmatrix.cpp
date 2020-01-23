@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <limits>
 
 using namespace std;
 using morph::BezCoord;
@@ -25,6 +26,21 @@ int main()
     c.push_back (v4);
 
     BezCurve cv (c);
+
+    BezCoord bm = cv.computePointMatrix (0.4);
+    BezCoord bg = cv.computePointGeneral (0.4);
+    cout << "matrix method: " << bm << endl;
+    cout << "general method: " << bg << endl;
+
+    float xdiff = bm.x() - bg.x();
+    float ydiff = bm.y() - bg.y();
+    cout << "x points differ by: " << xdiff << endl;
+    cout << "y points differ by: " << ydiff << endl;
+
+    if (xdiff < numeric_limits<float>::epsilon() && ydiff < numeric_limits<float>::epsilon()) {
+        cout << "General & matrix methods compute same point" << endl;
+        rtn = 0;
+    }
 
     return rtn;
 }

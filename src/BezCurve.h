@@ -179,6 +179,16 @@ namespace morph
         pair<float,float> getFinalPointScaled (void) const;
         //@}
 
+        /*!
+         * Compute a Bezier curve of general order using the matrix method.
+         */
+        BezCoord computePointMatrix (float t) const;
+
+        /*!
+         * Compute a Bezier curve of general order using the conventional method.
+         */
+        BezCoord computePointGeneral (float t) const;
+
     private: // methods
         /*!
          * Compute one point on the linear curve, distance t along the
@@ -215,11 +225,6 @@ namespace morph
          * Look up the binomial coefficient (n,k) from morph::Pascal.
          */
         static unsigned int binomial_lookup (unsigned int n, unsigned int k);
-
-        /*!
-         * Compute a Bezier curve of general order.
-         */
-        BezCoord computePointGeneral (float t) const;
 
         /*!
          * A computePoint starting from the point for parameter value
@@ -294,14 +299,23 @@ namespace morph
          * Matrix representation
          */
         //@{
-        //! Set up T, M and C. Called from constructors.
+
+        /*!
+         * Set up M, C and MC. Called from constructors.  A description of how to
+         * write out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
+         * Representations...
+         */
         void matrixSetup (void);
-        //! Powers vector
-        arma::Mat<int> T;
-        //! The important one; the coefficients
+
+        //! The coefficients. Probably not necessary to hold in memory.
         arma::Mat<int> M;
-        //! The control points vector
-        arma::Mat<double> C;
+
+        //! The control points vector. Again, not necessary to hold in memory (as we
+        //! compute MC)
+        arma::Mat<float> C;
+
+        //! M*C
+        arma::Mat<float> MC;
         //@}
     };
 

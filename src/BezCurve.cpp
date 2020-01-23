@@ -47,6 +47,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->controls.insert (this->controls.end(), cp.begin(), cp.end());
     this->controls.push_back (fp);
     this->order = cp.size()-1;
+    this->matrixSetup();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -63,6 +64,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->controls.push_back (c2);
     this->controls.push_back (fp);
     this->order = 3;
+    this->matrixSetup();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -77,6 +79,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->controls.push_back (c1);
     this->controls.push_back (fp);
     this->order = 2;
+    this->matrixSetup();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -89,6 +92,7 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
     this->controls.push_back (ip);
     this->controls.push_back (fp);
     this->order = 1;
+    this->matrixSetup();
 }
 
 void
@@ -96,6 +100,17 @@ morph::BezCurve::matrixSetup (void)
 {
     // Scheme to write out the matrix comes from Cohen & Riesenfeld (1982) General
     // Matrix Representations...
+
+    // Check order here
+    if (this->order >= PascalRows) {
+        stringstream ee;
+        ee << "This code is limited to Bezier Curves of order " << (PascalRows-1)
+           << " by the current size of the morph::Pascal lookup table";
+        throw runtime_error (ee.str());
+    }
+    if (this->order == 0) {
+        throw runtime_error ("No curves if order=0");
+    }
 
     // Set up M.
     int m = (int)this->order;
@@ -112,26 +127,21 @@ morph::BezCurve::matrixSetup (void)
             this->M(m-i, r) = element;
         }
     }
-    cout << this->M << endl;
+    //DBG2 ("M:\n" << this->M);
 
-    // Set up C & T
-    this->T.set_size(2,mp);
-    this->T.zeros();
+    // Set up C
     this->C.set_size(mp,2);
     this->C.zeros();
     r = 0;
-    for (auto c : controls) {
-        cout << c.first << "," << c.second << endl;
+    for (auto c : this->controls) {
+        // Just put the controls into C, in order.
         this->C(r,0) = c.first;
         this->C(r,1) = c.second;
-
-        this->T(0,r) = r;
-        this->T(1,r) = r;
         ++r;
     }
-    cout << "C:" << this->C << endl;
-    cout << "T:" << this->T << endl;
+    //cout << "C:\n" << this->C << endl;
 
+    this->MC = this->M * this->C;
 }
 
 vector<BezCoord>
@@ -200,7 +210,8 @@ morph::BezCurve::computePoint (float t) const
     case 3:
         return this->computePointCubic (t);
     default:
-        return this->computePointGeneral (t);
+        //return this->computePointGeneral (t);
+        return this->computePointMatrix (t);
     }
 }
 
@@ -338,17 +349,6 @@ morph::BezCurve::binomial_lookup (unsigned int n, unsigned int k) {
 BezCoord
 morph::BezCurve::computePointGeneral (float t) const
 {
-    if (this->order >= PascalRows) {
-        stringstream ee;
-        ee << "Limited to Bezier Curves order " << (PascalRows-1)
-           << " by current size of morph::Pascal lookup table";
-        throw runtime_error (ee.str());
-    }
-
-    if (this->order == 0) {
-        throw runtime_error ("No curve if order=0");
-    }
-
     this->checkt (t);
     float t_ = 1-t;
     pair<float,float> b;
@@ -371,6 +371,18 @@ morph::BezCurve::computePointGeneral (float t) const
     b.second *= this->scale;
 
     return BezCoord(t, b);
+}
+
+BezCoord
+morph::BezCurve::computePointMatrix (float t) const
+{
+    int mp = this->order+1;
+    arma::Mat<float> T(1, mp, arma::fill::ones);// First element is one anyway
+    for (int i = 1; i<mp; ++i) {
+        T(i) = pow (t, i);
+    }
+    arma::Mat<float> bp = T * this->MC;
+    return BezCoord (t, make_pair(bp(0), bp(1)));
 }
 
 BezCoord
