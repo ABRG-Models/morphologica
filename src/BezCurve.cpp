@@ -37,10 +37,14 @@ morph::BezCurve::init (void)
 void
 morph::BezCurve::fit (vector<pair<float,float>> points)
 {
-    // Curve fit to find controls
+    // Zero out the controls vector
+    this->controls.clear();
+
+    // Set the order for the curve
     size_t n = points.size();
     this->order = n - 1;
 
+    // This call to matrixSetup will set up this->M (required for the fit)
     this->matrixSetup();
 
     int i = 0;
@@ -182,7 +186,7 @@ morph::BezCurve::matrixSetup (void)
     int m = (int)this->order;
     int mp = m+1;
     int r = 0;
-    this->M.set_size(mp,mp);
+    this->M.set_size (mp, mp);
     this->M.zeros();
     for (int i=0; i<mp; ++i) { // i is column
         for (r=0; r<mp-i; ++r) { // r is row
@@ -193,10 +197,10 @@ morph::BezCurve::matrixSetup (void)
             this->M(m-i, r) = element;
         }
     }
-    //DBG2 ("M:\n" << this->M);
+    //cout << "matrixSetup M:\n" << this->M;
 
     // Set up C
-    this->C.set_size(mp,2);
+    this->C.set_size (mp, 2);
     this->C.zeros();
     r = 0;
     for (auto c : this->controls) {
@@ -205,7 +209,7 @@ morph::BezCurve::matrixSetup (void)
         this->C(r,1) = c.second;
         ++r;
     }
-    //cout << "C:\n" << this->C << endl;
+    //cout << "matrixSetup C:\n" << this->C << endl;
 
     this->MC = this->M * this->C;
 }
