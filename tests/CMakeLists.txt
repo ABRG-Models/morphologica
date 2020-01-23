@@ -35,6 +35,13 @@ add_executable(${TARGETTEST1_3} ${SOURCETEST1_3})
 target_link_libraries(${TARGETTEST1_3} morphologica)
 add_test(testbezmatrix ${TARGETTEST1_3})
 
+# Testing auto-fitting a Bezier curve
+set(TARGETTEST1_4 testbezfit CACHE TYPE STRING)
+set(SOURCETEST1_4 testbezfit.cpp)
+add_executable(${TARGETTEST1_4} ${SOURCETEST1_4})
+target_link_libraries(${TARGETTEST1_4} morphologica)
+add_test(testbezfit ${TARGETTEST1_4})
+
 # Test two curves connected together
 set(TARGETTEST2 twocurves CACHE TYPE STRING)
 set(SOURCETEST2 twocurves.cpp)

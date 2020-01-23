@@ -62,6 +62,9 @@ namespace morph
     {
     public: // methods
 
+        //! Do-nothing constructor
+        BezCurve (void);
+
         /*!
          * Construct a Bezier curve of order cp.size()-1 with the initial and final
          * points making up part of cp.
@@ -99,6 +102,12 @@ namespace morph
         BezCurve (pair<float,float> ip,
                   pair<float,float> fp,
                   vector<pair<float, float>> cp);
+
+        /*!
+         * Using the given points, make this a best-fit Bezier curve with
+         * points.size()-1 control points.
+         */
+        void fit (vector<pair<float, float>> points);
 
         /*!
          * Compute n points on the curve whose parameters, t, are
@@ -170,6 +179,11 @@ namespace morph
         string output (float step) const;
 
         /*!
+         * Output the control points.
+         */
+        string outputControl (void) const;
+
+        /*!
          * A setter for the scaling factor.
          */
         void setScale (const float s);
@@ -198,6 +212,12 @@ namespace morph
         }
 
     private: // methods
+
+        /*!
+         * Perform common initialization tasks.
+         */
+        void init (void);
+
         /*!
          * Compute one point on the linear curve, distance t along the
          * curve from the starting position.
@@ -315,11 +335,10 @@ namespace morph
          */
         void matrixSetup (void);
 
-        //! The coefficients. Probably not necessary to hold in memory.
-        arma::Mat<int> M;
+        //! The coefficients.
+        arma::Mat<float> M;
 
-        //! The control points vector. Again, not necessary to hold in memory (as we
-        //! compute MC)
+        //! The control points vector.
         arma::Mat<float> C;
 
         //! M*C

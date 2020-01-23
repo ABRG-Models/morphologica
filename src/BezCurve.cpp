@@ -24,30 +24,108 @@ using namespace std;
 using morph::BezCoord;
 using arma::mat;
 
-morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
+void
+morph::BezCurve::init (void)
 {
-    this->controls = cp;
-    this->order = cp.size()-1;
+    this->order = this->controls.size()-1;
     this->linlength = sqrtf ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
                               + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
     this->linlengthscaled = this->scale * this->linlength;
+    this->matrixSetup();
+}
+
+void
+morph::BezCurve::fit (vector<pair<float,float>> points)
+{
+    // Curve fit to find controls
+    size_t n = points.size();
+    this->order = n - 1;
 
     this->matrixSetup();
+
+    int i = 0;
+
+    arma::Mat<float> P (n, 2, arma::fill::zeros);
+    for (auto p : points) {
+        P(i,0) = p.first;
+        P(i++,1) = p.second;
+    }
+    cout << "P:\n" << P << endl;
+
+    // Compute candidate t values for the points.
+    i = 0;
+    pair<float, float> p_l;
+    bool first = true;
+    arma::Mat<float> S (n, 1, arma::fill::zeros);
+    float total_len = 0.0f;
+    for (auto p : points) {
+        if (first) {
+            //S (i) = 0.0f; // No need
+            first = false;
+        } else {
+            register float xdiff = (p.first - p_l.first);
+            register float ydiff = (p.second - p_l.second);
+            register float len = sqrtf (xdiff*xdiff + ydiff*ydiff);
+            total_len += len;
+            S(i,0) = total_len;
+        }
+        p_l = p;
+        ++i;
+    }
+    for (i = 0; i < n; ++i) {
+        S(i,0) = S(i,0) / total_len;
+    }
+    // S now contains the t values for the fitting.
+    cout << "S:\n" << S << endl;
+
+    // Make TT matrix (T with double bar in
+    // https://pomax.github.io/bezierinfo/#curvefitting) This takes each t and makes
+    // one column containing all the powers of t relevant to the order that we're
+    // looking for.
+    arma::Mat<float> TT (n, n, arma::fill::ones);
+    for (i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            float s = S(i,0);
+            TT(i, j) = pow (s, j);
+        }
+    }
+    cout << "TT:\n" << TT;
+
+    // Magic matrix incantation to find the best set of coordinates:
+    this->C = this->M.i() * (TT.t()*TT).i() * TT.t() * P;
+    cout << "Drumroll... C is\n" << this->C;
+
+    // Copy elements of C into this->controls.
+    this->controls.clear();
+    for (i = 0; i<n; ++i) {
+        this->controls.push_back (make_pair (this->C(i,0), this->C(i,1)));
+    }
+
+    // Re-init
+    this->init();
+}
+
+
+morph::BezCurve::BezCurve (void)
+{
+    this->order = 0;
+}
+
+morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
+{
+    this->controls = cp;
+    this->init();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
                            vector<pair<float,float>> cp)
 {
-    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
-                              + (fp.second-ip.second)*(fp.second-ip.second) );
-    this->linlengthscaled = this->scale * this->linlength;
     this->controls.clear();
     this->controls.push_back (ip);
     this->controls.insert (this->controls.end(), cp.begin(), cp.end());
     this->controls.push_back (fp);
-    this->order = cp.size()-1;
-    this->matrixSetup();
+    this->init();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
@@ -55,44 +133,32 @@ morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> c1,
                            pair<float,float> c2)
 {
-    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
-                              + (fp.second-ip.second)*(fp.second-ip.second) );
-    this->linlengthscaled = this->scale * this->linlength;
     this->controls.clear();
     this->controls.push_back (ip);
     this->controls.push_back (c1);
     this->controls.push_back (c2);
     this->controls.push_back (fp);
-    this->order = 3;
-    this->matrixSetup();
+    this->init();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp,
                            pair<float,float> c1)
 {
-    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
-                              + (fp.second-ip.second)*(fp.second-ip.second) );
-    this->linlengthscaled = this->scale * this->linlength;
     this->controls.clear();
     this->controls.push_back (ip);
     this->controls.push_back (c1);
     this->controls.push_back (fp);
-    this->order = 2;
-    this->matrixSetup();
+    this->init();
 }
 
 morph::BezCurve::BezCurve (pair<float,float> ip,
                            pair<float,float> fp)
 {
-    this->linlength = sqrtf ( (fp.first-ip.first)*(fp.first-ip.first)
-                              + (fp.second-ip.second)*(fp.second-ip.second) );
-    this->linlengthscaled = this->scale * this->linlength;
     this->controls.clear();
     this->controls.push_back (ip);
     this->controls.push_back (fp);
-    this->order = 1;
-    this->matrixSetup();
+    this->init();
 }
 
 void
@@ -120,9 +186,9 @@ morph::BezCurve::matrixSetup (void)
     this->M.zeros();
     for (int i=0; i<mp; ++i) { // i is column
         for (r=0; r<mp-i; ++r) { // r is row
-            int element = BezCurve::binomial_lookup (m, i)
-                * BezCurve::binomial_lookup (m-i, m-i-r)
-                * pow (-1, m-i-r);
+            float element = static_cast<float>(BezCurve::binomial_lookup (m, i))
+                * static_cast<float>(BezCurve::binomial_lookup (m-i, m-i-r))
+                * pow (-1.0f, static_cast<float>(m-i-r));
             // Ensure the matrix is inverted 'm-i', not just 'i'
             this->M(m-i, r) = element;
         }
@@ -280,6 +346,16 @@ morph::BezCurve::output (float step) const
     return ss.str();
 }
 
+string
+morph::BezCurve::outputControl (void) const
+{
+    stringstream ss;
+    for (auto c : this->controls) {
+        ss << c.first << "," << c.second << endl;
+    }
+    return ss.str();
+}
+
 void
 morph::BezCurve::setScale (const float s)
 {
@@ -380,7 +456,7 @@ morph::BezCurve::computePointMatrix (float t) const
     int mp = this->order+1;
     arma::Mat<float> T(1, mp, arma::fill::ones);// First element is one anyway
     for (int i = 1; i<mp; ++i) {
-        T(i) = pow (t, i);
+        T(i) = pow (t, static_cast<float>(i));
     }
     arma::Mat<float> bp = T * this->MC;
     return BezCoord (t, make_pair(bp(0), bp(1)));
