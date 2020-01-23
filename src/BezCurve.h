@@ -18,7 +18,6 @@ using std::numeric_limits;
 
 namespace morph
 {
-
     /*!
      * Store the first N=21 rows of Pascal's triangle in a linear array. To get the
      * values from row n, where n starts at 0 (and ends at N-1), you step along a number

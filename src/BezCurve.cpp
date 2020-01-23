@@ -37,11 +37,15 @@ morph::BezCurve::init (void)
 void
 morph::BezCurve::fit (vector<pair<float,float>> points)
 {
+    // Note that you really need double precision in the matrices whilst computing a
+    // Bezier best fit. If we use single precision, the fits are only good up to
+    // Bezier order 4 or 5, rather than 8-10.
+
     // Zero out the controls vector
     this->controls.clear();
 
     // Set the order for the curve
-    size_t n = points.size();
+    int n = points.size();
     this->order = n - 1;
 
     // This call to matrixSetup will set up this->M (required for the fit)
@@ -49,55 +53,61 @@ morph::BezCurve::fit (vector<pair<float,float>> points)
 
     int i = 0;
 
-    arma::Mat<float> P (n, 2, arma::fill::zeros);
+    arma::Mat<double> P (n, 2, arma::fill::zeros);
     for (auto p : points) {
         P(i,0) = p.first;
         P(i++,1) = p.second;
     }
-    cout << "P:\n" << P << endl;
+    cout << "P:\n" << P;
 
     // Compute candidate t values for the points.
     i = 0;
-    pair<float, float> p_l;
     bool first = true;
-    arma::Mat<float> S (n, 1, arma::fill::zeros);
-    float total_len = 0.0f;
-    for (auto p : points) {
-        if (first) {
-            //S (i) = 0.0f; // No need
-            first = false;
-        } else {
-            register float xdiff = (p.first - p_l.first);
-            register float ydiff = (p.second - p_l.second);
-            register float len = sqrtf (xdiff*xdiff + ydiff*ydiff);
-            total_len += len;
-            S(i,0) = total_len;
-        }
-        p_l = p;
-        ++i;
+    arma::Mat<double> D (n, 1, arma::fill::zeros);
+    arma::Mat<double> S (n, 1, arma::fill::zeros);
+    double total_len = 0.0f;
+    for (i=1; i<n; ++i) {
+        register double xdiff = P(i,0) - P(i-1,0);
+        register double ydiff = P(i,1) - P(i-1,1);
+        register double len = sqrtf (xdiff*xdiff + ydiff*ydiff);
+        total_len += len;
+        D(i,0) = total_len;
     }
     for (i = 0; i < n; ++i) {
-        S(i,0) = S(i,0) / total_len;
+        S(i,0) = D(i,0) / total_len;
     }
     // S now contains the t values for the fitting.
-    cout << "S:\n" << S << endl;
+    cout << "S:\n" << S;
 
     // Make TT matrix (T with double bar in
     // https://pomax.github.io/bezierinfo/#curvefitting) This takes each t and makes
     // one column containing all the powers of t relevant to the order that we're
     // looking for.
-    arma::Mat<float> TT (n, n, arma::fill::ones);
+    arma::Mat<double> TT (n, n, arma::fill::ones);
     for (i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            float s = S(i,0);
+            double s = S(i,0);
             TT(i, j) = pow (s, j);
         }
     }
     cout << "TT:\n" << TT;
 
+    arma::Mat<double> Md = arma::conv_to<arma::Mat<double>>::from (this->M);
     // Magic matrix incantation to find the best set of coordinates:
-    this->C = this->M.i() * (TT.t()*TT).i() * TT.t() * P;
-    cout << "Drumroll... C is\n" << this->C;
+#if 0
+    // Long winded:
+    arma::Mat<double> Mi = Md.i();
+    arma::Mat<double> TTtTT = TT.t()*TT;
+    arma::Mat<double> TTtTTi = TTtTT.i();
+    arma::Mat<double> Cd = Mi * TTtTTi * TT.t() * P;
+#else
+    // One line:
+    arma::Mat<double> Cd = Md.i() * (TT.t()*TT).i() * TT.t() * P;
+#endif
+    cout << "Drumroll... C is\n" << Cd;
+
+    // Cast back to floats
+    this->C = arma::conv_to<arma::Mat<float>>::from (Cd);
 
     // Copy elements of C into this->controls.
     this->controls.clear();
@@ -458,12 +468,12 @@ morph::BezCurve::computePointMatrix (float t) const
 {
     this->checkt(t);
     int mp = this->order+1;
-    arma::Mat<float> T(1, mp, arma::fill::ones);// First element is one anyway
+    arma::Mat<double> T(1, mp, arma::fill::ones);// First element is one anyway
     for (int i = 1; i<mp; ++i) {
-        T(i) = pow (t, static_cast<float>(i));
+        T(i) = pow (t, static_cast<double>(i));
     }
-    arma::Mat<float> bp = T * this->MC;
-    return BezCoord (t, make_pair(bp(0), bp(1)));
+    arma::Mat<double> bp = T * this->MC;
+    return BezCoord (t, make_pair(static_cast<float>(bp(0)), static_cast<float>(bp(1))));
 }
 
 BezCoord
