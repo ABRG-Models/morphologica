@@ -54,6 +54,20 @@ namespace morph
         float scale = 1.0f;
 
         /*!
+         * This can be filled with a set of points on the path made up by the Bezier
+         * curves. Do so with computePoints.
+         */
+        vector<BezCoord> points;
+
+        /*!
+         * As for points, store tangents and normals.
+         */
+        //@{
+        vector<BezCoord> tangents;
+        vector<BezCoord> normals;
+        //@}
+
+        /*!
          * A null BezCurvePath is one which has no curves. If curves
          * is empty then the BezCurvePath is null.
          */
@@ -173,15 +187,16 @@ namespace morph
          * system, so if you're going to plot the BezCoord points in a
          * right hand system, set invertY to true.
          */
-        vector<BezCoord> getPoints (float step, bool invertY = false) const {
-            vector<BezCoord> rtn;
+        void computePoints (float step, bool invertY = false) {
+
+            this->points.clear();
 
             // First the very start point:
             BezCoord startPt = this->curves.front().computePoint (0.0f);
             if (invertY) {
                 startPt.invertY();
             }
-            rtn.push_back (startPt);
+            this->points.push_back (startPt);
 
             list<BezCurve>::const_iterator i = this->curves.begin();
             // Don't forget to set the scaling factor in each
@@ -200,37 +215,51 @@ namespace morph
                         ++bci;
                     }
                 }
-                rtn.insert (rtn.end(), cp.begin(), cp.end());
+                this->points.insert (this->points.end(), cp.begin(), cp.end());
                 ++i;
             }
-            return rtn;
         }
+
+        //! Getters
+        //@{
+        vector<BezCoord> getPoints (void) const {
+            return this->points;
+        }
+        vector<BezCoord> getTangents (void) const {
+            return this->tangents;
+        }
+        vector<BezCoord> getNormals (void) const {
+            return this->normals;
+        }
+        //@}
 
         /*!
          * Similar to the above, but ensure that there are @nPoints evenly spaced
          * points along the curve. @invertY has the same meaning as in the other
          * overload of this function.
          */
-        vector<BezCoord> getPoints (unsigned int nPoints, bool invertY = false) const {
+        void computePoints (unsigned int nPoints, bool invertY = false) {
             // Get end-to-end distance and compute a candidate step, then call other
             // overload.
-            vector<BezCoord> rtn;
             if (nPoints == 0) {
-                cout << "nPoints should be >0, returning empty vector of points" << endl;
-                return rtn;
+                cout << "nPoints should be >0, returning" << endl;
+                return;
             }
             if (this->curves.empty()) {
-                cout << "Curve is empty, returning empty vector of points" << endl;
-                return rtn;
+                cout << "Curve is empty, returning" << endl;
+                return;
             }
+
+            this->points.clear();
+
             float etoe = this->getEndToEnd();
             float step = etoe/(nPoints-1);
             unsigned int actualPoints = 0;
             while (actualPoints != nPoints) {
-                rtn.clear();
+                this->points.clear();
                 // cout << "Getting points with step size " << step << endl;
-                rtn = this->getPoints (step, invertY);
-                actualPoints = rtn.size();
+                this->points = this->getPoints (step, invertY);
+                actualPoints = this->points.size();
                 if (actualPoints != nPoints) {
 
                     // Modify step
@@ -241,15 +270,15 @@ namespace morph
                         float stepinc = step;
                         while (actualPoints < nPoints) {
                             steptrial = step + stepinc;
-                            rtn.clear();
-                            rtn = this->getPoints (steptrial, invertY);
-                            actualPoints = rtn.size();
+                            this->points.clear();
+                            this->points = this->getPoints (steptrial, invertY);
+                            actualPoints = this->points.size();
                             stepinc /= 2.0f;
                         }
 
                         if (fabs(step-steptrial) < numeric_limits<float>::epsilon()) {
                             cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
-                            return rtn;
+                            return;
                         }
                         step = steptrial;
 
@@ -259,20 +288,19 @@ namespace morph
                         float stepinc = step/2.0f;
                         while (actualPoints < nPoints) {
                             steptrial = step - stepinc;
-                            rtn.clear();
-                            rtn = this->getPoints (steptrial, invertY);
-                            actualPoints = rtn.size();
+                            this->points.clear();
+                            this->points = this->getPoints (steptrial, invertY);
+                            actualPoints = this->points.size();
                             stepinc /= 2.0f;
                         }
                         if (fabs(step-steptrial) < numeric_limits<float>::epsilon()) {
                             cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
-                            return rtn;
+                            return;
                         }
                         step = steptrial;
                     }
                 }
             }
-            return rtn;
         }
     };
 

@@ -109,6 +109,11 @@ namespace morph
         void fit (vector<pair<float, float>> points);
 
         /*!
+         * Obtain the derivative of this Bezier curve
+         */
+        BezCurve derivative (void) const;
+
+        /*!
          * Compute n points on the curve whose parameters, t, are
          * equally spaced in parameter space. The first point will be
          * the start of the curve (t==0) and the last point will be at

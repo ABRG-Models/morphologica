@@ -24,6 +24,61 @@ using namespace std;
 using morph::BezCoord;
 using arma::mat;
 
+morph::BezCurve::BezCurve (void)
+{
+    this->order = 0;
+}
+
+morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
+{
+    this->controls = cp;
+    this->init();
+}
+
+morph::BezCurve::BezCurve (pair<float,float> ip,
+                           pair<float,float> fp,
+                           vector<pair<float,float>> cp)
+{
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.insert (this->controls.end(), cp.begin(), cp.end());
+    this->controls.push_back (fp);
+    this->init();
+}
+
+morph::BezCurve::BezCurve (pair<float,float> ip,
+                           pair<float,float> fp,
+                           pair<float,float> c1,
+                           pair<float,float> c2)
+{
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.push_back (c1);
+    this->controls.push_back (c2);
+    this->controls.push_back (fp);
+    this->init();
+}
+
+morph::BezCurve::BezCurve (pair<float,float> ip,
+                           pair<float,float> fp,
+                           pair<float,float> c1)
+{
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.push_back (c1);
+    this->controls.push_back (fp);
+    this->init();
+}
+
+morph::BezCurve::BezCurve (pair<float,float> ip,
+                           pair<float,float> fp)
+{
+    this->controls.clear();
+    this->controls.push_back (ip);
+    this->controls.push_back (fp);
+    this->init();
+}
+
 void
 morph::BezCurve::init (void)
 {
@@ -62,7 +117,6 @@ morph::BezCurve::fit (vector<pair<float,float>> points)
 
     // Compute candidate t values for the points.
     i = 0;
-    bool first = true;
     arma::Mat<double> D (n, 1, arma::fill::zeros);
     arma::Mat<double> S (n, 1, arma::fill::zeros);
     double total_len = 0.0f;
@@ -119,60 +173,20 @@ morph::BezCurve::fit (vector<pair<float,float>> points)
     this->init();
 }
 
-
-morph::BezCurve::BezCurve (void)
+morph::BezCurve
+morph::BezCurve::derivative (void) const
 {
-    this->order = 0;
-}
-
-morph::BezCurve::BezCurve (vector<pair<float,float>> cp)
-{
-    this->controls = cp;
-    this->init();
-}
-
-morph::BezCurve::BezCurve (pair<float,float> ip,
-                           pair<float,float> fp,
-                           vector<pair<float,float>> cp)
-{
-    this->controls.clear();
-    this->controls.push_back (ip);
-    this->controls.insert (this->controls.end(), cp.begin(), cp.end());
-    this->controls.push_back (fp);
-    this->init();
-}
-
-morph::BezCurve::BezCurve (pair<float,float> ip,
-                           pair<float,float> fp,
-                           pair<float,float> c1,
-                           pair<float,float> c2)
-{
-    this->controls.clear();
-    this->controls.push_back (ip);
-    this->controls.push_back (c1);
-    this->controls.push_back (c2);
-    this->controls.push_back (fp);
-    this->init();
-}
-
-morph::BezCurve::BezCurve (pair<float,float> ip,
-                           pair<float,float> fp,
-                           pair<float,float> c1)
-{
-    this->controls.clear();
-    this->controls.push_back (ip);
-    this->controls.push_back (c1);
-    this->controls.push_back (fp);
-    this->init();
-}
-
-morph::BezCurve::BezCurve (pair<float,float> ip,
-                           pair<float,float> fp)
-{
-    this->controls.clear();
-    this->controls.push_back (ip);
-    this->controls.push_back (fp);
-    this->init();
+    // Construct new weights.
+    vector<pair<float,float>> deriv_cp;
+    for (unsigned int i = 0; i<=this->order-1; ++i) {
+        pair<float, float> wi = this->controls[i];
+        pair<float, float> wip1 = this->controls[i+1];
+        float new1 = this->order * (wip1.first - wi.first);
+        float new2 = this->order * (wip1.second - wi.second);
+        deriv_cp.push_back (make_pair (new1, new2));
+    }
+    cout << "New controls size: " << deriv_cp.size() << endl;
+    return morph::BezCurve (deriv_cp);
 }
 
 void
