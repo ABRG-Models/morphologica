@@ -170,6 +170,11 @@ namespace morph
         BezCoord computePoint (float t, float l) const;
 
         /*!
+         * Compute the tangent and normal at t.
+         */
+        pair<BezCoord, BezCoord> computeTangentNormal (const float t) const;
+
+        /*!
          * For debugging - output, as a string, the BezCoords of this
          * curve, choosing numPoints points evenly spaced in the
          * parameter space t=[0,1].

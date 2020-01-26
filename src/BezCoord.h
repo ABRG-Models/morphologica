@@ -10,6 +10,7 @@
 #include <ostream>
 
 using std::pair;
+using std::make_pair;
 using std::ostream;
 
 namespace morph
@@ -89,6 +90,17 @@ namespace morph
          */
         void invertY (void) {
             this->coord.second = -this->coord.second;
+        }
+
+        /*!
+         * Normalize the length that is made by drawing a vector from the origin to this
+         * coordinate.
+         */
+        void normalize (void) {
+            BezCoord origin(make_pair(0.0f,0.0f));
+            float len = origin.distanceTo (*this);
+            this->coord.first /= len;
+            this->coord.second /= len;
         }
 
         /*!

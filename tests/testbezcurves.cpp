@@ -43,10 +43,16 @@ int main()
     bcp.addCurve (cc4);
 
     unsigned int nPoints = 201;
-    vector<BezCoord> points = bcp.getPoints (nPoints);
+    bcp.computePoints (nPoints);
+    vector<BezCoord> points = bcp.getPoints();
+    vector<BezCoord> tans = bcp.getTangents();
 
     for (auto p : points) {
         cout << p.x() << "," << p.y() << endl;
+    }
+    cout << "Tangents" << endl;
+    for (auto ta : tans) {
+        cout << ta.x() << "," << ta.y() << endl;
     }
 
     if (points.size() == nPoints) {

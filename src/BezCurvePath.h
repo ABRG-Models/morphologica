@@ -190,6 +190,8 @@ namespace morph
         void computePoints (float step, bool invertY = false) {
 
             this->points.clear();
+            this->tangents.clear();
+            this->normals.clear();
 
             // First the very start point:
             BezCoord startPt = this->curves.front().computePoint (0.0f);
@@ -216,6 +218,12 @@ namespace morph
                     }
                 }
                 this->points.insert (this->points.end(), cp.begin(), cp.end());
+                // Now compute tangents and normals
+                for (BezCoord bp : cp) {
+                    pair<BezCoord, BezCoord> tn = i->computeTangentNormal(bp.t());
+                    this->tangents.push_back (tn.first);
+                    this->normals.push_back (tn.second);
+                }
                 ++i;
             }
         }
@@ -258,7 +266,7 @@ namespace morph
             while (actualPoints != nPoints) {
                 this->points.clear();
                 // cout << "Getting points with step size " << step << endl;
-                this->points = this->getPoints (step, invertY);
+                this->computePoints (step, invertY);
                 actualPoints = this->points.size();
                 if (actualPoints != nPoints) {
 
@@ -271,7 +279,7 @@ namespace morph
                         while (actualPoints < nPoints) {
                             steptrial = step + stepinc;
                             this->points.clear();
-                            this->points = this->getPoints (steptrial, invertY);
+                            this->computePoints (steptrial, invertY);
                             actualPoints = this->points.size();
                             stepinc /= 2.0f;
                         }
@@ -289,7 +297,7 @@ namespace morph
                         while (actualPoints < nPoints) {
                             steptrial = step - stepinc;
                             this->points.clear();
-                            this->points = this->getPoints (steptrial, invertY);
+                            this->computePoints (steptrial, invertY);
                             actualPoints = this->points.size();
                             stepinc /= 2.0f;
                         }

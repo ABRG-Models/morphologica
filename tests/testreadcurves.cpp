@@ -5,10 +5,12 @@
 #include <fstream>
 #include <math.h>
 #include "BezCoord.h"
+#include "BezCurvePath.h"
 
 using namespace std;
 using morph::ReadCurves;
 using morph::BezCoord;
+using morph::BezCurvePath;
 using std::vector;
 
 #define DEBUG 1
@@ -22,7 +24,9 @@ int main()
     try {
         ReadCurves r("../../tests/trial.svg");
         //r.save (0.001f);
-        vector<BezCoord> pts = r.getCorticalPath().getPoints (0.01f);
+        BezCurvePath bcp = r.getCorticalPath();
+        bcp.computePoints (0.01f);
+        vector<BezCoord> pts = bcp.getPoints();
         cout << "Got " << pts.size() << " points with getPoints()" << endl;
         auto i = pts.begin();
         while (i != pts.end()) {

@@ -610,6 +610,18 @@ morph::BezCurve::computePointBySearchHorz (float t, float x) const
     return b2;
 }
 
+pair<BezCoord, BezCoord>
+morph::BezCurve::computeTangentNormal (const float t) const
+{
+    morph::BezCurve deriv = this->derivative();
+    BezCoord tang = deriv.computePoint (t);
+    tang.normalize();
+    BezCoord norm = tang; // copies the parameter
+    // rotate norm:
+    norm.setCoord (make_pair(-tang.y(), tang.x()));
+    return make_pair(tang, norm);
+}
+
 void
 morph::BezCurve::checkt (float t) const
 {

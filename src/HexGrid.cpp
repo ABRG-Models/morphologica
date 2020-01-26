@@ -446,9 +446,10 @@ morph::HexGrid::clearRegionBoundaryFlags (void)
 }
 
 vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
+morph::HexGrid::getRegion (BezCurvePath& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
 {
-    vector<BezCoord> bpoints = p.getPoints (this->d/2.0f, true);
+    p.computePoints (this->d/2.0f, true);
+    vector<BezCoord> bpoints = p.getPoints();
     return this->getRegion (bpoints, regionCentroid, applyOriginalBoundaryCentroid);
 }
 
@@ -580,10 +581,10 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
 
     if (!this->boundary.isNull()) {
         DBG ("Applying boundary...");
-
         // Compute the points on the boundary using half of the hex to hex spacing as the step
         // size. The 'true' argument inverts the y axis.
-        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true);
+        this->boundary.computePoints (this->d/2.0f, true);
+        vector<BezCoord> bpoints = this->boundary.getPoints();
         this->setBoundary (bpoints);
     }
 }

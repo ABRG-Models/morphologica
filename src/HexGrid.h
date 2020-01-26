@@ -375,7 +375,7 @@ namespace morph {
          * Returns a vector of iterators to the Hexes that make up the region.
          */
         //@{
-        vector<list<Hex>::iterator> getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid,
+        vector<list<Hex>::iterator> getRegion (BezCurvePath& p, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
         vector<list<Hex>::iterator> getRegion (vector<BezCoord>& bpoints, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
