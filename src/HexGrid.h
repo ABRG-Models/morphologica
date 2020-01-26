@@ -221,7 +221,7 @@ namespace morph {
          * offsets the boundary so that when it is applied to the
          * HexGrid, the centroid IS (0,0).
          */
-        void setBoundary (const BezCurvePath& p);
+        void setBoundary (const BezCurvePath<float>& p);
 
         /*!
          * Sets boundary based on the vector of BezCoords.
@@ -375,7 +375,7 @@ namespace morph {
          * Returns a vector of iterators to the Hexes that make up the region.
          */
         //@{
-        vector<list<Hex>::iterator> getRegion (BezCurvePath& p, pair<float, float>& regionCentroid,
+        vector<list<Hex>::iterator> getRegion (BezCurvePath<float>& p, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
         vector<list<Hex>::iterator> getRegion (vector<BezCoord<float>>& bpoints, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
@@ -631,7 +631,7 @@ namespace morph {
         /*!
          * A boundary to apply to the initial, rectangular grid.
          */
-        BezCurvePath boundary;
+        BezCurvePath<float> boundary;
 
         /*!
          * Hex references to the hexes on the vertices of the

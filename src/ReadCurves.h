@@ -58,18 +58,18 @@ namespace morph
         /*!
          * Get the cortical path as a list of BezCurves
          */
-        BezCurvePath getCorticalPath (void) const;
+        BezCurvePath<float> getCorticalPath (void) const;
 
         /*!
          * Get the path of an enclosed structure by name, as a list of BezCurves.
          */
-        BezCurvePath getEnclosedRegion (const string& structName) const;
+        BezCurvePath<float> getEnclosedRegion (const string& structName) const;
 
         /*!
          * Get all the paths of enclosed structures. This is a list of pairs, in which the name and
          * the structure path are the two parts of the pair.
          */
-        list<BezCurvePath> getEnclosedRegions (void) const;
+        list<BezCurvePath<float>> getEnclosedRegions (void) const;
 
         /*!
          * Save the paths to named files, with the step size being approximately step in Cartesian
@@ -167,7 +167,7 @@ namespace morph
          * positive down. This parsing does not change that coordinate system, and so the BezCoords
          * in the path may need to have their y coordinates reversed.
          */
-        BezCurvePath parseD (const string& d);
+        BezCurvePath<float> parseD (const string& d);
 
         /*!
          * Read a <line> element. Read x1,y1,x2,y2 attributes from which line length can be
@@ -184,7 +184,7 @@ namespace morph
         /*!
          * The neocortical path.
          */
-        BezCurvePath corticalPath;
+        BezCurvePath<float> corticalPath;
 
         /*!
          * Init to false, set true if we find the "cortex" layer in the svg file.
@@ -194,12 +194,12 @@ namespace morph
         /*!
          * A list of paths marking out structures within the neocortex.
          */
-        list<BezCurvePath> enclosedRegions;
+        list<BezCurvePath<float>> enclosedRegions;
 
         /*!
          * To hold the scale bar line.
          */
-        BezCurvePath linePath;
+        BezCurvePath<float> linePath;
 
         /*!
          * lineToMillimetres.first is the length of the line in the units of the SVG

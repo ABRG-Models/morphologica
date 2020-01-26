@@ -24,7 +24,7 @@ int main()
     morph::BezCurve<float> c3(v3,v4);
     morph::BezCurve<float> c4(v4,v1);
     cout << "instanciated curves" << endl;
-    morph::BezCurvePath bound;
+    morph::BezCurvePath<float> bound;
     cout << "instanciated curvepath" << endl;
 
     bound.addCurve(c1);

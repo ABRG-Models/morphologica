@@ -288,7 +288,7 @@ morph::ReadCurves::readPath (xml_node<>* path_node, const string& layerName)
 
     DBG ("Path commands for layer " << layerName << ": " << d);
 
-    BezCurvePath curves = this->parseD (d);
+    BezCurvePath<float> curves = this->parseD (d);
     curves.name = layerName;
     if (layerName == "cortex") {
         this->gotCortex = true;
@@ -376,10 +376,10 @@ morph::ReadCurves::splitSvgCmdString (const string& s, char cmd, unsigned int nu
     return numbers;
 }
 
-BezCurvePath
+BezCurvePath<float>
 morph::ReadCurves::parseD (const string& d)
 {
-    BezCurvePath curves;
+    BezCurvePath<float> curves;
 
     // As we parse through the path, we have to keep track of the
     // current coordinate position, as curves are specified from the
@@ -722,7 +722,7 @@ morph::ReadCurves::setScale (void)
         throw runtime_error ("Failed to obtain scaling from the scale bar.");
     }
     this->corticalPath.setScale (this->lineToMillimetres.second);
-    list<BezCurvePath>::iterator ei = this->enclosedRegions.begin();
+    typename list<BezCurvePath<float>>::iterator ei = this->enclosedRegions.begin();
     while (ei != this->enclosedRegions.end()) {
         ei->setScale (this->lineToMillimetres.second);
         ++ei;
@@ -754,17 +754,17 @@ morph::ReadCurves::getScale_svgpermm (void)
     return scale;
 }
 
-BezCurvePath
+BezCurvePath<float>
 morph::ReadCurves::getCorticalPath (void) const
 {
     return this->corticalPath;
 }
 
-BezCurvePath
+BezCurvePath<float>
 morph::ReadCurves::getEnclosedRegion (const string& structName) const
 {
-    BezCurvePath nullrtn;
-    list<BezCurvePath>::const_iterator i = this->enclosedRegions.begin();
+    BezCurvePath<float> nullrtn;
+    typename list<BezCurvePath<float>>::const_iterator i = this->enclosedRegions.begin();
     while (i != this->enclosedRegions.end()) {
         if (i->name == structName) {
             return *i;
@@ -774,7 +774,7 @@ morph::ReadCurves::getEnclosedRegion (const string& structName) const
     return nullrtn;
 }
 
-list<BezCurvePath>
+list<BezCurvePath<float>>
 morph::ReadCurves::getEnclosedRegions (void) const
 {
     return this->enclosedRegions;
@@ -784,7 +784,7 @@ void
 morph::ReadCurves::save (float step) const
 {
     this->corticalPath.save (step);
-    list<BezCurvePath>::const_iterator i = this->enclosedRegions.begin();
+    typename list<BezCurvePath<float>>::const_iterator i = this->enclosedRegions.begin();
     while (i != this->enclosedRegions.end()) {
         i->save (step);
         ++i;

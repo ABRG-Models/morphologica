@@ -446,7 +446,7 @@ morph::HexGrid::clearRegionBoundaryFlags (void)
 }
 
 vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (BezCurvePath& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
+morph::HexGrid::getRegion (BezCurvePath<float>& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
 {
     p.computePoints (this->d/2.0f, true);
     vector<BezCoord<float>> bpoints = p.getPoints();
@@ -460,7 +460,7 @@ morph::HexGrid::getRegion (vector<BezCoord<float>>& bpoints, pair<float, float>&
     this->clearRegionBoundaryFlags();
 
     // Compute region centroid from bpoints
-    regionCentroid = BezCurvePath::getCentroid (bpoints);
+    regionCentroid = BezCurvePath<float>::getCentroid (bpoints);
 
     // A return object
     vector<list<Hex>::iterator> theRegion;
@@ -575,7 +575,7 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
 }
 
 void
-morph::HexGrid::setBoundary (const BezCurvePath& p)
+morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
 {
     this->boundary = p;
 
@@ -592,7 +592,7 @@ morph::HexGrid::setBoundary (const BezCurvePath& p)
 void
 morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints)
 {
-    this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
+    this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
     DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
     auto bpi = bpoints.begin();
     while (bpi != bpoints.end()) {

@@ -24,7 +24,7 @@ int main()
     try {
         ReadCurves r("../../tests/whiskerbarrels_withcentres.svg");
         //r.save (0.001f);
-        BezCurvePath bcp = r.getCorticalPath();
+        BezCurvePath<float> bcp = r.getCorticalPath();
         bcp.computePoints (0.01f);
         vector<BezCoord<float>> pts = bcp.getPoints();
         auto i = pts.begin();

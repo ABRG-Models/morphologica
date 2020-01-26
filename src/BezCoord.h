@@ -8,10 +8,13 @@
 #include <utility>
 #include <math.h>
 #include <ostream>
+#include <cmath>
 
 using std::pair;
 using std::make_pair;
 using std::ostream;
+using std::sqrt;
+using std::abs;
 
 namespace morph
 {
@@ -112,21 +115,21 @@ namespace morph
             pair<Flt,Flt> se;
             se.first = this->x() - other.x();
             se.second = this->y() - other.y();
-            return (sqrtf (se.first*se.first + se.second*se.second));
+            return (sqrt (se.first*se.first + se.second*se.second));
         }
 
         /*!
          * Horizontal distance between two BezCoords.
          */
         Flt horzDistanceTo (BezCoord& other) const {
-            return (fabs(this->x() - other.x()));
+            return (abs(this->x() - other.x()));
         }
 
         /*!
          * Vertical distance between two BezCoords.
          */
         Flt vertDistanceTo (BezCoord& other) const {
-            return (fabs(this->y() - other.y()));
+            return (abs(this->y() - other.y()));
         }
 
         /*!

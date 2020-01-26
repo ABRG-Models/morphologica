@@ -37,7 +37,7 @@ int main()
     BezCurve<float> cc4(quart);
 
     // Put em in a BezCurvePath
-    BezCurvePath bcp;
+    BezCurvePath<float> bcp;
     bcp.name = "testbezcurves";
     bcp.addCurve (cc3);
     bcp.addCurve (cc4);

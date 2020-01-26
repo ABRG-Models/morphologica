@@ -2,30 +2,31 @@
 #define _BEZCURVE_H_
 
 #include <utility>
-#include <vector>
-#include <array>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <limits>
-#include <armadillo>
-#include <stdexcept>
-#include <math.h>
-
-#include "BezCoord.h"
-
-#define DBGSTREAM std::cout
-#include "MorphDbg.h"
-
 using std::pair;
+#include <vector>
 using std::vector;
+#include <array>
 using std::array;
-using std::string;
-using std::stringstream;
+#include <iostream>
 using std::cout;
 using std::endl;
+#include <string>
+using std::string;
+#include <sstream>
+using std::stringstream;
+#include <limits>
 using std::numeric_limits;
+#include <stdexcept>
 using std::runtime_error;
+#include <cmath>
+using std::sqrt;
+using std::pow;
+using std::abs;
+#include <armadillo>
+
+#include "BezCoord.h"
+#define DBGSTREAM std::cout
+#include "MorphDbg.h"
 
 namespace morph
 {
@@ -180,7 +181,7 @@ namespace morph
             for (i=1; i<n; ++i) {
                 register double xdiff = P(i,0) - P(i-1,0);
                 register double ydiff = P(i,1) - P(i-1,1);
-                register double len = sqrtf (xdiff*xdiff + ydiff*ydiff);
+                register double len = sqrt (xdiff*xdiff + ydiff*ydiff);
                 total_len += len;
                 D(i,0) = total_len;
             }
@@ -522,8 +523,8 @@ namespace morph
          */
         void init (void) {
             this->order = this->controls.size()-1;
-            this->linlength = sqrtf ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
-                                      + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
+            this->linlength = sqrt ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
+                                     + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
             this->linlengthscaled = this->scale * this->linlength;
             this->matrixSetup();
         }
@@ -665,7 +666,7 @@ namespace morph
                 // Compute position of candidate point dt beyond t in param space
                 b2 = this->computePoint (t+dt);
                 Flt dl = b1.distanceTo (b2);
-                if (fabs(l-dl) < lt) {
+                if (abs(l-dl) < lt) {
                     // Stop here.
                     finished = true;
                 } else {
@@ -728,7 +729,7 @@ namespace morph
                 b2 = this->computePoint (t+dt);
                 Flt dx = b1.horzDistanceTo (b2);
                 //cout << "t+dt= " << t+dt << ", dx = " << dx << endl;
-                if (fabs(x-dx) < lt) {
+                if (abs(x-dx) < lt) {
                     // Stop here.
                     finished = true;
                 } else {

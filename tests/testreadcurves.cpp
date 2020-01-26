@@ -23,8 +23,7 @@ int main()
 
     try {
         ReadCurves r("../../tests/trial.svg");
-        //r.save (0.001f);
-        BezCurvePath bcp = r.getCorticalPath();
+        BezCurvePath<float> bcp = r.getCorticalPath();
         bcp.computePoints (0.01f);
         vector<BezCoord<float>> pts = bcp.getPoints();
         cout << "Got " << pts.size() << " points with getPoints()" << endl;
