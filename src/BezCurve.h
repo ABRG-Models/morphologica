@@ -63,11 +63,10 @@ namespace morph
     const unsigned int PascalRows = 21;
 
     /*!
-     * A Bezier curve class which allows the computation of Cartesian
-     * coordinates (though with x right, y down, and hence a left-hand
-     * coordinate system) of points on a Bezier curve which is
-     * specified using a parameter (often called t) which is in the
-     * range [0, 1]
+     * A Bezier curve class which allows the computation of Cartesian coordinates
+     * (though with x right, y down, and hence a left-hand coordinate system) of points
+     * on a Bezier curve which is specified using a parameter (often called t) which is
+     * in the range [0, 1]
      */
     template <class Flt>
     class BezCurve
@@ -90,9 +89,8 @@ namespace morph
         }
 
         /*!
-         * Construct a cubic Bezier curve with a specification of
-         * the curve as inital and final position with two control
-         * points.
+         * Construct a cubic Bezier curve with a specification of the curve as inital
+         * and final position with two control points.
          */
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp,
@@ -107,8 +105,8 @@ namespace morph
         }
 
         /*!
-         * Construct a quadratic Bezier curve with a specification of the
-         * curve as inital and final position with a single control point
+         * Construct a quadratic Bezier curve with a specification of the curve as
+         * inital and final position with a single control point
          */
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp,
@@ -121,8 +119,7 @@ namespace morph
         }
 
         /*!
-         * Construct a linear Bezier curve for production of straight
-         * lines.
+         * Construct a linear Bezier curve for production of straight lines.
          */
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp) {
@@ -192,9 +189,9 @@ namespace morph
             cout << "S:\n" << S;
 
             // Make TT matrix (T with double bar in
-            // https://pomax.github.io/bezierinfo/#curvefitting) This takes each t and makes
-            // one column containing all the powers of t relevant to the order that we're
-            // looking for.
+            // https://pomax.github.io/bezierinfo/#curvefitting) This takes each t and
+            // makes one column containing all the powers of t relevant to the order
+            // that we're looking for.
             arma::Mat<double> TT (n, n, arma::fill::ones);
             for (i = 0; i < n; ++i) {
                 for (int j = 0; j < n; ++j) {
@@ -249,10 +246,17 @@ namespace morph
         }
 
         /*!
-         * Compute n points on the curve whose parameters, t, are
-         * equally spaced in parameter space. The first point will be
-         * the start of the curve (t==0) and the last point will be at
-         * the end of the curve (t==1).
+         * Return two Bezier curves that split up this one.
+         */
+        pair<BezCurve<Flt>, BezCurve<Flt>>
+        split (Flt z) const {
+            // Using the matrix representation
+        }
+
+        /*!
+         * Compute n points on the curve whose parameters, t, are equally spaced in
+         * parameter space. The first point will be the start of the curve (t==0) and
+         * the last point will be at the end of the curve (t==1).
          */
         vector<BezCoord<Flt>> computePoints (unsigned int n) const {
             vector<BezCoord<Flt>> rtn;
@@ -264,16 +268,14 @@ namespace morph
         }
 
         /*!
-         * Compute points on the curve which are distance l from each
-         * other in Cartesian space. This will return 1 or more points
-         * in the vector. The last point in the vector will be a
-         * nullCoordinate BezCoord which will contain the Euclidean
+         * Compute points on the curve which are distance l from each other in Cartesian
+         * space. This will return 1 or more points in the vector. The last point in the
+         * vector will be a nullCoordinate BezCoord which will contain the Euclidean
          * distance to the end of the curve.
          *
-         * If firstl is set and non-zero, then the first point will be
-         * a Cartesian distance firstl from the initial point of the
-         * curve, rather than being a distance l from the initial
-         * point.
+         * If firstl is set and non-zero, then the first point will be a Cartesian
+         * distance firstl from the initial point of the curve, rather than being a
+         * distance l from the initial point.
          */
         vector<BezCoord<Flt>> computePoints (Flt l, Flt firstl = static_cast<Flt>(0.0)) const {
             DBG2 ("computePoints (Flt l="<<l<<", Flt firstl="<<firstl<<") called");
@@ -282,16 +284,16 @@ namespace morph
             bool lastnull = false;
 
             if (firstl > static_cast<Flt>(0.0)) {
-                // firstl is the desired distance to the first point and, if
-                // non-zero, overrides l for the first point.
+                // firstl is the desired distance to the first point and, if non-zero,
+                // overrides l for the first point.
                 BezCoord<Flt> b = this->computePoint (t, firstl);
                 rtn.push_back (b);
                 t = b.t();
                 lastnull = b.getNullCoordinate();
             }
 
-            // This searches forward to try to find a point which is 'l' further on. If at any
-            // point t exceeds 1.0, we have to break out.
+            // This searches forward to try to find a point which is 'l' further on. If
+            // at any point t exceeds 1.0, we have to break out.
             while (t != static_cast<Flt>(1.0) && lastnull == false) {
                 BezCoord<Flt> b = this->computePoint (t, l);
                 rtn.push_back (b);
@@ -302,8 +304,7 @@ namespace morph
         }
 
         /*!
-         * Get a vector of points on the curve with horizontal spacing
-         * x.
+         * Get a vector of points on the curve with horizontal spacing x.
          */
         vector<BezCoord<Flt>> computePointsHorz (Flt x) const {
             vector<BezCoord<Flt>> rtn;
@@ -319,9 +320,9 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the curve, distance t along the curve from the
-         * starting position with t in range [0,1]. This chooses either optimzed
-         * quartic/cubic functions, or defaults to the matrix computation method.
+         * Compute one point on the curve, distance t along the curve from the starting
+         * position with t in range [0,1]. This chooses either optimzed quartic/cubic
+         * functions, or defaults to the matrix computation method.
          */
         BezCoord<Flt> computePoint (Flt t) const {
             switch (this->order) {
@@ -380,13 +381,12 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the curve, starting at the curve point
-         * which is found for parameter value t and extending a
-         * (Euclidean) distance l along the curve from the starting
-         * position.
+         * Compute one point on the curve, starting at the curve point which is found
+         * for parameter value t and extending a (Euclidean) distance l along the curve
+         * from the starting position.
          *
-         * If it is not possible, without exceeding t, to advance a distance l, then
-         * set a null BezCoord and return that.
+         * If it is not possible, without exceeding t, to advance a distance l, then set
+         * a null BezCoord and return that.
          */
         BezCoord<Flt> computePoint (Flt t, Flt l) const {
             switch (this->order) {
@@ -420,9 +420,8 @@ namespace morph
         }
 
         /*!
-         * For debugging - output, as a string, the BezCoords of this
-         * curve, choosing numPoints points evenly spaced in the
-         * parameter space t=[0,1].
+         * For debugging - output, as a string, the BezCoords of this curve, choosing
+         * numPoints points evenly spaced in the parameter space t=[0,1].
          */
         string output (unsigned int numPoints) const {
             stringstream ss;
@@ -438,8 +437,8 @@ namespace morph
         }
 
         /*!
-         * For debugging/file use. Output, as a string, the BezCoords
-         * of this curve with the step size step in Cartesian space.
+         * For debugging/file use. Output, as a string, the BezCoords of this curve with
+         * the step size step in Cartesian space.
          */
         string output (Flt step) const {
             stringstream ss;
@@ -481,8 +480,8 @@ namespace morph
         }
 
         /*!
-         * Getters for p0 and p1, the initial and final positions on
-         * the curve, either unscaled or scaled by @scale
+         * Getters for p0 and p1, the initial and final positions on the curve, either
+         * unscaled or scaled by @scale
          */
         //@{
         pair<Flt,Flt> getInitialPointUnscaled (void) const {
@@ -530,8 +529,8 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the linear curve, distance t along the
-         * curve from the starting position.
+         * Compute one point on the linear curve, distance t along the curve from the
+         * starting position.
          */
         BezCoord<Flt> computePointLinear (Flt t) const {
             DBG2 ("computePointLinear (t=" << t << ")");
@@ -543,15 +542,13 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the linear curve, starting at the
-         * curve point which is found for parameter value t and
-         * extending a distance l along the curve from the starting
-         * position.
+         * Compute one point on the linear curve, starting at the curve point which is
+         * found for parameter value t and extending a distance l along the curve from
+         * the starting position.
          *
-         * The key to this is to compute a change in t from the l that
-         * you want to move along the line. It's not hard to do the
-         * maths for the linear case; see LinearBez1.jpg and
-         * LinearBez2.jpg for the sums.
+         * The key to this is to compute a change in t from the l that you want to move
+         * along the line. It's not hard to do the maths for the linear case; see
+         * LinearBez1.jpg and LinearBez2.jpg for the sums.
          */
         BezCoord<Flt> computePointLinear (Flt t, Flt l) const {
             DBG2 ("Called computePointLinear(Flt t="<<t<<", Flt l="<<l<<")");
@@ -559,8 +556,8 @@ namespace morph
             BezCoord<Flt> e1 = this->computePoint (static_cast<Flt>(1.0));
             Flt toEnd = b1.distanceTo (e1);
             if (toEnd < l) {
-                // Return null coordinate as the result and set remaining to
-                // toEnd and the last param to t.
+                // Return null coordinate as the result and set remaining to toEnd and
+                // the last param to t.
                 BezCoord<Flt> rtn (true);
                 rtn.setRemaining (toEnd);
                 rtn.setParam (t);
@@ -573,8 +570,8 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the quadratic curve, distance t along
-         * the curve from the starting position.
+         * Compute one point on the quadratic curve, distance t along the curve from the
+         * starting position.
          */
         BezCoord<Flt> computePointQuadratic (Flt t) const {
             this->checkt (t);
@@ -591,8 +588,8 @@ namespace morph
         }
 
         /*!
-         * Compute one point on the cubic curve, distance t along the
-         * curve from the starting position.
+         * Compute one point on the cubic curve, distance t along the curve from the
+         * starting position.
          */
         BezCoord<Flt> computePointCubic (Flt t) const {
             this->checkt (t);
@@ -613,23 +610,21 @@ namespace morph
          * Look up the binomial coefficient (n,k) from morph::Pascal.
          */
         static unsigned int binomial_lookup (unsigned int n, unsigned int k) {
-            /* To get the values from row n, where n starts at 0 (and ends at N-1), you step
-               along a number given by the triangle sequence (n(n+1)/2) and then read n+1
-               values. OR to get n,k, step along a number given by the triangle sequence
-               (n(n+1)/2) and then step another k space to the result. */
+            /* To get the values from row n, where n starts at 0 (and ends at N-1), you
+               step along a number given by the triangle sequence (n(n+1)/2) and then
+               read n+1 values. OR to get n,k, step along a number given by the triangle
+               sequence (n(n+1)/2) and then step another k space to the result. */
             unsigned int idx = (n * (n+1) / 2) + k;
             return morph::Pascal[idx];
         }
 
         /*!
-         * A computePoint starting from the point for parameter value
-         * t and going to a point which is Euclidean distance l from
-         * the starting point.
+         * A computePoint starting from the point for parameter value t and going to a
+         * point which is Euclidean distance l from the starting point.
          *
-         * This one uses a binary search to find the next point, and
-         * works for quadratic and cubic Bezier curves for which it is
-         * difficult to compute the t that would give a Euclidean
-         * extension l (it would work for linear curves too).
+         * This one uses a binary search to find the next point, and works for quadratic
+         * and cubic Bezier curves for which it is difficult to compute the t that would
+         * give a Euclidean extension l (it would work for linear curves too).
          */
         BezCoord<Flt> computePointBySearch (Flt t, Flt l) const {
             // Min and max of possible range for dt to make a step of length l in posn space
@@ -654,11 +649,12 @@ namespace morph
                 return rtn;
             }
 
-            // On every call, compute a threshold. lthresh is a percentage, so compute the
-            // absolute threshold, lt as a percentage of l.
+            // On every call, compute a threshold. lthresh is a percentage, so compute
+            // the absolute threshold, lt as a percentage of l.
             Flt lt = this->lthresh * static_cast<Flt>(0.01) * l;
 
-            // Do a binary search to find the value of dt which gives a b2 that is l further on
+            // Do a binary search to find the value of dt which gives a b2 that is l
+            // further on
             BezCoord<Flt> b2 (true);
             bool finished = false;
             while (!finished && ((t+dt) <= static_cast<Flt>(1.0))) {
@@ -689,9 +685,9 @@ namespace morph
         }
 
         /*!
-         * Like computePointsBySearch, but instead of using the
-         * Euclidean distance, space points with x between them in the
-         * first coordinate - the horizonal coordinate.
+         * Like computePointsBySearch, but instead of using the Euclidean distance,
+         * space points with x between them in the first coordinate - the horizonal
+         * coordinate.
          */
         BezCoord<Flt> computePointBySearchHorz (Flt t, Flt x) const {
             // Min and max of possible range for dt to make a step of length l in posn space
@@ -703,13 +699,13 @@ namespace morph
 
             BezCoord<Flt> b1 = this->computePoint (t);
 
-            // Find distance from the initial position to the end of the
-            // curve. If this is a shorter distance than l, then return.
+            // Find distance from the initial position to the end of the curve. If this
+            // is a shorter distance than l, then return.
             BezCoord<Flt> e1 = this->computePoint (static_cast<Flt>(1.0));
             Flt toEnd = b1.horzDistanceTo (e1);
             if (toEnd < x) {
-                // Return null coordinate as the result and set remaining to
-                // toEnd and the last param to t.
+                // Return null coordinate as the result and set remaining to toEnd and
+                // the last param to t.
                 BezCoord<Flt> rtn (true);
                 rtn.setRemaining (toEnd);
                 rtn.setParam (t);
@@ -765,32 +761,34 @@ namespace morph
         /*!
          * Control points. First control point is the initial position; last is the
          * final position.
+         *
+         * FIXME: This information is duplicated in this->C, so controls should be
+         * written out of the code.
          */
         //@{
         vector<pair<Flt,Flt>> controls;
         //@}
 
         /*!
-         * A scaling factor to convert from the SVG drawing units into
-         * mm (or whatever). This is used when computing the BezCoords
-         * to output.
+         * A scaling factor to convert from the SVG drawing units into mm (or
+         * whatever). This is used when computing the BezCoords to output.
          */
         Flt scale = static_cast<Flt>(1.0);
 
         /*!
-         * How close we need to be to the target l for a given choice
-         * of dt. arb. units in position space (not parameter space).
-         * This is used in computeBySearch and computeBySearchHorz.
+         * How close we need to be to the target l for a given choice of dt. arb. units
+         * in position space (not parameter space).  This is used in computeBySearch and
+         * computeBySearchHorz.
          *
          * Should be set as an acceptable percentage error in the target l. So, 1.0
-         * would mean that the threshold for finding a suitable dt to advance a
-         * distance l along the curve would be l/100 * 1.0.
+         * would mean that the threshold for finding a suitable dt to advance a distance
+         * l along the curve would be l/100 * 1.0.
          */
         Flt lthresh = static_cast<Flt>(1.0);
 
         /*!
-         * The as-the-crow-flies distance from p0 to p1. Use for for BEZLINEAR to avoid repeat
-         * computations. See, especially, computePointLinear (Flt t, Flt l) const
+         * The as-the-crow-flies distance from p0 to p1. Use for for BEZLINEAR to avoid
+         * repeat computations. See, especially, computePointLinear (Flt t, Flt l) const
          */
         Flt linlength = static_cast<Flt>(0.0);
 
@@ -812,8 +810,8 @@ namespace morph
         //@{
 
         /*!
-         * Set up M, C and MC. Called from constructors.  A description of how to
-         * write out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
+         * Set up M, C and MC. Called from constructors.  A description of how to write
+         * out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
          * Representations...
          */
         void matrixSetup (void) {
