@@ -44,7 +44,7 @@ int main()
     c.push_back (v7);
 #endif
 
-    BezCurve cv;
+    BezCurve<FLT> cv;
     cv.fit (c);
     cout << "Defined a " << cv.getOrder() << " nd/rd/th order curve" << endl;
 

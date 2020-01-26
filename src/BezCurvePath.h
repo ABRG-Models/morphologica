@@ -46,7 +46,7 @@ namespace morph
         /*!
          * A list of the BezCurves that make up the full BezCurvePath.
          */
-        list<BezCurve> curves;
+        list<BezCurve<float>> curves;
 
         /*!
          * A scaling factor that's used to convert the path into mm.
@@ -57,14 +57,14 @@ namespace morph
          * This can be filled with a set of points on the path made up by the Bezier
          * curves. Do so with computePoints.
          */
-        vector<BezCoord> points;
+        vector<BezCoord<float>> points;
 
         /*!
          * As for points, store tangents and normals.
          */
         //@{
-        vector<BezCoord> tangents;
-        vector<BezCoord> normals;
+        vector<BezCoord<float>> tangents;
+        vector<BezCoord<float>> normals;
         //@}
 
         /*!
@@ -92,7 +92,7 @@ namespace morph
             this->scale = s;
             this->initialCoordinate.first = this->initialCoordinate.first * this->scale;
             this->initialCoordinate.second = this->initialCoordinate.second * this->scale;
-            list<BezCurve>::iterator i = this->curves.begin();
+            list<BezCurve<float>>::iterator i = this->curves.begin();
             while (i != this->curves.end()) {
                 i->setScale (this->scale);
                 ++i;
@@ -102,7 +102,7 @@ namespace morph
         /*!
          * Add a curve to this->curves.
          */
-        void addCurve (BezCurve& c) {
+        void addCurve (BezCurve<float>& c) {
             if (this->curves.empty()) {
                 this->initialCoordinate = c.getInitialPointScaled();
             }
@@ -118,7 +118,7 @@ namespace morph
             cout << "Initial coord: (" << this->initialCoordinate.first
                  << "," << this->initialCoordinate.second << ")" << endl;
             cout << "Number of curves: " << this->curves.size() << endl;
-            list<BezCurve>::const_iterator i = this->curves.begin();
+            typename list<BezCurve<float>>::const_iterator i = this->curves.begin();
             while (i != this->curves.end()) {
                 cout << i->output(static_cast<unsigned int>(20));
                 ++i;
@@ -136,7 +136,7 @@ namespace morph
             string fname = this->name + ".csv";
             f.open (fname.c_str(), std::ios::out|std::ios::trunc);
             if (f.is_open()) {
-                list<BezCurve>::const_iterator i = this->curves.begin();
+                typename list<BezCurve<float>>::const_iterator i = this->curves.begin();
                 // Don't forget to set the scaling factor in each
                 // BezCurve before generating points:
                 while (i != this->curves.end()) {
@@ -163,10 +163,10 @@ namespace morph
         /*!
          * Compute the centroid of the passed in set of positions.
          */
-        static pair<float,float> getCentroid (const vector<BezCoord>& points) {
+        static pair<float,float> getCentroid (const vector<BezCoord<float>>& points) {
             float c_x = 0.0f;
             float c_y = 0.0f;
-            for (const BezCoord& i : points) {
+            for (const BezCoord<float>& i : points) {
                 c_x += i.x();
                 c_y += i.y();
             }
@@ -194,24 +194,24 @@ namespace morph
             this->normals.clear();
 
             // First the very start point:
-            BezCoord startPt = this->curves.front().computePoint (0.0f);
+            BezCoord<float> startPt = this->curves.front().computePoint (0.0f);
             if (invertY) {
                 startPt.invertY();
             }
             this->points.push_back (startPt);
 
-            list<BezCurve>::const_iterator i = this->curves.begin();
+            typename list<BezCurve<float>>::const_iterator i = this->curves.begin();
             // Don't forget to set the scaling factor in each
             // BezCurve before generating points:
             float firstl = 0.0f;
             while (i != this->curves.end()) {
-                vector<BezCoord> cp = i->computePoints (step, firstl);
+                vector<BezCoord<float>> cp = i->computePoints (step, firstl);
                 if (cp.back().isNull()) {
                     firstl = step - cp.back().getRemaining();
                     cp.pop_back();
                 }
                 if (invertY) {
-                    vector<BezCoord>::iterator bci = cp.begin();
+                    vector<BezCoord<float>>::iterator bci = cp.begin();
                     while (bci != cp.end()) {
                         bci->invertY();
                         ++bci;
@@ -219,8 +219,8 @@ namespace morph
                 }
                 this->points.insert (this->points.end(), cp.begin(), cp.end());
                 // Now compute tangents and normals
-                for (BezCoord bp : cp) {
-                    pair<BezCoord, BezCoord> tn = i->computeTangentNormal(bp.t());
+                for (BezCoord<float> bp : cp) {
+                    pair<BezCoord<float>, BezCoord<float>> tn = i->computeTangentNormal(bp.t());
                     this->tangents.push_back (tn.first);
                     this->normals.push_back (tn.second);
                 }
@@ -230,13 +230,13 @@ namespace morph
 
         //! Getters
         //@{
-        vector<BezCoord> getPoints (void) const {
+        vector<BezCoord<float>> getPoints (void) const {
             return this->points;
         }
-        vector<BezCoord> getTangents (void) const {
+        vector<BezCoord<float>> getTangents (void) const {
             return this->tangents;
         }
-        vector<BezCoord> getNormals (void) const {
+        vector<BezCoord<float>> getNormals (void) const {
             return this->normals;
         }
         //@}

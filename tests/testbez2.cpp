@@ -19,12 +19,13 @@ int main()
     pair<float,float> v3 = make_pair (0.28f, 0.45f);
     pair<float,float> v4 = make_pair (-0.28f, 0.45f);
 
-    morph::BezCurve c1(v1,v2);
-    morph::BezCurve c2(v2,v3);
-    morph::BezCurve c3(v3,v4);
-    morph::BezCurve c4(v4,v1);
-
+    morph::BezCurve<float> c1(v1,v2);
+    morph::BezCurve<float> c2(v2,v3);
+    morph::BezCurve<float> c3(v3,v4);
+    morph::BezCurve<float> c4(v4,v1);
+    cout << "instanciated curves" << endl;
     morph::BezCurvePath bound;
+    cout << "instanciated curvepath" << endl;
 
     bound.addCurve(c1);
     bound.addCurve(c2);

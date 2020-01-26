@@ -20,6 +20,7 @@ namespace morph
      * parameter value and the distance remaining to the end of the
      * curve.
      */
+    template <class Flt>
     class BezCoord
     {
     public: // methods
@@ -44,16 +45,16 @@ namespace morph
          * Construct a coordinate using the info given.
          */
         //@{
-        BezCoord (pair<float,float> r)
+        BezCoord (pair<Flt,Flt> r)
             : coord(r)
             { this->param = -1.0f; this->remaining = -1.0f; this->nullCoordinate = false; }
 
-        BezCoord (float t, pair<float,float> r)
+        BezCoord (Flt t, pair<Flt,Flt> r)
             : coord(r)
             , param(t)
             { this->remaining = -1.0f; this->nullCoordinate = false; }
 
-        BezCoord (float t, pair<float,float> r, float remain)
+        BezCoord (Flt t, pair<Flt,Flt> r, Flt remain)
             : coord(r)
             , param(t)
             , remaining(remain)
@@ -64,14 +65,14 @@ namespace morph
          * Accessors
          */
         //@{
-        pair<float,float> getCoord (void) const { return this->coord; }
-        float getParam (void) const { return this->param; }
-        float getRemaining (void) const { return this->remaining; }
+        pair<Flt,Flt> getCoord (void) const { return this->coord; }
+        Flt getParam (void) const { return this->param; }
+        Flt getRemaining (void) const { return this->remaining; }
         bool getNullCoordinate (void) const { return this->nullCoordinate; }
         bool isNull (void) const { return this->nullCoordinate; }
-        void setCoord (pair<float,float> c) { this->coord = c; }
-        void setParam (float p) { this->param = p; }
-        void setRemaining (float r) { this->remaining = r; }
+        void setCoord (pair<Flt,Flt> c) { this->coord = c; }
+        void setParam (Flt p) { this->param = p; }
+        void setRemaining (Flt r) { this->remaining = r; }
         void setNullCoordinate (bool b) { this->nullCoordinate = b; }
         //@}
 
@@ -80,9 +81,9 @@ namespace morph
          * named accessors, for easy-to-read client code.
          */
         //@{
-        float x (void) const { return this->coord.first; }
-        float y (void) const { return this->coord.second; }
-        float t (void) const { return this->param; }
+        Flt x (void) const { return this->coord.first; }
+        Flt y (void) const { return this->coord.second; }
+        Flt t (void) const { return this->param; }
         //@}
 
         /*!
@@ -98,7 +99,7 @@ namespace morph
          */
         void normalize (void) {
             BezCoord origin(make_pair(0.0f,0.0f));
-            float len = origin.distanceTo (*this);
+            Flt len = origin.distanceTo (*this);
             this->coord.first /= len;
             this->coord.second /= len;
         }
@@ -107,8 +108,8 @@ namespace morph
          * Compute the Euclidean distance from the current coordinate
          * to the given coordinate.
          */
-        float distanceTo (BezCoord& other) const {
-            pair<float,float> se;
+        Flt distanceTo (BezCoord& other) const {
+            pair<Flt,Flt> se;
             se.first = this->x() - other.x();
             se.second = this->y() - other.y();
             return (sqrtf (se.first*se.first + se.second*se.second));
@@ -117,21 +118,21 @@ namespace morph
         /*!
          * Horizontal distance between two BezCoords.
          */
-        float horzDistanceTo (BezCoord& other) const {
+        Flt horzDistanceTo (BezCoord& other) const {
             return (fabs(this->x() - other.x()));
         }
 
         /*!
          * Vertical distance between two BezCoords.
          */
-        float vertDistanceTo (BezCoord& other) const {
+        Flt vertDistanceTo (BezCoord& other) const {
             return (fabs(this->y() - other.y()));
         }
 
         /*!
          * Subtract the coordinate c from this BezCoord.
          */
-        void subtract (const pair<float,float>& c) {
+        void subtract (const pair<Flt,Flt>& c) {
             this->coord.first -= c.first;
             this->coord.second -= c.second;
         }
@@ -147,7 +148,7 @@ namespace morph
         /*!
          * Add the coordinate c to this BezCoord.
          */
-        void add (const pair<float,float>& c) {
+        void add (const pair<Flt,Flt>& c) {
             this->coord.first += c.first;
             this->coord.second += c.second;
         }
@@ -165,7 +166,7 @@ namespace morph
          */
         //@{
         BezCoord operator- (const BezCoord& br) {
-            pair<float,float> p;
+            pair<Flt,Flt> p;
             p.first = this->coord.first - br.x();
             p.second = this->coord.second - br.y();
             return BezCoord(p); // Note returned object contains remaining and param == -1
@@ -191,7 +192,7 @@ namespace morph
          * coord.first (x) is positive rightwards and coord.second is
          * positive downwards.
          */
-        pair<float,float> coord;
+        pair<Flt,Flt> coord;
 
         /*!
          * The parameter value used to obtain this coordinate. Note
@@ -200,7 +201,7 @@ namespace morph
          *
          * Range is 0 to 1.0. If set to -1.0, then this means "unset".
          */
-        float param;
+        Flt param;
 
         /*!
          * If set >-1, stores the remaining distance to the end point
@@ -209,7 +210,7 @@ namespace morph
          * Range is 0 to FLOATMAX. If set to -1.0, then this means
          * "unset".
          */
-        float remaining;
+        Flt remaining;
 
         /*!
          * If this is a null coordinate, set this to true. Note that a

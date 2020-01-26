@@ -26,7 +26,7 @@ int main()
         //r.save (0.001f);
         BezCurvePath bcp = r.getCorticalPath();
         bcp.computePoints (0.01f);
-        vector<BezCoord> pts = bcp.getPoints();
+        vector<BezCoord<float>> pts = bcp.getPoints();
         auto i = pts.begin();
         while (i != pts.end()) {
             cout << *i << endl;

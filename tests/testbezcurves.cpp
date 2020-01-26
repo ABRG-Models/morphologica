@@ -25,7 +25,7 @@ int main()
     f.first = 10;
     f.second = 1;
     // Make a cubic curve
-    BezCurve cc3(i, f, c1, c2);
+    BezCurve<float> cc3(i, f, c1, c2);
 
     // Make a second quartic curve.
     vector<pair<float, float>> quart;
@@ -34,7 +34,7 @@ int main()
     quart.push_back (make_pair(10,0));
     quart.push_back (make_pair(12,-5));
     quart.push_back (make_pair(14,0));
-    BezCurve cc4(quart);
+    BezCurve<float> cc4(quart);
 
     // Put em in a BezCurvePath
     BezCurvePath bcp;
@@ -44,8 +44,8 @@ int main()
 
     unsigned int nPoints = 201;
     bcp.computePoints (nPoints);
-    vector<BezCoord> points = bcp.getPoints();
-    vector<BezCoord> tans = bcp.getTangents();
+    vector<BezCoord<float>> points = bcp.getPoints();
+    vector<BezCoord<float>> tans = bcp.getTangents();
 
     for (auto p : points) {
         cout << p.x() << "," << p.y() << endl;

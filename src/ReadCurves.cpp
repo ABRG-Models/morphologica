@@ -439,7 +439,7 @@ morph::ReadCurves::parseD (const string& d)
                     } else {
                         f = make_pair (v[i], v[i+1]);
                     }
-                    BezCurve c(currentCoordinate, f);
+                    BezCurve<float> c(currentCoordinate, f);
                     curves.addCurve (c);
                     currentCoordinate = f;
                 }
@@ -466,7 +466,7 @@ morph::ReadCurves::parseD (const string& d)
                     } else {
                         f = make_pair (v[i], currentCoordinate.second);
                     }
-                    BezCurve c(currentCoordinate, f);
+                    BezCurve<float> c(currentCoordinate, f);
                     curves.addCurve (c);
                     currentCoordinate = f;
                 }
@@ -492,13 +492,13 @@ morph::ReadCurves::parseD (const string& d)
                         if (v[i] != 0.0f) {
                             f = make_pair (currentCoordinate.first,
                                            currentCoordinate.second + v[i]);
-                            BezCurve c(currentCoordinate, f);
+                            BezCurve<float> c(currentCoordinate, f);
                             curves.addCurve (c);
                             currentCoordinate = f;
                         }
                     } else {
                         f = make_pair (currentCoordinate.first, v[i]);
-                        BezCurve c(currentCoordinate, f);
+                        BezCurve<float> c(currentCoordinate, f);
                         curves.addCurve (c);
                         currentCoordinate = f;
                     }
@@ -544,7 +544,7 @@ morph::ReadCurves::parseD (const string& d)
                         } else {
                             f = make_pair (v[i], v[i+1]);
                         }
-                        BezCurve c(currentCoordinate, f);
+                        BezCurve<float> c(currentCoordinate, f);
                         DBG("curves.addCurve...");
                         curves.addCurve (c);
                         currentCoordinate = f;
@@ -580,7 +580,7 @@ morph::ReadCurves::parseD (const string& d)
                     c2 = make_pair (v[2],v[3]);
                     f = make_pair (v[4],v[5]);
                 }
-                BezCurve c(currentCoordinate, f, c1, c2);
+                BezCurve<float> c(currentCoordinate, f, c1, c2);
                 curves.addCurve (c);
                 currentCoordinate = f;
             }
@@ -611,7 +611,7 @@ morph::ReadCurves::parseD (const string& d)
                     c2 = make_pair (v[0],v[1]);
                     f = make_pair (v[2],v[3]);
                 }
-                BezCurve c(currentCoordinate, f, c1, c2);
+                BezCurve<float> c(currentCoordinate, f, c1, c2);
                 curves.addCurve (c);
                 currentCoordinate = f;
             }
@@ -634,7 +634,7 @@ morph::ReadCurves::parseD (const string& d)
         case 'z': // straight line from current position to first point of path.
         {
             if (currentCoordinate != firstCoordinate) {
-                BezCurve c(currentCoordinate, firstCoordinate);
+                BezCurve<float> c(currentCoordinate, firstCoordinate);
                 curves.addCurve (c);
                 currentCoordinate = firstCoordinate;
             }
@@ -707,7 +707,7 @@ morph::ReadCurves::readLine (xml_node<>* line_node, const string& layerName)
     // Create a BezCurve object then add this to this->linePath
     pair<float,float> p1 = make_pair (atof (x1.c_str()), atof (y1.c_str()));
     pair<float,float> p2 = make_pair (atof (x2.c_str()), atof (y2.c_str()));
-    BezCurve linecurve (p1, p2);
+    BezCurve<float> linecurve (p1, p2);
     this->linePath.reset();
     this->linePath.initialCoordinate = p1;
     this->linePath.addCurve (linecurve);
