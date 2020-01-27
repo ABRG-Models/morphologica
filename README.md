@@ -113,3 +113,53 @@ correctly (or at least you can now search up how to do that).
 If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
 before -larmadillo during linking
+
+### Building/installing as a per-user library
+
+#### Build morphologica:
+
+(Make sure you are on a version of morphologica later than the master
+branch of 2:15 PM, Jan 27 2020, as I added an important line to
+pc/CMakeLists.txt).
+
+```bash
+cd morphologica
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${HOME}/usr
+make -j4
+make install # no sudo! You don't need it to install in your home
+```
+
+#### Update the environment
+
+Edit .bashrc and add:
+
+```bash
+export LD_LIBRARY_PATH=${HOME}/usr/lib:${LD_LIBRARY_PATH}
+export PKG_CONFIG_PATH=${HOME}/usr/lib/pkgconfig:${PKG_CONFIG_PATH}
+export PATH=${HOME}/usr/bin:${PATH}
+```
+
+Either log out/log in, restart your terminal or type:
+
+```bash
+source ~/.bashrc
+```
+
+To get the updated variables into your environment.
+
+#### Build the client code
+
+In the base CMakeLists.txt of, for example, BarrelEmerge, pkgconfig is
+used to find morphologica. This is all that's required to build
+against your local libmorphologica. If things aren't working, check
+there isn't an alternative morphologica installation (or the pkgconfig
+file from an old one). PRactically, that means checking there isn't
+
+/usr/local/lib/pkgconfig/libmorphologica.pc
+
+or
+
+/usr/lib/pkgconfig/libmorphologica.pc
+
+on your system.
