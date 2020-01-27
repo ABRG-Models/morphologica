@@ -150,6 +150,11 @@ namespace morph {
         void drawTri (vector <double> p1, vector <double> p2, vector <double> p3, vector <double> C);
 
         /*!
+        * Draw a rectangle
+        */
+        void drawRect(double x, double y, double z, double width, double height, vector<double> color);
+
+        /*!
          * Draw a filled triangle of colour cl with vertices at points
          * p1, p2 and p3. p1-p3 are vectors in three-space. C is a
          * three component RGB colour specification.
