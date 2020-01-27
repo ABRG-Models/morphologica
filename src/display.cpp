@@ -338,17 +338,13 @@ morph::Gdisplay::drawHexSeg (array<float,3> pos, array<float,3> offset, double r
     double halfWidth = width*0.5;
     double halfHeight = height*0.5;
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    GLfloat col[] = {(GLfloat)color[0],(GLfloat)color[1],(GLfloat)color[2], 1.f};
-    GLfloat wht[] = {1.f, 1.f, 1.f, 1.f};
+    GLfloat col[] = {(GLfloat)color[0], (GLfloat)color[1], (GLfloat)color[2], 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, wht);
-    glMaterialf(GL_FRONT, GL_SHININESS, 60.);
-    glBegin(GL_QUADS);
+    glBegin(GL_POLYGON);
     glVertex3d(x-halfWidth,y-halfHeight,z);
     glVertex3d(x-halfWidth,y+halfHeight,z);
     glVertex3d(x+halfWidth,y+halfHeight,z);
     glVertex3d(x+halfWidth,y-halfHeight,z);
-    glNormal3d(0.,0.,1.);
     glEnd();
 }
 
