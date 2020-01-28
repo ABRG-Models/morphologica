@@ -83,7 +83,6 @@ namespace morph
          * points making up part of cp.
          */
         BezCurve (vector<pair<Flt, Flt>> cp) {
-            cout << "set up with controls of size " << cp.size() << endl;
             this->controls = cp;
             this->init();
         }
@@ -280,8 +279,7 @@ namespace morph
             for (unsigned int i = 0; i < n; ++i) {
                 Q.row(i) = arma::shift (Q.row(i), (n-i-1));
             }
-            arma::flipud(Q);
-            C2 = Q * this->C;
+            C2 = arma::flipud (Q) * this->C;
 
             return make_pair(C1, C2);
         }
@@ -436,15 +434,16 @@ namespace morph
          * Compute the tangent and normal at t.
          */
         pair<BezCoord<Flt>, BezCoord<Flt>> computeTangentNormal (const Flt t) const {
-            // Handle case where this->control.size() == 2.
+            BezCoord<Flt> tang;
             if (this->controls.size() == 2) {
                 // Can't compute tangent using the derivative as derivative would be a
-                // curve with a single control point.
-                BezCoord<Flt> nullCoord(true);
-                return make_pair(nullCoord, nullCoord);
+                // curve with a single control point. The tangent to a line is
+                // simply the line:
+                tang = this->computePoint (t);
+            } else {
+                BezCurve<Flt> deriv = this->derivative();
+                tang = deriv.computePoint (t);
             }
-            BezCurve<Flt> deriv = this->derivative();
-            BezCoord<Flt> tang = deriv.computePoint (t);
             tang.normalize();
             BezCoord<Flt> norm = tang; // copies the parameter
             // rotate norm:
