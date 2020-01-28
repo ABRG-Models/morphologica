@@ -251,13 +251,13 @@ namespace morph
         }
 
         /*!
-         * Return two Bezier curves that split up this one. Or two control matrices?
+         * Return (control points for) two Bezier curves that split up this one.
+         *
+         * Using the matrix representation find, from this->C, a C1 and C2 that trace
+         * the same trajectory.
          */
-        //pair<BezCurve<Flt>, BezCurve<Flt>>
         pair<arma::Mat<Flt>, arma::Mat<Flt>>
         split (Flt z) const {
-            // Using the matrix representation find, from this->C, a C1 and C2 that
-            // trace the same trajectory.
             int n = this->order + 1;
             // 'z prime':
             Flt zp = z-static_cast<Flt>(1.0);
@@ -268,33 +268,19 @@ namespace morph
             arma::Mat<Flt> Q (n, n, arma::fill::zeros);
             for (unsigned int i = 0; i < n; ++i) {
                 sign = sign0;
-                //cout << "i=" << i << " loop, sign starting as " << sign << endl;
                 for (int j = 0; j <= i; ++j) {
                     Flt binom = static_cast<Flt>(BezCurve::binomial_lookup(i, j));
-#if 0 // DEBUG
-                    Flt entry0 = sign * binom * pow(z, j) * pow (zp, i-j);
-                    cout << "i=" << i << ", j=" << j << ", i-j=" << (i-j)
-                         << ", sign=" << sign
-                         << ", binom=" << binom
-                         << ", pow(z:"<<z<<","<<(j)<<")=" << pow(z, j)
-                         << ", pow(zp:"<<zp<<","<<(i-j)<<")=" << pow(zp, i-j)
-                         << " entry=" << entry0 << endl;
-                    Q(i,j) = entry0;
-#else
                     Q(i,j) = sign * binom * pow(z, j) * pow (zp, i-j);
-#endif
                     sign = sign > static_cast<Flt>(0.0) ? static_cast<Flt>(-1.0) : static_cast<Flt>(1.0);
                 }
                 sign0 = sign0 > static_cast<Flt>(0.0) ? static_cast<Flt>(-1.0) : static_cast<Flt>(1.0);
             }
-            //cout << "Q1:\n" << Q << endl;
             C1 = Q * this->C;
             // Shift rows then flip
             for (unsigned int i = 0; i < n; ++i) {
                 Q.row(i) = arma::shift (Q.row(i), (n-i-1));
             }
             arma::flipud(Q);
-            //cout << "Q2:\n" << Q << endl;
             C2 = Q * this->C;
 
             return make_pair(C1, C2);
