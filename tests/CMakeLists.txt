@@ -44,6 +44,14 @@ target_compile_definitions(${TARGETTEST1_4} PUBLIC FLT=float)
 target_link_libraries(${TARGETTEST1_4} morphologica)
 add_test(testbezfit ${TARGETTEST1_4})
 
+# Testing splitting of Bezier curves
+set(TARGETTEST1_5 testbezsplit CACHE TYPE STRING)
+set(SOURCETEST1_5 testbezsplit.cpp)
+add_executable(${TARGETTEST1_5} ${SOURCETEST1_5})
+target_compile_definitions(${TARGETTEST1_5} PUBLIC FLT=float)
+target_link_libraries(${TARGETTEST1_5} morphologica)
+add_test(testbezsplit ${TARGETTEST1_5})
+
 # Test two curves connected together
 set(TARGETTEST2 twocurves CACHE TYPE STRING)
 set(SOURCETEST2 twocurves.cpp)

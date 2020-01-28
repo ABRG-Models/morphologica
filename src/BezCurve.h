@@ -89,6 +89,18 @@ namespace morph
         }
 
         /*!
+         * Construct a Bezier curve using the control points provided in the matrix @cmat.
+         */
+        BezCurve (const arma::Mat<Flt>& cmat) {
+            // When I get rid of this->contorls, this will jjst be this->C = cmat (with
+            // a size check first).
+            for (unsigned int r = 0; r < cmat.n_rows; ++r) {
+                this->controls.push_back (make_pair(cmat(r,0), cmat(r,1)));
+            }
+            this->init();
+        }
+
+        /*!
          * Construct a cubic Bezier curve with a specification of the curve as inital
          * and final position with two control points.
          */
@@ -147,9 +159,6 @@ namespace morph
          * points.size()-1 control points.
          */
         void fit (vector<pair<Flt, Flt>> points) {
-            // Note that you really need double precision in the matrices whilst
-            // computing a Bezier best fit. If we use single precision, the fits are
-            // only good up to Bezier order 4 or 5, rather than 8-10.
 
             // Zero out the controls vector
             this->controls.clear();
@@ -163,6 +172,9 @@ namespace morph
 
             int i = 0;
 
+            // Note that you really need double precision in the matrices whilst
+            // computing a Bezier best fit. If we use single precision, the fits are
+            // only good up to Bezier order 4 or 5, rather than 8-10.
             arma::Mat<double> P (n, 2, arma::fill::zeros);
             for (auto p : points) {
                 P(i,0) = p.first;
@@ -175,7 +187,7 @@ namespace morph
             arma::Mat<double> D (n, 1, arma::fill::zeros);
             arma::Mat<double> S (n, 1, arma::fill::zeros);
             double total_len = static_cast<Flt>(0.0);
-            for (i=1; i<n; ++i) {
+            for (i = 1; i < n; ++i) {
                 register double xdiff = P(i,0) - P(i-1,0);
                 register double ydiff = P(i,1) - P(i-1,1);
                 register double len = sqrt (xdiff*xdiff + ydiff*ydiff);
@@ -201,18 +213,12 @@ namespace morph
             }
             cout << "TT:\n" << TT;
 
+            // Could we check/use the preprocessor to avoid this line if Flt is double?
             arma::Mat<double> Md = arma::conv_to<arma::Mat<double>>::from (this->M);
+
             // Magic matrix incantation to find the best set of coordinates:
-#if 0
-            // Long winded:
-            arma::Mat<double> Mi = Md.i();
-            arma::Mat<double> TTtTT = TT.t()*TT;
-            arma::Mat<double> TTtTTi = TTtTT.i();
-            arma::Mat<double> Cd = Mi * TTtTTi * TT.t() * P;
-#else
-            // One line:
             arma::Mat<double> Cd = Md.i() * (TT.t()*TT).i() * TT.t() * P;
-#endif
+
             cout << "Drumroll... C is\n" << Cd;
 
             // Cast back to Flts
@@ -220,7 +226,7 @@ namespace morph
 
             // Copy elements of C into this->controls.
             this->controls.clear();
-            for (i = 0; i<n; ++i) {
+            for (i = 0; i < n; ++i) {
                 this->controls.push_back (make_pair (this->C(i,0), this->C(i,1)));
             }
 
@@ -234,23 +240,64 @@ namespace morph
         BezCurve<Flt> derivative (void) const {
             // Construct new weights.
             vector<pair<Flt,Flt>> deriv_cp;
-            for (unsigned int i = 0; i<=this->order-1; ++i) {
+            for (unsigned int i = 0; i < this->order; ++i) {
                 pair<Flt, Flt> wi = this->controls[i];
                 pair<Flt, Flt> wip1 = this->controls[i+1];
                 Flt new1 = this->order * (wip1.first - wi.first);
                 Flt new2 = this->order * (wip1.second - wi.second);
                 deriv_cp.push_back (make_pair (new1, new2));
             }
-            cout << "New controls size: " << deriv_cp.size() << endl;
             return morph::BezCurve<Flt> (deriv_cp);
         }
 
         /*!
-         * Return two Bezier curves that split up this one.
+         * Return two Bezier curves that split up this one. Or two control matrices?
          */
-        pair<BezCurve<Flt>, BezCurve<Flt>>
+        //pair<BezCurve<Flt>, BezCurve<Flt>>
+        pair<arma::Mat<Flt>, arma::Mat<Flt>>
         split (Flt z) const {
-            // Using the matrix representation
+            // Using the matrix representation find, from this->C, a C1 and C2 that
+            // trace the same trajectory.
+            int n = this->order + 1;
+            // 'z prime':
+            Flt zp = z-static_cast<Flt>(1.0);
+            arma::Mat<Flt> C1 (n, 2, arma::fill::zeros);
+            arma::Mat<Flt> C2 (n, 2, arma::fill::zeros);
+            Flt sign0 = static_cast<Flt>(1.0);
+            Flt sign = sign0;
+            arma::Mat<Flt> Q (n, n, arma::fill::zeros);
+            for (unsigned int i = 0; i < n; ++i) {
+                sign = sign0;
+                //cout << "i=" << i << " loop, sign starting as " << sign << endl;
+                for (int j = 0; j <= i; ++j) {
+                    Flt binom = static_cast<Flt>(BezCurve::binomial_lookup(i, j));
+#if 0 // DEBUG
+                    Flt entry0 = sign * binom * pow(z, j) * pow (zp, i-j);
+                    cout << "i=" << i << ", j=" << j << ", i-j=" << (i-j)
+                         << ", sign=" << sign
+                         << ", binom=" << binom
+                         << ", pow(z:"<<z<<","<<(j)<<")=" << pow(z, j)
+                         << ", pow(zp:"<<zp<<","<<(i-j)<<")=" << pow(zp, i-j)
+                         << " entry=" << entry0 << endl;
+                    Q(i,j) = entry0;
+#else
+                    Q(i,j) = sign * binom * pow(z, j) * pow (zp, i-j);
+#endif
+                    sign = sign > static_cast<Flt>(0.0) ? static_cast<Flt>(-1.0) : static_cast<Flt>(1.0);
+                }
+                sign0 = sign0 > static_cast<Flt>(0.0) ? static_cast<Flt>(-1.0) : static_cast<Flt>(1.0);
+            }
+            //cout << "Q1:\n" << Q << endl;
+            C1 = Q * this->C;
+            // Shift rows then flip
+            for (unsigned int i = 0; i < n; ++i) {
+                Q.row(i) = arma::shift (Q.row(i), (n-i-1));
+            }
+            arma::flipud(Q);
+            //cout << "Q2:\n" << Q << endl;
+            C2 = Q * this->C;
+
+            return make_pair(C1, C2);
         }
 
         /*!
@@ -345,7 +392,7 @@ namespace morph
             this->checkt(t);
             int mp = this->order+1;
             arma::Mat<double> T(1, mp, arma::fill::ones);// First element is one anyway
-            for (int i = 1; i<mp; ++i) {
+            for (int i = 1; i < mp; ++i) {
                 T(i) = pow (t, static_cast<double>(i));
             }
             arma::Mat<double> bp = T * this->MC;
@@ -833,8 +880,8 @@ namespace morph
             int r = 0;
             this->M.set_size (mp, mp);
             this->M.zeros();
-            for (int i=0; i<mp; ++i) { // i is column
-                for (r=0; r<mp-i; ++r) { // r is row
+            for (int i = 0; i < mp; ++i) { // i is column
+                for (r = 0; r < mp-i; ++r) { // r is row
                     Flt element = static_cast<Flt>(BezCurve::binomial_lookup (m, i))
                         * static_cast<Flt>(BezCurve::binomial_lookup (m-i, m-i-r))
                         * pow (-static_cast<Flt>(1.0), static_cast<Flt>(m-i-r));
