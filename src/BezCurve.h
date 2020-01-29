@@ -375,11 +375,11 @@ namespace morph
         BezCoord<Flt> computePointMatrix (Flt t) const {
             this->checkt(t);
             int mp = this->order+1;
-            arma::Mat<double> T(1, mp, arma::fill::ones);// First element is one anyway
+            arma::Mat<Flt> T(1, mp, arma::fill::ones);// First element is one anyway
             for (int i = 1; i < mp; ++i) {
                 T(i) = pow (t, static_cast<double>(i));
             }
-            arma::Mat<double> bp = T * this->MC;
+            arma::Mat<Flt> bp = T * this->MC;
             return BezCoord<Flt> (t, make_pair(static_cast<Flt>(bp(0)), static_cast<Flt>(bp(1))));
         }
 
@@ -536,6 +536,11 @@ namespace morph
             rtn.first *= this->scale;
             rtn.second *= this->scale;
             return rtn;
+        }
+
+        //! Getter for the control points
+        vector<pair<Flt,Flt>> getControls (void) const {
+            return this->controls;
         }
 
         //@}
