@@ -265,7 +265,7 @@ namespace morph
             Flt sign0 = static_cast<Flt>(1.0);
             Flt sign = sign0;
             arma::Mat<Flt> Q (n, n, arma::fill::zeros);
-            for (unsigned int i = 0; i < n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 sign = sign0;
                 for (int j = 0; j <= i; ++j) {
                     Flt binom = static_cast<Flt>(BezCurve::binomial_lookup(i, j));
@@ -276,7 +276,7 @@ namespace morph
             }
             C1 = Q * this->C;
             // Shift rows then flip
-            for (unsigned int i = 0; i < n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 Q.row(i) = arma::shift (Q.row(i), (n-i-1));
             }
             C2 = arma::flipud (Q) * this->C;
