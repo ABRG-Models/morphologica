@@ -22,7 +22,11 @@ using std::runtime_error;
 using std::sqrt;
 using std::pow;
 using std::abs;
+using std::cos;
+using std::acos;
+using std::sin;
 #include <armadillo>
+#include "MathConst.h"
 
 #include "BezCoord.h"
 #define DBGSTREAM std::cout
@@ -84,6 +88,15 @@ namespace morph
          */
         BezCurve (vector<pair<Flt, Flt>> cp) {
             this->controls = cp;
+#if 0
+            this->C.set_size (cp.size(), 2);
+            int i = 0;
+            for (auto c : cp) {
+                this->C(i,0) = c.first;
+                this->C(i,1) = c.second;
+                ++i;
+            }
+#endif
             this->init();
         }
 
@@ -91,7 +104,7 @@ namespace morph
          * Construct a Bezier curve using the control points provided in the matrix @cmat.
          */
         BezCurve (const arma::Mat<Flt>& cmat) {
-            // When I get rid of this->contorls, this will jjst be this->C = cmat (with
+            // When I get rid of this->controls, this will just be this->C = cmat (with
             // a size check first).
             for (unsigned int r = 0; r < cmat.n_rows; ++r) {
                 this->controls.push_back (make_pair(cmat(r,0), cmat(r,1)));
@@ -150,6 +163,164 @@ namespace morph
             this->controls.push_back (ip);
             this->controls.insert (this->controls.end(), cp.begin(), cp.end());
             this->controls.push_back (fp);
+            this->init();
+        }
+
+        void updateControls (vector<pair<Flt, Flt>> cp) {
+            this->controls = cp;
+#if 0
+            this->C.set_size (cp.size(), 2);
+            int i = 0;
+            for (auto c : cp) {
+                this->C(i,0) = c.first;
+                this->C(i,1) = c.second;
+                ++i;
+            }
+#endif
+            this->init();
+        }
+
+        /*!
+         * Fit a curve to @points, lining up with the curve @c. Assumes this curve
+         * appends to the end of @c. *May also modify @c*
+         */
+        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c) {
+#if 0
+            vector<pair<Flt,Flt>> lastCtrls = c.getControls();
+            size_t lcsize = lastCtrls.size();
+            if (lcsize > 2) {
+                pair<Flt,Flt> lastCtrl = lastCtrls[lcsize-2];
+                this->fit (points, lastCtrl);
+            } else {
+                this->fit (points);
+            }
+#endif
+            this->fit (points);
+
+            // preceding control points.
+            vector<pair<Flt, Flt>> prec_ctrl = c.getControls();
+            size_t len = prec_ctrl.size();
+            if (len < 3) {
+                return;
+            }
+            pair<Flt, Flt> pc = prec_ctrl[len-2];
+
+            // Compute distance from control point 0 to control point 1.
+            Flt xdiff = C(0,0) - C(1,0);
+            Flt ydiff = C(0,1) - C(1,1);
+            Flt control0to1_sq = xdiff*xdiff + ydiff+ydiff;
+            Flt control0to1 = sqrt (control0to1_sq); // a
+
+            // Compute distance from control point -1 to control point 0.
+            xdiff = prec_ctrl[len-2].first - prec_ctrl[len-1].first;
+            ydiff = prec_ctrl[len-2].second - prec_ctrl[len-1].second;
+            Flt precm1to0_sq = xdiff*xdiff + ydiff+ydiff;
+            Flt precm1to0 = sqrt (precm1to0_sq); // b
+
+            // Compute distance from control point -1 to control point 1
+            xdiff = prec_ctrl[len-2].first - C(1,0);
+            xdiff = prec_ctrl[len-2].second - C(1,1);
+            Flt m1to1_sq = xdiff*xdiff + ydiff+ydiff;
+            Flt m1to1 = sqrt (m1to1_sq); // c
+
+            // Use cosine rule to get angle between 'em
+            Flt costheta = (control0to1_sq + precm1to0_sq - m1to1_sq) / (2.0 * control0to1 * precm1to0);
+            Flt theta = acos (costheta);
+            Flt phi = morph::PI_F - theta;
+            Flt halfphi = phi*0.5;
+            // Construct rotn matrix
+            arma::Mat<Flt> rotmat (2,2);
+            rotmat(0,0) = cos (halfphi);
+            rotmat(0,1) = sin (halfphi);
+            rotmat(1,0) = -rotmat(0,1);
+            rotmat(1,1) = rotmat(0,0);
+
+            // Now we rotate each point by halfphi.
+            // The point at the end of the curve
+            arma::Mat<Flt> p0 = C.row(0);
+            arma::Mat<Flt> pm1 (1,2);
+            pm1(0,0) = prec_ctrl[len-2].first;
+            pm1(0,1) = prec_ctrl[len-2].second;
+            arma::Mat<Flt> pm2 = C.row(1);
+
+            // Offset so we rotate about p0
+            arma::Mat<Flt> pm1_r = pm1 - p0;
+            arma::Mat<Flt> pm2_r = pm2 - p0;
+
+            // Apply rotation
+            arma::Mat<Flt> pm1_r_after = pm1_r * rotmat;
+            arma::Mat<Flt> pm2_r_after = pm2_r * rotmat;
+
+            arma::Mat<Flt> pm1_r_final = pm1_r_after + p0;
+            arma::Mat<Flt> pm2_r_final = pm2_r_after + p0;
+
+            C.row(1) = pm2_r_final;
+            this->controls[1].first = pm2_r_final(0,0);
+            this->controls[1].second = pm2_r_final(0,1);
+
+            this->init();
+
+            // Update other one
+            prec_ctrl[len-2].first = pm1_r_final(0,0);
+            prec_ctrl[len-2].second = pm1_r_final(0,1);
+            c.updateControls (prec_ctrl);
+        }
+
+        /*!
+         * Fit a curve to @points, ensuring that the line segment between points[0]
+         * (aka fitted_ctrls[0]) and fitted_ctrls[1] is parallel with the line segment
+         * between @c and points[0]. This make it possible to get the best fit
+         * curve, which also lines up with a previous best fit curve.
+         *
+         * How to achieve this?
+         *
+         * 1) Could do BezCurve<>::fit(points) first, then change fitted_ctrls[1] by
+         * rotating it until it lines up with extCtrl---points[0]
+         *ccc
+         * 2) Can I do a version of the fitting which then finds the optimum position
+         * on the line segment by a gradient descent to minimise the SOS error? Possibly.
+         */
+        void fit (vector<pair<Flt, Flt>> points, const pair<Flt, Flt> c) {
+
+            // First fit with the analytic solution for points on their
+            // own. this->controls and this->C then contain the fitted points.
+            this->fit (points);
+
+            // c is the control point
+            cout << "external control point is (" << c.first << "," << c.second << ")\n";
+            // this->controls[0] is the start and should be same as points[0]
+            cout << "C(0,:) is (" << C(0,0) << "," << C(0,1) << ")\n";
+            cout << "C(1,:) (to be changed) is ("  << C(1,0) << "," << C(1,1) << ")\n";
+
+            // Compute distance from control point 0 to control point 1.
+            Flt xdiff = C(0,0) - C(1,0);
+            Flt ydiff = C(0,1) - C(1,1);
+            Flt control0to1 = sqrt (xdiff*xdiff + ydiff+ydiff);
+
+            // Compute vector from c to control point 0
+            Flt v_x = C(0,0) - c.first;
+            Flt v_y = C(0,1) - c.second;
+            Flt v_len = sqrt (v_x*v_x + v_y*v_y);
+            v_x /= v_len;
+            v_y /= v_len;
+
+            // With unit vector v_x/y can now make up the vector of length control0to1
+            // to make our new control point:
+            Flt newCtrl_x = C(0,0) + v_x * control0to1;
+            Flt newCtrl_y = C(0,1) + v_y * control0to1;
+
+            // This is a possible first stab:
+            C(1,0) = newCtrl_x;
+            C(1,1) = newCtrl_y;
+            this->controls[1].first = newCtrl_x;
+            this->controls[1].second = newCtrl_y;
+            cout << "C(1,:) (updated) is ("  << C(1,0) << "," << C(1,1) << ")\n";
+
+            // Last job, vary contorl0to1 between 0 and 2*control0to1 and find the
+            // best one.
+            cout << "Write me. Optimizing version" << endl;
+
+            // Last thing, re-init to set up the matrices again after changing C.
             this->init();
         }
 
@@ -448,7 +619,7 @@ namespace morph
             BezCoord<Flt> norm = tang; // copies the parameter
             // rotate norm:
             norm.setCoord (make_pair(-tang.y(), tang.x()));
-            return make_pair(tang, norm);
+            return make_pair (tang, norm);
         }
 
         /*!

@@ -107,10 +107,20 @@ namespace morph
          * Add a curve to this->curves.
          */
         void addCurve (BezCurve<Flt>& c) {
-            if (this->curves.empty()) {
-                this->initialCoordinate = c.getInitialPointScaled();
+            if (c.getOrder() == 0) {
+                cout << "Not adding 0th order curve." << endl;
+            } else {
+                if (this->curves.empty()) {
+                    this->initialCoordinate = c.getInitialPointScaled();
+                }
+                this->curves.push_back (c);
             }
-            this->curves.push_back (c);
+        }
+
+        void removeCurve (void) {
+            if (!this->curves.empty()) {
+                this->curves.pop_back();
+            }
         }
 
         /*!
@@ -158,6 +168,9 @@ namespace morph
          */
         Flt getEndToEnd (void) const {
             // Distance from this->initialCoordinate to:
+            if (this->curves.empty()) {
+                return static_cast<Flt>(0.0);
+            }
             pair<Flt,Flt> cend = this->curves.back().getFinalPointScaled();
             Flt dx = cend.first - initialCoordinate.first;
             Flt dy = cend.second - initialCoordinate.second;
@@ -267,6 +280,7 @@ namespace morph
             Flt etoe = this->getEndToEnd();
             Flt step = etoe/(nPoints-1);
             unsigned int actualPoints = 0;
+            cout << "while...." << endl;
             while (actualPoints != nPoints) {
                 this->points.clear();
                 // cout << "Getting points with step size " << step << endl;
@@ -277,7 +291,8 @@ namespace morph
                     // Modify step
                     Flt steptrial = static_cast<Flt>(0.0);
                     if (actualPoints > nPoints) {
-                        // Increase step size, starting with a doubling, then a half extra, then a quarter extra, etc
+                        // Increase step size, starting with a doubling, then a half
+                        // extra, then a quarter extra, etc
                         actualPoints = 0;
                         Flt stepinc = step;
                         while (actualPoints < nPoints) {
@@ -289,13 +304,15 @@ namespace morph
                         }
 
                         if (abs(step-steptrial) < numeric_limits<Flt>::epsilon()) {
-                            cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
+                            cout << "Numeric limit reached; can't change step a small "
+                                 << "enough amount to change the number of points" << endl;
                             return;
                         }
                         step = steptrial;
 
                     } else { // actualPoints < nPoints
-                        // Decrease step size, starting with a halving, then a quartering until we exceed nPoints
+                        // Decrease step size, starting with a halving, then a
+                        // quartering until we exceed nPoints
                         actualPoints = 0;
                         Flt stepinc = step/2.0f;
                         while (actualPoints < nPoints) {
@@ -306,7 +323,8 @@ namespace morph
                             stepinc /= 2.0f;
                         }
                         if (abs(step-steptrial) < numeric_limits<Flt>::epsilon()) {
-                            cout << "Numeric limit reached; can't change step a small enough amount to change the number of points" << endl;
+                            cout << "Numeric limit reached; can't change step a small "
+                                 << "enough amount to change the number of points" << endl;
                             return;
                         }
                         step = steptrial;
