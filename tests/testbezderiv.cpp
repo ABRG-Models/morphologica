@@ -105,7 +105,7 @@ int main()
     v.push_back (make_pair (200,380));
     v.push_back (make_pair (270,530));
     v.push_back (make_pair (350,620));
-    v.push_back (make_pair (440,730)); // or 450,700
+    v.push_back (make_pair (430,730)); // or 450,700
 
     vector<pair<FLT,FLT>> w;
     w.push_back (v.back());
@@ -132,6 +132,7 @@ int main()
     draw (frame, bcp, v, w);
 
     cv2.fit (w, cv1);
+#if 1
     bcp.removeCurve();
     bcp.removeCurve();
     bcp.addCurve (cv1);
@@ -140,6 +141,7 @@ int main()
     v.clear();
     w.clear();
     draw (frame, bcp, v, w);
+#endif
     imshow ("testBezDeriv", frame);
     // Wait for a key, then exit
     waitKey();

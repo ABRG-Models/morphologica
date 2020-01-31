@@ -280,7 +280,7 @@ namespace morph
             Flt etoe = this->getEndToEnd();
             Flt step = etoe/(nPoints-1);
             unsigned int actualPoints = 0;
-            cout << "while...." << endl;
+
             while (actualPoints != nPoints) {
                 this->points.clear();
                 // cout << "Getting points with step size " << step << endl;

@@ -24,6 +24,7 @@ using std::pow;
 using std::abs;
 using std::cos;
 using std::acos;
+using std::atan2;
 using std::sin;
 #include <armadillo>
 #include "MathConst.h"
@@ -167,11 +168,7 @@ namespace morph
         }
 
         void updateControls (vector<pair<Flt, Flt>> cp) {
-            cout << "updateControls called." << endl;
             this->controls = cp;
-            for (auto c : cp) {
-                cout << "(" << c.first << "," << c.second << ")" << endl;
-            }
 #if 0
             this->C.set_size (cp.size(), 2);
             int i = 0;
@@ -190,8 +187,6 @@ namespace morph
          */
         void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c) {
 
-            cout << "fit(vec<>, BezCurve<>&) called" << endl;
-
             this->fit (points);
 
             // preceding control points.
@@ -200,68 +195,47 @@ namespace morph
             if (len < 3) {
                 return;
             }
-            pair<Flt, Flt> pc = prec_ctrl[len-2];
 
-            // Compute distance from control point 0 to control point 1.
-            //cout << "cp 0 to 1: " << C.row(0) << " to "  << C.row(1) << endl;
-            Flt xdiff = C(0,0) - C(1,0);
-            Flt ydiff = C(0,1) - C(1,1);
-            Flt control0to1_sq = xdiff*xdiff + ydiff*ydiff;
-            Flt control0to1 = sqrt (control0to1_sq); // a
-            //cout << "   distance "  << control0to1 << endl;
-
-            // Compute distance from control point -1 to control point 0.
-            xdiff = prec_ctrl[len-2].first - prec_ctrl[len-1].first;
-            ydiff = prec_ctrl[len-2].second - prec_ctrl[len-1].second;
-            //cout << "cp -1 to 0: (" << prec_ctrl[len-2].first << "," << prec_ctrl[len-2].second
-            //     << ") to "  << prec_ctrl[len-1].first << "," << prec_ctrl[len-1].second << endl;
-            Flt precm1to0_sq = xdiff*xdiff + ydiff*ydiff;
-            Flt precm1to0 = sqrt (precm1to0_sq); // b
-            //cout << "   distance "  << precm1to0 << endl;
-
-            // Compute distance from control point -1 to control point 1
-            //cout << "cp -1 to 1: (" << prec_ctrl[len-2].first << "," << prec_ctrl[len-2].second
-            //     << ") to " << C.row(1) << endl;
-            xdiff = prec_ctrl[len-2].first - C(1,0);
-            ydiff = prec_ctrl[len-2].second - C(1,1);
-            Flt m1to1_sq = xdiff*xdiff + ydiff*ydiff;
-#if 0 // DEBUG
-            Flt m1to1 = sqrt (m1to1_sq); // c
-            cout << "   distance "  << m1to1 << endl;
-#endif
-
-            // Use cosine rule to get angle between 'em
-            Flt costheta = (control0to1_sq + precm1to0_sq - m1to1_sq) / (2.0 * control0to1 * precm1to0);
-            Flt theta = acos (costheta);
+            // Use atan2 to get angles with direction instead, here.
+            // va is vector from previous ctrl to the join
+            Flt va_x = prec_ctrl[len-2].first - prec_ctrl[len-1].first;
+            Flt va_y = prec_ctrl[len-2].second - prec_ctrl[len-1].second;
+            // vb is vector from join to the next ctrl.
+            Flt vb_x = C(1,0) - C(0,0);
+            Flt vb_y = C(1,1) - C(0,1);
+            Flt ang_a = atan2 (va_x, va_y);
+            Flt ang_b = atan2 (vb_x, vb_y);
+            Flt theta = ang_a - ang_b;
+            //cout << "ang_a = " << ang_a << " rads " << (ang_a * 180 / morph::PI_F) << " deg" << endl;
+            //cout << "ang_b = " << ang_b << " rads " << (ang_b * 180 / morph::PI_F) << " deg" << endl;
             //cout << "theta = " << theta << " rads " << (theta * 180 / morph::PI_F) << " deg" << endl;
-            Flt phi = 0.5 * (morph::PI_F - theta);
+
+            Flt phi = 0.5 * ((2.0 * morph::PI_F) + theta - morph::PI_F);
+            //cout << "phi = " << phi << " rads " << (phi * 180 / morph::PI_F) << " deg" << endl;
+
             // Construct rotn matrix
             arma::Mat<Flt> rotmat (2,2);
-            rotmat(0,0) = cos (-phi);
-            rotmat(0,1) = sin (-phi);
+            rotmat(0,0) = cos (phi);
+            rotmat(0,1) = sin (phi);
             rotmat(1,0) = -rotmat(0,1);
             rotmat(1,1) = rotmat(0,0);
 
-            // Now we rotate each point by halfphi.
+            // Now we rotate each point by phi
             // The point at the end of the curve
             arma::Mat<Flt> p0 = C.row(0);
             arma::Mat<Flt> pm1 (1,2);
             pm1(0,0) = prec_ctrl[len-2].first;
             pm1(0,1) = prec_ctrl[len-2].second;
-
             // Offset so we rotate about p0
             arma::Mat<Flt> pm1_r = pm1 - p0;
-
             // Apply rotation
             arma::Mat<Flt> pm1_r_after = pm1_r * rotmat;
 
-            rotmat(0,0) = cos (phi);
-            rotmat(0,1) = sin (phi);
-            rotmat(1,0) = -rotmat(0,1);
-            rotmat(1,1) = rotmat(0,0);
+            // Change two elements in the rotation matrix to reverse the rotational direction
+            rotmat(1,0) = rotmat(0,1);
+            rotmat(0,1) = -rotmat(0,1); // sin (-phi);
             arma::Mat<Flt> pm2 = C.row(1);
             arma::Mat<Flt> pm2_r = pm2 - p0;
-
             arma::Mat<Flt> pm2_r_after = pm2_r * rotmat;
 
             arma::Mat<Flt> pm1_r_final = pm1_r_after + p0;
@@ -276,7 +250,6 @@ namespace morph
             // Update other one
             prec_ctrl[len-2].first = pm1_r_final(0,0);
             prec_ctrl[len-2].second = pm1_r_final(0,1);
-            cout << "Calling c.updateControls" << endl;
             c.updateControls (prec_ctrl);
         }
 

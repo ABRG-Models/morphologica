@@ -11,6 +11,7 @@ if(APPLE)
 else()
   file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: -L\${libdir} -lmorphologica\n")
 endif(APPLE)
+file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: hdf5 jsoncpp lapack\n")
 
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Cflags: -I\${includedir}\n")
 
