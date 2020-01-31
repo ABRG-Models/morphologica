@@ -237,6 +237,7 @@ namespace morph
                 this->points.insert (this->points.end(), cp.begin(), cp.end());
                 // Now compute tangents and normals
                 for (BezCoord<Flt> bp : cp) {
+                    cout << "Computing tangent and normal for " << bp << endl;
                     pair<BezCoord<Flt>, BezCoord<Flt>> tn = i->computeTangentNormal(bp.t());
                     this->tangents.push_back (tn.first);
                     this->normals.push_back (tn.second);

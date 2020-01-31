@@ -548,7 +548,6 @@ namespace morph
             this->checkt (t);
             Flt t_ = 1-t;
             pair<Flt,Flt> b;
-
             // x
             b.first = pow(t_, this->order) * this->controls[0].first;
             for(unsigned int k=1; k<this->order; k++) {
@@ -559,7 +558,7 @@ namespace morph
             b.first *= this->scale;
             // y
             b.second = pow(t_, this->order) * this->controls[0].second;
-            for(unsigned int k=1; k<this->order; k++) {
+            for (unsigned int k=1; k<this->order; k++) {
                 b.second += static_cast<Flt> (BezCurve::binomial_lookup(this->order, k))
                     * pow (t_, this->order-k) * pow (t, k) * this->controls[k].second;
             }
