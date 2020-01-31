@@ -167,7 +167,11 @@ namespace morph
         }
 
         void updateControls (vector<pair<Flt, Flt>> cp) {
+            cout << "updateControls called." << endl;
             this->controls = cp;
+            for (auto c : cp) {
+                cout << "(" << c.first << "," << c.second << ")" << endl;
+            }
 #if 0
             this->C.set_size (cp.size(), 2);
             int i = 0;
@@ -185,16 +189,9 @@ namespace morph
          * appends to the end of @c. *May also modify @c*
          */
         void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c) {
-#if 0
-            vector<pair<Flt,Flt>> lastCtrls = c.getControls();
-            size_t lcsize = lastCtrls.size();
-            if (lcsize > 2) {
-                pair<Flt,Flt> lastCtrl = lastCtrls[lcsize-2];
-                this->fit (points, lastCtrl);
-            } else {
-                this->fit (points);
-            }
-#endif
+
+            cout << "fit(vec<>, BezCurve<>&) called" << endl;
+
             this->fit (points);
 
             // preceding control points.
@@ -206,32 +203,42 @@ namespace morph
             pair<Flt, Flt> pc = prec_ctrl[len-2];
 
             // Compute distance from control point 0 to control point 1.
+            //cout << "cp 0 to 1: " << C.row(0) << " to "  << C.row(1) << endl;
             Flt xdiff = C(0,0) - C(1,0);
             Flt ydiff = C(0,1) - C(1,1);
-            Flt control0to1_sq = xdiff*xdiff + ydiff+ydiff;
+            Flt control0to1_sq = xdiff*xdiff + ydiff*ydiff;
             Flt control0to1 = sqrt (control0to1_sq); // a
+            //cout << "   distance "  << control0to1 << endl;
 
             // Compute distance from control point -1 to control point 0.
             xdiff = prec_ctrl[len-2].first - prec_ctrl[len-1].first;
             ydiff = prec_ctrl[len-2].second - prec_ctrl[len-1].second;
-            Flt precm1to0_sq = xdiff*xdiff + ydiff+ydiff;
+            //cout << "cp -1 to 0: (" << prec_ctrl[len-2].first << "," << prec_ctrl[len-2].second
+            //     << ") to "  << prec_ctrl[len-1].first << "," << prec_ctrl[len-1].second << endl;
+            Flt precm1to0_sq = xdiff*xdiff + ydiff*ydiff;
             Flt precm1to0 = sqrt (precm1to0_sq); // b
+            //cout << "   distance "  << precm1to0 << endl;
 
             // Compute distance from control point -1 to control point 1
+            //cout << "cp -1 to 1: (" << prec_ctrl[len-2].first << "," << prec_ctrl[len-2].second
+            //     << ") to " << C.row(1) << endl;
             xdiff = prec_ctrl[len-2].first - C(1,0);
-            xdiff = prec_ctrl[len-2].second - C(1,1);
-            Flt m1to1_sq = xdiff*xdiff + ydiff+ydiff;
+            ydiff = prec_ctrl[len-2].second - C(1,1);
+            Flt m1to1_sq = xdiff*xdiff + ydiff*ydiff;
+#if 0 // DEBUG
             Flt m1to1 = sqrt (m1to1_sq); // c
+            cout << "   distance "  << m1to1 << endl;
+#endif
 
             // Use cosine rule to get angle between 'em
             Flt costheta = (control0to1_sq + precm1to0_sq - m1to1_sq) / (2.0 * control0to1 * precm1to0);
             Flt theta = acos (costheta);
-            Flt phi = morph::PI_F - theta;
-            Flt halfphi = phi*0.5;
+            //cout << "theta = " << theta << " rads " << (theta * 180 / morph::PI_F) << " deg" << endl;
+            Flt phi = 0.5 * (morph::PI_F - theta);
             // Construct rotn matrix
             arma::Mat<Flt> rotmat (2,2);
-            rotmat(0,0) = cos (halfphi);
-            rotmat(0,1) = sin (halfphi);
+            rotmat(0,0) = cos (-phi);
+            rotmat(0,1) = sin (-phi);
             rotmat(1,0) = -rotmat(0,1);
             rotmat(1,1) = rotmat(0,0);
 
@@ -241,14 +248,20 @@ namespace morph
             arma::Mat<Flt> pm1 (1,2);
             pm1(0,0) = prec_ctrl[len-2].first;
             pm1(0,1) = prec_ctrl[len-2].second;
-            arma::Mat<Flt> pm2 = C.row(1);
 
             // Offset so we rotate about p0
             arma::Mat<Flt> pm1_r = pm1 - p0;
-            arma::Mat<Flt> pm2_r = pm2 - p0;
 
             // Apply rotation
             arma::Mat<Flt> pm1_r_after = pm1_r * rotmat;
+
+            rotmat(0,0) = cos (phi);
+            rotmat(0,1) = sin (phi);
+            rotmat(1,0) = -rotmat(0,1);
+            rotmat(1,1) = rotmat(0,0);
+            arma::Mat<Flt> pm2 = C.row(1);
+            arma::Mat<Flt> pm2_r = pm2 - p0;
+
             arma::Mat<Flt> pm2_r_after = pm2_r * rotmat;
 
             arma::Mat<Flt> pm1_r_final = pm1_r_after + p0;
@@ -263,6 +276,7 @@ namespace morph
             // Update other one
             prec_ctrl[len-2].first = pm1_r_final(0,0);
             prec_ctrl[len-2].second = pm1_r_final(0,1);
+            cout << "Calling c.updateControls" << endl;
             c.updateControls (prec_ctrl);
         }
 
@@ -350,7 +364,7 @@ namespace morph
                 P(i,0) = p.first;
                 P(i++,1) = p.second;
             }
-            cout << "P:\n" << P;
+            //cout << "P:\n" << P;
 
             // Compute candidate t values for the points.
             i = 0;
@@ -368,7 +382,7 @@ namespace morph
                 S(i,0) = D(i,0) / total_len;
             }
             // S now contains the t values for the fitting.
-            cout << "S:\n" << S;
+            //cout << "S:\n" << S;
 
             // Make TT matrix (T with double bar in
             // https://pomax.github.io/bezierinfo/#curvefitting) This takes each t and
@@ -381,7 +395,7 @@ namespace morph
                     TT(i, j) = pow (s, j);
                 }
             }
-            cout << "TT:\n" << TT;
+            //cout << "TT:\n" << TT;
 
             // Could we check/use the preprocessor to avoid this line if Flt is double?
             arma::Mat<double> Md = arma::conv_to<arma::Mat<double>>::from (this->M);
@@ -389,7 +403,7 @@ namespace morph
             // Magic matrix incantation to find the best set of coordinates:
             arma::Mat<double> Cd = Md.i() * (TT.t()*TT).i() * TT.t() * P;
 
-            cout << "Drumroll... C is\n" << Cd;
+            //cout << "Drumroll... C is\n" << Cd;
 
             // Cast back to Flts
             this->C = arma::conv_to<arma::Mat<Flt>>::from (Cd);

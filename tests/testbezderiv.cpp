@@ -48,6 +48,12 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
                 circle (pImg, p1, 2, M_WHITE, -1);
             }
         }
+        Point ps(ctrls[0].first, ctrls[0].second);
+        Point pe(ctrls[1].first, ctrls[1].second);
+        line (pImg, ps, pe, M_GREEN, 1);
+        Point ps2(ctrls[ctrls.size()-2].first, ctrls[ctrls.size()-2].second);
+        Point pe2(ctrls[ctrls.size()-1].first, ctrls[ctrls.size()-1].second);
+        line (pImg, ps2, pe2, M_GREEN, 1);
         j++;
     }
 
@@ -82,9 +88,11 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         line (pImg, fitted[i-1], fitted[i], M_RED, 1);
     }
 
-    for(size_t i=0; i<fitted.size(); i++) {
-        Point2d normLen = normals[i]*100.0;
-        line (pImg, fitted[i], fitted[i]+Point2i(normLen), M_BLUE, 1);
+    if (v.empty()) {
+        for(size_t i=0; i<fitted.size(); i++) {
+            Point2d normLen = normals[i]*100.0;
+            line (pImg, fitted[i], fitted[i]+Point2i(normLen), M_BLUE, 1);
+        }
     }
 }
 
@@ -97,20 +105,20 @@ int main()
     v.push_back (make_pair (200,380));
     v.push_back (make_pair (270,530));
     v.push_back (make_pair (350,620));
-    v.push_back (make_pair (440,730));
+    v.push_back (make_pair (440,730)); // or 450,700
 
     vector<pair<FLT,FLT>> w;
-    w.push_back (make_pair (440,730));
+    w.push_back (v.back());
     w.push_back (make_pair (530,790));
     w.push_back (make_pair (610,850));
     w.push_back (make_pair (760,840));
     w.push_back (make_pair (840,760));
-    w.push_back (make_pair (900,650));
+    w.push_back (make_pair (980,650));
 
+    // First the analytical fit
     BezCurve<FLT> cv1;
     cv1.fit (v);
     BezCurve<FLT> cv2;
-//    cv2.fit (w, cv1);
     cv2.fit (w);
 
     BezCurvePath<FLT> bcp;
@@ -125,8 +133,12 @@ int main()
 
     cv2.fit (w, cv1);
     bcp.removeCurve();
+    bcp.removeCurve();
+    bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
+    v.clear();
+    w.clear();
     draw (frame, bcp, v, w);
     imshow ("testBezDeriv", frame);
     // Wait for a key, then exit
