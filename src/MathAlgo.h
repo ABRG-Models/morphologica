@@ -76,6 +76,23 @@ namespace morph {
             centroid[3] /= (psz/3);
             return centroid;
         }
+        //! Centroid 4 3D coordinates
+        static array<T,3> centroid3D (const array<T, 12> points) {
+            array<T,3> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
+            centroid[2] = static_cast<T>(0);
+            size_t psz = 12;
+            for (size_t i = 0; i < psz-2; i+=3) {
+                centroid[0] += points[i];
+                centroid[1] += points[i+1];
+                centroid[1] += points[i+2];
+            }
+            centroid[0] /= 4;
+            centroid[1] /= 4;
+            centroid[3] /= 4;
+            return centroid;
+        }
 
         //! Compute standard deviation of the T values in @values. Return SD.
         static T compute_sd (const vector<T>& values) {
