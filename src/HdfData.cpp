@@ -103,6 +103,54 @@ morph::HdfData::read_contained_vals (const char* path, vector<float>& vals)
 }
 
 void
+morph::HdfData::read_contained_vals (const char* path, vector<array<float, 3>>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[2] = {0,0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 2) {
+        stringstream ee;
+        ee << "Error. Expected 2D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    if (dims[1] != 3) {
+        stringstream ee;
+        ee << "Error. Expected 3 coordinates to be stored in each element of " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0]);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, vector<array<float, 12>>& vals)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[2] = {0,0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 2) {
+        stringstream ee;
+        ee << "Error. Expected 2D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+    if (dims[1] != 12) {
+        stringstream ee;
+        ee << "Error. Expected 12 floats to be stored in each element of " << path;
+        throw runtime_error (ee.str());
+    }
+    vals.resize (dims[0]);
+    herr_t status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+}
+
+void
 morph::HdfData::read_contained_vals (const char* path, vector<int>& vals)
 {
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
@@ -597,6 +645,55 @@ morph::HdfData::add_contained_vals (const char* path, const list<pair<double, do
     this->add_contained_vals (p1.c_str(), first);
     this->add_contained_vals (p2.c_str(), second);
 }
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<array<float, 3>>& vals)
+{
+    // Three columns? Or as a 'real Hdf array'?
+    this->process_groups (path);
+    hsize_t dim_vec3dcoords[2]; // 2 Dims
+    dim_vec3dcoords[0] = vals.size();
+    dim_vec3dcoords[1] = 3; // 3 floats in each array<float,3>
+    // Note 2 dims (1st arg, which is rank = 2)
+    hid_t dataspace_id = H5Screate_simple (2, dim_vec3dcoords, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<array<float, 12>>& vals)
+{
+    // Three columns? Or as a 'real Hdf array'?
+    this->process_groups (path);
+    hsize_t dim_vec12f[2];
+    dim_vec12f[0] = vals.size();
+    dim_vec12f[1] = 12;
+    hid_t dataspace_id = H5Screate_simple (2, dim_vec12f, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+#if 0
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<cv::Point>& vals)
+{
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const vector<cv::Point2d>& vals)
+{
+}
+#endif
 
 void
 morph::HdfData::add_contained_vals (const char* path, const vector<int>& vals)

@@ -4,13 +4,16 @@
 #ifndef _HDFDATA_H_
 #define _HDFDATA_H_
 
+//#include <opencv2/opencv.hpp>
 #include <hdf5.h>
 #include <vector>
+#include <array>
 #include <list>
 #include <string>
 #include <utility>
 
 using std::vector;
+using std::array;
 using std::list;
 using std::string;
 using std::pair;
@@ -85,6 +88,14 @@ namespace morph {
         void read_contained_vals (const char* path, list<pair<double, double>>& vals);
         //@}
 
+        /*!
+         * Vector of 3D coordinates
+         */
+        //@{
+        void read_contained_vals (const char* path, vector<array<float, 3>>& vals);
+        void read_contained_vals (const char* path, vector<array<float, 12>>& vals);
+        //@}
+
         void read_val (const char* path, double& val);
         void read_val (const char* path, float& val);
         void read_val (const char* path, int& val);
@@ -147,6 +158,19 @@ namespace morph {
         void add_contained_vals (const char* path, const vector<unsigned int>& vals);
         void add_contained_vals (const char* path, const vector<long long int>& vals);
         void add_contained_vals (const char* path, const vector<unsigned long long int>& vals);
+        //@}
+
+        /*!
+         * Containers of coordinates
+         */
+        //@{
+        //! 3D coordinates
+        void add_contained_vals (const char* path, const vector<array<float, 3>>& vals);
+        //! Sets of 4 3D coordinates (if you like, or anything else that requires arrays of 12 floats)
+        void add_contained_vals (const char* path, const vector<array<float, 12>>& vals);
+        //! OpenCV Point objects
+        //void add_contained_vals (const char* path, const vector<cv::Point>& vals);
+        //void add_contained_vals (const char* path, const vector<cv::Point2d>& vals);
         //@}
 
         /*!
