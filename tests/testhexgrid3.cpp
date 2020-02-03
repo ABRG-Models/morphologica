@@ -1,4 +1,3 @@
-#include "display.h"
 #include "tools.h"
 #include <utility>
 #include <iostream>
@@ -6,6 +5,8 @@
 
 #include "HexGrid.h"
 #include "ReadCurves.h"
+
+#include "display.h"
 
 using namespace morph;
 using namespace std;

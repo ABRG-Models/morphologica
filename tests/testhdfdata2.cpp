@@ -82,7 +82,98 @@ int main()
         }
     }
 
+    cout << "vector<Point>" << endl;
+    vector<cv::Point> vpi = { cv::Point(1,2),
+                              cv::Point(3,4),
+                              cv::Point(5,6),
+                              cv::Point(7,8),
+                              cv::Point(9,18)};
+    {
+        HdfData data("test.h5");
+        data.add_contained_vals ("/vpi", vpi);
+    } // data closes when out of scope
 
+    vector<cv::Point> vpiread;
+    {
+        HdfData data("test.h5", true); // true for read data
+        data.read_contained_vals ("/vpi", vpiread);
+    }
+
+    if (vpi.size() == vpiread.size()) {
+        for (unsigned int i = 0; i < vpi.size(); ++i) {
+            if (vpi[i].x != vpiread[i].x) {
+                rtn -= 1;
+                break;
+            }
+            if (vpi[i].y != vpiread[i].y) {
+                rtn -= 1;
+                break;
+            }
+            cout << "Coordinate: (" << vpiread[i].x << "," << vpiread[i].y << ")" << endl;
+        }
+    }
+
+    cout << "vector<Point2f>" << endl;
+    vector<cv::Point2f> vpi2f = { cv::Point2f(1.5,2.5),
+                                  cv::Point2f(3.,4.),
+                                  cv::Point2f(5.,6.7),
+                                  cv::Point2f(7.6,8.0),
+                                  cv::Point2f(9.2,18.3)};
+    {
+        HdfData data("test.h5");
+        data.add_contained_vals ("/vpi2f", vpi2f);
+    } // data closes when out of scope
+
+    vector<cv::Point2f> vpi2fread;
+    {
+        HdfData data("test.h5", true); // true for read data
+        data.read_contained_vals ("/vpi2f", vpi2fread);
+    }
+
+    if (vpi2f.size() == vpi2fread.size()) {
+        for (unsigned int i = 0; i < vpi2f.size(); ++i) {
+            if (vpi2f[i].x != vpi2fread[i].x) {
+                rtn -= 1;
+                break;
+            }
+            if (vpi2f[i].y != vpi2fread[i].y) {
+                rtn -= 1;
+                break;
+            }
+            cout << "Coordinate: (" << vpi2fread[i].x << "," << vpi2fread[i].y << ")" << endl;
+        }
+    }
+
+    cout << "vector<Point2d>" << endl;
+    vector<cv::Point2d> vpi2d = { cv::Point2d(1.5,2.5),
+                                  cv::Point2d(3.,4.),
+                                  cv::Point2d(5.,6.7),
+                                  cv::Point2d(7.6,8.0),
+                                  cv::Point2d(9.2,18.3)};
+    {
+        HdfData data("test.h5");
+        data.add_contained_vals ("/vpi2d", vpi2d);
+    } // data closes when out of scope
+
+    vector<cv::Point2d> vpi2dread;
+    {
+        HdfData data("test.h5", true); // true for read data
+        data.read_contained_vals ("/vpi2d", vpi2dread);
+    }
+
+    if (vpi2d.size() == vpi2dread.size()) {
+        for (unsigned int i = 0; i < vpi2d.size(); ++i) {
+            if (vpi2d[i].x != vpi2dread[i].x) {
+                rtn -= 1;
+                break;
+            }
+            if (vpi2d[i].y != vpi2dread[i].y) {
+                rtn -= 1;
+                break;
+            }
+            cout << "Coordinate: (" << vpi2dread[i].x << "," << vpi2dread[i].y << ")" << endl;
+        }
+    }
 
     cout << "Returning " << rtn << endl;
 

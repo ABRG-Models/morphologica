@@ -11,7 +11,6 @@
  */
 
 #include "ReadCurves.h"
-#include "display.h"
 #include "tools.h"
 #include "HexGrid.h"
 #include <utility>
@@ -20,6 +19,8 @@
 #include <fstream>
 #include <math.h>
 #include "BezCoord.h"
+
+#include "display.h"
 
 using namespace std;
 using morph::ReadCurves;
