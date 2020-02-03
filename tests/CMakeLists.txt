@@ -19,7 +19,46 @@ set(TARGETTEST1_1 testbez2 CACHE TYPE STRING)
 set(SOURCETEST1_1 testbez2.cpp)
 add_executable(${TARGETTEST1_1} ${SOURCETEST1_1})
 target_link_libraries(${TARGETTEST1_1} morphologica)
-add_test(testbez ${TARGETTEST1_1})
+add_test(testbez2 ${TARGETTEST1_1})
+
+# BezCurvePath class
+set(TARGETTEST1_2 testbezcurves CACHE TYPE STRING)
+set(SOURCETEST1_2 testbezcurves.cpp)
+add_executable(${TARGETTEST1_2} ${SOURCETEST1_2})
+target_link_libraries(${TARGETTEST1_2} morphologica)
+add_test(testbezcurves ${TARGETTEST1_2})
+
+# Testing matrix representation of Bezier curves
+set(TARGETTEST1_3 testbezmatrix CACHE TYPE STRING)
+set(SOURCETEST1_3 testbezmatrix.cpp)
+add_executable(${TARGETTEST1_3} ${SOURCETEST1_3})
+target_compile_definitions(${TARGETTEST1_3} PUBLIC FLT=float)
+target_link_libraries(${TARGETTEST1_3} morphologica)
+add_test(testbezmatrix ${TARGETTEST1_3})
+
+# Testing auto-fitting a Bezier curve
+set(TARGETTEST1_4 testbezfit CACHE TYPE STRING)
+set(SOURCETEST1_4 testbezfit.cpp)
+add_executable(${TARGETTEST1_4} ${SOURCETEST1_4})
+target_compile_definitions(${TARGETTEST1_4} PUBLIC FLT=float)
+target_link_libraries(${TARGETTEST1_4} morphologica)
+add_test(testbezfit ${TARGETTEST1_4})
+
+# Testing splitting of Bezier curves
+set(TARGETTEST1_5 testbezsplit CACHE TYPE STRING)
+set(SOURCETEST1_5 testbezsplit.cpp)
+add_executable(${TARGETTEST1_5} ${SOURCETEST1_5})
+target_compile_definitions(${TARGETTEST1_5} PUBLIC FLT=float)
+target_link_libraries(${TARGETTEST1_5} morphologica)
+add_test(testbezsplit ${TARGETTEST1_5})
+
+# Testing Bezier derivatives
+set(TARGETTEST1_6 testbezderiv CACHE TYPE STRING)
+set(SOURCETEST1_6 testbezderiv.cpp)
+add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
+target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
+target_link_libraries(${TARGETTEST1_6} morphologica)
+add_test(testbezderiv ${TARGETTEST1_6})
 
 # Test two curves connected together
 set(TARGETTEST2 twocurves CACHE TYPE STRING)

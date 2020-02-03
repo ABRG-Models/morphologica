@@ -221,12 +221,12 @@ namespace morph {
          * offsets the boundary so that when it is applied to the
          * HexGrid, the centroid IS (0,0).
          */
-        void setBoundary (const BezCurvePath& p);
+        void setBoundary (const BezCurvePath<float>& p);
 
         /*!
          * Sets boundary based on the vector of BezCoords.
          */
-        void setBoundary (vector<BezCoord>& bpoints);
+        void setBoundary (vector<BezCoord<float>>& bpoints);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This
@@ -253,7 +253,7 @@ namespace morph {
          * ellipse functions (work in progress)
          */
         //@{
-        vector<BezCoord> ellipseCompute (const float a, const float b);
+        vector<BezCoord<float>> ellipseCompute (const float a, const float b);
         float ellipsePerimeter (const float a, const float b);
         //@}
 
@@ -375,9 +375,9 @@ namespace morph {
          * Returns a vector of iterators to the Hexes that make up the region.
          */
         //@{
-        vector<list<Hex>::iterator> getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid,
+        vector<list<Hex>::iterator> getRegion (BezCurvePath<float>& p, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
-        vector<list<Hex>::iterator> getRegion (vector<BezCoord>& bpoints, pair<float, float>& regionCentroid,
+        vector<list<Hex>::iterator> getRegion (vector<BezCoord<float>>& bpoints, pair<float, float>& regionCentroid,
                                                bool applyOriginalBoundaryCentroid = true);
         //@}
 
@@ -444,7 +444,7 @@ namespace morph {
          * return An iterator into hexen which refers to the closest
          * Hex to @a point.
          */
-        list<Hex>::iterator setBoundary (const BezCoord& point, list<Hex>::iterator startFrom);
+        list<Hex>::iterator setBoundary (const BezCoord<float>& point, list<Hex>::iterator startFrom);
 
         /*!
          * Determine whether the boundary is contiguous. Whilst doing
@@ -469,7 +469,7 @@ namespace morph {
          * supposed to be temporary, so that client code can find a region, extract the pointers to
          * all the Hexes in that region and store that information for later use.
          */
-        list<Hex>::iterator setRegionBoundary (const BezCoord& point, list<Hex>::iterator startFrom);
+        list<Hex>::iterator setRegionBoundary (const BezCoord<float>& point, list<Hex>::iterator startFrom);
 
         /*!
          * Determine whether the region boundary is contiguous, starting from the boundary Hex
@@ -490,7 +490,7 @@ namespace morph {
          * Find the hex near @point, starting from startFrom, which should be as close as possible
          * to point in order to reduce computation time.
          */
-        list<Hex>::iterator findHexNearPoint (const BezCoord& point, list<Hex>::iterator startFrom);
+        list<Hex>::iterator findHexNearPoint (const BezCoord<float>& point, list<Hex>::iterator startFrom);
 
         /*!
          * Mark hexes as being inside the boundary given that @hi refers to a boundary Hex and at
@@ -631,7 +631,7 @@ namespace morph {
         /*!
          * A boundary to apply to the initial, rectangular grid.
          */
-        BezCurvePath boundary;
+        BezCurvePath<float> boundary;
 
         /*!
          * Hex references to the hexes on the vertices of the

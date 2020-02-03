@@ -24,14 +24,14 @@ int main()
     f.second = 1;
 
     // Make a cubic curve
-    BezCurve cc(i, f, c1, c2);
+    BezCurve<float> cc(i, f, c1, c2);
 
     // Length of step along curve
     std::ofstream f1;
     f1.open ("tests/curve.csv", std::ios::trunc|std::ios::out);
     f1.precision(12);
-    vector<BezCoord> a = cc.computePoints ((unsigned int)100);
-    vector<BezCoord>::iterator ai = a.begin();
+    vector<BezCoord<float>> a = cc.computePoints ((unsigned int)100);
+    typename vector<BezCoord<float>>::iterator ai = a.begin();
     int ii = 0;
     while (ai != a.end()) {
         if (ai->getNullCoordinate() == false) {

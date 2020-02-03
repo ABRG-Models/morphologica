@@ -384,7 +384,7 @@ namespace morph {
          * Compute the distance from the point given (in two-dimensions only; x and y) by the
          * BezCoord @a cartesianPoint to the centre of this Hex.
          */
-        float distanceFrom (const BezCoord& cartesianPoint) const {
+        float distanceFrom (const BezCoord<float>& cartesianPoint) const {
             float dx = cartesianPoint.x() - x;
             float dy = cartesianPoint.y() - y;
             return sqrt (dx*dx + dy*dy);

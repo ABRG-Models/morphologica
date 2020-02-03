@@ -29,7 +29,7 @@ int main()
     p1_f.second = 1;
 
     // Make a cubic curve
-    BezCurve cc1(p1_i, p1_f, p1_c1, p1_c2);
+    BezCurve<float> cc1(p1_i, p1_f, p1_c1, p1_c2);
 
     pair<float,float> p2_f, p2_c1, p2_c2;
     p2_c1.first = 15;
@@ -39,15 +39,15 @@ int main()
     p2_f.first = 20;
     p2_f.second = 3;
 
-    BezCurve cc2(p1_f, p2_f, p2_c1, p2_c2);
+    BezCurve<float> cc2(p1_f, p2_f, p2_c1, p2_c2);
 
     // Now have two curves, generate points on the curves
     float steplen = 1.0f;
 
-    vector<BezCoord> a = cc1.computePoints (steplen);
+    vector<BezCoord<float>> a = cc1.computePoints (steplen);
 
     // Look at 'em
-    vector<BezCoord>::iterator ai = a.begin();
+    typename vector<BezCoord<float>>::iterator ai = a.begin();
     int ii = 0;
     while (ai != a.end()) {
         if (ai->getNullCoordinate() == false) {
@@ -63,7 +63,7 @@ int main()
     pair<float,float> last_of_cc1 = ai->getCoord();
 
     float firstl = steplen - a.back().getRemaining();
-    vector<BezCoord> b = cc2.computePoints (steplen, firstl);
+    vector<BezCoord<float>> b = cc2.computePoints (steplen, firstl);
 
     ai = b.begin();
     ii = 0;

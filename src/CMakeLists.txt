@@ -1,5 +1,5 @@
 # Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp BezCurve.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
+set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
 
 # If we have glfw3 then attempt to compile Seb's modern opengl visualization code
 if (${glfw3_FOUND})

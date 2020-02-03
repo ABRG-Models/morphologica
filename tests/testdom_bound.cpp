@@ -27,7 +27,7 @@ int main()
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        unsigned int correctNum = 6304;
+        unsigned int correctNum = 6300;
         if (hg.num() != correctNum) {
             cout << "hg.num() == " << hg.num() << " which is not " << correctNum << endl;
             rtn = -1;

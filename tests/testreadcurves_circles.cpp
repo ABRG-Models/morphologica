@@ -5,10 +5,12 @@
 #include <fstream>
 #include <math.h>
 #include "BezCoord.h"
+#include "BezCurvePath.h"
 
 using namespace std;
 using morph::ReadCurves;
 using morph::BezCoord;
+using morph::BezCurvePath;
 using std::vector;
 
 #define DEBUG 1
@@ -22,26 +24,23 @@ int main()
     try {
         ReadCurves r("../../tests/whiskerbarrels_withcentres.svg");
         //r.save (0.001f);
-        vector<BezCoord> pts = r.getCorticalPath().getPoints (0.01f);
+        BezCurvePath<float> bcp = r.getCorticalPath();
+        bcp.computePoints (0.01f);
+        vector<BezCoord<float>> pts = bcp.getPoints();
         auto i = pts.begin();
         while (i != pts.end()) {
             cout << *i << endl;
             ++i;
         }
-        // Change as it's on a different outline 0.110460862517 0.739935457706 0.393380910158
 
         cout.precision(12);
         cout << "pts[23] =  " << pts[23].t()
              << " " << pts[23].x()
              << " " << pts[23].y()
              << endl;
-        cout << "pts[23] =  " << fabs(pts[23].t() - 0.110460862517)
-             << " " << fabs(pts[23].x() - 0.739935457706)
-             << " " << fabs(pts[23].y() - 0.393380910158)
-             << endl;
-        if ((fabs(pts[23].t() - 0.110460862517) < 0.000001f)
-            && (fabs(pts[23].x() - 0.739935457706) < 0.000001f)
-            && (fabs(pts[23].y() - 0.393380910158) < 0.000001f)) {
+        if ((fabs(pts[23].t() - 0.110523112118) < 0.000001f)
+            && (fabs(pts[23].x() - 0.74002712965) < 0.000001f)
+            && (fabs(pts[23].y() - 0.393309623003) < 0.000001f)) {
             cout << "rtn IS 0" << endl;
             rtn = 0;
         } else {

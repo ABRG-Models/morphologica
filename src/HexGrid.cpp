@@ -411,10 +411,10 @@ morph::HexGrid::ellipsePerimeter (const float a, const float b)
     return (float)p;
 }
 
-vector<BezCoord>
+vector<BezCoord<float>>
 morph::HexGrid::ellipseCompute (const float a, const float b)
 {
-    vector<BezCoord> bpoints;
+    vector<BezCoord<float>> bpoints;
 #ifdef WORK_IN_PROGRESS
     // Determine perimeter of the ellipse
     float perim = this->ellipsePerimeter (a, b);
@@ -433,7 +433,7 @@ morph::HexGrid::setEllipticalBoundary (const float a, const float b)
 {
     DBG ("Applying elliptical boundary...");
     // Compute the points on the boundary using half of the hex to hex spacing as the step size.
-    vector<BezCoord> bpoints = ellipseCompute (a, b);
+    vector<BezCoord<float>> bpoints = ellipseCompute (a, b);
     this->setBoundary (bpoints);
 }
 
@@ -446,20 +446,21 @@ morph::HexGrid::clearRegionBoundaryFlags (void)
 }
 
 vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (const BezCurvePath& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
+morph::HexGrid::getRegion (BezCurvePath<float>& p, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
 {
-    vector<BezCoord> bpoints = p.getPoints (this->d/2.0f, true);
+    p.computePoints (this->d/2.0f, true);
+    vector<BezCoord<float>> bpoints = p.getPoints();
     return this->getRegion (bpoints, regionCentroid, applyOriginalBoundaryCentroid);
 }
 
 vector<list<Hex>::iterator>
-morph::HexGrid::getRegion (vector<BezCoord>& bpoints, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
+morph::HexGrid::getRegion (vector<BezCoord<float>>& bpoints, pair<float, float>& regionCentroid, bool applyOriginalBoundaryCentroid)
 {
     // First clear all region boundary flags, as we'll be defining a new region boundary
     this->clearRegionBoundaryFlags();
 
     // Compute region centroid from bpoints
-    regionCentroid = BezCurvePath::getCentroid (bpoints);
+    regionCentroid = BezCurvePath<float>::getCentroid (bpoints);
 
     // A return object
     vector<list<Hex>::iterator> theRegion;
@@ -478,7 +479,7 @@ morph::HexGrid::getRegion (vector<BezCoord>& bpoints, pair<float, float>& region
 
     // Now find the hexes on the boundary of the region
     list<Hex>::iterator nearbyRegionBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
-    vector<BezCoord>::iterator bpi = bpoints.begin();
+    typename vector<BezCoord<float>>::iterator bpi = bpoints.begin();
     while (bpi != bpoints.end()) {
         nearbyRegionBoundaryPoint = this->setRegionBoundary (*bpi++, nearbyRegionBoundaryPoint);
         DBG2 ("Added region boundary point " << nearbyRegionBoundaryPoint->ri << "," << nearbyRegionBoundaryPoint->gi);
@@ -512,7 +513,7 @@ morph::HexGrid::getRegion (vector<BezCoord>& bpoints, pair<float, float>& region
 }
 
 list<Hex>::iterator
-morph::HexGrid::setRegionBoundary (const BezCoord& point, list<Hex>::iterator startFrom)
+morph::HexGrid::setRegionBoundary (const BezCoord<float>& point, list<Hex>::iterator startFrom)
 {
     list<Hex>::iterator h = this->findHexNearPoint (point, startFrom);
     h->setFlag (HEX_IS_REGION_BOUNDARY | HEX_INSIDE_REGION);
@@ -574,24 +575,24 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
 }
 
 void
-morph::HexGrid::setBoundary (const BezCurvePath& p)
+morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
 {
     this->boundary = p;
 
     if (!this->boundary.isNull()) {
         DBG ("Applying boundary...");
-
         // Compute the points on the boundary using half of the hex to hex spacing as the step
         // size. The 'true' argument inverts the y axis.
-        vector<BezCoord> bpoints = this->boundary.getPoints (this->d/2.0f, true);
+        this->boundary.computePoints (this->d/2.0f, true);
+        vector<BezCoord<float>> bpoints = this->boundary.getPoints();
         this->setBoundary (bpoints);
     }
 }
 
 void
-morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
+morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints)
 {
-    this->boundaryCentroid = BezCurvePath::getCentroid (bpoints);
+    this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
     DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
     auto bpi = bpoints.begin();
     while (bpi != bpoints.end()) {
@@ -637,7 +638,7 @@ morph::HexGrid::setBoundary (vector<BezCoord>& bpoints)
 }
 
 list<Hex>::iterator
-morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFrom)
+morph::HexGrid::setBoundary (const BezCoord<float>& point, list<Hex>::iterator startFrom)
 {
     // Searching from "startFrom", search out, via neighbours until the hex closest to the boundary
     // point is located. How to know if it's closest? When all neighbours are further from the
@@ -651,7 +652,7 @@ morph::HexGrid::setBoundary (const BezCoord& point, list<Hex>::iterator startFro
 }
 
 list<Hex>::iterator
-morph::HexGrid::findHexNearPoint (const BezCoord& point, list<Hex>::iterator startFrom)
+morph::HexGrid::findHexNearPoint (const BezCoord<float>& point, list<Hex>::iterator startFrom)
 {
     bool neighbourNearer = true;
 
