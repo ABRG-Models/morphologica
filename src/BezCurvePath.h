@@ -239,6 +239,7 @@ namespace morph
                 for (BezCoord<Flt> bp : cp) {
                     cout << "Computing tangent and normal for " << bp << endl;
                     pair<BezCoord<Flt>, BezCoord<Flt>> tn = i->computeTangentNormal(bp.t());
+                    cout << "...which are:" << tn.first << ", and " << tn.second << endl;
                     this->tangents.push_back (tn.first);
                     this->normals.push_back (tn.second);
                 }
