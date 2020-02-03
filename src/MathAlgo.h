@@ -3,6 +3,8 @@
 
 #include <vector>
 using std::vector;
+#include <array>
+using std::array;
 #include <list>
 using std::list;
 #include <limits>
@@ -12,7 +14,6 @@ using std::sqrt;
 #include <utility>
 using std::pair;
 using std::make_pair;
-
 #include <iostream>
 using std::endl;
 using std::cout;
@@ -31,6 +32,50 @@ namespace morph {
     class MathAlgo
     {
     public:
+        //! Centroid of a set of 2D coordinates @points.
+        static pair<T,T> centroid2D (const vector<pair<T,T>> points) {
+            pair<T,T> centroid;
+            centroid.first = static_cast<T>(0);
+            centroid.second = static_cast<T>(0);
+            for (auto p : points) {
+                centroid.first += p.first;
+                centroid.second += p.second;
+            }
+            centroid.first /= points.size();
+            centroid.second /= points.size();
+            return centroid;
+        }
+        //! Centroid of a set of 2D coordinates @points, assumed to be in order x1,y1,x2,y2,etc
+        static pair<T,T> centroid2D (const vector<T> points) {
+            pair<T,T> centroid;
+            centroid.first = static_cast<T>(0);
+            centroid.second = static_cast<T>(0);
+            size_t psz = points.size();
+            for (size_t i = 0; i < psz-1; i+=2) {
+                centroid.first += points[i];
+                centroid.second += points[i+1];
+            }
+            centroid.first /= (psz/2);
+            centroid.second /= (psz/2);
+            return centroid;
+        }
+        //! Centroid of a set of 3D coordinates @points, assumed to be in order x1,y1,z1, x2,y2,z2, etc
+        static array<T,3> centroid3D (const vector<T> points) {
+            array<T,3> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
+            centroid[2] = static_cast<T>(0);
+            size_t psz = points.size();
+            for (size_t i = 0; i < psz-2; i+=3) {
+                centroid[0] += points[i];
+                centroid[1] += points[i+1];
+                centroid[1] += points[i+2];
+            }
+            centroid[0] /= (psz/3);
+            centroid[1] /= (psz/3);
+            centroid[3] /= (psz/3);
+            return centroid;
+        }
 
         //! Compute standard deviation of the T values in @values. Return SD.
         static T compute_sd (const vector<T>& values) {
