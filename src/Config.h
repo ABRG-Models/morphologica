@@ -7,6 +7,7 @@
 #include <json/json.h>
 #include <fstream>
 using std::ifstream;
+using std::ofstream;
 using std::ios;
 #include <sstream>
 using std::stringstream;
@@ -14,9 +15,11 @@ using std::stringstream;
 using std::string;
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 #include <stdexcept>
 using std::exception;
+using std::runtime_error;
 
 #include "Process.h"
 
@@ -61,10 +64,16 @@ namespace morph {
     class Config {
 
     public:
-        /*!
-         * Just one constructor, which takes the path to the file that contains the JSON.
-         */
+        //! Default constructor, when config should be a class member. Call init() before use.
+        Config() : ready(false) {}
+
+        //! Constructor which takes the path to the file that contains the JSON.
         Config (const string& configfile) {
+            this->init (configfile);
+        }
+
+        //! Perform config file initialization.
+        void init (const string& configfile) {
             stringstream ess;
             // Test for existence of the JSON file.
             ifstream jsonfile_test;
