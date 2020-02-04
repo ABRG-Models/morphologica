@@ -125,7 +125,7 @@ namespace morph {
         }
 
         //! Read an OpenCV Matrix that was stored with the sister add_contained_vals
-        //! function
+        //! function (which also stores some necessary metadata).
         void read_contained_vals (const char* path, cv::Mat& vals);
 
         //@} // reading methods
@@ -212,7 +212,8 @@ namespace morph {
         void add_contained_vals (const char* path, const vector<cv::Point2d>& vals);
         void add_contained_vals (const char* path, const vector<cv::Point2f>& vals);
 
-        //! Write out cv::Mat matrix.
+        //! Write out cv::Mat matrix data, along with the data type and the channels
+        //! as metadata.
         void add_contained_vals (const char* path, const cv::Mat& vals);
         //@}
 
