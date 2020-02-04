@@ -12,12 +12,14 @@
 #include <list>
 #include <string>
 #include <utility>
+#include <bitset>
 
 using std::vector;
 using std::array;
 using std::list;
 using std::string;
 using std::pair;
+using std::bitset;
 
 namespace morph {
 
@@ -147,6 +149,23 @@ namespace morph {
         void add_val (const char* path, const long long int& val);
         void add_val (const char* path, const unsigned long long int& val);
         void add_val (const char* path, const bool& val);
+
+        /*!
+         * Templated add_val for bitset, so that the code can handle all sizes of
+         * bitset.
+         */
+        template <size_t N>
+        void add_val (const char* path, const bitset<N>& val) {
+            unsigned long long int bs_ullong = val.to_ullong();
+            this->add_val (path, bs_ullong);
+        }
+        template <size_t N>
+        void read_val (const char* path, bitset<N>& val) {
+            unsigned long long int bs_ullong = 0ULL;
+            this->read_val (path, bs_ullong);
+            bitset<N> val_ (bs_ullong);
+            val = val_;
+        }
         //@}
 
         //! Add a string of chars

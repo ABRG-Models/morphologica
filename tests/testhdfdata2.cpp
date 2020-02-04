@@ -193,6 +193,24 @@ int main()
         rtn -= 1;
     }
 
+    bitset<13> bs;
+    bs.set(3);
+    bs.set(7);
+    {
+        HdfData data("test.h5");
+        data.add_val ("/bitset", bs);
+    }
+    bitset<13> bsread;
+    {
+        HdfData data("test.h5", true);
+        data.read_val ("/bitset", bsread);
+    }
+    cout << "Bitset stored: " << bs << endl;
+    cout << "Bitset retrieved: " << bsread << endl;
+    if (!(bs == bsread)) {
+        rtn -= 1;
+    }
+
     cout << "Returning " << rtn << endl;
 
     return rtn;
