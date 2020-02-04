@@ -8,17 +8,16 @@
 
 #include <hdf5.h>
 #include <vector>
-#include <array>
-#include <list>
-#include <string>
-#include <utility>
-#include <bitset>
-
 using std::vector;
+#include <array>
 using std::array;
+#include <list>
 using std::list;
+#include <string>
 using std::string;
+#include <utility>
 using std::pair;
+#include <bitset>
 using std::bitset;
 
 namespace morph {
@@ -99,7 +98,7 @@ namespace morph {
         void read_contained_vals (const char* path, vector<array<float, 12>>& vals);
         //! OpenCV-friendly overloads
         //@{
-        void read_contained_vals (const char* path, vector<cv::Point>& vals);
+        void read_contained_vals (const char* path, vector<cv::Point2i>& vals);
         void read_contained_vals (const char* path, vector<cv::Point2f>& vals);
         void read_contained_vals (const char* path, vector<cv::Point2d>& vals);
         //@}
@@ -115,6 +114,15 @@ namespace morph {
 
         //! Read a string of chars
         void read_string (const char* path, string& str);
+
+        //! Templated read_val for bitsets
+        template <size_t N>
+        void read_val (const char* path, bitset<N>& val) {
+            unsigned long long int bs_ullong = 0ULL;
+            this->read_val (path, bs_ullong);
+            bitset<N> val_ (bs_ullong);
+            val = val_;
+        }
 
         //@} // reading methods
 
@@ -152,19 +160,13 @@ namespace morph {
 
         /*!
          * Templated add_val for bitset, so that the code can handle all sizes of
-         * bitset.
+         * bitset. Note the limit on N here is the size of an unsigned long long int,
+         * so that's a bit of a FIXME for the future.
          */
         template <size_t N>
         void add_val (const char* path, const bitset<N>& val) {
             unsigned long long int bs_ullong = val.to_ullong();
             this->add_val (path, bs_ullong);
-        }
-        template <size_t N>
-        void read_val (const char* path, bitset<N>& val) {
-            unsigned long long int bs_ullong = 0ULL;
-            this->read_val (path, bs_ullong);
-            bitset<N> val_ (bs_ullong);
-            val = val_;
         }
         //@}
 
@@ -202,9 +204,12 @@ namespace morph {
         //! Sets of 4 3D coordinates (if you like, or anything else that requires arrays of 12 floats)
         void add_contained_vals (const char* path, const vector<array<float, 12>>& vals);
         //! OpenCV Point objects
-        void add_contained_vals (const char* path, const vector<cv::Point>& vals);
+        void add_contained_vals (const char* path, const vector<cv::Point2i>& vals);
         void add_contained_vals (const char* path, const vector<cv::Point2d>& vals);
         void add_contained_vals (const char* path, const vector<cv::Point2f>& vals);
+
+        //! Write out cv::Mat matrix.
+        void add_contained_vals (const char* path, const cv::Mat& vals);
         //@}
 
         /*!

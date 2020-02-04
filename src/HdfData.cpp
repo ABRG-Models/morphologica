@@ -153,7 +153,7 @@ morph::HdfData::read_contained_vals (const char* path, vector<array<float, 12>>&
 }
 
 void
-morph::HdfData::read_contained_vals (const char* path, vector<cv::Point>& vals)
+morph::HdfData::read_contained_vals (const char* path, vector<cv::Point2i>& vals)
 {
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
     hid_t space_id = H5Dget_space (dataset_id);
@@ -755,7 +755,7 @@ morph::HdfData::add_contained_vals (const char* path, const vector<array<float, 
 }
 
 void
-morph::HdfData::add_contained_vals (const char* path, const vector<cv::Point>& vals)
+morph::HdfData::add_contained_vals (const char* path, const vector<cv::Point2i>& vals)
 {
     this->process_groups (path);
     hsize_t dim_vec2dcoords[2]; // 2 Dims
@@ -801,6 +801,108 @@ morph::HdfData::add_contained_vals (const char* path, const vector<cv::Point2f>&
     hid_t dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
     hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::add_contained_vals (const char* path, const cv::Mat& vals)
+{
+    this->process_groups (path);
+
+    hsize_t dim_mat[2]; // 2 dimensions supported (even though Mat's can do n dimensions)
+
+    cv::Size ms = vals.size();
+    dim_mat[0] = ms.height;
+    int channels = vals.channels();
+    if (channels > 4) {
+        // error, can't handle >4 channels
+    }
+    dim_mat[1] = ms.width * channels;
+
+    hid_t dataspace_id = H5Screate_simple (2, dim_mat, NULL);
+
+    hid_t dataset_id;
+    herr_t status;
+
+    int cv_type = vals.type();
+
+    switch (cv_type) {
+
+    case CV_8UC1:
+    case CV_8UC2:
+    case CV_8UC3:
+    case CV_8UC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U8LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_8SC1:
+    case CV_8SC2:
+    case CV_8SC3:
+    case CV_8SC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I8LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_16UC1:
+    case CV_16UC2:
+    case CV_16UC3:
+    case CV_16UC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U16LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_USHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_16SC1:
+    case CV_16SC2:
+    case CV_16SC3:
+    case CV_16SC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I16LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_SHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_32SC1:
+    case CV_32SC2:
+    case CV_32SC3:
+    case CV_32SC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_32FC1:
+    case CV_32FC2:
+    case CV_32FC3:
+    case CV_32FC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_64FC1:
+    case CV_64FC2:
+    case CV_64FC3:
+    case CV_64FC4:
+    {
+        dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    default:
+    {
+        //cerr << "Unknown CvType " << cv_type << endl;
+        dataset_id = -1; // What's correct for an error here?
+        break;
+    }
+    }
+
     this->handle_error (status, "Error. status after H5Dwrite: ");
     status = H5Dclose (dataset_id);
     this->handle_error (status, "Error. status after H5Dclose: ");
