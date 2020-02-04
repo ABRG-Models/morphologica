@@ -602,7 +602,6 @@ morph::HdfData::add_val (const char* path, const bool& val)
     status = H5Sclose (dataspace_id);
     this->handle_error (status, "Error. status after H5Sclose: ");
 }
-
 //@} // add_val overloads
 
 /*!
@@ -889,5 +888,45 @@ morph::HdfData::add_contained_vals (const char* path, const pair<double, double>
     vf.push_back (vals.first);
     vf.push_back (vals.second);
     this->add_contained_vals (path, vf);
+}
+//@} // add_contained_vals overloads
+
+/*!
+ * String saving
+ */
+//@{
+void
+morph::HdfData::add_string (const char* path, const string& str)
+{
+    this->process_groups (path);
+    hsize_t dim_singlestring[1];
+    dim_singlestring[0] = str.size();
+    hid_t dataspace_id = H5Screate_simple (1, dim_singlestring, NULL);
+    hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_C_S1, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    herr_t status = H5Dwrite (dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, str.c_str());
+    this->handle_error (status, "Error. status after H5Dwrite: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
+    status = H5Sclose (dataspace_id);
+    this->handle_error (status, "Error. status after H5Sclose: ");
+}
+
+void
+morph::HdfData::read_string (const char* path, string& str)
+{
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[1] = {0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 1) {
+        stringstream ee;
+        ee << "Error. Expected string to be stored as 1D data in " << path;
+        throw runtime_error (ee.str());
+    }
+    str.resize (dims[0], ' ');
+    herr_t status = H5Dread (dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(str[0]));
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
 }
 //@}

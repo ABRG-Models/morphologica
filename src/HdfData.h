@@ -110,6 +110,10 @@ namespace morph {
         void read_val (const char* path, long long int& val);
         void read_val (const char* path, unsigned long long int& val);
         void read_val (const char* path, bool& val);
+
+        //! Read a string of chars
+        void read_string (const char* path, string& str);
+
         //@} // reading methods
 
         /*!
@@ -144,6 +148,9 @@ namespace morph {
         void add_val (const char* path, const unsigned long long int& val);
         void add_val (const char* path, const bool& val);
         //@}
+
+        //! Add a string of chars
+        void add_string (const char* path, const string& str);
 
         /*!
          * Makes necessary calls to add a container of values to an

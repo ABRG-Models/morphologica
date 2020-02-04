@@ -175,6 +175,24 @@ int main()
         }
     }
 
+    string tstr = "Thou art more lovely...";
+    {
+        HdfData data("test.h5");
+        data.add_string ("/stringtest", tstr);
+        int i = 27;
+        data.add_val ("/inttest", i);
+    }
+    string str;
+    {
+        HdfData data("test.h5", true);
+        data.read_string ("/stringtest", str);
+    }
+    cout << "String stored: " << tstr << endl;
+    cout << "String retrieved: " << str << endl;
+    if (str != tstr) {
+        rtn -= 1;
+    }
+
     cout << "Returning " << rtn << endl;
 
     return rtn;
