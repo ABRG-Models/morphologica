@@ -209,22 +209,21 @@ int main()
         rtn -= 1;
     }
 
-    cv::Mat mt = cv::Mat::ones(6, 7, CV_32F);
-    mt.at<float>(2,3) = 2.f;
-    mt.at<float>(5,5) = -7.5f;
+    cv::Mat mt = cv::Mat::ones(6, 7, CV_64F);
+    mt.at<double>(2,3) = 2.f;
+    mt.at<double>(5,5) = -7.5f;
     {
         HdfData data("test.h5");
         data.add_contained_vals ("/matfloat", mt);
     }
     cout << "Mat stored: " << mt << endl;
-#if 0
-    cv::Mat mtread
+    cv::Mat mtread;
     {
         HdfData data("test.h5", true);
         data.read_contained_vals ("/matfloat", mtread);
     }
     cout << "Mat retrieved: " << mtread << endl;
-#endif
+
     //if (!(bs == bsread)) {
     //   rtn -= 1;
     //}

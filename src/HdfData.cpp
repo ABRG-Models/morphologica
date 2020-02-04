@@ -908,6 +908,113 @@ morph::HdfData::add_contained_vals (const char* path, const cv::Mat& vals)
     this->handle_error (status, "Error. status after H5Dclose: ");
     status = H5Sclose (dataspace_id);
     this->handle_error (status, "Error. status after H5Sclose: ");
+
+    // Last, write the type in a special metadata field.
+    string pathtype (path);
+    pathtype += "_type";
+    this->add_val (pathtype.c_str(), cv_type);
+    pathtype = string(path) + "_channels";
+    this->add_val (pathtype.c_str(), channels);
+}
+
+void
+morph::HdfData::read_contained_vals (const char* path, cv::Mat& vals)
+{
+    // First get the type metadata
+    string pathtype (path);
+    pathtype += "_type";
+    int cv_type = 0;
+    this->read_val (pathtype.c_str(), cv_type);
+    pathtype = string(path) + "_channels";
+    int channels = 0;
+    this->read_val (pathtype.c_str(), channels);
+
+    // Now read the matrix
+    hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    hid_t space_id = H5Dget_space (dataset_id);
+    hsize_t dims[2] = {0,0};
+    int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+    if (ndims != 2) {
+        stringstream ee;
+        ee << "Error. Expected 2D data to be stored in " << path;
+        throw runtime_error (ee.str());
+    }
+
+    // Dims gives size in absolute number of elements. If channels > 1, then the Mat
+    // needs to be resized accordingly
+    int matcols = dims[1] / channels;
+
+    // Resize the Mat
+    vals.create ((int)dims[0], matcols, cv_type);
+
+    herr_t status;
+    switch (cv_type) {
+    case CV_8UC1:
+    case CV_8UC2:
+    case CV_8UC3:
+    case CV_8UC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_8SC1:
+    case CV_8SC2:
+    case CV_8SC3:
+    case CV_8SC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_16UC1:
+    case CV_16UC2:
+    case CV_16UC3:
+    case CV_16UC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_USHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_16SC1:
+    case CV_16SC2:
+    case CV_16SC3:
+    case CV_16SC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_SHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_32SC1:
+    case CV_32SC2:
+    case CV_32SC3:
+    case CV_32SC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_32FC1:
+    case CV_32FC2:
+    case CV_32FC3:
+    case CV_32FC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    case CV_64FC1:
+    case CV_64FC2:
+    case CV_64FC3:
+    case CV_64FC4:
+    {
+        status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
+        break;
+    }
+    default:
+    {
+        //cerr << "Unknown CvType " << cv_type << endl;
+        status = -1; // What's correct for an error here?
+        break;
+    }
+    }
+    this->handle_error (status, "Error. status after H5Dread: ");
+    status = H5Dclose (dataset_id);
+    this->handle_error (status, "Error. status after H5Dclose: ");
 }
 
 void

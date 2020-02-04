@@ -124,6 +124,10 @@ namespace morph {
             val = val_;
         }
 
+        //! Read an OpenCV Matrix that was stored with the sister add_contained_vals
+        //! function
+        void read_contained_vals (const char* path, cv::Mat& vals);
+
         //@} // reading methods
 
         /*!
