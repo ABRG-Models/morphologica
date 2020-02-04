@@ -25,8 +25,9 @@ using std::cout;
 namespace morph {
 
     /*!
-     * A class containing some algorithms applied to numbers of type T. T may be floating point or
-     * integer types, but some methods may not make much sense for integer types.
+     * A class containing some algorithms applied to numbers of type T. T may be
+     * floating point or integer types, but some methods may not make much sense for
+     * integer types.
      */
     template <class T>
     class MathAlgo
@@ -45,7 +46,8 @@ namespace morph {
             centroid.second /= points.size();
             return centroid;
         }
-        //! Centroid of a set of 2D coordinates @points, assumed to be in order x1,y1,x2,y2,etc
+        //! Centroid of a set of 2D coordinates @points, assumed to be in order
+        //! x1,y1,x2,y2,etc
         static pair<T,T> centroid2D (const vector<T> points) {
             pair<T,T> centroid;
             centroid.first = static_cast<T>(0);
@@ -59,7 +61,8 @@ namespace morph {
             centroid.second /= (psz/2);
             return centroid;
         }
-        //! Centroid of a set of 3D coordinates @points, assumed to be in order x1,y1,z1, x2,y2,z2, etc
+        //! Centroid of a set of 3D coordinates @points, assumed to be in order
+        //! x1,y1,z1, x2,y2,z2, etc
         static array<T,3> centroid3D (const vector<T> points) {
             array<T,3> centroid;
             centroid[0] = static_cast<T>(0);
@@ -69,11 +72,11 @@ namespace morph {
             for (size_t i = 0; i < psz-2; i+=3) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
-                centroid[1] += points[i+2];
+                centroid[2] += points[i+2];
             }
             centroid[0] /= (psz/3);
             centroid[1] /= (psz/3);
-            centroid[3] /= (psz/3);
+            centroid[2] /= (psz/3);
             return centroid;
         }
         //! Centroid 4 3D coordinates
@@ -86,11 +89,11 @@ namespace morph {
             for (size_t i = 0; i < psz-2; i+=3) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
-                centroid[1] += points[i+2];
+                centroid[2] += points[i+2];
             }
             centroid[0] /= 4;
             centroid[1] /= 4;
-            centroid[3] /= 4;
+            centroid[2] /= 4;
             return centroid;
         }
 
@@ -100,7 +103,8 @@ namespace morph {
             return MathAlgo<T>::compute_mean_sd (values, mean);
         }
 
-        //! Compute standard deviation of the T values in @values. Return SD, write mean into arg.
+        //! Compute standard deviation of the T values in @values. Return SD, write
+        //! mean into arg.
         static T compute_mean_sd (const vector<T>& values, T& mean) {
             mean = 0.0;
             for (T val : values) {
@@ -116,7 +120,8 @@ namespace morph {
             return sqrt(variance);
         }
 
-        //! The bubble sort algorithm, high to low. T could be floating point or integer types.
+        //! The bubble sort algorithm, high to low. T could be floating point or
+        //! integer types.
         static void bubble_sort_hi_to_lo (vector<T>& values) {
             T value;
             unsigned int jplus;
@@ -132,7 +137,8 @@ namespace morph {
             }
         }
 
-        //! The bubble sort algorithm, low to high. T could be floating point or integer types.
+        //! The bubble sort algorithm, low to high. T could be floating point or
+        //! integer types.
         static void bubble_sort_lo_to_hi (vector<T>& values) {
             T value;
             unsigned int jplus;
@@ -148,7 +154,8 @@ namespace morph {
             }
         }
 
-        //! Bubble sort, high to low, order is returned in indices, values are left unchanged
+        //! Bubble sort, high to low, order is returned in indices, values are left
+        //! unchanged
         static void bubble_sort_hi_to_lo (const vector<T>& values, vector<unsigned int>& indices) {
 
             vector<T> vcopy = values;
@@ -178,7 +185,8 @@ namespace morph {
             }
         }
 
-        //! Bubble sort, low to high, order is returned in indices, values are left unchanged
+        //! Bubble sort, low to high, order is returned in indices, values are left
+        //! unchanged
         static void bubble_sort_lo_to_hi (const vector<T>& values, vector<unsigned int>& indices) {
 
             vector<T> vcopy = values;
@@ -208,7 +216,7 @@ namespace morph {
             }
         }
 
-        // Fixme: Use traits to make it possible to generalise the container in these...
+        //! Fixme: Use traits to make it possible to generalise the container in these...
         //@{
         //! Return the max and min of the vector of values
         static pair<T, T> maxmin (const vector<T>& values) {
@@ -233,7 +241,6 @@ namespace morph {
         }
         //@}
     };
-
 }
 
 #endif // _MATHALGO_H_
