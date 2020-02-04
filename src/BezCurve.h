@@ -345,9 +345,9 @@ namespace morph
             arma::Mat<double> S (n, 1, arma::fill::zeros);
             double total_len = static_cast<Flt>(0.0);
             for (i = 1; i < n; ++i) {
-                register double xdiff = P(i,0) - P(i-1,0);
-                register double ydiff = P(i,1) - P(i-1,1);
-                register double len = sqrt (xdiff*xdiff + ydiff*ydiff);
+                double xdiff = P(i,0) - P(i-1,0);
+                double ydiff = P(i,1) - P(i-1,1);
+                double len = sqrt (xdiff*xdiff + ydiff*ydiff);
                 total_len += len;
                 D(i,0) = total_len;
             }
