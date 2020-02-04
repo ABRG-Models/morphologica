@@ -97,6 +97,23 @@ namespace morph {
             return centroid;
         }
 
+        //! Compute distance from p1 to p2 (2D)
+        static T distance (const array<T, 2> p1, const array<T, 2> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
+            T dist = sqrt (xdiff*xdiff + ydiff*ydiff);
+            return dist;
+        }
+
+        //! Compute distance from p1 to p2 (3D)
+        static T distance (const array<T, 3> p1, const array<T, 3> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
+            T zdiff = p2[2]-p1[2];
+            T dist = sqrt (xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
+            return dist;
+        }
+
         //! Compute standard deviation of the T values in @values. Return SD.
         static T compute_sd (const vector<T>& values) {
             T mean = 0.0;
