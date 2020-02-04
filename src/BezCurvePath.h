@@ -217,6 +217,12 @@ namespace morph
             }
             this->points.push_back (startPt);
 
+            // Make cp a complete set of points for the current curve *including
+            // the point in the curve for t=0*
+            pair<BezCoord<Flt>, BezCoord<Flt>> tn0 = this->curves.front().computeTangentNormal(static_cast<Flt>(0.0));
+            this->tangents.push_back (tn0.first);
+            this->normals.push_back (tn0.second);
+
             typename list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
             // Don't forget to set the scaling factor in each
             // BezCurve before generating points:
@@ -235,6 +241,7 @@ namespace morph
                     }
                 }
                 this->points.insert (this->points.end(), cp.begin(), cp.end());
+
                 // Now compute tangents and normals
                 for (BezCoord<Flt> bp : cp) {
                     cout << "Computing tangent and normal for " << bp << endl;
