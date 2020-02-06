@@ -257,6 +257,20 @@ morph::Visual::render (void)
         (*hgvd)->render();
         ++hgvd;
     }
+    typename vector<QuadsVisual<float>*>::iterator qvf = this->qv_float.begin();
+    while (qvf != this->qv_float.end()) {
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*qvf)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+
+        (*qvf)->render();
+        ++qvf;
+    }
 
     glfwSwapBuffers (this->window);
 
@@ -309,8 +323,23 @@ morph::Visual::addHexGridVisual (const HexGrid* hg,
     // Double precision version of the above
     HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale);
     this->hgv_double.push_back (hgv1);
-    unsigned int rtn = 0x20000; // 0x10000 denotes "member of hgv_double"
+    unsigned int rtn = 0x20000; // 0x20000 denotes "member of hgv_double"
     rtn |= (this->hgv_double.size()-1);
+    return rtn;
+}
+
+unsigned int
+morph::Visual::addQuadsVisual (const vector<array<float, 12>>* quads,
+                               const array<float, 3> offset,
+                               const vector<float>& data,
+                               const array<float, 4> scale)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    QuadsVisual<float>* qv1 = new QuadsVisual<float>(this->shaderprog, quads, offset, &data, scale);
+    this->qv_float.push_back (qv1);
+    // Create the return ID
+    unsigned int rtn = 0x30000; // 0x10000 denotes "member of qv_float"
+    rtn |= (this->qv_float.size()-1);
     return rtn;
 }
 

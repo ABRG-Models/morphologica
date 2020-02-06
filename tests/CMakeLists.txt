@@ -160,6 +160,9 @@ if(${glfw3_FOUND})
   add_executable(testvis testVisual.cpp)
   target_link_libraries(testvis morphologica)
   #add_test(testvis testvis)
+
+  add_executable(testvisquads testVisQuads.cpp)
+  target_link_libraries(testvisquads morphologica)
 endif()
 
 # Test morph::Process class

@@ -134,6 +134,14 @@ namespace morph {
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
+        //! Special constructor for 2 vertices in 1 dimension
+        NM_Simplex (const Flt& v0, const Flt& v1) {
+            this->n = 1;
+            this->allocate();
+            this->vertices[0][0] = v0;
+            this->vertices[1][0] = v1;
+            this->state = NM_Simplex_State::NeedToComputeThenOrder;
+        }
         //! Special constructor for 3 vertices in 2 dimensions
         NM_Simplex (const pair<Flt, Flt>& v0, const pair<Flt, Flt>& v1, const pair<Flt, Flt>& v2) {
             this->n = 2;

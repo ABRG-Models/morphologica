@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"
+#include "QuadsVisual.h"
 #include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
@@ -126,6 +127,11 @@ namespace morph {
                                        const array<double, 4> scale);
         //@}
 
+        unsigned int addQuadsVisual (const vector<array<float, 12>>* quads,
+                                     const array<float, 3> offset,
+                                     const vector<float>& data,
+                                     const array<float, 4> scale);
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
@@ -205,6 +211,10 @@ namespace morph {
         vector<HexGridVisual<float>*> hgv_float;
         vector<HexGridVisual<double>*> hgv_double;
         // Plus int/unsigned int.
+
+        // To render surfaces made of boxes, use QuadVisuals.
+        vector<QuadsVisual<float>*> qv_float;
+        // Plus double version...
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
