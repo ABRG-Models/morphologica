@@ -8,10 +8,12 @@ file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Version: ${VERSION}\n")
 
 if(APPLE)
   file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: \${libdir}/libmorphologica.dylib\n")
+  file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: jsoncpp\n")
 else()
   file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: -L\${libdir} -lmorphologica\n")
+  file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: hdf5 jsoncpp lapack\n")
 endif(APPLE)
-file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: hdf5 jsoncpp lapack\n")
+
 
 file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Cflags: -I\${includedir}\n")
 
