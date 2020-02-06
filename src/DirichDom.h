@@ -398,7 +398,7 @@ namespace morph {
                     simp.apply_reflection (val);
 
                 } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
-                    Flt val = this->compute_sos (simp.xe[0], simp.xc[1]);
+                    Flt val = this->compute_sos (simp.xe[0], simp.xe[1]);
                     simp.apply_expansion (val);
 
                 } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
