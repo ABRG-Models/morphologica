@@ -105,10 +105,10 @@ sudo ldconfig # Probably Linux specific! Mac alternative?
 Note the call to ldconfig at the end there, which makes sure that
 libmorphologica is available to your system's dynamic linker. On
 Linux, that means running ldconfig (assuming that the
-CMAKE\_INSTALL\_PREFIX of /usr/local is already in your dynamic
+CMAKE_INSTALL_PREFIX of /usr/local is already in your dynamic
 linker's search path) as in the example above. If you installed
-elsewhere, then you probably know how to set LD\_CONFIG\_PATH
-correctly (or at least you can now search up how to do that).
+elsewhere, then you probably know how to set LD_LIBRARY_PATH
+correctly (or see **Building/installing as a per-user library**, below).
 
 If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
