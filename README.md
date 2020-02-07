@@ -135,8 +135,14 @@ make install # no sudo! You don't need it to install in your home
 Edit ${HOME}/.bashrc and add:
 
 ```bash
+# This line because libmorphologica.so is installed in ${HOME}/usr/lib/
 export LD_LIBRARY_PATH=${HOME}/usr/lib:${LD_LIBRARY_PATH}
+# This line allows your system's pkg-config program to find your locally
+# installed libmorphologica. This allows a program built on morphologica (like
+# BarrelEmerge) to find libmorphologica with pkg-config.
 export PKG_CONFIG_PATH=${HOME}/usr/lib/pkgconfig:${PKG_CONFIG_PATH}
+# This means that any binaries installed in ${HOME}/usr/bin can be executed
+# by typing their name into your command line
 export PATH=${HOME}/usr/bin:${PATH}
 ```
 
