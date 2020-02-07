@@ -332,7 +332,7 @@ unsigned int
 morph::Visual::addQuadsVisual (const vector<array<float, 12>>* quads,
                                const array<float, 3> offset,
                                const vector<float>& data,
-                               const array<float, 4> scale)
+                               const array<float, 2> scale)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
     QuadsVisual<float>* qv1 = new QuadsVisual<float>(this->shaderprog, quads, offset, &data, scale);

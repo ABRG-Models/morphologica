@@ -8,6 +8,8 @@
 
 #include "VisualModel.h"
 
+#include "MathAlgo.h"
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -28,7 +30,7 @@ namespace morph {
                     const vector<array<Flt,12>>* _quads,
                     const array<float, 3> _offset,
                     const vector<Flt>* _data,
-                    const array<Flt, 4> _scale) {
+                    const array<Flt, 2> _scale) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -53,11 +55,16 @@ namespace morph {
                 return;
             }
 
+            vector<Flt> dcopy = *(this->data);
+            if (this->scale[0] == 0.0f && this->scale[1] == 0.0f) {
+                // Special 0,0 scale means auto scale data
+                dcopy = MathAlgo<Flt>::autoscale (dcopy);
+                this->scale[0] = 1.0f;
+            }
+
             for (unsigned int qi = 0; qi < nquads; ++qi) {
-                // Scale z:
-                Flt datumC = this->sc((*this->data)[qi]);
                 // Scale colour
-                Flt datum = (*this->data)[qi] * this->scale[2] + this->scale[3];
+                Flt datum = dcopy[qi] * this->scale[0] + this->scale[1];
                 datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
@@ -95,13 +102,8 @@ namespace morph {
             }
         }
 
-        //! Apply scaling for Z position
-        inline Flt sc (const Flt& datum) {
-            return (datum * this->scale[0] + this->scale[1]);
-        }
-
         //! Update the data and re-compute the vertices.
-        void updateData (const vector<Flt>* _data, const array<Flt, 4> _scale) {
+        void updateData (const vector<Flt>* _data, const array<Flt, 2> _scale) {
             this->scale = _scale;
             this->data = _data;
             // Fixme: Better not to clear, then repeatedly pushback here:
@@ -117,10 +119,9 @@ namespace morph {
             this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
         }
 
-        //! Linear scaling which should be applied to the (scalar value of the)
-        //! data. y = mx + c, with scale[0] == m and scale[1] == c. The linear scaling
-        //! for the colour is y1 = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
-        array<Flt, 4> scale;
+        //! The linear scaling for the colour is y1 = m1 x + c1 (m1 = scale[0] and c1 =
+        //! scale[1]) If all entries of scale are static_cast<Flt>(0), then auto-scale.
+        array<Flt, 2> scale;
 
     private:
         //! The Quads to visualize. This is a vector of 12 values which define 4

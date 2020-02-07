@@ -11,6 +11,8 @@ using std::list;
 using std::numeric_limits;
 #include <cmath>
 using std::sqrt;
+using std::min;
+using std::max;
 #include <utility>
 using std::pair;
 using std::make_pair;
@@ -257,6 +259,19 @@ namespace morph {
             return make_pair (max, min);
         }
         //@}
+
+        //! Autoscale a vector of numbers so that the range min to max is scaled to 0.0 to 1.0.
+        static vector<T> autoscale (const vector<T>& values) {
+            pair<T,T> mm = MathAlgo<T>::maxmin (values);
+            T min_v = mm.second;
+            T max_v = mm.first;
+            T scale_v = static_cast<T>(1.0) / (max_v - min_v);
+            vector<T> norm_v(values.size());
+            for (unsigned int i = 0; i<values.size(); ++i) {
+                norm_v[i] = min (max (((values[i]) - min_v) * scale_v, static_cast<T>(0.0)), static_cast<T>(1.0));
+            }
+            return norm_v;
+        }
     };
 }
 

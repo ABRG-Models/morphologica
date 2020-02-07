@@ -19,7 +19,7 @@ int main (int argc, char** argv)
 
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        array<float, 4> scale = { 0.1, 0.0, 1.0, 0.0};
+        array<float, 2> scale = { 1.0, 0.0};
 
         vector<array<float, 12>> surfBoxes;
 

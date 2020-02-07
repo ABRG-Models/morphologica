@@ -127,10 +127,16 @@ namespace morph {
                                        const array<double, 4> scale);
         //@}
 
+        /*!
+         * Add a 'Quads visual' quads specifies a load of quads to render as two
+         * triangles each with offset in the scene specified in @offset. The data is
+         * rendered only as the colour of the quads. @scale specifies scaling as 'm' and
+         * 'c' of y=mx+c. If both are 0, then auto-scale.
+         */
         unsigned int addQuadsVisual (const vector<array<float, 12>>* quads,
                                      const array<float, 3> offset,
                                      const vector<float>& data,
-                                     const array<float, 4> scale);
+                                     const array<float, 2> scale);
 
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
@@ -219,7 +225,9 @@ namespace morph {
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
-        array<float, 3> coordArrowsOffset = {-1.5, 0.0, 0.0};
+        //! Position and length of coordinate arrows. Need to be configurable at Visual
+        //! construction.
+        array<float, 3> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
         array<float, 3> coordArrowsLength = {0.5, 0.5, 0.5};
 
         /*!
