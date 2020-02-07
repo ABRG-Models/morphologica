@@ -132,7 +132,7 @@ make install # no sudo! You don't need it to install in your home
 
 #### Update the environment
 
-Edit ${HOME}/bashrc and add:
+Edit ${HOME}/.bashrc and add:
 
 ```bash
 export LD_LIBRARY_PATH=${HOME}/usr/lib:${LD_LIBRARY_PATH}
