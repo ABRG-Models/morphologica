@@ -156,7 +156,8 @@ To get the updated variables into your environment.
 
 #### Build the client code
 
-In the base CMakeLists.txt of, for example, BarrelEmerge, pkgconfig is
+In the base CMakeLists.txt of, for example,
+[BarrelEmerge](https://github.com/ABRG-Models/BarrelEmerge), pkgconfig is
 used to find morphologica. This is all that's required to build
 against your local libmorphologica. If things aren't working, check
 there isn't an alternative morphologica installation (or the pkgconfig
