@@ -293,7 +293,7 @@ namespace morph
             // Convert the middle rows of C to vector<Flt> to be the first NM vertex
             vector<Flt> v0;
             int startrow = 2;
-            int endrow = 1;
+            int endrow = 2; // 2 means don't change the angle of the end of the curve
             for (int r = startrow; r < (int)C.n_rows-endrow; ++r) {
                 v0.push_back (this->C(r,0));
                 v0.push_back (this->C(r,1));
@@ -301,6 +301,7 @@ namespace morph
 
             if (v0.empty()) {
                 cout << "No further optimization possible" << endl;
+                return;
             }
 
             // Make a set of random vertices to init the NM_Simplex algo with.
