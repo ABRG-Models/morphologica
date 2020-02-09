@@ -28,6 +28,15 @@ using std::atan2;
 using std::sin;
 #include <armadillo>
 #include "MathConst.h"
+#include "MathAlgo.h"
+#include "NM_Simplex.h"
+using morph::NM_Simplex;
+using morph::NM_Simplex_State;
+#include <random>
+using std::random_device;
+using std::mt19937;
+using std::mt19937_64;
+using std::uniform_real_distribution;
 
 #include "BezCoord.h"
 #define DBGSTREAM std::cout
@@ -181,6 +190,15 @@ namespace morph
             this->init();
         }
 
+        //! Set C from the vector for floats vf, which ONLY changes the middle rows of C.
+        void setCFromV (const vector<Flt>& vf) {
+            for (int i = 0; i<vf.size(); i+=2) {
+                int r = (2+i)>>1;
+                this->C(r,0) = vf[i];
+                this->C(r,1) = vf[i+1];
+            }
+        }
+
         /*!
          * Fit a curve to @points, lining up with the curve @c. Assumes this curve
          * appends to the end of @c. *May also modify @c*
@@ -247,10 +265,177 @@ namespace morph
 
             this->init();
 
-            // Update other one
+            // Update the other curve's control points, also.
             prec_ctrl[len-2].first = pm1_r_final(0,0);
             prec_ctrl[len-2].second = pm1_r_final(0,1);
             c.updateControls (prec_ctrl);
+
+            // Optimization stage. Move control points other than those we just fixed to
+            // be in line with each other, to minimize the deviation of this curve and
+            // @c from the user-points provided.
+            cout << "Optimization" << endl;
+            cout << "------------" << endl;
+            cout << "C:\n" << this->C;
+
+            // First, need a cost function:
+            Flt startsos = this->computeSos (points);
+            cout << "SOS with no optimization: " << startsos << endl;
+
+            // Now it's Nelder-Mead time!
+
+            // Turn control matrix C into a vector of Flts.
+            int nr = C.n_rows;
+            arma::Mat<Flt> Cvec0 = C.tail_rows(--nr);
+            arma::Mat<Flt> Cvec = Cvec0.head_rows(--nr);
+            cout << "Cvec:\n" << Cvec;
+            //int vlen = Cvec.n_rows * Cvec.n_cols;
+
+            // Convert C to vector<Flt>
+            vector<Flt> v0;
+            for (int r = 1; r < C.n_rows-1; ++r) {
+                v0.push_back (C(r,0));
+                //cout << "v[]=" << v.back() << endl;
+                v0.push_back (C(r,1));
+                //cout << "v[]=" << v.back() << endl;
+            }
+
+            // How to recreate a C from v
+            arma::Mat<Flt> Cback = C;
+            {
+                for (int i = 0; i<v0.size(); i+=2) {
+                    int r = (2+i)>>1;
+                    //cout << "Row " << r << " i is " << i <<  endl;
+                    Cback(r,0) = v0[i];
+                    Cback(r,1) = v0[i+1];
+                }
+                //cout << "Cback:\n" << Cback;
+            }
+
+            // Now need to make a set of random vs to init the NM_Simplex algo with.
+            vector<vector<Flt>> nm_vertices;
+
+            // Push back the existing set of controls
+            nm_vertices.push_back (v0);
+
+            // Set up random
+            random_device rd;  // Will be used to obtain a seed for the random number engine
+            mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+            uniform_real_distribution<Flt> dis(static_cast<Flt>(0.0),
+                                               static_cast<Flt>(1.0));
+
+            // Add some more vertices:
+            Flt propchange = static_cast<Flt>(0.1);
+            Flt propchangeov2 = propchange / static_cast<Flt>(2.0);
+            for (int i = 0; i<v0.size(); ++i) {
+                vector<Flt> v;
+                for (int j = 0; j<v0.size(); ++j) {
+                    // Perturbate v0[j] a bit and add to vector<Flt>
+                    Flt v_j = v0[j];
+                    Flt v_1 = (v0[j]*propchange);
+                    Flt rn = dis(gen);
+                    //cout << "rn: " << dis(gen) << endl;
+                    v_j += (v_1 * rn);
+                    v_j -= (v0[j]*propchangeov2);
+                    //cout << "Pushing back " << v_j << endl;
+                    v.push_back (v_j);
+                }
+                cout << "v has size " << v.size();
+                cout << ", is ";
+                for (auto vv : v) {
+                    cout << vv << ",";
+                }
+                nm_vertices.push_back (v);
+                cout << " nm_vertices has size " << nm_vertices.size() << endl;
+            }
+
+            // Start out with a simplex with a vertex at the centroid of the domain vertices, and
+            // then two other vertices at the first domain vertex (v) and its neighbour (vn).
+            NM_Simplex<Flt> simp (nm_vertices);
+            // Set a termination threshold for the SD of the vertices of the simplex
+            simp.termination_threshold = 20.0 * numeric_limits<Flt>::epsilon();
+            // Set an operation limit, in case the above threshold can't be reached
+            simp.too_many_operations = 2; // debug
+
+            cout << "Set up simplex with " << simp.n << " vertices" << endl;
+#if 0 // until I write controls out of the code.
+            while (simp.state != NM_Simplex_State::ReadyToStop) {
+
+                if (simp.state == NM_Simplex_State::NeedToComputeThenOrder) {
+                    // 1. apply objective to each vertex
+                    for (unsigned int i = 0; i <= simp.n; ++i) {
+                        // simp.vertices[i][0], simp.vertices[i][1]
+                        cout << "simp.vertices["<<i<<"] =\n";
+                        for (auto sv : simp.vertices[i]) {
+                            cout << sv << ", ";
+                        }
+                        cout << endl;
+                        this->setCFromV (simp.vertices[i]);
+                        cout << "Setting nm vertex C [i="<<i<<"] to \n" << C << endl;
+                        this->init(); // Re-setup this BezCurve
+                        simp.values[i] = this->computeSos (points);
+                        cout << "SOS for that one was " << simp.values[i] << endl;
+                    }
+                    simp.order();
+
+                } else if (simp.state == NM_Simplex_State::NeedToOrder) {
+                    simp.order();
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeReflection) {
+                    this->setCFromV (simp.xr);
+                    this->init(); // Re-setup this BezCurve
+                    Flt val = this->computeSos (points);
+                    simp.apply_reflection (val);
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
+                    this->setCFromV (simp.xe);
+                    this->init(); // Re-setup this BezCurve
+                    Flt val = this->computeSos (points);
+                    simp.apply_expansion (val);
+
+                } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
+                    this->setCFromV (simp.xc);
+                    this->init(); // Re-setup this BezCurve
+                    Flt val = this->computeSos (points);
+                    simp.apply_contraction (val);
+                }
+            }
+            vector<Flt> vP = simp.best_vertex();
+            Flt min_sos = simp.best_value();
+            this->setCFromV (simp.best_vertex());
+            this->init(); // Re-setup this BezCurve
+            Flt bestval = this->computeSos (points);
+            cout << "FINISHED! Best approximation: (" << this->C << ") has value " << bestval << endl;
+            // We now have best controls points
+#endif
+        }
+
+        Flt computeSos (const vector<pair<Flt, Flt>>& points) const {
+            // Compute relative positions of pairs in @points
+            vector<Flt> sample_t;
+            sample_t.push_back (static_cast<Flt>(0.0));
+            Flt totaldist = static_cast<Flt>(0.0);
+            for (size_t i = 1; i < points.size(); ++i) {
+                Flt lindist = MathAlgo<Flt>::distance (points[i-1], points[i]);
+                sample_t.push_back (lindist);
+                totaldist += lindist;
+            }
+            vector<pair<Flt,Flt>> curvePoints;
+            for (size_t i = 0; i < sample_t.size(); ++i) {
+                sample_t[i] /= totaldist;
+                // Have the t parameter value to sample our Bezier curve at now...
+                BezCoord<Flt> bc = this->computePoint (sample_t[i]);
+                curvePoints.push_back (make_pair(bc.x(),bc.y()));
+            }
+            // Can now compare points and curvePoints.
+            if (curvePoints.size() != points.size()) {
+                cout << "Can't optimize" << endl;
+                return static_cast<Flt>(-1.0);
+            }
+            Flt sos = static_cast<Flt>(0.0);
+            for (size_t i = 0; i < points.size(); ++i) {
+                sos += MathAlgo<Flt>::distance_sq (points[i], curvePoints[i]);
+            }
+            return sos;
         }
 
         /*!

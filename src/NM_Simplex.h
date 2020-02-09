@@ -122,15 +122,27 @@ namespace morph {
         //@{
         //! Default constructor
         NM_Simplex (void) { this->allocate(); }
-        //! General constructor for n+1 vertices in n dimensions
+        //! General constructor for n+1 vertices in n dimensions. The inner vector
+        //! should be of size n, the outer vector of size n+1. Thus, for a simplex
+        //! triangle flipping on a 2D surface, you'd have 3 vertices with 2 coordinates
+        //! each.
         NM_Simplex (const vector<vector<Flt>>& initial_vertices) {
             // dimensionality, n, is the number of simlex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
+            cerr << "Simplex dimensionality is " << this->n << endl;
             this->allocate();
             unsigned int i = 0;
             for (vector<Flt>& v : this->vertices) {
                 v = initial_vertices[i++];
+            }
+            i=0;
+            for (vector<Flt>& v : this->vertices) {
+                cerr << "NM_Simplex vertices["<<i++<<"] = ";
+                for (Flt vv : v) {
+                    cerr << vv <<",";
+                }
+                cerr << endl;
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }

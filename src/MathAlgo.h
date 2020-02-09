@@ -107,12 +107,45 @@ namespace morph {
             return dist;
         }
 
+        //! Compute distance from p1 to p2 (2D)
+        static T distance (const pair<T, T> p1, const pair<T, T> p2) {
+            T xdiff = p2.first-p1.first;
+            T ydiff = p2.second-p1.second;
+            T dist = sqrt (xdiff*xdiff + ydiff*ydiff);
+            return dist;
+        }
+
         //! Compute distance from p1 to p2 (3D)
         static T distance (const array<T, 3> p1, const array<T, 3> p2) {
             T xdiff = p2[0]-p1[0];
             T ydiff = p2[1]-p1[1];
             T zdiff = p2[2]-p1[2];
             T dist = sqrt (xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
+            return dist;
+        }
+
+        //! Compute distance^2 from p1 to p2 (2D)
+        static T distance_sq (const array<T, 2> p1, const array<T, 2> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
+            T dist = xdiff*xdiff + ydiff*ydiff;
+            return dist;
+        }
+
+        //! Compute distance^2 from p1 to p2 (2D)
+        static T distance_sq (const pair<T, T> p1, const pair<T, T> p2) {
+            T xdiff = p2.first-p1.first;
+            T ydiff = p2.second-p1.second;
+            T dist = xdiff*xdiff + ydiff*ydiff;
+            return dist;
+        }
+
+        //! Compute distance^2 from p1 to p2 (3D)
+        static T distance_sq (const array<T, 3> p1, const array<T, 3> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
+            T zdiff = p2[2]-p1[2];
+            T dist = xdiff*xdiff + ydiff*ydiff + zdiff*zdiff;
             return dist;
         }
 

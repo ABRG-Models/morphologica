@@ -165,12 +165,18 @@ namespace morph
         /*!
          * Return a random double precision number in the range [0,1], sampled
          * from a uniform distribution.
+         *
+         * Don't use this! Use c++-11 random number generators, which include a 64 bit Mersenne
+         * Twister algorithm as an option!
          */
         static double randDouble (void);
 
         /*!
          * Return a random single precision number in the range [0,1],
          * sampled from a uniform distribution.
+         *
+         * Don't use this! Use c++-11 random number generators, which include a 64 bit Mersenne
+         * Twister algorithm as an option!
          */
         static float randSingle (void);
 
@@ -793,6 +799,9 @@ namespace morph
 
 /*!
  * Templated random number function.
+ *
+ * Don't use this! Use c++-11 random number generators, which include a 64 bit Mersenne
+ * Twister algorithm as an option!
  */
 template <typename F>
 F
