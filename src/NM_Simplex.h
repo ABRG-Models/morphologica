@@ -69,7 +69,7 @@ namespace morph {
         //! default we DO. Set this to false to instead ascend to the maximum metric value.
         bool downhill = true;
 
-        //! Increment every time the algorithm performs an operation of some sort. FOr
+        //! Increment every time the algorithm performs an operation of some sort. For
         //! this NM algorithm, I increment every time the simplex changes shape.
         unsigned long long int operation_count = 0;
 
@@ -130,19 +130,10 @@ namespace morph {
             // dimensionality, n, is the number of simlex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
-            cerr << "Simplex dimensionality is " << this->n << endl;
             this->allocate();
             unsigned int i = 0;
             for (vector<Flt>& v : this->vertices) {
                 v = initial_vertices[i++];
-            }
-            i=0;
-            for (vector<Flt>& v : this->vertices) {
-                cerr << "NM_Simplex vertices["<<i++<<"] = ";
-                for (Flt vv : v) {
-                    cerr << vv <<",";
-                }
-                cerr << endl;
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }

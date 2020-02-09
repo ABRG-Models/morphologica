@@ -31,7 +31,7 @@ using namespace cv;
 #define M_C1 Scalar(238,121,159) // mediumpurple2
 #define M_C2 Scalar(238,58,178) // darkorchid2
 
-void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<pair<FLT,FLT>>& w) {
+void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<pair<FLT,FLT>>& w, Scalar linecolour) {
 
     // Add the control points in similar colours
     list<BezCurve<FLT>> theCurves = bcp.curves;
@@ -50,10 +50,10 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         }
         Point ps(ctrls[0].first, ctrls[0].second);
         Point pe(ctrls[1].first, ctrls[1].second);
-        line (pImg, ps, pe, M_GREEN, 1);
+        line (pImg, ps, pe, linecolour, 1);
         Point ps2(ctrls[ctrls.size()-2].first, ctrls[ctrls.size()-2].second);
         Point pe2(ctrls[ctrls.size()-1].first, ctrls[ctrls.size()-1].second);
-        line (pImg, ps2, pe2, M_GREEN, 1);
+        line (pImg, ps2, pe2, linecolour, 1);
         j++;
     }
 
@@ -83,17 +83,24 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         normals[i] = Point2d(norms[i].x(),norms[i].y());
     }
 
-    // This is the fit. Red.
+    // This is the fit line.
     for(size_t i=1; i<fitted.size(); i++) {
-        line (pImg, fitted[i-1], fitted[i], M_RED, 1);
+        line (pImg, fitted[i-1], fitted[i], linecolour, 1);
     }
 
     if (v.empty()) {
         for(size_t i=0; i<fitted.size(); i++) {
             Point2d normLen = normals[i]*100.0;
-            line (pImg, fitted[i], fitted[i]+Point2i(normLen), M_BLUE, 1);
+            line (pImg, fitted[i], fitted[i]+Point2i(normLen), linecolour, 1);
         }
     }
+
+    circle (pImg, Point(10,10), 2, M_BLACK, -1);
+    circle (pImg, Point(1600,10), 2, M_BLACK, -1);
+    circle (pImg, Point(1600,1000), 2, M_BLACK, -1);
+    circle (pImg, Point(800,10), 2, M_BLACK, -1);
+    circle (pImg, Point(800,1000), 2, M_BLACK, -1);
+    circle (pImg, Point(10,1000), 2, M_BLACK, -1);
 }
 
 int main()
@@ -126,23 +133,45 @@ int main()
     bcp.addCurve (cv2);
 
     // Create a frame as the background for our drawing.
-    Mat frame = Mat (1000, 1000, CV_8UC3, M_WHITE);
+    Mat frame = Mat (1000, 1600, CV_8UC3, M_WHITE);
 
     // Draw
-    draw (frame, bcp, v, w);
+    cout << "Draw the two analytical best-fit curves..." << endl;
+    draw (frame, bcp, v, w, M_RED);
 
-    cv2.fit (w, cv1);
-#if 1
+    cout << "Do the control point-equalizing 0th order optimization..."<< endl;
+    bool withopt = false;
+    cv2.fit (w, cv1, withopt);
+
     bcp.removeCurve();
     bcp.removeCurve();
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    v.clear();
-    w.clear();
-    draw (frame, bcp, v, w);
-#endif
-    imshow ("testBezDeriv", frame);
+    //v.clear();
+    //w.clear();
+    draw (frame, bcp, v, w, M_BLUE);
+
+    // Reset and fit with optimzation
+    withopt = true;
+    // Reset the best fits:
+    cv1.fit(v);
+    cv2.fit(w);
+    // Now do the fully optimized fit
+    cv2.fit (w, cv1, withopt);
+
+    bcp.removeCurve();
+    bcp.removeCurve();
+    bcp.addCurve (cv1);
+    bcp.addCurve (cv2);
+
+    //v.clear();
+    //w.clear();
+    draw (frame, bcp, v, w, M_GREEN);
+    cout << "Semi-optimised is BLUE; Fully optimized is GREEN" << endl;
+
+    namedWindow( "Curves", WINDOW_AUTOSIZE );// Create a window for display.
+    imshow ("Curves", frame);
     // Wait for a key, then exit
     waitKey();
 

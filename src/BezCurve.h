@@ -97,8 +97,6 @@ namespace morph
          * points making up part of cp.
          */
         BezCurve (vector<pair<Flt, Flt>> cp) {
-            this->controls = cp;
-#if 0
             this->C.set_size (cp.size(), 2);
             int i = 0;
             for (auto c : cp) {
@@ -106,7 +104,6 @@ namespace morph
                 this->C(i,1) = c.second;
                 ++i;
             }
-#endif
             this->init();
         }
 
@@ -114,11 +111,8 @@ namespace morph
          * Construct a Bezier curve using the control points provided in the matrix @cmat.
          */
         BezCurve (const arma::Mat<Flt>& cmat) {
-            // When I get rid of this->controls, this will just be this->C = cmat (with
-            // a size check first).
-            for (unsigned int r = 0; r < cmat.n_rows; ++r) {
-                this->controls.push_back (make_pair(cmat(r,0), cmat(r,1)));
-            }
+            //this->C.copy_size (cmat); // necessary?
+            this->C = cmat;
             this->init();
         }
 
@@ -130,11 +124,17 @@ namespace morph
                   pair<Flt,Flt> fp,
                   pair<Flt,Flt> c1,
                   pair<Flt,Flt> c2) {
-            this->controls.clear();
-            this->controls.push_back (ip);
-            this->controls.push_back (c1);
-            this->controls.push_back (c2);
-            this->controls.push_back (fp);
+
+            this->C.set_size (4,2);
+            this->C(0,0) = ip.first;
+            this->C(0,1) = ip.second;
+            this->C(1,0) = c1.first;
+            this->C(1,1) = c1.second;
+            this->C(2,0) = c2.first;
+            this->C(2,1) = c2.second;
+            this->C(3,0) = fp.first;
+            this->C(3,1) = fp.second;
+
             this->init();
         }
 
@@ -145,10 +145,13 @@ namespace morph
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp,
                   pair<Flt,Flt> c1) {
-            this->controls.clear();
-            this->controls.push_back (ip);
-            this->controls.push_back (c1);
-            this->controls.push_back (fp);
+            this->C.set_size (3,2);
+            this->C(0,0) = ip.first;
+            this->C(0,1) = ip.second;
+            this->C(1,0) = c1.first;
+            this->C(1,1) = c1.second;
+            this->C(2,0) = fp.first;
+            this->C(2,1) = fp.second;
             this->init();
         }
 
@@ -157,9 +160,11 @@ namespace morph
          */
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp) {
-            this->controls.clear();
-            this->controls.push_back (ip);
-            this->controls.push_back (fp);
+            this->C.set_size (2,2);
+            this->C(0,0) = ip.first;
+            this->C(0,1) = ip.second;
+            this->C(1,0) = fp.first;
+            this->C(1,1) = fp.second;
             this->init();
         }
 
@@ -169,16 +174,22 @@ namespace morph
         BezCurve (pair<Flt,Flt> ip,
                   pair<Flt,Flt> fp,
                   vector<pair<Flt, Flt>> cp){
-            this->controls.clear();
-            this->controls.push_back (ip);
-            this->controls.insert (this->controls.end(), cp.begin(), cp.end());
-            this->controls.push_back (fp);
+            unsigned int n_ctrls = cp.size()+2;
+            this->C.set_size (n_ctrls, 2);
+            this->C(0,0) = ip.first;
+            this->C(0,1) = ip.second;
+            unsigned int i = 1;
+            for (auto cpi : cp) {
+                this->C(i,0) = cpi.first;
+                this->C(i,1) = cpi.second;
+                ++i;
+            }
+            this->C(n_ctrls-1,0) = fp.first;
+            this->C(n_ctrls-1,1) = fp.second;
             this->init();
         }
 
         void updateControls (vector<pair<Flt, Flt>> cp) {
-            this->controls = cp;
-#if 0
             this->C.set_size (cp.size(), 2);
             int i = 0;
             for (auto c : cp) {
@@ -186,24 +197,14 @@ namespace morph
                 this->C(i,1) = c.second;
                 ++i;
             }
-#endif
             this->init();
-        }
-
-        //! Set C from the vector for floats vf, which ONLY changes the middle rows of C.
-        void setCFromV (const vector<Flt>& vf) {
-            for (int i = 0; i<vf.size(); i+=2) {
-                int r = (2+i)>>1;
-                this->C(r,0) = vf[i];
-                this->C(r,1) = vf[i+1];
-            }
         }
 
         /*!
          * Fit a curve to @points, lining up with the curve @c. Assumes this curve
          * appends to the end of @c. *May also modify @c*
          */
-        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c) {
+        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c, bool optimize=true) {
 
             this->fit (points);
 
@@ -260,8 +261,6 @@ namespace morph
             arma::Mat<Flt> pm2_r_final = pm2_r_after + p0;
 
             C.row(1) = pm2_r_final;
-            this->controls[1].first = pm2_r_final(0,0);
-            this->controls[1].second = pm2_r_final(0,1);
 
             this->init();
 
@@ -270,65 +269,57 @@ namespace morph
             prec_ctrl[len-2].second = pm1_r_final(0,1);
             c.updateControls (prec_ctrl);
 
+#ifdef DEBUG__
+            cout << "Preceding controls: " << c.outputControl();
+            cout << "C (after line-up):\n" << this->C;
+            // First, need a cost function:
+#endif
+            // If client code requests NOT to optimize, then return
+            if (!optimize) { return; }
+
+            /*
+             * Nelder-Mead gradient descent optimization of intermediate control points.
+             */
+
             // Optimization stage. Move control points other than those we just fixed to
             // be in line with each other, to minimize the deviation of this curve and
             // @c from the user-points provided.
-            cout << "Optimization" << endl;
-            cout << "------------" << endl;
-            cout << "C:\n" << this->C;
+            cout << "Optimization..." << endl;
 
-            // First, need a cost function:
-            Flt startsos = this->computeSos (points);
-            cout << "SOS with no optimization: " << startsos << endl;
+            Flt startsos = this->computeObjective (points);
+            cout << "Objective with no optimization: " << startsos << endl;
+            arma::Mat<Flt> Copy = this->C;
 
-            // Now it's Nelder-Mead time!
-
-            // Turn control matrix C into a vector of Flts.
-            int nr = C.n_rows;
-            arma::Mat<Flt> Cvec0 = C.tail_rows(--nr);
-            arma::Mat<Flt> Cvec = Cvec0.head_rows(--nr);
-            cout << "Cvec:\n" << Cvec;
-            //int vlen = Cvec.n_rows * Cvec.n_cols;
-
-            // Convert C to vector<Flt>
+            // Convert the middle rows of C to vector<Flt> to be the first NM vertex
             vector<Flt> v0;
-            for (int r = 1; r < C.n_rows-1; ++r) {
-                v0.push_back (C(r,0));
-                //cout << "v[]=" << v.back() << endl;
-                v0.push_back (C(r,1));
-                //cout << "v[]=" << v.back() << endl;
+            int startrow = 2;
+            int endrow = 1;
+            for (int r = startrow; r < (int)C.n_rows-endrow; ++r) {
+                v0.push_back (this->C(r,0));
+                v0.push_back (this->C(r,1));
             }
 
-            // How to recreate a C from v
-            arma::Mat<Flt> Cback = C;
-            {
-                for (int i = 0; i<v0.size(); i+=2) {
-                    int r = (2+i)>>1;
-                    //cout << "Row " << r << " i is " << i <<  endl;
-                    Cback(r,0) = v0[i];
-                    Cback(r,1) = v0[i+1];
-                }
-                //cout << "Cback:\n" << Cback;
+            if (v0.empty()) {
+                cout << "No further optimization possible" << endl;
             }
 
-            // Now need to make a set of random vs to init the NM_Simplex algo with.
+            // Make a set of random vertices to init the NM_Simplex algo with.
             vector<vector<Flt>> nm_vertices;
 
-            // Push back the existing set of controls
+            // First, push back the existing set of controls as the first NM vertex
             nm_vertices.push_back (v0);
 
             // Set up random
             random_device rd;  // Will be used to obtain a seed for the random number engine
             mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-            uniform_real_distribution<Flt> dis(static_cast<Flt>(0.0),
-                                               static_cast<Flt>(1.0));
+            uniform_real_distribution<Flt> dis(static_cast<Flt>(0.0), static_cast<Flt>(1.0));
 
             // Add some more vertices:
-            Flt propchange = static_cast<Flt>(0.1);
+            Flt propchange = static_cast<Flt>(0.2);
             Flt propchangeov2 = propchange / static_cast<Flt>(2.0);
-            for (int i = 0; i<v0.size(); ++i) {
+            for (size_t i = 0; i < v0.size(); ++i) {
                 vector<Flt> v;
-                for (int j = 0; j<v0.size(); ++j) {
+                for (size_t j = 0; j<v0.size(); ++j) {
                     // Perturbate v0[j] a bit and add to vector<Flt>
                     Flt v_j = v0[j];
                     Flt v_1 = (v0[j]*propchange);
@@ -339,41 +330,48 @@ namespace morph
                     //cout << "Pushing back " << v_j << endl;
                     v.push_back (v_j);
                 }
+#ifdef DEBUG__
                 cout << "v has size " << v.size();
                 cout << ", is ";
                 for (auto vv : v) {
                     cout << vv << ",";
                 }
+#endif
                 nm_vertices.push_back (v);
+#ifdef DEBUG__
                 cout << " nm_vertices has size " << nm_vertices.size() << endl;
+#endif
             }
 
             // Start out with a simplex with a vertex at the centroid of the domain vertices, and
             // then two other vertices at the first domain vertex (v) and its neighbour (vn).
             NM_Simplex<Flt> simp (nm_vertices);
             // Set a termination threshold for the SD of the vertices of the simplex
-            simp.termination_threshold = 20.0 * numeric_limits<Flt>::epsilon();
+            simp.termination_threshold = static_cast<Flt>(0.00001);//2.0 * numeric_limits<Flt>::epsilon();
             // Set an operation limit, in case the above threshold can't be reached
-            simp.too_many_operations = 2; // debug
+            simp.too_many_operations = 1000;
 
-            cout << "Set up simplex with " << simp.n << " vertices" << endl;
-#if 0 // until I write controls out of the code.
+            // Tweak the NM parameters to help it find solutions
+            // The reflection coefficient
+            simp.alpha = 0.1; // 1
+            // The expansion coefficient
+            simp.gamma = 0.2; // 2
+            // The contraction coefficient
+            simp.rho = 0.05; // .5
+            // The shrink coefficient
+            simp.sigma = 0.05; // .5
+
+            //cout << "Set up simplex with " << simp.n << " vertices" << endl;
+
             while (simp.state != NM_Simplex_State::ReadyToStop) {
 
                 if (simp.state == NM_Simplex_State::NeedToComputeThenOrder) {
                     // 1. apply objective to each vertex
                     for (unsigned int i = 0; i <= simp.n; ++i) {
-                        // simp.vertices[i][0], simp.vertices[i][1]
-                        cout << "simp.vertices["<<i<<"] =\n";
-                        for (auto sv : simp.vertices[i]) {
-                            cout << sv << ", ";
-                        }
-                        cout << endl;
-                        this->setCFromV (simp.vertices[i]);
-                        cout << "Setting nm vertex C [i="<<i<<"] to \n" << C << endl;
+                        this->setCFromV (simp.vertices[i], startrow);
                         this->init(); // Re-setup this BezCurve
-                        simp.values[i] = this->computeSos (points);
-                        cout << "SOS for that one was " << simp.values[i] << endl;
+                        simp.values[i] = this->computeObjective (points);
+                        //cout << "Obj for that one was " << simp.values[i] << endl;
                     }
                     simp.order();
 
@@ -381,35 +379,46 @@ namespace morph
                     simp.order();
 
                 } else if (simp.state == NM_Simplex_State::NeedToComputeReflection) {
-                    this->setCFromV (simp.xr);
+                    this->setCFromV (simp.xr, startrow);
                     this->init(); // Re-setup this BezCurve
-                    Flt val = this->computeSos (points);
+                    Flt val = this->computeObjective (points);
+                    //cout << "Obj for reflected one was " << val << endl;
                     simp.apply_reflection (val);
 
                 } else if (simp.state == NM_Simplex_State::NeedToComputeExpansion) {
-                    this->setCFromV (simp.xe);
+                    this->setCFromV (simp.xe, startrow);
                     this->init(); // Re-setup this BezCurve
-                    Flt val = this->computeSos (points);
+                    Flt val = this->computeObjective (points);
+                    //cout << "Obj for expanded one was " << val << endl;
                     simp.apply_expansion (val);
 
                 } else if (simp.state == NM_Simplex_State::NeedToComputeContraction) {
-                    this->setCFromV (simp.xc);
+                    this->setCFromV (simp.xc, startrow);
                     this->init(); // Re-setup this BezCurve
-                    Flt val = this->computeSos (points);
+                    Flt val = this->computeObjective (points);
+                    //cout << "Obj for contracted one was " << val << endl;
                     simp.apply_contraction (val);
                 }
+                //cout << "C:\n" << C;
             }
+            cout << "NM finished in " << simp.operation_count << " simplex change operations)" << endl;
             vector<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
-            this->setCFromV (simp.best_vertex());
-            this->init(); // Re-setup this BezCurve
-            Flt bestval = this->computeSos (points);
-            cout << "FINISHED! Best approximation: (" << this->C << ") has value " << bestval << endl;
-            // We now have best controls points
-#endif
+            cout << "Best value had objective = " << min_sos << endl;
+            if (min_sos < startsos) {
+                cout << "This was an improvement" << endl;
+                this->setCFromV (simp.best_vertex(), startrow);
+                this->init(); // Re-setup this BezCurve
+                Flt bestval = this->computeObjective (points);
+                cout << "FINISHED! Best approximation:\n" << this->C << "has value " << bestval << endl;
+            } else {
+                cout << "Optimization failed to improve. Back to C." << endl;
+                this->C = Copy;
+                this->init(); // Re-setup this BezCurve
+            }
         }
 
-        Flt computeSos (const vector<pair<Flt, Flt>>& points) const {
+        Flt computeObjective (const vector<pair<Flt, Flt>>& points) const {
             // Compute relative positions of pairs in @points
             vector<Flt> sample_t;
             sample_t.push_back (static_cast<Flt>(0.0));
@@ -435,9 +444,20 @@ namespace morph
             for (size_t i = 0; i < points.size(); ++i) {
                 sos += MathAlgo<Flt>::distance_sq (points[i], curvePoints[i]);
             }
+
+#if 0
+            // Add a penalty for the length of the curve, also, which should be as close
+            // to the linear length from point to point.
+            Flt clen = this->computeLength(50);
+            Flt distpart = (clen-totaldist)*(clen-totaldist);
+            cout << "sos part: " << sos << ", distance part: " << distpart << endl;
+            return sos + distpart;
+#else
             return sos;
+#endif
         }
 
+#if 0
         /*!
          * Fit a curve to @points, ensuring that the line segment between points[0]
          * (aka fitted_ctrls[0]) and fitted_ctrls[1] is parallel with the line segment
@@ -450,7 +470,7 @@ namespace morph
          * rotating it until it lines up with extCtrl---points[0]
          *ccc
          * 2) Can I do a version of the fitting which then finds the optimum position
-         * on the line segment by a gradient descent to minimise the SOS error? Possibly.
+         * on the line segment by a gradient descent to minimise the objective error? Possibly.
          */
         void fit (vector<pair<Flt, Flt>> points, const pair<Flt, Flt> c) {
 
@@ -460,7 +480,7 @@ namespace morph
 
             // c is the control point
             cout << "external control point is (" << c.first << "," << c.second << ")\n";
-            // this->controls[0] is the start and should be same as points[0]
+            // this->C.row(0) is the start and should be same as points[0]
             cout << "C(0,:) is (" << C(0,0) << "," << C(0,1) << ")\n";
             cout << "C(1,:) (to be changed) is ("  << C(1,0) << "," << C(1,1) << ")\n";
 
@@ -484,9 +504,7 @@ namespace morph
             // This is a possible first stab:
             C(1,0) = newCtrl_x;
             C(1,1) = newCtrl_y;
-            this->controls[1].first = newCtrl_x;
-            this->controls[1].second = newCtrl_y;
-            cout << "C(1,:) (updated) is ("  << C(1,0) << "," << C(1,1) << ")\n";
+            // cout << "C(1,:) (updated) is ("  << C(1,0) << "," << C(1,1) << ")\n";
 
             // Last job, vary contorl0to1 between 0 and 2*control0to1 and find the
             // best one.
@@ -495,19 +513,20 @@ namespace morph
             // Last thing, re-init to set up the matrices again after changing C.
             this->init();
         }
-
+#endif
         /*!
          * Using the given points, make this a best-fit Bezier curve with
          * points.size()-1 control points.
          */
         void fit (vector<pair<Flt, Flt>> points) {
 
-            // Zero out the controls vector
-            this->controls.clear();
-
             // Set the order for the curve
             int n = points.size();
             this->order = n - 1;
+
+            // Empty C here, in advance of this->matrixSetup(), and make sure it has the
+            // right size, though it can just be zeros.
+            this->C = arma::Mat<Flt> (n, 2, arma::fill::zeros);
 
             // This call to matrixSetup will set up this->M (required for the fit)
             this->matrixSetup();
@@ -566,12 +585,6 @@ namespace morph
             // Cast back to Flts
             this->C = arma::conv_to<arma::Mat<Flt>>::from (Cd);
 
-            // Copy elements of C into this->controls.
-            this->controls.clear();
-            for (i = 0; i < n; ++i) {
-                this->controls.push_back (make_pair (this->C(i,0), this->C(i,1)));
-            }
-
             // Re-init
             this->init();
         }
@@ -580,14 +593,9 @@ namespace morph
          * Obtain the derivative of this Bezier curve
          */
         BezCurve<Flt> derivative (void) const {
-            // Construct new weights.
-            vector<pair<Flt,Flt>> deriv_cp;
+            arma::Mat<Flt> deriv_cp(this->order, 2);
             for (unsigned int i = 0; i < this->order; ++i) {
-                pair<Flt, Flt> wi = this->controls[i];
-                pair<Flt, Flt> wip1 = this->controls[i+1];
-                Flt new1 = this->order * (wip1.first - wi.first);
-                Flt new2 = this->order * (wip1.second - wi.second);
-                deriv_cp.push_back (make_pair (new1, new2));
+                deriv_cp.row(i) = this->order * (this->C.row(i+1) - this->C.row(i));
             }
             return morph::BezCurve<Flt> (deriv_cp);
         }
@@ -734,20 +742,20 @@ namespace morph
             Flt t_ = 1-t;
             pair<Flt,Flt> b;
             // x
-            b.first = pow(t_, this->order) * this->controls[0].first;
+            b.first = pow(t_, this->order) * this->C(0,0);
             for(unsigned int k=1; k<this->order; k++) {
                 b.first += static_cast<Flt> (BezCurve::binomial_lookup(this->order, k))
-                    * pow (t_, this->order-k) * pow (t, k) * this->controls[k].first;
+                    * pow (t_, this->order-k) * pow (t, k) * this->C(k,0);
             }
-            b.first += pow (t, this->order) * this->controls[this->order].first;
+            b.first += pow (t, this->order) * this->C(this->order,0);
             b.first *= this->scale;
             // y
-            b.second = pow(t_, this->order) * this->controls[0].second;
+            b.second = pow(t_, this->order) * this->C(0,1);
             for (unsigned int k=1; k<this->order; k++) {
                 b.second += static_cast<Flt> (BezCurve::binomial_lookup(this->order, k))
-                    * pow (t_, this->order-k) * pow (t, k) * this->controls[k].second;
+                    * pow (t_, this->order-k) * pow (t, k) * this->C(k,1);
             }
-            b.second += pow(t, this->order) * this->controls[this->order].second;
+            b.second += pow(t, this->order) * this->C(this->order,1);
             b.second *= this->scale;
 
             return BezCoord<Flt>(t, b);
@@ -777,7 +785,7 @@ namespace morph
          */
         pair<BezCoord<Flt>, BezCoord<Flt>> computeTangentNormal (const Flt t) const {
             BezCoord<Flt> tang;
-            if (this->controls.size() == 2) {
+            if (this->C.n_rows == 2/*this->controls.size() == 2*/) {
                 // Can't compute tangent using the derivative as derivative would be a
                 // curve with a single control point. The tangent to a line is
                 // simply the line:
@@ -832,9 +840,7 @@ namespace morph
          */
         string outputControl (void) const {
             stringstream ss;
-            for (auto c : this->controls) {
-                ss << c.first << "," << c.second << endl;
-            }
+            ss << this->C;
             return ss.str();
         }
 
@@ -859,30 +865,40 @@ namespace morph
          */
         //@{
         pair<Flt,Flt> getInitialPointUnscaled (void) const {
-            return this->controls[0];
+            pair<Flt,Flt> ip_unscaled;
+            ip_unscaled.first = this->C(0,0);
+            ip_unscaled.second = this->C(0,1);
+            return ip_unscaled;
         }
 
         pair<Flt,Flt> getFinalPointUnscaled (void) const {
-            return this->controls[this->order];
+            pair<Flt,Flt> fp_unscaled;
+            fp_unscaled.first = this->C(this->order,0);
+            fp_unscaled.second = this->C(this->order,1);
+            return fp_unscaled;
         }
 
         pair<Flt,Flt> getInitialPointScaled (void) const {
-            pair<Flt,Flt> rtn = this->controls[0];
-            rtn.first *= this->scale;
-            rtn.second *= this->scale;
-            return rtn;
+            pair<Flt,Flt> ip_scaled;
+            ip_scaled.first = this->scale * this->C(0,0);
+            ip_scaled.second = this->scale * this->C(0,1);
+            return ip_scaled;
         }
 
         pair<Flt,Flt> getFinalPointScaled (void) const {
-            pair<Flt,Flt> rtn = this->controls[this->order];
-            rtn.first *= this->scale;
-            rtn.second *= this->scale;
-            return rtn;
+            pair<Flt,Flt> fp_scaled;
+            fp_scaled.first = this->scale * this->C(this->order,0);
+            fp_scaled.second = this->scale * this->C(this->order,1);
+            return fp_scaled;
         }
 
-        //! Getter for the control points
+        //! Getter for the control points in vector pair format
         vector<pair<Flt,Flt>> getControls (void) const {
-            return this->controls;
+            vector<pair<Flt,Flt>> rtn;
+            for (unsigned int r = 0; r<this->C.n_rows; ++r) {
+                rtn.push_back (make_pair (this->C(r,0), this->C(r,1)));
+            }
+            return rtn;
         }
 
         //@}
@@ -900,11 +916,39 @@ namespace morph
          * Perform common initialization tasks.
          */
         void init (void) {
-            this->order = this->controls.size()-1;
-            this->linlength = sqrt ( (controls[order].first-controls[0].first)*(controls[order].first-controls[0].first)
-                                     + (controls[order].second-controls[0].second)*(controls[order].second-controls[0].second) );
+            this->order = this->C.n_rows-1;
+            this->linlength = sqrt ((C(order,0)-C(0,0)) * (C(order,0) - C(0,0))
+                                    + (C(order,1)-C(0,1)) * (C(order,1) - C(0,1)));
             this->linlengthscaled = this->scale * this->linlength;
             this->matrixSetup();
+        }
+
+        //! Set C from the vector for floats vf, which ONLY changes the rows of C from startrow and on.
+        void setCFromV (const vector<Flt>& vf, int r) {
+            //cout << "Setting C from row " << r << endl;
+            for (size_t i = 0; i<vf.size(); i+=2) {
+                this->C(r,0) = vf[i];
+                this->C(r,1) = vf[i+1];
+                //cout << "Set C row " << r << " to ";
+                //cout.precision(12);
+                //cout << C(r,0) << "," << C(r,1)<<endl;
+                ++r;
+            }
+            //--r;
+            //cout << "Last row set in C was " << r << endl;
+        }
+
+        /*!
+         * Compute an approximation to the distance along the curve, by computing
+         * npoints and summing their linear separations.
+         */
+        Flt computeLength (unsigned int npoints) const {
+            vector<BezCoord<Flt>> pts = this->computePoints (npoints);
+            Flt dist = static_cast<Flt>(0.0);
+            for (size_t i = 1; i<pts.size(); ++i) {
+                dist += MathAlgo<Flt>::distance (pts[i-1].getCoord(), pts[i].getCoord());
+            }
+            return dist;
         }
 
         /*!
@@ -915,8 +959,8 @@ namespace morph
             DBG2 ("computePointLinear (t=" << t << ")");
             this->checkt(t);
             pair<Flt,Flt> b;
-            b.first = ((1-t) * this->controls[0].first + t * this->controls[1].first) * this->scale;
-            b.second = ((1-t) * this->controls[0].second + t * this->controls[1].second) * this->scale;
+            b.first =  ((1-t) * this->C(0,0) + t * this->C(1,0)) * this->scale;
+            b.second = ((1-t) * this->C(0,1) + t * this->C(1,1)) * this->scale;
             return BezCoord<Flt>(t, b);
         }
 
@@ -956,14 +1000,13 @@ namespace morph
             this->checkt (t);
             pair<Flt,Flt> b;
             Flt t_ = 1-t;
-            b.first = (t_ * t_ * this->controls[0].first
-                       + 2 * t_ * t * this->controls[1].first
-                       + t * t * this->controls[2].first) * this->scale;
-            b.second = (t_ * t_ * this->controls[0].second
-                        + 2 * t_ * t * this->controls[1].second
-                        + t * t * this->controls[2].second) * this->scale;
+            b.first = (t_ * t_ * this->C(0,0)
+                       + 2 * t_ * t * this->C(1,0)
+                       + t * t * this->C(2,0)) * this->scale;
+            b.second = (t_ * t_ * this->C(0,1)
+                        + 2 * t_ * t * this->C(1,1)
+                        + t * t * this->C(2,1)) * this->scale;
             return BezCoord<Flt>(t, b);
-
         }
 
         /*!
@@ -974,14 +1017,14 @@ namespace morph
             this->checkt (t);
             pair<Flt,Flt> b;
             Flt t_ = 1-t;
-            b.first = (t_ * t_ * t_ * this->controls[0].first
-                       + 3 * t_ * t_ * t * this->controls[1].first
-                       + 3 * t_ * t * t * this->controls[2].first
-                       + t * t * t * this->controls[3].first) * this->scale;
-            b.second = (t_ * t_ * t_ * this->controls[0].second
-                        + 3 * t_ * t_ * t * this->controls[1].second
-                        + 3 * t_ * t * t * this->controls[2].second
-                        + t * t * t * this->controls[3].second) * this->scale;
+            b.first = (t_ * t_ * t_ * this->C(0,0)
+                       + 3 * t_ * t_ * t * this->C(1,0)
+                       + 3 * t_ * t * t * this->C(2,0)
+                       + t * t * t * this->C(3,0)) * this->scale;
+            b.second = (t_ * t_ * t_ * this->C(0,1)
+                        + 3 * t_ * t_ * t * this->C(1,1)
+                        + 3 * t_ * t * t * this->C(2,1)
+                        + t * t * t * this->C(3,1)) * this->scale;
             return BezCoord<Flt>(t, b);
         }
 
@@ -1138,17 +1181,6 @@ namespace morph
 
     private: // attributes
         /*!
-         * Control points. First control point is the initial position; last is the
-         * final position.
-         *
-         * FIXME: This information is duplicated in this->C, so controls should be
-         * written out of the code.
-         */
-        //@{
-        vector<pair<Flt,Flt>> controls;
-        //@}
-
-        /*!
          * A scaling factor to convert from the SVG drawing units into mm (or
          * whatever). This is used when computing the BezCoords to output.
          */
@@ -1189,7 +1221,7 @@ namespace morph
         //@{
 
         /*!
-         * Set up M, C and MC. Called from constructors.  A description of how to write
+         * Set up M and MC. Called from constructors.  A description of how to write
          * out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
          * Representations...
          */
@@ -1208,7 +1240,7 @@ namespace morph
 
             // Set up M.
             int m = (int)this->order;
-            int mp = m+1;
+            int mp = m+1; // order+1
             int r = 0;
             this->M.set_size (mp, mp);
             this->M.zeros();
@@ -1221,28 +1253,15 @@ namespace morph
                     this->M(m-i, r) = element;
                 }
             }
-            //cout << "matrixSetup M:\n" << this->M;
 
-            // Set up C
-            this->C.set_size (mp, 2);
-            this->C.zeros();
-            r = 0;
-            for (auto c : this->controls) {
-                // Just put the controls into C, in order.
-                this->C(r,0) = c.first;
-                this->C(r,1) = c.second;
-                ++r;
-            }
-            //cout << "matrixSetup C:\n" << this->C << endl;
-
+            // Compute M * C
             this->MC = this->M * this->C;
         }
-
 
         //! The coefficients.
         arma::Mat<Flt> M;
 
-        //! The control points vector.
+        //! The control points.
         arma::Mat<Flt> C;
 
         //! M*C
