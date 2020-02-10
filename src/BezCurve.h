@@ -216,27 +216,38 @@ namespace morph
                 return;
             }
 
-            // Use atan2 to get angles with direction instead, here.
-            // va is vector from previous ctrl to the join
-            Flt va_x = prec_ctrl[len-2].first - prec_ctrl[len-1].first;
+            // va is vector from join to the previous ctrl
+            Flt va_x = prec_ctrl[len-2].first - prec_ctrl[len-1].first; // "prev ctrl - join"
             Flt va_y = prec_ctrl[len-2].second - prec_ctrl[len-1].second;
             // vb is vector from join to the next ctrl.
-            Flt vb_x = C(1,0) - C(0,0);
+            Flt vb_x = C(1,0) - C(0,0); // "next ctrl - join"
             Flt vb_y = C(1,1) - C(0,1);
+            // Use atan2 to get angles with direction here.
             Flt ang_a = atan2 (va_y, va_x); // NB: args in order y, x!
             Flt ang_b = atan2 (vb_y, vb_x);
+            // theta is the angle between vector a and vector b.
             Flt theta = ang_a - ang_b;
-            cout << "ang_a = " << ang_a << " rads " << (ang_a * 180 / morph::PI_F) << " deg" << endl;
-            cout << "ang_b = " << ang_b << " rads " << (ang_b * 180 / morph::PI_F) << " deg" << endl;
-            cout << "theta = " << theta << " rads " << (theta * 180 / morph::PI_F) << " deg" << endl;
-            Flt phi = 0.5 * ((2.0 * morph::PI_F) + theta - morph::PI_F);
-            cout << "phi = " << phi << " rads " << (phi * 180 / morph::PI_F) << " deg" << endl;
-
-            // FIXME FIXME: I'm missing something here. Sometimes my rotation matrix is
-            // rotating the control point by about 180 degrees. This suggests that a
-            // further test is required on ang_a or ang_b to determine whether to rotate
-            // by phi or 180-phi.
-
+#ifdef DEBUG__
+            cout << "ang_a = " << ang_a << " rads "
+                 << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
+            cout << "ang_b = " << ang_b << " rads "
+                 << (ang_b * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
+            cout << "theta = " << theta << " rads "
+                 << (theta * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
+#endif
+            // phi is the angle that conforms to: theta + 2 phi = pi radians
+            // thus 2 phi = pi - theta
+            // thus   phi = 1/2(pi - theta)
+            Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - theta);
+            // BUT if phi > pi/2 (more than a right angle) then don't add 90-and-a-bit, instead
+            // subtract 90-less-a-bit:
+            if (phi > static_cast<Flt>(morph::PI_OVER_2_D)) {
+                phi = static_cast<Flt>(morph::PI_D) - phi;
+            }
+#ifdef DEBUG__
+            cout << "phi = " << phi << " rads "
+                 << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
+#endif
             // Construct rotn matrix
             arma::Mat<Flt> rotmat (2,2);
             rotmat(0,0) = cos (-phi);
