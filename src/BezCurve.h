@@ -202,9 +202,10 @@ namespace morph
 
         /*!
          * Fit a curve to @points, lining up with the curve @c. Assumes this curve
-         * appends to the end of @c. *May also modify @c*
+         * appends to the end of @c. *May also modify @c*. Set @optimize to true to try
+         * out experimental fit improvements.
          */
-        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c, bool optimize=true) {
+        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c, bool optimize=false) {
 
             this->fit (points);
 
@@ -222,20 +223,24 @@ namespace morph
             // vb is vector from join to the next ctrl.
             Flt vb_x = C(1,0) - C(0,0);
             Flt vb_y = C(1,1) - C(0,1);
-            Flt ang_a = atan2 (va_x, va_y);
-            Flt ang_b = atan2 (vb_x, vb_y);
+            Flt ang_a = atan2 (va_y, va_x); // NB: args in order y, x!
+            Flt ang_b = atan2 (vb_y, vb_x);
             Flt theta = ang_a - ang_b;
-            //cout << "ang_a = " << ang_a << " rads " << (ang_a * 180 / morph::PI_F) << " deg" << endl;
-            //cout << "ang_b = " << ang_b << " rads " << (ang_b * 180 / morph::PI_F) << " deg" << endl;
-            //cout << "theta = " << theta << " rads " << (theta * 180 / morph::PI_F) << " deg" << endl;
-
+            cout << "ang_a = " << ang_a << " rads " << (ang_a * 180 / morph::PI_F) << " deg" << endl;
+            cout << "ang_b = " << ang_b << " rads " << (ang_b * 180 / morph::PI_F) << " deg" << endl;
+            cout << "theta = " << theta << " rads " << (theta * 180 / morph::PI_F) << " deg" << endl;
             Flt phi = 0.5 * ((2.0 * morph::PI_F) + theta - morph::PI_F);
-            //cout << "phi = " << phi << " rads " << (phi * 180 / morph::PI_F) << " deg" << endl;
+            cout << "phi = " << phi << " rads " << (phi * 180 / morph::PI_F) << " deg" << endl;
+
+            // FIXME FIXME: I'm missing something here. Sometimes my rotation matrix is
+            // rotating the control point by about 180 degrees. This suggests that a
+            // further test is required on ang_a or ang_b to determine whether to rotate
+            // by phi or 180-phi.
 
             // Construct rotn matrix
             arma::Mat<Flt> rotmat (2,2);
-            rotmat(0,0) = cos (phi);
-            rotmat(0,1) = sin (phi);
+            rotmat(0,0) = cos (-phi);
+            rotmat(0,1) = sin (-phi);
             rotmat(1,0) = -rotmat(0,1);
             rotmat(1,1) = rotmat(0,0);
 
