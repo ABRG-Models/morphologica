@@ -227,6 +227,7 @@ namespace morph
             Flt ang_b = atan2 (vb_y, vb_x);
             // theta is the angle between vector a and vector b
             Flt theta = ang_a - ang_b;
+#define DEBUG__ 1
 #ifdef DEBUG__
             cout << "ang_a = " << ang_a << " rads "
                  << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
@@ -239,15 +240,11 @@ namespace morph
             // thus 2 phi = pi - theta
             // thus   phi = 1/2(pi - theta)
             Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - abs(theta));
-            // Note use of abs(theta) above. However, we have to pay attention to sign of theta and
-            // invert phi as necessary
-            if (theta > static_cast<Flt>(0.0)) {
-                phi = -phi;
-            }
 #ifdef DEBUG__
             cout << "phi = " << phi << " rads "
                  << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
 #endif
+#undef DEBUG__
             // Construct rotn matrix (one for positive rotation, one for negative)
             arma::Mat<Flt> rotmat_pos (2,2);
             rotmat_pos(0,0) = cos (phi);
@@ -272,17 +269,38 @@ namespace morph
             // Offset so we rotate va about p0
             arma::Mat<Flt> pm1_r = pm1 - p0;
 
-            // Apply rotation to va
-            arma::Mat<Flt> pm1_r_after = pm1_r * rotmat_neg;
-
-            // You _can_ change just two elements in the rotation matrix to reverse the rotational direction:
-            //rotmat(1,0) = rotmat(0,1);
-            //rotmat(0,1) = -rotmat(0,1); // sin (-phi);
-
             // Rotate the vector vb in the opposing direction (rotmat_pos)
             arma::Mat<Flt> pm2 = C.row(1);
             arma::Mat<Flt> pm2_r = pm2 - p0;
-            arma::Mat<Flt> pm2_r_after = pm2_r * rotmat_pos;
+
+            // Apply rotations depending on the quadrant in which ang_a and ang_b (and thus theta) lay in.
+            arma::Mat<Flt> pm1_r_after;
+            arma::Mat<Flt> pm2_r_after;
+            if (ang_b < static_cast<Flt>(0.0)) {
+                if (ang_a > static_cast<Flt>(0.0)) {
+                    cout << "BezCurve::fit(): Type I join" << endl;
+                    cout << "                 Rotate va +phi, vb -phi." << endl;
+                    pm1_r_after = pm1_r * rotmat_pos;
+                    pm2_r_after = pm2_r * rotmat_neg;
+                } else {
+                    cout << "BezCurve::fit(): Type II join" << endl;
+                    cout << "                 Rotate va +phi, vb +phi." << endl;
+                    pm1_r_after = pm1_r * rotmat_pos;
+                    pm2_r_after = pm2_r * rotmat_pos;
+                }
+            } else {
+                if (ang_a > static_cast<Flt>(0.0)) {
+                    cout << "BezCurve::fit(): Type III join" << endl;
+                    cout << "                 Rotate va -phi, vb -phi." << endl;
+                    pm1_r_after = pm1_r * rotmat_neg;
+                    pm2_r_after = pm2_r * rotmat_neg;
+                } else {
+                    cout << "BezCurve::fit(): Type IV join" << endl;
+                    cout << "                 Rotate va -phi, vb +phi." << endl;
+                    pm1_r_after = pm1_r * rotmat_neg;
+                    pm2_r_after = pm2_r * rotmat_pos;
+                }
+            }
 
             // Translate the points back by p0 to place them in the correct final position
             arma::Mat<Flt> pm1_r_final = pm1_r_after + p0;
