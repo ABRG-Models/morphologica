@@ -225,7 +225,7 @@ namespace morph
             // Use atan2 to get angles with direction here.
             Flt ang_a = atan2 (va_y, va_x); // NB: args in order y, x!
             Flt ang_b = atan2 (vb_y, vb_x);
-            // theta is the angle between vector a and vector b.
+            // theta is the angle between vector a and vector b
             Flt theta = ang_a - ang_b;
 #ifdef DEBUG__
             cout << "ang_a = " << ang_a << " rads "
@@ -238,41 +238,53 @@ namespace morph
             // phi is the angle that conforms to: theta + 2 phi = pi radians
             // thus 2 phi = pi - theta
             // thus   phi = 1/2(pi - theta)
-            Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - theta);
-            // BUT if phi > pi/2 (more than a right angle) then don't add 90-and-a-bit, instead
-            // subtract 90-less-a-bit:
-            if (phi > static_cast<Flt>(morph::PI_OVER_2_D)) {
-                phi = static_cast<Flt>(morph::PI_D) - phi;
+            Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - abs(theta));
+            // Note use of abs(theta) above. However, we have to pay attention to sign of theta and
+            // invert phi as necessary
+            if (theta > static_cast<Flt>(0.0)) {
+                phi = -phi;
             }
 #ifdef DEBUG__
             cout << "phi = " << phi << " rads "
                  << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << endl;
 #endif
-            // Construct rotn matrix
-            arma::Mat<Flt> rotmat (2,2);
-            rotmat(0,0) = cos (-phi);
-            rotmat(0,1) = sin (-phi);
-            rotmat(1,0) = -rotmat(0,1);
-            rotmat(1,1) = rotmat(0,0);
+            // Construct rotn matrix (one for positive rotation, one for negative)
+            arma::Mat<Flt> rotmat_pos (2,2);
+            rotmat_pos(0,0) = cos (phi);
+            rotmat_pos(0,1) = sin (phi);
+            rotmat_pos(1,0) = -rotmat_pos(0,1);
+            rotmat_pos(1,1) = rotmat_pos(0,0);
 
-            // Now we rotate each point by phi
-            // The point at the end of the curve
+            arma::Mat<Flt> rotmat_neg (2,2);
+            rotmat_neg(0,0) = cos (-phi);
+            rotmat_neg(0,1) = sin (-phi);
+            rotmat_neg(1,0) = -rotmat_neg(0,1);
+            rotmat_neg(1,1) = rotmat_neg(0,0);
+
+            // Now we rotate each point by +/-phi
+            // p0 is the point which joins the two curves:
             arma::Mat<Flt> p0 = C.row(0);
+
+            // Rotate the vector 'va' in the rotmat_neg direction
             arma::Mat<Flt> pm1 (1,2);
             pm1(0,0) = prec_ctrl[len-2].first;
             pm1(0,1) = prec_ctrl[len-2].second;
-            // Offset so we rotate about p0
+            // Offset so we rotate va about p0
             arma::Mat<Flt> pm1_r = pm1 - p0;
-            // Apply rotation
-            arma::Mat<Flt> pm1_r_after = pm1_r * rotmat;
 
-            // Change two elements in the rotation matrix to reverse the rotational direction
-            rotmat(1,0) = rotmat(0,1);
-            rotmat(0,1) = -rotmat(0,1); // sin (-phi);
+            // Apply rotation to va
+            arma::Mat<Flt> pm1_r_after = pm1_r * rotmat_neg;
+
+            // You _can_ change just two elements in the rotation matrix to reverse the rotational direction:
+            //rotmat(1,0) = rotmat(0,1);
+            //rotmat(0,1) = -rotmat(0,1); // sin (-phi);
+
+            // Rotate the vector vb in the opposing direction (rotmat_pos)
             arma::Mat<Flt> pm2 = C.row(1);
             arma::Mat<Flt> pm2_r = pm2 - p0;
-            arma::Mat<Flt> pm2_r_after = pm2_r * rotmat;
+            arma::Mat<Flt> pm2_r_after = pm2_r * rotmat_pos;
 
+            // Translate the points back by p0 to place them in the correct final position
             arma::Mat<Flt> pm1_r_final = pm1_r_after + p0;
             arma::Mat<Flt> pm2_r_final = pm2_r_after + p0;
 

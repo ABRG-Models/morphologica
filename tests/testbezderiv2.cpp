@@ -107,20 +107,20 @@ int main()
 {
     int rtn = 0;
     vector<pair<FLT,FLT>> v;
-    v.push_back (make_pair (90,100));
-    v.push_back (make_pair (140,200));
-    v.push_back (make_pair (200,380));
-    v.push_back (make_pair (270,530));
-    v.push_back (make_pair (350,620));
-    v.push_back (make_pair (430,730)); // or 450,700
+    v.push_back (make_pair (90,730));  //730
+    v.push_back (make_pair (140,620)); //620
+    v.push_back (make_pair (200,530)); //530
+    v.push_back (make_pair (270,380)); //380
+    v.push_back (make_pair (350,200)); //200
+    v.push_back (make_pair (430,100)); //100
 
     vector<pair<FLT,FLT>> w;
     w.push_back (v.back());
-    w.push_back (make_pair (530,790));
-    w.push_back (make_pair (610,850));
-    w.push_back (make_pair (760,840));
-    w.push_back (make_pair (840,760));
-    w.push_back (make_pair (980,650));
+    w.push_back (make_pair (530,120));
+    w.push_back (make_pair (610,200));
+    w.push_back (make_pair (760,380));
+    w.push_back (make_pair (840,600));
+    w.push_back (make_pair (980,700));
 
     // First the analytical fit
     BezCurve<FLT> cv1;
