@@ -54,9 +54,26 @@ libmorphologica by means of the src/CMakeLists.txt file. I'm using the
 HEAD of the master branch of the jsoncpp repository, which installs a
 library with version about 1.8.4.
 
+### (Optional) Install glfw3
+
 There is some OpenGL 2 style OpenGL code in display.h/cpp and also
 some more modern OpenGL code in Visual/HexGridVisual. This modern code
 requires the library GLFW3 and only compiles if GLFW3 is present.
+
+It's possible to apt install glfw on recent versions of Ubuntu. Doing so
+will install libglfw.a. These build instructions install libglfw3.a (into 
+/usr/local/lib/).
+
+```
+sudo apt install libxinerama-dev libxrandr-dev libxcursor-dev
+git clone git@github.com:glfw/glfw.git
+cd glfw
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## Install dependencies on Mac
 
@@ -80,6 +97,21 @@ You'll need jsoncpp on Mac, too, built as a static library, just like for Linux,
 ```sh
 git clone https://github.com/open-source-parsers/jsoncpp.git
 cd jsoncpp
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+### (Optional) Install glfw3
+
+The modern OpenGL code in morphologica requires the library GLFW3 and only compiles if 
+GLFW3 is present.
+
+```
+# NB: Untested on Mac as yet!
+git clone git@github.com:glfw/glfw.git
+cd glfw
 mkdir build
 cd build
 cmake ..
