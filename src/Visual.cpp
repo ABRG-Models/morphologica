@@ -113,16 +113,17 @@ morph::Visual::saveImage (const string& filename)
     glPixelStorei (GL_PACK_SKIP_ROWS, 0);
     glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
     glReadPixels (0, 0, w, h, GL_BGR_EXT, GL_UNSIGNED_BYTE, bits);
-    IplImage* capImg = cvCreateImage (cvSize(w,h), IPL_DEPTH_8U, 3);
-    for (int i=0; i<h; ++i) { // Each line
-        for (int j=0; j < w; ++j) { // Each bit
-            capImg->imageData[i*capImg->widthStep + j*3+0] = (unsigned char)(bits[(h-i-1)*3*w + j*3+0]);
-            capImg->imageData[i*capImg->widthStep + j*3+1] = (unsigned char)(bits[(h-i-1)*3*w + j*3+1]);
-            capImg->imageData[i*capImg->widthStep + j*3+2] = (unsigned char)(bits[(h-i-1)*3*w + j*3+2]);
+    cv::Mat capImg (h, w, CV_8UC3); // 3 channels, 8 bits
+    cv::Vec3b triplet;
+    for (int i = 0; i < h; ++i) {
+        for (int j = 0; j < w; ++j) {
+            triplet[0] = (unsigned char)(bits[(h-i-1)*3*w + j*3+0]);
+            triplet[1] = (unsigned char)(bits[(h-i-1)*3*w + j*3+1]);
+            triplet[2] = (unsigned char)(bits[(h-i-1)*3*w + j*3+2]);
+            capImg.at<cv::Vec3b>(i,j) = triplet;
         }
     }
-    imwrite (filename.c_str(), cv::cvarrToMat(capImg));
-    cvReleaseImage (&capImg);
+    imwrite (filename.c_str(), capImg);
     delete[] bits;
 }
 
