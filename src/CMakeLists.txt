@@ -26,12 +26,12 @@ if(APPLE)
   # X11 located in /opt/X11.
   target_link_libraries(
     morphologica
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
     )
 else()
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
     )
 endif(APPLE)
 
@@ -50,12 +50,12 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} /usr/local/lib/libjsoncpp.a
+  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${JSONCPP_LDFLAGS}
   )
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
   )
 endif(APPLE)
 

@@ -72,6 +72,22 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
+find_package(PkgConfig)
+
+# JSON
+if(${PKG_CONFIG_FOUND})
+  message(INFO ": pkg-config found. Search for JSON.")
+  pkg_search_module (JSONCPP REQUIRED jsoncpp)
+  if(${JSONCPP_FOUND})
+    message(INFO ": pkg-config found jsoncpp. Excellent.")
+  else(${JSONCPP_FOUND})
+    message(WARNING ": jsoncpp was NOT found by pkg-config. Try default: /usr/local/lib/jsoncpp.a")
+    set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
+  endif(${JSONCPP_FOUND})
+else(${PKG_CONFIG_FOUND})
+  message(INFO ": No pkg-config. Tryign default /usr/local/lib/libjsoncpp.a for jsoncpp.")
+  set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
+endif(${PKG_CONFIG_FOUND})
 
 # glfw3 library finding. However, it's possible to compile from
 # source, and there are instructions on the glfw3 website on how to do
@@ -84,7 +100,6 @@ find_package(LAPACK REQUIRED)
 find_package(glfw3 QUIET)
 if (${glfw3_FOUND})
   message(INFO ": cmake's find_package() found glfw3, using pkg-config to get details...")
-  find_package(PkgConfig)
   if(PKG_CONFIG_FOUND)
     # Use pkg-config to check GLFW3 is present:
     pkg_search_module (GLFW REQUIRED glfw3)
