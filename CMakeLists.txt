@@ -86,10 +86,12 @@ if(${PKG_CONFIG_FOUND})
   else(${JSONCPP_FOUND})
     message(WARNING ": jsoncpp was NOT found by pkg-config. Try default: /usr/local/lib/jsoncpp.a")
     set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
+    set(JSONCPP_INCLUDE_DIRS "/usr/local/include")
   endif(${JSONCPP_FOUND})
 else(${PKG_CONFIG_FOUND})
   message(INFO ": No pkg-config. Tryign default /usr/local/lib/libjsoncpp.a for jsoncpp.")
   set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
+  set(JSONCPP_INCLUDE_DIRS "/usr/local/include")
 endif(${PKG_CONFIG_FOUND})
 
 # glfw3 provides a cmake find_package script. Because it doesn't set
@@ -119,7 +121,7 @@ else(APPLE)
   find_package(Armadillo REQUIRED)
 endif(APPLE)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${JSONCPP_INCLUDE_DIRS})
 
 # rapidxml is bundled in the source:
 include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
