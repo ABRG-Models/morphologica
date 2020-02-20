@@ -3,9 +3,8 @@ set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp ReadCurves.cpp Hex
 
 # If we have glfw3 then attempt to compile Seb's modern opengl visualization code
 if (${glfw3_FOUND})
-  message ("libglfw3 found, compiling in Visual.cpp, etc")
+  message (INFO ": libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
-  message ("morphlibsrc: ${morphlibsrc}")
 endif()
 
 if(APPLE)
@@ -13,7 +12,7 @@ if(APPLE)
 endif(APPLE)
 
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
-  message ("You have MORPH_ARMADILLO_LIBPATH set to: ${MORPH_ARMADILLO_LIBPATH}")
+  message (INFO ": You have MORPH_ARMADILLO_LIBPATH set to: ${MORPH_ARMADILLO_LIBPATH}")
   link_directories(${MORPH_ARMADILLO_LIBPATH})
 endif()
 
@@ -37,7 +36,7 @@ else()
 endif(APPLE)
 
 if (${glfw3_FOUND})
-  target_link_libraries (morphologica glfw3)
+  target_link_libraries (morphologica ${GLFW_LIBRARIES})
 endif()
 
 install(TARGETS morphologica
@@ -61,7 +60,7 @@ target_link_libraries(
 endif(APPLE)
 
 if (${glfw3_FOUND})
-  target_link_libraries (morphstatic glfw3)
+  target_link_libraries (morphstatic ${GLFW_LIBRARIES})
 endif()
 
 install(TARGETS morphstatic

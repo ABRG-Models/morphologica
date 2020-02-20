@@ -82,21 +82,21 @@ find_package(LAPACK REQUIRED)
 # compile the static libglfw3.a or with "glfw" if you compiled the
 # dynamic libglfw.so
 find_package(glfw3 QUIET)
-# You can find GLFW library with pkgconfig, but it's switched off for now
-if(0)
+if (${glfw3_FOUND})
+  message(INFO ": cmake's find_package() found glfw3, using pkg-config to get details...")
   find_package(PkgConfig)
   if(PKG_CONFIG_FOUND)
     # Use pkg-config to check GLFW3 is present:
-    pkg_check_modules(GLFW3 REQUIRED glfw3)
-    if (GLFW3_FOUND)
+    pkg_search_module (GLFW REQUIRED glfw3)
+    if (${GLFW_FOUND})
       # Good....
-      message(INFO, "pkg-config found glfw3. Excellent.")
-    else(GLFW3_FOUND)
+      message(INFO ": pkg-config found glfw(3). Excellent.")
+    else(${GLFW_FOUND})
       # Bad....
-      message(ERROR, "glfw3 was NOT found by pkg-config. Uh oh.")
-    endif(GLFW3_FOUND)
+      message(ERROR ": glfw(3) was NOT found by pkg-config. Uh oh.")
+    endif(${GLFW_FOUND})
   else()
-    message(WARNING "There's no pkg-config on this system to check for libglfw3. You may need to try `sudo apt-get install pkg-config`")
+    message(WARNING "There's no pkg-config on this system to find exact details for glfw3. You may need to try `sudo apt-get install pkg-config` or similar")
   endif()
 endif()
 
