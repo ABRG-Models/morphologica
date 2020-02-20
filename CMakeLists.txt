@@ -72,12 +72,15 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
+# Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
+find_package(HDF5 REQUIRED)
+# pkgconfig is used to find JSON adn also to find lib paths for glfw3.
 find_package(PkgConfig)
 
 # JSON
 if(${PKG_CONFIG_FOUND})
-  message(INFO ": pkg-config found. Search for JSON.")
-  pkg_search_module (JSONCPP REQUIRED jsoncpp)
+  message(INFO ": pkg-config was found. Search for JSON.")
+  pkg_search_module(JSONCPP REQUIRED jsoncpp)
   if(${JSONCPP_FOUND})
     message(INFO ": pkg-config found jsoncpp. Excellent.")
   else(${JSONCPP_FOUND})
@@ -89,40 +92,29 @@ else(${PKG_CONFIG_FOUND})
   set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
 endif(${PKG_CONFIG_FOUND})
 
-# glfw3 library finding. However, it's possible to compile from
-# source, and there are instructions on the glfw3 website on how to do
-# this with cmake.
-#
-# glfw3 provides a cmake find_package script, though it doesn't set
-# lib paths etc. Then you just link with "glfw3" if you happened to
-# compile the static libglfw3.a or with "glfw" if you compiled the
-# dynamic libglfw.so
+# glfw3 provides a cmake find_package script. Because it doesn't set
+# lib paths, we go on and use pkg-config to do this.
 find_package(glfw3 QUIET)
-if (${glfw3_FOUND})
+if(${glfw3_FOUND})
   message(INFO ": cmake's find_package() found glfw3, using pkg-config to get details...")
-  if(PKG_CONFIG_FOUND)
+  if(${PKG_CONFIG_FOUND})
     # Use pkg-config to check GLFW3 is present:
-    pkg_search_module (GLFW REQUIRED glfw3)
-    if (${GLFW_FOUND})
-      # Good....
+    pkg_search_module(GLFW REQUIRED glfw3)
+    if(${GLFW_FOUND})
       message(INFO ": pkg-config found glfw(3). Excellent.")
     else(${GLFW_FOUND})
-      # Bad....
       message(ERROR ": glfw(3) was NOT found by pkg-config. Uh oh.")
     endif(${GLFW_FOUND})
-  else()
+  else(${PKG_CONFIG_FOUND})
     message(WARNING "There's no pkg-config on this system to find exact details for glfw3. You may need to try `sudo apt-get install pkg-config` or similar")
-  endif()
-endif()
-
-# Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
-find_package (HDF5 REQUIRED)
+  endif(${PKG_CONFIG_FOUND})
+endif(${glfw3_FOUND})
 
 # Armadillo
-if (APPLE)
+if(APPLE)
   # Give a hint on where to find Armadillo on Mac
-  find_package (Armadillo 9.20 HINTS /opt/local/lib REQUIRED)
-else()
+  find_package(Armadillo 9.20 HINTS /opt/local/lib REQUIRED)
+else(APPLE)
   # A simpler find package for armadillo on non-mac:
   find_package(Armadillo REQUIRED)
 endif(APPLE)
@@ -130,10 +122,10 @@ endif(APPLE)
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR})
 
 # rapidxml is bundled in the source:
-include_directories ("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
 # OpenGL code needs the local include directory, too
-include_directories ("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
@@ -154,7 +146,7 @@ add_subdirectory(pc)
 set(DEBUG_VARIABLES ON)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
-  foreach (_variableName ${_variableNames})
+  foreach(_variableName ${_variableNames})
     message(STATUS "${_variableName}=${${_variableName}}")
   endforeach()
 endif(DEBUG_VARIABLES)
