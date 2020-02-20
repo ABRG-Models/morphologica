@@ -100,16 +100,14 @@ if (${glfw3_FOUND})
   endif()
 endif()
 
-# Find the HDF5 library
+# Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
+find_package (HDF5 REQUIRED)
+
+# Armadillo
 if (APPLE)
-  # hdf5, as installed by mac ports, gets found easily:
-  find_package (HDF5 REQUIRED)
+  # Give a hint on where to find Armadillo on Mac
   find_package (Armadillo 9.20 HINTS /opt/local/lib REQUIRED)
 else()
-  # This finds a manually-installed HDF5 in /usr/local on Linux:
-  set (HDF_LIB_TYPE SHARED) # STATIC or SHARED
-  string(TOLOWER ${HDF_LIB_TYPE} HDF_SEARCH_TYPE)
-  find_package (HDF5 NAMES hdf5 COMPONENTS C ${HDF_SEARCH_TYPE} REQUIRED)
   # A simpler find package for armadillo on non-mac:
   find_package(Armadillo REQUIRED)
 endif(APPLE)

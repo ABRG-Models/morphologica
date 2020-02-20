@@ -31,7 +31,7 @@ if(APPLE)
 else()
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
     )
 endif(APPLE)
 
@@ -55,7 +55,7 @@ target_link_libraries(
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_${HDF_LIB_TYPE}_LIBRARY} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} /usr/local/lib/libjsoncpp.a
   )
 endif(APPLE)
 
