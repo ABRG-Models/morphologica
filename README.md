@@ -30,7 +30,7 @@ cd hdf5-1.10.x
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-make -j4 # or however many cores you have. This takes a while.
+make -j$(nproc)
 sudo make install
 ```
 
@@ -131,6 +131,15 @@ make
 sudo make install
 ```
 
+## Docker
+
+A minimal Docker image based on [Alpine Linux](https://alpinelinux.org/) can be created as follows:
+
+```
+cd morphologica/docker/
+docker build .
+```
+
 ## Build morphologica
 
 To build morphologica, it's the usual CMake process:
@@ -140,8 +149,7 @@ cd morphologica
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-make -j4
-ctest
+make -j$(nproc)
 sudo make install
 sudo ldconfig # Probably Linux specific! Mac alternative?
 ```
@@ -170,7 +178,7 @@ pc/CMakeLists.txt).
 cd morphologica
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${HOME}/usr
-make -j4
+make -j$(nproc)
 make install # no sudo! You don't need it to install in your home
 ```
 
@@ -214,3 +222,8 @@ or
 /usr/lib/pkgconfig/libmorphologica.pc
 ```
 on your system.
+
+## Tests
+To run the test suite, use the `ctest` command in the build directory.
+
+Note that certain test cases will fail if no display server is available (e.g. in Docker images). See also [issue #6](https://github.com/ABRG-Models/morphologica/issues/6).
