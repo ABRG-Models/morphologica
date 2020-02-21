@@ -66,8 +66,11 @@ morph::Gdisplay::createWindow (unsigned int windowWidth, unsigned int windowHeig
     // Setting the class hint, as well as the window title ensures
     // Gnome 3 (and presumably some other window managers) will
     // display the window name in the icon list.
+    // Set the class name for window managers to match morphologica windows and
+    // apply layout rules.
     this->classHints = XAllocClassHint();
-    this->classHints->res_class = (char*)title;
+    this->classHints->res_class = (char*)"morphologica";
+    this->classHints->res_name = (char*)title;
     XSetClassHint (this->disp, this->win, this->classHints);
 
     // Similarly for Window Manager Hints. Using the group here, but
