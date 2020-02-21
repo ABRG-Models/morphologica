@@ -61,7 +61,7 @@ some more modern OpenGL code in Visual/HexGridVisual. This modern code
 requires the library GLFW3 and only compiles if GLFW3 is present.
 
 It's possible to apt install glfw on recent versions of Ubuntu. Doing so
-will install libglfw.a. These build instructions install libglfw3.a (into 
+will install libglfw.a. These build instructions install libglfw3.a (into
 /usr/local/lib/).
 
 ```
@@ -117,7 +117,7 @@ sudo make install
 ```
 ### (Optional) Install glfw3
 
-The modern OpenGL code in morphologica requires the library GLFW3 and only compiles if 
+The modern OpenGL code in morphologica requires the library GLFW3 and only compiles if
 GLFW3 is present.
 
 ```
@@ -227,3 +227,10 @@ on your system.
 To run the test suite, use the `ctest` command in the build directory.
 
 Note that certain test cases will fail if no display server is available (e.g. in Docker images). See also [issue #6](https://github.com/ABRG-Models/morphologica/issues/6).
+
+# Credits
+
+Authorship of morphologica code is given in each file. Copyright in
+the software is owned by the authors. morphologica is distributed
+under the terms of the GNU General Public License, version 3 (see
+LICENCE.txt).
