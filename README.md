@@ -9,11 +9,11 @@ files.
 
 Code is (or shortly will be) enclosed in the "morph" namespace.
 
-It requires OpenCV, Armadillo, OpenGL and X headers to compile, and
+It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to compile, and
 programs linked with libmorphologica will also need to link to those
 dependencies. You will also need the cmake program and a C++ compiler.
 
-## Install dependencies on GNU/Linux
+## Install dependencies on Ubuntu/Debian
 
 To install these dependencies on Ubuntu or Debian Linux, you can do:
 
@@ -74,6 +74,18 @@ cmake ..
 make
 sudo make install
 ```
+
+## Install dependencies on Arch Linux
+
+On Arch Linux, all required dependencies except Armadillo are available in the official repository. They can be installed as follows:
+
+```shell
+sudo pacman -S vtk hdf5 lapack blas freeglut jsoncpp glfw-wayland
+```
+
+**Note:** Specify `glfw-x11` instead of `glfw-wayland` if you use X.org.
+
+Then, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
 
 ## Install dependencies on Mac
 
