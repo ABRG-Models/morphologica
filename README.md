@@ -66,7 +66,7 @@ will install libglfw.a. These build instructions install libglfw3.a (into
 
 ```
 sudo apt install libxinerama-dev libxrandr-dev libxcursor-dev
-git clone git@github.com:glfw/glfw.git
+git clone https://github.com/glfw/glfw.git
 cd glfw
 mkdir build
 cd build
@@ -122,7 +122,7 @@ GLFW3 is present.
 
 ```
 # NB: Untested on Mac as yet!
-git clone git@github.com:glfw/glfw.git
+git clone https://github.com/glfw/glfw.git
 cd glfw
 mkdir build
 cd build
