@@ -25,6 +25,8 @@ sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
 You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
 
 ```sh
+mkdir -p ~/src
+cd ~/src
 tar xvf hdf5-1.10.x.tar.gz
 cd hdf5-1.10.x
 mkdir build
@@ -39,6 +41,7 @@ the jsoncpp library compiled and installed in /usr/local. I cloned it
 from github:
 
 ```sh
+cd ~/src
 git clone https://github.com/open-source-parsers/jsoncpp.git
 cd jsoncpp
 mkdir build
@@ -66,6 +69,7 @@ will install libglfw.a. These build instructions install libglfw3.a (into
 
 ```
 sudo apt install libxinerama-dev libxrandr-dev libxcursor-dev
+cd ~/src
 git clone https://github.com/glfw/glfw.git
 cd glfw
 mkdir build
@@ -107,6 +111,8 @@ Note that the installation of armadillo will pull in hdf5, so on Mac, we don't n
 You'll need jsoncpp on Mac, too, built as a static library, just like for Linux, above:
 
 ```sh
+mkdir -p ~/src
+cd ~/src
 git clone https://github.com/open-source-parsers/jsoncpp.git
 cd jsoncpp
 mkdir build
@@ -122,6 +128,7 @@ GLFW3 is present.
 
 ```
 # NB: Untested on Mac as yet!
+cd ~/src
 git clone https://github.com/glfw/glfw.git
 cd glfw
 mkdir build
@@ -145,6 +152,8 @@ docker build .
 To build morphologica, it's the usual CMake process:
 
 ```sh
+cd ~/src
+git clone https://github.com/ABRG-Models/morphologica.git
 cd morphologica
 mkdir build
 cd build
@@ -175,8 +184,7 @@ branch of 2:15 PM, Jan 27 2020, as I added an important line to
 pc/CMakeLists.txt).
 
 ```bash
-cd morphologica
-cd build
+cd ~/src/morphologica/build
 cmake .. -DCMAKE_INSTALL_PREFIX=${HOME}/usr
 make -j$(nproc)
 make install # no sudo! You don't need it to install in your home
