@@ -21,9 +21,7 @@ To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
 sudo apt install build-essential cmake git libopencv-dev libarmadillo-dev \
-                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev 
-# and maybe:
-sudo apt install libopenblas-dev
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev
 ```
 
 ### Package-managed dependencies for Arch Linux
@@ -54,6 +52,10 @@ make -j$(nproc)
 sudo make install
 ```
 
+### gcc/g++ for older systems (if required)
+
+morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Download and build the latest stable gcc (instructions to come).
+
 ### HDF5 library
 
 You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
@@ -77,6 +79,7 @@ On Ubuntu 16.04, the packaged armadillo is too old, so first remove that:
 ```sh
 sudo apt remove libarmadillo-dev
 sudo apt autoremove
+sudo apt install libopenblas-dev
 ```
 
 Then download and compile an up-to-date version
