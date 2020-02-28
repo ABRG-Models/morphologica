@@ -21,7 +21,7 @@ To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
 sudo apt install build-essential cmake git libopencv-dev libarmadillo-dev \
-                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev wget
 ```
 
 ### Package-managed dependencies for Arch Linux
@@ -54,7 +54,7 @@ sudo make install
 
 ### gcc/g++ for older systems (if required)
 
-morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Download and build the latest stable gcc (instructions to come).
+morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Download and build a recent stable gcc (version 7.x, 8.x or 9.x).
 
 ### HDF5 library
 
