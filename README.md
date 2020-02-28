@@ -169,7 +169,7 @@ Install the Ubuntu 18.04 image from the Windows store. Fully upgrade all package
 ```sh
 sudo apt-get install apt
 sudo apt update
-sudo apt ugprade
+sudo apt upgrade
 ```
 
 (Optional) Install an X server on yoru Windows desktop, so that your graphical Windows subsystem for Linux programs can draw their output. This will be required for some of the morphologica test programs to run.
