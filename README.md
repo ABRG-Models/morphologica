@@ -21,7 +21,9 @@ To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
 sudo apt install build-essential cmake git libopencv-dev libarmadillo-dev \
-                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev 
+# and maybe:
+sudo apt install libopenblas-dev
 ```
 
 ### Package-managed dependencies for Arch Linux
@@ -52,6 +54,22 @@ make -j$(nproc)
 sudo make install
 ```
 
+### HDF5 library
+
+You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
+
+```sh
+mkdir -p ~/src
+cd ~/src
+tar xvf hdf5-1.10.x.tar.gz
+cd hdf5-1.10.x
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make -j$(nproc)
+sudo make install
+```
+
 ### armadillo for older systems (if required)
 
 On Ubuntu 16.04, the packaged armadillo is too old, so first remove that:
@@ -68,18 +86,6 @@ cd ~/src
 wget http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
 tar xf armadillo-9.850.1.tar.xz
 cd armadillo-9.850.1
-mkdir build etc...
-```
-
-### HDF5 library
-
-You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
-
-```sh
-mkdir -p ~/src
-cd ~/src
-tar xvf hdf5-1.10.x.tar.gz
-cd hdf5-1.10.x
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
