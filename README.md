@@ -13,16 +13,32 @@ It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to compile, an
 programs linked with libmorphologica will also need to link to those
 dependencies. You will also need the cmake program and a C++ compiler.
 
-## Install dependencies on Ubuntu/Debian
+## Installation dependencies for GNU/Linux
 
-To install these dependencies on Ubuntu or Debian Linux, you can do:
+### Package-managed dependencies for Ubuntu/Debian
+
+To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
 sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
 ```
 
-**Note for Ubuntu 16.04:** cmake on Ubuntu 16.04 is too old to compile hdf5-1.10.4 or higher. On this OS, please manually download and install a recent cmake from https://cmake.org/ like this:
+### Package-managed dependencies for Arch Linux
+
+On Arch Linux, all required dependencies except Armadillo are available in the official repository. They can be installed as follows:
+
+```shell
+sudo pacman -S vtk hdf5 lapack blas freeglut jsoncpp glfw-wayland
+```
+
+**Note:** Specify `glfw-x11` instead of `glfw-wayland` if you use X.org.
+
+Then, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
+
+### cmake for older systems (if required)
+
+On **Ubuntu 16.04**, the packaged cmake is too old to compile hdf5-1.10.x. On this OS (or others with cmake version <3.10), please manually download and install a recent cmake from https://cmake.org/
 
 ```sh
 mkdir -p ~/src
@@ -35,6 +51,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_USE_OPENSSL=OFF
 make -j$(nproc)
 sudo make install
 ```
+
+### HDF5 library
 
 You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
 
@@ -49,6 +67,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j$(nproc)
 sudo make install
 ```
+
+### JSON library
 
 For the saving and reading of configuration information, you'll need
 the jsoncpp library compiled and installed in /usr/local. I cloned it
@@ -71,7 +91,7 @@ libmorphologica by means of the src/CMakeLists.txt file. I'm using the
 HEAD of the master branch of the jsoncpp repository, which installs a
 library with version about 1.8.4.
 
-### (Optional) Install glfw3
+### glfw3 library (Optional)
 
 There is some OpenGL 2 style OpenGL code in display.h/cpp and also
 some more modern OpenGL code in Visual/HexGridVisual. This modern code
@@ -93,19 +113,7 @@ make
 sudo make install
 ```
 
-## Install dependencies on Arch Linux
-
-On Arch Linux, all required dependencies except Armadillo are available in the official repository. They can be installed as follows:
-
-```shell
-sudo pacman -S vtk hdf5 lapack blas freeglut jsoncpp glfw-wayland
-```
-
-**Note:** Specify `glfw-x11` instead of `glfw-wayland` if you use X.org.
-
-Then, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
-
-## Install dependencies on Mac
+## Installation dependencies for Mac
 
 You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store.
 
@@ -151,6 +159,22 @@ cmake ..
 make
 sudo make install
 ```
+
+## Installation on Windows
+
+To install on Windows, first install *Windows subsystem for Linux* https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+Install the Ubuntu 18.04 image from the Windows store. Fully upgrade all packages before you start:
+
+```sh
+sudo apt-get install apt
+sudo apt update
+sudo apt ugprade
+```
+
+(Optional) Install an X server on yoru Windows desktop, so that your graphical Windows subsystem for Linux programs can draw their output. This will be required for some of the morphologica test programs to run.
+
+Now you can follow instructions for installing on GNU/Linux, above.
 
 ## Docker
 
