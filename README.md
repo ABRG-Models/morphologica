@@ -22,6 +22,20 @@ sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
 ```
 
+**Note for Ubuntu 16.04:** cmake on Ubuntu 16.04 is too old to compile hdf5-1.10.4 or higher. On this OS, please manually download and install a recent cmake from https://cmake.org/ like this:
+
+```sh
+mkdir -p ~/src
+cd ~/src
+tar xvf path/to/cmake-3.16.4.tar.gz # any cmake version 3.10 or higher should be ok
+cd cmake-3.16.4
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_USE_OPENSSL=OFF
+make -j$(nproc)
+sudo make install
+```
+
 You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
 
 ```sh
