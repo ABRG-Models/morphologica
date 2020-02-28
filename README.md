@@ -20,7 +20,7 @@ dependencies. You will also need the cmake program and a C++ compiler.
 To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
-sudo apt install build-essential cmake libopencv-dev libarmadillo-dev \
+sudo apt install build-essential cmake git libopencv-dev libarmadillo-dev \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
 ```
 
