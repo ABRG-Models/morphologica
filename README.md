@@ -21,7 +21,7 @@ To install the necessary dependencies on Ubuntu or Debian Linux, start with:
 
 ```sh
 sudo apt install build-essential cmake git libopencv-dev libarmadillo-dev \
-                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev
 ```
 
 ### Package-managed dependencies for Arch Linux
@@ -50,6 +50,25 @@ cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_USE_OPENSSL=OFF
 make -j$(nproc)
 sudo make install
+```
+
+### armadillo for older systems (if required)
+
+On Ubuntu 16.04, the packaged armadillo is too old, so first remove that:
+
+```sh
+sudo apt remove libarmadillo-dev
+sudo apt autoremove
+```
+
+Then download and compile an up-to-date version
+
+```sh
+cd ~/src
+wget http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
+tar xf armadillo-9.850.1.tar.xz
+cd armadillo-9.850.1
+mkdir build etc...
 ```
 
 ### HDF5 library
