@@ -243,6 +243,13 @@ linker's search path) as in the example above. If you installed
 elsewhere, then you probably know how to set LD_LIBRARY_PATH
 correctly (or see **Building/installing as a per-user library**, below).
 
+If you need to build with a specific compiler, such as g++-7 or clang, 
+then you just change the cmake call in the recipe above. It becomes:
+
+```sh
+CC=gcc-7 CXX=g++-7 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+```
+
 If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
 before -larmadillo during linking
