@@ -54,7 +54,13 @@ sudo make install
 
 ### gcc/g++ for older systems (if required)
 
-morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Download and build a recent stable gcc (version 7.x, 8.x or 9.x).
+morphologica requires a fairly up to date compiler. The one on Ubuntu 16.04 is not supported. Download and build a recent stable gcc (version 7.x, 8.x or 9.x). Alternatively, on Ubuntu 16.04 you can:
+
+```sh
+sudo add-apt-repository ppa:jonathonf/gcc-7.1
+sudo apt update
+sudo apt install gcc-7 g++-7
+```
 
 ### HDF5 library
 
