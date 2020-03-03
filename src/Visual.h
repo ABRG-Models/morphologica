@@ -10,6 +10,7 @@
 #ifndef _VISUAL_H_
 #define _VISUAL_H_
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"
