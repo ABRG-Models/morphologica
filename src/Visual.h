@@ -10,7 +10,11 @@
 #ifndef _VISUAL_H_
 #define _VISUAL_H_
 
-#include <GL/glew.h>
+#ifdef USE_GLEW
+// Including glew.h and linking with libglew helps older platforms,
+// such as Ubuntu 16.04. Not necessary on later platforms.
+# include <GL/glew.h>
+#endif
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "HexGridVisual.h"

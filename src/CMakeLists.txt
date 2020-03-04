@@ -36,7 +36,10 @@ else()
 endif(APPLE)
 
 if (${glfw3_FOUND})
-  target_link_libraries (morphologica ${GLFW_LIBRARIES} ${GLEW_LIBRARIES})
+  target_link_libraries (morphologica ${GLFW_LIBRARIES})
+  if (USE_GLEW)
+    target_link_libraries (morphologica ${GLEW_LIBRARIES})
+  endif (USE_GLEW)
 endif()
 
 install(TARGETS morphologica

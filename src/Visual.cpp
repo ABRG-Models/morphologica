@@ -31,13 +31,13 @@ morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
     , window_h(height)
 {
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-      /* Problem: glewInit failed, something is seriously wrong. */
-      fprintf (stderr, "Error: %s\n", glewGetErrorString(err));
-  }
-  fprintf (stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
- 
+#ifdef USE_GLEW
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        // Problem: glewInit failed, something is seriously wrong.
+        cerr << "GLEW initialization failed!" << glewGetErrorString(err) << endl;
+    }
+#endif
     if (!glfwInit()) {
         // Initialization failed
         cerr << "GLFW initialization failed!" << endl;
