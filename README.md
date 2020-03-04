@@ -146,6 +146,15 @@ cmake ..
 make
 sudo make install
 ```
+#### libglew on some systems (if required)
+
+Note that this is required only if you are building morphologica with glfw. When building on Ubuntu 16.04 issue#13 showed up. To work around, I added a link to libglew.so and a call to glewInit() in morph::Visual. Because this is unnecessary on other platforms (Ubuntu 18/19 and Mac) I made it an option in the cmake build process.
+
+If you're on Ubuntu 16.04 (or otherwise find you need GLEW), make sure you have libglew:
+```
+sudo apt install libglew-dev
+```
+You'll then need to add the switch -DUSE_GLEW=ON when calling cmake.
 
 ## Installation dependencies for Mac
 
@@ -249,6 +258,13 @@ then you just change the cmake call in the recipe above. It becomes:
 ```sh
 CC=gcc-7 CXX=g++-7 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 ```
+
+On Ubuntu 16.04, you'll also need to USE_GLEW:
+
+```sh
+CC=gcc-7 CXX=g++-7 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_GLEW=ON
+```
+
 
 If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
