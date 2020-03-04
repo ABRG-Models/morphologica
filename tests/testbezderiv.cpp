@@ -89,9 +89,16 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
     }
 
     if (v.empty()) {
-        for(size_t i=0; i<fitted.size(); i++) {
+        for (size_t i=0; i<fitted.size(); i++) {
             Point2d normLen = normals[i]*100.0;
+#if 0 // Ok on recent OpenCV
             line (pImg, fitted[i], fitted[i]+Point2i(normLen), linecolour, 1);
+#else // This form works on the OpenCV on Ubuntu 16
+	    Point2i nli;	    
+	    nli.x = (int)normLen.x;
+	    nli.y = (int)normLen.y;
+            line (pImg, fitted[i], fitted[i]+nli, linecolour, 1);
+#endif
         }
     }
 

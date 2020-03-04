@@ -22,6 +22,9 @@ else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
+# An option that's useful for Ubuntu 16.04 builds
+option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
+
 # Add the host definition to CFLAGS
 set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION}")
 set(CMAKE_C_FLAGS "${MORPH_HOST_DEFINITION}")
@@ -38,6 +41,9 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Additional GL compiler flags.
 # maybe -DGL_GLEXT_PROTOTYPES
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+if(USE_GLEW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLEW")
+endif(USE_GLEW)
 
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
 # work, but was required for OpenCV, so it's useful to be able to
@@ -70,6 +76,9 @@ endif(APPLE)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
+if(USE_GLEW)
+  find_package(GLEW REQUIRED)
+endif(USE_GLEW)
 find_package(X11 REQUIRED)
 find_package(LAPACK REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first

@@ -91,7 +91,10 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
     if (v.empty()) {
         for(size_t i=0; i<fitted.size(); i++) {
             Point2d normLen = normals[i]*100.0;
-            line (pImg, fitted[i], fitted[i]+Point2i(normLen), linecolour, 1);
+	    Point2i nli;	    
+	    nli.x = (int)normLen.x;
+	    nli.y = (int)normLen.y;
+            line (pImg, fitted[i], fitted[i]+nli, linecolour, 1);
         }
     }
 
