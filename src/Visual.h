@@ -26,6 +26,8 @@
 // A base class with static event handling dispatchers
 #include "VisualBase.h"
 
+#include "ColourMap.h"
+
 #include "GL3/gl3.h"
 
 #include <string>
@@ -120,11 +122,23 @@ namespace morph {
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const array<float, 3> offset,
                                        const vector<float>& data,
-                                       const array<float, 4> scale);
+                                       const array<float, 4> scale,
+                                       const ColourMapType cmtype = ColourMapType::Jet);
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const array<float, 3> offset,
                                        const vector<double>& data,
-                                       const array<double, 4> scale);
+                                       const array<double, 4> scale,
+                                       const ColourMapType cmtype = ColourMapType::Jet);
+        unsigned int addHexGridVisualMono (const HexGrid* hg,
+                                           const array<float, 3> offset,
+                                           const vector<float>& data,
+                                           const array<float, 4> scale,
+                                           const float cmhue);
+        unsigned int addHexGridVisualMono (const HexGrid* hg,
+                                           const array<float, 3> offset,
+                                           const vector<double>& data,
+                                           const array<double, 4> scale,
+                                           const float cmhue);
         //@}
 
         /*!

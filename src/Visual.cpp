@@ -304,10 +304,11 @@ unsigned int
 morph::Visual::addHexGridVisual (const HexGrid* hg,
                                  const array<float, 3> offset,
                                  const vector<float>& data,
-                                 const array<float, 4> scale)
+                                 const array<float, 4> scale,
+                                 const ColourMapType cmtype)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, offset, &data, scale);
+    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, offset, &data, scale, cmtype);
     this->hgv_float.push_back (hgv1);
     // Create the return ID
     unsigned int rtn = 0x10000; // 0x10000 denotes "member of hgv_float"
@@ -319,10 +320,44 @@ unsigned int
 morph::Visual::addHexGridVisual (const HexGrid* hg,
                                  const array<float, 3> offset,
                                  const vector<double>& data,
-                                 const array<double, 4> scale)
+                                 const array<double, 4> scale,
+                                 const ColourMapType cmtype)
 {
     // Double precision version of the above
-    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale);
+    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale, cmtype);
+    this->hgv_double.push_back (hgv1);
+    unsigned int rtn = 0x20000; // 0x20000 denotes "member of hgv_double"
+    rtn |= (this->hgv_double.size()-1);
+    return rtn;
+}
+
+unsigned int
+morph::Visual::addHexGridVisualMono (const HexGrid* hg,
+                                     const array<float, 3> offset,
+                                     const vector<float>& data,
+                                     const array<float, 4> scale,
+                                     const float hue)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    HexGridVisual<float>* hgv1 = new HexGridVisual<float>(this->shaderprog, hg, offset, &data, scale,
+                                                          ColourMapType::Monochrome, hue);
+    this->hgv_float.push_back (hgv1);
+    // Create the return ID
+    unsigned int rtn = 0x10000; // 0x10000 denotes "member of hgv_float"
+    rtn |= (this->hgv_float.size()-1);
+    return rtn;
+}
+
+unsigned int
+morph::Visual::addHexGridVisualMono (const HexGrid* hg,
+                                     const array<float, 3> offset,
+                                     const vector<double>& data,
+                                     const array<double, 4> scale,
+                                     const float hue)
+{
+    // Double precision version of the above
+    HexGridVisual<double>* hgv1 = new HexGridVisual<double>(this->shaderprog, hg, offset, &data, scale,
+                                                            ColourMapType::Monochrome, hue);
     this->hgv_double.push_back (hgv1);
     unsigned int rtn = 0x20000; // 0x20000 denotes "member of hgv_double"
     rtn |= (this->hgv_double.size()-1);
