@@ -1,7 +1,13 @@
 #pragma once
 
+#include "ColourMap_Lists.h"
+
 #include <stdexcept>
 using std::runtime_error;
+
+#include <cmath>
+using std::round;
+using std::abs;
 
 namespace morph {
 
@@ -9,6 +15,12 @@ namespace morph {
     enum class ColourMapType {
         Jet,
         Rainbow,
+        Magma,      // Like matplotlib's magma
+        Inferno,    // matplotlib's inferno
+        Plasma,     // etc
+        Viridis,
+        Cividis,
+        Twilight,
         Greyscale,  // Greyscale is any hue; saturation=0; *value* varies.
         Monochrome, // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
         MonochromeRed,
@@ -44,6 +56,36 @@ namespace morph {
             case ColourMapType::Rainbow:
             {
                 c = ColourMap::rainbow (datum);
+                break;
+            }
+            case ColourMapType::Magma:
+            {
+                c = ColourMap::magma (datum);
+                break;
+            }
+            case ColourMapType::Inferno:
+            {
+                c = ColourMap::inferno (datum);
+                break;
+            }
+            case ColourMapType::Plasma:
+            {
+                c = ColourMap::plasma (datum);
+                break;
+            }
+            case ColourMapType::Viridis:
+            {
+                c = ColourMap::viridis (datum);
+                break;
+            }
+            case ColourMapType::Cividis:
+            {
+                c = ColourMap::cividis (datum);
+                break;
+            }
+            case ColourMapType::Twilight:
+            {
+                c = ColourMap::twilight (datum);
                 break;
             }
             case ColourMapType::Greyscale:
@@ -209,6 +251,66 @@ namespace morph {
          */
         array<float,3> rainbow (Flt datum) {
             return ColourMap::hsv2rgb ((float)datum, 1.0f, 1.0f);
+        }
+
+        /*!
+         * A copy of matplotlib's magma colourmap
+         */
+        array<float,3> magma (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_magma_len-1))));
+            array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
+            return c;
+        }
+
+        /*!
+         * A copy of matplotlib's inferno colourmap
+         */
+        array<float,3> inferno (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_inferno_len-1))));
+            array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
+            return c;
+        }
+
+        /*!
+         * A copy of matplotlib's plasma colourmap
+         */
+        array<float,3> plasma (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_plasma_len-1))));
+            array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
+            return c;
+        }
+
+        /*!
+         * A copy of matplotlib's viridis colourmap
+         */
+        array<float,3> viridis (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_viridis_len-1))));
+            array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
+            return c;
+        }
+
+        /*!
+         * A copy of matplotlib's cividis colourmap
+         */
+        array<float,3> cividis (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_cividis_len-1))));
+            array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
+            return c;
+        }
+
+        /*!
+         * A copy of matplotlib's twilight colourmap
+         */
+        array<float,3> twilight (Flt datum) {
+            // let's just try the closest colour from the map, with no interpolation
+            size_t datum_i = static_cast<size_t>(abs (round (datum * (Flt)(morph::cm_twilight_len-1))));
+            array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
+            return c;
         }
     };
 
