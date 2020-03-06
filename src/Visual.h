@@ -14,6 +14,7 @@
 #include "HexGrid.h"
 #include "HexGridVisual.h"
 #include "QuadsVisual.h"
+#include "PointRowsVisual.h"
 #include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
@@ -153,6 +154,18 @@ namespace morph {
                                      const array<float, 2> scale);
 
         /*!
+         * Rows of @points, which should be linked up into a triangular mesh and added as a
+         * VisualModel. Each point has a value (in @data) which gives it a colour according to the
+         * passed in colour map type (@cmtype). @offset is a spatial offset for the location of the
+         * VisualModel in the Visual scene.
+         */
+        unsigned int addPointRowsVisual (const vector<array<float, 3>>* points,
+                                         const array<float, 3> offset,
+                                         const vector<float>& data,
+                                         const array<float, 2> scale,
+                                         const ColourMapType cmtype);
+
+        /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
@@ -234,7 +247,10 @@ namespace morph {
 
         // To render surfaces made of boxes, use QuadVisuals.
         vector<QuadsVisual<float>*> qv_float;
-        // Plus double version...
+        vector<QuadsVisual<double>*> qv_double;
+
+        vector<PointRowsVisual<float>*> prv_float;
+        vector<PointRowsVisual<double>*> prv_double;
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;

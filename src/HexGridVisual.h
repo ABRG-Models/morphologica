@@ -96,11 +96,11 @@ namespace morph {
             this->hg = _hg;
             this->data = _data;
 
+            this->cm.hue = _hue;
+            this->cm.setType (_cmt);
+
             this->initializeVertices();
             this->postVertexInit();
-
-            this->cm.hue = _hue;
-            this->cm.type = _cmt;
         }
 
         //! Do the computations to initialize the vertices that will represent the

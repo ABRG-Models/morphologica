@@ -272,6 +272,20 @@ morph::Visual::render (void)
         (*qvf)->render();
         ++qvf;
     }
+    typename vector<PointRowsVisual<float>*>::iterator prvf = this->prv_float.begin();
+    while (prvf != this->prv_float.end()) {
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*prvf)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+
+        (*prvf)->render();
+        ++prvf;
+    }
 
     glfwSwapBuffers (this->window);
 
@@ -374,8 +388,26 @@ morph::Visual::addQuadsVisual (const vector<array<float, 12>>* quads,
     QuadsVisual<float>* qv1 = new QuadsVisual<float>(this->shaderprog, quads, offset, &data, scale);
     this->qv_float.push_back (qv1);
     // Create the return ID
-    unsigned int rtn = 0x30000; // 0x10000 denotes "member of qv_float"
+    unsigned int rtn = 0x40000; // 0x40000 denotes "member of qv_float" (0x80000 for qv_double)
     rtn |= (this->qv_float.size()-1);
+    return rtn;
+}
+
+// A general-purpose 3d surface consisting of a collection of points arranged in rows. This function
+// has to determine how to turn these into triangles. Each row of points has a different value of x.
+unsigned int
+morph::Visual::addPointRowsVisual (const vector<array<float, 3>>* points,
+                                   const array<float, 3> offset,
+                                   const vector<float>& data,
+                                   const array<float, 2> scale,
+                                   const ColourMapType cmtype)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    PointRowsVisual<float>* prv1 = new PointRowsVisual<float>(this->shaderprog, points, offset, &data, scale, cmtype);
+    this->prv_float.push_back (prv1);
+    // Create the return ID
+    unsigned int rtn = 0x100000; // 0x100000 denotes "member of prv_float" (0x200000 for prv_double)
+    rtn |= (this->prv_float.size()-1);
     return rtn;
 }
 

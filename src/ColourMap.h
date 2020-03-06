@@ -6,7 +6,10 @@ namespace morph {
     enum class ColourMapType {
         Jet,
         Rainbow,
-        Monochrome
+        Monochrome,
+        MonochromeRed,
+        MonochromeBlue,
+        MonochromeGreen
     };
 
     //! Different ways of specifying colour exist
@@ -19,6 +22,9 @@ namespace morph {
 
     template <class Flt>
     class ColourMap {
+    private:
+        //! Type of map
+        ColourMapType type = ColourMapType::Jet;
     public:
         //! Convert the scalar datum into an RGB (or BGR) colour
         array<float, 3> convert (Flt datum) {
@@ -35,6 +41,9 @@ namespace morph {
                 break;
             }
             case ColourMapType::Monochrome:
+            case ColourMapType::MonochromeRed:
+            case ColourMapType::MonochromeBlue:
+            case ColourMapType::MonochromeGreen:
             {
                 c = this->monochrome (datum);
                 break;
@@ -55,12 +64,42 @@ namespace morph {
         //! Convert for 4 component colours
         //array<float, 4> convertAlpha (Flt datum);
 
-        //! Type of map
-        ColourMapType type = ColourMapType::Jet;
+        // Set the colour map type.
+        void setType (const ColourMapType& tp) {
+            this->type = tp;
+            // Set hue if necessary
+            switch (tp) {
+            case ColourMapType::Monochrome:
+            {
+                this->hue = 0.0f;
+                break;
+            }
+            case ColourMapType::MonochromeRed:
+            {
+                this->hue = 1.0f;
+                break;
+            }
+            case ColourMapType::MonochromeBlue:
+            {
+                this->hue = 0.667f;
+                break;
+            }
+            case ColourMapType::MonochromeGreen:
+            {
+                this->hue = 0.333f;
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+        }
+
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;
 
-        //! The hue (range 0 to 1.0f)
+        //! The hue (range 0 to 1.0f) as used in HSV colour values.
         float hue = 0.0;
 
         /*!
