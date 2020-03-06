@@ -183,7 +183,7 @@ if(${glfw3_FOUND})
   target_link_libraries(testvisquads morphologica)
 
   add_executable(testvispointrows testVisPointRows.cpp)
-  target_link_libraries(testvispointrows morphologica)
+  target_link_libraries(testvispointrows -L${morphologica_BINARY_DIR}/src morphologica)
 endif()
 
 # Test morph::Process class
