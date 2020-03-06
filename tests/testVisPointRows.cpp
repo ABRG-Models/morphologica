@@ -25,6 +25,7 @@ int main (int argc, char** argv)
             holdVis = true;
         }
     }
+    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };

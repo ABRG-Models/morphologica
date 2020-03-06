@@ -106,8 +106,18 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
     circle (pImg, Point(10,1000), 2, M_BLACK, -1);
 }
 
-int main()
+int main (int argc, char** argv)
 {
+    bool holdVis = false;
+    if (argc > 1) {
+        string a1(argv[1]);
+        cout << "a1 is " << a1 << endl;
+        if (a1.size() > 0) {
+            holdVis = true;
+        }
+    }
+    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
+
     int rtn = 0;
     vector<pair<FLT,FLT>> v;
     v.push_back (make_pair (90,730));  //730
@@ -175,8 +185,11 @@ int main()
 
     namedWindow( "Curves", WINDOW_AUTOSIZE );// Create a window for display.
     imshow ("Curves", frame);
-    // Wait for a key, then exit
-    waitKey();
+
+    if (holdVis == true) {
+        // Wait for a key, then exit
+        waitKey();
+    }
 
     return rtn;
 }
