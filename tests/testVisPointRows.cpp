@@ -3,12 +3,12 @@
  */
 #include "Visual.h"
 using morph::Visual;
+#include "ColourMap.h"
+using morph::ColourMapType;
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <array>
-//#include "ColourMap.h"
-
 using namespace std;
 
 int main (int argc, char** argv)
@@ -18,13 +18,20 @@ int main (int argc, char** argv)
     Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
 
+    bool holdVis = false;
+    if (argc > 1) {
+        string a1(argv[1]);
+        if (a1.size() > 0) {
+            holdVis = true;
+        }
+    }
 
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         array<float, 2> scale = { 1.0, 0.0};
 
         vector<array<float, 3>> points;
-        vector<float> data;
+        vector<float> data; // copy points[:][2] into data
         points.push_back ({ 0, 0,   0.1 }); data.push_back(points.back()[2]);
         points.push_back ({ 0, 2,   0.7 }); data.push_back(points.back()[2]);
         points.push_back ({ 0, 4,   0.1 }); data.push_back(points.back()[2]);
@@ -40,15 +47,15 @@ int main (int argc, char** argv)
         points.push_back ({ 2, 2.9, 0.3 }); data.push_back(points.back()[2]);
         points.push_back ({ 2, 4,   0.1 }); data.push_back(points.back()[2]);
 
-        //vector<float> data = {0.1, 0.7, 0.1, 0.9, 0.3, 0.8, 0.1, 0.1, 0.5, 0.1};
-
-        unsigned int visId = v.addPointRowsVisual (&points, offset, data, scale, morph::ColourMapType::Jet);
+        unsigned int visId = v.addPointRowsVisual (&points, offset, data, scale, ColourMapType::Rainbow);
         cout << "Added Visual with visId " << visId << endl;
 
         v.render();
-        while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
-            v.render();
+        if (holdVis == true) {
+            while (v.readyToFinish == false) {
+                glfwWaitEventsTimeout (0.018);
+                v.render();
+            }
         }
 
     } catch (const exception& e) {

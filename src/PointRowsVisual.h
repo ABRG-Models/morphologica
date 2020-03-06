@@ -69,7 +69,7 @@ namespace morph {
         //! surface.
         void initializeVertices (void) {
 
-            cout << __FUNCTION__ << " called" << endl;
+            //cout << __FUNCTION__ << " called" << endl;
 
             unsigned int npoints = this->pointrows->size();
             unsigned int ndata = this->data->size();
@@ -111,25 +111,25 @@ namespace morph {
             }
             r2_e--;
             // Now r1, r1_e, r2 and r2_e all point to the right places
-            cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
-            cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
-            cout << "prlen is " << prlen << endl;
+            //cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
+            //cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
+            //cout << "prlen is " << prlen << endl;
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
-                cout << "====================================" << endl;
-                cout << "  ROW" << endl;
-                cout << "  r1: " << r1 << ", r1_e: " << r1_e << endl;
-                cout << "  r2: " << r2 << ", r2_e: " << r2_e << endl;
-                cout << "====================================" << endl;
+                //cout << "====================================" << endl;
+                //cout << "  ROW" << endl;
+                //cout << "  r1: " << r1 << ", r1_e: " << r1_e << endl;
+                //cout << "  r2: " << r2 << ", r2_e: " << r2_e << endl;
+                //cout << "====================================" << endl;
 
                 // Push the first two vertices in the row:
-                cout << "Pushing start vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
+                //cout << "Pushing start vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
                 this->vertex_push ((*pointrows)[r1], this->vertexPositions);
                 this->vertex_push (this->datumToColour(dcopy[r1]), this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                 this->indices.push_back (ib);
                 ib++;
 
-                cout << "Pushing start vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
+                //cout << "Pushing start vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
                 this->vertex_push ((*pointrows)[r2], this->vertexPositions);
                 this->vertex_push (this->datumToColour(dcopy[r2]), this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -137,9 +137,7 @@ namespace morph {
                 ib++;
 
                 // Now while through the row pushing the rest of the vertices.
-                //size_t count = 0;
-                //while (count++ < 30 && r1<12 && !(r1 == r1_e && r2 == r2_e)) {
-                cout << "While through the rest, with r2 < r2_e=" << r2_e << endl;
+                //cout << "While through the rest, with r2 < r2_e=" << r2_e << endl;
                 while (r2 <= r2_e && r1 <= r1_e) {
 
                     // Now iterate r1 and r2 until we get to the end of the two rows.
@@ -147,20 +145,20 @@ namespace morph {
                     size_t r1n = r1+1;
                     size_t r2n = r2+1;
 
-                    cout << "**************************" << endl;
-                    cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
-                    cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
+                    //cout << "**************************" << endl;
+                    //cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
+                    //cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
 
                     // Increment and make sure we didn't drop off the end
                     if (r1n > r1_e && r2n > r2_e) {
                         r1 = r1n;
                         r2 = r2n;
-                        cout << "Breaking as r1n>r1_e and r2n>r2_e" << endl;
+                        //cout << "Breaking as r1n>r1_e and r2n>r2_e" << endl;
                         break;
                     }
 
-                    cout << "r1: " << r1 << ", r1n: " << r1n << endl;
-                    cout << "r2: " << r2 << ", r2n: " << r2n << endl;
+                    //cout << "r1: " << r1 << ", r1n: " << r1n << endl;
+                    //cout << "r2: " << r2 << ", r2n: " << r2n << endl;
 
                     bool completed_end_tri = false;
                     bool must_be_r1n = false;
@@ -220,8 +218,7 @@ namespace morph {
                     if (must_be_r1n) {
                         // r1 is the next
                         r1 = r1n;
-                        cout << "Pushing r1 vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
-
+                        //cout << "Pushing r1 vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
                         this->vertex_push ((*pointrows)[r1], this->vertexPositions);
                         this->vertex_push (this->datumToColour(dcopy[r1]), this->vertexColors);
                         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -231,8 +228,7 @@ namespace morph {
                     } else {
                         // r2 is next
                         r2 = r2n;
-                        cout << "Pushing r2 vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
-
+                        //cout << "Pushing r2 vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
                         this->vertex_push ((*pointrows)[r2], this->vertexPositions);
                         this->vertex_push (this->datumToColour(dcopy[r2]), this->vertexColors);
                         this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -241,20 +237,20 @@ namespace morph {
                     }
 
                     if (completed_end_tri == true) {
-                        cout << "Completed the end triangle";
+                        //cout << "Completed the end triangle";
                         break;
                     }
 
                     // Next tri:
-                    cout << "Next tri." << endl;
-                    cout << "Pushing vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
+                    //cout << "Next tri." << endl;
+                    //cout << "Pushing vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ") with value " << dcopy[r1] << endl;
                     this->vertex_push ((*pointrows)[r1], this->vertexPositions);
                     this->vertex_push (this->datumToColour(dcopy[r1]), this->vertexColors);
                     this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                     this->indices.push_back (ib);
                     ib++;
 
-                    cout << "Pushing vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
+                    //cout << "Pushing vertex (" << (*pointrows)[r2][0] << "," << (*pointrows)[r2][1] << "," << (*pointrows)[r2][2] << ") with value " << dcopy[r2] << endl;
                     this->vertex_push ((*pointrows)[r2], this->vertexPositions);
                     this->vertex_push (this->datumToColour(dcopy[r2]), this->vertexColors);
                     this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -268,11 +264,11 @@ namespace morph {
                 r2 = r2_e; ++r2;
                 r2_e = r2;
 
-                cout << "Next r1 is: " << r1 << endl;
-                cout << "Next r2 is: " << r2 << endl;
-                cout << "ib is now " << ib << endl;
+                //cout << "Next r1 is: " << r1 << endl;
+                //cout << "Next r2 is: " << r2 << endl;
+                //cout << "ib is now " << ib << endl;
                 if (r2 == prlen) {
-                    cout << "No more rows, break." << endl;
+                    //cout << "No more rows, break." << endl;
                     break;
                 }
 
@@ -288,9 +284,9 @@ namespace morph {
                 }
                 r2_e--;
                 // Now r1, r1_e, r2 and r2_e all point to the right places
-                cout << "Next r1,r1, r1_e, r2_e:" << endl;
-                cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
-                cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
+                //cout << "Next r1,r1, r1_e, r2_e:" << endl;
+                //cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
+                //cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
             }
         }
 
