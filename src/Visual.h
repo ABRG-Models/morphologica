@@ -19,6 +19,7 @@
 #include "HexGrid.h"
 #include "HexGridVisual.h"
 #include "QuadsVisual.h"
+#include "PointRowsVisual.h"
 #include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
@@ -30,6 +31,8 @@
 
 // A base class with static event handling dispatchers
 #include "VisualBase.h"
+
+#include "ColourMap.h"
 
 #include "GL3/gl3.h"
 
@@ -125,11 +128,23 @@ namespace morph {
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const array<float, 3> offset,
                                        const vector<float>& data,
-                                       const array<float, 4> scale);
+                                       const array<float, 4> scale,
+                                       const ColourMapType cmtype = ColourMapType::Jet);
         unsigned int addHexGridVisual (const HexGrid* hg,
                                        const array<float, 3> offset,
                                        const vector<double>& data,
-                                       const array<double, 4> scale);
+                                       const array<double, 4> scale,
+                                       const ColourMapType cmtype = ColourMapType::Jet);
+        unsigned int addHexGridVisualMono (const HexGrid* hg,
+                                           const array<float, 3> offset,
+                                           const vector<float>& data,
+                                           const array<float, 4> scale,
+                                           const float cmhue);
+        unsigned int addHexGridVisualMono (const HexGrid* hg,
+                                           const array<float, 3> offset,
+                                           const vector<double>& data,
+                                           const array<double, 4> scale,
+                                           const float cmhue);
         //@}
 
         /*!
@@ -142,6 +157,18 @@ namespace morph {
                                      const array<float, 3> offset,
                                      const vector<float>& data,
                                      const array<float, 2> scale);
+
+        /*!
+         * Rows of @points, which should be linked up into a triangular mesh and added as a
+         * VisualModel. Each point has a value (in @data) which gives it a colour according to the
+         * passed in colour map type (@cmtype). @offset is a spatial offset for the location of the
+         * VisualModel in the Visual scene.
+         */
+        unsigned int addPointRowsVisual (const vector<array<float, 3>>* points,
+                                         const array<float, 3> offset,
+                                         const vector<float>& data,
+                                         const array<float, 2> scale,
+                                         const ColourMapType cmtype);
 
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
@@ -225,7 +252,10 @@ namespace morph {
 
         // To render surfaces made of boxes, use QuadVisuals.
         vector<QuadsVisual<float>*> qv_float;
-        // Plus double version...
+        vector<QuadsVisual<double>*> qv_double;
+
+        vector<PointRowsVisual<float>*> prv_float;
+        vector<PointRowsVisual<double>*> prv_double;
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
@@ -233,7 +263,7 @@ namespace morph {
         //! Position and length of coordinate arrows. Need to be configurable at Visual
         //! construction.
         array<float, 3> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
-        array<float, 3> coordArrowsLength = {0.5, 0.5, 0.5};
+        array<float, 3> coordArrowsLength = {1., 1., 1.};
 
         /*!
          * Variables to manage projection and rotation of the object

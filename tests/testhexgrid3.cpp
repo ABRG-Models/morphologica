@@ -30,6 +30,7 @@ int main()
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
         if (hg.num() != 2088) {
+            cerr << "hg num (" << hg.num() << ") not equal to 2088..." << endl;
             rtn = -1;
         }
 

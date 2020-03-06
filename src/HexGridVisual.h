@@ -7,7 +7,7 @@
 #include "tools.h"
 
 #include "VisualModel.h"
-
+#include "ColourMap.h"
 #include "HexGrid.h"
 
 #include <iostream>
@@ -81,6 +81,28 @@ namespace morph {
             this->postVertexInit();
         }
 
+        HexGridVisual(GLuint sp,
+                      const HexGrid* _hg,
+                      const array<float, 3> _offset,
+                      const vector<Flt>* _data,
+                      const array<Flt, 4> _scale,
+                      ColourMapType _cmt,
+                      const float _hue = 0.0f) {
+            // Set up...
+            this->shaderprog = sp;
+            this->offset = _offset;
+            this->viewmatrix.translate (this->offset);
+            this->scale = _scale;
+            this->hg = _hg;
+            this->data = _data;
+
+            this->cm.hue = _hue;
+            this->cm.setType (_cmt);
+
+            this->initializeVertices();
+            this->postVertexInit();
+        }
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices (void) {
@@ -88,6 +110,12 @@ namespace morph {
             // or:
             // this->initializeVerticesTris();
         }
+
+        /*!
+         * The relevant colour map. Change the type/hue of this colour map object to
+         * generate different types of map.
+         */
+        ColourMap<Flt> cm;
 
         //! Initialize vertex buffer objects and vertex array object.
         //@{
@@ -103,7 +131,7 @@ namespace morph {
                 datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
-                array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
+                array<float, 3> clr = this->cm.convert (datum);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -188,7 +216,7 @@ namespace morph {
                 datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
-                array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
+                array<float, 3> clr = this->cm.convert (datum);
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
