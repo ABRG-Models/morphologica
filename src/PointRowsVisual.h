@@ -25,7 +25,9 @@ namespace morph {
      * The template argument Flt is the type of the data which this PointRowsVisual will visualize.
      *
      * A PointsRowVisual is a visualization of a surface which is defined by a set of rows of
-     * points, which are aligned perpendicular to one of the 3 Cartesian axes.
+     * points, which are aligned perpendicular to one of the 3 Cartesian axes. It was designed to
+     * support the Stalefish app, which collects 2-D curves of ISH gene expression and arranges them
+     * in a stack.
      */
     template <class Flt>
     class PointRowsVisual : public VisualModel
@@ -53,13 +55,14 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Convert datum using our scale into a colour triplet (RGB).
         array<float, 3> datumToColour (Flt datum_in) {
-            // Scale colour
+            // Scale the input...
             Flt datum = datum_in * this->scale[0] + this->scale[1];
             datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
             datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
-            // And turn it into a colour:
-            return morph::Tools::getJetColorF((double)datum);
+            // ...then turn it into a colour:
+            return this->cm.convert (datum);
         }
 
         //! Do the computations to initialize the vertices that will represent the
@@ -113,6 +116,10 @@ namespace morph {
             cout << "prlen is " << prlen << endl;
             while (r2 != prlen) {
                 cout << "ROW" << endl;
+                cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
+                cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
+                cout << "====================================" << endl;
+
                 // Push first two vertices in the row:
                 cout << "Pushing vertex (" << (*pointrows)[r1][0] << "," << (*pointrows)[r1][1] << "," << (*pointrows)[r1][2] << ")" << endl;
                 this->vertex_push ((*pointrows)[r1], this->vertexPositions);
@@ -129,12 +136,16 @@ namespace morph {
                 ib++;
 
                 // Now while through the row...
-                while (r1<12 && !(r1 == r1_e && r2 == r2_e)) {
+                //size_t count = 0;
+                //while (count++ < 30 && r1<12 && !(r1 == r1_e && r2 == r2_e)) {
+                while (r2 < r2_e) {
+
                     // Now iterate r1 and r2 until we get to the end of the two rows.
                     // vtx is r1, r2. Question is: Is other vertex ++r1 or ++r2?
                     size_t r1n = r1+1;
                     size_t r2n = r2+1;
 
+                    cout << "**************************" << endl;
                     cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
                     cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
 
@@ -230,7 +241,7 @@ namespace morph {
                 while (r1_e != prlen && (*pointrows)[r1_e][pa] == x) {
                     ++r1_e;
                 }
-                r2 = r1_e--;
+                //r2 = r1_e--;
                 r2_e = r2;
                 x = (*pointrows)[r2][pa];
                 while (r2_e != prlen && (*pointrows)[r2_e][pa] == x) {
@@ -238,6 +249,11 @@ namespace morph {
                 }
                 r2_e--;
                 // Now r1, r1_e, r2 and r2_e all point to the right places
+                cout << "Next r1,r1, r1_e, r2_e:" << endl;
+                cout << "r1: " << r1 << ", r1_e: " << r1_e << endl;
+                cout << "r2: " << r2 << ", r2_e: " << r2_e << endl;
+
+                //usleep (4000000);
             }
         }
 

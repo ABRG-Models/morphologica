@@ -24,18 +24,22 @@ int main (int argc, char** argv)
 
         vector<array<float, 3>> points;
 
-        points.push_back ({0,0,0.1});
-        points.push_back ({0,2,0});
-        points.push_back ({0,4,0.1});
+        points.push_back ({ 0, 0,   0.1 });
+        points.push_back ({ 0, 2,   0   });
+        points.push_back ({ 0, 4,   0.1 });
 
-        points.push_back ({1,0,0.1});
-        points.push_back ({1,1,0});
-        points.push_back ({1,2.5,0});
-        points.push_back ({1,4,0.1});
+        points.push_back ({ 1, 0,   0.1  });
+        points.push_back ({ 1, 1,   0    });
+        points.push_back ({ 1, 2.5, 0    });
+        points.push_back ({ 1, 4,   0.1  });
 
-        vector<float> data = {0.1, 0.2, 0.8, 0.1, 0.2, 0.5, 0.8};
+        points.push_back ({ 2, 0,   0.1 });
+        points.push_back ({ 2, 2,   0   });
+        points.push_back ({ 2, 4,   0.1 });
 
-        unsigned int visId = v.addPointRowsVisual (&points, offset, data, scale, morph::ColourMapType::Jet);
+        vector<float> data = {0.1, 0.2, 0.8, 0.1, 0.2, 0.5, 0.8, 0.8, 0.99, 0.9};
+
+        unsigned int visId = v.addPointRowsVisual (&points, offset, data, scale, morph::ColourMapType::Monochrome);
         cout << "Added Visual with visId " << visId << endl;
 
         v.render();
