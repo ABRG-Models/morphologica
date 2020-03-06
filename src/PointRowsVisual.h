@@ -48,7 +48,7 @@ namespace morph {
             this->pointrows = _pointrows;
             this->data = _data;
 
-            this->cm.hue = _hue;
+            this->cm.setHue (_hue);
             this->cm.setType (_cmt);
 
             this->initializeVertices();

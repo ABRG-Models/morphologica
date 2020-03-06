@@ -1,12 +1,16 @@
 #pragma once
 
+#include <stdexcept>
+using std::runtime_error;
+
 namespace morph {
 
     //! Different colour maps types.
     enum class ColourMapType {
         Jet,
         Rainbow,
-        Monochrome,
+        Greyscale,  // Greyscale is any hue; saturation=0; *value* varies.
+        Monochrome, // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
         MonochromeRed,
         MonochromeBlue,
         MonochromeGreen
@@ -25,6 +29,8 @@ namespace morph {
     private:
         //! Type of map
         ColourMapType type = ColourMapType::Jet;
+        //! The hue (range 0 to 1.0f) as used in HSV colour values.
+        float hue = 0.0;
     public:
         //! Convert the scalar datum into an RGB (or BGR) colour
         array<float, 3> convert (Flt datum) {
@@ -38,6 +44,11 @@ namespace morph {
             case ColourMapType::Rainbow:
             {
                 c = ColourMap::rainbow (datum);
+                break;
+            }
+            case ColourMapType::Greyscale:
+            {
+                c = this->greyscale (datum);
                 break;
             }
             case ColourMapType::Monochrome:
@@ -71,7 +82,6 @@ namespace morph {
             switch (tp) {
             case ColourMapType::Monochrome:
             {
-                this->hue = 0.0f;
                 break;
             }
             case ColourMapType::MonochromeRed:
@@ -96,11 +106,26 @@ namespace morph {
             }
         }
 
+        // Set the hue... unless you can't/shouldn't
+        void setHue (const float& h) {
+            switch (this->type) {
+            case ColourMapType::MonochromeRed:
+            case ColourMapType::MonochromeBlue:
+            case ColourMapType::MonochromeGreen:
+            {
+                throw runtime_error ("This colour map does not accept changes to the hue");
+                break;
+            }
+            default:
+            {
+                this->hue = h;
+                break;
+            }
+            }
+        }
+
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;
-
-        //! The hue (range 0 to 1.0f) as used in HSV colour values.
-        float hue = 0.0;
 
         /*!
          * @param datum gray value from 0.0 to 1.0
@@ -165,6 +190,18 @@ namespace morph {
          */
         array<float,3> monochrome (Flt datum) {
             return ColourMap::hsv2rgb (this->hue, static_cast<float>(datum), 1.0f);
+        }
+
+        /*!
+         * @param datum gray value from 0.0 to 1.0
+         *
+         * @returns Generate RGB value for which all entries are equal and the
+         * brightness gives the map value.
+         */
+        array<float,3> greyscale (Flt datum) {
+            return ColourMap::hsv2rgb (this->hue, 0.0f, static_cast<float>(datum));
+            // or
+            //return {datum, datum, datum}; // assuming 0 <= datum <= 1
         }
 
         /*!
