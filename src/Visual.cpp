@@ -235,7 +235,9 @@ morph::Visual::render (void)
     if (loc != -1) {
         glUniformMatrix4fv (loc, 1, GL_FALSE, vp_coords.mat.data());
     }
-    this->coordArrows->render();
+    if (this->showCoordArrows == true) {
+        this->coordArrows->render();
+    }
 
     typename vector<HexGridVisual<float>*>::iterator hgvf = this->hgv_float.begin();
     while (hgvf != this->hgv_float.end()) {
@@ -616,6 +618,10 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
 
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         this->rotateModMode = !this->rotateModMode;
+    }
+
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+        this->showCoordArrows = !this->showCoordArrows;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {

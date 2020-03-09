@@ -210,6 +210,9 @@ namespace morph {
         float fov = 30.0;
         //@}
 
+        //! Set to true to show the coordinate arrows
+        bool showCoordArrows = false;
+
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
 
