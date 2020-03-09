@@ -74,8 +74,6 @@ namespace morph {
             // The indices index
             GLushort idx = 0;
 
-            array<float, 3> reloffset = this->offset;
-
             for (unsigned int i = 0; i < ncoords; ++i) {
                 // Scale colour (or use single colour)
                 array<float, 3> clr = this->cm.getHueRGB();
