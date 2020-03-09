@@ -117,7 +117,7 @@ namespace morph {
 
     protected:
 
-        //! The offset of this Coordarrows. Note that this is not incorporated into
+        //! The offset of this VisualModel. Note that this is not incorporated into
         //! the computation of the vertices, but is instead applied when the object is
         //! rendered as part of the model->world transformation.
         array<float, 3> offset;
