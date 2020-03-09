@@ -166,6 +166,11 @@ namespace morph {
             }
         }
 
+        //! Get the hue, in its most saturated form
+        array<float, 3> getHueRGB (void) {
+            return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f);
+        }
+
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;
 

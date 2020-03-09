@@ -20,6 +20,7 @@
 #include "HexGridVisual.h"
 #include "QuadsVisual.h"
 #include "PointRowsVisual.h"
+#include "ScatterVisual.h"
 #include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
@@ -171,6 +172,17 @@ namespace morph {
                                          const ColourMapType cmtype);
 
         /*!
+         * Scatter of @points to plot as spheres. Each point has a value (in @data) which gives it a
+         * colour according to the passed in colour map type (@cmtype). @offset is a spatial offset
+         * for the location of the VisualModel in the Visual scene.
+         */
+        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
+                                       const array<float, 3> offset,
+                                       const vector<float>& data,
+                                       const array<float, 2> scale,
+                                       const ColourMapType cmtype);
+
+        /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
@@ -254,8 +266,13 @@ namespace morph {
         vector<QuadsVisual<float>*> qv_float;
         vector<QuadsVisual<double>*> qv_double;
 
+        //! Visuals made from rows of points arranged into triangular meshes
         vector<PointRowsVisual<float>*> prv_float;
         vector<PointRowsVisual<double>*> prv_double;
+
+        //! Scatter visuals - a scatter plot of spheres
+        vector<ScatterVisual<float>*> scv_float;
+        vector<ScatterVisual<double>*> scv_double;
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;

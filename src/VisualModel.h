@@ -72,7 +72,7 @@ namespace morph {
 
             // Set up the indices buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            cout << "indices.size(): " << this->indices.size() << endl;
+            //cout << "indices.size(): " << this->indices.size() << endl;
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
 

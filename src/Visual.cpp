@@ -293,6 +293,20 @@ morph::Visual::render (void)
         (*prvf)->render();
         ++prvf;
     }
+    typename vector<ScatterVisual<float>*>::iterator scvf = this->scv_float.begin();
+    while (scvf != this->scv_float.end()) {
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*scvf)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+
+        (*scvf)->render();
+        ++scvf;
+    }
 
     glfwSwapBuffers (this->window);
 
@@ -415,6 +429,22 @@ morph::Visual::addPointRowsVisual (const vector<array<float, 3>>* points,
     // Create the return ID
     unsigned int rtn = 0x100000; // 0x100000 denotes "member of prv_float" (0x200000 for prv_double)
     rtn |= (this->prv_float.size()-1);
+    return rtn;
+}
+
+unsigned int
+morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
+                                 const array<float, 3> offset,
+                                 const vector<float>& data,
+                                 const array<float, 2> scale,
+                                 const ColourMapType cmtype)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    ScatterVisual<float>* scv1 = new ScatterVisual<float>(this->shaderprog, points, offset, &data, scale, cmtype);
+    this->scv_float.push_back (scv1);
+    // Create the return ID
+    unsigned int rtn = 0x400000; // 0x400000 denotes "member of scv_float" (0x200000 for scv_double)
+    rtn |= (this->scv_float.size()-1);
     return rtn;
 }
 
