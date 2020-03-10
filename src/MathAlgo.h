@@ -20,6 +20,8 @@ using std::make_pair;
 using std::endl;
 using std::cout;
 
+#include "MathConst.h"
+
 /*!
  * Mathematical algorithms in the morph namespace.
  */
@@ -305,6 +307,79 @@ namespace morph {
             }
             return norm_v;
         }
+
+        /*!
+         * Functions which help you to arrange dots on circular rings
+         */
+        //@{
+
+        //! How many items (dots, for example) could you arrange on a circle of
+        //! radius=@radius with @d between each item's centre?
+        static int numOnCircle (T radius, T d) {
+            if (radius == static_cast<T>(0.0)) {
+                return 1;
+            }
+            T circum = (T)morph::TWO_PI_D * radius;
+            return static_cast<int>(floor (circum / d));
+        }
+
+        //! How many items on a circular arc of angle @a?
+        static int numOnCircleArc (T radius, T d, T a) {
+            //cout << "Called for radius == " << radius << ", d=" << d <<  endl;
+            if (radius == static_cast<T>(0.0)) {
+                return 1;
+            }
+            T circum = static_cast<T>(morph::TWO_PI_D) * radius;
+            //cout << "circum = " << circum << endl;
+            T rtn = 0;
+#if 1
+            // longhand, with a test for a circular arc
+            if (a >= static_cast<T>(morph::TWO_PI_D)) {
+                rtn = floor (circum / d);
+            } else {
+                T proportion = a / static_cast<T>(morph::TWO_PI_D);
+                //cout << "prop = " << proportion << endl;
+                T arclen = circum * proportion;
+                //cout << "arclen = " << arclen << endl;
+                rtn = floor (arclen / d);
+            }
+#else
+            T proportion = a / static_cast<T>(morph::TWO_PI_D);
+            rtn = floor (circum * proportion / d);
+#endif
+            //cout << "rtn " << rtn << endl;
+            return rtn;
+        }
+
+        //! How many dots spaced by d can be placed on circular arc rings with d between them?
+        static int numDotsOnRings (T minRadius, T maxRadius, T d,
+                                   T a = static_cast<T>(morph::TWO_PI_D)) {
+
+            // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
+            // from minRadius to maxRadius. Herein lies the problem!
+            int n_dots = 0;
+            if (minRadius == static_cast<T>(0.0)) {
+                int nrings = (int) floor ((maxRadius-minRadius)/d);
+                if (minRadius == 0.0) {
+                    nrings++; // cos of centre dot.
+                }
+
+                for (int r=0; r<nrings; ++r) {
+                    n_dots += MathAlgo<T>::numOnCircleArc (minRadius+r*d, d, a);
+                }
+            } else {
+                // Annulus
+                int nrings = 1 + (int) floor ((maxRadius-minRadius)/d);
+                //cout << nrings << " rings" << endl;
+                for (int r=0; r<nrings; ++r) {
+                    n_dots += MathAlgo<T>::numOnCircleArc (minRadius+r*d, d, a);
+                }
+            }
+            //cout << "n_dots for d=" << d << " is " << n_dots << endl;
+            return n_dots;
+        }
+
+        //@}
     };
 }
 
