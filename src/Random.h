@@ -45,7 +45,8 @@ namespace morph {
         }
         //! Default constructor gives RN generator which works in range [a,b)
         RandUniformReal (T a, T b) {
-            this->dist.param ({a,b});
+            typename uniform_real_distribution<T>::param_type prms(a,b);
+            this->dist.param (prms);
         }
         //! Get 1 random number from the generator
         T get (void) {
@@ -54,7 +55,7 @@ namespace morph {
         //! Get n random numbers from the generator
         vector<T> get (size_t n) {
             vector<T> rtn (n, static_cast<T>(0));
-            for (unsigned int i = 0; i < n; ++i) {
+            for (size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
@@ -84,7 +85,10 @@ namespace morph {
             this->dist.param (prms);
         }
         //! Default constructor gives RN generator which works in range [a,b)
-        RandUniformInt (T a, T b) { this->dist.param ({a,b}); }
+        RandUniformInt (T a, T b) {
+            typename uniform_int_distribution<T>::param_type prms(a,b);
+            this->dist.param (prms);
+        }
         //! Get 1 random number from the generator
         T get (void) {
             return this->dist (this->generator);
@@ -92,7 +96,7 @@ namespace morph {
         //! Get n random numbers from the generator
         vector<T> get (size_t n) {
             vector<T> rtn (n, static_cast<T>(0));
-            for (unsigned int i = 0; i < n; ++i) {
+            for (size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;

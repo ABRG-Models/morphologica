@@ -29,5 +29,21 @@ int main()
         cout << d << endl;
     }
 
+    // You can set up an RNG which has different max and min values:
+    morph::RandUniformInt<unsigned int> rubnd (0, 3);
+    // You can find the min and max:
+    cout << "That bounded, integer RNG has min and max: " << rubnd.min() << "/" << rubnd.max() << endl;
+    cout << "Ten random numbers in that range:\n";
+    vector<unsigned int> tenrns2 = rubnd.get(10);
+    for (auto d : tenrns2) { cout << d << endl; }
+
+    // Similar for float
+    morph::RandUniformReal<float> rubndf (0.0f, 1000.0f);
+    // You can find the min and max:
+    cout << "That bounded, float RNG has min and max: " << rubndf.min() << "/" << rubndf.max() << endl;
+    cout << "Ten random numbers in that range:\n";
+    vector<float> tenrns3 = rubndf.get(10);
+    for (auto d : tenrns3) { cout << d << endl; }
+
     return rtn;
 }
