@@ -49,5 +49,15 @@ int main()
     cout << "10 normals:" << endl;
     for (auto d : tennorms) { cout << d << endl; }
 
+    morph::RandLogNormal<double> rln (5, 0.1);
+    vector<double> tenlnorms = rln.get(10);
+    cout << "10 log normals:" << endl;
+    for (auto d : tenlnorms) { cout << d << endl; }
+
+    morph::RandPoisson<int> rpois (5);
+    vector<int> tenpois = rpois.get(10);
+    cout << "10 Poisson RNs:" << endl;
+    for (auto d : tenpois) { cout << d << endl; }
+
     return rtn;
 }
