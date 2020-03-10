@@ -246,3 +246,8 @@ add_executable(testNMSimplex testNMSimplex.cpp)
 target_compile_definitions(testNMSimplex PUBLIC FLT=float)
 target_link_libraries(testNMSimplex morphologica)
 add_test(testNMSimplex testNMSimplex)
+
+# Test Random number generation code
+add_executable(testRandom testRandom.cpp)
+target_link_libraries(testRandom morphologica)
+add_test(testRandom testRandom)
