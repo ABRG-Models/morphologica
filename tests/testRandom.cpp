@@ -25,9 +25,7 @@ int main()
     morph::RandUniformReal<double> rud;
     vector<double> tenrns = rud.get(10);
     cout << "10 random doubles:" << endl;
-    for (auto d : tenrns) {
-        cout << d << endl;
-    }
+    for (auto d : tenrns) { cout << d << endl; }
 
     // You can set up an RNG which has different max and min values:
     morph::RandUniformInt<unsigned int> rubnd (0, 3);
@@ -44,6 +42,12 @@ int main()
     cout << "Ten random numbers in that range:\n";
     vector<float> tenrns3 = rubndf.get(10);
     for (auto d : tenrns3) { cout << d << endl; }
+
+    // Normally distributed numbers:
+    morph::RandNormal<double> rnorm (5, 0.1);
+    vector<double> tennorms = rnorm.get(10);
+    cout << "10 normals:" << endl;
+    for (auto d : tennorms) { cout << d << endl; }
 
     return rtn;
 }
