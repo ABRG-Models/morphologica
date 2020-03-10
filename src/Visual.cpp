@@ -450,6 +450,23 @@ morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
     return rtn;
 }
 
+unsigned int
+morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
+                                 const array<float, 3> offset,
+                                 const vector<float>& data,
+                                 const float pointRadius,
+                                 const array<float, 2> scale,
+                                 const ColourMapType cmtype)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    ScatterVisual<float>* scv1 = new ScatterVisual<float>(this->shaderprog, points, offset, &data, pointRadius, scale, cmtype);
+    this->scv_float.push_back (scv1);
+    // Create the return ID
+    unsigned int rtn = 0x400000; // 0x400000 denotes "member of scv_float" (0x200000 for scv_double)
+    rtn |= (this->scv_float.size()-1);
+    return rtn;
+}
+
 const GLchar*
 morph::Visual::ReadShader (const char* filename)
 {

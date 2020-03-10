@@ -176,11 +176,20 @@ namespace morph {
          * colour according to the passed in colour map type (@cmtype). @offset is a spatial offset
          * for the location of the VisualModel in the Visual scene.
          */
+        //@{
         unsigned int addScatterVisual (const vector<array<float, 3>>* points,
                                        const array<float, 3> offset,
                                        const vector<float>& data,
                                        const array<float, 2> scale,
                                        const ColourMapType cmtype);
+        //! As above, but with @pointRadius as a user-provided argument
+        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
+                                       const array<float, 3> offset,
+                                       const vector<float>& data,
+                                       const float pointRadius,
+                                       const array<float, 2> scale,
+                                       const ColourMapType cmtype);
+        //@}
 
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window

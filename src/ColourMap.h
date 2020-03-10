@@ -15,6 +15,8 @@ namespace morph {
     enum class ColourMapType {
         Jet,
         Rainbow,
+        RainbowZeroBlack, // As Rainbow, but if datum is 0, then colour is pure black.
+        RainbowZeroWhite, // As Rainbow, but if datum is 0, then colour is pure white.
         Magma,      // Like matplotlib's magma
         Inferno,    // matplotlib's inferno
         Plasma,     // etc
@@ -56,6 +58,22 @@ namespace morph {
             case ColourMapType::Rainbow:
             {
                 c = ColourMap::rainbow (datum);
+                break;
+            }
+            case ColourMapType::RainbowZeroBlack:
+            {
+                if (datum != static_cast<Flt>(0.0)) {
+                    c = ColourMap::rainbow (datum);
+                }
+                break;
+            }
+            case ColourMapType::RainbowZeroWhite:
+            {
+                if (datum != static_cast<Flt>(0.0)) {
+                    c = ColourMap::rainbow (datum);
+                } else {
+                    c = {1.0f, 1.0f, 1.0f};
+                }
                 break;
             }
             case ColourMapType::Magma:

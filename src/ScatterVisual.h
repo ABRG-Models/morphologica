@@ -48,6 +48,30 @@ namespace morph {
             this->postVertexInit();
         }
 
+        ScatterVisual(GLuint sp,
+                      const vector<array<Flt,3>>* _coords,
+                      const array<float, 3> _offset,
+                      const vector<Flt>* _data,
+                      const float fr,
+                      const array<Flt, 2> _scale,
+                      ColourMapType _cmt,
+                      const float _hue = 0.0f) {
+            // Set up...
+            this->shaderprog = sp;
+            this->offset = _offset;
+            this->viewmatrix.translate (this->offset);
+            this->scale = _scale;
+            this->coords = _coords;
+            this->data = _data;
+            this->radiusFixed = fr;
+
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+
+            this->initializeVertices();
+            this->postVertexInit();
+        }
+
         //! Do the computations to initialize the vertices that will represent the Scatter.
         void initializeVertices (void) {
 
@@ -92,6 +116,10 @@ namespace morph {
         void updateData (const vector<Flt>* _data, const array<Flt, 2> _scale) {
             this->scale = _scale;
             this->data = _data;
+            this->reinit();
+        }
+
+        void reinit (void) {
             // Fixme: Better not to clear, then repeatedly pushback here:
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -113,12 +141,17 @@ namespace morph {
         //! different types of map.
         ColourMap<Flt> cm;
 
-        //! Change this to get larger or smaller spheres.
-        Flt radiusMult = 1.0;
-
-        Flt radiusFixed = 0.1;
+        //! Set this->radiusFixed, then re-compute vertices.
+        void setRadius (float fr) {
+            this->radiusFixed = fr;
+            this->reinit();
+        }
 
     private:
+
+        //! Change this to get larger or smaller spheres.
+        Flt radiusFixed = 0.05;
+
         //! The coordinates of the points to visualize. A sphere at each coordinate. Sphere radius
         //! computed as 10% of the minimum distance between coordinates.
         const vector<array<Flt,3>>* coords;
