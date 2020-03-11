@@ -1,16 +1,16 @@
-// This file is included by Vertex.cpp.
+// This file is included by Vertex.cpp. It contains default vertex and fragment
+// shaders which get compiled in to libmorphologica.
 
-// The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has some
-// code comments.
+// Define a version string for the shaders
 #ifdef __OSX__
-// Note that Mac support is fixed at OpenGL 4.1 in favour of their own graphics
-// API. So tell Mac that we're operating at version 4.1 here.
+// Mac support is fixed at OpenGL 4.1 in favour of their own graphics API.
 #define OpenGL_VersionString "#version 410\n"
 #else
 /*
- On other platforms ALSO specify OpenGL 4.1. In future, may wish to change this, in
- case there's a need for any of the following major features released since OpenGL
- 4.1 (this list from the wikipedia OpenGL page):
+ On other platforms ALSO specify OpenGL 4.1, because only relatively simple features
+ of OpenGL are in use. In future, may wish to change this, in case there's a need for
+ any of the following major features released since OpenGL 4.1 (this list from the
+ wikipedia OpenGL page):
 
 OpenGL 4.2
 
@@ -91,6 +91,8 @@ OpenGL 4.5
 #define OpenGL_VersionString "#version 410\n"
 #endif
 
+// The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has some
+// code comments.
 const char* defaultVtxShader = OpenGL_VersionString
     "uniform mat4 mvp_matrix;\n"
     "layout(location = 0) in vec4 position;\n"
