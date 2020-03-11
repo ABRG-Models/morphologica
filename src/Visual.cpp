@@ -53,7 +53,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << endl;
 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
     this->window = glfwCreateWindow (width, height, title.c_str(), NULL, NULL);
     if (!this->window) {
         // Window or OpenGL context creation failed
