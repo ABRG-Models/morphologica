@@ -31,13 +31,6 @@ morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
     , window_h(height)
 {
-#ifdef USE_GLEW
-    GLenum err = glewInit();
-    if (GLEW_OK != err) {
-        // Problem: glewInit failed, something is seriously wrong.
-        cerr << "GLEW initialization failed!" << glewGetErrorString(err) << endl;
-    }
-#endif
     if (!glfwInit()) {
         // Initialization failed
         cerr << "GLFW initialization failed!" << endl;
@@ -71,6 +64,18 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwSetScrollCallback (this->window,  VisualBase::scroll_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
+
+#ifdef USE_GLEW
+    glewExperimental = GL_FALSE;
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        cerr << "OpenGL error: " << error << endl;
+    }
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        cerr << "GLEW initialization failed!" << glewGetErrorString(err) << endl;
+    }
+#endif
 
     // Swap as fast as possible (fixes lag of scene with mouse movements)
     glfwSwapInterval (0);
