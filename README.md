@@ -252,7 +252,7 @@ linker's search path) as in the example above. If you installed
 elsewhere, then you probably know how to set LD_LIBRARY_PATH
 correctly (or see **Building/installing as a per-user library**, below).
 
-If you need to build with a specific compiler, such as g++-7 or clang, 
+If you need to build with a specific compiler, such as g++-7 or clang,
 then you just change the cmake call in the recipe above. It becomes:
 
 ```sh
@@ -336,4 +336,4 @@ Note that certain test cases will fail if no display server is available (e.g. i
 Authorship of morphologica code is given in each file. Copyright in
 the software is owned by the authors. morphologica is distributed
 under the terms of the GNU General Public License, version 3 (see
-LICENCE.txt).
+LICENSE.txt).
