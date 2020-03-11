@@ -1,4 +1,5 @@
-#version 450
+// The coded-in shaders tell non-Mac platforms that they use OpenGL 4.5, but Mac limited to 4.1
+#version 410
 
 // ProjMatrix * RotnMatrix operation carried out on CPU in this
 // program, so only one mvp_matrix.
