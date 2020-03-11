@@ -7,7 +7,7 @@ extern "C" {
 
 /*
 ** Copyright (c) 2007-2012 The Khronos Group Inc.
-** 
+**
 ** Permission is hereby granted, free of charge, to any person obtaining a
 ** copy of this software and/or associated documentation files (the
 ** "Materials"), to deal in the Materials without restriction, including
@@ -15,10 +15,10 @@ extern "C" {
 ** distribute, sublicense, and/or sell copies of the Materials, and to
 ** permit persons to whom the Materials are furnished to do so, subject to
 ** the following conditions:
-** 
+**
 ** The above copyright notice and this permission notice shall be included
 ** in all copies or substantial portions of the Materials.
-** 
+**
 ** THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 ** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 ** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -1958,7 +1958,13 @@ typedef ptrdiff_t GLsizeiptrARB;
 #ifndef GL_ARB_shader_objects
 /* GL types for program/shader text and shader object handles */
 typedef char GLcharARB;
+/* On Apple a different typedef is for GLhandleARB is required; see:
+   https://www.meandmark.com/blog/2011/11/sdl-opengl-typedef-redefinition-error-on-mac-os-x-10-7/ */
+# if defined(__APPLE__)
+typedef void *GLhandleARB;
+# else
 typedef unsigned int GLhandleARB;
+# endif
 #endif
 
 /* GL type for "half" precision (s10e5) float data in host memory */
