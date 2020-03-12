@@ -225,6 +225,10 @@ namespace morph {
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
 
+        //! If you set this to true, then the mouse movements won't change scenetrans
+        //! or rotation.
+        bool sceneLocked = false;
+
         //! Setter for zDefault
         void setZDefault (float f) {
             this->zDefault = f;

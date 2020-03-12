@@ -642,7 +642,7 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->rotateModMode = !this->rotateModMode;
     }
 
-    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_C && action == GLFW_PRESS) {
         this->showCoordArrows = !this->showCoordArrows;
     }
 
@@ -650,6 +650,7 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         // Help to stdout:
         cout << "h: Output this help to stdout" << endl;
         cout << "x: Request exit" << endl;
+        cout << "l: Toggle the scene lock" << endl;
         cout << "t: Toggle mouse rotate mode" << endl;
         cout << "c: Toggle coordinate arrows" << endl;
         cout << "s: Take a snapshot" << endl;
@@ -659,6 +660,11 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         cout << "z: Show the current scenetrans (x,y,z)" << endl;
         cout << "u: Reduce zNear cutoff plane" << endl;
         cout << "i: Increase zNear cutoff plane" << endl;
+    }
+
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        this->sceneLocked = this->sceneLocked ? false : true;
+        cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked" << endl;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
@@ -673,7 +679,7 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
     }
 
     // Reset view to default
-    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_A && action == GLFW_PRESS) {
         cout << "Reset to default view" << endl;
         // Reset translation
         this->scenetrans = this->scenetrans_default;
@@ -684,25 +690,25 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->render();
     }
 
-    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_O && action == GLFW_PRESS) {
         this->fov -= 2;
         if (this->fov < 1.0) {
             this->fov = 2.0;
         }
         cout << "FOV reduced to " << this->fov << endl;
     }
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_P && action == GLFW_PRESS) {
         this->fov += 2;
         if (this->fov > 179.0) {
             this->fov = 178.0;
         }
         cout << "FOV increased to " << this->fov << endl;
     }
-    if (key == GLFW_KEY_U && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_U && action == GLFW_PRESS) {
         this->zNear /= 2;
         cout << "zNear reduced to " << this->zNear << endl;
     }
-    if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+    if (!this->sceneLocked && key == GLFW_KEY_I && action == GLFW_PRESS) {
         this->zNear *= 2;
         cout << "zNear increased to " << this->zNear << endl;
     }
@@ -711,6 +717,9 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
 void
 morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action, int mods)
 {
+    // If the scene is locked, then ignore the mouse movements
+    if (this->sceneLocked) { return; }
+
     // button is the button number, action is either key press (1) or key release (0)
     // cout << "button: " << button << " action: " << (action==1?("press"):("release")) << endl;
 
@@ -861,6 +870,7 @@ morph::Visual::window_size_callback (GLFWwindow* window, int width, int height)
 void
 morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
 {
+    if (this->sceneLocked) { return; }
     // x and y can be +/- 1
     this->scenetrans.x -= xoffset * this->scenetrans_stepsize;
     if (this->translateMode) {
