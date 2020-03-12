@@ -646,6 +646,20 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->showCoordArrows = !this->showCoordArrows;
     }
 
+    if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        // Help to stdout:
+        cout << "h: Output this help to stdout" << endl;
+        cout << "x: Request exit" << endl;
+        cout << "t: Toggle mouse rotate mode" << endl;
+        cout << "c: Toggle coordinate arrows" << endl;
+        cout << "s: Take a snapshot " << endl;
+        cout << "a: Reset default view" << endl;
+        cout << "o: Reduce field of view" << endl;
+        cout << "p: Increase field of view " << endl;
+        cout << "u: Reduce zNear cutoff plane" << endl;
+        cout << "i: Increase zNear cutoff plane" << endl;
+    }
+
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         this->saveImage ("./picture.png");
         cout << "Took a snap" << endl;
