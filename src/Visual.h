@@ -231,6 +231,20 @@ namespace morph {
             this->scenetrans.z = -f;
         }
 
+        //! Setters for x/y
+        //@{
+        void setSceneTransXY (float _x, float _y) {
+            this->scenetrans.x = _x;
+            this->scenetrans.y = _y;
+        }
+        void setSceneTransX (float _x) {
+            this->scenetrans.x = _x;
+        }
+        void setSceneTransY (float _y) {
+            this->scenetrans.y = _y;
+        }
+        //@}
+
     private:
 
         //! The default z=0 position for HexGridVisual models
