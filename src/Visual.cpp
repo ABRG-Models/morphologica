@@ -652,10 +652,11 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         cout << "x: Request exit" << endl;
         cout << "t: Toggle mouse rotate mode" << endl;
         cout << "c: Toggle coordinate arrows" << endl;
-        cout << "s: Take a snapshot " << endl;
+        cout << "s: Take a snapshot" << endl;
         cout << "a: Reset default view" << endl;
         cout << "o: Reduce field of view" << endl;
-        cout << "p: Increase field of view " << endl;
+        cout << "p: Increase field of view" << endl;
+        cout << "z: Show the current scenetrans (x,y,z)" << endl;
         cout << "u: Reduce zNear cutoff plane" << endl;
         cout << "i: Increase zNear cutoff plane" << endl;
     }
@@ -663,6 +664,12 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         this->saveImage ("./picture.png");
         cout << "Took a snap" << endl;
+    }
+
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+        cout << "Scenetrans is: "
+             << "(" << this->scenetrans.x << "," << this->scenetrans.y
+             << "," << this->scenetrans.z << ")" << endl;
     }
 
     // Reset view to default

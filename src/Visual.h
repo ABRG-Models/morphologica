@@ -45,7 +45,7 @@ using std::array;
 using std::vector;
 
 //! The default z=0 position for HexGridVisual models
-#define Z_DEFAULT 5
+#define Z_DEFAULT -5
 
 namespace morph {
 
@@ -228,7 +228,7 @@ namespace morph {
         //! Setter for zDefault
         void setZDefault (float f) {
             this->zDefault = f;
-            this->scenetrans.z = -f;
+            this->scenetrans.z = f;
         }
 
         //! Setters for x/y
