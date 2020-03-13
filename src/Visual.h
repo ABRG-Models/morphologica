@@ -321,10 +321,10 @@ namespace morph {
         Vector2<float> cursorpos;
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, -Z_DEFAULT};
+        Vector3<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
         //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, -Z_DEFAULT};
+        const Vector3<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
