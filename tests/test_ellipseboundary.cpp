@@ -1,88 +1,75 @@
-#include "display.h"
-#include "tools.h"
 #include <utility>
 #include <iostream>
 #include <unistd.h>
+#include <cmath>
 
+#include "Visual.h"
+using morph::Visual;
+#include "ColourMap.h"
+using morph::ColourMapType;
+#include "tools.h"
+using morph::Tools;
 #include "HexGrid.h"
+using morph::HexGrid;
+using morph::HexDomainShape;
 #include "ReadCurves.h"
 
 using namespace std;
 
-int main()
+int main (int argc, char** argv)
 {
     int rtn = 0;
+
+    Visual v(1024, 768, "Ellipse");
+    v.zNear = 0.001;
+    v.showCoordArrows = true;
+
+    bool holdVis = false;
+    if (argc > 1) {
+        string a1(argv[1]);
+        if (a1.size() > 0) {
+            holdVis = true;
+        }
+    }
+    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
+
     try {
-        morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
-        hg.setEllipticalBoundary (2, 3);
+        HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);
+        hg.setEllipticalBoundary (1, 0.7);
 
         cout << hg.extent() << endl;
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 14535) {
+        if (hg.num() != 25717) {
             rtn = -1;
         }
 
-        vector<double> fix(3, 0.0);
-        vector<double> eye(3, 0.0);
-        vector<double> rot(3, 0.0);
-        double rhoInit = 1.7;
-        morph::Gdisplay disp(960, 700, 0, 0, "Elliptical boundary", rhoInit, 0.0, 0.0);
-        disp.resetDisplay (fix, eye, rot);
-        disp.redrawDisplay();
+        vector<float> data;
+        unsigned int nhex = hg.num();
+        data.resize(nhex, 0.0);
 
-        // plot stuff here.
-        array<float,3> cl_boundary_and_in = morph::Tools::getJetColorF (0.9);
-        array<float,3> cl_bndryonly = morph::Tools::getJetColorF (0.8);
-        array<float,3> cl_domain = morph::Tools::getJetColorF (0.5);
-        array<float,3> cl_inside = morph::Tools::getJetColorF (0.15);
-        array<float,3> offset = {{0, 0, 0}};
-        for (auto h : hg.hexen) {
-            if (h.boundaryHex && h.insideBoundary) {
-                // red is boundary hex AND inside boundary
-                disp.drawHex (h.position(), (h.d/2.0f), cl_boundary_and_in);
-            } else if (h.boundaryHex) {
-                // orange is boundary ONLY
-                disp.drawHex (h.position(), (h.d/2.0f), cl_bndryonly);
-            } else if (h.insideBoundary) {
-                // Inside boundary -  blue
-                disp.drawHex (h.position(), (h.d/2.0f), cl_inside);
-            } else {
-                // The domain - greenish
-                disp.drawHex (h.position(), offset, (h.d/2.0f), cl_domain);
+        // Make some dummy data (a sine wave)
+        for (unsigned int hi=0; hi<nhex; ++hi) {
+            data[hi] = 0.5 + 0.5*sin(10*hg.d_x[hi]); // Range 0->1
+        }
+        cout << "Created " << data.size() << " floats in data" << endl;
+
+        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        array<float, 4> scale = { 0.1, 0.0, 1.0, 0.0};
+        v.addHexGridVisual (&hg, offset, data, scale, ColourMapType::Magma);
+        v.render();
+
+        if (holdVis == true) {
+            while (v.readyToFinish == false) {
+                glfwWaitEventsTimeout (0.018);
+                v.render();
             }
         }
-        disp.redrawDisplay();
-
-        // Draw small hex at boundary centroid
-        array<float,3> cl_aa = morph::Tools::getJetColorF (0.98);
-        array<float,3> c;
-        c[2] = 0;
-        c[0] = hg.boundaryCentroid.first;
-        c[1] = hg.boundaryCentroid.second;
-        cout << "d/2: " << hg.hexen.begin()->d/4.0f << endl;
-        disp.drawHex (c, offset, (hg.hexen.begin()->d/2.0f), cl_aa);
-        cout << "boundaryCentroid x,y: " << c[0] << "," << c[1] << endl;
-
-        disp.redrawDisplay();
-
-        // red hex at zero
-        array<float,3> pos = { { 0, 0, 0} };
-        disp.drawHex (pos, 0.05, cl_aa);
-        disp.redrawDisplay();
-
-        unsigned int sleep_seconds = 1;
-        cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
-        while (sleep_seconds--) {
-            usleep (1000000); // one second
-        }
-
-        disp.closeDisplay();
 
     } catch (const exception& e) {
         cerr << "Caught exception reading svg: " << e.what() << endl;
-        cerr << "Current working directory: " << morph::Tools::getPwd() << endl;
+        cerr << "Current working directory: " << Tools::getPwd() << endl;
         rtn = -1;
     }
 

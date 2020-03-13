@@ -18,6 +18,15 @@ int main (int argc, char** argv)
     v.zNear = 0.001;
     v.showCoordArrows = true;
 
+    bool holdVis = false;
+    if (argc > 1) {
+        string a1(argv[1]);
+        if (a1.size() > 0) {
+            holdVis = true;
+        }
+    }
+    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
+
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         array<float, 2> scale = { 1.0, 0.0};
@@ -57,9 +66,11 @@ int main (int argc, char** argv)
 
         v.render();
 
-        while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
-            v.render();
+        if (holdVis == true) {
+            while (v.readyToFinish == false) {
+                glfwWaitEventsTimeout (0.018);
+                v.render();
+            }
         }
 
     } catch (const exception& e) {

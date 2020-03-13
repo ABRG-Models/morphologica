@@ -250,7 +250,7 @@ namespace morph {
         list<Hex> getBoundary (void) const;
 
         /*!
-         * ellipse functions (work in progress)
+         * ellipse functions
          */
         //@{
         vector<BezCoord<float>> ellipseCompute (const float a, const float b);

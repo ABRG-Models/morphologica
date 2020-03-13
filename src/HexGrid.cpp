@@ -7,6 +7,7 @@
  */
 
 #include "HexGrid.h"
+#include "MathConst.h"
 #include <string>
 #include <cmath>
 #include <float.h>
@@ -27,6 +28,10 @@
 
 using std::ceil;
 using std::abs;
+using std::sin;
+using std::cos;
+using std::atan2;
+using std::sqrt;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -414,25 +419,34 @@ morph::HexGrid::ellipsePerimeter (const float a, const float b)
 vector<BezCoord<float>>
 morph::HexGrid::ellipseCompute (const float a, const float b)
 {
+    // Compute the points on the boundary using the parametric elliptical formula and
+    // half of the hex to hex spacing as the angular step size. Return as bpoints.
     vector<BezCoord<float>> bpoints;
-#ifdef WORK_IN_PROGRESS
-    // Determine perimeter of the ellipse
-    float perim = this->ellipsePerimeter (a, b);
-    DBG ("Perimeter length is " << perim);
 
-    // FIXME: Fill bpoints with a point every h/2
-    float spacing = this->d/2.0f;
-    int number = (int)ceilf(perim/spacing);
-    DBG ("That means " << number << " points along the ellipse");
-#endif
+    // Estimate a good delta_phi based on the larger of a and b. Compute the delta_phi
+    // required to travel a fraction of one hex-to-hex distance.
+    double delta_phi = 0.0;
+    double dfraction = this->d / 2.0;
+    if (a > b) {
+        delta_phi = atan2 (dfraction, a);
+    } else {
+        delta_phi = atan2 (dfraction, b);
+    }
+
+    // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
+    for (double phi = 0.0; phi < morph::TWO_PI_D; phi+=delta_phi) {
+        float x_pt = static_cast<float>(a * cos (phi));
+        float y_pt = static_cast<float>(b * sin (phi));
+        BezCoord<float> b(make_pair(x_pt, y_pt));
+        bpoints.push_back (b);
+    }
+
     return bpoints;
 }
 
 void
 morph::HexGrid::setEllipticalBoundary (const float a, const float b)
 {
-    DBG ("Applying elliptical boundary...");
-    // Compute the points on the boundary using half of the hex to hex spacing as the step size.
     vector<BezCoord<float>> bpoints = ellipseCompute (a, b);
     this->setBoundary (bpoints);
 }
