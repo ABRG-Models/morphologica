@@ -248,6 +248,11 @@ namespace morph {
         void setEllipticalBoundary (const float a, const float b);
 
         /*!
+         * Set the boundary to be a circle with the given radius a.
+         */
+        void setCircularBoundary (const float a);
+
+        /*!
          * \brief Accessor for the size of hexen.
          *
          * return The number of hexes in the grid.

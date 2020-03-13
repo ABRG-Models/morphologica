@@ -35,13 +35,13 @@ int main (int argc, char** argv)
 
     try {
         HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);
-        hg.setEllipticalBoundary (1, 0.7);
+        hg.setCircularBoundary (1);
 
         cout << hg.extent() << endl;
         cout << "Number of hexes in grid:" << hg.num() << endl;
         cout << "Last vector index:" << hg.lastVectorIndex() << endl;
 
-        if (hg.num() != 25717) {
+        if (hg.num() != 36624) {
             rtn = -1;
         }
 
@@ -57,7 +57,7 @@ int main (int argc, char** argv)
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         array<float, 4> scale = { 0.0, 0.0, 1.0, 0.0};
-        v.addHexGridVisual (&hg, offset, data, scale, ColourMapType::Magma);
+        v.addHexGridVisual (&hg, offset, data, scale, ColourMapType::Rainbow);
         v.render();
 
         if (holdVis == true) {

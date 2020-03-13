@@ -452,6 +452,13 @@ morph::HexGrid::setEllipticalBoundary (const float a, const float b)
 }
 
 void
+morph::HexGrid::setCircularBoundary (const float a)
+{
+    vector<BezCoord<float>> bpoints = ellipseCompute (a, a);
+    this->setBoundary (bpoints);
+}
+
+void
 morph::HexGrid::clearRegionBoundaryFlags (void)
 {
     for (auto& hh : this->hexen) {

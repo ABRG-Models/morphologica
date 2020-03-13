@@ -168,11 +168,6 @@ add_executable(testhdfdata2 testhdfdata2.cpp)
 target_link_libraries(testhdfdata2 morphologica)
 add_test(testhdfdata2 testhdfdata2)
 
-# Test ellipse code
-add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-target_link_libraries(test_ellipseboundary morphologica)
-add_test(test_ellipseboundary test_ellipseboundary)
-
 if(${glfw3_FOUND})
   # Test morph::Visual class
   add_executable(testvis testVisual.cpp)
@@ -187,6 +182,17 @@ if(${glfw3_FOUND})
 
   add_executable(testvisscatter testVisScatter.cpp)
   target_link_libraries(testvisscatter -L${morphologica_BINARY_DIR}/src morphologica)
+
+  # Test elliptical HexGrid code (visualized with morph::Visual)
+  add_executable(test_ellipseboundary test_ellipseboundary.cpp)
+  target_link_libraries(test_ellipseboundary morphologica)
+  add_test(test_ellipseboundary test_ellipseboundary)
+
+  # Test circular HexGrid code
+  add_executable(test_circleboundary test_circleboundary.cpp)
+  target_link_libraries(test_circleboundary morphologica)
+  add_test(test_circleboundary test_circleboundary)
+
 endif()
 
 # Test morph::Process class
