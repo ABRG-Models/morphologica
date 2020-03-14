@@ -209,7 +209,7 @@ namespace morph {
                 {1.0, 0.0, 0.0}, // red
                 {0.5, 0.0, 0.0}, // #7F0000
             };
-            array<float,3> col;
+            array<float,3> col = {0.0f, 0.0f, 0.0f};
             float ivl = 1.0/8.0;
             for (int i=0; i<8; i++) {
                 Flt llim = (i==0) ? static_cast<Flt>(0.0) : (Flt)i/static_cast<Flt>(8.0);

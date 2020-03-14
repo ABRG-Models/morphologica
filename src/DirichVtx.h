@@ -54,7 +54,7 @@ namespace morph {
          * The value of the domain for which this vertex is a vertex. This is essentially the
          * domain's identity.
          */
-        Flt f;
+        Flt f = static_cast<Flt>(0.0);
 
         /*!
          * A distance threshold that makes sense within the problem - probably some fraction of

@@ -299,7 +299,7 @@ morph::Gdisplay::drawHexSeg (array<float,3> pos, array<float,3> offset, double r
     double ry = r * 1.154700538379252; // r * 1.0/sin(pi/3.0)
     double hry = ry * 0.5;
 
-    double ax, ay, bx, by;
+    double ax=0.0, ay=0.0, bx=0.0, by=0.0;
     switch (edgeIndex){
     case (0):{
         ax=pos[0]+r,    ay=pos[1]-hry;

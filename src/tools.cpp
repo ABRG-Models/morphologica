@@ -237,7 +237,7 @@ morph::Tools::getGrayScaleColor(double gray)
 array<float,3>
 morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
 {
-    double r, g, b;
+    double r=0.0, g=0.0, b=0.0;
     int i = floor(h * 6);
     double f = h * 6. - i;
     double p = v * (1. - s);
