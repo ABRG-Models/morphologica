@@ -9,6 +9,8 @@
 #include "VisualModel.h"
 #include "ColourMap.h"
 #include "HexGrid.h"
+#include "MathAlgo.h"
+using morph::MathAlgo;
 
 #include <iostream>
 using std::cout;
@@ -188,6 +190,14 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
+            // This is the QuadsVisual way - have an autoscale option
+            vector<Flt> dcopy = *(this->data);
+            if (this->scale[2] == 0.0f && this->scale[3] == 0.0f) {
+                // Special {x,x,0,0} scale means auto scale data, then use scale[0]/[1] to scale the Z position
+                dcopy = MathAlgo<Flt>::autoscale (dcopy);
+                this->scale[2] = 1.0f;
+            }
+
             Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
             Flt datumNE = static_cast<Flt>(0.0);  // datum at the hex to the east.
             Flt datumNNE = static_cast<Flt>(0.0); // etc
@@ -202,17 +212,17 @@ namespace morph {
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
                 // Compute the linear scalings. Could do this once only and have a this->scaledData member
-                datumC = this->sc((*this->data)[hi]);
-                datumNE = this->sc((*this->data)[NE(hi)]);   // datum Neighbour East
-                datumNNE = this->sc((*this->data)[NNE(hi)]); // datum Neighbour North East
-                datumNNW = this->sc((*this->data)[NNW(hi)]); // etc
-                datumNW = this->sc((*this->data)[NW(hi)]);
-                datumNSW = this->sc((*this->data)[NSW(hi)]);
-                datumNSE = this->sc((*this->data)[NSE(hi)]);
+                datumC = this->sc(dcopy[hi]);
+                datumNE = this->sc(dcopy[NE(hi)]);   // datum Neighbour East
+                datumNNE = this->sc(dcopy[NNE(hi)]); // datum Neighbour North East
+                datumNNW = this->sc(dcopy[NNW(hi)]); // etc
+                datumNW = this->sc(dcopy[NW(hi)]);
+                datumNSW = this->sc(dcopy[NSW(hi)]);
+                datumNSE = this->sc(dcopy[NSE(hi)]);
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
-                datum = (*this->data)[hi] * this->scale[2] + this->scale[3];
+                datum = dcopy[hi] * this->scale[2] + this->scale[3];
                 datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
