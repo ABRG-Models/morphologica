@@ -22,7 +22,10 @@
 #include <list>
 #include <string>
 #include <limits>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
+using std::chrono::steady_clock;
 
 /*!
  * Include the reaction diffusion class
@@ -34,8 +37,19 @@ using namespace std;
  * If COMPILE_PLOTTING is defined at compile time, then include the display and
  * plotting code.
  */
-# include "morph/display.h"
-# include "morph/RD_Plot.h"
+# include <morph/Visual.h>
+using morph::Visual;
+#include "morph/ColourMap.h"
+using morph::ColourMapType;
+//! Helper function to save PNG images
+void savePngs (const string& logpath, const string& name,
+               unsigned int frameN, Visual& v) {
+    stringstream ff1;
+    ff1 << logpath << "/" << name<< "_";
+    ff1 << setw(5) << setfill('0') << frameN;
+    ff1 << ".png";
+    v.saveImage (ff1.str());
+}
 #endif
 
 /*!
@@ -118,45 +132,39 @@ int main (int argc, char **argv)
     cout << "steps to simulate: " << steps << endl;
 
 #ifdef COMPILE_PLOTTING
-
     // Parameters from the config that apply only to plotting:
     const unsigned int plotevery = conf.getUInt ("plotevery", 10);
-
     // Should the plots be saved as png images?
     const bool saveplots = conf.getBool ("saveplots", false);
-
     // If true, then write out the logs in consecutive order numbers,
     // rather than numbers that relate to the simulation timestep.
     const bool vidframes = conf.getBool ("vidframes", false);
     unsigned int framecount = 0;
 
-    // Create some displays
-    vector<morph::Gdisplay> displays;
-    vector<double> fix(3, 0.0);
-    vector<double> eye(3, 0.0);
-    eye[2] = 0.12; // This also acts as a zoom. more +ve to zoom out, more -ve to zoom in.
-    vector<double> rot(3, 0.0);
+    // Window width and height
+    const unsigned int win_width = conf.getUInt ("win_width", 1025UL);
+    unsigned int win_height_default = static_cast<unsigned int>(0.8824f * (float)win_width);
+    const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
-    // A plot object.
-    morph::RD_Plot<FLOATTYPE> plt(fix, eye, rot);
+    // Set up the morph::Visual object which provides the visualization scene (and
+    // window)
+    Visual v1 (win_width, win_height, "Schnakenberg RD");
+    // You can tweak the near and far clipping planes
+    v1.zNear = 0.001;
+    v1.zFar = 50;
+    // And the field of view of the visual scene.
+    v1.fov = 45;
+    // You can lock movement of the scene
+    v1.sceneLocked = conf.getBool ("sceneLocked", false);
+    // You can set the default scene x/y/z offsets
+    v1.setZDefault (conf.getFloat ("z_default", -5.0f));
+    v1.setSceneTransXY (conf.getFloat ("x_default", 0.0f),
+                        conf.getFloat ("y_default", 0.0f));
+    // Make this larger to "scroll in and out of the image" faster
+    v1.scenetrans_stepsize = 0.5;
 
-    double rhoInit = 1; // This is effectively a zoom control. Increase to zoom out.
-    double thetaInit = 0.0;
-    double phiInit = 0.0;
-
-    string worldName("schnak");
-
-    string winTitle = worldName + ": A"; // 0
-    displays.push_back (morph::Gdisplay (340, 300, 100, 1800, winTitle.c_str(),
-                                         rhoInit, thetaInit, phiInit));
-    displays.back().resetDisplay (fix, eye, rot);
-    displays.back().redrawDisplay();
-
-    winTitle = worldName + ": B"; // 1
-    displays.push_back (morph::Gdisplay (340, 300, 100, 1800, winTitle.c_str(),
-                                         rhoInit, thetaInit, phiInit, displays[0].win));
-    displays.back().resetDisplay (fix, eye, rot);
-    displays.back().redrawDisplay();
+    // if using plotting, then set up the render clock
+    steady_clock::time_point lastrender = steady_clock::now();
 #endif
 
     /*
@@ -222,7 +230,27 @@ int main (int argc, char **argv)
     RD.savePositions();
 
 #ifdef COMPILE_PLOTTING
-    // Here's where you'd plot any one-off plots
+    // Before starting the simulation, create the HexGridVisuals.
+
+    // Data scaling parameters. First two are the Z position scaling - how hilly/bumpy
+    // the visual will be. The second is the colour scaling. If the colour scaling
+    // params are both 0 then the map will be auto-colour scaled.
+    const array<float, 4> scaling = { 0.2f, 0.0f, 0.0f, 0.0f };
+
+    // Spatial offset, for positioning of HexGridVisuals
+    array<float, 3> spatOff;
+    float xzero = 0.0f;
+
+    // A
+    unsigned int Agrid = 0;
+    spatOff = { xzero, 0.0, 0.0 };
+    Agrid = v1.addHexGridVisual (RD.hg, spatOff, RD.A, scaling, ColourMapType::Plasma);
+    xzero += RD.hg->width();
+    // B
+    unsigned int Bgrid = 0;
+    spatOff = { xzero, 0.0, 0.0 };
+    Bgrid = v1.addHexGridVisual (RD.hg, spatOff, RD.B, scaling, ColourMapType::Jet);
+    xzero += RD.hg->width();
 #endif
 
     // Start the loop
@@ -233,22 +261,25 @@ int main (int argc, char **argv)
 
 #ifdef COMPILE_PLOTTING
         if ((RD.stepCount % plotevery) == 0) {
-            //DBG("Plot at step " << RD.stepCount);
-            plt.scalarfields (displays[0], RD.hg, RD.A);
-            plt.scalarfields (displays[1], RD.hg, RD.B);
-            //displays[0].redrawDisplay();
-            //displays[1].redrawDisplay();
+            v1.updateHexGridVisual (Agrid, RD.A, scaling);
+            v1.updateHexGridVisual (Bgrid, RD.B, scaling);
 
             if (saveplots) {
                 if (vidframes) {
-                    plt.savePngs (logpath, "A", framecount, displays[0]);
-                    plt.savePngs (logpath, "B", framecount, displays[1]);
+                    savePngs (logpath, "schnak", framecount, v1);
                     ++framecount;
                 } else {
-                    plt.savePngs (logpath, "A", RD.stepCount, displays[0]);
-                    plt.savePngs (logpath, "B", RD.stepCount, displays[1]);
+                    savePngs (logpath, "schnak", RD.stepCount, v1);
                 }
             }
+        }
+
+        // rendering the graphics.
+        steady_clock::duration sincerender = steady_clock::now() - lastrender;
+        if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
+            glfwPollEvents();
+            v1.render();
+            lastrender = steady_clock::now();
         }
 #endif
         // Save data every 'logevery' steps
@@ -288,10 +319,8 @@ int main (int argc, char **argv)
     }
 
 #ifdef COMPILE_PLOTTING
-    // Ask for a keypress before exiting so that the final images can be studied
-    int a;
-    cout << "Press any key[return] to exit.\n";
-    cin >> a;
+    cout << "Ctrl-c or press x in graphics window to exit.\n";
+    v1.keepOpen();
 #endif
 
     return 0;

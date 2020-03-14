@@ -5,8 +5,7 @@
     "plotevery": 50,
     "saveplots": false,
     "overwrite_logs": true,
-    "logpath" : "./logs/schnak1",
-    "hextohex_d" : 0.01,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
     "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
     "dt" : 0.000005,
