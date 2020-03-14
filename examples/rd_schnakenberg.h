@@ -8,8 +8,10 @@
 using std::vector;
 #include <array>
 using std::array;
-#include "morph/RD_Base.h"
+#include <morph/RD_Base.h>
 using morph::RD_Base;
+#include <morph/HdfData.h>
+using morph::HdfData;
 
 /*!
  * Two component Schnakenberg Reaction Diffusion system

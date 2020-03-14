@@ -2,16 +2,19 @@
     // Global simulation parameters
     "steps" : 125000,                // Number of steps to simulate for
     "logevery": 5000,
-    "plotevery": 50,
+    "plotevery": 500,
     "saveplots": false,
     "overwrite_logs": true,
-    "hextohex_d" : 0.03,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.02,           // Hex to hex distance, determines num hexes
     "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
     "dt" : 0.000005,
+    // Ellipse parameters
+    "ellipse_a" : 0.8,
+    "ellipse_b" : 0.6,
     // Schnakenberg model parameters
-    "D_A" : 0.3,
-    "D_B" : 0.1,
+    "D_A" : 0.5,
+    "D_B" : 0.6,
     "k1"  : 3,
     "k2"  : 1,
     "k3"  : 2,

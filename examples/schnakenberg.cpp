@@ -174,7 +174,7 @@ int main (int argc, char **argv)
 
     RD.svgpath = ""; // We'll do an elliptical boundary
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
-    RD.ellipse_b = conf.getDouble ("ellipse_b", 1.2);
+    RD.ellipse_b = conf.getDouble ("ellipse_b", 0.6);
     RD.logpath = logpath;
 
     // Control the size of the hexes, and therefore the number of hexes in the grid
