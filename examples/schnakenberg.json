@@ -1,0 +1,20 @@
+{
+    // Global simulation parameters
+    "steps" : 125000,                // Number of steps to simulate for
+    "logevery": 5000,
+    "plotevery": 50,
+    "saveplots": false,
+    "overwrite_logs": true,
+    "logpath" : "./logs/schnak1",
+    "hextohex_d" : 0.01,           // Hex to hex distance, determines num hexes
+    "svgpath" : "./ellipse.svg",
+    "boundaryFalloffDist" : 0.01,
+    "dt" : 0.000005,
+    // Schnakenberg model parameters
+    "D_A" : 0.3,
+    "D_B" : 0.1,
+    "k1"  : 3,
+    "k2"  : 1,
+    "k3"  : 2,
+    "k4"  : 2
+}

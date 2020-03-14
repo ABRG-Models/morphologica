@@ -25,14 +25,16 @@ endif()
 # An option that's useful for Ubuntu 16.04 builds
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
-# Add the host definition to CFLAGS
-set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION}")
-set(CMAKE_C_FLAGS "${MORPH_HOST_DEFINITION}")
-
-if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++11")
+# Add the host definition to CXXFLAGS along with other switches
+if (APPLE)
+  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Xpreprocessor -fopenmp")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -g -std=c++11")
+  # To use Intel compiler, you can call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
+  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -qopenmp -D__ICC__")
+  else() # GCC
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  endif()
 endif()
 
 # Following `cmake --help-policy CMP0072`
@@ -152,6 +154,9 @@ add_subdirectory(tests)
 
 # pkgconfig file installation
 add_subdirectory(pc)
+
+# Example code (you can also see tests/ for examples)
+add_subdirectory(examples)
 
 # For debugging of variables:
 set(DEBUG_VARIABLES ON)
