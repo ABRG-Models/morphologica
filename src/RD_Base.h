@@ -195,9 +195,18 @@ namespace morph {
         }
 
         /*!
-         * Make the svgpath something that can be set by client code...
+         * Make the svgpath something that can be set by client code. If empty, then
+         * set an elliptical boundary
          */
         string svgpath = "./trial.svg";
+
+        /*!
+         * Ellipse a and b values. Used to specify a boundary only if svgpath is empty.
+         */
+        //@{
+        float ellipse_a = 1.0f;
+        float ellipse_b = 1.0f;
+        //@}
 
         /*!
          * Simple constructor; no arguments.
@@ -393,10 +402,16 @@ namespace morph {
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
             this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
             DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
-            // Read the curves which make a boundary
-            this->r.init (this->svgpath);
-            // Set the boundary in the HexGrid
-            this->hg->setBoundary (this->r.getCorticalPath());
+
+            // Either set a boundary using the svgpath, or set it as an ellipse
+            if (this->svgpath != "") {
+                // Read the curves which make a boundary
+                this->r.init (this->svgpath);
+                // Set the boundary in the HexGrid
+                this->hg->setBoundary (this->r.getCorticalPath());
+            } else {
+                this->hg->setEllipticalBoundary (this->ellipse_a, this->ellipse_b);
+            }
             // Compute the distances from the boundary
             this->hg->computeDistanceToBoundary();
             // Vector size comes from number of Hexes in the HexGrid
