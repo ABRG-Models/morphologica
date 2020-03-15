@@ -36,8 +36,10 @@ classes that Morphologica makes available. It demonstrates:
 
 Run it as follows (I'm assuming you already built morphologica):
 
+```bash
 cd morphologica
 ./build/examples/schnakenberg ./examples/schnakenberg.json
+```
 
 You can interact with the window using your mouse. For some help
 (which will appear on stdout) press 'h' (with the graphical window
