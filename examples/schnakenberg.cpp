@@ -35,13 +35,15 @@ using std::chrono::steady_clock;
 #ifdef COMPILE_PLOTTING
 /*!
  * If COMPILE_PLOTTING is defined at compile time, then include the display and
- * plotting code.
+ * plotting code. I usually put all the plotting code inside #defines like this so
+ * that I can compile a version of the binary without plotting, for parameter searches
+ * in which I am only going to be saving out HDF5 data.
  */
 # include <morph/Visual.h>
 using morph::Visual;
-#include "morph/ColourMap.h"
+#include <morph/ColourMap.h>
 using morph::ColourMapType;
-//! Helper function to save PNG images
+//! Helper function to save PNG images with a suitable name
 void savePngs (const string& logpath, const string& name,
                unsigned int frameN, Visual& v) {
     stringstream ff1;
@@ -55,7 +57,7 @@ void savePngs (const string& logpath, const string& name,
 /*!
  * Included for directory manipulation code
  */
-#include "morph/tools.h"
+#include <morph/tools.h>
 using morph::Tools;
 
 /*!
@@ -95,8 +97,9 @@ int main (int argc, char **argv)
         cerr << "Not much point simulating 0 steps! Exiting." << endl;
         return 1;
     }
+    // After how many simulation steps should a log of the simulation data be written?
     const unsigned int logevery = conf.getUInt ("logevery", 100UL);
-
+    // If true, write over an existing set of logs
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
 
     // Handling of log path requires a few lines of code:
@@ -127,6 +130,7 @@ int main (int argc, char **argv)
         }
     }
 
+    // The length of one timestep
     const FLOATTYPE dt = static_cast<FLOATTYPE>(conf.getDouble ("dt", 0.00001));
 
     cout << "steps to simulate: " << steps << endl;
@@ -147,11 +151,11 @@ int main (int argc, char **argv)
     const unsigned int win_height = conf.getUInt ("win_height", win_height_default);
 
     // Set up the morph::Visual object which provides the visualization scene (and
-    // window)
+    // a GLFW window to show it in)
     Visual v1 (win_width, win_height, "Schnakenberg RD");
     // You can tweak the near and far clipping planes
     v1.zNear = 0.001;
-    v1.zFar = 50;
+    v1.zFar = 20;
     // And the field of view of the visual scene.
     v1.fov = 45;
     // You can lock movement of the scene
@@ -172,7 +176,7 @@ int main (int argc, char **argv)
      */
     RD_Schnakenberg<FLOATTYPE> RD;
 
-    RD.svgpath = ""; // We'll do an elliptical boundary
+    RD.svgpath = ""; // We'll do an elliptical boundary, so set svgpath empty
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
     RD.ellipse_b = conf.getDouble ("ellipse_b", 0.6);
     RD.logpath = logpath;
@@ -180,17 +184,18 @@ int main (int argc, char **argv)
     // Control the size of the hexes, and therefore the number of hexes in the grid
     RD.hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
 
-    // Boundary fall-off distance
+    // Boundary fall-off distance, this is used to ensure that initial noise in the
+    // system rolls off to zero at the boundary.
     RD.boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
 
-
-    // After setting the first few features, we can set up all the vectors in RD:
+    // After setting the first few features, we can call the allocate function to set
+    // up all the vectors in the RD object:
     RD.allocate();
 
     // After allocate(), we can set up parameters:
     RD.set_dt(dt);
 
-    // Set the Schakenberg model parameters
+    // Set the Schakenberg model parameters:
     RD.k1 = conf.getDouble ("k1", 1);
     RD.k2 = conf.getDouble ("k2", 1);
     RD.k3 = conf.getDouble ("k3", 1);
@@ -198,7 +203,8 @@ int main (int argc, char **argv)
     RD.D_A = conf.getDouble ("D_A", 0.1);
     RD.D_B = conf.getDouble ("D_B", 0.1);
 
-    // Now parameters are set, call init()
+    // Now parameters are set, call init(), which in this example simply initializes A
+    // and B with noise.
     RD.init();
 
     /*
@@ -225,8 +231,8 @@ int main (int argc, char **argv)
         }
     }
 
-    // As RD.allocate() as been called (and log directory has been
-    // created/verified ready), positions can be saved to file.
+    // As RD.allocate() as been called (and log directory has been created/verified
+    // ready), positions can be saved to an HDF5 file:
     RD.savePositions();
 
 #ifdef COMPILE_PLOTTING
@@ -242,15 +248,12 @@ int main (int argc, char **argv)
     float xzero = 0.0f;
 
     // A
-    unsigned int Agrid = 0;
     spatOff = { xzero, 0.0, 0.0 };
-    Agrid = v1.addHexGridVisual (RD.hg, spatOff, RD.A, scaling, ColourMapType::Plasma);
+    unsigned int Agrid = v1.addHexGridVisual (RD.hg, spatOff, RD.A, scaling, ColourMapType::Plasma);
     xzero += RD.hg->width();
     // B
-    unsigned int Bgrid = 0;
     spatOff = { xzero, 0.0, 0.0 };
-    Bgrid = v1.addHexGridVisual (RD.hg, spatOff, RD.B, scaling, ColourMapType::Jet);
-    xzero += RD.hg->width();
+    unsigned int Bgrid = v1.addHexGridVisual (RD.hg, spatOff, RD.B, scaling, ColourMapType::Jet);
 #endif
 
     // Start the loop
@@ -261,6 +264,8 @@ int main (int argc, char **argv)
 
 #ifdef COMPILE_PLOTTING
         if ((RD.stepCount % plotevery) == 0) {
+            // These two lines update the data for the two hex grids. That leads to
+            // the CPU recomputing the OpenGL vertices for the visualizations.
             v1.updateHexGridVisual (Agrid, RD.A, scaling);
             v1.updateHexGridVisual (Bgrid, RD.B, scaling);
 
@@ -274,7 +279,8 @@ int main (int argc, char **argv)
             }
         }
 
-        // rendering the graphics.
+        // rendering the graphics. After each simulation step, check if enough time
+        // has elapsed for it to be necessary to call v1.render().
         steady_clock::duration sincerender = steady_clock::now() - lastrender;
         if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
             glfwPollEvents();
