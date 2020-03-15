@@ -57,8 +57,7 @@ public:
     //@}
 
     /*!
-     * Simple constructor; no arguments. Simply call RD_Base
-     * constructor.
+     * Simple constructor; no arguments. Simply call RD_Base constructor.
      */
     RD_Schnakenberg (void) :
         RD_Base<Flt>() {
@@ -77,14 +76,16 @@ public:
     void allocate (void) {
         // Always call allocate() from the base class first.
         RD_Base<Flt>::allocate();
-        // Resize and zero-initialise the various containers
+        // Resize and zero-initialise the various containers. Note that the size of a
+        // 'vector variable' is given by the number of hexes in the hex grid which is
+        // a member of this class (via its parent, RD_Base)
         this->resize_vector_variable (this->A);
         this->resize_vector_variable (this->B);
     }
 
     /*!
-     * Initialise variables and parameters. Carry out one-time
-     * computations required of the model.
+     * Initialise variables and parameters. Carry out one-time computations required
+     * of the model.
      */
     void init (void) {
         // Initialise A, B with noise
@@ -155,7 +156,7 @@ public:
 
         this->stepCount++;
 
-        // 2. 4th order Runge-Kutta computation for A
+        // 1. 4th order Runge-Kutta computation for A
         {
             // Atst: "A at a test point". Atst is a temporary estimate for A.
             vector<Flt> Atst(this->nhex, 0.0);
@@ -205,9 +206,8 @@ public:
             }
 
             /*
-             * Final sum together. This could be incorporated in the
-             * for loop for Stage 4, but I've separated it out for
-             * pedagogy.
+             * Final sum together. This could be incorporated in the for loop for
+             * Stage 4, but I've separated it out for pedagogy.
              */
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
@@ -215,7 +215,7 @@ public:
             }
         }
 
-        // 3. 4th order Runge-Kutta computation of B
+        // 2. 4th order Runge-Kutta computation of B
         {
             // Btst: "B at a test point". Btst is a temporary estimate for B.
             vector<Flt> Btst(this->nhex, 0.0);
@@ -265,9 +265,8 @@ public:
             }
 
             /*
-             * Final sum together. This could be incorporated in the
-             * for loop for Stage 4, but I've separated it out for
-             * pedagogy.
+             * Final sum together. This could be incorporated in the for loop for
+             * Stage 4, but I've separated it out for pedagogy.
              */
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
