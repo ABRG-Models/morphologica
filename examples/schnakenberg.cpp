@@ -248,6 +248,7 @@ int main (int argc, char **argv)
     float xzero = 0.0f;
 
     // A
+    xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
     unsigned int Agrid = v1.addHexGridVisual (RD.hg, spatOff, RD.A, scaling, ColourMapType::Plasma);
     xzero += RD.hg->width();
