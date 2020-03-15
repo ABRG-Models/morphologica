@@ -1,3 +1,9 @@
+include_directories(../src)
+
+if(APPLE)
+  link_directories(/usr/X11R6/lib)
+endif(APPLE)
+
 # Schnakenberg RD system
 add_executable(schnakenberg schnakenberg.cpp)
 target_compile_definitions(schnakenberg PUBLIC FLOATTYPE=float COMPILE_PLOTTING)

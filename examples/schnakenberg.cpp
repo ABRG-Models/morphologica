@@ -39,9 +39,9 @@ using std::chrono::steady_clock;
  * that I can compile a version of the binary without plotting, for parameter searches
  * in which I am only going to be saving out HDF5 data.
  */
-# include <morph/Visual.h>
+# include "Visual.h"
 using morph::Visual;
-#include <morph/ColourMap.h>
+#include "ColourMap.h"
 using morph::ColourMapType;
 //! Helper function to save PNG images with a suitable name
 void savePngs (const string& logpath, const string& name,
@@ -57,13 +57,13 @@ void savePngs (const string& logpath, const string& name,
 /*!
  * Included for directory manipulation code
  */
-#include <morph/tools.h>
+#include "tools.h"
 using morph::Tools;
 
 /*!
  * A jsoncpp-wrapping class for configuration.
  */
-#include <morph/Config.h>
+#include "Config.h"
 using morph::Config;
 
 /*!
