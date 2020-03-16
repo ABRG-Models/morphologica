@@ -91,10 +91,19 @@ namespace morph {
         //@}
 
         /*!
+         * 2D coordinates (or other pairs of values)
+         */
+        //@{
+        void read_contained_vals (const char* path, vector<array<float, 2>>& vals);
+        void read_contained_vals (const char* path, vector<array<double, 2>>& vals);
+        //@}
+
+        /*!
          * Vector of 3D coordinates
          */
         //@{
         void read_contained_vals (const char* path, vector<array<float, 3>>& vals);
+        //! 3D coordinates collected into groups of 4 (each specifying a quad)
         void read_contained_vals (const char* path, vector<array<float, 12>>& vals);
         //! OpenCV-friendly overloads
         //@{
@@ -203,6 +212,9 @@ namespace morph {
          * Containers of coordinates
          */
         //@{
+        //! 2D coordinates
+        void add_contained_vals (const char* path, const vector<array<float, 2>>& vals);
+        void add_contained_vals (const char* path, const vector<array<double, 2>>& vals);
         //! 3D coordinates
         void add_contained_vals (const char* path, const vector<array<float, 3>>& vals);
         //! Sets of 4 3D coordinates (if you like, or anything else that requires arrays of 12 floats)

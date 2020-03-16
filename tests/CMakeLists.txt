@@ -170,6 +170,16 @@ add_executable(testhdfdata2 testhdfdata2.cpp)
 target_link_libraries(testhdfdata2 morphologica)
 add_test(testhdfdata2 testhdfdata2)
 
+add_executable(testhdfdata3f testhdfdata3.cpp)
+target_compile_definitions(testhdfdata3f PUBLIC FLT=float)
+target_link_libraries(testhdfdata3f morphologica)
+add_test(testhdfdata3f testhdfdata3f)
+
+add_executable(testhdfdata3d testhdfdata3.cpp)
+target_compile_definitions(testhdfdata3d PUBLIC FLT=float)
+target_link_libraries(testhdfdata3d morphologica)
+add_test(testhdfdata3d testhdfdata3d)
+
 if(${glfw3_FOUND})
   # Test morph::Visual class
   add_executable(testvis testVisual.cpp)
