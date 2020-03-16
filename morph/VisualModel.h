@@ -474,6 +474,130 @@ namespace morph {
             // end of sphere calculation
             //cout << "Number of vertexPositions coords: " << (this->vertexPositions.size()/3) << endl;
         }
+
+        /*!
+         * Create a cone.
+         *
+         * @idx The index into the 'vertex array'
+         *
+         * @centre The centre of the cone - would be the end of the line
+         *
+         * @tip The tip of the cone
+         *
+         * @ringoffset Move the ring forwards or backwards along the vector from
+         * @centre to @tip. This is positive or negative proportion of tip - centre.
+         *
+         * @col The cone colour
+         *
+         * @r Radius of the ring
+         *
+         * @segments Number of segments used to render the tube
+         */
+        void computeCone (GLushort& idx,
+                          array<float, 3> centre,
+                          array<float, 3> tip,
+                          float ringoffset,
+                          array<float, 3> col,
+                          float r = 1.0f, int segments = 12) {
+
+            // The cone is drawn as two "caps" a 'bottom cap' (or perhaps the 'back'
+            // cap) and an 'outer cap'
+
+            // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
+            Vector3<float> vcentre (centre);
+            Vector3<float> vtip (tip);
+            //cout << "Compute cone from " << vcentre.asString() << "to " << vtip.asString() << endl;
+            Vector3<float> v = vtip - vcentre;
+            v.renormalize();
+            //cout << "Normal vector v is " << v.asString() << endl;
+
+            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
+            // v. The unit in-plane vector is inplane.normalise. Can now use that
+            // vector in the plan to define a point on the circle.
+            Vector3<float> rand_vec;
+            rand_vec.randomize();
+            Vector3<float> inplane = rand_vec * v;
+            inplane.renormalize();
+            //cout << "in-plane vector is " << inplane.asString() << endl;
+
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            Vector3<float> v_x_inplane = v * inplane;
+            //cout << "v ^ inplane vector is " << v_x_inplane.asString() << endl;
+            // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vcentre, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::TWO_PI_F/(float)segments;
+                //cout << "t is " << t << endl;
+                Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                // Subtract the vector which makes this circle
+                c = c + (c * ringoffset);
+                this->vertex_push (vcentre+c, this->vertexPositions);
+                //cout << "point on vstart cap is " << (vstart+c).asString() << endl;
+                this->vertex_push (-v, this->vertexNormals); // -v
+                this->vertex_push (col, this->vertexColors);
+            }
+
+            // Push tip vertex as the last vertex.
+            this->vertex_push (vtip, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            // Number of vertices = segments + 2.
+            int nverts = segments + 2;
+
+            // After creating vertices, push all the indices.
+            GLushort capMiddle = idx;
+            GLushort capStartIdx = idx + 1;
+            GLushort endMiddle = idx + (GLushort)nverts - 1;
+            GLushort endStartIdx = capStartIdx /*+ segments*/;
+
+            //cout << "bottom cap" << endl;
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                //cout << "add " << capMiddle << " to indices\n";
+                this->indices.push_back (capStartIdx + j);
+                //cout << "add " << (capStartIdx+j) << " to indices\n";
+                this->indices.push_back (capStartIdx + 1 + j);
+                //cout << "add " << (capStartIdx+1+j) << " to indices\n";
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            //cout << "add " << capMiddle << " to indices\n";
+            this->indices.push_back (capStartIdx + segments - 1);
+            //cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
+            this->indices.push_back (capStartIdx);
+            //cout << "add " << (capStartIdx) << " to indices\n";
+
+
+            // 'outer' cap
+            //cout << "vend cap" << endl;
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                //cout << "add " << (endMiddle) << " to indices\n";
+                this->indices.push_back (endStartIdx + j);
+                //cout << "add " << (endStartIdx + j) << " to indices\n";
+                this->indices.push_back (endStartIdx + 1 + j);
+                //cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
+            }
+            // Last one
+            this->indices.push_back (endMiddle);
+            //cout << "add " << (endMiddle) << " to indices\n";
+            this->indices.push_back (endStartIdx + segments - 1);
+            //cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
+            this->indices.push_back (endStartIdx);
+            //cout << "add " << (endStartIdx) << " to indices\n";
+
+            // Update idx
+            idx += nverts;
+        }
     };
 
 } // namespace morph

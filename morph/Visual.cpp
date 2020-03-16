@@ -255,7 +255,6 @@ morph::Visual::render (void)
             // Set the uniform:
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
         }
-
         (*hgvf)->render();
         ++hgvf;
     }
@@ -266,7 +265,6 @@ morph::Visual::render (void)
         if (loc == -1) {
             cout << "No mvp_matrix? loc: " << loc << endl;
         } else {
-            // Set the uniform:
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
         }
         (*hgvd)->render();
@@ -279,10 +277,8 @@ morph::Visual::render (void)
         if (loc == -1) {
             cout << "No mvp_matrix? loc: " << loc << endl;
         } else {
-            // Set the uniform:
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
         }
-
         (*qvf)->render();
         ++qvf;
     }
@@ -293,10 +289,8 @@ morph::Visual::render (void)
         if (loc == -1) {
             cout << "No mvp_matrix? loc: " << loc << endl;
         } else {
-            // Set the uniform:
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
         }
-
         (*prvf)->render();
         ++prvf;
     }
@@ -307,12 +301,25 @@ morph::Visual::render (void)
         if (loc == -1) {
             cout << "No mvp_matrix? loc: " << loc << endl;
         } else {
-            // Set the uniform:
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
         }
-
         (*scvf)->render();
         ++scvf;
+    }
+
+    // FIXME: this->scv_float etc etc should all be one or two things: vector<VisualModel<float>*> vm_float;
+    // and vector<VisualModel<double>*> vm_double; not sure it would work, though.
+    typename vector<QuiverVisual<float>*>::iterator quivf = this->quiv_float.begin();
+    while (quivf != this->quiv_float.end()) {
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*quivf)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        (*quivf)->render();
+        ++quivf;
     }
 
     glfwSwapBuffers (this->window);
@@ -470,6 +477,51 @@ morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
     unsigned int rtn = 0x400000; // 0x400000 denotes "member of scv_float" (0x200000 for scv_double)
     rtn |= (this->scv_float.size()-1);
     return rtn;
+}
+
+unsigned int
+morph::Visual::addQuiverVisual (const vector<array<float, 3>>* points,
+                                const array<float, 3> offset,
+                                const vector<array<float, 3>>* quivers,
+                                //const array<float, 2> scale,
+                                const ColourMapType cmtype)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    QuiverVisual<float>* quiv1 = new QuiverVisual<float>(this->shaderprog, points, offset, quivers, cmtype);
+    this->quiv_float.push_back (quiv1);
+    // Create the return ID
+    unsigned int rtn = 0x1000000; // 0x1000000 denotes "member of quiv_float" (0x200000 for scv_double)
+    rtn |= (this->quiv_float.size()-1);
+    return rtn;
+}
+
+void
+morph::Visual::updateQuiverVisual (const unsigned int gridId,
+                                   const vector<array<float, 3>>* points,
+                                   const vector<array<float, 3>>* quivers)
+{
+    unsigned int idx = gridId & 0xffff;
+    this->quiv_float[idx]->updateData (points, quivers);
+}
+
+void
+morph::Visual::updateQuiverVisual (const unsigned int gridId,
+                                   const vector<array<float, 2>>* points,
+                                   const vector<array<float, 2>>* quivers)
+{
+    unsigned int idx = gridId & 0xffff;
+    // Make the 2d points and quivers into 3d, assuming 2d in x-y plane
+    vector<array<float, 3>> pts3 ((*points).size());
+    vector<array<float, 3>> quivs3 ((*quivers).size());
+    for (unsigned int i = 0; i < (*points).size(); ++i) {
+        array<float,3> pt3 = {(*points)[i][0], (*points)[i][1], 0.0f};
+        pts3[i] = pt3;
+    }
+    for (unsigned int i = 0; i < (*quivers).size(); ++i) {
+        array<float,3> quiv3 = {(*quivers)[i][0], (*quivers)[i][1], 0.0f};
+        quivs3[i] = quiv3;
+    }
+    this->quiv_float[idx]->updateData (&pts3, &quivs3);
 }
 
 const GLchar*

@@ -21,6 +21,7 @@
 #include "QuadsVisual.h"
 #include "PointRowsVisual.h"
 #include "ScatterVisual.h"
+#include "QuiverVisual.h"
 #include "CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
 # include "TriangleVisual.h"
@@ -192,6 +193,25 @@ namespace morph {
         //@}
 
         /*!
+         * Add a quiver visualizatoin
+         */
+        unsigned int addQuiverVisual (const vector<array<float, 3>>* points,
+                                      const array<float, 3> offset,
+                                      const vector<array<float, 3>>* quivers,
+                                      //const array<float, 2> scale,
+                                      const ColourMapType cmtype);
+
+        /*!
+         * Update a quiver visual
+         */
+        void updateQuiverVisual (const unsigned int gridId,
+                                 const vector<array<float, 3>>* points,
+                                 const vector<array<float, 3>>* quivers);
+        void updateQuiverVisual (const unsigned int gridId,
+                                 const vector<array<float, 2>>* points,
+                                 const vector<array<float, 2>>* quivers);
+
+        /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
@@ -303,6 +323,10 @@ namespace morph {
         //! Scatter visuals - a scatter plot of spheres
         vector<ScatterVisual<float>*> scv_float;
         vector<ScatterVisual<double>*> scv_double;
+
+        //! Quiver visuals
+        vector<QuiverVisual<float>*> quiv_float;
+        vector<QuiverVisual<double>*> quiv_double;
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;

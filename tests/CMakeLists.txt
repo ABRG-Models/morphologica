@@ -195,6 +195,9 @@ if(${glfw3_FOUND})
   add_executable(testvisscatter testVisScatter.cpp)
   target_link_libraries(testvisscatter -L${morphologica_BINARY_DIR}/src morphologica)
 
+  add_executable(testvisquiver testVisQuiver.cpp)
+  target_link_libraries(testvisquiver -L${morphologica_BINARY_DIR}/src morphologica)
+
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
   target_link_libraries(test_ellipseboundary morphologica)

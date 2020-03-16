@@ -27,7 +27,8 @@ namespace morph {
         Monochrome, // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
         MonochromeRed,
         MonochromeBlue,
-        MonochromeGreen
+        MonochromeGreen,
+        Fixed       // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
     //! Different ways of specifying colour exist
@@ -43,8 +44,13 @@ namespace morph {
     private:
         //! Type of map
         ColourMapType type = ColourMapType::Jet;
-        //! The hue (range 0 to 1.0f) as used in HSV colour values.
+        //! The hue (range 0 to 1.0f) as used in HSV colour values for Monochrome maps.
         float hue = 0.0;
+        //! The saturation, used for ColourMapType::Fixed only
+        float sat = 1.0;
+        //! The value, used for ColourMapType::Fixed only
+        float val = 1.0;
+
     public:
         //! Convert the scalar datum into an RGB (or BGR) colour
         array<float, 3> convert (Flt datum) {
@@ -119,6 +125,11 @@ namespace morph {
                 c = this->monochrome (datum);
                 break;
             }
+            case ColourMapType::Fixed:
+            {
+                c = ColourMap::hsv2rgb (this->hue, this->sat, this->val);
+                break;
+            }
             default:
             {
                 break;
@@ -183,6 +194,24 @@ namespace morph {
             }
             }
         }
+
+        void setHSV (const float& h, const float& s, const float& v) {
+            if (this->type != ColourMapType::Fixed) {
+                throw runtime_error ("Only ColourMapType::Fixed allows setting of saturation/value");
+            }
+            this->hue = h;
+            this->sat = s;
+            this->val = v;
+        }
+
+#if 0
+        void setRGB (const float& r, const float& g, const float& b) {
+            if (this->type != ColourMapType::Fixed) {
+                throw runtime_error ("Only ColourMapType::Fixed allows setting of RGB");
+            }
+            // Set hue, sat, val by converting from RGB.
+        }
+#endif
 
         //! Get the hue, in its most saturated form
         array<float, 3> getHueRGB (void) {
