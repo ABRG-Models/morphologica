@@ -1,6 +1,8 @@
 # CTests
 
-include_directories(../src)
+# In tests allow #include <morph/hdr.h> or <hdr.h>
+include_directories(..)
+include_directories(../morph)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)

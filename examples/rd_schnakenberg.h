@@ -8,9 +8,9 @@
 using std::vector;
 #include <array>
 using std::array;
-#include "RD_Base.h"
+#include "morph/RD_Base.h"
 using morph::RD_Base;
-#include "HdfData.h"
+#include "morph/HdfData.h"
 using morph::HdfData;
 
 /*!

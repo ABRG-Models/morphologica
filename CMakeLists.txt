@@ -142,7 +142,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
-add_subdirectory(src)
+add_subdirectory(morph)
 
 # We have to make a morph/rapidxml-1.13 installation for client code
 # that uses the ReadCurves class.

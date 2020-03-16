@@ -1,4 +1,6 @@
-include_directories(../src)
+# Include the base directory, so that we can then #include
+# <morph/header.h> either in-build, or within client code
+include_directories(..)
 
 if(APPLE)
   link_directories(/usr/X11R6/lib)
