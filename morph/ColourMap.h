@@ -204,6 +204,10 @@ namespace morph {
             this->val = v;
         }
 
+        void setHSV (const array<float,3> hsv) {
+            this->setHSV (hsv[0],hsv[1],hsv[2]);
+        }
+
 #if 0
         void setRGB (const float& r, const float& g, const float& b) {
             if (this->type != ColourMapType::Fixed) {

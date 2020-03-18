@@ -480,14 +480,49 @@ morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
 }
 
 unsigned int
+morph::Visual::addScatterVisual (const vector<array<float, 3>>* points,
+                                 const array<float, 3> offset,
+                                 const vector<float>& data,
+                                 const float pointRadius,
+                                 const array<float, 2> scale,
+                                 const ColourMapType cmtype,
+                                 const array<float, 3> hsv_colour)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    ScatterVisual<float>* scv1 = new ScatterVisual<float>(this->shaderprog, points, offset, &data, pointRadius, scale, cmtype);
+    scv1->cm.setHSV (hsv_colour);
+    this->scv_float.push_back (scv1);
+    // Create the return ID
+    unsigned int rtn = 0x400000; // 0x400000 denotes "member of scv_float" (0x200000 for scv_double)
+    rtn |= (this->scv_float.size()-1);
+    return rtn;
+}
+
+unsigned int
 morph::Visual::addQuiverVisual (const vector<array<float, 3>>* points,
                                 const array<float, 3> offset,
                                 const vector<array<float, 3>>* quivers,
-                                //const array<float, 2> scale,
                                 const ColourMapType cmtype)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
     QuiverVisual<float>* quiv1 = new QuiverVisual<float>(this->shaderprog, points, offset, quivers, cmtype);
+    this->quiv_float.push_back (quiv1);
+    // Create the return ID
+    unsigned int rtn = 0x1000000; // 0x1000000 denotes "member of quiv_float" (0x200000 for scv_double)
+    rtn |= (this->quiv_float.size()-1);
+    return rtn;
+}
+
+unsigned int
+morph::Visual::addQuiverVisual (const vector<array<float, 3>>* points,
+                                const array<float, 3> offset,
+                                const vector<array<float, 3>>* quivers,
+                                const ColourMapType cmtype,
+                                const array<float, 3> colour_hsv)
+{
+    // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
+    QuiverVisual<float>* quiv1 = new QuiverVisual<float>(this->shaderprog, points, offset, quivers, cmtype);
+    quiv1->cm.setHSV (colour_hsv);
     this->quiv_float.push_back (quiv1);
     // Create the return ID
     unsigned int rtn = 0x1000000; // 0x1000000 denotes "member of quiv_float" (0x200000 for scv_double)
@@ -522,6 +557,28 @@ morph::Visual::updateQuiverVisual (const unsigned int gridId,
         quivs3[i] = quiv3;
     }
     this->quiv_float[idx]->updateData (&pts3, &quivs3);
+}
+
+void
+morph::Visual::updateScatterVisual (const unsigned int gridId,
+                                    const vector<array<float, 3>>* points)
+{
+    unsigned int idx = gridId & 0xffff;
+    this->scv_float[idx]->updateCoords (points);
+}
+
+void
+morph::Visual::updateScatterVisual (const unsigned int gridId,
+                                    const vector<array<float, 2>>* points)
+{
+    unsigned int idx = gridId & 0xffff;
+    // Make the 2d points and quivers into 3d, assuming 2d in x-y plane
+    vector<array<float, 3>> pts3 ((*points).size());
+    for (unsigned int i = 0; i < (*points).size(); ++i) {
+        array<float,3> pt3 = {(*points)[i][0], (*points)[i][1], 0.0f};
+        pts3[i] = pt3;
+    }
+    this->scv_float[idx]->updateCoords (&pts3);
 }
 
 const GLchar*

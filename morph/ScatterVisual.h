@@ -79,7 +79,7 @@ namespace morph {
             unsigned int ndata = this->data->size();
 
             if (ndata > 0 && ncoords != ndata) {
-                cout << "ncoords != ndata, return." << endl;
+                cout << "ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return." << endl;
                 return;
             }
 
@@ -112,12 +112,25 @@ namespace morph {
             }
         }
 
-        //! Update the data and re-compute the vertices.
+        //! Update the data and/or coords and re-compute the vertices.
+        //@{
         void updateData (const vector<Flt>* _data, const array<Flt, 2> _scale) {
             this->scale = _scale;
             this->data = _data;
             this->reinit();
         }
+        void updateData (const vector<array<Flt, 3>>* _coords,
+                         const vector<Flt>* _data, const array<Flt, 2> _scale) {
+            this->coords = _coords;
+            this->scale = _scale;
+            this->data = _data;
+            this->reinit();
+        }
+        void updateCoords (const vector<array<Flt, 3>>* _coords) {
+            this->coords = _coords;
+            this->reinit();
+        }
+        //@}
 
         void reinit (void) {
             // Fixme: Better not to clear, then repeatedly pushback here:
