@@ -613,6 +613,19 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         delete [] source;
 
         glCompileShader (shader);
+
+        int  shaderCompileSuccess;
+        char infoLog[512];
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
+        if (!shaderCompileSuccess) {
+            glGetShaderInfoLog(shader, 512, NULL, infoLog);
+            cout << "\nShader compilation failed!";
+            cout << "\n--------------------------\n";
+            cout << infoLog << endl;
+            cout << "Exiting." << endl;
+            exit (2);
+        }
+
         GLenum shaderError = glGetError();
         if (shaderError == GL_INVALID_VALUE) {
             cout << "Shader compilation resulted in GL_INVALID_VALUE" << endl;
