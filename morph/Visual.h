@@ -190,7 +190,21 @@ namespace morph {
                                        const float pointRadius,
                                        const array<float, 2> scale,
                                        const ColourMapType cmtype);
+        //! And this one allows you to set hsv for a fixed colour, if required
+        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
+                                       const array<float, 3> offset,
+                                       const vector<float>& data,
+                                       const float pointRadius,
+                                       const array<float, 2> scale,
+                                       const ColourMapType cmtype,
+                                       const array<float, 3> hsv_colour);
+
         //@}
+        void updateScatterVisual (const unsigned int gridId,
+                                  const vector<array<float, 3>>* points);
+
+        void updateScatterVisual (const unsigned int gridId,
+                                  const vector<array<float, 2>>* points);
 
         /*!
          * Add a quiver visualizatoin
@@ -198,8 +212,12 @@ namespace morph {
         unsigned int addQuiverVisual (const vector<array<float, 3>>* points,
                                       const array<float, 3> offset,
                                       const vector<array<float, 3>>* quivers,
-                                      //const array<float, 2> scale,
                                       const ColourMapType cmtype);
+        unsigned int addQuiverVisual (const vector<array<float, 3>>* points,
+                                      const array<float, 3> offset,
+                                      const vector<array<float, 3>>* quivers,
+                                      const ColourMapType cmtype,
+                                      const array<float, 3> colour_hsv);
 
         /*!
          * Update a quiver visual
