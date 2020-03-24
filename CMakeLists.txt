@@ -25,16 +25,31 @@ endif()
 # An option that's useful for Ubuntu 16.04 builds
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
+# An option to allow users without OpenMP (that's some Macs) to compile
+option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to compile lines, as appropriate)" ON)
+
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Xpreprocessor -fopenmp")
+  if (COMPILE_WITH_OPENMP)
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Xpreprocessor -fopenmp")
+  else(COMPILE_WITH_OPENMP)
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11")
+  endif(COMPILE_WITH_OPENMP)
 else()
   # To use Intel compiler, you can call cmake as: cmake -DCMAKE_CXX_COMPILER=icpc ..
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -qopenmp -D__ICC__")
-  else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
-  endif()
+  if (COMPILE_WITH_OPENMP)
+    if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -qopenmp -D__ICC__")
+    else() # GCC
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+    endif()
+  else(COMPILE_WITH_OPENMP)
+    if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -D__ICC__")
+    else() # GCC
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
+    endif()
+  endif(COMPILE_WITH_OPENMP)
 endif()
 
 # Following `cmake --help-policy CMP0072`
