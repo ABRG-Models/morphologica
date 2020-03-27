@@ -103,6 +103,11 @@ find_package(HDF5 REQUIRED)
 # pkgconfig is used to find JSON adn also to find lib paths for glfw3.
 find_package(PkgConfig)
 
+if(APPLE)
+  # Manually set PKG_CONFIG_PATH onMac, as mac ports will, by default, search only in /opt/local
+  set(ENV{PKG_CONFIG_PATH}  "ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+endif(APPLE)
+
 # JSON
 if(${PKG_CONFIG_FOUND})
   message(INFO ": pkg-config was found. Search for JSON.")
