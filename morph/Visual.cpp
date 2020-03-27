@@ -47,6 +47,10 @@ morph::Visual::Visual(int width, int height, const string& title)
 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+#ifdef __OSX__
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
     this->window = glfwCreateWindow (width, height, title.c_str(), NULL, NULL);
     if (!this->window) {
         // Window or OpenGL context creation failed
