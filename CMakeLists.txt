@@ -45,6 +45,11 @@ endif()
 
 if (COMPILE_WITH_OPENMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_SWITCH}")
+  if(APPLE)
+    # On Apple, add the links for libomp:
+    include_directories(/opt/local/include/libomp)
+    link_libraries(-L/opt/local/lib/libomp omp)
+  endif(APPLE)
 endif (COMPILE_WITH_OPENMP)
 
 # Following `cmake --help-policy CMP0072`
