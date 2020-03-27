@@ -143,7 +143,7 @@ if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
   # Schnakenberg RD system
   add_executable(schnakenberg schnakenberg.cpp)
   target_compile_definitions(schnakenberg PUBLIC FLOATTYPE=float COMPILE_PLOTTING)
-  target_link_libraries(schnakenberg ${MORPH_LDFLAGS} glfw3)
+  target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo glfw3)
 else()
     message(FATAL_ERROR "You need libglfw3 to compile this program!")
 endif()
