@@ -166,7 +166,7 @@ add_subdirectory(tests)
 add_subdirectory(pc)
 
 # Example code (you can also see tests/ for examples)
-add_subdirectory(examples)
+#add_subdirectory(examples)
 
 # For debugging of variables:
 set(DEBUG_VARIABLES ON)
