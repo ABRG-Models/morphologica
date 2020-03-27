@@ -186,6 +186,14 @@ cmake ..
 make
 sudo make install
 ```
+Also make sure that PKG_CONFIG_PATH environment variable is set up correctly, some Mac ports systems don't have this set up and then jsoncpp isn't found. Add
+
+```
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+```
+to your .bashrc.
+
+
 ### (Optional) Install glfw3
 
 The modern OpenGL code in morphologica requires the library GLFW3 and only compiles if
