@@ -9,7 +9,10 @@ if(APPLE)
 endif(APPLE)
 
 # BezCurve class
-set(TARGETTEST1 testbez CACHE TYPE STRING)
+set(TARGETTEST1 testbez) # On Lana's Apple got this warning:
+# Cmake warning (dev) at tests/CMakeLists.txt:12 (set):
+# implicitly converting 'TYPE' to 'STRING' type.
+# This warning is for project developers...
 set(SOURCETEST1 testbez.cpp)
 add_executable(${TARGETTEST1} ${SOURCETEST1})
 #target_compile_features(${TARGETTEST1} PUBLIC)
@@ -17,21 +20,21 @@ target_link_libraries(${TARGETTEST1} morphologica)
 add_test(testbez ${TARGETTEST1})
 
 # BezCurve class
-set(TARGETTEST1_1 testbez2 CACHE TYPE STRING)
+set(TARGETTEST1_1 testbez2)
 set(SOURCETEST1_1 testbez2.cpp)
 add_executable(${TARGETTEST1_1} ${SOURCETEST1_1})
 target_link_libraries(${TARGETTEST1_1} morphologica)
 add_test(testbez2 ${TARGETTEST1_1})
 
 # BezCurvePath class
-set(TARGETTEST1_2 testbezcurves CACHE TYPE STRING)
+set(TARGETTEST1_2 testbezcurves)
 set(SOURCETEST1_2 testbezcurves.cpp)
 add_executable(${TARGETTEST1_2} ${SOURCETEST1_2})
 target_link_libraries(${TARGETTEST1_2} morphologica)
 add_test(testbezcurves ${TARGETTEST1_2})
 
 # Testing matrix representation of Bezier curves
-set(TARGETTEST1_3 testbezmatrix CACHE TYPE STRING)
+set(TARGETTEST1_3 testbezmatrix)
 set(SOURCETEST1_3 testbezmatrix.cpp)
 add_executable(${TARGETTEST1_3} ${SOURCETEST1_3})
 # Disable warning -Wunused-but-set-variable:
@@ -41,7 +44,7 @@ target_link_libraries(${TARGETTEST1_3} morphologica)
 add_test(testbezmatrix ${TARGETTEST1_3})
 
 # Testing auto-fitting a Bezier curve
-set(TARGETTEST1_4 testbezfit CACHE TYPE STRING)
+set(TARGETTEST1_4 testbezfit)
 set(SOURCETEST1_4 testbezfit.cpp)
 add_executable(${TARGETTEST1_4} ${SOURCETEST1_4})
 target_compile_definitions(${TARGETTEST1_4} PUBLIC FLT=float)
@@ -49,7 +52,7 @@ target_link_libraries(${TARGETTEST1_4} morphologica)
 add_test(testbezfit ${TARGETTEST1_4})
 
 # Testing splitting of Bezier curves
-set(TARGETTEST1_5 testbezsplit CACHE TYPE STRING)
+set(TARGETTEST1_5 testbezsplit)
 set(SOURCETEST1_5 testbezsplit.cpp)
 add_executable(${TARGETTEST1_5} ${SOURCETEST1_5})
 target_compile_definitions(${TARGETTEST1_5} PUBLIC FLT=float)
@@ -57,7 +60,7 @@ target_link_libraries(${TARGETTEST1_5} morphologica)
 add_test(testbezsplit ${TARGETTEST1_5})
 
 # Testing Bezier derivatives (though really testing curve joining)
-set(TARGETTEST1_6 testbezderiv CACHE TYPE STRING)
+set(TARGETTEST1_6 testbezderiv)
 set(SOURCETEST1_6 testbezderiv.cpp)
 add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
 target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
@@ -65,7 +68,7 @@ target_link_libraries(${TARGETTEST1_6} morphologica)
 add_test(testbezderiv ${TARGETTEST1_6})
 
 # Testing Bezier derivatives
-set(TARGETTEST1_7 testbezderiv2 CACHE TYPE STRING)
+set(TARGETTEST1_7 testbezderiv2)
 set(SOURCETEST1_7 testbezderiv2.cpp)
 add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
 target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
@@ -73,7 +76,7 @@ target_link_libraries(${TARGETTEST1_7} morphologica)
 add_test(testbezderiv2 ${TARGETTEST1_7})
 
 # Testing Bezier derivatives
-set(TARGETTEST1_8 testbezderiv3 CACHE TYPE STRING)
+set(TARGETTEST1_8 testbezderiv3)
 set(SOURCETEST1_8 testbezderiv3.cpp)
 add_executable(${TARGETTEST1_8} ${SOURCETEST1_8})
 target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
@@ -81,35 +84,35 @@ target_link_libraries(${TARGETTEST1_8} morphologica)
 add_test(testbezderiv3 ${TARGETTEST1_8})
 
 # Test two curves connected together
-set(TARGETTEST2 twocurves CACHE TYPE STRING)
+set(TARGETTEST2 twocurves)
 set(SOURCETEST2 twocurves.cpp)
 add_executable(${TARGETTEST2} ${SOURCETEST2})
 target_link_libraries(${TARGETTEST2} morphologica)
 add_test(twocurves ${TARGETTEST2})
 
 # Test reading trial.svg
-set(TARGETTEST3 testreadcurves CACHE TYPE STRING)
+set(TARGETTEST3 testreadcurves)
 set(SOURCETEST3 testreadcurves.cpp)
 add_executable(${TARGETTEST3} ${SOURCETEST3})
 target_link_libraries(${TARGETTEST3} morphologica)
 add_test(testreadcurves ${TARGETTEST3})
 
 # Test reading whiskerbarrels_withcentres.svg
-set(TARGETTEST31 testreadcurves_circles CACHE TYPE STRING)
+set(TARGETTEST31 testreadcurves_circles)
 set(SOURCETEST31 testreadcurves_circles.cpp)
 add_executable(${TARGETTEST31} ${SOURCETEST31})
 target_link_libraries(${TARGETTEST31} morphologica)
 add_test(testreadcurves_circles ${TARGETTEST31})
 
 # Test display. Note also linking to static library here, to prove it works.
-set(TARGETTEST4 testdisplay CACHE TYPE STRING)
+set(TARGETTEST4 testdisplay)
 set(SOURCETEST4 testdisplay.cpp)
 add_executable(${TARGETTEST4} ${SOURCETEST4})
 target_link_libraries(${TARGETTEST4} morphstatic ${LAPACK_LIBRARIES})
 add_test(testdisplay ${TARGETTEST4})
 
 # Test hexgrid
-set(TARGETTEST5 testhexgrid CACHE TYPE STRING)
+set(TARGETTEST5 testhexgrid)
 set(SOURCETEST5 testhexgrid.cpp)
 add_executable(${TARGETTEST5} ${SOURCETEST5})
 target_link_libraries(${TARGETTEST5} morphologica)
