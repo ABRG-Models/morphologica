@@ -18,7 +18,20 @@ boundary shapes too! Finally, it has a set of classes which implement
 a modern OpenGL visualization scheme which is efficient enough to run
 alongside your simulation.
 
-## schnakenberg.cpp
+## schnakenberg
+
+This directory contains a complete example. After you have compiled and
+installed morphologica, you should be able to change directory into
+schnakenberg, create a build directory and carry out a cmake build
+
+```bash
+cd morphologica/examples/schakenberg
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+```
 
 This program demonstrates the creation of a reaction diffusion system
 using the morph::RD_Base class. It is a good demonstration of the main
@@ -34,10 +47,10 @@ classes that Morphologica makes available. It demonstrates:
 * The morph::Tools class, which contains a collection of static
   utility functions.
 
-Run it as follows (I'm assuming you already built morphologica):
+Run it as follows (I'm assuming you already built morphologica and then
+ran through the build instructions above):
 
 ```bash
-cd morphologica
 ./build/examples/schnakenberg ./examples/schnakenberg.json
 ```
 
