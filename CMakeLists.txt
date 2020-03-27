@@ -179,7 +179,7 @@ add_subdirectory(pc)
 #add_subdirectory(examples)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES ON)
+set(DEBUG_VARIABLES OFF)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach(_variableName ${_variableNames})
