@@ -205,12 +205,13 @@ namespace morph
          * appends to the end of @c. *May also modify @c*. Set @optimize to true to try
          * out experimental fit improvements.
          */
-        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& c, bool optimize=false) {
+        void fit (vector<pair<Flt, Flt>> points, BezCurve<Flt>& preceding, bool optimize=false) {
 
+            // First, find the best fit for @points, without reference to the @preceding curve.
             this->fit (points);
 
             // preceding control points.
-            vector<pair<Flt, Flt>> prec_ctrl = c.getControls();
+            vector<pair<Flt, Flt>> prec_ctrl = preceding.getControls();
             size_t len = prec_ctrl.size();
             if (len < 3) {
                 return;
@@ -313,10 +314,10 @@ namespace morph
             // Update the other curve's control points, also.
             prec_ctrl[len-2].first = pm1_r_final(0,0);
             prec_ctrl[len-2].second = pm1_r_final(0,1);
-            c.updateControls (prec_ctrl);
+            preceding.updateControls (prec_ctrl);
 
 #ifdef DEBUG__
-            cout << "Preceding controls: " << c.outputControl();
+            cout << "Preceding controls: " << preceding.outputControl();
             cout << "C (after line-up):\n" << this->C;
             // First, need a cost function:
 #endif
