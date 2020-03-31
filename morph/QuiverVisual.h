@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GL3/gl3.h"
-#include "GL/glext.h"
 
 #include "tools.h"
 

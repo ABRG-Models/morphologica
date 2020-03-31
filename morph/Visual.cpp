@@ -1,7 +1,6 @@
 #include "Visual.h"
 
 #include "GL3/gl3.h"
-#include "GL/glext.h"
 
 #include <iostream>
 using std::cout;
