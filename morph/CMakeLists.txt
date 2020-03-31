@@ -1,7 +1,22 @@
-# Define which cpp files will be compiled
-set(morphlibsrc display.cpp sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
+#
+# This file controls the compilation and linking of libmorphologica,
+# along with a library of the older visualisation code, called
+# libmorphdisplay0
+#
+# It also controls the compilation of the executable testboundary,
+# which is a utility program which reads an svg file, then creates a
+# HexGrid and shows the boundary. It's useful to demonstrate that the
+# morphologica code can read an Adobe Illustrator or Inkscape file.
+#
 
-# If we have glfw3 then attempt to compile Seb's modern opengl visualization code
+# Old display code:
+set(morphdisplay0src display.cpp)
+
+# Define which cpp files will be compiled into libmorphologica:
+set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
+
+# If we have glfw3 then attempt to compile Seb's modern opengl
+# visualization code into libmorphologica
 if (${glfw3_FOUND})
   message (INFO ": libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
@@ -19,19 +34,34 @@ endif()
 # Compile shared library
 add_library(morphologica SHARED ${morphlibsrc})
 
+# Compile display code separately
+add_library(morphdisplay0 SHARED ${morphdisplay0src})
+
 # Library linking
 if(APPLE)
-  # Note hard-coded linking of libX11.dylib, to avoid linking to one in /opt/local. There's
-  # probably a better way to do this; ideally, find_package(X11) should be pointed towards the
-  # X11 located in /opt/X11.
+  # Note hard-coded linking of libX11.dylib, to avoid linking to one
+  # in /opt/local. There's probably a better way to do this; ideally,
+  # find_package(X11) should be pointed towards the X11 located in
+  # /opt/X11.
+  #
+  # Linking incantations suitable for old OpenGL code:
+  target_link_libraries(
+    morphdisplay0 GL ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
+    )
+  # and for modern OpenGL:
   target_link_libraries(
     morphologica
-    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
     )
 else()
+  # Old OpenGL:
+  target_link_libraries(
+    morphdisplay0 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
+    )
+  # Modern OpenGL:
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
     )
 endif(APPLE)
 
@@ -45,6 +75,9 @@ endif()
 install(TARGETS morphologica
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   )
+install(TARGETS morphdisplay0
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  )
 
 # Static library
 add_library(morphstatic STATIC ${morphlibsrc})
@@ -53,12 +86,12 @@ set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 if(APPLE)
 target_link_libraries(
   morphstatic
-  armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${JSONCPP_LDFLAGS}
+  armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${JSONCPP_LDFLAGS}
   )
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
   )
 endif(APPLE)
 
@@ -83,5 +116,5 @@ endif()
 
 # The testboundary utility program
 add_executable(testboundary testboundary.cpp)
-target_link_libraries(testboundary morphologica)
+target_link_libraries(testboundary morphologica morphdisplay0)
 install(TARGETS testboundary DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

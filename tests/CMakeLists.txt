@@ -108,7 +108,7 @@ add_test(testreadcurves_circles ${TARGETTEST31})
 set(TARGETTEST4 testdisplay)
 set(SOURCETEST4 testdisplay.cpp)
 add_executable(${TARGETTEST4} ${SOURCETEST4})
-target_link_libraries(${TARGETTEST4} morphstatic ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST4} morphstatic morphdisplay0 ${LAPACK_LIBRARIES})
 add_test(testdisplay ${TARGETTEST4})
 
 # Test hexgrid
@@ -120,42 +120,42 @@ add_test(testhexgrid ${TARGETTEST5})
 
 # Test hexgrid2
 add_executable(testhexgrid2 testhexgrid2.cpp)
-target_link_libraries(testhexgrid2 morphologica)
+target_link_libraries(testhexgrid2 morphologica morphdisplay0)
 add_test(testhexgrid2 testhexgrid2)
 
 # Test hexgrid3 (hexgrid2 with visualisation)
 add_executable(testhexgrid3 testhexgrid3.cpp)
-target_link_libraries(testhexgrid3 morphologica)
+target_link_libraries(testhexgrid3 morphologica morphdisplay0)
 add_test(testhexgrid3 testhexgrid3)
 
 # Test hexgridsave (HexGrid's save feature)
 add_executable(testhexgridsave testhexgridsave.cpp)
-target_link_libraries(testhexgridsave morphologica)
+target_link_libraries(testhexgridsave morphologica morphdisplay0)
 add_test(testhexgridsave testhexgridsave)
 
 # Test boundary pgram
 add_executable(testdom_pgram testdom_pgram.cpp)
-target_link_libraries(testdom_pgram morphologica)
+target_link_libraries(testdom_pgram morphologica morphdisplay0)
 add_test(testdom_pgram testdom_pgram)
 
 # Test boundary rect
 add_executable(testdom_rect testdom_rect.cpp)
-target_link_libraries(testdom_rect morphologica)
+target_link_libraries(testdom_rect morphologica morphdisplay0)
 add_test(testdom_rect testdom_rect)
 
 # Test boundary hex
 add_executable(testdom_hex testdom_hex.cpp)
-target_link_libraries(testdom_hex morphologica)
+target_link_libraries(testdom_hex morphologica morphdisplay0)
 add_test(testdom_hex testdom_hex)
 
 # Test boundary bound
 add_executable(testdom_bound testdom_bound.cpp)
-target_link_libraries(testdom_bound morphologica)
+target_link_libraries(testdom_bound morphologica morphdisplay0)
 add_test(testdom_bound testdom_bound)
 
 # Test boundary sub-parallelograms
 #add_executable(testdom_subp testdom_subp.cpp)
-#target_link_libraries(testdom_subp morphologica)
+#target_link_libraries(testdom_subp morphologica morphdisplay0)
 #add_test(testdom_subp testdom_subp)
 
 # Test distance to boundary
@@ -245,19 +245,19 @@ add_test(testHexUserFlags testHexUserFlags)
 
 # Test Dirichlet code
 add_executable(testDirichlet testDirichlet.cpp)
-target_link_libraries(testDirichlet morphologica)
+target_link_libraries(testDirichlet morphologica morphdisplay0)
 add_test(testDirichlet testDirichlet)
 
 add_executable(testDirichlet2 testDirichlet2.cpp)
-target_link_libraries(testDirichlet2 morphologica)
+target_link_libraries(testDirichlet2 morphologica morphdisplay0)
 add_test(testDirichlet2 testDirichlet2)
 
 add_executable(testDirichlet4 testDirichlet4.cpp)
-target_link_libraries(testDirichlet4 morphologica)
+target_link_libraries(testDirichlet4 morphologica morphdisplay0)
 add_test(testDirichlet4 testDirichlet4)
 
 add_executable(testDirichlet5 testDirichlet5.cpp)
-target_link_libraries(testDirichlet5 morphologica)
+target_link_libraries(testDirichlet5 morphologica morphdisplay0)
 add_test(testDirichlet5 testDirichlet5)
 
 # Test MathAlgo code
