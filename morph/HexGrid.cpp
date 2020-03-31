@@ -595,84 +595,46 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
     return rtn;
 }
 
-
-// Start of JMB changes
-//JMB ensures that client code calling this function is not broken by the change
-//to setBoundary(bpoints) which adds an extra bool argument
 void
-morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
+morph::HexGrid::setBoundary (const BezCurvePath<float>& p, bool loffset)
 {
     this->boundary = p;
 
     if (!this->boundary.isNull()) {
-        DBG ("Applying boundary...");
-	    cout<<"in boundaryDRegion with non-Null boundary" << endl;
-        // Compute the points on the boundary using half of the hex to hex spacing as the step
-        // size. The 'true' argument inverts the y axis.
+        DBG ("Applying boundary " << (loffset ? "WITH" : "without") << " recentering...");
+        // Compute the points on the boundary using half of the hex to hex spacing as
+        // the step size. The 'true' argument inverts the y axis.
         this->boundary.computePoints (this->d/2.0f, true);
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        this->setBoundary (bpoints,true);
+        this->setBoundary (bpoints, loffset);
     }
-	else
-	{
-	    cout<<"in boundaryDRegion with Null boundary" << endl;
-	}
-
 }
 
-
-//JMBwrapper for DRegion code, does not reset centroid
+#if 0 // John: Consider whether you need these wrappers. You could just explicitly
+      // call setBoundary (p, false) or setBoundary (boints, false)
 void
 morph::HexGrid::setBoundaryDRegion (const BezCurvePath<float>& p)
 {
-    this->boundary = p;
-
-    if (!this->boundary.isNull()) {
-        DBG ("Applying boundary...");
-	    cout<<"in boundaryDRegion with non-Null boundary" << endl;
-
-        // Compute the points on the boundary using half of the hex to hex spacing as the step
-        // size. The 'true' argument inverts the y axis.
-		this->boundary.computePoints(this->d/2.0f,true);
-        vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-		// call to setBoundary without recentering the coodinates
-        this->setBoundary (bpoints,false);
-    }
-	else
-	{
-	    cout<<"in boundaryDRegion with Null boundary" << endl;
-	}
+    this->setBoundary (p, false);
 }
 
-
-// JMB wrapper functions for setBoundary
-// this one ensures that current code does not break
-void
-morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints)
-{
-    morph::HexGrid::setBoundary (bpoints, true);
-}
-
-// JMB this one works with DRegion class
 void
 morph::HexGrid::setBoundaryDRegion (vector<BezCoord<float>>& bpoints)
 {
-    morph::HexGrid::setBoundary (bpoints, false);
+    this->setBoundary (bpoints, false);
 }
+#endif
 
-// JMB rewrite of this method to allow for an extra bool argument to determine
-// if the centroid gets remapped (true) or not (false)
 void
 morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
 {
-    cout <<"in setBoundary"<<endl;
     this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
-	// code to offset so boundary centroid moves to (0,0)
+    // code to offset so boundary centroid moves to (0,0)
     auto bpi = bpoints.begin();
-    //if offset is true origin of coordinate system is changed
-    if (loffset) {
+
+    // If loffset is true, the origin of coordinate system is changed:
+    if (loffset == true) {
         DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
-        cout << "Boundary centroid: loffset true " << boundaryCentroid.first << "," << boundaryCentroid.second<<endl;
         while (bpi != bpoints.end()) {
             bpi->subtract (this->boundaryCentroid);
             ++bpi;
@@ -685,16 +647,13 @@ morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
     } // end of code to offset
 
     list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
-    //bpi = bpoints.begin();
-     cout << "Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second<<endl;
     while (bpi != bpoints.end()) {
         nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
 	DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
-	cout << "Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi << endl;
-}
-cout << "after boundary point loop" << endl;
-// Check that the boundary is contiguous.
-{
+    }
+
+    // Check that the boundary is contiguous.
+    {
 	set<unsigned int> seen;
 	list<Hex>::iterator hi = nearbyBoundaryPoint;
 	if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
@@ -702,26 +661,22 @@ cout << "after boundary point loop" << endl;
 		ee << "The constructed boundary is not a contiguous sequence of hexes.";
 		throw runtime_error (ee.str());
 	}
-}
+    }
 
-if (this->domainShape == morph::HexDomainShape::Boundary) {
-    cout<<"in loop on HexDomainShape"<<endl;
+    if (this->domainShape == morph::HexDomainShape::Boundary) {
 	this->discardOutsideBoundary();
 	// Now populate the d_ vectors
-	cout<<"before populate vectors"<<endl;
 	this->populate_d_vectors();
-	cout<<"after populate vectors"<<endl;
 
-} else {
+    } else {
 	// Given that the boundary IS contiguous, can now set a domain of hexes (rectangular,
 	// parallelogram or hexagonal region, such that computations can be efficient) and discard
 	// hexes outside the domain.  setDomain() will define a regular domain, then discard those
 	// hexes outside the regular domain and populate all the d_ vectors.
 	this->setDomain();
+    }
 }
-cout<<"at end of setBoundary"<<endl;
-}
-// end of JMB changes
+
 list<Hex>::iterator
 morph::HexGrid::setBoundary (const BezCoord<float>& point, list<Hex>::iterator startFrom)
 {
