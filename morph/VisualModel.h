@@ -62,12 +62,14 @@ namespace morph {
         //! Common code to call after the vertices have been set up.
         void postVertexInit (void) {
             // Create vertex array object
-            glCreateVertexArrays (1, &this->vao);
+            //glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
+            glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
             glBindVertexArray (this->vao);
 
             // Allocate/create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
-            glCreateBuffers (numVBO, this->vbos);
+            //glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+            glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
 
             // Set up the indices buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
