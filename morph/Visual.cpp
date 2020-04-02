@@ -674,7 +674,7 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
 
         glCompileShader (shader);
 
-        int  shaderCompileSuccess;
+        GLint shaderCompileSuccess = GL_FALSE;
         char infoLog[512];
         glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
         if (!shaderCompileSuccess) {
@@ -686,31 +686,22 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
             exit (2);
         }
 
+        // Test glGetError:
         GLenum shaderError = glGetError();
         if (shaderError == GL_INVALID_VALUE) {
             cout << "Shader compilation resulted in GL_INVALID_VALUE" << endl;
+            exit (3);
         } else if (shaderError == GL_INVALID_OPERATION) {
             cout << "Shader compilation resulted in GL_INVALID_OPERATION" << endl;
+            exit (4);
         } // shaderError is 0
 
-        GLint compiled = GL_FALSE;
-        glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
-        if (compiled != GL_TRUE) {
-            GLsizei len = 0;
-            glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &len);
-            cout << "compiled is GL_FALSE. log length is " << len
-                 << " compiled has value " << compiled <<  endl;
-            if (len > 0) {
-                GLchar* log = new GLchar[len+1];
-                glGetShaderInfoLog (shader, len, &len, log);
-                std::cerr << "Shader compilation failed: " << (char*)log << std::endl;
-                delete [] log;
-            }
-            return 0;
-#ifdef DEBUG
+        if (entry->type == GL_VERTEX_SHADER) {
+            cout << "Successfully compiled vertex shader!" << endl;
+        } else if (entry->type == GL_FRAGMENT_SHADER) {
+            cout << "Successfully compiled fragment shader!" << endl;
         } else {
-            cout << "shader compiled" << endl;
-#endif
+            cout << "Successfully compiled shader!" << endl;
         }
 
         glAttachShader (program, shader);
@@ -727,17 +718,22 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         glGetProgramiv( program, GL_INFO_LOG_LENGTH, &len );
         GLchar* log = new GLchar[len+1];
         glGetProgramInfoLog( program, len, &len, log );
-        std::cerr << "Shader linking failed: " << log << std::endl;
+        cerr << "Shader linking failed: " << log << endl << "Exiting." << endl;
         delete [] log;
-
         for (entry = shaders; entry->type != GL_NONE; ++entry) {
             glDeleteShader (entry->shader);
             entry->shader = 0;
         }
+        exit (5);
 
-        return 0;
     } else {
-        cout << "Good, shader is linked." << endl;
+        if (entry->type == GL_VERTEX_SHADER) {
+            cout << "Successfully linked vertex shader!" << endl;
+        } else if (entry->type == GL_FRAGMENT_SHADER) {
+            cout << "Successfully linked fragment shader!" << endl;
+        } else {
+            cout << "Successfully linked shader!" << endl;
+        }
     }
 
     return program;
