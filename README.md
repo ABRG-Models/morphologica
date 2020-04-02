@@ -43,7 +43,9 @@ On **Ubuntu 16.04**, the packaged cmake is too old to compile hdf5-1.10.x. On th
 ```sh
 mkdir -p ~/src
 cd ~/src
-tar xvf path/to/cmake-3.16.4.tar.gz # any cmake version 3.10 or higher should be ok
+cp path/to/cmake-3.16.4.tar.gz ./ # any cmake version 3.10 or higher should be ok
+gunzip cmake-3.16.4.tar.gz
+tar xvf path/to/cmake-3.16.4.tar
 cd cmake-3.16.4
 mkdir build
 cd build
@@ -69,7 +71,9 @@ You will also need HDF5 installed on your system. There _is_ an HDF5 package for
 ```sh
 mkdir -p ~/src
 cd ~/src
-tar xvf hdf5-1.10.x.tar.gz
+cp path/to/hdf5-1.10.x.tar.gz ./
+gunzip hdf5-1.10.x.tar.gz
+tar xvf hdf5-1.10.x.tar
 cd hdf5-1.10.x
 mkdir build
 cd build
@@ -93,7 +97,7 @@ Then download and compile an up-to-date version
 ```sh
 cd ~/src
 wget http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz
-tar xf armadillo-9.850.1.tar.xz
+tar xf armadillo-9.850.1.tar.xz # On some platforms you may need to do multiple steps here
 cd armadillo-9.850.1
 mkdir build
 cd build
