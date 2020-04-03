@@ -46,7 +46,7 @@ if(APPLE)
   #
   # Linking incantations suitable for old OpenGL code:
   target_link_libraries(
-    morphdisplay0 GL ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
+    morphdisplay0 GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
     )
   # and for modern OpenGL:
   target_link_libraries(
