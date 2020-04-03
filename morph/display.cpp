@@ -1,6 +1,5 @@
 #include <opencv2/opencv.hpp>
 #include "display.h"
-#include "tools.h"
 #include <armadillo>
 #include <stdexcept>
 
@@ -271,10 +270,43 @@ morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, ar
     glEnd();
 }
 
+/// @param gray gray value from 0.0 to 1.0
+/// @returns RGB value in jet colormap
+array<float,3>
+morph::Gdisplay::getJetColorF (double gray)
+{
+    float color_table[][3] = {
+        {0.0, 0.0, 0.5}, // #00007F
+        {0.0, 0.0, 1.0}, // blue
+        {0.0, 0.5, 1.0}, // #007FFF
+        {0.0, 1.0, 1.0}, // cyan
+        {0.5, 1.0, 0.5}, // #7FFF7F
+        {1.0, 1.0, 0.0}, // yellow
+        {1.0, 0.5, 0.0}, // #FF7F00
+        {1.0, 0.0, 0.0}, // red
+        {0.5, 0.0, 0.0}, // #7F0000
+    };
+
+    array<float,3> col;
+    float ivl = 1.0/8.0;
+    for (int i=0; i<8; i++) {
+        double llim = (i==0)?0.:(double)i/8.;
+        double ulim = (i==7)?1.:((double)i+1.)/8.;
+        if (gray >= llim && gray <= ulim) {
+            for (int j=0; j<3; j++) {
+                float c = static_cast<float>(gray - llim);
+                col[j] = (color_table[i][j]*(ivl-c)/ivl + color_table[i+1][j]*c/ivl);
+            }
+            break;
+        }
+    }
+    return col;
+}
+
 void
 morph::Gdisplay::drawHex (array<float,3> pos, array<float,3> offset, float r, float val)
 {
-    array<float,3> c = morph::Tools::getJetColorF (val);
+    array<float,3> c = morph::Gdisplay::getJetColorF (val);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GLfloat col[] = {(GLfloat)c[0], (GLfloat)c[1], (GLfloat)c[2], 1.f};
     glMaterialfv(GL_FRONT, GL_DIFFUSE, col);

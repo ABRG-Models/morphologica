@@ -117,6 +117,10 @@ namespace morph {
         void resetDisplay(vector <double>, vector <double>, vector <double>);
         void redrawDisplay();
         void closeDisplay();
+
+        //! Copied from Tools
+        static array<float,3> getJetColorF (double gray);
+
         void drawHex(double,double,double,double,double,double,double);
         /*!
          * A drawHex taking float args. pos is the position of the
