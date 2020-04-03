@@ -51,7 +51,7 @@ if(APPLE)
   # and for modern OpenGL:
   target_link_libraries(
     morphologica
-    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+    armadillo GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
     )
 else()
   # Old OpenGL:
