@@ -179,8 +179,14 @@ morph::Visual::render (void)
     steady_clock::time_point renderstart = steady_clock::now();
 #endif
     // Can avoid this by getting window size into members only when window size changes.
-    const double retinaScale = 1; // devicePixelRatio()?
 
+
+#ifdef __OSX__
+    // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
+    const double retinaScale = 2; // deals with quadrant issue on osx
+#else
+    const double retinaScale = 1; // devicePixelRatio()?
+#endif
     // Can't do this in a new thread:
     glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
