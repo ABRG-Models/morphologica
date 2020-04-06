@@ -60,7 +60,7 @@ int main (int argc, char** argv)
 
         vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
-        unsigned int visId = v.addQuadsVisual (&surfBoxes, offset, data, scale);
+        unsigned int visId = v.addQuadsVisual (&surfBoxes, offset, data, scale, morph::ColourMapType::Plasma);
 
         cout << "Added Visual with visId " << visId << endl;
 

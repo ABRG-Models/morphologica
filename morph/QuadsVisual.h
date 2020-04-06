@@ -29,7 +29,10 @@ namespace morph {
                     const vector<array<Flt,12>>* _quads,
                     const array<float, 3> _offset,
                     const vector<Flt>* _data,
-                    const array<Flt, 2> _scale) {
+                    const array<Flt, 2> _scale,
+                    ColourMapType _cmt,
+                    const float _hue = 0.0f) {
+
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -38,8 +41,21 @@ namespace morph {
             this->quads = _quads;
             this->data = _data;
 
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+
             this->initializeVertices();
             this->postVertexInit();
+        }
+
+        //! Convert datum using our scale into a colour triplet (RGB).
+        array<float, 3> datumToColour (Flt datum_in) {
+            // Scale the input...
+            Flt datum = datum_in * this->scale[0] + this->scale[1];
+            datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
+            datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
+            // ...then turn it into a colour:
+            return this->cm.convert (datum);
         }
 
         //! Do the computations to initialize the vertices that will represent the
@@ -62,13 +78,15 @@ namespace morph {
             }
 
             for (unsigned int qi = 0; qi < nquads; ++qi) {
+
+                /*
                 // Scale colour
                 Flt datum = dcopy[qi] * this->scale[0] + this->scale[1];
                 datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
                 array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
-
+                */
                 array<float, 12> quad = (*this->quads)[qi];
                 this->vertex_push (quad[0], quad[1], quad[2], this->vertexPositions);   //1
                 this->vertex_push (quad[3], quad[4], quad[5], this->vertexPositions);   //2
@@ -76,10 +94,14 @@ namespace morph {
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
 
                 // All same colours
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
+                //this->vertex_push (clr, this->vertexColors);
+                //this->vertex_push (clr, this->vertexColors);
+                //this->vertex_push (clr, this->vertexColors);
+                //this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
+                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
+                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
+                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
 
                 // All same normals
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -117,6 +139,12 @@ namespace morph {
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
             this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
         }
+
+        /*!
+         * The relevant colour map. Change the type/hue of this colour map object to
+         * generate different types of map.
+         */
+        ColourMap<Flt> cm;
 
         //! The linear scaling for the colour is y1 = m1 x + c1 (m1 = scale[0] and c1 =
         //! scale[1]) If all entries of scale are static_cast<Flt>(0), then auto-scale.

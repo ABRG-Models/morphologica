@@ -426,10 +426,11 @@ unsigned int
 morph::Visual::addQuadsVisual (const vector<array<float, 12>>* quads,
                                const array<float, 3> offset,
                                const vector<float>& data,
-                               const array<float, 2> scale)
+                               const array<float, 2> scale,
+                               const ColourMapType cmtype)
 {
     // Copy x/y positions from the HexGrid and make a copy of the data as vertices.
-    QuadsVisual<float>* qv1 = new QuadsVisual<float>(this->shaderprog, quads, offset, &data, scale);
+    QuadsVisual<float>* qv1 = new QuadsVisual<float>(this->shaderprog, quads, offset, &data, scale, cmtype);
     this->qv_float.push_back (qv1);
     // Create the return ID
     unsigned int rtn = 0x40000; // 0x40000 denotes "member of qv_float" (0x80000 for qv_double)

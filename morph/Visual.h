@@ -158,7 +158,8 @@ namespace morph {
         unsigned int addQuadsVisual (const vector<array<float, 12>>* quads,
                                      const array<float, 3> offset,
                                      const vector<float>& data,
-                                     const array<float, 2> scale);
+                                     const array<float, 2> scale,
+                                     const ColourMapType cmtype);
 
         /*!
          * Rows of @points, which should be linked up into a triangular mesh and added as a
