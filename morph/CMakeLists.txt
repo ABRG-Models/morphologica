@@ -58,10 +58,10 @@ else()
   target_link_libraries(
     morphdisplay0 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
     )
-  # Modern OpenGL:
+  # Modern OpenGL. X11_X11_LIB linking may be unnecessary
   target_link_libraries(
     morphologica
-    ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+    ${ARMADILLO_LIBRARY} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS}
     )
 endif(APPLE)
 
@@ -91,7 +91,7 @@ target_link_libraries(
 else()
 target_link_libraries(
   morphstatic
-  ${ARMADILLO_LIBRARY} ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
+  ${ARMADILLO_LIBRARY} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS}
   )
 endif(APPLE)
 
