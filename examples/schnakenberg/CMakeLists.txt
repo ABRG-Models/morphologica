@@ -147,7 +147,7 @@ if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
 if(APPLE)
 	target_link_libraries(schnakenberg ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw)
 else()
-	target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo glfw3)
+	target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo)
 endif()
 
 
