@@ -11,7 +11,11 @@ if(APPLE)
   file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: jsoncpp\n")
 else()
   file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Libs: -L\${libdir} -lmorphologica\n")
-  file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: hdf5 jsoncpp lapack opencv\n")
+  if(${glfw3_FOUND})
+    file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: x11 glfw3 hdf5 jsoncpp lapack opencv\n")
+  else()
+    file(APPEND ${CMAKE_BINARY_DIR}/pc/libmorphologica.pc "Requires: x11 hdf5 jsoncpp lapack opencv\n")
+  endif()
 endif(APPLE)
 
 
