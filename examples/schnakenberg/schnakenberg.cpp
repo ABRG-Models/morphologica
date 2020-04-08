@@ -153,6 +153,9 @@ int main (int argc, char **argv)
     // Set up the morph::Visual object which provides the visualization scene (and
     // a GLFW window to show it in)
     Visual v1 (win_width, win_height, "Schnakenberg RD");
+    // Set a dark blue background (black is the default). This value has the order
+    // 'RGBA', though the A(alpha) makes no difference.
+    v1.bgcolour = {0.0f, 0.0f, 0.2f, 1.0f};
     // You can tweak the near and far clipping planes
     v1.zNear = 0.001;
     v1.zFar = 20;
