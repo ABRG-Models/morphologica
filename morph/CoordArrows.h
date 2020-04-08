@@ -71,9 +71,9 @@ namespace morph {
         //! Make sure coord arrow colours are ok on the given background colour
         void setColourForBackground (const array<float, 4>& bgcolour) {
             // For now, only worry about the centresphere:
-            array<float, 3> cscol = {-(bgcolour[0]-1.0f),
-                                     -(bgcolour[1]-1.0f),
-                                     -(bgcolour[2]-1.0f)};
+            array<float, 3> cscol = {1.0f-bgcolour[0],
+                                     1.0f-bgcolour[1],
+                                     1.0f-bgcolour[2]};
             if (cscol != this->centresphere_col) {
                 this->centresphere_col = cscol;
                 this->initializeVertices();
