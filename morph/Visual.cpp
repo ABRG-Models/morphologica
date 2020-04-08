@@ -205,9 +205,8 @@ morph::Visual::render (void)
     // Clear color buffer and **also depth buffer**
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Can set a background colour:
-    //static const float white[] = { 1.0f, 1.0f, 1.0f, 0.5f };
-    //glClearBufferfv (GL_COLOR, 0, white); // This line works...
+    // Set the background colour:
+    glClearBufferfv (GL_COLOR, 0, bgcolour.data());
 
     // Render it.
 

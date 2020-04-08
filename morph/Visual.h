@@ -268,6 +268,22 @@ namespace morph {
         //! or rotation.
         bool sceneLocked = false;
 
+        //! The background colour; black by default.
+        array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        /*!
+         * User can directly set bgcolour for any background colour they like, but
+         * here are convenience functions:
+         */
+        //@{
+        void backgroundWhite (void) {
+            this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
+        }
+        void backgroundBlack (void) {
+            this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
+        }
+        //@}
+
         //! Setter for zDefault
         void setZDefault (float f) {
             this->zDefault = f;
