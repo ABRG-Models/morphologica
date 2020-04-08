@@ -189,6 +189,13 @@ morph::Visual::render (void)
     // Can't do this in a new thread:
     glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
+#if 0 // An alternative to the above, using glfw to get the framebuffer size (see
+      // https://www.glfw.org/docs/latest/window_guide.html#window_fbsize)
+    int fb_width, fb_height;
+    glfwGetFramebufferSize (window, &fb_width, &fb_height);
+    glViewport(0, 0, fb_width, fb_height);
+#endif
+
     // Set the perspective from the width/height
     this->setPerspective();
 
