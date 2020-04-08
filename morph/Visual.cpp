@@ -156,7 +156,7 @@ morph::Visual::setPerspective (void)
 }
 
 #ifdef PROFILE_RENDER
-// Rendering takes 16 ms if (that's 60 Hz). With no vsync it's <200 us and typically
+// Rendering takes 16 ms (that's 60 Hz). With no vsync it's <200 us and typically
 // 130 us on corebeast (i9 and GTX1080).
 #include <chrono>
 using namespace std::chrono;
@@ -178,15 +178,14 @@ morph::Visual::render (void)
 #ifdef PROFILE_RENDER
     steady_clock::time_point renderstart = steady_clock::now();
 #endif
-    // Can avoid this by getting window size into members only when window size changes.
-
 
 #ifdef __OSX__
     // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
     const double retinaScale = 2; // deals with quadrant issue on osx
 #else
-    const double retinaScale = 1; // devicePixelRatio()?
+    const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
+
     // Can't do this in a new thread:
     glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
