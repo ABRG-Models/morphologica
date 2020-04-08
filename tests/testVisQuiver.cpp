@@ -19,6 +19,8 @@ int main (int argc, char** argv)
     Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows = true;
+    // For a white background:
+    v.backgroundWhite();
 
     bool holdVis = false;
     if (argc > 1) {
