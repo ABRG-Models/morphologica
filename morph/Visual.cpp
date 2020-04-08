@@ -210,8 +210,9 @@ morph::Visual::render (void)
 
     // Render it.
 
-    // First, the coordinates thing.
-
+    // First, the coordinates thing. Ensure coordarrows centre sphere will be visible
+    // on BG:
+    this->coordArrows->setColourForBackground (this->bgcolour);
 #if 0 // Find out the location of the bottom left of the screen and make the coord
       // arrows stay put there.
     Vector2<float> p0_coord;
