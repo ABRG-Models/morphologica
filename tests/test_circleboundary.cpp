@@ -5,6 +5,8 @@
 
 #include "Visual.h"
 using morph::Visual;
+#include "HexGridVisual.h"
+using morph::HexGridVisual;
 #include "ColourMap.h"
 using morph::ColourMapType;
 #include "tools.h"
@@ -57,7 +59,7 @@ int main (int argc, char** argv)
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         array<float, 4> scale = { 0.0, 0.0, 1.0, 0.0};
-        v.addHexGridVisual (&hg, offset, data, scale, ColourMapType::Rainbow);
+        v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, scale, ColourMapType::Rainbow));
         v.render();
 
         if (holdVis == true) {

@@ -5,6 +5,8 @@
 using morph::Visual;
 #include "ColourMap.h"
 using morph::ColourMapType;
+#include "PointRowsVisual.h"
+using morph::PointRowsVisual;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -49,7 +51,7 @@ int main (int argc, char** argv)
         points.push_back ({ 2, 2.9, 0.3 }); data.push_back(points.back()[2]);
         points.push_back ({ 2, 4,   0.1 }); data.push_back(points.back()[2]);
 
-        unsigned int visId = v.addPointRowsVisual (&points, offset, data, scale, ColourMapType::Twilight);
+        unsigned int visId = v.addVisualModel (new PointRowsVisual<float> (v.shaderprog, &points, offset, &data, scale, ColourMapType::Twilight));
         cout << "Added Visual with visId " << visId << endl;
 
         v.render();

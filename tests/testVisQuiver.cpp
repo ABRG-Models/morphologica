@@ -5,6 +5,8 @@
 using morph::Visual;
 #include "ColourMap.h"
 using morph::ColourMapType;
+#include "QuiverVisual.h"
+using morph::QuiverVisual;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -48,7 +50,7 @@ int main (int argc, char** argv)
         quivs.push_back ({-0.04, 0.05, 0});
         quivs.push_back ({0.3,  -0.1,  0});
 
-        unsigned int visId = v.addQuiverVisual (&coords, offset, &quivs, ColourMapType::Cividis);
+        unsigned int visId = v.addVisualModel (new QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, ColourMapType::Cividis));
 
         cout << "Added Visual with visId " << visId << endl;
 

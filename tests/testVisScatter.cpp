@@ -5,6 +5,8 @@
 using morph::Visual;
 #include "ColourMap.h"
 using morph::ColourMapType;
+#include "ScatterVisual.h"
+using morph::ScatterVisual;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -48,7 +50,7 @@ int main (int argc, char** argv)
         vector<float> data = {0.1, 0.2, 0.5, 0.6, 0.95};
 #endif
 
-        unsigned int visId = v.addScatterVisual (&points, offset, data, 0.03f, scale, ColourMapType::Plasma);
+        unsigned int visId = v.addVisualModel (new ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, ColourMapType::Plasma));
 
         cout << "Added Visual with visId " << visId << endl;
 

@@ -3,6 +3,8 @@
  */
 #include "Visual.h"
 using morph::Visual;
+#include "QuadsVisual.h"
+using morph::QuadsVisual;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -60,7 +62,7 @@ int main (int argc, char** argv)
 
         vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
-        unsigned int visId = v.addQuadsVisual (&surfBoxes, offset, data, scale, morph::ColourMapType::Plasma);
+        unsigned int visId = v.addVisualModel (new QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
 
         cout << "Added Visual with visId " << visId << endl;
 

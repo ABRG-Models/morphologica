@@ -100,142 +100,20 @@ namespace morph {
 
         void saveImage (const string& s);
 
-#if 0
         /*!
-         * Add the vertices for the data in @dat, defined on the HexGrid @hg to the
-         * visual. Offset (spatially) every vertex using @offset. Scale the data
-         * linearly using @scale, which defines a y=mx+c type of scaling, with
-         * scale[0]='m' and scale[1]='c'. (plus a colour scaling defined in scale[2]
-         * and scale[3] in the same way).
+         * Add a VisualModel to the scene. The VisualModel* should be a pointer to a
+         * visual model which has been newly allocated by the client code. Do not add
+         * a pointer to the same VisualModel more than once! When this morph::Visual
+         * object goes out of scope, its deconstructor will delete each VisualModel
+         * that it has a pointer for.
          */
-        //@{
-        void updateHexGridVisual (const unsigned int gridId,
-                                  const vector<float>& data,
-                                  const array<float, 4> scale);
-        void updateHexGridVisual (const unsigned int gridId,
-                                  const vector<double>& data,
-                                  const array<double, 4> scale);
-        //@}
-
-        /*!
-         * Add the vertices for the data in @dat, defined on the HexGrid @hg to the
-         * visual. Spatially offset every vertex using @offset. A scaling must be
-         * applied to the data; otherwise, the scalar values of data should be of the
-         * same order as the positions of the hexes. Only the client code can
-         * determine this, so the scaling has to be supplied, and could be modified
-         * during visualization. Scale the data linearly using @scale, which defines a
-         * y=mx+c type of scaling, with scale[0]='m' and scale[1]='c'.
-         *
-         * Returns a numeric ID which identifies where the HexGridVisual object lives
-         * (hgv_float or hgv_double and which index therein).
-         */
-        //@{
-        unsigned int addHexGridVisual (const HexGrid* hg,
-                                       const array<float, 3> offset,
-                                       const vector<float>& data,
-                                       const array<float, 4> scale,
-                                       const ColourMapType cmtype = ColourMapType::Jet);
-        unsigned int addHexGridVisual (const HexGrid* hg,
-                                       const array<float, 3> offset,
-                                       const vector<double>& data,
-                                       const array<double, 4> scale,
-                                       const ColourMapType cmtype = ColourMapType::Jet);
-        unsigned int addHexGridVisualMono (const HexGrid* hg,
-                                           const array<float, 3> offset,
-                                           const vector<float>& data,
-                                           const array<float, 4> scale,
-                                           const float cmhue);
-        unsigned int addHexGridVisualMono (const HexGrid* hg,
-                                           const array<float, 3> offset,
-                                           const vector<double>& data,
-                                           const array<double, 4> scale,
-                                           const float cmhue);
-        //@}
-
-        /*!
-         * Add a 'Quads visual' quads specifies a load of quads to render as two
-         * triangles each with offset in the scene specified in @offset. The data is
-         * rendered only as the colour of the quads. @scale specifies scaling as 'm' and
-         * 'c' of y=mx+c. If both are 0, then auto-scale.
-         */
-        unsigned int addQuadsVisual (const vector<array<float, 12>>* quads,
-                                     const array<float, 3> offset,
-                                     const vector<float>& data,
-                                     const array<float, 2> scale,
-                                     const ColourMapType cmtype);
-
-        /*!
-         * Rows of @points, which should be linked up into a triangular mesh and added as a
-         * VisualModel. Each point has a value (in @data) which gives it a colour according to the
-         * passed in colour map type (@cmtype). @offset is a spatial offset for the location of the
-         * VisualModel in the Visual scene.
-         */
-        unsigned int addPointRowsVisual (const vector<array<float, 3>>* points,
-                                         const array<float, 3> offset,
-                                         const vector<float>& data,
-                                         const array<float, 2> scale,
-                                         const ColourMapType cmtype);
-
-        /*!
-         * Scatter of @points to plot as spheres. Each point has a value (in @data) which gives it a
-         * colour according to the passed in colour map type (@cmtype). @offset is a spatial offset
-         * for the location of the VisualModel in the Visual scene.
-         */
-        //@{
-        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
-                                       const array<float, 3> offset,
-                                       const vector<float>& data,
-                                       const array<float, 2> scale,
-                                       const ColourMapType cmtype);
-        //! As above, but with @pointRadius as a user-provided argument
-        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
-                                       const array<float, 3> offset,
-                                       const vector<float>& data,
-                                       const float pointRadius,
-                                       const array<float, 2> scale,
-                                       const ColourMapType cmtype);
-        //! And this one allows you to set hsv for a fixed colour, if required
-        unsigned int addScatterVisual (const vector<array<float, 3>>* points,
-                                       const array<float, 3> offset,
-                                       const vector<float>& data,
-                                       const float pointRadius,
-                                       const array<float, 2> scale,
-                                       const ColourMapType cmtype,
-                                       const array<float, 3> hsv_colour);
-
-        //@}
-        void updateScatterVisual (const unsigned int gridId,
-                                  const vector<array<float, 3>>* points);
-
-        void updateScatterVisual (const unsigned int gridId,
-                                  const vector<array<float, 2>>* points);
-
-        /*!
-         * Add a quiver visualizatoin
-         */
-        unsigned int addQuiverVisual (const vector<array<float, 3>>* points,
-                                      const array<float, 3> offset,
-                                      const vector<array<float, 3>>* quivers,
-                                      const ColourMapType cmtype);
-        unsigned int addQuiverVisual (const vector<array<float, 3>>* points,
-                                      const array<float, 3> offset,
-                                      const vector<array<float, 3>>* quivers,
-                                      const ColourMapType cmtype,
-                                      const array<float, 3> colour_hsv);
-
-        /*!
-         * Update a quiver visual
-         */
-        void updateQuiverVisual (const unsigned int gridId,
-                                 const vector<array<float, 3>>* points,
-                                 const vector<array<float, 3>>* quivers);
-        void updateQuiverVisual (const unsigned int gridId,
-                                 const vector<array<float, 2>>* points,
-                                 const vector<array<float, 2>>* quivers);
-#else // NEW code
         unsigned int addVisualModel (VisualModel* model);
-        VisualModel* getVisualModel (unsigned int gridId);
-#endif
+
+        /*!
+         * For the given @modelId, return a pointer to the visual model.
+         */
+        VisualModel* getVisualModel (unsigned int modelId);
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
@@ -345,36 +223,10 @@ namespace morph {
         int window_h;
         //@}
 
-#if 0
-        /*!
-         * This Visual is going to render some HexGridVisuals for us. 1 or
-         * more. Various data types are possible.
-         */
-        vector<HexGridVisual<float>*> hgv_float;
-        vector<HexGridVisual<double>*> hgv_double;
-        // Plus int/unsigned int.
-
-        // To render surfaces made of boxes, use QuadVisuals.
-        vector<QuadsVisual<float>*> qv_float;
-        vector<QuadsVisual<double>*> qv_double;
-
-        //! Visuals made from rows of points arranged into triangular meshes
-        vector<PointRowsVisual<float>*> prv_float;
-        vector<PointRowsVisual<double>*> prv_double;
-
-        //! Scatter visuals - a scatter plot of spheres
-        vector<ScatterVisual<float>*> scv_float;
-        vector<ScatterVisual<double>*> scv_double;
-
-        //! Quiver visuals
-        vector<QuiverVisual<float>*> quiv_float;
-        vector<QuiverVisual<double>*> quiv_double;
-#else
-        // How to have a vector of pointers to VisualModels of any template value? The
-        // fact is, it's complicated:
-        // https://stackoverflow.com/questions/25107807/list-of-template-classes-of-different-types
+        //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
+        //! ScatterVisual, etc) which are going to be rendered in the scene.
         vector<VisualModel*> vm;
-#endif
+
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 

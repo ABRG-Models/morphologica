@@ -1,4 +1,5 @@
 #include "Visual.h"
+#include "HexGridVisual.h"
 #include "HexGrid.h"
 #include "ReadCurves.h"
 #include "tools.h"
@@ -10,6 +11,7 @@
 using namespace std;
 using morph::Visual;
 using morph::HexGrid;
+using morph::HexGridVisual;
 using morph::Tools;
 using morph::HexDomainShape;
 using morph::ReadCurves;
@@ -53,7 +55,7 @@ int main()
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         array<float, 4> scale = { 0.1, 0.0, 1.0, 0.0};
-        unsigned int gridId = v.addHexGridVisual (&hg, offset, data, scale);
+        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data, scale));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
         v.render();
 
