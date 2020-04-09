@@ -129,7 +129,7 @@ morph::Visual::saveImage (const string& filename)
     glPixelStorei (GL_PACK_ROW_LENGTH, 0);
     glPixelStorei (GL_PACK_SKIP_ROWS, 0);
     glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-    glReadPixels (0, 0, w, h, GL_BGR_EXT, GL_UNSIGNED_BYTE, bits);
+    glReadPixels (0, 0, w, h, GL_BGR, GL_UNSIGNED_BYTE, bits);
     cv::Mat capImg (h, w, CV_8UC3); // 3 channels, 8 bits
     cv::Vec3b triplet;
     for (int i = 0; i < h; ++i) {
