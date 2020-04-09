@@ -251,6 +251,18 @@ morph::Visual::render (void)
     TransformMatrix<float> vp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
 #endif
 
+    // Set the view matrix...
+    GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
+    if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, sceneview.mat.data()); }
+
+    // and the projection matrix
+    GLint loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
+    if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
+    GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
+
+    // Render the coordinate arrows if required
+    // Update the coordinate's model-view-projection matrix as a uniform in the GLSL...
     GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
     if (loc != -1) {
         glUniformMatrix4fv (loc, 1, GL_FALSE, vp_coords.mat.data());
@@ -263,12 +275,11 @@ morph::Visual::render (void)
     while (hgvf != this->hgv_float.end()) {
         // For each different HexGridVisual, I can CHANGE the uniform. Right? Right.
         TransformMatrix<float> viewproj = this->projection * sceneview * (*hgvf)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
-            // Set the uniform:
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*hgvf)->viewmatrix.mat.data());
         }
         (*hgvf)->render();
         ++hgvf;
@@ -276,11 +287,11 @@ morph::Visual::render (void)
     typename vector<HexGridVisual<double>*>::iterator hgvd = this->hgv_double.begin();
     while (hgvd != this->hgv_double.end()) {
         TransformMatrix<float> viewproj = this->projection * sceneview * (*hgvd)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*hgvd)->viewmatrix.mat.data());
         }
         (*hgvd)->render();
         ++hgvd;
@@ -288,11 +299,11 @@ morph::Visual::render (void)
     typename vector<QuadsVisual<float>*>::iterator qvf = this->qv_float.begin();
     while (qvf != this->qv_float.end()) {
         TransformMatrix<float> viewproj = this->projection * sceneview * (*qvf)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*qvf)->viewmatrix.mat.data());
         }
         (*qvf)->render();
         ++qvf;
@@ -300,11 +311,11 @@ morph::Visual::render (void)
     typename vector<PointRowsVisual<float>*>::iterator prvf = this->prv_float.begin();
     while (prvf != this->prv_float.end()) {
         TransformMatrix<float> viewproj = this->projection * sceneview * (*prvf)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*prvf)->viewmatrix.mat.data());
         }
         (*prvf)->render();
         ++prvf;
@@ -312,11 +323,11 @@ morph::Visual::render (void)
     typename vector<ScatterVisual<float>*>::iterator scvf = this->scv_float.begin();
     while (scvf != this->scv_float.end()) {
         TransformMatrix<float> viewproj = this->projection * sceneview * (*scvf)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*scvf)->viewmatrix.mat.data());
         }
         (*scvf)->render();
         ++scvf;
@@ -327,11 +338,11 @@ morph::Visual::render (void)
     typename vector<QuiverVisual<float>*>::iterator quivf = this->quiv_float.begin();
     while (quivf != this->quiv_float.end()) {
         TransformMatrix<float> viewproj = this->projection * sceneview * (*quivf)->viewmatrix;
-        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*quivf)->viewmatrix.mat.data());
         }
         (*quivf)->render();
         ++quivf;
