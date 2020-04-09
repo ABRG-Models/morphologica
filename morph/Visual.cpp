@@ -271,6 +271,21 @@ morph::Visual::render (void)
         this->coordArrows->render();
     }
 
+    typename vector<VisualModel*>::iterator vmi = this->vm.begin();
+    while (vmi != this->vm.end()) {
+        // For each different VisualModel, I can CHANGE the uniform. Right? Right.
+        TransformMatrix<float> viewproj = this->projection * sceneview * (*vmi)->viewmatrix;
+        GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+        if (loc == -1) {
+            cout << "No mvp_matrix? loc: " << loc << endl;
+        } else {
+            // Set the uniform:
+            glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        (*vmi)->render();
+        ++vmi;
+    }
+#if 0
     typename vector<HexGridVisual<float>*>::iterator hgvf = this->hgv_float.begin();
     while (hgvf != this->hgv_float.end()) {
         // For each different HexGridVisual, I can CHANGE the uniform. Right? Right.
@@ -347,6 +362,7 @@ morph::Visual::render (void)
         (*quivf)->render();
         ++quivf;
     }
+#endif
 
     glfwSwapBuffers (this->window);
 
@@ -357,6 +373,7 @@ morph::Visual::render (void)
 #endif
 }
 
+#if 0
 void
 morph::Visual::updateHexGridVisual (const unsigned int gridId,
                                     const vector<float>& data,
@@ -607,6 +624,23 @@ morph::Visual::updateScatterVisual (const unsigned int gridId,
     }
     this->scv_float[idx]->updateCoords (&pts3);
 }
+#else // New add/update calls
+unsigned int
+morph::Visual::addVisualModel (VisualModel* model)
+{
+    this->vm.push_back (model);
+    unsigned int rtn = 0x0;
+    // Could check on size of vm_float to make sure it is <= 0x10000
+    rtn |= (this->vm.size()-1);
+    return rtn;
+}
+
+VisualModel*
+morph::Visual::getVisualModel (unsigned int gridId)
+{
+    return (this->vm[gridId]);
+}
+#endif
 
 const GLchar*
 morph::Visual::ReadShader (const char* filename)

@@ -17,6 +17,8 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
+#include "VisualModel.h"
+using morph::VisualModel;
 #include "HexGridVisual.h"
 #include "QuadsVisual.h"
 #include "PointRowsVisual.h"
@@ -98,6 +100,7 @@ namespace morph {
 
         void saveImage (const string& s);
 
+#if 0
         /*!
          * Add the vertices for the data in @dat, defined on the HexGrid @hg to the
          * visual. Offset (spatially) every vertex using @offset. Scale the data
@@ -229,7 +232,10 @@ namespace morph {
         void updateQuiverVisual (const unsigned int gridId,
                                  const vector<array<float, 2>>* points,
                                  const vector<array<float, 2>>* quivers);
-
+#else // NEW code
+        unsigned int addVisualModel (VisualModel* model);
+        VisualModel* getVisualModel (unsigned int gridId);
+#endif
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
@@ -339,6 +345,7 @@ namespace morph {
         int window_h;
         //@}
 
+#if 0
         /*!
          * This Visual is going to render some HexGridVisuals for us. 1 or
          * more. Various data types are possible.
@@ -362,7 +369,12 @@ namespace morph {
         //! Quiver visuals
         vector<QuiverVisual<float>*> quiv_float;
         vector<QuiverVisual<double>*> quiv_double;
-
+#else
+        // How to have a vector of pointers to VisualModels of any template value? The
+        // fact is, it's complicated:
+        // https://stackoverflow.com/questions/25107807/list-of-template-classes-of-different-types
+        vector<VisualModel*> vm;
+#endif
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
