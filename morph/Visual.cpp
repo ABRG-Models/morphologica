@@ -276,11 +276,11 @@ morph::Visual::render (void)
         // For each different VisualModel, I can CHANGE the uniform. Right? Right.
         TransformMatrix<float> viewproj = this->projection * sceneview * (*vmi)->viewmatrix;
         GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-        if (loc == -1) {
-            cout << "No mvp_matrix? loc: " << loc << endl;
-        } else {
-            // Set the uniform:
+        if (loc != -1) {
             glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
+        }
+        if (loc_m != -1) {
+            glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*vmi)->viewmatrix.mat.data());
         }
         (*vmi)->render();
         ++vmi;
