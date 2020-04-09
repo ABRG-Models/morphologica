@@ -62,6 +62,10 @@ if(USE_GLEW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLEW")
 endif(USE_GLEW)
 
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
+endif()
+
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
 # work, but was required for OpenCV, so it's useful to be able to
 # install a from-source build of Armadillo in /usr/local and link to
