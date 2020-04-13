@@ -1,8 +1,11 @@
-#ifndef _VISUALMODEL_H_
-#define _VISUALMODEL_H_
+/*!
+ * A class to hold the vertices that make up some individual model object that can be
+ * part of an OpenGL scene.
+ */
+
+#pragma once
 
 #include "GL3/gl3.h"
-
 #include "tools.h"
 
 #include "TransformMatrix.h"
@@ -602,5 +605,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _VISUALMODEL_H_

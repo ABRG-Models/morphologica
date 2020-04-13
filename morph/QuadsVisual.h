@@ -1,12 +1,8 @@
-#ifndef _QUADSVISUAL_H_
-#define _QUADSVISUAL_H_
+#pragma once
 
 #include "GL3/gl3.h"
-
 #include "tools.h"
-
-#include "VisualModel.h"
-
+#include "VisualDataModel.h"
 #include "MathAlgo.h"
 
 #include <iostream>
@@ -17,12 +13,13 @@ using std::endl;
 using std::vector;
 #include <array>
 using std::array;
+#include <stdexcept>
+using std::runtime_error;
 
 namespace morph {
 
-    //! The template argument Flt is the type of the data which this QuadsVisual will visualize.
     template <class Flt>
-    class QuadsVisual : public VisualModel
+    class QuadsVisual : public VisualDataModel<Flt>
     {
     public:
         QuadsVisual(GLuint sp,
@@ -37,9 +34,26 @@ namespace morph {
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->scale = _scale;
+            this->colourScale.setParams (_scale[0], _scale[1]);
+
+            // How to deal with quads? Each quad has a centroid. The coordinate of the
+            // centroid of the quad is the location for the data point. Thus, convert
+            // the quad data into centroids and save these in VisualDataModel<>::dataCoords.
             this->quads = _quads;
-            this->data = _data;
+
+            // From quads, build dataCoords:
+            this->dataCoords = new vector<array<float, 3>>;
+            this->dataCoords->resize (this->quads->size());
+            unsigned int qi = 0;
+            for (auto q : (*this->quads)) {
+                // q is an array<Flt, 12>. These lines compute the centroid:
+                (*this->dataCoords)[qi][0] = 0.25f * static_cast<float>(q[0]+q[3]+q[6]+q[9]);
+                (*this->dataCoords)[qi][1] = 0.25f * static_cast<float>(q[1]+q[4]+q[7]+q[10]);
+                (*this->dataCoords)[qi][2] = 0.25f * static_cast<float>(q[2]+q[5]+q[8]+q[11]);
+                ++qi;
+            }
+
+            this->scalarData = _data;
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
@@ -48,45 +62,30 @@ namespace morph {
             this->postVertexInit();
         }
 
-        //! Convert datum using our scale into a colour triplet (RGB).
-        array<float, 3> datumToColour (Flt datum_in) {
-            // Scale the input...
-            Flt datum = datum_in * this->scale[0] + this->scale[1];
-            datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
-            datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
-            // ...then turn it into a colour:
-            return this->cm.convert (datum);
+        ~QuadsVisual() {
+            delete this->dataCoords;
         }
 
-        //! Do the computations to initialize the vertices that will represent the
-        //! Quads.
+        virtual void updateCoords (vector<array<Flt, 3>>* _coords) {
+            throw runtime_error ("This won't work.");
+        }
+
+        //! Onitialize the vertices that will represent the Quads.
         void initializeVertices (void) {
 
             unsigned int nquads = this->quads->size();
-            unsigned int ndata = this->data->size();
+            unsigned int ndata = this->scalarData->size();
 
             if (nquads != ndata) {
                 cout << "nquads != ndata, return." << endl;
                 return;
             }
 
-            vector<Flt> dcopy = *(this->data);
-            if (this->scale[0] == 0.0f && this->scale[1] == 0.0f) {
-                // Special 0,0 scale means auto scale data
-                dcopy = MathAlgo<Flt>::autoscale (dcopy);
-                this->scale[0] = 1.0f;
-            }
+            vector<Flt> dcopy = *(this->scalarData);
+            this->colourScale.autoscale (dcopy);
 
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
-                /*
-                // Scale colour
-                Flt datum = dcopy[qi] * this->scale[0] + this->scale[1];
-                datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
-                datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
-                // And turn it into a colour:
-                array<float, 3> clr = morph::Tools::getJetColorF((double)datum);
-                */
                 array<float, 12> quad = (*this->quads)[qi];
                 this->vertex_push (quad[0], quad[1], quad[2], this->vertexPositions);   //1
                 this->vertex_push (quad[3], quad[4], quad[5], this->vertexPositions);   //2
@@ -94,14 +93,11 @@ namespace morph {
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
 
                 // All same colours
-                //this->vertex_push (clr, this->vertexColors);
-                //this->vertex_push (clr, this->vertexColors);
-                //this->vertex_push (clr, this->vertexColors);
-                //this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
-                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
-                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
-                this->vertex_push (this->datumToColour(dcopy[qi]), this->vertexColors);
+                array<float, 3> clr = this->cm.convert(dcopy[qi]);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
 
                 // All same normals
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -123,43 +119,12 @@ namespace morph {
             }
         }
 
-        //! Update the data and re-compute the vertices.
-        void updateData (const vector<Flt>* _data, const array<Flt, 2> _scale) {
-            this->scale = _scale;
-            this->data = _data;
-            // Fixme: Better not to clear, then repeatedly pushback here:
-            this->vertexPositions.clear();
-            this->vertexNormals.clear();
-            this->vertexColors.clear();
-            this->initializeVertices();
-            // Now re-set up the VBOs
-            int sz = this->indices.size() * sizeof(VBOint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
-        }
-
-        /*!
-         * The relevant colour map. Change the type/hue of this colour map object to
-         * generate different types of map.
-         */
-        ColourMap<Flt> cm;
-
-        //! The linear scaling for the colour is y1 = m1 x + c1 (m1 = scale[0] and c1 =
-        //! scale[1]) If all entries of scale are static_cast<Flt>(0), then auto-scale.
-        array<Flt, 2> scale;
-
     private:
         //! The Quads to visualize. This is a vector of 12 values which define 4
-        //! coordinates that define boxes (and we'll vis them as triangles)
+        //! coordinates that define boxes (and we'll vis them as triangles). Note that
+        //! the coordinates of the locations of the data are the centroids of each
+        //! quad.
         const vector<array<Flt,12>>* quads;
-
-        //! The data to visualize as colour (modulated by the linear scaling
-        //! provided in this->scale)
-        const vector<Flt>* data;
     };
 
 } // namespace morph
-
-#endif // _QUADSVISUAL_H_

@@ -5,7 +5,7 @@
 
 #include "tools.h"
 
-#include "VisualModel.h"
+#include "VisualDataModel.h"
 #include "ColourMap.h"
 #include "HexGrid.h"
 #include "MathAlgo.h"
@@ -62,7 +62,7 @@ namespace morph {
 
     //! The template arguemnt Flt is the type of the data which this HexGridVisual will visualize.
     template <class Flt>
-    class HexGridVisual : public VisualModel
+    class HexGridVisual : public VisualDataModel<Flt>
     {
     public:
         HexGridVisual(GLuint sp,
@@ -74,9 +74,10 @@ namespace morph {
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->scale = _scale;
+            this->zScale.setParams (_scale[0], _scale[1]);
+            this->colourScale.setParams (_scale[2], _scale[3]);
             this->hg = _hg;
-            this->data = _data;
+            this->scalarData = _data;
 
             this->initializeVertices();
             this->postVertexInit();
@@ -93,9 +94,10 @@ namespace morph {
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->scale = _scale;
+            this->zScale.setParams (_scale[0], _scale[1]);
+            this->colourScale.setParams (_scale[2], _scale[3]);
             this->hg = _hg;
-            this->data = _data;
+            this->scalarData = _data;
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
@@ -112,12 +114,6 @@ namespace morph {
             // this->initializeVerticesTris();
         }
 
-        /*!
-         * The relevant colour map. Change the type/hue of this colour map object to
-         * generate different types of map.
-         */
-        ColourMap<Flt> cm;
-
         //! Initialize vertex buffer objects and vertex array object.
         //@{
         //! Initialize as triangled. Gives a smooth surface with much
@@ -126,11 +122,11 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 // Scale z:
-                Flt datumC = this->sc((*this->data)[hi]);
+                Flt datumC = this->zScale.transform ((*this->data)[hi]);
                 // Scale colour
-                Flt datum = (*this->data)[hi] * this->scale[2] + this->scale[3];
-                datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
-                datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
+                Flt datum = this->colourScale.transform ((*this->data)[hi]);
+                //shouldn't need: datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
+                //datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
                 array<float, 3> clr = this->cm.convert (datum);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -156,28 +152,6 @@ namespace morph {
             }
         }
 
-        //! Apply scaling for Z position
-        inline Flt sc (const Flt& datum) {
-            return (datum * this->scale[0] + this->scale[1]);
-        }
-
-        //! Update the data and re-compute the vertices.
-        void updateData (const vector<Flt>* _data, const array<Flt, 4> _scale) {
-            this->scale = _scale;
-            this->data = _data;
-            // Fixme: Better not to clear, then repeatedly pushback here:
-            this->vertexPositions.clear();
-            this->vertexNormals.clear();
-            this->vertexColors.clear();
-            this->initializeVertices();
-            // Now re-set up the VBOs
-            int sz = this->indices.size() * sizeof(VBOint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
-        }
-
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
@@ -190,12 +164,11 @@ namespace morph {
             unsigned int idx = 0;
 
             // This is the QuadsVisual way - have an autoscale option
-            vector<Flt> dcopy = *(this->data);
-            if (this->scale[2] == 0.0f && this->scale[3] == 0.0f) {
-                // Special {x,x,0,0} scale means auto scale data, then use scale[0]/[1] to scale the Z position
-                dcopy = MathAlgo<Flt>::autoscale (dcopy);
-                this->scale[2] = 1.0f;
-            }
+            vector<Flt> dcopy = *(this->scalarData);
+            // Need a "if I'm supposed to autoscale when I have data, then do so" option
+            // if (colourScale.shouldAutoscale == true) {
+            this->colourScale.autoscale (dcopy);
+            this->colourScale.transform (*(this->scalarData), dcopy);
 
             Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
             Flt datumNE = static_cast<Flt>(0.0);  // datum at the hex to the east.
@@ -210,22 +183,18 @@ namespace morph {
             Flt half = static_cast<Flt>(0.5);
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
-                // Compute the linear scalings. Could do this once only and have a this->scaledData member
-                datumC = this->sc(dcopy[hi]);
-                datumNE = this->sc(dcopy[NE(hi)]);   // datum Neighbour East
-                datumNNE = this->sc(dcopy[NNE(hi)]); // datum Neighbour North East
-                datumNNW = this->sc(dcopy[NNW(hi)]); // etc
-                datumNW = this->sc(dcopy[NW(hi)]);
-                datumNSW = this->sc(dcopy[NSW(hi)]);
-                datumNSE = this->sc(dcopy[NSE(hi)]);
+                // Use the linear scaled copy of the data, dcopy.
+                datumC = dcopy[hi];
+                datumNE = dcopy[NE(hi)];   // datum Neighbour East
+                datumNNE = dcopy[NNE(hi)]; // datum Neighbour North East
+                datumNNW = dcopy[NNW(hi)]; // etc
+                datumNW = dcopy[NW(hi)];
+                datumNSW = dcopy[NSW(hi)];
+                datumNSE = dcopy[NSE(hi)];
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
-                datum = dcopy[hi] * this->scale[2] + this->scale[3];
-                datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
-                datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
-                // And turn it into a colour:
-                array<float, 3> clr = this->cm.convert (datum);
+                array<float, 3> clr = this->cm.convert (datumC);
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -367,19 +336,9 @@ namespace morph {
         void initializeVerticesHexesStepped (void) {}
         //@}
 
-        //! Linear scaling which should be applied to the (scalar value of the)
-        //! data. y = mx + c, with scale[0] == m and scale[1] == c. The linear scaling
-        //! for the colour is y1 = m1 x + c1 (m1 = scale[2] and c1 = scale[3])
-        array<Flt, 4> scale;
-
     private:
-
         //! The HexGrid to visualize
         const HexGrid* hg;
-
-        //! The data to visualize as z/colour (modulated by the linear scaling
-        //! provided in this->scale)
-        const vector<Flt>* data;
     };
 
 } // namespace morph
