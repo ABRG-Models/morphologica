@@ -12,6 +12,9 @@
 using std::runtime_error;
 #include "MathAlgo.h"
 using morph::MathAlgo;
+#include <type_traits>
+using std::is_array;
+using std::is_vector;
 
 namespace morph {
 
@@ -35,7 +38,23 @@ namespace morph {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This transform function is for Linear scaling only");
             }
-            return (datum * this->params[0] + this->params[1]);
+            if (is_array<T>::value == true) {
+                // It's an array type; a (mathematical) vector. Scale the vector by m
+                // times. params should contain enough values for c to be a vector
+                // itself.
+                cout << "T has array type." << endl;
+                if (params.size() <= datum.size()) {
+                    throw runtime_error ("For linear scaling of ND vector, need N+1 params");
+                }
+                T rtn;
+                for (size_t i = 0; i < datum.size(); ++i) {
+                    rtn[i] = datum[i] * this->params[0] + this->params[1+i];
+                }
+                return rtn;
+            } else {
+                // Assume scalar type; y = mx + c
+                return (datum * this->params[0] + this->params[1]);
+            }
         }
 
         //! Transform a vector of data
@@ -80,10 +99,12 @@ namespace morph {
         //! If true, then the params have been set by autoscaling
         bool autoscaled = false;
 
+        bool do_autoscale = false;
+
         //! maximum and minimum for autoscaling
         //@{
-        T min = 0.0;
-        T max = 1.0;
+        T min; // 0.0; or {0,0,0}; or whatever
+        T max; // 1.0; or {1/sqrt(3), 1/sqrt(3), 1/sqrt(3)}; (length 1)
         //@}
 
     private:

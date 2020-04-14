@@ -132,7 +132,7 @@ namespace morph {
 
         //! A scaling function for the vectorData. Note it's a scalar scaling; scaling
         //! of the actual vectorData will have to be carried out manually.
-        Scale<T> vectorScale;
+        Scale<array<T,3>> vectorScale;
 
         //! The data to visualize. Tdata may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,

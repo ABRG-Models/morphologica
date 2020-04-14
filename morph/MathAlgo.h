@@ -19,6 +19,8 @@ using std::make_pair;
 #include <iostream>
 using std::endl;
 using std::cout;
+#include <type_traits>
+using std::is_array;
 
 #include "MathConst.h"
 
@@ -37,6 +39,7 @@ namespace morph {
     class MathAlgo
     {
     public:
+#if 0 // Reinstate after type_traits set up
         //! Centroid of a set of 2D coordinates @points.
         static pair<T,T> centroid2D (const vector<pair<T,T>> points) {
             pair<T,T> centroid;
@@ -65,8 +68,10 @@ namespace morph {
             centroid.second /= (psz/2);
             return centroid;
         }
+#endif
         //! Centroid of a set of 3D coordinates @points, assumed to be in order
         //! x1,y1,z1, x2,y2,z2, etc
+        // *Used in Stalefish only (I think)
         static array<T,3> centroid3D (const vector<T> points) {
             array<T,3> centroid;
             centroid[0] = static_cast<T>(0);
