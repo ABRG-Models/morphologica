@@ -265,6 +265,10 @@ add_executable(testMathAlgo testMathAlgo.cpp)
 target_link_libraries(testMathAlgo -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testMathAlgo testMathAlgo)
 
+add_executable(testMathAlgo2 testMathAlgo2.cpp)
+target_link_libraries(testMathAlgo2 -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testMathAlgo2 testMathAlgo2)
+
 # Test Nelder Mead algorithm
 add_executable(testNMSimplex testNMSimplex.cpp)
 target_compile_definitions(testNMSimplex PUBLIC FLT=float)
