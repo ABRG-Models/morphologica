@@ -1,6 +1,8 @@
 #include "MathAlgo2.h"
 #include <iostream>
 
+#include "Vector3.h"
+
 using namespace morph;
 using namespace std;
 
@@ -67,5 +69,15 @@ int main()
     vector<float> cen2 = MathAlgo::centroid (vvf);
     cout << "centroid (" << cen2[0] << "," << cen2[1] << "," << cen2[2] << ")" << endl;
 
+    // Not currently possible:
+    //vector<Vector3<float>> vVec3 (4, Vector3<float>(0,0,0));
+    //Vector3<float> cen3 = MathAlgo::centroid (vVec3);
+
+    list<int> li;
+    li.push_back(2);
+    li.push_back(1);
+    li.push_back(7);
+    pair<int,int> limm = MathAlgo::maxmin (li);
+    cout << "max/min: " << limm.first << "," << limm.second << endl;
     return rtn;
 }

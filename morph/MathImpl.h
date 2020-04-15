@@ -21,7 +21,7 @@ using std::cout;
 #include <stdexcept>
 using std::runtime_error;
 #include <type_traits>
-
+#include <memory>
 #include "MathConst.h"
 
 /*!
@@ -48,8 +48,12 @@ namespace morph {
     struct MathImpl
     {
         //! Find the max and min length vector values and return in a pair.
-        template<typename T>
-        static pair<T, T> maxmin (const vector<T>& values) {
+        // For instructions on generalising the container, see
+        // https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
+        template < template <typename, typename> class Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
             cout << "T is resizable 'vector'" << endl;
 
             // Example to get the type of the container T.
@@ -130,8 +134,10 @@ namespace morph {
     struct MathImpl<1>
     {
         //! Find the max and min length vector values and return in a pair.
-        template<typename T>
-        static pair<T, T> maxmin (const vector<T>& values) {
+        template < template <typename, typename> class Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
             cout << "T is fixed size 'vector'" << endl;
 
             using element_type_t = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
@@ -166,6 +172,8 @@ namespace morph {
         template <typename T>
         static T centroid (const vector<T>& coords) {
             cout << "T is fixed size 'vector'" << endl;
+
+            // THIS won't work for my Vector2/3/4 classes.
             using element_type_t = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
             T _centroid;
@@ -175,7 +183,6 @@ namespace morph {
                 return _centroid;
             }
 
-            cout << "Zero _centroid" << endl;
             // zero _centroid
             size_t vsz = coords.begin()->size();
 
@@ -186,7 +193,6 @@ namespace morph {
                 _centroid[j] = static_cast<element_type_t>(0);
             }
 
-            cout << "Compute _centroid" << endl;
             size_t csz = coords.size();
             for (size_t i = 0; i < csz; ++i) {
                 for (size_t j = 0; j < vsz; ++j) {
@@ -197,7 +203,6 @@ namespace morph {
                 _centroid[j] /= static_cast<element_type_t>(csz);
             }
 
-            cout << "Return _centroid" << endl;
             return _centroid;
         }
     };
@@ -212,8 +217,10 @@ namespace morph {
     struct MathImpl<2>
     {
         //! Find the max and min scalar values and return in a pair.
-        template<typename T>
-        static pair<T, T> maxmin (const vector<T>& values) {
+        template < template <typename, typename> class Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
             cout << "T is scalar" << endl;
             T max = numeric_limits<T>::lowest();
             T min = numeric_limits<T>::max();
