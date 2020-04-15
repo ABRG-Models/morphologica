@@ -1,3 +1,7 @@
+/*!
+ * Mathematical algorithms in the morph namespace.
+ */
+
 #pragma once
 
 #include <vector>
@@ -22,84 +26,113 @@ using std::cout;
 using std::is_scalar;
 
 #include "MathConst.h"
-
-/*!
- * Mathematical algorithms in the morph namespace.
- */
+#include "number_type.h"
+#include "MathImpl.h"
 
 namespace morph {
-
-    /*!
-     * Implementations of algorithms where 'T' is a vector-like object, such as
-     * array<> or vector<>.
-     */
-    template <bool b>
-    struct MathImpl // default (is_scalar will have been false)
-    {
-        template<typename T>
-        static pair<T, T> maxmin (const vector<T>& values) {
-            cout << "T is vector" << endl;
-
-            // Example to get the type of the container T.
-            // See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
-            using element_type_t = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
-
-            T max;
-            T min;
-            element_type_t maxlen = 0;
-            element_type_t minlen = numeric_limits<element_type_t>::max();
-
-            for (auto v : values) {
-
-                // (Vector version compares sqrt (v[0]*v[0] + v[1]*v[1] +...))
-                element_type_t vlen = 0;
-                for (auto vi : v) {
-                    vlen += vi*vi;
-                }
-                vlen = sqrt(vlen);
-
-                if (vlen > maxlen) {
-                    maxlen = vlen;
-                    max = v;
-                }
-                if (vlen < minlen) {
-                    minlen = vlen;
-                    min = v;
-                }
-            }
-
-            return make_pair (max, min);
-        }
-    };
-
-    /*!
-     * Implementations of algorithms taking T as a scalar-like object, such as float
-     * or double.
-     */
-    template<>
-    struct MathImpl<true> // is_scalar was true
-    {
-        template<typename T>
-        static pair<T, T> maxmin (const vector<T>& values) {
-            cout << "T is scalar" << endl;
-            T max = numeric_limits<T>::lowest();
-            T min = numeric_limits<T>::max();
-            for (auto v : values) {
-                max = v > max ? v : max;
-                min = v < min ? v : min;
-            }
-            return make_pair (max, min);
-        }
-    };
 
     /*!
      * The new MathAlgo class with its methods.
      */
     struct MathAlgo
     {
+        /*!
+         * Functions whose implementations are in MathImpl, and which differ depending
+         * on whether T is a scalar type or a vector.
+         */
         template <typename T>
         static pair<T,T> maxmin (vector<T>& vec) {
-            return MathImpl<is_scalar<T>::value>::maxmin (vec);
+            //return MathImpl<is_scalar<T>::value>::maxmin (vec);
+            return MathImpl<number_type<T>::value>::maxmin (vec);
         }
-    };
-}
+
+        //! Centroid coordinates. If T is array<Flt, N> then the N-D centroid of the
+        //! points vector<T> is computed.  Try and make it possible to use my own
+        //! Vector3 class for the coords. Find a better way of identifying
+        //! array/vector types?
+        template <typename T>
+        static T centroid (const vector<T>& coords) {
+            return MathImpl<number_type<T>::value>::centroid (coords);
+        }
+
+#if 1
+        /*!
+         * Functions without specific scalar/vector implementations
+         */
+        //@{
+
+        //! Centroid of a set of 2D coordinates @points.
+        template<typename T>
+        static pair<T,T> centroid2D (const vector<pair<T,T>> points) {
+            pair<T,T> centroid;
+            centroid.first = static_cast<T>(0);
+            centroid.second = static_cast<T>(0);
+            for (auto p : points) {
+                centroid.first += p.first;
+                centroid.second += p.second;
+            }
+            centroid.first /= points.size();
+            centroid.second /= points.size();
+            return centroid;
+        }
+
+        //! Centroid of a set of 2D coordinates @points, assumed to be in order
+        //! x1,y1,x2,y2,etc
+        template<typename T>
+        static pair<T,T> centroid2D (const vector<T> points) {
+            pair<T,T> centroid;
+            centroid.first = static_cast<T>(0);
+            centroid.second = static_cast<T>(0);
+            size_t psz = points.size();
+            for (size_t i = 0; i < psz-1; i+=2) {
+                centroid.first += points[i];
+                centroid.second += points[i+1];
+            }
+            centroid.first /= (psz/2);
+            centroid.second /= (psz/2);
+            return centroid;
+        }
+
+        //! Centroid of a set of 3D coordinates @points, assumed to be in order
+        //! x1,y1,z1, x2,y2,z2, etc
+        // *Used in Stalefish only (I think)
+        template<typename T>
+        static array<T,3> centroid3D (const vector<T> points) {
+            array<T,3> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
+            centroid[2] = static_cast<T>(0);
+            size_t psz = points.size();
+            for (size_t i = 0; i < psz-2; i+=3) {
+                centroid[0] += points[i];
+                centroid[1] += points[i+1];
+                centroid[2] += points[i+2];
+            }
+            centroid[0] /= (psz/3);
+            centroid[1] /= (psz/3);
+            centroid[2] /= (psz/3);
+            return centroid;
+        }
+
+        //! Centroid 4 3D coordinates
+        template<typename T>
+        static array<T,3> centroid3D (const array<T, 12> points) {
+            array<T,3> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
+            centroid[2] = static_cast<T>(0);
+            size_t psz = 12;
+            for (size_t i = 0; i < psz-2; i+=3) {
+                centroid[0] += points[i];
+                centroid[1] += points[i+1];
+                centroid[2] += points[i+2];
+            }
+            centroid[0] /= 4;
+            centroid[1] /= 4;
+            centroid[2] /= 4;
+            return centroid;
+        }
+#endif
+    }; // struct MathAlgo
+
+} // namespace morph

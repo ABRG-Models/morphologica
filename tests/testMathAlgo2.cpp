@@ -10,16 +10,22 @@ int main()
 {
     int rtn = 0;
 
-    double f = 0.0f;
     vector<double> vf;
-    vf.push_back (f);
-    f = 2.0f;
-    vf.push_back (f);
-    f = 1.0f;
-    vf.push_back (f);
-    cout << "double version" << endl;
+    vf.push_back (0.0);
+    vf.push_back (0.1);
+    vf.push_back (0.2);
+    vf.push_back (1.0);
+    vf.push_back (1.1);
+    vf.push_back (1.2);
+    cout << "double functions" << endl;
     pair<double, double> vfmm = MathAlgo::maxmin (vf);
     cout << "max/min: " << vfmm.first << "/" << vfmm.second << endl;
+
+    // Throws runtime error, as expected; can't pass vector of scalars to the
+    // MathAlgo::centroid function (instead, use MathAlgo::centroid3D)
+    //
+    //double cen = MathAlgo::centroid (vf);
+    //cout << "centroid (" << cen << endl;
 
     array<double, 3> v1 = { 1.0f, 1.0f, 1.0f };
     array<double, 3> v2 = { 0.5f, 2.0f, 1.0f };
@@ -28,11 +34,38 @@ int main()
     vv3.push_back (v1);
     vv3.push_back (v2);
     vv3.push_back (v3);
-    cout << "array<double,3> version" << endl;
+    cout << "array<double,3> functions" << endl;
     pair<array<double,3>, array<double,3> > vv3mm = MathAlgo::maxmin (vv3);
     cout << "max/min: (" << vv3mm.first[0] << ","
          << vv3mm.first[1] << "," << vv3mm.first[2] << ")/(" << vv3mm.second[0] << ","
          << vv3mm.second[1] << "," << vv3mm.second[2] << ")" << endl;
+
+    array<double,3> cen = MathAlgo::centroid (vv3);
+    cout << "centroid (" << cen[0] << "," << cen[1] << "," << cen[2] << ")" << endl;
+
+    cout << "Try vector of vectors" << endl;
+    vector<float> vf1 = { 1.0f, 1.0f, 1.0f };
+    vector<float> vf2 = { 2.0f, 2.0f, 3.0f };
+    vector<float> vf3 = { 3.0f, -1.0f, 5.0f };
+    vector< vector<float> > vvf;
+    vvf.push_back (vf1);
+    vvf.push_back (vf2);
+    vvf.push_back (vf3);
+    cout << "vector<float> functions" << endl;
+    pair<vector<float>, vector<float> > vvfmm = MathAlgo::maxmin (vvf);
+    cout << "max: (";
+    for (auto i : vvfmm.first) {
+        cout << i << " ";
+    }
+    cout << ")\n";
+    cout << "min: (";
+    for (auto i : vvfmm.second) {
+        cout << i << " ";
+    }
+    cout << ")\n";
+
+    vector<float> cen2 = MathAlgo::centroid (vvf);
+    cout << "centroid (" << cen2[0] << "," << cen2[1] << "," << cen2[2] << ")" << endl;
 
     return rtn;
 }
