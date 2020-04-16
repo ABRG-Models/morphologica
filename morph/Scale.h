@@ -14,7 +14,6 @@ using std::runtime_error;
 using morph::MathAlgo;
 #include <type_traits>
 using std::is_array;
-using std::is_vector;
 
 namespace morph {
 
@@ -38,6 +37,14 @@ namespace morph {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This transform function is for Linear scaling only");
             }
+
+// Example to get the type of the container T:
+// template<typename T>
+// using element_type_t = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
+// See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
+
+// See also std::enable_if for if/else templating
+#if 0
             if (is_array<T>::value == true) {
                 // It's an array type; a (mathematical) vector. Scale the vector by m
                 // times. params should contain enough values for c to be a vector
@@ -52,9 +59,13 @@ namespace morph {
                 }
                 return rtn;
             } else {
+#else
                 // Assume scalar type; y = mx + c
                 return (datum * this->params[0] + this->params[1]);
+#endif
+#if 0
             }
+#endif
         }
 
         //! Transform a vector of data
