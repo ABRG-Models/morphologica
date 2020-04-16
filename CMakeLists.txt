@@ -30,15 +30,15 @@ option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to co
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14")
     set(OPENMP_SWITCH "-Xpreprocessor -fopenmp")
 else()
   # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -xHOST -O3 -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14 -xHOST -O3 -D__ICC__")
     set(OPENMP_SWITCH "-qopenmp")
   else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
     set(OPENMP_SWITCH "-fopenmp")
   endif()
 endif()
@@ -181,6 +181,31 @@ add_subdirectory(pc)
 
 # Example code (you can also see tests/ for examples)
 #add_subdirectory(examples)
+
+# first we can indicate the documentation build as an option and set it to ON by default
+option (BUILD_DOC "Build documentation" OFF)
+if (BUILD_DOC)
+  # check if Doxygen is installed
+  find_package(Doxygen)
+  if(DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target(doc_doxygen ALL
+      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT "Generating API documentation with Doxygen"
+      VERBATIM )
+  else(DOXYGEN_FOUND)
+    message("Need doxygen for documentation")
+  endif(DOXYGEN_FOUND)
+endif (BUILD_DOC)
 
 # For debugging of variables:
 set(DEBUG_VARIABLES OFF)
