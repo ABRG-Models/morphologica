@@ -74,6 +74,27 @@ namespace morph {
             this->w = other.w;
         }
 
+        //! Access to members using the square brackets
+        Flt operator[] (int idx) {
+            Flt rtn = this->x;
+            rtn = idx == 1 ? this->y : rtn;
+            rtn = idx == 2 ? this->z : rtn;
+            rtn = idx == 3 ? this->w : rtn;
+            return rtn;
+        }
+
+        //! To help MathAlgo code (size() and data() methods in common with
+        //! std::vector, etc)
+        size_t size() const noexcept {
+            return 4;
+        }
+
+        //! To help MathAlgo code (size() and data() methods in common with
+        //! std::vector, etc)
+        Flt* data() {
+            return &this->x;
+        }
+
         //! Return the vector as an array
         array<Flt, 4> asArray (void) const {
             array<Flt, 4> v = {x, y, z, w};
