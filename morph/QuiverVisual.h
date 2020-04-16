@@ -69,10 +69,10 @@ namespace morph {
             array<Flt, 3> zero3 = {0.0,0.0,0.0};
             vector<Flt> lengths;
             for (unsigned int i = 0; i < nquiv; ++i) {
-                lengths.push_back (MathAlgo<Flt>::distance (zero3, (*this->vectorData)[i]));
+                lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
             }
             // Auto scale the lengths to get a full range of colours for the lengths.
-            vector<Flt> lengthcolours = MathAlgo<Flt>::autoscale (lengths);
+            vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, 0.0f, 1.0f);
 
             // The indices index
             GLushort idx = 0;

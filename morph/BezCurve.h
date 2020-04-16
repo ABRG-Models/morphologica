@@ -472,7 +472,7 @@ namespace morph
             sample_t.push_back (static_cast<Flt>(0.0));
             Flt totaldist = static_cast<Flt>(0.0);
             for (size_t i = 1; i < points.size(); ++i) {
-                Flt lindist = MathAlgo<Flt>::distance (points[i-1], points[i]);
+                Flt lindist = MathAlgo::distance<Flt> (points[i-1], points[i]);
                 sample_t.push_back (lindist);
                 totaldist += lindist;
             }
@@ -490,7 +490,7 @@ namespace morph
             }
             Flt sos = static_cast<Flt>(0.0);
             for (size_t i = 0; i < points.size(); ++i) {
-                sos += MathAlgo<Flt>::distance_sq (points[i], curvePoints[i]);
+                sos += MathAlgo::distance_sq<Flt> (points[i], curvePoints[i]);
             }
 
 #if 0
@@ -994,7 +994,7 @@ namespace morph
             vector<BezCoord<Flt>> pts = this->computePoints (npoints);
             Flt dist = static_cast<Flt>(0.0);
             for (size_t i = 1; i<pts.size(); ++i) {
-                dist += MathAlgo<Flt>::distance (pts[i-1].getCoord(), pts[i].getCoord());
+                dist += MathAlgo::distance<Flt> (pts[i-1].getCoord(), pts[i].getCoord());
             }
             return dist;
         }

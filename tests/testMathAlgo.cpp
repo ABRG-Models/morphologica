@@ -17,7 +17,7 @@ int main()
 
     // SD of the vector:
     float themean = 0.0f;
-    float sd = MathAlgo<float>::compute_mean_sd (vec, themean);
+    float sd = MathAlgo::compute_mean_sd<float> (vec, themean);
     cout << "Standard deviation: " << sd << " and mean: " << themean << endl;
     if (abs(sd - 0.262615053) > numeric_limits<float>::epsilon()) {
         cout << "Wrong SD" << endl;
@@ -32,7 +32,7 @@ int main()
     }
     cout << endl;
 
-    MathAlgo<float>::bubble_sort_lo_to_hi (vec);
+    MathAlgo::bubble_sort_lo_to_hi<float> (vec);
 
     cout << "After sort lo to hi";
     for (auto v : vec) {
@@ -46,7 +46,7 @@ int main()
         rtn--;
     }
 
-    MathAlgo<float>::bubble_sort_hi_to_lo (vec);
+    MathAlgo::bubble_sort_hi_to_lo<float> (vec);
 
     cout << "After sort hi to lo";
     for (auto v : vec) {
@@ -63,7 +63,7 @@ int main()
     // Reset vec
     vec = {{ first, second, third, fourth }};
     vector<unsigned int> indices(vec.size(), 0);
-    MathAlgo<float>::bubble_sort_lo_to_hi (vec, indices);
+    MathAlgo::bubble_sort_lo_to_hi<float> (vec, indices);
 
     cout << "After sort lo to hi of INDICES:" << endl;
     for (unsigned int i = 0; i < vec.size(); ++i) {
@@ -82,7 +82,7 @@ int main()
     }
 
     vector<float> vf = {0.1f, 0.2f, 0.9f, -0.4f};
-    pair<float, float> mmvf = MathAlgo<float>::maxmin (vf);
+    pair<float, float> mmvf = MathAlgo::maxmin (vf);
     cout << "vector has max: " << mmvf.first << " and min/lowest: " << mmvf.second << endl;
     if (mmvf.first == 0.9f && mmvf.second == -0.4f) {
         cout << "Max/min correct" << endl;

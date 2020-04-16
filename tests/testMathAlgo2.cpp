@@ -1,4 +1,4 @@
-#include "MathAlgo2.h"
+#include "MathAlgo.h"
 #include <iostream>
 #include <queue>
 

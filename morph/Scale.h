@@ -96,7 +96,7 @@ namespace morph {
         //! min(data) gives this->min as output and max(data) gives this->max as
         //! output
         virtual void autoscale (const vector<T>& data) {
-            pair<T, T> maxmin = MathAlgo<T>::maxmin (data);
+            pair<T, T> maxmin = MathAlgo::maxmin (data);
             this->autoscale (maxmin.first, maxmin.second);
         }
 

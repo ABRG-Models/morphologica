@@ -178,14 +178,14 @@ namespace morph {
             // Order the vertices so that the first vertex is the best and the last one is the worst
             if (this->downhill) {
                 // Best is lowest
-                MathAlgo<Flt>::bubble_sort_lo_to_hi (this->values, this->vertex_order);
+                MathAlgo::bubble_sort_lo_to_hi<Flt> (this->values, this->vertex_order);
             } else {
-                MathAlgo<Flt>::bubble_sort_hi_to_lo (this->values, this->vertex_order);
+                MathAlgo::bubble_sort_hi_to_lo<Flt> (this->values, this->vertex_order);
             }
 
             // if ready to stop, set state and return (we order before testing if we stop, as the
             // returning of the best value relies on the vertices being ordered).
-            Flt sd = MathAlgo<Flt>::compute_sd (this->values);
+            Flt sd = MathAlgo::compute_sd<Flt> (this->values);
             if (sd < this->termination_threshold) {
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
