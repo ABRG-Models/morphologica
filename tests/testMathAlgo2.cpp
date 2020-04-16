@@ -1,5 +1,6 @@
 #include "MathAlgo2.h"
 #include <iostream>
+#include <queue>
 
 #include "Vector3.h"
 
@@ -23,11 +24,15 @@ int main()
     pair<double, double> vfmm = MathAlgo::maxmin (vf);
     cout << "max/min: " << vfmm.first << "/" << vfmm.second << endl;
 
+    vector<double> autoscaled = MathAlgo::autoscale (vf, 0.0, 1.0);
+    pair<double, double> vfmm2 = MathAlgo::maxmin (autoscaled);
+    cout << "after autoscale, max/min: " << vfmm2.first << "/" << vfmm2.second << endl;
+
     // Throws runtime error, as expected; can't pass vector of scalars to the
     // MathAlgo::centroid function (instead, use MathAlgo::centroid3D)
-    //
-    //double cen = MathAlgo::centroid (vf);
-    //cout << "centroid (" << cen << endl;
+    // OR better, removed the implementation and now we get a compile-time error.
+    //double cencen = MathAlgo::centroid (vf);
+    //cout << "centroid (" << cencen << endl;
 
     array<double, 3> v1 = { 1.0f, 1.0f, 1.0f };
     array<double, 3> v2 = { 0.5f, 2.0f, 1.0f };
@@ -79,5 +84,44 @@ int main()
     li.push_back(7);
     pair<int,int> limm = MathAlgo::maxmin (li);
     cout << "max/min: " << limm.first << "," << limm.second << endl;
+
+    deque<list<float>> qf;
+    list<float> lv1 = {1,1}; // Hmm. list<float> has no [] operators.
+    list<float> lv2 = {2,2};
+    list<float> lv3 = {3,3};
+    qf.push_back (lv1);
+    qf.push_back (lv2);
+    qf.push_back (lv3);
+
+    list<float> lfcent = MathAlgo::centroid (qf);
+    cout << "centroid: ";
+    for (auto li : lfcent) {
+        cout << li << " ";
+    }
+    cout << endl;
+
+    deque<array<float, 2>> d2;
+    d2.push_back ({1,1});
+    d2.push_back ({2,2});
+    d2.push_back ({3,3});
+    deque<array<float, 2>> out = MathAlgo::autoscale (d2, 0.0f, 1.0f);
+
+    cout << "autoscale on fixed size vectors:\n";
+    for (auto d : out) {
+        cout << "(" << d[0] << "," << d[1] << ")" << endl;
+    }
+
+    vector<vector<float>> vv2;
+    vv2.push_back ({1,1});
+    vv2.push_back ({2,2});
+    vv2.push_back ({3,3});
+    vector<vector<float>> outvv = MathAlgo::autoscale (vv2, 0.0f, 1.0f);
+
+    cout << "autoscale on dynamic vectors:\n";
+    for (auto d : outvv) {
+        cout << "(" << d[0] << "," << d[1] << ")" << endl;
+    }
+
+
     return rtn;
 }

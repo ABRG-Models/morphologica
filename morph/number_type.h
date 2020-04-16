@@ -62,10 +62,11 @@ struct number_type {
     static constexpr bool const fixedsize = is_fixedsize_vector_impl::is_fixedsize_vector<std::decay_t<T>>::value;
 
     // value needs to be either of:
-    // 1 scalar == false and resizable == true   => value 0
-    // 2 scalar == false and fixedsize == true   => value 1
-    // scalar == true and whatever               => value 2
-    static constexpr int const value = scalar ? 2 : (resizable ? 0 : 1);
+    //                                                         0 for default impl (vector-common)
+    // 1 scalar == false and resizable == true   => value 0 or 1 for resizable vector
+    // 2 scalar == false and fixedsize == true   => value 1    2 for fixed-size vector
+    // scalar == true and whatever               => value 2    3 for scalar
+    static constexpr int const value = scalar ? 3 : (resizable ? 1 : 2);
 };
 
 #if 0

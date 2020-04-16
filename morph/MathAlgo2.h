@@ -38,26 +38,55 @@ namespace morph {
     struct MathAlgo
     {
         /*!
-         * Functions whose implementations are in MathImpl, and which differ depending
-         * on whether T is a scalar type or a vector.
+         * Functions which can take objects where T is EITHER a scalar, such as float
+         * or double (or int, etc, if it makes sense) OR a mathematical vector
+         * encapsulated in a std::list, std::vector or std::array (or any other STL
+         * container which needs just a type and an allocator to be initialised).
          */
-        template < template <typename, typename> class Container,
+        //@{
+        /*******************************************************************/
+
+        /*!
+         * Functions whose implementations are in MathImpl, and which differ depending
+         * on whether T is a scalar type or a vector-like object (such as std::vector
+         * or std::list).
+         *
+         * Don't confuse this with C++11's std::minmax, which does something similar,
+         * but won't do a max/min length of vector search like this does.
+         */
+        template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
         static pair<T,T> maxmin (const Container<T, Allocator>& vec) {
             return MathImpl<number_type<T>::value>::maxmin (vec);
         }
 
-        //! Centroid coordinates. If T is array<Flt, N> then the N-D centroid of the
-        //! points vector<T> is computed.  Try and make it possible to use my own
-        //! Vector3 class for the coords. Find a better way of identifying
-        //! array/vector types?
-        template <typename T>
-        static T centroid (const vector<T>& coords) {
+        /*!
+         * Find the centroid of a set of coordinates. If T is e.g. array<float, N> or
+         * vector<double> or list<float> then the N-D centroid of the coordinates
+         * defined in Container<T> is computed.
+         */
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static T centroid (const Container<T, Allocator>& coords) {
             return MathImpl<number_type<T>::value>::centroid (coords);
         }
 
+        /*!
+         * Autoscale a vector of numbers so that the range min to max is scaled from
+         * 0.0 to 1.0.
+         */
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T>,
+                   typename S >
+        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
+            return MathImpl<number_type<T>::value>::autoscale (values, range_min, range_max);
+        }
+
         /*******************************************************************/
+        //@}
 
         /*!
          * Functions without specific scalar/vector implementations
@@ -293,6 +322,83 @@ namespace morph {
                 }
             }
         }
+
+        /*!
+         * Functions which help you to arrange dots on circular rings
+         */
+        //@{
+
+        //! How many items (dots, for example) could you arrange on a circle of
+        //! radius=@radius with @d between each item's centre?
+        template<typename T>
+        static int numOnCircle (T radius, T d) {
+            if (radius == static_cast<T>(0.0)) {
+                return 1;
+            }
+            T circum = (T)morph::TWO_PI_D * radius;
+            return static_cast<int>(floor (circum / d));
+        }
+
+        //! How many items on a circular arc of angle @a?
+        template<typename T>
+        static int numOnCircleArc (T radius, T d, T a) {
+            //cout << "Called for radius == " << radius << ", d=" << d <<  endl;
+            if (radius == static_cast<T>(0.0)) {
+                return 1;
+            }
+            T circum = static_cast<T>(morph::TWO_PI_D) * radius;
+            //cout << "circum = " << circum << endl;
+            T rtn = 0;
+#if 1
+            // longhand, with a test for a circular arc
+            if (a >= static_cast<T>(morph::TWO_PI_D)) {
+                rtn = floor (circum / d);
+            } else {
+                T proportion = a / static_cast<T>(morph::TWO_PI_D);
+                //cout << "prop = " << proportion << endl;
+                T arclen = circum * proportion;
+                //cout << "arclen = " << arclen << endl;
+                rtn = floor (arclen / d);
+            }
+#else
+            T proportion = a / static_cast<T>(morph::TWO_PI_D);
+            rtn = floor (circum * proportion / d);
+#endif
+            //cout << "rtn " << rtn << endl;
+            return rtn;
+        }
+
+        //! How many dots spaced by d can be placed on circular arc rings with d between them?
+        template<typename T>
+        static int numDotsOnRings (T minRadius, T maxRadius, T d,
+                                   T a = static_cast<T>(morph::TWO_PI_D)) {
+
+            // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
+            // from minRadius to maxRadius. Herein lies the problem!
+            int n_dots = 0;
+            if (minRadius == static_cast<T>(0.0)) {
+                int nrings = (int) floor ((maxRadius-minRadius)/d);
+                if (minRadius == 0.0) {
+                    nrings++; // cos of centre dot.
+                }
+
+                for (int r=0; r<nrings; ++r) {
+                    n_dots += MathAlgo::numOnCircleArc<T> (minRadius+r*d, d, a);
+                }
+            } else {
+                // Annulus
+                int nrings = 1 + (int) floor ((maxRadius-minRadius)/d);
+                //cout << nrings << " rings" << endl;
+                for (int r=0; r<nrings; ++r) {
+                    n_dots += MathAlgo::numOnCircleArc<T> (minRadius+r*d, d, a);
+                }
+            }
+            //cout << "n_dots for d=" << d << " is " << n_dots << endl;
+            return n_dots;
+        }
+
+        //@}
+        //@}
 
     }; // struct MathAlgo
 
