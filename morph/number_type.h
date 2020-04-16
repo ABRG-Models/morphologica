@@ -30,6 +30,7 @@
 //#include "Vector3.h"
 //#include "Vector4.h"
 
+#if 0 // Required only for more flexible testing of types
 // specialize a type for resizable stl containers
 namespace is_resizable_vector_impl {
     template <typename T>       struct is_resizable_vector:std::false_type{};
@@ -50,6 +51,7 @@ namespace is_fixedsize_vector_impl {
     // Also, what about:
     //template <typename T>                struct is_fixedsize_vector<std::pair<T,T>>      : std::true_type {}; // 2D vector
 }
+#endif
 
 // From the typename T, set a value attribute which says whether T is a scalar (like
 // float, double), or whether it is a resizable list-like type (vector, list etc) or
@@ -58,6 +60,7 @@ template <typename T>
 struct number_type {
 
     static constexpr bool const scalar = std::is_scalar<std::decay_t<T>>::value;
+#if 0 // For a more flexible set of tests:
     static constexpr bool const resizable = is_resizable_vector_impl::is_resizable_vector<std::decay_t<T>>::value;
     static constexpr bool const fixedsize = is_fixedsize_vector_impl::is_fixedsize_vector<std::decay_t<T>>::value;
 
@@ -67,6 +70,10 @@ struct number_type {
     // 2 scalar == false and fixedsize == true   => value 1    2 for fixed-size vector
     // scalar == true and whatever               => value 2    3 for scalar
     static constexpr int const value = scalar ? 3 : (resizable ? 1 : 2);
+#else
+    // 0 for vector, 1 for scalar
+    static constexpr int const value = scalar ? 1 : 0;
+#endif
 };
 
 #if 0

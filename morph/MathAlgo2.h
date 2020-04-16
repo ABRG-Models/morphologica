@@ -74,8 +74,8 @@ namespace morph {
         }
 
         /*!
-         * Autoscale a vector of numbers so that the range min to max is scaled from
-         * 0.0 to 1.0.
+         * Autoscale a vector of numbers (or vectors) so that the range min to max is
+         * scaled from 0.0 to 1.0.
          */
         template < template <typename, typename> typename Container,
                    typename T,

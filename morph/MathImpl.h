@@ -198,88 +198,13 @@ namespace morph {
     };
 
     /*!
-     * Implementations of algorithms where 'T' is a dynamically allocated vector-like
-     * object, such as vector<>, list<> or queue<>. Each algorithm is a templated
-     * static function.
-     *
-     * The default implementations in this class template are for vectors/lists etc.
-     *
-     * This is the implementation for "number_type::value is 1". Resizable vector.
-     */
-    template<>
-    struct MathImpl<1>
-    {
-        //! Resizable vector maxmin implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
-            // Use the common implementation:
-            return MathImpl<0>::maxmin (values);
-        }
-
-        //! Resizable vector centroid implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static T centroid (const Container<T, Allocator>& coords) {
-            return MathImpl<0>::centroid (coords);
-        }
-
-        //! Resizable vector autoscale implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T>,
-                   typename S >
-        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            // autoscale vectors (with variable size vector)
-            return MathImpl<0>::autoscale (values, range_min, range_max);
-        }
-    };
-
-    /*!
-     * A 'type 2' type is a fixed size array type, such as std::array or morph::Vector3
-     *
-     * This is the implementation for "number_type::value is 2" - fixed size.
-     */
-    template<>
-    struct MathImpl<2>
-    {
-        //! Fixed size vector maxmin implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
-            // Use the common implementation:
-            return MathImpl<0>::maxmin (values);
-        }
-
-        //! Fixed size vector centroid implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static T centroid (const Container<T, Allocator>& coords) {
-            return MathImpl<0>::centroid (coords);
-        }
-
-        //! Fixed size vector autoscale implementation. Autoscales from min to max.
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T>,
-                   typename S > // S is a scalar
-        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            return MathImpl<0>::autoscale (values, range_min, range_max);
-        }
-    };
-
-    /*!
      * Implementations of algorithms taking T as a scalar-like object, such as float
      * or double.
      *
-     * number_type::value is 3 - scalar
+     * number_type::value is 1 - scalar
      */
     template<>
-    struct MathImpl<3>
+    struct MathImpl<1>
     {
         //! Scalar maxmin implementation
         template < template <typename, typename> typename Container,
@@ -311,7 +236,7 @@ namespace morph {
                    typename Allocator=std::allocator<T>,
                    typename S > // FIXME: Check T==S?
         static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            pair<T,T> mm = MathImpl<3>::maxmin (values);
+            pair<T,T> mm = MathImpl<1>::maxmin (values);
             T min_v = mm.second;
             T max_v = mm.first;
             T scale_v = (range_max - range_min) / (max_v - min_v);
