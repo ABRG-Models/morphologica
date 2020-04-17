@@ -1,6 +1,9 @@
 #include "tools.h"
 #include <math.h>
 #include <vector>
+#ifdef __ICC__
+# define ARMA_ALLOW_FAKE_GCC 1
+#endif
 #include <armadillo>
 #include <stdlib.h>
 #include <stdexcept>

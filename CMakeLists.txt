@@ -1,5 +1,5 @@
-# AUTOMOC requires 2.8.6. Per-target include directories would require 2.8.8
-cmake_minimum_required(VERSION 2.8.8)
+# AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
+cmake_minimum_required(VERSION 3.1)
 project(morphologica)
 set(VERSION 0.1)
 set(SOVERSION 1.0)
@@ -25,20 +25,23 @@ endif()
 # An option that's useful for Ubuntu 16.04 builds
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
+# Using c++-14 (calls to std::decay_t)
+set (CMAKE_CXX_STANDARD 14)
+
 # An option to allow users without OpenMP (that's some Macs) to compile
 option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to compile lines, as appropriate)" ON)
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g")
     set(OPENMP_SWITCH "-Xpreprocessor -fopenmp")
 else()
   # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14 -xHOST -O3 -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -xHOST -O3 -D__ICC__")
     set(OPENMP_SWITCH "-qopenmp")
   else() # GCC
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++14 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
     set(OPENMP_SWITCH "-fopenmp")
   endif()
 endif()
@@ -208,7 +211,7 @@ if (BUILD_DOC)
 endif (BUILD_DOC)
 
 # For debugging of variables:
-set(DEBUG_VARIABLES OFF)
+option(DEBUG_VARIABLES OFF)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach(_variableName ${_variableNames})

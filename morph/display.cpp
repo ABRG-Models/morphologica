@@ -1,5 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include "display.h"
+#ifdef __ICC__
+# define ARMA_ALLOW_FAKE_GCC 1
+#endif
 #include <armadillo>
 #include <stdexcept>
 

@@ -26,6 +26,9 @@ using std::cos;
 using std::acos;
 using std::atan2;
 using std::sin;
+#ifdef __ICC__
+# define ARMA_ALLOW_FAKE_GCC 1
+#endif
 #include <armadillo>
 #include "MathConst.h"
 #include "MathAlgo.h"
