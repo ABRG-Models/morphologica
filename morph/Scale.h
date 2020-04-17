@@ -57,21 +57,23 @@ namespace morph {
         virtual T transform_one (const T& datum) const = 0;
 
         /*!
-         * Transform a vector of data.
-         *
-         * FIXME: Make it possible to use any Container, not just vector<T>. See
-         * MathAlgo for a way to achieve this.
+         * Transform a container of scalars or vectors.
          */
-        void transform (const vector<T>& data, vector<T>& output) {
+        template < template <typename, typename> typename Container,
+                   typename TT=T,
+                   typename Allocator=std::allocator<TT> >
+        void transform (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
             size_t dsize = data.size();
             if (output.size() != dsize) {
                 throw runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
             }
             if (this->do_autoscale == true && this->autoscaled == false) {
-                this->autoscale_from (data); // not const
+                this->autoscale_from<Container> (data); // not const
             }
-            for (size_t i = 0; i < dsize; ++i) {
-                output[i] = this->transform_one (data[i]);
+            typename Container<TT, Allocator>::const_iterator di = data.begin();
+            typename Container<TT, Allocator>::iterator oi = output.begin();
+            while (di != data.end()) {
+                *oi++ = this->transform_one (*di++);
             }
         }
 
@@ -83,8 +85,11 @@ namespace morph {
         //! 'Autoscale from data'. Compute the params for the scaling given the vector
         //! of data such that min(data) gives this->min as output and max(data) gives
         //! this->max as output.
-        void autoscale_from (const vector<T>& data) {
-            pair<T, T> mm = MathAlgo::maxmin (data);
+        template < template <typename, typename> typename Container,
+                   typename TT=T,
+                   typename Allocator=std::allocator<TT> >
+        void autoscale_from (const Container<TT, Allocator>& data) {
+            pair<TT, TT> mm = MathAlgo::maxmin (data);
             this->compute_autoscale (mm.second, mm.first);
         }
 
@@ -120,19 +125,6 @@ namespace morph {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This transform function is for Linear scaling only");
             }
-#if 0
-            // It's an array type; a (mathematical) vector. Scale the vector by m
-            // times. params should contain enough values for c to be a vector
-            // itself.
-            if (params.size() <= datum.size()) {
-                throw runtime_error ("For linear scaling of ND vector (with vector offset), need N+1 params");
-            }
-            T rtn;
-            for (size_t i = 0; i < datum.size(); ++i) {
-                rtn[i] = datum[i] * this->params[0] + this->params[1+i];
-            }
-#else
-            // Simple approach; scale ONLY vector lengths
             if (params.size() != 2) {
                 throw runtime_error ("For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
             }
@@ -144,7 +136,6 @@ namespace morph {
                 // Here's the scaling of a component
                 rtn[i] = (el_len - (el_len/vec_len)*this->params[1]) * this->params[0];
             }
-#endif
             return rtn;
         }
 

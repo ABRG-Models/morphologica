@@ -1,5 +1,7 @@
 #include <vector>
 using std::vector;
+#include <list>
+using std::list;
 #include <array>
 using std::array;
 #include <iostream>
@@ -42,7 +44,8 @@ int main () {
     vaf.push_back ({4,4,4,4});
     vector<array<float,4>> result2(vaf);
     s2.transform (vaf, result2);
-    cout << "Uncaled/scaled vectors:\n";
+
+    cout << "vector<array<float,4>> unscaled/scaled vectors:\n";
     for (unsigned int i = 0; i < result2.size(); ++i) {
 
         cout << "(";
@@ -56,6 +59,28 @@ int main () {
             cout << v << ",";
         }
         cout << ")\n";
+    }
+
+    morph::Scale<vector<double>> s3;
+    s3.do_autoscale = true;
+    list<vector<double>> vaf3;
+    vaf3.push_back ({1,1,1});
+    vaf3.push_back ({2,2,2});
+    vaf3.push_back ({3,3,3});
+    vaf3.push_back ({4,4,4});
+    list<vector<double>> result3(vaf3);
+    s3.transform (vaf3, result3);
+
+    cout << "list<vector<double>> scaled vectors:\n";
+    list<vector<double>>::iterator res3i = result3.begin();
+    while (res3i != result3.end()) {
+        cout << "(";
+        vector<double>::iterator vi = res3i->begin();
+        while (vi != res3i->end()) {
+            cout << *vi++ << ",";
+        }
+        cout << ")\n";
+        ++res3i;
     }
 
     return 0;
