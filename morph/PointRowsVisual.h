@@ -75,7 +75,8 @@ namespace morph {
             }
 
             vector<Flt> dcopy = *(this->scalarData);
-            this->colourScale.autoscale (dcopy);
+            this->colourScale.do_autoscale = true;
+            this->colourScale.transform (*this->scalarData, dcopy);
 
             // First, need to know which set of points form two, adjacent rows. An assumption we'll
             // accept: The rows are listed in slice-order and the points in each row are listed in

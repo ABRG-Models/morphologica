@@ -45,9 +45,9 @@ int main (int argc, char** argv)
 
         vector<array<float, 3>> quivs;
         quivs.push_back ({0.3,   0.4,  0});
-        quivs.push_back ({0.1,   0.2,  0});
+        quivs.push_back ({0.1,   0.2,  0.1});
         quivs.push_back ({-0.1,  0,    0});
-        quivs.push_back ({-0.04, 0.05, 0});
+        quivs.push_back ({-0.04, 0.05, -.2});
         quivs.push_back ({0.3,  -0.1,  0});
 
         unsigned int visId = v.addVisualModel (new QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, ColourMapType::Cividis));

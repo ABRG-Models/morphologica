@@ -84,7 +84,8 @@ namespace morph {
             vector<Flt> dcopy;
             if (ndata) {
                 dcopy = *(this->scalarData);
-                this->colourScale.autoscale (dcopy);
+                this->colourScale.do_autoscale = true;
+                this->colourScale.transform (*this->scalarData, dcopy);
             } // else no scaling required - spheres will be one colour
 
             // The indices index
@@ -94,7 +95,7 @@ namespace morph {
                 // Scale colour (or use single colour)
                 array<float, 3> clr = this->cm.getHueRGB();
                 if (ndata) {
-                    clr = this->cm.convert (this->colourScale.transform (dcopy[i]));
+                    clr = this->cm.convert (dcopy[i]);
                 }
                 this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed);
             }

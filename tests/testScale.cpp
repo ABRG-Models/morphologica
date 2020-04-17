@@ -8,10 +8,11 @@ using std::array;
 using std::cout;
 using std::endl;
 #include "Scale.h"
+using morph::Scale;
 
 int main () {
 
-    morph::Scale<float> s;
+    Scale<float> s;
     s.do_autoscale = true;
     vector<float> vf = {1,2,3.5,4,5.1,6.3,7};
     vector<float> result(vf);
@@ -35,7 +36,7 @@ int main () {
     }
     cout << endl;
 
-    morph::Scale<array<float,4>> s2;
+    Scale<array<float,4>> s2;
     s2.do_autoscale = true;
     vector<array<float,4>> vaf;
     vaf.push_back ({1,1,2,1});
@@ -61,7 +62,7 @@ int main () {
         cout << ")\n";
     }
 
-    morph::Scale<vector<double>> s3;
+    Scale<vector<double>> s3;
     s3.do_autoscale = true;
     list<vector<double>> vaf3;
     vaf3.push_back ({1,1,1});

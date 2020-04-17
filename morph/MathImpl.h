@@ -39,10 +39,14 @@ using std::max;
 namespace morph {
 
     /*!
-     * Default MathImpl template contains common vector implementations
+     * Default MathImpl template contains common vector implementations.
      *
-     * This special case is for vector implementations which are identical whether
-     * they are for resizable vector types or fixed-size vector types.
+     * This is a templated class, with an integer template argument (vtype). That
+     * integer allows specializations of this class with alternative implementations
+     * of the functions.
+     *
+     * This default case is for 'vector' implementations; those for which the type T
+     * is some sort of vector type such as std::array or std::vector.
      */
     template <int vtype = 0>
     struct MathImpl
@@ -198,10 +202,10 @@ namespace morph {
     };
 
     /*!
-     * Implementations of algorithms taking T as a scalar-like object, such as float
-     * or double.
+     * This is a specialization of MathImpl with vtype set to 1. The templates are
+     * applied if the type T is a scalar such as float or double.
      *
-     * number_type::value is 1 - scalar
+     * number_type::value will have been 1 - scalar (see number_type.h).
      */
     template<>
     struct MathImpl<1>
@@ -228,6 +232,7 @@ namespace morph {
                    typename Allocator=std::allocator<T> >
         static T centroid (const Container<T, Allocator>& coords) {
             throw runtime_error ("Call this with Container<T>& coords where T is a vector/array type");
+            // OR, FIXME: Do the most natural thing for a container of scalars - find the mean!
         }
 #endif
         //! Scalar autoscale implementation

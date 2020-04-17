@@ -165,9 +165,7 @@ namespace morph {
 
             // This is the QuadsVisual way - have an autoscale option
             vector<Flt> dcopy = *(this->scalarData);
-            // Need a "if I'm supposed to autoscale when I have data, then do so" option
-            // if (colourScale.shouldAutoscale == true) {
-            this->colourScale.autoscale (dcopy);
+            this->colourScale.do_autoscale = true;
             this->colourScale.transform (*(this->scalarData), dcopy);
 
             Flt datumC = static_cast<Flt>(0.0);   // datum at the centre

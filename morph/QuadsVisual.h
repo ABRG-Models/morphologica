@@ -70,7 +70,7 @@ namespace morph {
             throw runtime_error ("This won't work.");
         }
 
-        //! Onitialize the vertices that will represent the Quads.
+        //! Initialize the vertices that will represent the Quads.
         void initializeVertices (void) {
 
             unsigned int nquads = this->quads->size();
@@ -82,7 +82,8 @@ namespace morph {
             }
 
             vector<Flt> dcopy = *(this->scalarData);
-            this->colourScale.autoscale (dcopy);
+            this->colourScale.do_autoscale = true;
+            this->colourScale.transform ((*this->scalarData), dcopy);
 
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
