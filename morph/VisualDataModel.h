@@ -130,10 +130,9 @@ namespace morph {
         //! locations of data coordinates based on scalarData. The scaling may
         Scale<T> zScale;
 
-        //! A scaling function for the vectorData. Note it's a scalar scaling; scaling
-        //! of the actual vectorData will have to be carried out manually.
+        //! A scaling function for the vectorData. This will scale the lengths of the
+        //! vectorData.
         Scale<array<T,3>> vectorScale;
-        //Scale<T> vectorScale;
 
         //! The data to visualize. Tdata may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
