@@ -12,6 +12,8 @@ using morph::Scale;
 
 int main () {
 
+    int rtn = 0;
+
     Scale<float> s;
     s.do_autoscale = true;
     vector<float> vf = {1,2,3.5,4,5.1,6.3,7};
@@ -22,6 +24,12 @@ int main () {
         cout << vf[i]<<"/"<<result[i]<<", ";
     }
     cout << endl;
+
+    // Test scalar scaling
+    if (result.back() != 1.0f) {
+        cout << "Error in scalar scaling" << endl;
+        rtn--;
+    }
 
     // Different data, but extend max a bit. The result should now span >0,1
     // range. This shows that the autoscaling is carried out once only by the Scale
@@ -62,6 +70,15 @@ int main () {
         cout << ")\n";
     }
 
+    // Test this scaling:
+    vector<array<float, 4>>::const_iterator r2i = result2.end();
+    r2i--; // To get to last element in vector
+    float r2ilen = std::sqrt ((*r2i)[0] * (*r2i)[0] + (*r2i)[1] * (*r2i)[1] + (*r2i)[2] * (*r2i)[2] + (*r2i)[3] * (*r2i)[3]);
+    if (abs(r2ilen - 1) > 0.0001) {
+        cout << "Error" << endl;
+        rtn--;
+    }
+
     Scale<vector<double>> s3;
     s3.do_autoscale = true;
     list<vector<double>> vaf3;
@@ -84,5 +101,5 @@ int main () {
         ++res3i;
     }
 
-    return 0;
+    return rtn;
 }
