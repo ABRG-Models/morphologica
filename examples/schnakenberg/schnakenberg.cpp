@@ -8,9 +8,9 @@
  * This will be passed as the template argument for RD_classes and
  * should be defined when compiling.
  */
-#ifndef FLOATTYPE
+#ifndef FLT
 // Check CMakeLists.txt to change to double or float
-# error "Please define FLOATTYPE when compiling (hint: See CMakeLists.txt)"
+# error "Please define FLT when compiling (hint: See CMakeLists.txt)"
 #endif
 
 /*!
@@ -41,8 +41,13 @@ using std::chrono::steady_clock;
  */
 # include "morph/Visual.h"
 using morph::Visual;
+# include "morph/HexGridVisual.h"
+using morph::HexGridVisual;
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
+#include "morph/VisualDataModel.h"
+using morph::VisualDataModel;
+
 //! Helper function to save PNG images with a suitable name
 void savePngs (const string& logpath, const string& name,
                unsigned int frameN, Visual& v) {
@@ -131,7 +136,7 @@ int main (int argc, char **argv)
     }
 
     // The length of one timestep
-    const FLOATTYPE dt = static_cast<FLOATTYPE>(conf.getDouble ("dt", 0.00001));
+    const FLT dt = static_cast<FLT>(conf.getDouble ("dt", 0.00001));
 
     cout << "steps to simulate: " << steps << endl;
 
@@ -177,7 +182,7 @@ int main (int argc, char **argv)
     /*
      * Instantiate and set up the model object
      */
-    RD_Schnakenberg<FLOATTYPE> RD;
+    RD_Schnakenberg<FLT> RD;
 
     RD.svgpath = ""; // We'll do an elliptical boundary, so set svgpath empty
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
@@ -253,11 +258,11 @@ int main (int argc, char **argv)
     // A
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Agrid = v1.addHexGridVisual (RD.hg, spatOff, RD.A, scaling, ColourMapType::Plasma);
+    unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog, RD.hg, spatOff, &(RD.A), scaling, ColourMapType::Plasma));
     xzero += RD.hg->width();
     // B
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Bgrid = v1.addHexGridVisual (RD.hg, spatOff, RD.B, scaling, ColourMapType::Jet);
+    unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog, RD.hg, spatOff, &(RD.B), scaling, ColourMapType::Jet));
 #endif
 
     // Start the loop
@@ -270,8 +275,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            v1.updateHexGridVisual (Agrid, RD.A, scaling);
-            v1.updateHexGridVisual (Bgrid, RD.B, scaling);
+            VisualDataModel<FLT>* avm = (VisualDataModel<FLT>*)v1.getVisualModel (Agrid);
+            avm->updateData (&(RD.A), scaling);
+
+            VisualDataModel<FLT>* bvm = (VisualDataModel<FLT>*)v1.getVisualModel (Bgrid);
+            bvm->updateData (&(RD.B), scaling);
 
             if (saveplots) {
                 if (vidframes) {
@@ -303,10 +311,10 @@ int main (int argc, char **argv)
     }
 
     // Before saving the json, we'll place any additional useful info
-    // in there, such as the FLOATTYPE. If float_width is 4, then
+    // in there, such as the FLT. If float_width is 4, then
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
-    conf.set ("float_width", (unsigned int)sizeof(FLOATTYPE));
+    conf.set ("float_width", (unsigned int)sizeof(FLT));
     string tnow = Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);

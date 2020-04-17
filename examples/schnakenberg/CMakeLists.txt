@@ -38,10 +38,10 @@ if (APPLE)
   # features. However, the code did not compile without it, so we've
   # moved the links to omp to the later apple if case.
   #
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++11 -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++14 -Xpreprocessor -fopenmp")
 else()
   # This assumes a gcc compiler (or a gcc mimic)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++11 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++14 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
 endif()
 
 # Additional GL compiler flags.
@@ -142,21 +142,20 @@ endif()
 if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
   # Schnakenberg RD system
   add_executable(schnakenberg schnakenberg.cpp)
-  target_compile_definitions(schnakenberg PUBLIC FLOATTYPE=float COMPILE_PLOTTING)
+  target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
 
-if(APPLE)
-	target_link_libraries(schnakenberg ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw)
-else()
-	target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo)
-endif()
-
+  if(APPLE)
+    target_link_libraries(schnakenberg ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw)
+  else()
+    target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
+  endif()
 
 else()
     message(FATAL_ERROR "You need libglfw3 to compile this program!")
 endif()
 
 # For debugging of variables:
-set(DEBUG_VARIABLES OFF)
+set(DEBUG_VARIABLES ON)
 if(DEBUG_VARIABLES)
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})
