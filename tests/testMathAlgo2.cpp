@@ -27,6 +27,9 @@ int main()
     vector<double> autoscaled = MathAlgo::autoscale (vf, 0.0, 1.0);
     pair<double, double> vfmm2 = MathAlgo::maxmin (autoscaled);
     cout << "after autoscale, max/min: " << vfmm2.first << "/" << vfmm2.second << endl;
+    if (vfmm2.first != 1.0 || vfmm2.second != 0.0) {
+        rtn--;
+    }
 
     // Throws runtime error, as expected; can't pass vector of scalars to the
     // MathAlgo::centroid function (instead, use MathAlgo::centroid3D)
@@ -46,9 +49,19 @@ int main()
     cout << "max/min: (" << vv3mm.first[0] << ","
          << vv3mm.first[1] << "," << vv3mm.first[2] << ")/(" << vv3mm.second[0] << ","
          << vv3mm.second[1] << "," << vv3mm.second[2] << ")" << endl;
+    if (abs(vv3mm.first[2] - 2.1) > 0.0000001
+        || abs(vv3mm.second[2] - 1.0) > 0.0000001) {
+        cout << "vv3mm.first[2] is " << vv3mm.first[2] << " not 2.1 OR" << endl;
+        cout << "vv3mm.second[2] is " << vv3mm.second[2] << " not 1.0" << endl;
+        --rtn;
+    }
 
     array<double,3> cen = MathAlgo::centroid (vv3);
     cout << "centroid (" << cen[0] << "," << cen[1] << "," << cen[2] << ")" << endl;
+    if (abs(cen[0] - 0.833333) > 0.0000007) {
+        cout << "Error " << abs(cen[0] - 0.833333)<< endl;
+        --rtn;
+    }
 
     cout << "Try vector of vectors" << endl;
     vector<float> vf1 = { 1.0f, 1.0f, 1.0f };
@@ -109,6 +122,11 @@ int main()
     cout << "autoscale on fixed size vectors:\n";
     for (auto d : out) {
         cout << "(" << d[0] << "," << d[1] << ")" << endl;
+    }
+
+    if (abs(out[1][1] - 0.353553) > 0.000005) {
+        cout << "Error " << abs(out[1][1] - 0.353553)<< endl;
+        --rtn;
     }
 
     vector<vector<float>> vv2;
