@@ -140,7 +140,7 @@ namespace morph {
             typename T::const_iterator vi = mm.first.begin();
             while (vi != mm.first.end()) {
                 const T_el val = *vi;
-                sos += (val * val); // induces a cryptic -Wmaybe-uninitialized warning.
+                sos += (val * val);
                 ++vi;
             }
             T_el max_v = sqrt (sos); // max length vector
