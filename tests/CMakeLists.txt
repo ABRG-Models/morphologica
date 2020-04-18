@@ -228,11 +228,29 @@ add_executable(testVector3 testVector3.cpp)
 target_link_libraries(testVector3 -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector3 testVector3)
 
-# testVector. Note this requires C++ 17
+# testVector. Note testVector.cpp requires c++-17 due to use of curly
+# brace initializers; only c++-17 permits a class derived from an
+# aggregate class such as std::array to ALSO be an aggregate class.
 add_executable(testVector testVector.cpp)
 target_compile_features(testVector PUBLIC cxx_std_17)
 target_link_libraries(testVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector testVector)
+
+# It's possible to modify testVector.cpp to be c++-11 or c++-14 friendly:
+add_executable(testVector14 testVector14.cpp)
+target_compile_features(testVector14 PUBLIC cxx_std_14)
+target_link_libraries(testVector14 -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testVector14 testVector14)
+add_executable(testVector11 testVector14.cpp)
+target_compile_features(testVector11 PUBLIC cxx_std_11)
+target_link_libraries(testVector11 -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testVector11 testVector11)
+
+# Test the Scaling of vectors
+add_executable(testScaleVector testScaleVector.cpp)
+target_compile_features(testScaleVector PUBLIC cxx_std_17)
+target_link_libraries(testScaleVector -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testScaleVector testScaleVector)
 
 # Test morph::Transformmatrix
 add_executable(testTransformMatrix testTransformMatrix.cpp)
