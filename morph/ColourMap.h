@@ -39,7 +39,7 @@ namespace morph {
         //BGRA?
     };
 
-    template <class Flt>
+    template <typename Flt>
     class ColourMap {
     private:
         //! Type of map

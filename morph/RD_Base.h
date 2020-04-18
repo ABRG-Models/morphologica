@@ -77,7 +77,7 @@ namespace morph {
     /*!
      * Base class for RD systems
      */
-    template <class Flt>
+    template <typename Flt>
     class RD_Base
     {
     public:

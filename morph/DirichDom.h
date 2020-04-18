@@ -31,7 +31,7 @@ namespace morph {
      *
      * Holds a list of DirichVtx objects, and a number of statistical metrics for the domain.
      */
-    template <class Flt>
+    template <typename Flt>
     class DirichDom {
     public:
         //! The ordered list of vertices that make up this Dirichlet domain.

@@ -26,7 +26,7 @@ using std::stringstream;
 
 namespace morph {
 
-    template <class Flt>
+    template <typename Flt>
     class Vector3
     {
     public:

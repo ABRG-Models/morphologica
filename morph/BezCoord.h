@@ -23,7 +23,7 @@ namespace morph
      * parameter value and the distance remaining to the end of the
      * curve.
      */
-    template <class Flt>
+    template <typename Flt>
     class BezCoord
     {
     public: // methods

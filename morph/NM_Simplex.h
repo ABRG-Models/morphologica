@@ -46,7 +46,7 @@ namespace morph {
      * A class implementing a Nelder Mead simplex of points, and the associated methods for
      * manipulating those points on the way to discovering a minimum of a function.
      */
-    template <class Flt>
+    template <typename Flt>
     class NM_Simplex
     {
     public:

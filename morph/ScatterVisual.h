@@ -17,7 +17,7 @@ namespace morph {
 
     //! The template argument Flt is the type of the data which this ScatterVisual
     //! will visualize.
-    template <class Flt>
+    template <typename Flt>
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:

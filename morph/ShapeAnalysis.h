@@ -43,7 +43,7 @@ namespace morph {
     /*!
      * A helper class, containing pattern analysis code to analyse patterns within HexGrids.
      */
-    template <class Flt>
+    template <typename Flt>
     class ShapeAnalysis
     {
     public:

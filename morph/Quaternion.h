@@ -26,7 +26,7 @@ namespace morph {
     /*!
      * Quaternion computations
      */
-    template <class Flt>
+    template <typename Flt>
     class Quaternion
     {
     private:

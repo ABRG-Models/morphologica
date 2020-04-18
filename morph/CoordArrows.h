@@ -14,7 +14,7 @@ using std::array;
 
 #if 0
 // Add +, - operators to std::array
-template<class T, size_t N>
+template <typename T, size_t N>
 class Array : public array<T, N>
 {
 public:

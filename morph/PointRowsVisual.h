@@ -22,7 +22,7 @@ namespace morph {
      * support the Stalefish app, which collects 2-D curves of ISH gene expression and arranges them
      * in a stack.
      */
-    template <class Flt>
+    template <typename Flt>
     class PointRowsVisual : public VisualDataModel<Flt>
     {
     public:

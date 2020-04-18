@@ -18,7 +18,7 @@ using std::runtime_error;
 
 namespace morph {
 
-    template <class Flt>
+    template <typename Flt>
     class QuadsVisual : public VisualDataModel<Flt>
     {
     public:

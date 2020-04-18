@@ -61,7 +61,7 @@ using std::array;
 namespace morph {
 
     //! The template arguemnt Flt is the type of the data which this HexGridVisual will visualize.
-    template <class Flt>
+    template <typename Flt>
     class HexGridVisual : public VisualDataModel<Flt>
     {
     public:

@@ -31,7 +31,7 @@ namespace morph
      * path. I've kept this very simple with all public member
      * attributes.
      */
-    template <class Flt>
+    template <typename Flt>
     class BezCurvePath
     {
     public:

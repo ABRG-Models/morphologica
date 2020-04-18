@@ -27,7 +27,7 @@ namespace morph {
      * a group of objects of this class type can define a single domain for Dirichlet-ness analysis
      * (after Honda 1983). You'll find a list<> of these in a morph::DirichDom.
      */
-    template <class Flt>
+    template <typename Flt>
     class DirichVtx {
     public:
         //! The coordinate data for the main vertex represented.

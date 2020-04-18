@@ -30,7 +30,7 @@ namespace morph {
     };
 
     //! A class to make quiver plots
-    template <class Flt>
+    template <typename Flt>
     class QuiverVisual : public VisualDataModel<Flt>
     {
     public:

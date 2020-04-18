@@ -26,7 +26,7 @@ using std::endl;
 
 namespace morph {
 
-    template <class Flt>
+    template <typename Flt>
     class TransformMatrix
     {
     private:

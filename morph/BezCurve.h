@@ -85,7 +85,7 @@ namespace morph
      * on a Bezier curve which is specified using a parameter (often called t) which is
      * in the range [0, 1]
      */
-    template <class Flt>
+    template <typename Flt>
     class BezCurve
     {
     public: // methods

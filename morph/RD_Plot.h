@@ -32,7 +32,7 @@ namespace morph {
      * double may also be used directly, where they relate to the
      * morph/display.h code.
      */
-    template <class Flt>
+    template <typename Flt>
     class RD_Plot
     {
     public:
