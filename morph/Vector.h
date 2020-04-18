@@ -1,18 +1,6 @@
 /*!
  * An N dimensional vector class template which derives from std::array.
  *
- * Because this extends std::array, it works best when compiled with a c++-17
- * compiler. This is because std::array is an 'aggregate class' with no user-provided
- * constructors. Prior to c++-17, aggregate classes were not permitted to have base
- * classes. So, if you want to do:
- *
- * Vector<float, 3> v = { 1.0f , 1.0f, 1.0f };
- *
- * You need c++-17. Otherwise, restrict your client code to doing:
- *
- * Vector<float, 3> v;
- * v[0] = 1.0f; v[1] = 1.0f; v[2] = 1.0f;
- *
  * Author: Seb James
  * Date: April 2020
  */
@@ -21,8 +9,6 @@
 #include <cmath>
 using std::abs;
 using std::sqrt;
-using std::cos;
-using std::sin;
 
 #include <array>
 using std::array;
@@ -50,44 +36,92 @@ using morph::RandUniformInt;
 namespace morph {
 
     /*!
-     * Forward declaration of templates for stream operator overloading
-     * Example adapted from https://stackoverflow.com/questions/4660123
+     * \brief N-D vector class
+     *
+     * An N dimensional vector class template which derives from std::array. Vector
+     * components are of scalar type S. It is anticipated that S will be set either to
+     * floating point scalar types such as float or double, or to integer scalar types
+     * such as int, long long int and so on. Thus, a typical (and in fact, the default)
+     * signature would be:
+     *
+     * Vector<float, 3> v;
+     *
+     * The class inherits std:array's fixed-size array of memory for storing the
+     * components of the vector. It adds numerous methods which allow objects of type
+     * Vector to have arithmetic operations applied to them, either scalar (add a scalar
+     * to all elements; divide all elements by a scalar, etc) or vector (including dot
+     * and cross products, normalization and so on.
+     *
+     * Because morph::Vector extends std::array, it works best when compiled with a
+     * c++-17 compiler (although it can be compiled with a c++-11 compiler). This is
+     * because std::array is an 'aggregate class' with no user-provided constructors,
+     * and morph::Vector does not add any of its own constructors. Prior to c++-17,
+     * aggregate classes were not permitted to have base classes. So, if you want to do:
+     *
+     * Vector<float, 3> v = { 1.0f , 1.0f, 1.0f };
+     *
+     * You need c++-17. Otherwise, restrict your client code to doing:
+     *
+     * Vector<float, 3> v;
+     * v[0] = 1.0f; v[1] = 1.0f; v[2] = 1.0f;
      */
-    template <typename Flt, size_t N> struct Vector;
-    template <typename Flt, size_t N> ostream& operator<< (ostream&, const Vector<Flt, N>&);
+    template <typename S, size_t N> struct Vector;
 
-    template <typename Flt=float, size_t N=3>
-    struct Vector : public array<Flt, N>
+    /*!
+     * Template friendly mechanism to overload the stream operator.
+     *
+     * Note forward declaration of the Vector template class and this template for
+     * stream operator overloading. Example adapted from
+     * https://stackoverflow.com/questions/4660123
+     */
+    template <typename S, size_t N> ostream& operator<< (ostream&, const Vector<S, N>&);
+
+    template <typename S=float, size_t N=3>
+    struct Vector : public array<S, N>
     {
-        //! Named component functions for up to 4D vectors
+        /*!
+         * \defgroup Named component functions for up to 4D vectors
+         */
         //@{
+        //! \return the first component of the vector
         template <size_t _N = N, enable_if_t<(_N>0), int> = 0>
-        Flt x (void) const {
+        S x (void) const {
             return (*this)[0];
         }
+        //! \return the second component of the vector
         template <size_t _N = N, enable_if_t<(_N>1), int> = 0>
-        Flt y (void) const {
+        S y (void) const {
             return (*this)[1];
         }
+        //! \return the third component of the vector
         template <size_t _N = N, enable_if_t<(_N>2), int> = 0>
-        Flt z (void) const {
+        S z (void) const {
             return (*this)[2];
         }
+        //! \return the fourth component of the vector
         template <size_t _N = N, enable_if_t<(_N>3), int> = 0>
-        Flt w (void) const {
+        S w (void) const {
             return (*this)[3];
         }
         //@}
 
         /*!
+         * \brief Unit vector threshold
+         *
          * The threshold outside of which the vector is no longer considered to be a
          * unit vector. Note this is hard coded as a constexpr, to avoid messing with
          * the initialization of the Vector with curly brace initialization.
+         *
+         * Clearly, this will be the wrong threshold for some cases. Possibly, a
+         * template parameter could set this; so size_t U could indicate the threshold;
+         * 0.001 could be U=-3 (10^-3).
          */
-        static constexpr Flt unitThresh = 0.001;
+        static constexpr S unitThresh = 0.001;
 
-        //! Set data members from an array of same size.
-        void setFrom (const array<Flt, N> v) {
+        /*!
+         * Set data members from an array the of same size and type.
+         */
+        void setFrom (const array<S, N> v) {
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = v[i];
             }
@@ -98,18 +132,25 @@ namespace morph {
          * ignoring the last element of v. Used when working with 4D vectors in graphics
          * applications involving 4x4 transform matrices.
          */
-        void setFrom (const array<Flt, (N+1)> v) {
+        void setFrom (const array<S, (N+1)> v) {
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = v[i];
             }
         }
 
-        //! Output the vector to stdout
+        /*!
+         * Output the vector to stdout
+         */
         void output (void) const {
             cout << "Vector" << this->asString();
         }
 
-        //! Create a string representation of the vector
+        /*!
+         * Create a string representation of the vector
+         *
+         * \return A 'coordinate format' string such as "(1,1,2)", "(0.2,0.4)" or
+         * "(5,4,5,5,40)".
+         */
         string asString (void) const {
             stringstream ss;
             auto i = this->begin();
@@ -127,17 +168,19 @@ namespace morph {
             return ss.str();
         }
 
-        //! Renormalize the vector to length 1.
+        /*!
+         * Renormalize the vector to length 1.
+         */
         void renormalize (void) {
-            Flt denom = static_cast<Flt>(0);
+            S denom = static_cast<S>(0);
             auto i = this->begin();
             while (i != this->end()) {
                 denom += ((*i) * (*i));
                 ++i;
             }
             denom = sqrt(denom);
-            if (denom != static_cast<Flt>(0.0)) {
-                Flt oneovermag = static_cast<Flt>(1.0) / denom;
+            if (denom != static_cast<S>(0.0)) {
+                S oneovermag = static_cast<S>(1.0) / denom;
                 i = this->begin();
                 while (i != this->end()) {
                     *i++ *= oneovermag;
@@ -146,15 +189,19 @@ namespace morph {
         }
 
         /*!
-         * Randomize the vector. Note that I need a real or int implementation here,
-         * depending on the type of Flt. This allows me to use the correct type of
-         * randomizer.
+         * Randomize the vector
+         *
+         * Randomly set the elements of the vector consisting of floating point
+         * coordinates. Coordinates are set to random numbers drawn from a uniform
+         * distribution between 0 and 1 (See morph::RandUniformReal for details).
+         *
+         * Note that I need a real or int implementation here, depending on the type of
+         * S. This allows me to use the correct type of randomizer.
          *
          * Note, if you omit the second template arg from enable_if_t (or enable_if)
          * then the type defaults to void.
          */
-        //@{
-        template <typename F=Flt, enable_if_t<!is_integral<F>::value, int> = 0 >
+        template <typename F=S, enable_if_t<!is_integral<F>::value, int> = 0 >
         void randomize (void) {
             RandUniformReal<F> ruf (static_cast<F>(0), static_cast<F>(1));
             auto i = this->begin();
@@ -162,9 +209,18 @@ namespace morph {
                 *i++ = ruf.get();
             }
         }
-        // Note: Here, if F is integral, then enable_if_t's type is '0' and the function
-        // is included
-        template <typename F=Flt, enable_if_t<is_integral<F>::value, int> = 0 >
+
+        /*!
+         * Randomize the vector
+         *
+         * Randomly set the elements of the vector consisting of integer
+         * coordinates. Coordinates are set to random numbers drawn from a uniform
+         * distribution between 0 and 255 (See morph::RandUniformInt for details).
+         *
+         * Note on the template syntax: Here, if F is integral, then enable_if_t's type
+         * is '0' and the function is defined (I think).
+        */
+        template <typename F=S, enable_if_t<is_integral<F>::value, int> = 0 >
         void randomize (void) {
             RandUniformInt<F> rui (static_cast<F>(0), static_cast<F>(255));
             auto i = this->begin();
@@ -172,26 +228,33 @@ namespace morph {
                 *i++ = rui.get();
             }
         }
-        //@}
 
-        //! Test to see if this vector is a unit vector (it doesn't *have* to be).
+        /*!
+         * Test to see if this vector is a unit vector (it doesn't *have* to be).
+         *
+         * \return true if the length of the vector is 1.
+         */
         bool checkunit (void) {
             bool rtn = true;
-            Flt metric = 1.0;
+            S metric = 1.0;
             auto i = this->begin();
             while (i != this->end()) {
                 metric -= ((*i) * (*i));
                 ++i;
             }
-            if (abs(metric) > morph::Vector<Flt, N>::unitThresh) {
+            if (abs(metric) > morph::Vector<S, N>::unitThresh) {
                 rtn = false;
             }
             return rtn;
         }
 
-        //! Return the length of the vector
-        Flt length (void) const {
-            Flt sos = static_cast<Flt>(0);
+        /*!
+         * Find the length of the vector.
+         *
+         * \return the length
+         */
+        S length (void) const {
+            S sos = static_cast<S>(0);
             auto i = this->begin();
             while (i != this->end()) {
                 sos += ((*i) * (*i));
@@ -200,9 +263,13 @@ namespace morph {
             return sqrt(sos);
         }
 
-        //! Unary negate operator
-        Vector<Flt, N> operator- (void) const {
-            Vector<Flt, N> rtn;
+        /*!
+         * Unary negate operator
+         *
+         * \return a Vector whose elements have been negated.
+         */
+        Vector<S, N> operator- (void) const {
+            Vector<S, N> rtn;
             auto i = this->begin();
             auto j = rtn.begin();
             while (i != this->end()) {
@@ -211,27 +278,34 @@ namespace morph {
             return rtn;
         }
 
-        //! Unary not
+        /*!
+         * Unary not operator.
+         *
+         * \return true if the vector length is 0, otherwise it returns false.
+         */
         bool operator! (void) const {
-            return (this->length() == static_cast<Flt>(0.0)) ? true : false;
+            return (this->length() == static_cast<S>(0.0)) ? true : false;
         }
 
         /*!
+         * \defgroup Vector multiply (cross product)
+         *
          * Vector multiply. Cross product of this with another vector v2 (if N==3). In
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
+        //@{
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
-        Vector<Flt, N> operator* (const Vector<Flt, _N>& v2) const {
-            Vector<Flt, _N> v;
+        Vector<S, N> operator* (const Vector<S, _N>& v2) const {
+            Vector<S, _N> v;
             v[0] = (*this)[1] * v2.z() - (*this)[2] * v2.y();
             v[1] = (*this)[2] * v2.x() - (*this)[0] * v2.z();
             v[2] = (*this)[0] * v2.y() - (*this)[1] * v2.x();
             return v;
         }
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
-        void operator*= (const Vector<Flt, _N>& v2) {
-            Vector<Flt, _N> v;
+        void operator*= (const Vector<S, _N>& v2) {
+            Vector<S, _N> v;
             v[0] = (*this)[1] * v2.z() - (*this)[2] * v2.y();
             v[1] = (*this)[2] * v2.x() - (*this)[0] * v2.z();
             v[2] = (*this)[0] * v2.y() - (*this)[1] * v2.x();
@@ -239,10 +313,17 @@ namespace morph {
             (*this)[1] = v[1];
             (*this)[2] = v[2];
         }
+        //@}
 
-        //! Scalar product of this with another vector, v2.
-        Flt dot (const Vector<Flt, N>& v2) const {
-            Flt rtn = static_cast<Flt>(0);
+        /*!
+         * \brief Scalar (dot) product
+         *
+         * Compute the scalar product of this Vector and the Vector, v2.
+         *
+         * \return scalar product
+         */
+        S dot (const Vector<S, N>& v2) const {
+            S rtn = static_cast<S>(0);
             auto i = this->begin();
             auto j = v2.begin();
             while (i != this->end()) {
@@ -251,56 +332,62 @@ namespace morph {
             return rtn;
         }
 
-        //! Scalar multiply. Define for scalar S as the multiplier of the Vector<Flt, N>
+        /*!
+         * \defgroup Scalar multiply
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this Vector<S, N> by s, element-wise.
+         */
         //@{
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        Vector<Flt, N> operator* (const S& s) const {
-            Vector<Flt, N> rtn;
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        Vector<S, N> operator* (const _S& s) const {
+            Vector<S, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
             // Here's a way to iterate through which the compiler should be able to
             // autovectorise; it knows what i is on each loop:
             for (size_t i = 0; i < N; ++i) {
-                *(rval+i) = *(val+i) * static_cast<Flt>(s);
+                *(rval+i) = *(val+i) * static_cast<S>(s);
             }
             return rtn;
         }
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        void operator*= (const S& s) {
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        void operator*= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
-                *(val+i) *= static_cast<Flt>(s);
+                *(val+i) *= static_cast<S>(s);
             }
         }
         //@}
 
-        //! Scalar division.
+        /*!
+         * \defgroup Scalar division.
+         */
         //@{
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        Vector<Flt, N> operator/ (const S& s) const {
-            Vector<Flt, N> rtn;
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        Vector<S, N> operator/ (const _S& s) const {
+            Vector<S, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
-            // Here's a way to iterate through which the compiler should be able to
-            // autovectorise; it knows what i is on each loop:
             for (size_t i = 0; i < N; ++i) {
-                *(rval+i) = *(val+i) / static_cast<Flt>(s);
+                *(rval+i) = *(val+i) / static_cast<S>(s);
             }
             return rtn;
         }
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        void operator/= (const S& s) {
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        void operator/= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
-                *(val+i) /= static_cast<Flt>(s);
+                *(val+i) /= static_cast<S>(s);
             }
         }
         //@}
 
-        //! Vector addition
+        /*!
+         * \defgroup Vector addition
+         */
         //@{
-        Vector<Flt, N> operator+ (const Vector<Flt, N>& v2) const {
-            Vector<Flt, N> v;
+        Vector<S, N> operator+ (const Vector<S, N>& v2) const {
+            Vector<S, N> v;
             auto val = this->begin();
             auto val2 = v2.begin();
             for (size_t i = 0; i < N; ++i) {
@@ -308,7 +395,7 @@ namespace morph {
             }
             return v;
         }
-        void operator+= (const Vector<Flt, N>& v2) {
+        void operator+= (const Vector<S, N>& v2) {
             auto val = this->begin();
             auto val2 = v2.begin();
             for (size_t i = 0; i < N; ++i) {
@@ -317,10 +404,12 @@ namespace morph {
         }
         //@}
 
-        //! Vector subtraction
+        /*!
+         * \defgroup Vector subtraction
+         */
         //@{
-        Vector<Flt, N> operator- (const Vector<Flt, N>& v2) const {
-            Vector<Flt, N> v;
+        Vector<S, N> operator- (const Vector<S, N>& v2) const {
+            Vector<S, N> v;
             auto val = this->begin();
             auto val2 = v2.begin();
             for (size_t i = 0; i < N; ++i) {
@@ -328,7 +417,7 @@ namespace morph {
             }
             return v;
         }
-        void operator-= (const Vector<Flt, N>& v2) {
+        void operator-= (const Vector<S, N>& v2) {
             auto val = this->begin();
             auto val2 = v2.begin();
             for (size_t i = 0; i < N; ++i) {
@@ -337,55 +426,60 @@ namespace morph {
         }
         //@}
 
-        //! Scalar addition
+        /*!
+         * \defgroup Scalar addition
+         */
         //@{
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        Vector<Flt, N> operator+ (const S& s) const {
-            Vector<Flt, N> rtn;
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        Vector<S, N> operator+ (const _S& s) const {
+            Vector<S, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
             for (size_t i = 0; i < N; ++i) {
-                *(rval+i) = *(val+i) + static_cast<Flt>(s);
+                *(rval+i) = *(val+i) + static_cast<S>(s);
             }
             return rtn;
         }
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        void operator+= (const S& s) {
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        void operator+= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
-                *(val+i) += static_cast<Flt>(s);
+                *(val+i) += static_cast<S>(s);
             }
         }
         //@}
 
-        //! Scalar subtraction
+        /*!
+         * \defgroup Scalar subtraction
+         */
         //@{
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        Vector<Flt, N> operator- (const S& s) const {
-            Vector<Flt, N> rtn;
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        Vector<S, N> operator- (const _S& s) const {
+            Vector<S, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
             for (size_t i = 0; i < N; ++i) {
-                *(rval+i) = *(val+i) - static_cast<Flt>(s);
+                *(rval+i) = *(val+i) - static_cast<S>(s);
             }
             return rtn;
         }
-        template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
-        void operator-= (const S& s) {
+        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        void operator-= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
-                *(val+i) -= static_cast<Flt>(s);
+                *(val+i) -= static_cast<S>(s);
             }
         }
         //@}
 
-        //! Overload the stream output operator
-        friend ostream& operator<< <Flt, N> (ostream& os, const Vector<Flt, N>& v);
+        /*!
+         * Overload the stream output operator
+         */
+        friend ostream& operator<< <S, N> (ostream& os, const Vector<S, N>& v);
     };
 
-    //! Template friendly mechanism to overload the stream operator.
-    template <typename Flt=float, size_t N=3>
-    ostream& operator<< (ostream& os, const Vector<Flt, N>& v)
+    template <typename S=float, size_t N=3>
+    ostream& operator<< (ostream& os, const Vector<S, N>& v)
     {
         os << v.asString();
         return os;
