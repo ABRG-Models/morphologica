@@ -71,5 +71,15 @@ int main() {
     Vector v_def;
     v_def.randomize();
     cout << v_def << endl;
+
+    // So you want to do the dot product of a 1000000 D vector? Easy
+    Vector<float, 1000> big1;
+    Vector<float, 1000> big2;
+    big1.randomize();
+    big2.randomize();
+    cout << "DP..." << endl;
+    float bdp = big1.dot(big2);
+    cout << "big1.big2=" << bdp << endl;
+
     return rtn;
 }
