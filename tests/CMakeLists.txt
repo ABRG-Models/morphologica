@@ -228,6 +228,12 @@ add_executable(testVector3 testVector3.cpp)
 target_link_libraries(testVector3 -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector3 testVector3)
 
+# testVector. Note this requires C++ 17
+add_executable(testVector testVector.cpp)
+target_compile_features(testVector PUBLIC cxx_std_17)
+target_link_libraries(testVector -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testVector testVector)
+
 # Test morph::Transformmatrix
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 target_link_libraries(testTransformMatrix -L${morphologica_BINARY_DIR}/src morphologica)

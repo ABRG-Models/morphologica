@@ -25,7 +25,7 @@ endif()
 # An option that's useful for Ubuntu 16.04 builds
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
-# Using c++-14 (calls to std::decay_t)
+# Using c++-14 (calls to std::decay_t in number_type.h)
 set (CMAKE_CXX_STANDARD 14)
 
 # An option to allow users without OpenMP (that's some Macs) to compile
