@@ -49,17 +49,17 @@ using morph::RandUniformInt;
 
 namespace morph {
 
-    //! Forward declaration of templates for stream operator overloading
-    //! Example adapted from https://stackoverflow.com/questions/4660123
+    /*!
+     * Forward declaration of templates for stream operator overloading
+     * Example adapted from https://stackoverflow.com/questions/4660123
+     */
     template <typename Flt, size_t N> struct Vector;
     template <typename Flt, size_t N> ostream& operator<< (ostream&, const Vector<Flt, N>&);
 
     template <typename Flt=float, size_t N=3>
     struct Vector : public array<Flt, N>
     {
-        /*!
-         * Named component functions for up to 4D vectors
-         */
+        //! Named component functions for up to 4D vectors
         //@{
         template <size_t _N = N, enable_if_t<(_N>0), int> = 0>
         Flt x (void) const {
@@ -93,21 +93,23 @@ namespace morph {
             }
         }
 
-        //! Set the data members of this Vector from the passed in, larger vector, v,
-        //! ignoring the last element of v. Used when working with 4D vectors in
-        //! graphics applications involving 4x4 transform matrices.
+        /*!
+         * Set the data members of this Vector from the passed in, larger vector, v,
+         * ignoring the last element of v. Used when working with 4D vectors in graphics
+         * applications involving 4x4 transform matrices.
+         */
         void setFrom (const array<Flt, (N+1)> v) {
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = v[i];
             }
         }
 
-        // Output the vector to stdout
+        //! Output the vector to stdout
         void output (void) const {
             cout << "Vector" << this->asString();
         }
 
-        // Create a string representation of the vector
+        //! Create a string representation of the vector
         string asString (void) const {
             stringstream ss;
             auto i = this->begin();
@@ -125,9 +127,7 @@ namespace morph {
             return ss.str();
         }
 
-        /*!
-         * Renormalize the vector to 1.
-         */
+        //! Renormalize the vector to length 1.
         void renormalize (void) {
             Flt denom = static_cast<Flt>(0);
             auto i = this->begin();
@@ -174,9 +174,7 @@ namespace morph {
         }
         //@}
 
-        /*!
-         * Test to see if this vector is a unit vector (it doesn't *have* to be)
-         */
+        //! Test to see if this vector is a unit vector (it doesn't *have* to be).
         bool checkunit (void) {
             bool rtn = true;
             Flt metric = 1.0;
@@ -218,9 +216,11 @@ namespace morph {
             return (this->length() == static_cast<Flt>(0.0)) ? true : false;
         }
 
-        //! Vector multiply. Cross product of this with another vector v2 (if N==3). In
-        //! higher dimensions, its more complicated to define what the cross product is,
-        //! and I'm unlikely to need anything other than the plain old 3D cross product.
+        /*!
+         * Vector multiply. Cross product of this with another vector v2 (if N==3). In
+         * higher dimensions, its more complicated to define what the cross product is,
+         * and I'm unlikely to need anything other than the plain old 3D cross product.
+         */
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
         Vector<Flt, N> operator* (const Vector<Flt, _N>& v2) const {
             Vector<Flt, _N> v;
@@ -265,7 +265,6 @@ namespace morph {
             }
             return rtn;
         }
-
         template <typename S=Flt, enable_if_t<is_scalar<S>::value, int> = 0 >
         void operator*= (const S& s) {
             auto val = this->begin();
@@ -345,8 +344,6 @@ namespace morph {
             Vector<Flt, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
-            // Here's a way to iterate through which the compiler should be able to
-            // autovectorise; it knows what i is on each loop:
             for (size_t i = 0; i < N; ++i) {
                 *(rval+i) = *(val+i) + static_cast<Flt>(s);
             }
@@ -368,8 +365,6 @@ namespace morph {
             Vector<Flt, N> rtn;
             auto val = this->begin();
             auto rval = rtn.begin();
-            // Here's a way to iterate through which the compiler should be able to
-            // autovectorise; it knows what i is on each loop:
             for (size_t i = 0; i < N; ++i) {
                 *(rval+i) = *(val+i) - static_cast<Flt>(s);
             }
@@ -388,7 +383,7 @@ namespace morph {
         friend ostream& operator<< <Flt, N> (ostream& os, const Vector<Flt, N>& v);
     };
 
-    // Template friendly mechanism to overload stream operator.
+    //! Template friendly mechanism to overload the stream operator.
     template <typename Flt=float, size_t N=3>
     ostream& operator<< (ostream& os, const Vector<Flt, N>& v)
     {

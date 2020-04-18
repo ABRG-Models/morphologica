@@ -81,5 +81,14 @@ int main() {
     float bdp = big1.dot(big2);
     cout << "big1.big2=" << bdp << endl;
 
+    // Test setFrom
+    Vector<double, 3> d1;
+    array<double, 3> a1 = { 5,6,7 };
+    d1.setFrom (a1);
+    cout << "d1 should be 5,6,7: " << d1 << endl;
+    array<double, 4> a2 = { 5,6,8,8 };
+    d1.setFrom (a2);
+    cout << "d1 should be 5,6,8: " << d1 << endl;
+
     return rtn;
 }
