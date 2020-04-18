@@ -1,5 +1,20 @@
 /*!
- * A better (templated) ND vector class which derives from std::array.
+ * An N dimensional vector class template which derives from std::array.
+ *
+ * Because this extends std::array, it works best when compiled with a c++-17
+ * compiler. This is because std::array is an 'aggregate class' with no user-provided
+ * constructors. Prior to c++-17, aggregate classes were not permitted to have base
+ * classes. So, if you want to do:
+ *
+ * Vector<float, 3> v = { 1.0f , 1.0f, 1.0f };
+ *
+ * You need c++-17. Otherwise, restrict your client code to doing:
+ *
+ * Vector<float, 3> v;
+ * v[0] = 1.0f; v[1] = 1.0f; v[2] = 1.0f;
+ *
+ * Author: Seb James
+ * Date: April 2020
  */
 #pragma once
 
@@ -34,8 +49,8 @@ using morph::RandUniformInt;
 
 namespace morph {
 
-    // Forward declaration of templates for stream operator overloading
-    // Example adapted from https://stackoverflow.com/questions/4660123
+    //! Forward declaration of templates for stream operator overloading
+    //! Example adapted from https://stackoverflow.com/questions/4660123
     template <typename Flt, size_t N> struct Vector;
     template <typename Flt, size_t N> ostream& operator<< (ostream&, const Vector<Flt, N>&);
 
@@ -48,44 +63,44 @@ namespace morph {
         //@{
         template <size_t _N = N, enable_if_t<(_N>0), int> = 0>
         Flt x (void) const {
-            return this->at(0);
+            return (*this)[0];
         }
         template <size_t _N = N, enable_if_t<(_N>1), int> = 0>
         Flt y (void) const {
-            return this->at(1);
+            return (*this)[1];
         }
         template <size_t _N = N, enable_if_t<(_N>2), int> = 0>
         Flt z (void) const {
-            return this->at(2);
+            return (*this)[2];
         }
         template <size_t _N = N, enable_if_t<(_N>3), int> = 0>
         Flt w (void) const {
-            return this->at(3);
+            return (*this)[3];
         }
         //@}
 
         /*!
-         * The threshold outside of which the vector is no longer
-         * considered to be a unit vector.
+         * The threshold outside of which the vector is no longer considered to be a
+         * unit vector. Note this is hard coded as a constexpr, to avoid messing with
+         * the initialization of the Vector with curly brace initialization.
          */
-        const Flt unitThresh = 0.001;
+        static constexpr Flt unitThresh = 0.001;
 
-#if 0
-        // AVOID CODING ANY CONSTRUCTORS if possible
-        // But I would like:
-        Vector (const array<Flt, N> arr) {}
-
-        // and:
-        //! Construct from an array of *four* floats, assuming that this is a 4d vector
-        //! of the sort used with transformation matrix and that v[3] is 'w', and can be
-        //! discarded.
-        Vector (const array<Flt, (N+1)> v) {
-            // copy N elements from v
+        //! Set data members from an array of same size.
+        void setFrom (const array<Flt, N> v) {
+            for (size_t i = 0; i < N; ++i) {
+                (*this)[i] = v[i];
+            }
         }
-        // Problem to solve: Including these buggers up init with curly braces.
-#endif
-        //! Return the vector as an array // no need
-        //array<Flt, 3> asArray (void) const {}
+
+        //! Set the data members of this Vector from the passed in, larger vector, v,
+        //! ignoring the last element of v. Used when working with 4D vectors in
+        //! graphics applications involving 4x4 transform matrices.
+        void setFrom (const array<Flt, (N+1)> v) {
+            for (size_t i = 0; i < N; ++i) {
+                (*this)[i] = v[i];
+            }
+        }
 
         // Output the vector to stdout
         void output (void) const {
@@ -209,20 +224,20 @@ namespace morph {
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
         Vector<Flt, N> operator* (const Vector<Flt, _N>& v2) const {
             Vector<Flt, _N> v;
-            v[0] = this->y() * v2.z() - this->z() * v2.y();
-            v[1] = this->z() * v2.x() - this->x() * v2.z();
-            v[2] = this->x() * v2.y() - this->y() * v2.x();
+            v[0] = (*this)[1] * v2.z() - (*this)[2] * v2.y();
+            v[1] = (*this)[2] * v2.x() - (*this)[0] * v2.z();
+            v[2] = (*this)[0] * v2.y() - (*this)[1] * v2.x();
             return v;
         }
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
         void operator*= (const Vector<Flt, _N>& v2) {
             Vector<Flt, _N> v;
-            v[0] = this->y() * v2.z() - this->z() * v2.y();
-            v[1] = this->z() * v2.x() - this->x() * v2.z();
-            v[2] = this->x() * v2.y() - this->y() * v2.x();
-            this->at(0) = v.x();
-            this->at(1) = v.y();
-            this->at(2) = v.z();
+            v[0] = (*this)[1] * v2.z() - (*this)[2] * v2.y();
+            v[1] = (*this)[2] * v2.x() - (*this)[0] * v2.z();
+            v[2] = (*this)[0] * v2.y() - (*this)[1] * v2.x();
+            (*this)[0] = v[0];
+            (*this)[1] = v[1];
+            (*this)[2] = v[2];
         }
 
         //! Scalar product of this with another vector, v2.
