@@ -7,7 +7,8 @@ This code builds a shared library called libmorphologica.
 It installs the library on your system, along with the required header
 files.
 
-Code is (or shortly will be) enclosed in the "morph" namespace.
+Code is enclosed in the "morph" namespace. You can see the code
+documentation at https://codedocs.xyz/ABRG-Models/morphologica/
 
 It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to compile, and
 programs linked with libmorphologica will also need to link to those
