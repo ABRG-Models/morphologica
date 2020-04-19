@@ -80,10 +80,6 @@ namespace morph {
     template <typename S=float, size_t N=3>
     struct Vector : public array<S, N>
     {
-        /*!
-         * \defgroup Named component functions for up to 4D vectors
-         */
-        //@{
         //! \return the first component of the vector
         template <size_t _N = N, enable_if_t<(_N>0), int> = 0>
         S x (void) const {
@@ -104,7 +100,6 @@ namespace morph {
         S w (void) const {
             return (*this)[3];
         }
-        //@}
 
         /*!
          * \brief Unit vector threshold
@@ -289,13 +284,12 @@ namespace morph {
         }
 
         /*!
-         * \defgroup Vector multiply (cross product)
+         * Vector multiply * operator.
          *
-         * Vector multiply. Cross product of this with another vector v2 (if N==3). In
+         * Cross product of this with another vector v2 (if N==3). In
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        //@{
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
         Vector<S, N> operator* (const Vector<S, _N>& v2) const {
             Vector<S, _N> v;
@@ -304,6 +298,13 @@ namespace morph {
             v[2] = (*this)[0] * v2.y() - (*this)[1] * v2.x();
             return v;
         }
+
+        /*!
+         * Vector multiply *= operator.
+         *
+         * Cross product of this with another vector v2 (if N==3). Result written into
+         * this.
+         */
         template <size_t _N = N, enable_if_t<(_N==3), int> = 0>
         void operator*= (const Vector<S, _N>& v2) {
             Vector<S, _N> v;
@@ -314,7 +315,6 @@ namespace morph {
             (*this)[1] = v[1];
             (*this)[2] = v[2];
         }
-        //@}
 
         /*!
          * \brief Scalar (dot) product
@@ -334,11 +334,11 @@ namespace morph {
         }
 
         /*!
-         * \defgroup Scalar multiply
+         * Scalar multiply * operator
+         *
          * This function will only be defined if typename _S is a
          * scalar type. Multiplies this Vector<S, N> by s, element-wise.
          */
-        //@{
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator* (const _S& s) const {
             Vector<S, N> rtn;
@@ -351,6 +351,13 @@ namespace morph {
             }
             return rtn;
         }
+
+        /*!
+         * Scalar multiply *= operator
+         *
+         * This function will only be defined if typename _S is a
+         * scalar type. Multiplies this Vector<S, N> by s, element-wise.
+         */
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s) {
             auto val = this->begin();
@@ -358,12 +365,10 @@ namespace morph {
                 *(val+i) *= static_cast<S>(s);
             }
         }
-        //@}
 
         /*!
-         * \defgroup Scalar division.
+         * Scalar division * operator
          */
-        //@{
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator/ (const _S& s) const {
             Vector<S, N> rtn;
@@ -374,6 +379,10 @@ namespace morph {
             }
             return rtn;
         }
+
+        /*!
+         * Scalar division *= operator
+         */
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s) {
             auto val = this->begin();
@@ -381,12 +390,10 @@ namespace morph {
                 *(val+i) /= static_cast<S>(s);
             }
         }
-        //@}
 
         /*!
-         * \defgroup Vector addition
+         * Vector addition operator
          */
-        //@{
         Vector<S, N> operator+ (const Vector<S, N>& v2) const {
             Vector<S, N> v;
             auto val = this->begin();
@@ -396,6 +403,10 @@ namespace morph {
             }
             return v;
         }
+
+        /*!
+         * Vector addition operator
+         */
         void operator+= (const Vector<S, N>& v2) {
             auto val = this->begin();
             auto val2 = v2.begin();
@@ -403,12 +414,10 @@ namespace morph {
                 *(val+i) += *(val2+i);
             }
         }
-        //@}
 
         /*!
-         * \defgroup Vector subtraction
+         * Vector subtraction
          */
-        //@{
         Vector<S, N> operator- (const Vector<S, N>& v2) const {
             Vector<S, N> v;
             auto val = this->begin();
@@ -418,6 +427,10 @@ namespace morph {
             }
             return v;
         }
+
+        /*!
+         * Vector subtraction
+         */
         void operator-= (const Vector<S, N>& v2) {
             auto val = this->begin();
             auto val2 = v2.begin();
@@ -425,12 +438,10 @@ namespace morph {
                 *(val+i) -= *(val2+i);
             }
         }
-        //@}
 
         /*!
-         * \defgroup Scalar addition
+         * Scalar addition
          */
-        //@{
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator+ (const _S& s) const {
             Vector<S, N> rtn;
@@ -441,6 +452,10 @@ namespace morph {
             }
             return rtn;
         }
+
+        /*!
+         * Scalar addition
+         */
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s) {
             auto val = this->begin();
@@ -448,12 +463,10 @@ namespace morph {
                 *(val+i) += static_cast<S>(s);
             }
         }
-        //@}
 
         /*!
-         * \defgroup Scalar subtraction
+         * Scalar subtraction
          */
-        //@{
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator- (const _S& s) const {
             Vector<S, N> rtn;
@@ -464,6 +477,10 @@ namespace morph {
             }
             return rtn;
         }
+
+        /*!
+         * Scalar subtraction
+         */
         template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s) {
             auto val = this->begin();
@@ -471,7 +488,6 @@ namespace morph {
                 *(val+i) -= static_cast<S>(s);
             }
         }
-        //@}
 
         /*!
          * Overload the stream output operator
