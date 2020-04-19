@@ -1,17 +1,31 @@
 /*!
- * A class for scaling signals. Mostly used for linear scaling of signals, has an
- * autoscale feature. Could also be used to logarithmically scale a signal.
+ * \file
  *
- * Usage: See tests/testScale.cpp
- * e.g.:
+ * \brief A class for scaling signals
+ *
+ * Scale is a class for scaling (transforming) signals. It has been coded for linear
+ * scaling of signals. It could also be used to logarithmically scale signals with
+ * suitable extension, and this has been kept in mind (see ScaleFn). It has an
+ * autoscaling feature which allows a signal which ranges between x and y to be rescaled
+ * to range between 0 and 1 (or -1 and 1 or -w and z)
+ *
+ * Classes created from the template class morph::Scale will derive from one of the
+ * morph::ScaleImpl <ntype, T> classes, where ntype is the 'number type' (0 means the
+ * numbers are mathematical vectors like morph::Vector, std::array or std::vector; 1
+ * means that the numbers are scalars like float, double or int)
+ *
+ * Usage: See \c tests/testScale.cpp \n
+ * e.g.:\n
+ * \code{.cpp}
  *   morph::Scale<float> s;
  *   s.do_autoscale = true;
  *   std::vector<float> vf = { 1, 2, 3 };
  *   std::vector<float> result(vf);
  *   s.transform (vf, result);
+ *\endcode
  *
- * Author: Seb James
- * Date: April 2020
+ * \author Seb James
+ * \date April 2020
  */
 
 #pragma once
@@ -26,38 +40,52 @@ using morph::MathAlgo;
 
 namespace morph {
 
-    //! A label for what kind of scaling transformation to make
+    //! \brief A label for what kind of scaling transformation to make
     enum class ScaleFn {
         Linear,
         Logarithmic
     };
 
     /*!
+     * \brief Base class for morph::ScaleImpl
+     *
      * A base class for specialised implementations of ScaleImpl depending on whether
-     * T is a scalar type or a (mathematical) vector type.
+     * \a T is a scalar type or a (mathematical) vector type.
      *
-     * Perhaps this is a base class for LinearScale, LogScale etc? Possibly in the
-     * future when someone wants lots of different scaling function.
+     * This class contains code common to all implementations of ScaleImpl.
      *
-     * I'm annoyed that I can't seem to put void transform (const vector<T>& data,
-     * vector<T>& output) in this base class.
+     * \tparam T The type of the number to be scaled. Should be some scalar type such as
+     * int, double, etc or a type which can contain a vector such as std::array,
+     * morph::Vector or std::vector.
      */
     template <typename T>
     class ScaleImplBase {
     public:
         /*!
-         * Transform the given datum using this Scale's parameters.
+         * \brief Transform the given datum using this Scale's parameters.
          *
          * I would have preferred to have named this function 'transform', matching
          * transform (const vector<T>&, vector<T>&). Had I done so then I would have
          * to have had two implementations of transform (const vector<T>&, vector<T>&)
          * in ScaleImpl<0,T> and ScaleImpl<1,T>, even though they are identical in
          * each derived class.
+         *
+         * \param datum The datum (scalar or vector) to be transformed by the current
+         * scaling.
+         *
+         * \return The scaled datum.
          */
         virtual T transform_one (const T& datum) const = 0;
 
         /*!
-         * Transform a container of scalars or vectors.
+         * \brief Transform a container of scalars or vectors.
+         *
+         * This uses the scaling parameters \b params (ScaleImpl::params) to scale the
+         * input \a data. If #do_autoscale is true and #autoscaled is false, then the
+         * parameters are computed from the input \a data.
+         *
+         * \param data The input data
+         * \param output The scaled output
          */
         template < template <typename, typename> typename Container,
                    typename TT=T,
@@ -77,14 +105,40 @@ namespace morph {
             }
         }
 
-        //! Compute the params for the scaling given the minimum and maximum inputs
-        //! such that input_min gives this->min as output and input_max gives
-        //! this->max as output.
+        /*!
+         * \brief Compute scaling parameters
+         *
+         * Compute the parameters for the scaling given the minimum and maximum inputs
+         * such that \a input_min gives \b range_min as output and \a input_max gives \b
+         * range_max as output.
+         *
+         * \param input_min The minimum value of the input data
+         * \param input_max The maximum value of the input data
+         */
         virtual void compute_autoscale (T input_min, T input_max) = 0;
 
-        //! 'Autoscale from data'. Compute the params for the scaling given the vector
-        //! of data such that min(data) gives this->min as output and max(data) gives
-        //! this->max as output.
+        /*!
+         * \brief Autoscale from data
+         *
+         * 'Autoscale from data'. Compute the parameters for the scaling given the
+         * container of data such that min(\a data) gives \b range_min as output and
+         * max(\a data) gives \b range_max as output.
+         *
+         * This method sub-calls #compute_autoscale, when then modifies
+         * ScaleImpl::params.
+         *
+         * \tparam Container The STL container holding the data. Restricted to those
+         * containers which take two arguments for construction. This includes
+         * std::vector, std::list but excludes std::map.
+         *
+         * \tparam TT The type of the contained data (takes a copy of \a T).
+         *
+         * \tparam Allocator The STL container allocator determined from \a TT.
+         *
+         * \param data The data from which to determine the scaling parameters. In
+         * practice, this will be something like \c std::vector<float> or
+         * \c std::list<morph::Vector<double,2>>
+         */
         template < template <typename, typename> typename Container,
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
@@ -93,34 +147,55 @@ namespace morph {
             this->compute_autoscale (mm.second, mm.first);
         }
 
-        //! If true, then the params have been set by autoscaling
+        //! If true, then the parameters (ScaleImpl::params) have been set by
+        //! autoscaling
         bool autoscaled = false;
 
         //! Set to true to make the Scale object compute autoscaling when data is
-        //! available.
+        //! available, i.e. on the first call to #transform.
         bool do_autoscale = false;
 
     protected:
-        //! What type of scaling function is in use?
+        /*!
+         * What type of scaling function is in use? Intended for future implementations
+         * when Scale could carry out logarithmic (or other) scalings, in addition to
+         * linear transforms.
+         */
         ScaleFn type = ScaleFn::Linear;
     };
 
-    //! Vector implementation
-    template <int vtype = 0, typename T=float>
+    /*!
+     * \brief ScaleImpl for vector \a T
+     *
+     * A default implementation base class for Scale which is used when the number type
+     * of \a T is a vector such as std::array or morph::Vector.
+     *
+     * \tparam ntype The 'number type' as contained in number_type::value. 1 for
+     * vectors, 0 for scalars. Default is 0. This class is active if ntype is 0. There
+     * is a specialization of this class which is active if ntype is 1. Other values of
+     * ntype would activate this default implementation.
+     *
+     * \tparam T The type of the number to be scaled. Should be some scalar type such as
+     * int, double, etc or a type which can contain a vector such as std::array,
+     * morph::Vector or std::vector. It is from the type \a T that ntype is determined.
+     *
+     * \sa ScaleImplBase
+     */
+    template <int ntype = 0, typename T=float>
     class ScaleImpl : public ScaleImplBase<T>
     {
     public:
+        //! In a vector implementation we have to get the type of the components of the
+        //! vector type \a T. The component (or element) type is named \a T_el.
         using T_el=std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
-        //! maximum and minimum for autoscaling. In vector implementation have to use
-        //! the type of the elements of T
-        //@{
+        //! minimum for autoscaling. After autoscaling, the minimum value of the scaled
+        //! values should be have this value.
         T_el range_min = 0.0;
+        //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled
+        //! values should be have this value.
         T_el range_max = 1.0;
-        //@}
 
-        //! Transform the given datum using this Scale's parameters. This is a linear
-        //! scaling of the vector lengths only, so just need two parameters.
         virtual T transform_one (const T& datum) const {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This transform function is for Linear scaling only");
@@ -139,9 +214,6 @@ namespace morph {
             return rtn;
         }
 
-        //! Compute the params for the scaling given the minimum and maximum inputs
-        //! such that input_min gives this->min as output and input_max gives
-        //! this->max as output.
         virtual void compute_autoscale (T input_min, T input_max) {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This autoscale function is for Linear scaling only");
@@ -159,6 +231,8 @@ namespace morph {
         }
 
         //! Set params for a two parameter scaling
+        //! \param p0 The zeroth parameter
+        //! \param p1 The first parameter
         void setParams (T_el p0, T_el p1) {
             this->params.resize (2, static_cast<T_el>(0.0));
             this->params[0] = p0;
@@ -167,6 +241,8 @@ namespace morph {
 
     private:
         //! Compute vector length
+        //! \param vec the vector of type \a T
+        //! \return The vector's length
         T_el vec_length (const T& vec) const {
             T_el sos = static_cast<T_el>(0);
             typename T::const_iterator vi = vec.begin();
@@ -178,25 +254,37 @@ namespace morph {
             return sqrt (sos);
         }
 
-    private:
-        //! A vector of parameters for this scaling function.
+        //! The parameters for the scaling. For linear scaling, this will contain two
+        //! scalar values.
         vector<T_el> params;
     };
 
-    //! Specialised class for Scalar only stuff. First inherit the vector/common
-    //! stuff, then override some of the methods
+    /*!
+     * \brief ScaleImpl for scalar \a T
+     *
+     * A specialized implementation base class for the template class Scale, which is used
+     * when the number type of \a T is a scalar such as int, double, float or long
+     * double.
+     *
+     * \tparam ntype The 'number type' as contained in number_type::value. 0 for
+     * vectors, 1 for scalars. This class is active only for ntype==1 (scalar).
+     *
+     * \tparam T The type of the number to be scaled. Should be some scalar type such as
+     * int, double. It is from the type \a T that ntype is determined.
+     *
+     * \sa ScaleImplBase
+     */
     template<typename T>
     class ScaleImpl<1, T> : public ScaleImplBase<T>
     {
     public:
-        //! maximum and minimum for autoscaling
-        //@{
+        //! minimum for autoscaling. After autoscaling, the minimum value of the scaled
+        //! values should be have this value.
         T range_min = 0.0;
+        //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled
+        //! values should be have this value.
         T range_max = 1.0;
-        //@}
 
-        //! Transform the given datum using this Scale's parameters. How to deal with
-        //! regular types and arrays of types? T might be scalar, or vector.
         virtual T transform_one (const T& datum) const {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This transform function is for Linear scaling only");
@@ -205,9 +293,6 @@ namespace morph {
             return (datum * this->params[0] + this->params[1]);
         }
 
-        //! Compute the params for the scaling given the minimum and maximum inputs
-        //! such that input_min gives this->min as output and input_max gives
-        //! this->max as output.
         virtual void compute_autoscale (T input_min, T input_max) {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This autoscale function is for Linear scaling only");
@@ -221,6 +306,8 @@ namespace morph {
         }
 
         //! Set params for a two parameter scaling
+        //! \param p0 The zeroth parameter
+        //! \param p1 The first parameter
         void setParams (T p0, T p1) {
             this->params.resize (2, static_cast<T>(0.0));
             this->params[0] = p0;
@@ -228,11 +315,28 @@ namespace morph {
         }
 
     private:
+        //! The parameters for the scaling. If linear, this will contain two scalar
+        //! values.
         vector<T> params;
     };
 
-    //! morph::Scale derives from ScaleImpl<N> depending on the type of T
-    template <typename T>
-    struct Scale : public ScaleImpl<number_type<T>::value, T> {};
+    /*!
+     * A class for scaling and normalizing signals.
+     *
+     * Mostly used for linear scaling of signals, has an autoscale feature. Could also
+     * be used to logarithmically scale a signal with suitable extension.
+     *
+     * morph::Scale derives from ScaleImpl<N> depending on the type of T
+     *
+     * Usage: See tests/testScale.cpp
+     * e.g.:
+     *   morph::Scale<float> s;
+     *   s.do_autoscale = true;
+     *   std::vector<float> vf = { 1, 2, 3 };
+     *   std::vector<float> result(vf);
+     *   s.transform (vf, result);
+     */
+     template <typename T>
+     struct Scale : public ScaleImpl<number_type<T>::value, T> {};
 
 } // namespace morph

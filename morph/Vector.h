@@ -28,6 +28,7 @@ using std::enable_if;
 using std::enable_if_t;
 using std::is_integral;
 using std::is_scalar;
+using std::decay_t;
 
 #include "Random.h"
 using morph::RandUniformReal;
@@ -201,7 +202,7 @@ namespace morph {
          * Note, if you omit the second template arg from enable_if_t (or enable_if)
          * then the type defaults to void.
          */
-        template <typename F=S, enable_if_t<!is_integral<F>::value, int> = 0 >
+        template <typename F=S, enable_if_t<!is_integral<decay_t<F>>::value, int> = 0 >
         void randomize (void) {
             RandUniformReal<F> ruf (static_cast<F>(0), static_cast<F>(1));
             auto i = this->begin();
@@ -220,7 +221,7 @@ namespace morph {
          * Note on the template syntax: Here, if F is integral, then enable_if_t's type
          * is '0' and the function is defined (I think).
         */
-        template <typename F=S, enable_if_t<is_integral<F>::value, int> = 0 >
+        template <typename F=S, enable_if_t<is_integral<decay_t<F>>::value, int> = 0 >
         void randomize (void) {
             RandUniformInt<F> rui (static_cast<F>(0), static_cast<F>(255));
             auto i = this->begin();
@@ -338,7 +339,7 @@ namespace morph {
          * scalar type. Multiplies this Vector<S, N> by s, element-wise.
          */
         //@{
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator* (const _S& s) const {
             Vector<S, N> rtn;
             auto val = this->begin();
@@ -350,7 +351,7 @@ namespace morph {
             }
             return rtn;
         }
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
@@ -363,7 +364,7 @@ namespace morph {
          * \defgroup Scalar division.
          */
         //@{
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator/ (const _S& s) const {
             Vector<S, N> rtn;
             auto val = this->begin();
@@ -373,7 +374,7 @@ namespace morph {
             }
             return rtn;
         }
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
@@ -430,7 +431,7 @@ namespace morph {
          * \defgroup Scalar addition
          */
         //@{
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator+ (const _S& s) const {
             Vector<S, N> rtn;
             auto val = this->begin();
@@ -440,7 +441,7 @@ namespace morph {
             }
             return rtn;
         }
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
@@ -453,7 +454,7 @@ namespace morph {
          * \defgroup Scalar subtraction
          */
         //@{
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         Vector<S, N> operator- (const _S& s) const {
             Vector<S, N> rtn;
             auto val = this->begin();
@@ -463,7 +464,7 @@ namespace morph {
             }
             return rtn;
         }
-        template <typename _S=S, enable_if_t<is_scalar<_S>::value, int> = 0 >
+        template <typename _S=S, enable_if_t<is_scalar<decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s) {
             auto val = this->begin();
             for (size_t i = 0; i < N; ++i) {
