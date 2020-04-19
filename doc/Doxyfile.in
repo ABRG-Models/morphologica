@@ -63,7 +63,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/morph/ @CMAKE_CURRENT_SOURCE_DIR@/tests
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/morph/ @CMAKE_CURRENT_SOURCE_DIR@/tests @CMAKE_CURRENT_SOURCE_DIR@/README.md
+USE_MDFILE_AS_MAINPAGE = @CMAKE_CURRENT_SOURCE_DIR@/README.md
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO
 EXCLUDE                =
