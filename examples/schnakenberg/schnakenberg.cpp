@@ -43,10 +43,12 @@ using std::chrono::steady_clock;
 using morph::Visual;
 # include "morph/HexGridVisual.h"
 using morph::HexGridVisual;
-#include "morph/ColourMap.h"
+# include "morph/ColourMap.h"
 using morph::ColourMapType;
-#include "morph/VisualDataModel.h"
+# include "morph/VisualDataModel.h"
 using morph::VisualDataModel;
+# include "morph/Scale.h"
+using morph::Scale;
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const string& logpath, const string& name,
@@ -246,23 +248,34 @@ int main (int argc, char **argv)
 #ifdef COMPILE_PLOTTING
     // Before starting the simulation, create the HexGridVisuals.
 
-    // Data scaling parameters. First two are the Z position scaling - how hilly/bumpy
-    // the visual will be. The second is the colour scaling. If the colour scaling
-    // params are both 0 then the map will be auto-colour scaled.
-    const array<float, 4> scaling = { 0.2f, 0.0f, 0.0f, 0.0f };
-
     // Spatial offset, for positioning of HexGridVisuals
     array<float, 3> spatOff;
     float xzero = 0.0f;
 
-    // A
+    // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog, RD.hg, spatOff, &(RD.A), scaling, ColourMapType::Plasma));
+    // Z position scaling - how hilly/bumpy the visual will be.
+    Scale<FLT> zscale; zscale.setParams (0.2f, 0.0f);
+    // The second is the colour scaling. Set this to autoscale.
+    Scale<FLT> cscale; cscale.do_autoscale = true;
+    unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
+                                                                    RD.hg,
+                                                                    spatOff,
+                                                                    &(RD.A),
+                                                                    zscale,
+                                                                    cscale,
+                                                                    ColourMapType::Plasma));
+    // B. Offset in x direction to the right.
     xzero += RD.hg->width();
-    // B
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog, RD.hg, spatOff, &(RD.B), scaling, ColourMapType::Jet));
+    unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
+                                                                    RD.hg,
+                                                                    spatOff,
+                                                                    &(RD.B),
+                                                                    zscale,
+                                                                    cscale,
+                                                                    ColourMapType::Jet));
 #endif
 
     // Start the loop
@@ -276,10 +289,12 @@ int main (int argc, char **argv)
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
             VisualDataModel<FLT>* avm = (VisualDataModel<FLT>*)v1.getVisualModel (Agrid);
-            avm->updateData (&(RD.A), scaling);
+            avm->updateData (&(RD.A));
+            avm->clearAutoscaleColour();
 
             VisualDataModel<FLT>* bvm = (VisualDataModel<FLT>*)v1.getVisualModel (Bgrid);
-            bvm->updateData (&(RD.B), scaling);
+            bvm->updateData (&(RD.B));
+            bvm->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {

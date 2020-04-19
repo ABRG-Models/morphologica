@@ -1,3 +1,9 @@
+/*!
+ * \file
+ * \brief Bezier curve path class (path made of Bezier curves).
+ * \author Seb James
+ * \date 2019-2020
+ */
 #ifndef _BEZCURVEPATH_H_
 #define _BEZCURVEPATH_H_
 

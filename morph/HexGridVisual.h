@@ -113,6 +113,33 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Constructor which sets default colour map and z/colour Scale objects
+        HexGridVisual(GLuint sp,
+                      const HexGrid* _hg,
+                      const array<float, 3> _offset,
+                      const vector<Flt>* _data,
+                      const Scale<Flt>& zscale,
+                      const Scale<Flt>& cscale,
+                      ColourMapType _cmt,
+                      const float _hue = 0.0f) {
+            // Set up...
+            this->shaderprog = sp;
+            this->offset = _offset;
+            this->viewmatrix.translate (this->offset);
+
+            this->zScale = zscale;
+            this->colourScale = cscale;
+
+            this->hg = _hg;
+            this->scalarData = _data;
+
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+
+            this->initializeVertices();
+            this->postVertexInit();
+        }
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices (void) {

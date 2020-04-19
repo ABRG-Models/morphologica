@@ -1,8 +1,9 @@
 /*!
- * An N dimensional vector class template which derives from std::array.
+ * \file
+ * \brief An N dimensional vector class template which derives from std::array.
  *
- * Author: Seb James
- * Date: April 2020
+ * \author Seb James
+ * \date April 2020
  */
 #pragma once
 
@@ -111,6 +112,10 @@ namespace morph {
          * Clearly, this will be the wrong threshold for some cases. Possibly, a
          * template parameter could set this; so size_t U could indicate the threshold;
          * 0.001 could be U=-3 (10^-3).
+         *
+         * Another idea would be to change unitThresh based on the type S. Or use
+         * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
+         * sense.
          */
         static constexpr S unitThresh = 0.001;
 
@@ -196,6 +201,8 @@ namespace morph {
          *
          * Note, if you omit the second template arg from enable_if_t (or enable_if)
          * then the type defaults to void.
+         *
+         * \tparam F A floating point scalar type
          */
         template <typename F=S, enable_if_t<!is_integral<decay_t<F>>::value, int> = 0 >
         void randomize (void) {
@@ -213,12 +220,14 @@ namespace morph {
          * coordinates. Coordinates are set to random numbers drawn from a uniform
          * distribution between 0 and 255 (See morph::RandUniformInt for details).
          *
-         * Note on the template syntax: Here, if F is integral, then enable_if_t's type
+         * Note on the template syntax: Here, if I is integral, then enable_if_t's type
          * is '0' and the function is defined (I think).
-        */
-        template <typename F=S, enable_if_t<is_integral<decay_t<F>>::value, int> = 0 >
+         *
+         * \tparam I An integer scalar type
+         */
+        template <typename I=S, enable_if_t<is_integral<decay_t<I>>::value, int> = 0 >
         void randomize (void) {
-            RandUniformInt<F> rui (static_cast<F>(0), static_cast<F>(255));
+            RandUniformInt<I> rui (static_cast<I>(0), static_cast<I>(255));
             auto i = this->begin();
             while (i != this->end()) {
                 *i++ = rui.get();
@@ -230,7 +239,7 @@ namespace morph {
          *
          * \return true if the length of the vector is 1.
          */
-        bool checkunit (void) {
+        bool checkunit (void) const {
             bool rtn = true;
             S metric = 1.0;
             auto i = this->begin();

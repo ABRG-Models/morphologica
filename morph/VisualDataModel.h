@@ -38,6 +38,16 @@ namespace morph {
             this->vectorScale.autoscaled = false;
         }
 
+        void clearAutoscaleZ (void) {
+            this->zScale.autoscaled = false;
+        }
+        void clearAutoscaleColour (void) {
+            this->colourScale.autoscaled = false;
+        }
+        void clearAutoscaleVector (void) {
+            this->vectorScale.autoscaled = false;
+        }
+
         void setZScale (const Scale<T>& zscale) {
             this->zScale = zscale;
             this->reinit();

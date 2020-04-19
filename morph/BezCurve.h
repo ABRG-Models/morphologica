@@ -1,3 +1,9 @@
+/*!
+ * \file
+ * \brief Bezier curve class
+ * \author Seb James
+ * \date 2019-2020
+ */
 #ifndef _BEZCURVE_H_
 #define _BEZCURVE_H_
 

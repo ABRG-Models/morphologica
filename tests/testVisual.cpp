@@ -1,4 +1,5 @@
 #include "Visual.h"
+#include "VisualDataModel.h"
 #include "HexGridVisual.h"
 #include "HexGrid.h"
 #include "ReadCurves.h"
@@ -10,6 +11,7 @@
 
 using namespace std;
 using morph::Visual;
+using morph::VisualDataModel;
 using morph::HexGrid;
 using morph::HexGridVisual;
 using morph::Tools;
@@ -56,6 +58,15 @@ int main()
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
+
+        // Divide existing scale by 10:
+        float newGrad = static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
+        // Set this in a new zscale object:
+        Scale<float> zscale;
+        zscale.setParams (newGrad, 0);
+        // And set it back into the visual model:
+        static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->setZScale (zscale);
+
         v.render();
 
         while (v.readyToFinish == false) {

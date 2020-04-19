@@ -240,6 +240,13 @@ namespace morph {
             this->params[1] = p1;
         }
 
+        //! Getter for params
+        //! \param idx The index into #params
+        //! \return The specified element of #params
+        T_el getParams (size_t idx) {
+            return this->params[idx];
+        }
+
     private:
         //! Compute vector length
         //! \param vec the vector of type \a T
@@ -313,6 +320,13 @@ namespace morph {
             this->params.resize (2, static_cast<T>(0.0));
             this->params[0] = p0;
             this->params[1] = p1;
+        }
+
+        //! Getter for params
+        //! \param idx The index into #params
+        //! \return The specified element of #params
+        T getParams (size_t idx) {
+            return this->params[idx];
         }
 
     private:
