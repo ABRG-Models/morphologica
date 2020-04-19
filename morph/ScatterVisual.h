@@ -3,6 +3,8 @@
 #include "GL3/gl3.h"
 #include "tools.h"
 #include "VisualDataModel.h"
+#include "Scale.h"
+using morph::Scale;
 
 #include <iostream>
 using std::cout;
@@ -25,14 +27,14 @@ namespace morph {
                       vector<array<float,3>>* _coords,
                       const array<float, 3> _offset,
                       const vector<Flt>* _data,
-                      const array<Flt, 2> _scale,
+                      const Scale<Flt>& _scale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->colourScale.setParams (_scale[0], _scale[1]);
+            this->colourScale = _scale;
             this->dataCoords = _coords;
             this->scalarData = _data;
 
@@ -48,14 +50,14 @@ namespace morph {
                       const array<float, 3> _offset,
                       const vector<Flt>* _data,
                       const float fr,
-                      const array<Flt, 2> _scale,
+                      const Scale<Flt>& _scale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->colourScale.setParams (_scale[0], _scale[1]);
+            this->colourScale = _scale;
             this->dataCoords = _coords;
             this->scalarData = _data;
             this->radiusFixed = fr;

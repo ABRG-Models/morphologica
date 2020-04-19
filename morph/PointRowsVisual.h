@@ -4,6 +4,8 @@
 #include "tools.h"
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
+#include "Scale.h"
+using morph::Scale;
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -30,7 +32,7 @@ namespace morph {
                         vector<array<float,3>>* _pointrows,
                         const array<float, 3> _offset,
                         const vector<Flt>* _data,
-                        const array<Flt, 2> _scale,
+                        const Scale<Flt>& cscale,
                         ColourMapType _cmt,
                         const float _hue = 0.0f) {
             // Set up...
@@ -38,7 +40,7 @@ namespace morph {
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
 
-            this->colourScale.setParams (_scale[0], _scale[1]);
+            this->colourScale = cscale;
 
             this->dataCoords = _pointrows;
             this->scalarData = _data;

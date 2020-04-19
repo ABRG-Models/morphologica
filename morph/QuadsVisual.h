@@ -4,6 +4,8 @@
 #include "tools.h"
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
+#include "Scale.h"
+using morph::Scale;
 
 #include <iostream>
 using std::cout;
@@ -26,7 +28,7 @@ namespace morph {
                     const vector<array<Flt,12>>* _quads,
                     const array<float, 3> _offset,
                     const vector<Flt>* _data,
-                    const array<Flt, 2> _scale,
+                    const Scale<Flt>& _scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f) {
 
@@ -34,7 +36,7 @@ namespace morph {
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->colourScale.setParams (_scale[0], _scale[1]);
+            this->colourScale = _scale;
 
             // How to deal with quads? Each quad has a centroid. The coordinate of the
             // centroid of the quad is the location for the data point. Thus, convert

@@ -5,6 +5,8 @@
 using morph::Visual;
 #include "QuadsVisual.h"
 using morph::QuadsVisual;
+#include "Scale.h"
+using morph::Scale;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -31,7 +33,8 @@ int main (int argc, char** argv)
 
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        array<float, 2> scale = { 1.0, 0.0};
+        Scale<float> scale;
+        scale.setParams (1.0, 0.0);
 
         vector<array<float, 12>> surfBoxes;
 

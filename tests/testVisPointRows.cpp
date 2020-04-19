@@ -7,6 +7,8 @@ using morph::Visual;
 using morph::ColourMapType;
 #include "PointRowsVisual.h"
 using morph::PointRowsVisual;
+#include "Scale.h"
+using morph::Scale;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -32,7 +34,8 @@ int main (int argc, char** argv)
 
     try {
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        array<float, 2> scale = { 1.0, 0.0};
+        Scale<float> scale;
+        scale.setParams (1.0, 0.0);
 
         vector<array<float, 3>> points;
         vector<float> data; // copy points[:][2] into data

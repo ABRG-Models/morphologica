@@ -4,6 +4,8 @@
 #include "tools.h"
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
+#include "Scale.h"
+using morph::Scale;
 #include <iostream>
 using std::cout;
 using std::endl;
