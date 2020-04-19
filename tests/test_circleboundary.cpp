@@ -5,6 +5,8 @@
 
 #include "Visual.h"
 using morph::Visual;
+#include "VisualDataModel.h"
+using morph::VisualDataModel;
 #include "HexGridVisual.h"
 using morph::HexGridVisual;
 #include "ColourMap.h"
@@ -58,8 +60,10 @@ int main (int argc, char** argv)
         cout << "Created " << data.size() << " floats in data" << endl;
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        array<float, 4> scale = { 0.0, 0.0, 1.0, 0.0};
-        v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, scale, ColourMapType::Rainbow));
+        unsigned int id = v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, ColourMapType::Rainbow));
+        Scale<float> zscale;
+        zscale.setParams (0, 0);
+        static_cast<VisualDataModel<float>*>(v.getVisualModel(id))->setZScale (zscale);
         v.render();
 
         if (holdVis == true) {

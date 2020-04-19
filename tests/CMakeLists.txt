@@ -185,21 +185,21 @@ add_test(testhdfdata3d testhdfdata3d)
 
 if(${glfw3_FOUND})
   # Test morph::Visual class
-  add_executable(testvis testVisual.cpp)
-  target_link_libraries(testvis -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
-  #add_test(testvis testvis)
+  add_executable(testVisual testVisual.cpp)
+  target_link_libraries(testVisual -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+  #add_test(testVisual testVisual)
 
-  add_executable(testvisquads testVisQuads.cpp)
-  target_link_libraries(testvisquads -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+  add_executable(testVisQuads testVisQuads.cpp)
+  target_link_libraries(testVisQuads -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 
-  add_executable(testvispointrows testVisPointRows.cpp)
-  target_link_libraries(testvispointrows -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+  add_executable(testVisPointRows testVisPointRows.cpp)
+  target_link_libraries(testVisPointRows -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 
-  add_executable(testvisscatter testVisScatter.cpp)
-  target_link_libraries(testvisscatter -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+  add_executable(testVisScatter testVisScatter.cpp)
+  target_link_libraries(testVisScatter -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 
-  add_executable(testvisquiver testVisQuiver.cpp)
-  target_link_libraries(testvisquiver -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+  add_executable(testVisQuiver testVisQuiver.cpp)
+  target_link_libraries(testVisQuiver -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)

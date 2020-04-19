@@ -60,22 +60,26 @@ using std::array;
 
 namespace morph {
 
-    //! The template arguemnt Flt is the type of the data which this HexGridVisual will visualize.
-    template <typename Flt>
+    //! The template argument Flt is the type of the data which this HexGridVisual
+    //! will visualize.
+    template <class Flt>
     class HexGridVisual : public VisualDataModel<Flt>
     {
     public:
+        //! Constructor which does not set colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const array<float, 3> _offset,
-                      const vector<Flt>* _data,
-                      const array<Flt, 4> _scale) {
+                      const vector<Flt>* _data) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->zScale.setParams (_scale[0], _scale[1]);
-            this->colourScale.setParams (_scale[2], _scale[3]);
+
+            // Defaults here. After init, you can reset (at computational cost) to get desired params
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+
             this->hg = _hg;
             this->scalarData = _data;
 
@@ -83,19 +87,22 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Constructor which sets default colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const array<float, 3> _offset,
                       const vector<Flt>* _data,
-                      const array<Flt, 4> _scale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-            this->zScale.setParams (_scale[0], _scale[1]);
-            this->colourScale.setParams (_scale[2], _scale[3]);
+
+            // Defaults here. After init, you can reset (at computational cost) to get desired params
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+
             this->hg = _hg;
             this->scalarData = _data;
 
@@ -163,10 +170,10 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
-            // This is the QuadsVisual way - have an autoscale option
             vector<Flt> dcopy = *(this->scalarData);
-            this->colourScale.do_autoscale = true;
-            this->colourScale.transform (*(this->scalarData), dcopy);
+            this->zScale.transform (*(this->scalarData), dcopy);
+            vector<Flt> dcolour = *(this->scalarData);
+            this->colourScale.transform (*(this->scalarData), dcolour);
 
             Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
             Flt datumNE = static_cast<Flt>(0.0);  // datum at the hex to the east.
@@ -192,7 +199,7 @@ namespace morph {
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
-                array<float, 3> clr = this->cm.convert (datumC);
+                array<float, 3> clr = this->cm.convert (dcolour[hi]);
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);

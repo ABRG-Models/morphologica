@@ -29,6 +29,28 @@ namespace morph {
         ~VisualDataModel() {
         }
 
+        //! Reset the autoscaled flags so that the next time data is transformed by
+        //! the Scale objects they will autoscale again (assuming they have
+        //! do_autoscale set true).
+        void clearAutoscale (void) {
+            this->zScale.autoscaled = false;
+            this->colourScale.autoscaled = false;
+            this->vectorScale.autoscaled = false;
+        }
+
+        void setZScale (const Scale<T>& zscale) {
+            this->zScale = zscale;
+            this->reinit();
+        }
+        void setCScale (const Scale<T>& cscale) {
+            this->colourScale = cscale;
+            this->reinit();
+        }
+        void setVectorScale (const Scale<array<T, 3>>& vscale) {
+            this->vectorScale = vscale;
+            this->reinit();
+        }
+
         //! Methods to update the scalarData, vectorData, dataCoords and/or scaling and
         //! re-compute the vertices.
         //@{
@@ -36,47 +58,33 @@ namespace morph {
             this->scalarData = _data;
             this->reinit();
         }
-
-        void updateData (const vector<T>* _data,
-                         const array<T, 2>& zscale) {
+        void updateData (const vector<T>* _data, const Scale<T>& zscale) {
             this->scalarData = _data;
-            this->zScale.setParams (zscale[0], zscale[1]);
+            this->zScale = zscale;
             this->reinit();
         }
-        void updateData (const vector<T>* _data,
-                         const array<T, 2>& zscale,
-                         const array<T, 2>& cscale) {
+        void updateData (const vector<T>* _data, const Scale<T>& zscale, const Scale<T>& cscale) {
             this->scalarData = _data;
-            this->zScale.setParams (zscale[0], zscale[1]);
-            this->colourScale.setParams (cscale[0], cscale[1]);
+            this->zScale = zscale;
+            this->colourScale = cscale;
             this->reinit();
         }
-        void updateData (const vector<T>* _data,
-                         const array<T, 4>& _scale) {
-            this->scalarData = _data;
-            this->zScale.setParams (_scale[0], _scale[1]);
-            this->colourScale.setParams (_scale[2], _scale[3]);
-            this->reinit();
-        }
-
-        virtual void updateData (vector<array<T, 3>>* _coords,
-                                 const vector<T>* _data,
-                                 const array<T, 2> zscale) {
+        virtual void updateData (vector<array<T, 3>>* _coords, const vector<T>* _data,
+                                 const Scale<T>& zscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
-            this->zScale.setParams (zscale[0], zscale[1]);
+            this->zScale = zscale;
             this->reinit();
         }
-        virtual void updateData (vector<array<T, 3>>* _coords,
-                                 const vector<T>* _data,
-                                 const array<T, 2> zscale,
-                                 const array<T, 2> cscale) {
+        virtual void updateData (vector<array<T, 3>>* _coords, const vector<T>* _data,
+                                 const Scale<T>& zscale, const Scale<T>& cscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
-            this->zScale.setParams (zscale[0], zscale[1]);
-            this->colourScale.setParams (cscale[0], cscale[1]);
+            this->zScale = zscale;
+            this->colourScale = cscale;
             this->reinit();
         }
+#if 0
         virtual void updateData (vector<array<T, 3>>* _coords,
                                  const vector<T>* _data,
                                  const array<T, 4> _scale) {
@@ -86,18 +94,16 @@ namespace morph {
             this->colourScale.setParams (_scale[2], _scale[3]);
             this->reinit();
         }
-
+#endif
         virtual void updateCoords (vector<array<T, 3>>* _coords) {
             this->dataCoords = _coords;
             this->reinit();
         }
-
         void updateData (const vector<array<T, 3>>* _vectors) {
             this->vectorData = _vectors;
             this->reinit();
         }
-        void updateData (const vector<array<T, 3>>* _coords,
-                         const vector<array<T, 3>>* _vectors) {
+        void updateData (const vector<array<T, 3>>* _coords, const vector<array<T, 3>>* _vectors) {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
             this->reinit();
@@ -139,7 +145,7 @@ namespace morph {
         //! Tdata may be an array<float, 3> or array<double, 3>) etc. It's up to the
         const vector<T>* scalarData;
 
-        //! A container for vector data to visualize.
+        //! A container for vector data to visualize. FIXME: Change array<> to morph::Vector<>
         const vector<array<T,3>>* vectorData;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter

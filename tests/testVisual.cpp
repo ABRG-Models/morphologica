@@ -54,8 +54,7 @@ int main()
         cout << "Created " << data.size() << " floats in data" << endl;
 
         array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        array<float, 4> scale = { 0.1, 0.0, 1.0, 0.0};
-        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data, scale));
+        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
         v.render();
 

@@ -234,6 +234,7 @@ namespace morph {
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
         void setParams (T_el p0, T_el p1) {
+            this->do_autoscale = false;
             this->params.resize (2, static_cast<T_el>(0.0));
             this->params[0] = p0;
             this->params[1] = p1;
