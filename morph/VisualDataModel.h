@@ -113,7 +113,7 @@ namespace morph {
             this->vectorData = _vectors;
             this->reinit();
         }
-        void updateData (const vector<array<T, 3>>* _coords, const vector<array<T, 3>>* _vectors) {
+        void updateData (vector<array<T, 3>>* _coords, const vector<array<T, 3>>* _vectors) {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
             this->reinit();
