@@ -45,7 +45,7 @@ else()
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
       # Add compiler version check, to ensure gcc is version 7 or later.
       if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
-        message(FATAL_ERROR "GCC version must be at least 7.1!")
+        message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
       else()
         message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
       endif()
@@ -68,7 +68,6 @@ endif (COMPILE_WITH_OPENMP)
 set(OpenGL_GL_PREFERENCE "GLVND")
 
 # Additional GL compiler flags.
-# maybe -DGL_GLEXT_PROTOTYPES
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 if(USE_GLEW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GLEW")
@@ -120,7 +119,7 @@ find_package(HDF5 REQUIRED)
 find_package(PkgConfig)
 
 if(APPLE)
-  # Manually set PKG_CONFIG_PATH onMac, as mac ports will, by default, search only in /opt/local
+  # Manually set PKG_CONFIG_PATH on Mac, as mac ports will, by default, search only in /opt/local
   set(ENV{PKG_CONFIG_PATH}  "ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 endif(APPLE)
 
