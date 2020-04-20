@@ -30,7 +30,7 @@ using morph::VisualModel;
 #endif
 #include "Quaternion.h"
 #include "TransformMatrix.h"
-#include "Vector2.h"
+#include "Vector.h"
 #include "Vector3.h"
 
 // A base class with static event handling dispatchers
@@ -241,7 +241,7 @@ namespace morph {
         //@{
 
         //! Current cursor position
-        Vector2<float> cursorpos;
+        Vector<float,2> cursorpos = {0.0f, 0.0f};
 
         //! Holds the translation coordinates for the current location of the entire scene
         Vector3<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
@@ -259,7 +259,7 @@ namespace morph {
         bool translateMode = false;
 
         //! Screen coordinates of the position of the last mouse press
-        Vector2<float> mousePressPosition;
+        Vector<float,2> mousePressPosition = {0.0f, 0.0f};
 
         //! The current rotation axis. World frame?
         Vector3<float> rotationAxis;
