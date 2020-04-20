@@ -3,9 +3,8 @@
 # libmorphologica (which must already have been built and installed).
 #
 
-# Ask for a minimum version of cmake. 2.8.8 is quite old. If you use a
-# modern feature of cmake, change this
-cmake_minimum_required(VERSION 2.8.8)
+# cmake 3.1 provides the set(CMAKE_CXX_STANDARD 11) feature
+cmake_minimum_required(VERSION 3.1)
 # Give your project a name
 project(Schnakenberg)
 
@@ -26,6 +25,8 @@ elseif(CMAKE_SYSTEM MATCHES Win.*)
 else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
+
+set(CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
