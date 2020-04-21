@@ -68,7 +68,7 @@ int main() {
     Vector<double> vd_def;
     vd_def.randomize();
     cout << vd_def << endl;
-    Vector v_def;
+    Vector<> v_def;
     v_def.randomize();
     cout << v_def << endl;
 
