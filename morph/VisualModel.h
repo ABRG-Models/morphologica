@@ -1,6 +1,11 @@
 /*!
- * A class to hold the vertices that make up some individual model object that can be
- * part of an OpenGL scene.
+ * \file
+ *
+ * Declares a VisualModel class to hold the vertices that make up some individual
+ * model object that can be part of an OpenGL scene.
+ *
+ * \author Seb James
+ * \date May 2019
  */
 
 #pragma once
@@ -31,8 +36,25 @@ namespace morph {
     //! The locations for the position, normal and colour vertex attributes in the GLSL program
     enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2 };
 
-    //! This class is a base 'model' class. It has the common code to create the
-    //! vertices for some individual model to be rendered in a 3-D scene.
+    /*!
+     * OpenGL model base class
+     *
+     * This class is a base 'OpenGL model' class. It has the common code to create the
+     * vertices for some individual OpengGL model which is to be rendered in a 3-D
+     * scene.
+     *
+     * Some OpenGL models are derived directly from VisualModel; see for example
+     * morph::CoordArrows.
+     *
+     * Most of the models in morphologica are derived via morph::VisualDataModel,
+     * which adds a common mechanism for managing the data which is to be visualised
+     * by the final 'Visual' object (such as morph::HexGridVisual or
+     * morph::ScatterVisual)
+     *
+     * This class contains some common 'object primitives' code, such as computeSphere
+     * and computeCone, which compute the vertices that will make up sphere and cone,
+     * respectively.
+     */
     class VisualModel
     {
     public:
@@ -56,8 +78,8 @@ namespace morph {
             // glBindVertexArray(0);
         }
 
+        //! destroy gl buffers in the deconstructor
         virtual ~VisualModel() {
-            // destroy buffers
             glDeleteBuffers (4, vbos);
             delete (this->vbos);
         }
@@ -121,12 +143,16 @@ namespace morph {
 
     protected:
 
-        //! The offset of this VisualModel. Note that this is not incorporated into
-        //! the computation of the vertices, but is instead applied when the object is
-        //! rendered as part of the model->world transformation.
+        /*!
+         * The spatial offset of this VisualModel within the morph::Visual
+         * scene. Note that this is not incorporated into the computation of the
+         * vertices, but is instead applied when the object is rendered as part of
+         * the model->world transformation.
+         */
         array<float, 3> offset;
 
-        //! This enum contains the positions within the vbo array of the different vertex buffer objects
+        //! This enum contains the positions within the vbo array of the different
+        //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
 
         //! The parent Visual object - provides access to the shader prog
@@ -136,10 +162,9 @@ namespace morph {
         GLuint shaderprog;
 
         /*!
-         * Compute positions and colours of vertices for the hexes and
-         * store in these:
+         * Compute positions and colours of vertices for the hexes and store in these:
          */
-        //@{
+        ///@{
         //! The OpenGL Vertex Array Object
         GLuint vao;
 
@@ -154,13 +179,13 @@ namespace morph {
         vector<float> vertexNormals;
         //! CPU-side data for vertex colours
         vector<float> vertexColors;
-        //@}
+        ///@}
 
         //! I guess we'll need a shader program.
         GLuint* shaderProgram;
 
         //! Push three floats onto the vector of floats @vp
-        //@{
+        ///@{
         void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp) {
             vp.push_back (x);
             vp.push_back (y);
@@ -176,7 +201,7 @@ namespace morph {
             vp.push_back (vec.y);
             vp.push_back (vec.z);
         }
-        //@}
+        ///@}
 
         //! Set up a vertex buffer object
         void setupVBO (GLuint& buf, vector<float>& dat, unsigned int bufferAttribPosition) {
@@ -188,14 +213,14 @@ namespace morph {
         }
 
         /*!
-         * Create a tube from start to end, with radius r.
+         * Create a tube from \a start to \a end, with radius \a r.
          *
-         * @idx The index into the 'vertex array'
-         * @start The start of the tube
-         * @end The end of the tube
-         * @col The tube colour
-         * @r Radius of the tube
-         * @segments Number of segments used to render the tube
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param col The tube colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
          */
         void computeTube (GLushort& idx, array<float, 3> start, array<float, 3> end,
                           array<float, 3> colStart, array<float, 3> colEnd,
@@ -345,12 +370,12 @@ namespace morph {
         /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
          *
-         * @idx The index into the 'vertex indices array'
-         * @so The sphere offset. Where to place this sphere...
-         * @sc The sphere colour.
-         * @r Radius of the sphere
-         * @rings Number of rings used to render the sphere
-         * @segments Number of segments used to render the sphere
+         * \param idx The index into the 'vertex indices array'
+         * \param so The sphere offset. Where to place this sphere...
+         * \param sc The sphere colour.
+         * \param r Radius of the sphere
+         * \param rings Number of rings used to render the sphere
+         * \param segments Number of segments used to render the sphere
          */
         void computeSphere (GLushort& idx, array<float, 3> so, array<float, 3> sc, float r = 1.0f,
                             int rings = 10, int segments = 12) {
@@ -482,20 +507,20 @@ namespace morph {
         /*!
          * Create a cone.
          *
-         * @idx The index into the 'vertex array'
+         * \param idx The index into the 'vertex array'
          *
-         * @centre The centre of the cone - would be the end of the line
+         * \param centre The centre of the cone - would be the end of the line
          *
-         * @tip The tip of the cone
+         * \param tip The tip of the cone
          *
-         * @ringoffset Move the ring forwards or backwards along the vector from
-         * @centre to @tip. This is positive or negative proportion of tip - centre.
+         * \param ringoffset Move the ring forwards or backwards along the vector from
+         * \a centre to \a tip. This is positive or negative proportion of tip - centre.
          *
-         * @col The cone colour
+         * \param col The cone colour
          *
-         * @r Radius of the ring
+         * \param r Radius of the ring
          *
-         * @segments Number of segments used to render the tube
+         * \param segments Number of segments used to render the tube
          */
         void computeCone (GLushort& idx,
                           array<float, 3> centre,
