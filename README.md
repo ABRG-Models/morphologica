@@ -2,17 +2,52 @@
 
 Library code used in models developed by Stuart P. Wilson and co-workers
 
-This code builds a shared library called libmorphologica.
+This code builds a shared library called libmorphologica which
+contains 'simulation support facilities'.
 
-It installs the library on your system, along with the required header
-files.
+It helps with:
 
-Code is enclosed in the "morph" namespace. You can see the code
+* Configuration. morphologica allows you to easily set up a simulation
+  parameter configuration system, using the JSON reading and writing
+  abilities of morph::Config.
+
+* Saving data from your simulation. morphologica provides a set of
+  easy-to-use convenience wrappers (morph::HdfData) around the HDF5 C API.
+
+* Visualizing your model while it runs. A modern OpenGL visualization
+  scheme called morph::Visual provides the ability to visualise hex
+  grids, surfaces, scatter plots and quiver plots with minimal
+  processing overhead.
+
+## Code highlights
+
+morphologic code is enclosed in the "morph" namespace. You can see the code
 documentation at https://codedocs.xyz/ABRG-Models/morphologica/
+
+### Config
+
+### HdfData
+
+### Visual
+
+### Scale
+
+### Vector
+
+### BezCurve, BezCurvePath and BezCoord
+
+### HexGrid
+
+## Installation
+
+The cmake-driven morphologica build & install process installs static
+and shared object libraries on your system, along with the required
+header files.
 
 It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to compile, and
 programs linked with libmorphologica will also need to link to those
-dependencies. You will also need the cmake program and a C++ compiler.
+dependencies. You will also need the cmake program and a C++ compiler
+which can compile c++-17 code.
 
 ## Installation dependencies for GNU/Linux
 
