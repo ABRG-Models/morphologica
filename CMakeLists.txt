@@ -194,7 +194,7 @@ add_subdirectory(pc)
 #add_subdirectory(examples)
 
 # first we can indicate the documentation build as an option and set it to ON by default
-option (BUILD_DOC "Build documentation" OFF)
+option (BUILD_DOC "Build documentation" ON)
 if (BUILD_DOC)
   # check if Doxygen is installed
   find_package(Doxygen)
