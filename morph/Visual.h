@@ -1,10 +1,13 @@
 /*!
- * Visual.h
+ * \file
  *
- * Graphics code. Replacement for display.h. Uses modern OpenGL and
- * the library GLFW for window management.
+ * Graphics code. A replacement for morph::Gdisplay from display.h. Uses modern OpenGL
+ * and the library GLFW for window management.
  *
  * Created by Seb James on 2019/05/01
+ *
+ * \author Seb James
+ * \date May 2019
  */
 
 #ifndef _VISUAL_H_
@@ -47,7 +50,7 @@ using std::array;
 #include <vector>
 using std::vector;
 
-//! The default z=0 position for HexGridVisual models
+//! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
 
 namespace morph {
@@ -74,6 +77,8 @@ namespace morph {
     } ShaderInfo;
 
     /*!
+     * Visual 'scene' class
+     *
      * A class for visualising computational models on an OpenGL
      * screen. Will be specialised for rendering HexGrids to begin
      * with.
@@ -98,6 +103,9 @@ namespace morph {
 
         static void errorCallback (int error, const char* description);
 
+        /*!
+         * Take a screenshot of the window
+         */
         void saveImage (const string& s);
 
         /*!
@@ -110,7 +118,11 @@ namespace morph {
         unsigned int addVisualModel (VisualModel* model);
 
         /*!
-         * For the given @modelId, return a pointer to the visual model.
+         * VisualModel Getter
+         *
+         * For the given \a modelId, return a pointer to the visual model.
+         *
+         * \return VisualModel pointer
          */
         VisualModel* getVisualModel (unsigned int modelId);
 
@@ -136,11 +148,11 @@ namespace morph {
          * User-settable projection values for the near clipping distance, the far
          * clipping distance and the field of view of the camera.
          */
-        //@{
+        ///@{
         float zNear = 1.0;
         float zFar = 15.0;
         float fov = 30.0;
-        //@}
+        ///@}
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
@@ -159,14 +171,14 @@ namespace morph {
          * User can directly set bgcolour for any background colour they like, but
          * here are convenience functions:
          */
-        //@{
+        ///@{
         void backgroundWhite (void) {
             this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
         }
         void backgroundBlack (void) {
             this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
         }
-        //@}
+        ///@}
 
         //! Setter for zDefault
         void setZDefault (float f) {
@@ -178,7 +190,7 @@ namespace morph {
         }
 
         //! Setters for x/y
-        //@{
+        ///@{
         void setSceneTransXY (float _x, float _y) {
             this->scenetrans.x = _x;
             this->scenetrans.y = _y;
@@ -189,7 +201,7 @@ namespace morph {
         void setSceneTransY (float _y) {
             this->scenetrans.y = _y;
         }
-        //@}
+        ///@}
 
     private:
 
@@ -221,10 +233,10 @@ namespace morph {
         /*!
          * Current window width and height
          */
-        //@{
+        ///@{
         int window_w;
         int window_h;
-        //@}
+        ///@}
 
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
@@ -241,7 +253,7 @@ namespace morph {
         /*!
          * Variables to manage projection and rotation of the object
          */
-        //@{
+        ///@{
 
         //! Current cursor position
         Vector<float,2> cursorpos = {0.0f, 0.0f};
@@ -277,24 +289,24 @@ namespace morph {
         TransformMatrix<float> invproj;
 
         //! A scene transformation and associated inverse
-        //@{
+        ///@{
         TransformMatrix<float> scene;
         TransformMatrix<float> invscene;
-        //@}
+        ///@}
         Quaternion<float> savedRotation;
 
-        //@}
+        ///@}
 
         /*!
          * GLFW callback handlers
          */
-        //@{
+        ///@{
         virtual void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods);
         virtual void cursor_position_callback (GLFWwindow* window, double x, double y);
         virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods);
         virtual void window_size_callback (GLFWwindow* window, int width, int height);
         virtual void scroll_callback (GLFWwindow* window, double xoffset, double yoffset);
-        //@}
+        ///@}
     };
 
 } // namespace morph
