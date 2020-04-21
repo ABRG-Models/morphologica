@@ -1,3 +1,17 @@
+/*!
+ * \file
+ *
+ * This file defines MathImpl, which implements some of the mathematical algorithms
+ * from MathAlgo. This file contains default and specialized implementations for
+ * different argument types where the arguments fall into two groups; scalar (float or
+ * double) and vector (array<float, 3>, vector<float> etc).
+ *
+ * Client code should only call methods from morph::MathAlgo (see MathAlgo.h).
+ *
+ * \author Seb James
+ * \date April 2020
+ */
+
 #pragma once
 
 #include <vector>
@@ -27,19 +41,14 @@ using std::max;
 #include <memory>
 #include "MathConst.h"
 
-/*!
- * Mathematical algorithms in the morph namespace. This file contains default and
- * specialized implementations for different argument types where the arguments fall
- * into two groups; scalar (float or double) and vector (array<float, 3>,
- * vector<float> etc).
- *
- * Client code should only call methods from morph::MathAlgo (see MathAlgo.h).
- */
-
 namespace morph {
 
     /*!
-     * Default MathImpl template contains common vector implementations.
+     * Vector MathAlgo algorithm specializations
+     *
+     * This default MathImpl template contains common vector implementations of
+     * algorithms which are exposed by morph::MathAlgo (client code should always
+     * select functions from MathAlgo).
      *
      * This is a templated class, with an integer template argument (vtype). That
      * integer allows specializations of this class with alternative implementations
@@ -202,8 +211,14 @@ namespace morph {
     };
 
     /*!
+     * Scalar MathAlgo algorithm specializations
+     *
      * This is a specialization of MathImpl with vtype set to 1. The templates are
      * applied if the type T is a scalar such as float or double.
+     *
+     * This specialization contains scalar implementations of algorithms which are
+     * exposed by morph::MathAlgo (client code should always select functions from
+     * MathAlgo).
      *
      * number_type::value will have been 1 - scalar (see number_type.h).
      */
