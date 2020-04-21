@@ -8,6 +8,11 @@ using namespace std;
 
 int main()
 {
+    if (XOpenDisplay(NULL) == (Display*)0) {
+        cout << "No display, can't run test. Return 0\n";
+        return 0;
+    }
+
     unsigned int sleep_seconds = 1;
     string pwd = morph::Tools::getPwd();
     if (pwd.substr(pwd.length()-11) == "build/tests") {

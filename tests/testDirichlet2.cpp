@@ -25,6 +25,11 @@ using namespace std;
 
 int main()
 {
+    if (XOpenDisplay(NULL) == (Display*)0) {
+        cout << "No display, can't run test. Return 0\n";
+        return 0;
+    }
+
     int rtn = 0;
     try {
         HexGrid hg(0.2, 1, 0, HexDomainShape::Boundary);

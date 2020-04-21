@@ -13,6 +13,11 @@ using namespace std;
 
 int main()
 {
+    if (XOpenDisplay(NULL) == (Display*)0) {
+        cout << "No display, can't run test. Return 0\n";
+        return 0;
+    }
+
     int rtn = 0;
     try {
         string pwd = Tools::getPwd();
