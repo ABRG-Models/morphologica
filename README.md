@@ -51,7 +51,8 @@ Reads and writes parameter configuration data in JSON format. JSON is
 *so much easier* to work with than XML! The idea is that you will
 write out your parameteres by hand (or with a script) in a JSON file,
 then these are conveniently accessible in your program. Here's an
-example from the schankenberg example, schanakenberg.json:
+example from our Schnakenberg reaction-diffusion example,
+schanakenberg.json:
 ```json
 {
     "steps" : 125000,
@@ -90,7 +91,7 @@ information about the simulation run:
 ```c++
 {
     // Add information into the existing morph::Config object:
-    conf.set ("float_width", (unsigned int)sizeof(FLT));
+    conf.set ("float_width", (unsigned int)sizeof(FLT)); // FLT is a template param
     string tnow = morph::Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow);
     if (argc > 0) { conf.set("argv0", argv[0]); }
