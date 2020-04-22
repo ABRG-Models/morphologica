@@ -35,6 +35,7 @@ using std::runtime_error;
 #include <cmath>
 using std::sqrt;
 using std::log;
+using std::exp;
 #include "MathAlgo.h"
 using morph::MathAlgo;
 #include "number_type.h"
@@ -79,6 +80,15 @@ namespace morph {
         virtual T transform_one (const T& datum) const = 0;
 
         /*!
+         * Inverse transform
+         *
+         * \param datum The datum to be inverse-transformed
+         *
+         * \return the de-scaled datum
+         */
+        virtual T inverse_one (const T& datum) const = 0;
+
+        /*!
          * \brief Transform a container of scalars or vectors.
          *
          * This uses the scaling parameters \b params (ScaleImpl::params) to scale the
@@ -103,6 +113,27 @@ namespace morph {
             typename Container<TT, Allocator>::iterator oi = output.begin();
             while (di != data.end()) {
                 *oi++ = this->transform_one (*di++);
+            }
+        }
+
+        /*!
+         * \brief Inverse transform a container of scalars or vectors.
+         */
+        template < template <typename, typename> typename Container,
+                   typename TT=T,
+                   typename Allocator=std::allocator<TT> >
+        void inverse (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
+            size_t dsize = data.size();
+            if (output.size() != dsize) {
+                throw runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
+            }
+            if (this->do_autoscale == true && this->autoscaled == false) {
+                throw runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
+            }
+            typename Container<TT, Allocator>::const_iterator di = data.begin();
+            typename Container<TT, Allocator>::iterator oi = output.begin();
+            while (di != data.end()) {
+                *oi++ = this->inverse_one (*di++);
             }
         }
 
@@ -232,6 +263,10 @@ namespace morph {
             return rtn;
         }
 
+        virtual T inverse_one (const T& datum) const {
+            throw runtime_error ("Inverse transform not yet implemented for vectors");
+        }
+
         virtual void compute_autoscale (T input_min, T input_max) {
             if (this->type != ScaleFn::Linear) {
                 throw runtime_error ("This autoscale function is for Linear scaling only");
@@ -323,6 +358,18 @@ namespace morph {
             return rtn;
         }
 
+        virtual T inverse_one (const T& datum) const {
+            T rtn = static_cast<T>(0);
+            if (this->type == ScaleFn::Logarithmic) {
+                rtn = this->inverse_one_log (datum);
+            } else if (this->type == ScaleFn::Linear) {
+                rtn = this->inverse_one_linear (datum);
+            } else {
+                throw runtime_error ("Unknown scaling");
+            }
+            return rtn;
+        }
+
         virtual void compute_autoscale (T input_min, T input_max) {
             if (this->type == ScaleFn::Logarithmic) {
                 this->compute_autoscale_log (input_min, input_max);
@@ -356,8 +403,20 @@ namespace morph {
             return (datum * this->params[0] + this->params[1]);
         }
 
+        //! Log transform for scalar type
         T transform_one_log (const T& datum) const {
             return (transform_one_linear (log(datum)));
+        }
+
+        //! The inverse linear transform; x = (y-c)/m
+        T inverse_one_linear (const T& datum) const {
+            return ((datum-this->params[1])/this->params[0]);
+        }
+
+        //! The inverse of the log transform is exp.
+        T inverse_one_log (const T& datum) const {
+            T res = inverse_one_linear(datum);
+            return (exp (res));
         }
 
         void compute_autoscale_linear (T input_min, T input_max) {

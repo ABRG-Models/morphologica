@@ -107,20 +107,29 @@ int main () {
     ls.setlog();
 
     list<double> loggy;
-    loggy.push_back (0.001);
-    loggy.push_back (0.003);
     loggy.push_back (0.01);
-    loggy.push_back (0.2);
-    loggy.push_back (4.0);
+    loggy.push_back (1.0);
 
     list<double> loggyout(loggy);
     ls.transform (loggy, loggyout);
 
-    auto li = loggy.begin();
-    auto lio = loggyout.begin();
+    // That will have set the autoscale. now carry out inverse transform
+    vector<float> range;
+    range.push_back (0);
+    range.push_back (0.2);
+    range.push_back (0.4);
+    range.push_back (0.6);
+    range.push_back (0.8);
+    range.push_back (1.0);
+
+    vector<float> rangeout(range);
+    ls.inverse (range, rangeout);
+
+    auto li = range.begin();
+    auto lio = rangeout.begin();
     // output in MATLAB/Octave format:
     cout << "[";
-    while (li != loggy.end()) {
+    while (li != range.end()) {
         cout << *li << "," << *lio << ";" << endl;
         ++li; ++lio;
     }
