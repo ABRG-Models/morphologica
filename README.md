@@ -4,7 +4,7 @@ Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
 This code builds a shared library called libmorphologica which
-contains 'simulation support facilities'.
+contains **simulation support facilities**.
 
 It helps with:
 
@@ -26,9 +26,11 @@ morph::Config to load up a JSON parameter file defining the values of
 the parameters for the simulation run. We might also use
 morph::HdfData to retrieve some data (e.g. the state) from an earlier
 simulation and then set up a morph::Visual object for the
-visualization. We then might call a function, or instanciate a class
+visualization. We then might call a function, or create a class object
 which defines the simulation. This *may or may not* access features
-from libmorphologica. As the simulation progresses, we update the data
+from libmorphologica.
+
+As the simulation progresses, we update the data
 in the morph::Visual scene; save images from the scene for movie
 making and record data as often as we want it using morph::HdfData. At
 the end of the program, as well as saving any final data, we use
@@ -39,24 +41,25 @@ reproducion of the result.
 
 ## Code highlights
 
-morphologic code is enclosed in the "morph" namespace. You can see the code
-documentation at https://codedocs.xyz/ABRG-Models/morphologica/
+morphologica code is enclosed in the **morph** namespace. You can see
+the code documentation at
+https://codedocs.xyz/ABRG-Models/morphologica/
 
-### Config
+### morph::Config
 
 Reads and writes parameter configuration data in JSON format. JSON is
 *so much easier* to work with than XML! The idea is that you will
 write out your parameteres by hand (or with a script) in a JSON file,
 then these are conveniently accessible in your program. Here's an
 example from the schankenberg example, schanakenberg.json:
-
 ```json
 {
     "steps" : 125000,
-    "logevery": 5000,
-    "saveplots": false,
+    "logevery" : 5000,
+    "logpath" : "logs/",
+    "saveplots" : false,
     "dt" : 0.000005,
-    // Schnakenberg model parameters
+    /* Schnakenberg model parameters */
     "D_A" : 0.5,
     "D_B" : 0.6,
     "k1"  : 3,
@@ -67,22 +70,37 @@ example from the schankenberg example, schanakenberg.json:
 ```
 The code to read this is easy to use:
 ```c++
-#include "morph/Config.h"
+#include <morph/Config.h>
 {
-    morph::Config conf(paramsfile);
+    morph::Config conf("./params.json");
     if (!conf.ready) { /* handle error */ }
     // The length of one timestep. If dt does not exist in the JSON
-    // file, then the default value 0.00001 is written into dt.
+    // file, then the default value 0.00001 is written into the variable dt.
     const double dt = conf.getDouble ("dt", 0.00001);
     // Each type has a named method for access. Here's unsigned int:
-    const unsigned int plotevery = conf.getUInt ("plotevery", 10);
+    const unsigned int logevery = conf.getUInt ("logevery", 1000);
     // And a string:
     string logpath = conf.getString ("logpath", "fromfilename");
 }
 ```
+At the end of your program, it's a good idea to write out a copy of
+the params.json file into your log directory, along with some
+information about the simulation run:
 
-
-
+```c++
+{
+    // Add information into the existing morph::Config object:
+    conf.set ("float_width", (unsigned int)sizeof(FLT));
+    string tnow = morph::Tools::timeNow();
+    conf.set ("sim_ran_at_time", tnow);
+    if (argc > 0) { conf.set("argv0", argv[0]); }
+    if (argc > 1) { conf.set("argv1", argv[1]); }
+    conf.insertGitInfo ("sim/"); // checks 'sim' dir for any post-commit changes
+    const string paramsCopy = logpath + "/params.json";
+    conf.write (paramsCopy);
+    if (conf.ready == false) { /* handle error */ }
+}
+```
 
 ### HdfData
 
