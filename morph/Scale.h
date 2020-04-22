@@ -34,6 +34,7 @@
 using std::runtime_error;
 #include <cmath>
 using std::sqrt;
+using std::log;
 #include "MathAlgo.h"
 using morph::MathAlgo;
 #include "number_type.h"
@@ -154,6 +155,23 @@ namespace morph {
         //! Set to true to make the Scale object compute autoscaling when data is
         //! available, i.e. on the first call to #transform.
         bool do_autoscale = false;
+
+        // Set type for transformations/autoscaling
+        void setType (ScaleFn t) {
+            // Reset autoscaled, because any autoscaling will need to be re-computed
+            this->autoscaled = false;
+            this->type = t;
+        }
+
+        void setlog (void) {
+            this->autoscaled = false;
+            this->type = ScaleFn::Logarithmic;
+        }
+
+        void setlinear (void) {
+            this->autoscaled = false;
+            this->type = ScaleFn::Linear;
+        }
 
     protected:
         /*!
@@ -294,22 +312,25 @@ namespace morph {
         T range_max = 1.0;
 
         virtual T transform_one (const T& datum) const {
-            if (this->type != ScaleFn::Linear) {
-                throw runtime_error ("This transform function is for Linear scaling only");
+            T rtn = static_cast<T>(0);
+            if (this->type == ScaleFn::Logarithmic) {
+                rtn = this->transform_one_log (datum);
+            } else if (this->type == ScaleFn::Linear) {
+                rtn = this->transform_one_linear (datum);
+            } else {
+                throw runtime_error ("Unknown scaling");
             }
-            // Scalar type; y = mx + c
-            return (datum * this->params[0] + this->params[1]);
+            return rtn;
         }
 
         virtual void compute_autoscale (T input_min, T input_max) {
-            if (this->type != ScaleFn::Linear) {
-                throw runtime_error ("This autoscale function is for Linear scaling only");
+            if (this->type == ScaleFn::Logarithmic) {
+                this->compute_autoscale_log (input_min, input_max);
+            } else if (this->type == ScaleFn::Linear) {
+                this->compute_autoscale_linear (input_min, input_max);
+            } else {
+                throw runtime_error ("Unknown scaling");
             }
-            this->params.resize (2, static_cast<T>(0.0));
-            // m = rise/run
-            this->params[0] = (this->range_max - this->range_min) / (input_max - input_min);
-            // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-            this->params[1] = this->range_min - (this->params[0] * input_min);
             this->autoscaled = true;
         }
 
@@ -330,6 +351,30 @@ namespace morph {
         }
 
     private:
+        //! Linear transform for scalar type; y = mx + c
+        T transform_one_linear (const T& datum) const {
+            return (datum * this->params[0] + this->params[1]);
+        }
+
+        T transform_one_log (const T& datum) const {
+            return (transform_one_linear (log(datum)));
+        }
+
+        void compute_autoscale_linear (T input_min, T input_max) {
+            this->params.resize (2, static_cast<T>(0.0));
+            // m = rise/run
+            this->params[0] = (this->range_max - this->range_min) / (input_max - input_min);
+            // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
+            this->params[1] = this->range_min - (this->params[0] * input_min);
+        }
+
+        void compute_autoscale_log (T input_min, T input_max) {
+            T ln_imin = log(input_min);
+            T ln_imax = log(input_max);
+            // Now just scale linearly between ln_imin and ln_imax
+            this->compute_autoscale_linear (ln_imin, ln_imax);
+        }
+
         //! The parameters for the scaling. If linear, this will contain two scalar
         //! values.
         vector<T> params;
