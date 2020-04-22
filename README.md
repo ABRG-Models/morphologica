@@ -48,6 +48,11 @@ class, a class containing mathematical algorithms and classes for
 working with Bezier curves. It a way of storing our 'group knowledge'
 for posterity!
 
+Some existing projects which use morphologica are:
+* **BarrelEmerge** A reaction-diffusion style model: https://github.com/ABRG-Models/BarrelEmerge
+* **RetinoTectal** Also reaction-diffusion: https://github.com/sebjameswml/RetinoTectal
+* **ArtificialGeneNets** Neural networks: https://github.com/stuartwilson/ArtificialGeneNets
+
 ## Code documentation
 
 morphologica code is enclosed in the **morph** namespace. You can see
