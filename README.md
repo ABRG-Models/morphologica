@@ -45,6 +45,8 @@ morphologica code is enclosed in the **morph** namespace. You can see
 the code documentation at
 https://codedocs.xyz/ABRG-Models/morphologica/
 
+For full, compilable examples of the code, see the examples/ subdirectory.
+
 ### morph::Config
 
 Reads and writes parameter configuration data in JSON format. JSON is
@@ -105,15 +107,29 @@ information about the simulation run:
 
 ### HdfData
 
+HDF5 data saving code. Additional info to follow.
+
 ### Visual
+
+Modern OpenGL visualisation code.
+
+### HexGrid
+
+A class to manage simulations carried out on hexagonal grids with
+arbitrary boundaries.
 
 ### Scale
 
+A class for data scaling, with autoscaling features.
+
 ### Vector
+
+An extension of std::array to make a class for mathematical vector
+manipulation in N dimensions.
 
 ### BezCurve, BezCurvePath and BezCoord
 
-### HexGrid
+Classes to create Bezier curves.
 
 ## Installation
 
