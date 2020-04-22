@@ -3,7 +3,7 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
-This code builds a shared library called libmorphologica which
+This c++ code builds a shared library called libmorphologica which
 contains **simulation support facilities**.
 
 It helps with:
@@ -27,8 +27,8 @@ the parameters for the simulation run. We might also use
 morph::HdfData to retrieve some data (e.g. the state) from an earlier
 simulation and then set up a morph::Visual object for the
 visualization. We then might call a function, or create a class object
-which defines the simulation. This *may or may not* access features
-from libmorphologica.
+which defines the simulation. *This may or may not access features
+from libmorphologica*.
 
 As the simulation progresses, we update the data
 in the morph::Visual scene; save images from the scene for movie
