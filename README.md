@@ -1,6 +1,7 @@
 # morphologica
 
-Library code used in models developed by Stuart P. Wilson and co-workers
+Library code used in models developed by Stuart P. Wilson, Seb James
+and co-workers in the Wilson Lab.
 
 This code builds a shared library called libmorphologica which
 contains 'simulation support facilities'.
@@ -19,12 +20,69 @@ It helps with:
   grids, surfaces, scatter plots and quiver plots with minimal
   processing overhead.
 
+It keeps *out of the way* of what kind of simulation you write. Our
+programs typically start with some kind of preamble, in which we use
+morph::Config to load up a JSON parameter file defining the values of
+the parameters for the simulation run. We might also use
+morph::HdfData to retrieve some data (e.g. the state) from an earlier
+simulation and then set up a morph::Visual object for the
+visualization. We then might call a function, or instanciate a class
+which defines the simulation. This *may or may not* access features
+from libmorphologica. As the simulation progresses, we update the data
+in the morph::Visual scene; save images from the scene for movie
+making and record data as often as we want it using morph::HdfData. At
+the end of the program, as well as saving any final data, we use
+morph::Config to save out a 'version of record' of the parameters that
+were used, along with git information which morph::Config can extract
+so that we could find the exact version of the simulation for future
+reproducion of the result.
+
 ## Code highlights
 
 morphologic code is enclosed in the "morph" namespace. You can see the code
 documentation at https://codedocs.xyz/ABRG-Models/morphologica/
 
 ### Config
+
+Reads and writes parameter configuration data in JSON format. JSON is
+*so much easier* to work with than XML! The idea is that you will
+write out your parameteres by hand (or with a script) in a JSON file,
+then these are conveniently accessible in your program. Here's an
+example from the schankenberg example, schanakenberg.json:
+
+```json
+{
+    "steps" : 125000,
+    "logevery": 5000,
+    "saveplots": false,
+    "dt" : 0.000005,
+    // Schnakenberg model parameters
+    "D_A" : 0.5,
+    "D_B" : 0.6,
+    "k1"  : 3,
+    "k2"  : 1,
+    "k3"  : 2,
+    "k4"  : 2
+}
+```
+The code to read this is easy to use:
+```c++
+#include "morph/Config.h"
+{
+    morph::Config conf(paramsfile);
+    if (!conf.ready) { /* handle error */ }
+    // The length of one timestep. If dt does not exist in the JSON
+    // file, then the default value 0.00001 is written into dt.
+    const double dt = conf.getDouble ("dt", 0.00001);
+    // Each type has a named method for access. Here's unsigned int:
+    const unsigned int plotevery = conf.getUInt ("plotevery", 10);
+    // And a string:
+    string logpath = conf.getString ("logpath", "fromfilename");
+}
+```
+
+
+
 
 ### HdfData
 
