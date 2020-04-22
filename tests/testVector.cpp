@@ -1,5 +1,8 @@
 #include "Vector.h"
 using morph::Vector;
+using std::cout;
+using std::endl;
+using std::array;
 
 int main() {
     int rtn = 0;
@@ -8,29 +11,27 @@ int main() {
     cout << "x: " << v.x() << endl;
     cout << "z: " << v.z() << endl;
     cout << "w: " << v.w() << endl;
-    // Test output
-    v.output(); cout << endl;
     // Test renormalize
     v.renormalize();
-    cout << "After renormalize: "; v.output(); cout << endl;
+    cout << "After renormalize: " << v << endl;
     // Test checkunit
     cout << "is it unit? " << v.checkunit() << endl;
     // Test randomize
     v.randomize();
-    cout << "After randomize: "; v.output(); cout << endl;
+    cout << "After randomize: " << v << endl;
     // Check ints are ok, too
     Vector<int, 2> vi;
     vi.randomize();
-    cout << "After randomize of int vector: "; vi.output(); cout << endl;
+    cout << "After randomize of int vector: " << vi << endl;
     cout << "Length: " << vi.length() << endl;
     // Test assignment
     Vector<int, 2> vi2 = vi;
-    cout << "Copy of int vector: "; vi2.output(); cout << endl;
+    cout << "Copy of int vector: " << vi2 << endl;
     // Test comparison
     cout << "vi == vi2? " << (vi == vi2 ? "yes" : "no") << endl;
     // Test negate
     Vector<int, 2> vi3 = -vi;
-    cout << "-ve Copy of int vector: "; vi3.output(); cout << endl;
+    cout << "-ve Copy of int vector: " << vi3 << endl;
     // Test comparison
     cout << "vi == vi3? " << (vi == vi3 ? "yes" : "no") << endl;
     // Test cross product (3D only
@@ -46,8 +47,7 @@ int main() {
 #if 0 // No good:
     // Test init from array
     array<float, 3> arr = { 2,3,4 };
-    //Vector<float, 3> varr(arr);
-    Vector<float, 3> varr = arr;
+    Vector<float, 3> varr = arr; // Tried overloading operator= to no avail.
     cout << "Vector from array: " << varr << endl;
 #endif
     // Test scalar multiply
@@ -84,10 +84,10 @@ int main() {
     // Test setFrom
     Vector<double, 3> d1;
     array<double, 3> a1 = { 5,6,7 };
-    d1.setFrom (a1);
+    d1.set_from (a1);
     cout << "d1 should be 5,6,7: " << d1 << endl;
     array<double, 4> a2 = { 5,6,8,8 };
-    d1.setFrom (a2);
+    d1.set_from (a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
 
     return rtn;
