@@ -8,14 +8,14 @@ contains **simulation support facilities**.
 
 It helps with:
 
-* Configuration. morphologica allows you to easily set up a simulation
+* **Configuration**: morphologica allows you to easily set up a simulation
   parameter configuration system, using the JSON reading and writing
   abilities of morph::Config.
 
-* Saving data from your simulation. morphologica provides a set of
+* **Saving data from your simulation**. morphologica provides a set of
   easy-to-use convenience wrappers (morph::HdfData) around the HDF5 C API.
 
-* Visualizing your model while it runs. A modern OpenGL visualization
+* **Visualizing your model while it runs**. A modern OpenGL visualization
   scheme called morph::Visual provides the ability to visualise hex
   grids, surfaces, scatter plots and quiver plots with minimal
   processing overhead.
@@ -62,7 +62,7 @@ schanakenberg.json:
     "logpath" : "logs/",
     "saveplots" : false,
     "dt" : 0.000005,
-    /* Schnakenberg model parameters */
+    //Schnakenberg_model_parameters
     "D_A" : 0.5,
     "D_B" : 0.6,
     "k1"  : 3,
