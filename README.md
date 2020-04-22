@@ -39,13 +39,24 @@ were used, along with git information which morph::Config can extract
 so that we could find the exact version of the simulation for future
 reproducion of the result.
 
-## Code highlights
+Although it need not be incorporated into your actual simulation,
+morphologica does also provide classes that you might find
+useful. Examples include a class for running simulations on hexagonal
+grids (it manages all the neighbour relationships between hexes and
+allows you to specific various boundary shapes for your domain), a vector
+class, a class containing mathematical algorithms and classes for
+working with Bezier curves. It a way of storing our 'group knowledge'
+for posterity!
+
+## Code documentation
 
 morphologica code is enclosed in the **morph** namespace. You can see
-the code documentation at
+the doxygen-generated code documentation at
 https://codedocs.xyz/ABRG-Models/morphologica/
 
 For full, compilable examples of the code, see the examples/ subdirectory.
+
+Below, I've added a quick-start guide to the main classes.
 
 ### morph::Config
 
