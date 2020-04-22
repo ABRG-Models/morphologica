@@ -138,6 +138,56 @@ A class for data scaling, with autoscaling features.
 An extension of std::array to make a class for mathematical vector
 manipulation in N dimensions.
 
+While you *can* just store your vectors in std::array, here are 15
+things that you can do with morph::Vector<> (a mathematical vector
+class) that require much more code with plain std::array:
+
+```c++
+#include <morph/Vector.h>
+using morph::Vector;
+{
+    // 1 Access by named components:
+    Vector<float, 3> v = {1,2,3};
+    cout << "x: " << v.x() << endl;
+    cout << "y: " << v.y() << endl;
+    cout << "z: " << v.z() << endl;
+    // 2 Send to cout:
+    cout << "This vector is: " << v << endl;
+    // 3 Renormalize the vector to length 1:
+    v.renormalize();
+    // 4 Check if it's a unit vector:
+    cout << "is it unit? " << v.checkunit() << endl;
+    // 5 Randomize the vector's components:
+    v.randomize();
+    // 6 Get its vector length:
+    cout << "Length: " << v.length() << endl;
+    // 7 Negate the vector
+    Vector<int, 2> vi = {1,2,3};
+    Vector<int, 2> vi3 = -vi;
+    // 8 Compute the cross product (3D only)
+    Vector<double, 3> a = {1,0,0};
+    Vector<double, 3> b = {0,1,0};
+    Vector<double, 3> c = a * b;
+    cout << a << "*" << b << "=" << c << endl;
+    // 9 Compute the dot product
+    Vector<int, 2> vv1 = {1,1};
+    Vector<int, 2> vv2 = {2,2};
+    int dp = vv1.dot (vv2);
+    // 10-13 Scalar multiply, divide, add, subtract
+    vv2 *= 2UL;
+    vv2 = vv2 / 5;
+    Vector<int, 2> vv;
+    vv = vv1 + 7;
+    vv = vv1 - 9;
+    // 14 Vector addition
+    Vector<double, 3> e = a+b;
+    cout << "a + b = " << e << endl;
+    // 15 Vector subtraction
+    Vector<double, 3> f = a-b;
+    cout << "a - b = " << f << endl;
+}
+```
+
 ### BezCurve, BezCurvePath and BezCoord
 
 Classes to create Bezier curves.
