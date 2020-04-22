@@ -101,5 +101,30 @@ int main () {
         ++res3i;
     }
 
+    // Log scaling
+    Scale<double> ls;
+    ls.do_autoscale = true;
+    ls.setlog();
+
+    list<double> loggy;
+    loggy.push_back (0.001);
+    loggy.push_back (0.003);
+    loggy.push_back (0.01);
+    loggy.push_back (0.2);
+    loggy.push_back (4.0);
+
+    list<double> loggyout(loggy);
+    ls.transform (loggy, loggyout);
+
+    auto li = loggy.begin();
+    auto lio = loggyout.begin();
+    // output in MATLAB/Octave format:
+    cout << "[";
+    while (li != loggy.end()) {
+        cout << *li << "," << *lio << ";" << endl;
+        ++li; ++lio;
+    }
+    cout << "];" << endl;;
+
     return rtn;
 }
