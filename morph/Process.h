@@ -36,9 +36,6 @@ extern "C" {
 #define PROCESSNOMOREPIPES   7
 #define PROCESSFORKFAILED    8
 
-using std::string;
-using std::list;
-
 namespace morph {
 
         /*!
@@ -54,9 +51,9 @@ namespace morph {
         public:
                 ProcessCallbacks() {}
                 virtual ~ProcessCallbacks() {}
-                virtual void startedSignal (string) {}
+                virtual void startedSignal (std::string) {}
                 virtual void errorSignal (int) {}
-                virtual void processFinishedSignal (string) {}
+                virtual void processFinishedSignal (std::string) {}
                 virtual void readyReadStandardOutputSignal (void) {}
                 virtual void readyReadStandardErrorSignal (void) {}
         };
@@ -104,7 +101,7 @@ namespace morph {
                 /*!
                  * Write \arg input to the stdin of the process.
                  */
-                void writeIn (const string& input) const;
+                void writeIn (const std::string& input) const;
 
                 /*!
                  * When Process::start() is called, pause useconds
@@ -116,7 +113,7 @@ namespace morph {
                 /*!
                  * fork and exec the process.
                  */
-                int start (const string& program, const list<string>& args);
+                int start (const std::string& program, const std::list<std::string>& args);
 
                 /*!
                  * Send a TERM signal to the process.
@@ -157,8 +154,8 @@ namespace morph {
                  * Slots
                  */
                 //@{
-                string readAllStandardOutput (void) const;
-                string readAllStandardError (void) const;
+                std::string readAllStandardOutput (void) const;
+                std::string readAllStandardError (void) const;
 
                 /*!
                  * Wait for the process to get itself going. Do this
@@ -171,12 +168,12 @@ namespace morph {
                 /*!
                  * The name of the program to execute
                  */
-                string progName;
+                std::string progName;
 
                 /*!
                  * The environment and arguments of the program to execute
                  */
-                list<string> environment;
+                std::list<std::string> environment;
 
                 /*!
                  * Number of micro seconds to pause (via a usleep()
@@ -256,7 +253,7 @@ namespace morph {
                 /*!
                  * \brief Set the process finished message for a process
                  */
-                void setProcessFinishedMsg (const string& message);
+                void setProcessFinishedMsg (const std::string& message);
 
                 /*!
                  * \brief Set the error num for a process
@@ -276,7 +273,7 @@ namespace morph {
                 /*!
                  * \brief Getters
                  */
-                string getProcessFinishedMsg (void) const;
+                std::string getProcessFinishedMsg (void) const;
                 int getErrorNum (void) const;
                 bool getStdOutReady (void) const;
                 bool getStdErrReady (void) const;
@@ -287,7 +284,7 @@ namespace morph {
                 /*!
                  * \brief Holds the name of the process that finished
                  */
-                string processFinishedMessage;
+                std::string processFinishedMessage;
 
                 /*!
                  * \brief Holds a process error number
