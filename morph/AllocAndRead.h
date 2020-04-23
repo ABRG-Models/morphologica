@@ -6,8 +6,7 @@
  * Date: Oct 2014
  */
 
-#ifndef _ALLOCANDREAD_H_
-#define _ALLOCANDREAD_H_
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -162,5 +161,3 @@ namespace morph
     };
 
 } // namespace morph
-
-#endif // _ALLOCANDREAD_H_

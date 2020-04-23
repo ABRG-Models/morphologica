@@ -4,30 +4,19 @@
  * \author Seb James
  * \date 2019-2020
  */
-#ifndef _BEZCURVEPATH_H_
-#define _BEZCURVEPATH_H_
+
+#pragma once
 
 #include "BezCurve.h"
 
 #include <limits>
-using std::numeric_limits;
 #include <list>
-using std::list;
 #include <vector>
-using std::vector;
 #include <utility>
-using std::pair;
-using std::make_pair;
 #include <string>
-using std::string;
 #include <iostream>
-using std::cout;
-using std::endl;
 #include <fstream>
-using std::ofstream;
 #include <cmath>
-using std::abs;
-using std::sqrt;
 
 namespace morph
 {
@@ -46,35 +35,35 @@ namespace morph
          * from the layer name of the drawing from which the path was
          * read.
          */
-        string name = "";
+        std::string name = "";
 
         /*!
          * The initial coordinate for the BezCurvePath.
          */
-        pair<Flt, Flt> initialCoordinate = make_pair (static_cast<Flt>(0.0), static_cast<Flt>(0.0));
+        std::pair<Flt, Flt> initialCoordinate = std::make_pair (Flt{0}, Flt{0});
 
         /*!
          * A list of the BezCurves that make up the full BezCurvePath.
          */
-        list<BezCurve<Flt>> curves;
+        std::list<BezCurve<Flt>> curves;
 
         /*!
          * A scaling factor that's used to convert the path into mm.
          */
-        Flt scale = static_cast<Flt>(1.0);
+        Flt scale = Flt{1};
 
         /*!
          * This can be filled with a set of points on the path made up by the Bezier
          * curves. Do so with computePoints.
          */
-        vector<BezCoord<Flt>> points;
+        std::vector<BezCoord<Flt>> points;
 
         /*!
          * As for points, store tangents and normals.
          */
         //@{
-        vector<BezCoord<Flt>> tangents;
-        vector<BezCoord<Flt>> normals;
+        std::vector<BezCoord<Flt>> tangents;
+        std::vector<BezCoord<Flt>> normals;
         //@}
 
         /*!
@@ -90,8 +79,8 @@ namespace morph
          */
         void reset (void) {
             this->curves.clear();
-            this->initialCoordinate = make_pair (static_cast<Flt>(0.0), static_cast<Flt>(0.0));
-            this->scale = static_cast<Flt>(1.0);
+            this->initialCoordinate = std::make_pair (Flt{0}, Flt{0});
+            this->scale = Flt{1};
             this->name = "";
         }
 
@@ -102,7 +91,7 @@ namespace morph
             this->scale = s;
             this->initialCoordinate.first = this->initialCoordinate.first * this->scale;
             this->initialCoordinate.second = this->initialCoordinate.second * this->scale;
-            typename list<BezCurve<Flt>>::iterator i = this->curves.begin();
+            typename std::list<BezCurve<Flt>>::iterator i = this->curves.begin();
             while (i != this->curves.end()) {
                 i->setScale (this->scale);
                 ++i;
@@ -114,7 +103,7 @@ namespace morph
          */
         void addCurve (BezCurve<Flt>& c) {
             if (c.getOrder() == 0) {
-                cout << "Not adding 0th order curve." << endl;
+                std::cout << "Not adding 0th order curve." << std::endl;
             } else {
                 if (this->curves.empty()) {
                     this->initialCoordinate = c.getInitialPointScaled();
@@ -133,17 +122,17 @@ namespace morph
          * Output for debugging.
          */
         void output (void) const {
-            cout << "------ BezCurvePath ------" << endl;
-            cout << "Name: " << this->name << endl;
-            cout << "Initial coord: (" << this->initialCoordinate.first
-                 << "," << this->initialCoordinate.second << ")" << endl;
-            cout << "Number of curves: " << this->curves.size() << endl;
-            typename list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
+            std::cout << "------ BezCurvePath ------" << std::endl;
+            std::cout << "Name: " << this->name << std::endl;
+            std::cout << "Initial coord: (" << this->initialCoordinate.first
+                      << "," << this->initialCoordinate.second << ")" << std::endl;
+            std::cout << "Number of curves: " << this->curves.size() << std::endl;
+            typename std::list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
             while (i != this->curves.end()) {
-                cout << i->output(static_cast<unsigned int>(20));
+                std::cout << i->output(static_cast<unsigned int>(20));
                 ++i;
             }
-            cout << "------ End BezCurvePath ------" << endl;
+            std::cout << "------ End BezCurvePath ------" << std::endl;
         }
 
         /*!
@@ -152,11 +141,11 @@ namespace morph
          * drawing units.
          */
         void save (Flt step) const {
-            ofstream f;
-            string fname = this->name + ".csv";
+            std::ofstream f;
+            std::string fname = this->name + ".csv";
             f.open (fname.c_str(), std::ios::out|std::ios::trunc);
             if (f.is_open()) {
-                typename list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
+                typename std::list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
                 // Don't forget to set the scaling factor in each
                 // BezCurve before generating points:
                 while (i != this->curves.end()) {
@@ -175,20 +164,20 @@ namespace morph
         Flt getEndToEnd (void) const {
             // Distance from this->initialCoordinate to:
             if (this->curves.empty()) {
-                return static_cast<Flt>(0.0);
+                return Flt{0};
             }
-            pair<Flt,Flt> cend = this->curves.back().getFinalPointScaled();
+            std::pair<Flt,Flt> cend = this->curves.back().getFinalPointScaled();
             Flt dx = cend.first - initialCoordinate.first;
             Flt dy = cend.second - initialCoordinate.second;
-            return sqrt (dx * dx + dy * dy);
+            return std::sqrt (dx * dx + dy * dy);
         }
 
         /*!
          * Compute the centroid of the passed in set of positions.
          */
-        static pair<Flt,Flt> getCentroid (const vector<BezCoord<Flt>>& points) {
-            Flt c_x = static_cast<Flt>(0.0);
-            Flt c_y = static_cast<Flt>(0.0);
+        static std::pair<Flt,Flt> getCentroid (const std::vector<BezCoord<Flt>>& points) {
+            Flt c_x = Flt{0};
+            Flt c_y = Flt{0};
             for (const BezCoord<Flt>& i : points) {
                 c_x += i.x();
                 c_y += i.y();
@@ -196,7 +185,7 @@ namespace morph
             c_x = c_x / points.size();
             c_y = c_y / points.size();
 
-            return make_pair (c_x, c_y);
+            return std::make_pair (c_x, c_y);
         }
 
         /*!
@@ -217,7 +206,7 @@ namespace morph
             this->normals.clear();
 
             // First the very start point:
-            BezCoord<Flt> startPt = this->curves.front().computePoint (static_cast<Flt>(0.0));
+            BezCoord<Flt> startPt = this->curves.front().computePoint (Flt{0});
             if (invertY) {
                 startPt.invertY();
             }
@@ -225,22 +214,22 @@ namespace morph
 
             // Make cp a complete set of points for the current curve *including
             // the point in the curve for t=0*
-            pair<BezCoord<Flt>, BezCoord<Flt>> tn0 = this->curves.front().computeTangentNormal(static_cast<Flt>(0.0));
+            std::pair<BezCoord<Flt>, BezCoord<Flt>> tn0 = this->curves.front().computeTangentNormal(Flt{0});
             this->tangents.push_back (tn0.first);
             this->normals.push_back (tn0.second);
 
-            typename list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
+            typename std::list<BezCurve<Flt>>::const_iterator i = this->curves.begin();
             // Don't forget to set the scaling factor in each
             // BezCurve before generating points:
-            Flt firstl = static_cast<Flt>(0.0);
+            Flt firstl = Flt{0};
             while (i != this->curves.end()) {
-                vector<BezCoord<Flt>> cp = i->computePoints (step, firstl);
+                std::vector<BezCoord<Flt>> cp = i->computePoints (step, firstl);
                 if (cp.back().isNull()) {
                     firstl = step - cp.back().getRemaining();
                     cp.pop_back();
                 }
                 if (invertY) {
-                    typename vector<BezCoord<Flt>>::iterator bci = cp.begin();
+                    typename std::vector<BezCoord<Flt>>::iterator bci = cp.begin();
                     while (bci != cp.end()) {
                         bci->invertY();
                         ++bci;
@@ -250,7 +239,7 @@ namespace morph
 
                 // Now compute tangents and normals
                 for (BezCoord<Flt> bp : cp) {
-                    pair<BezCoord<Flt>, BezCoord<Flt>> tn = i->computeTangentNormal(bp.t());
+                    std::pair<BezCoord<Flt>, BezCoord<Flt>> tn = i->computeTangentNormal(bp.t());
                     this->tangents.push_back (tn.first);
                     this->normals.push_back (tn.second);
                 }
@@ -260,13 +249,13 @@ namespace morph
 
         //! Getters
         //@{
-        vector<BezCoord<Flt>> getPoints (void) const {
+        std::vector<BezCoord<Flt>> getPoints (void) const {
             return this->points;
         }
-        vector<BezCoord<Flt>> getTangents (void) const {
+        std::vector<BezCoord<Flt>> getTangents (void) const {
             return this->tangents;
         }
-        vector<BezCoord<Flt>> getNormals (void) const {
+        std::vector<BezCoord<Flt>> getNormals (void) const {
             return this->normals;
         }
         //@}
@@ -280,11 +269,11 @@ namespace morph
             // Get end-to-end distance and compute a candidate step, then call other
             // overload.
             if (nPoints == 0) {
-                cout << "nPoints should be >0, returning" << endl;
+                std::cout << "nPoints should be >0, returning" << std::endl;
                 return;
             }
             if (this->curves.empty()) {
-                cout << "Curve is empty, returning" << endl;
+                std::cout << "Curve is empty, returning" << std::endl;
                 return;
             }
 
@@ -296,13 +285,13 @@ namespace morph
 
             while (actualPoints != nPoints) {
                 this->points.clear();
-                // cout << "Getting points with step size " << step << endl;
+                // std::cout << "Getting points with step size " << step << std::endl;
                 this->computePoints (step, invertY);
                 actualPoints = this->points.size();
                 if (actualPoints != nPoints) {
 
                     // Modify step
-                    Flt steptrial = static_cast<Flt>(0.0);
+                    Flt steptrial = Flt{0};
                     if (actualPoints > nPoints) {
                         // Increase step size, starting with a doubling, then a half
                         // extra, then a quarter extra, etc
@@ -316,9 +305,9 @@ namespace morph
                             stepinc /= 2.0f;
                         }
 
-                        if (abs(step-steptrial) < numeric_limits<Flt>::epsilon()) {
-                            cout << "Numeric limit reached; can't change step a small "
-                                 << "enough amount to change the number of points" << endl;
+                        if (std::abs(step-steptrial) < std::numeric_limits<Flt>::epsilon()) {
+                            std::cout << "Numeric limit reached; can't change step a small "
+                                      << "enough amount to change the number of points" << std::endl;
                             return;
                         }
                         step = steptrial;
@@ -335,9 +324,9 @@ namespace morph
                             actualPoints = this->points.size();
                             stepinc /= 2.0f;
                         }
-                        if (abs(step-steptrial) < numeric_limits<Flt>::epsilon()) {
-                            cout << "Numeric limit reached; can't change step a small "
-                                 << "enough amount to change the number of points" << endl;
+                        if (std::abs(step-steptrial) < std::numeric_limits<Flt>::epsilon()) {
+                            std::cout << "Numeric limit reached; can't change step a small "
+                                      << "enough amount to change the number of points" << std::endl;
                             return;
                         }
                         step = steptrial;
@@ -348,5 +337,3 @@ namespace morph
     };
 
 } // namespace morph
-
-#endif // _BEZCURVEPATH_H_

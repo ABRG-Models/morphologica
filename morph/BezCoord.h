@@ -2,19 +2,12 @@
  * A Bezier curve coordinate class.
  */
 
-#ifndef _BEZCOORD_H_
-#define _BEZCOORD_H_
+#pragma once
 
 #include <utility>
-#include <math.h>
+#include <cmath>
 #include <ostream>
 #include <cmath>
-
-using std::pair;
-using std::make_pair;
-using std::ostream;
-using std::sqrt;
-using std::abs;
 
 namespace morph
 {
@@ -48,16 +41,16 @@ namespace morph
          * Construct a coordinate using the info given.
          */
         //@{
-        BezCoord (pair<Flt,Flt> r)
+        BezCoord (std::pair<Flt,Flt> r)
             : coord(r)
             { this->param = -1.0f; this->remaining = -1.0f; this->nullCoordinate = false; }
 
-        BezCoord (Flt t, pair<Flt,Flt> r)
+        BezCoord (Flt t, std::pair<Flt,Flt> r)
             : coord(r)
             , param(t)
             { this->remaining = -1.0f; this->nullCoordinate = false; }
 
-        BezCoord (Flt t, pair<Flt,Flt> r, Flt remain)
+        BezCoord (Flt t, std::pair<Flt,Flt> r, Flt remain)
             : coord(r)
             , param(t)
             , remaining(remain)
@@ -68,12 +61,12 @@ namespace morph
          * Accessors
          */
         //@{
-        pair<Flt,Flt> getCoord (void) const { return this->coord; }
+        std::pair<Flt,Flt> getCoord (void) const { return this->coord; }
         Flt getParam (void) const { return this->param; }
         Flt getRemaining (void) const { return this->remaining; }
         bool getNullCoordinate (void) const { return this->nullCoordinate; }
         bool isNull (void) const { return this->nullCoordinate; }
-        void setCoord (pair<Flt,Flt> c) { this->coord = c; }
+        void setCoord (std::pair<Flt,Flt> c) { this->coord = c; }
         void setParam (Flt p) { this->param = p; }
         void setRemaining (Flt r) { this->remaining = r; }
         void setNullCoordinate (bool b) { this->nullCoordinate = b; }
@@ -101,7 +94,7 @@ namespace morph
          * coordinate.
          */
         void normalize (void) {
-            BezCoord origin(make_pair(0.0f,0.0f));
+            BezCoord origin(std::make_pair(0.0f,0.0f));
             Flt len = origin.distanceTo (*this);
             this->coord.first /= len;
             this->coord.second /= len;
@@ -112,30 +105,30 @@ namespace morph
          * to the given coordinate.
          */
         Flt distanceTo (BezCoord& other) const {
-            pair<Flt,Flt> se;
+            std::pair<Flt,Flt> se;
             se.first = this->x() - other.x();
             se.second = this->y() - other.y();
-            return (sqrt (se.first*se.first + se.second*se.second));
+            return (std::sqrt (se.first*se.first + se.second*se.second));
         }
 
         /*!
          * Horizontal distance between two BezCoords.
          */
         Flt horzDistanceTo (BezCoord& other) const {
-            return (abs(this->x() - other.x()));
+            return (std::abs(this->x() - other.x()));
         }
 
         /*!
          * Vertical distance between two BezCoords.
          */
         Flt vertDistanceTo (BezCoord& other) const {
-            return (abs(this->y() - other.y()));
+            return (std::abs(this->y() - other.y()));
         }
 
         /*!
          * Subtract the coordinate c from this BezCoord.
          */
-        void subtract (const pair<Flt,Flt>& c) {
+        void subtract (const std::pair<Flt,Flt>& c) {
             this->coord.first -= c.first;
             this->coord.second -= c.second;
         }
@@ -151,7 +144,7 @@ namespace morph
         /*!
          * Add the coordinate c to this BezCoord.
          */
-        void add (const pair<Flt,Flt>& c) {
+        void add (const std::pair<Flt,Flt>& c) {
             this->coord.first += c.first;
             this->coord.second += c.second;
         }
@@ -169,13 +162,13 @@ namespace morph
          */
         //@{
         BezCoord operator- (const BezCoord& br) {
-            pair<Flt,Flt> p;
+            std::pair<Flt,Flt> p;
             p.first = this->coord.first - br.x();
             p.second = this->coord.second - br.y();
             return BezCoord(p); // Note returned object contains remaining and param == -1
         }
 
-        friend ostream& operator<< (ostream& output, const BezCoord& b) {
+        friend std::ostream& operator<< (std::ostream& output, const BezCoord& b) {
 #if 0
             output << b.x() << "," << b.y() << " (t=" << b.t() << " rem: " << b.getRemaining() << ")";
             if (b.getNullCoordinate() == true) {
@@ -195,7 +188,7 @@ namespace morph
          * coord.first (x) is positive rightwards and coord.second is
          * positive downwards.
          */
-        pair<Flt,Flt> coord;
+        std::pair<Flt,Flt> coord;
 
         /*!
          * The parameter value used to obtain this coordinate. Note
@@ -225,5 +218,3 @@ namespace morph
     };
 
 } // namespace morph
-
-#endif // _BEZCOORD_H_
