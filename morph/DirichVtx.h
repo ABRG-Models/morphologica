@@ -13,6 +13,7 @@
 #include <limits>
 #include <utility>
 #include <list>
+#include <string>
 #include "HexGrid.h"
 #include "HdfData.h"
 
@@ -300,8 +301,8 @@ namespace morph {
         }
 
         //! Save data from the DirichVtx. Not saving ALL members of this class (e.g. omitting threshold)
-        void save (HdfData& data, const string& pathroot) const {
-            string p("");
+        void save (HdfData& data, const std::string& pathroot) const {
+            std::string p("");
             p = pathroot + "/v";
             data.add_contained_vals (p.c_str(), this->v);
             p = pathroot + "/vn";

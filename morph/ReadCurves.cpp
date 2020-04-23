@@ -4,35 +4,38 @@
 
 #include "ReadCurves.h"
 #include "BezCurvePath.h"
+using morph::BezCurvePath;
 #include <stdexcept>
+using std::runtime_error;
 #include <sstream>
+using std::stringstream;
 #include <vector>
+using std::vector;
+#include <list>
+using std::list;
 #include <math.h>
 #include "tools.h"
+using morph::Tools;
 #include <cstdlib>
-
+using std::atof;
+#include <utility>
+using std::pair;
+using std::make_pair;
+#include <string>
+using std::string;
+#include <iostream>
+using std::cerr;
+using std::endl;
 // To enable debug cout messages:
 //#define DEBUG 1
 //#define DEBUG2 1
 #define DBGSTREAM std::cout
 #include "MorphDbg.h"
-
-using std::runtime_error;
-using std::stringstream;
-using std::make_pair;
-using std::vector;
-using std::cerr;
-using std::endl;
-
-using std::atof;
-
+#include "rapidxml.hpp"
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
 using rapidxml::parse_declaration_node;
 using rapidxml::parse_no_data_nodes;
-
-using morph::BezCurvePath;
-using morph::Tools;
 
 morph::ReadCurves::ReadCurves (const string& svgpath)
 {

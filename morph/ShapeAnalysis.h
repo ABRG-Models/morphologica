@@ -1,5 +1,10 @@
-#ifndef _SHAPEANALYSIS_H_
-#define _SHAPEANALYSIS_H_
+/*!
+ * \file
+ *
+ * \author Seb James
+ * \date 2019
+ */
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -13,21 +18,6 @@
 #include "DirichDom.h"
 #include "DirichVtx.h"
 #include "MorphDbg.h"
-
-using std::vector;
-using std::list;
-using std::pair;
-using std::make_pair;
-using std::set;
-using std::map;
-using std::numeric_limits;
-using std::runtime_error;
-using std::exception;
-
-using morph::Hex;
-using morph::HexGrid;
-using morph::DirichVtx;
-using morph::DirichDom;
 
 namespace morph {
 
@@ -52,17 +42,17 @@ namespace morph {
          * Obtain the contours (as a vector of list<Hex>) in the scalar fields f, where threshold is
          * crossed.
          */
-        static vector<list<Hex> > get_contours (HexGrid* hg,
-                                                vector<vector<Flt> >& f,
-                                                Flt threshold) {
+        static std::vector<std::list<Hex> > get_contours (HexGrid* hg,
+                                                          std::vector<std::vector<Flt> >& f,
+                                                          Flt threshold) {
 
             unsigned int nhex = hg->num();
             unsigned int N = f.size();
 
-            vector<list<Hex> > rtn;
+            std::vector<std::list<Hex> > rtn;
             // Initialise
             for (unsigned int li = 0; li < N; ++li) {
-                list<Hex> lh;
+                std::list<Hex> lh;
                 rtn.push_back (lh);
             }
 
@@ -79,7 +69,7 @@ namespace morph {
             Flt scalef = 1.0 / (maxf-minf);
 
             // Re-normalize
-            vector<vector<Flt> > norm_f;
+            std::vector<std::vector<Flt> > norm_f;
             norm_f.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_f[i].resize (nhex, 0.0);
@@ -120,14 +110,14 @@ namespace morph {
          * Like get_contours, but returns a full hexgrid's worth of Flts instead of
          * lists of Hexes.
          */
-        static vector<Flt> get_contour_map (HexGrid* hg,
-                                            vector<vector<Flt> >& f,
-                                            Flt threshold) {
+        static std::vector<Flt> get_contour_map (HexGrid* hg,
+                                                 std::vector<std::vector<Flt> >& f,
+                                                 Flt threshold) {
 
             unsigned int nhex = hg->num();
             unsigned int N = f.size();
 
-            vector<Flt> rtn (nhex, 0.0);
+            std::vector<Flt> rtn (nhex, 0.0);
 
             Flt maxf = -1e7;
             Flt minf = +1e7;
@@ -142,7 +132,7 @@ namespace morph {
             Flt scalef = 1.0 / (maxf-minf);
 
             // Re-normalize
-            vector<vector<Flt> > norm_f;
+            std::vector<std::vector<Flt> > norm_f;
             norm_f.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_f[i].resize (nhex, 0.0);
@@ -182,14 +172,14 @@ namespace morph {
         //! Like get_contour_map, but for N vector<Flt>s in @f, return N+1 positive values in the
         //! return vector. Good for plotting contours with ColourMapType::RainbowZeroBlack or
         //! ColourMapType::RainbowZeroWhite
-        static vector<Flt> get_contour_map_nozero (HexGrid* hg,
-                                                   vector<vector<Flt> >& f,
-                                                   Flt threshold) {
+        static std::vector<Flt> get_contour_map_nozero (HexGrid* hg,
+                                                        std::vector<std::vector<Flt> >& f,
+                                                        Flt threshold) {
 
             unsigned int nhex = hg->num();
             unsigned int N = f.size();
 
-            vector<Flt> rtn (nhex, 0.0);
+            std::vector<Flt> rtn (nhex, 0.0);
 
             Flt maxf = -1e7;
             Flt minf = +1e7;
@@ -204,7 +194,7 @@ namespace morph {
             Flt scalef = 1.0 / (maxf-minf);
 
             // Re-normalize
-            vector<vector<Flt> > norm_f;
+            std::vector<std::vector<Flt> > norm_f;
             norm_f.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_f[i].resize (nhex, 0.0);
@@ -246,12 +236,12 @@ namespace morph {
          * based on the HexGrid @hg) which marks each hex with the outer index of the @f which has
          * highest value in that hex, scaled and converted to a float.
          */
-        static vector<Flt>
-        dirichlet_regions (HexGrid* hg, vector<vector<Flt> >& f) {
+        static std::vector<Flt>
+        dirichlet_regions (HexGrid* hg, std::vector<std::vector<Flt> >& f) {
             unsigned int N = f.size();
 
             // Single variable to return
-            vector<Flt> rtn (f[0].size(), 0.0);
+            std::vector<Flt> rtn (f[0].size(), 0.0);
 
             // Mark regions first.
             for (auto h : hg->hexen) {
@@ -276,10 +266,10 @@ namespace morph {
          * having that ID. Return a map keyed by ID, containing the coordinates of
          * each centroid.
          */
-        static map<Flt, pair<Flt, Flt> >
-        region_centroids (HexGrid* hg, const vector<Flt>& regions) {
-            map<Flt, pair<Flt, Flt> > centroids;
-            map<Flt, Flt> counts;
+        static std::map<Flt, std::pair<Flt, Flt> >
+        region_centroids (HexGrid* hg, const std::vector<Flt>& regions) {
+            std::map<Flt, std::pair<Flt, Flt> > centroids;
+            std::map<Flt, Flt> counts;
             for (unsigned int h = 0; h<regions.size(); ++h) {
                 centroids[regions[h]].first += hg->d_x[h];
                 centroids[regions[h]].second += hg->d_y[h];
@@ -299,11 +289,11 @@ namespace morph {
          * see if it is a Dirichlet vertex. If so, a vertex should be created in @vertices.
          */
         static void
-        vertex_test (HexGrid* hg, vector<Flt>& f,
-                     list<Hex>::iterator h, list<DirichVtx<Flt> >& vertices) {
+        vertex_test (HexGrid* hg, std::vector<Flt>& f,
+                     std::list<Hex>::iterator h, std::list<DirichVtx<Flt> >& vertices) {
 
             // For each hex, examine its neighbours, counting number of different neighbours.
-            set<Flt> n_ids;
+            std::set<Flt> n_ids;
             n_ids.insert (f[h->vi]);
             for (unsigned int ni = 0; ni < 6; ++ni) {
                 if (h->has_neighbour(ni)) {
@@ -345,7 +335,7 @@ namespace morph {
                                     h->get_vertex_coord(ni),
                                     hg->getd(),
                                     f[h->vi],
-                                    make_pair(-1.0f, f[h->get_neighbour(ni)->vi]),
+                                    std::make_pair(-1.0f, f[h->get_neighbour(ni)->vi]),
                                     h);
                                 a.onBoundary = true;
                                 vertices.push_back (a);
@@ -359,7 +349,7 @@ namespace morph {
                                         h->get_vertex_coord(nii),
                                         hg->getd(),
                                         f[h->vi],
-                                        make_pair(f[h->get_neighbour(ni)->vi], -1.0f),
+                                        std::make_pair(f[h->get_neighbour(ni)->vi], -1.0f),
                                         h);
                                     a.onBoundary = true;
                                     vertices.push_back (a);
@@ -396,7 +386,7 @@ namespace morph {
                                         h->get_vertex_coord(ni),
                                         hg->getd(),
                                         f[h->vi],
-                                        make_pair(f[h->get_neighbour(nii)->vi], f[h->get_neighbour(ni)->vi]),
+                                        std::make_pair(f[h->get_neighbour(nii)->vi], f[h->get_neighbour(ni)->vi]),
                                         h)
                                     );
                             }
@@ -434,12 +424,12 @@ namespace morph {
          * @next_neighb_dom A variable in which to return the next neighbour domain ID that is
          * found.
          */
-        static pair<Flt, Flt>
+        static std::pair<Flt, Flt>
         walk_common (HexGrid* hg,
-                     vector<Flt>& f,
+                     std::vector<Flt>& f,
                      DirichVtx<Flt>& v,
-                     list<pair<Flt, Flt>>& path,
-                     pair<Flt, Flt>& edgedoms,
+                     std::list<std::pair<Flt, Flt>>& path,
+                     std::pair<Flt, Flt>& edgedoms,
                      Flt& next_neighb_dom) {
 
             WALK ("** Called to walk from (" << v.v.first << "," << v.v.second << ") or "
@@ -447,7 +437,7 @@ namespace morph {
                   << edgedoms.first << ", edgedoms.second: " << edgedoms.second);
 
             // Really, we only have coordinates to return.
-            pair<Flt, Flt> next_one = {numeric_limits<Flt>::max(), numeric_limits<Flt>::max()};
+            std::pair<Flt, Flt> next_one = {std::numeric_limits<Flt>::max(), std::numeric_limits<Flt>::max()};
 
             // Used later
             int i = 0;
@@ -457,19 +447,19 @@ namespace morph {
             // side. _Initially_, point hexit at the hex that's on the inside of the domain for
             // which v is a Dirichlet vertex - v.hi. At least, this is what you do when walking OUT
             // to a neighbour vertex that's part of another domain.
-            list<Hex>::iterator hexit = v.hi;
+            std::list<Hex>::iterator hexit = v.hi;
             // point hexit_neighb to the hexes on the edgedoms.second side
-            list<Hex>::iterator hexit_neighb = v.hi;
+            std::list<Hex>::iterator hexit_neighb = v.hi;
             // The first hex, inside the domain.
-            list<Hex>::iterator hexit_first = v.hi;
+            std::list<Hex>::iterator hexit_first = v.hi;
             // Temporary hex pointers
-            list<Hex>::iterator hexit_next = v.hi;
-            list<Hex>::iterator hexit_last = v.hi;
+            std::list<Hex>::iterator hexit_next = v.hi;
+            std::list<Hex>::iterator hexit_last = v.hi;
 
             // Set true when we find the partner vertex.
             bool partner_found = false;
 
-            pair<Flt, Flt> v_init = v.v;
+            std::pair<Flt, Flt> v_init = v.v;
 
             /*
              * A Find hexit_first
@@ -527,7 +517,7 @@ namespace morph {
                  */
 
                 // Find the initial direction of the edge and the hex containing edgedoms.first:
-                int hexit_first_dirn = numeric_limits<int>::max();
+                int hexit_first_dirn = std::numeric_limits<int>::max();
                 for (i = 0; i<6; ++i) {
                     DBG2 ("i=" << i << ", Comparing coordinates: ("
                           << hexit_first->get_vertex_coord(i).first << ","
@@ -612,7 +602,7 @@ namespace morph {
                 // hex neighbours in directions i+1 and i-1 from hexit_first.
                 bool found_second = false;
                 // dirn from hexit_first to hexit_neighb which has edgedoms.second identity
-                int hexit_second_dirn = numeric_limits<int>::max();
+                int hexit_second_dirn = std::numeric_limits<int>::max();
 
                 // Use *hex identity* to find neighbour, along with hex location with respect to
                 // the initial vertex, v.
@@ -670,7 +660,7 @@ namespace morph {
 
                 // Can now say whether the edgedoms are in clockwise or anti-clockwise order.
                 Rotn rot = Rotn::Unknown;
-                int hex_hex_neighb_dirn = numeric_limits<int>::max();
+                int hex_hex_neighb_dirn = std::numeric_limits<int>::max();
                 if (hexit_second_dirn == ((hexit_first_dirn>0)?(hexit_first_dirn-1):5)) {
                     // Rotation of edgedoms.first to edgedoms.second is clockwise around hexit_first.
 
@@ -813,13 +803,13 @@ namespace morph {
          * @next_neighb_dom The identity of the next domain neighbour when we find the vertex
          * neighbour.
          */
-        static pair<Flt, Flt>
-        walk_to_next (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
+        static std::pair<Flt, Flt>
+        walk_to_next (HexGrid* hg, std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
 
             // Starting from hex v.hi, find neighbours whos f values are v.f/v.neighb.first. Record
             // (in v.path_to_next) a series of coordinates that make up the path between that vertex
             // and the next vertex in the domain.
-            pair<Flt, Flt> edgedoms;
+            std::pair<Flt, Flt> edgedoms;
             edgedoms.first = v.f;
             edgedoms.second = v.neighb.first;
             return walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
@@ -838,15 +828,15 @@ namespace morph {
          * @next_neighb_dom The identity of the next domain neighbour when we find the vertex
          * neighbour.
          */
-        static pair<Flt, Flt>
-        walk_to_neighbour (HexGrid* hg, vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
+        static std::pair<Flt, Flt>
+        walk_to_neighbour (HexGrid* hg, std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
 
             // Don't set neighbours for the edge vertices (though edge vertices *can be set* as
             // neighbours for other vertices).
             if (v.neighb.first == -1.0f || v.neighb.second == -1.0f) {
-                return make_pair(0.0, 0.0);;
+                return std::make_pair (0.0, 0.0);
             }
-            pair<Flt, Flt> edgedoms = v.neighb;
+            std::pair<Flt, Flt> edgedoms = v.neighb;
             return walk_common (hg, f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
         }
 
@@ -859,9 +849,9 @@ namespace morph {
          * vertices so that @domain can be stored, reset and the next Dirichlet domain can be found.
          */
         static bool
-        process_domain (HexGrid* hg, vector<Flt>& f,
-                        typename list<DirichVtx<Flt>>::iterator dv,
-                        list<DirichVtx<Flt>>& vertices,
+        process_domain (HexGrid* hg, std::vector<Flt>& f,
+                        typename std::list<DirichVtx<Flt>>::iterator dv,
+                        std::list<DirichVtx<Flt>>& vertices,
                         DirichDom<Flt>& domain,
                         DirichVtx<Flt> first_vtx) {
 
@@ -878,16 +868,16 @@ namespace morph {
             // Find the neighbour of this vertex, if possible. Can't
             // do this if it's a boundary vertex, but nothing happens
             // in that case.
-            Flt next_neighb_dom = numeric_limits<Flt>::max();
+            Flt next_neighb_dom = std::numeric_limits<Flt>::max();
 
-            pair<Flt, Flt> neighb_vtx = walk_to_neighbour (hg, f, v, next_neighb_dom);
+            std::pair<Flt, Flt> neighb_vtx = walk_to_neighbour (hg, f, v, next_neighb_dom);
             DBG2 ("walk_to_neighbour returned with vertex (" << neighb_vtx.first
                   << "," << neighb_vtx.second << ")");
             v.vn = neighb_vtx;
 
             // Walk to the next vertex
-            next_neighb_dom = numeric_limits<Flt>::max();
-            pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, next_neighb_dom);
+            next_neighb_dom = std::numeric_limits<Flt>::max();
+            std::pair<Flt, Flt> next_vtx = walk_to_next (hg, f, v, next_neighb_dom);
             DBG2 ("starting from (" << v.v.first << "," << v.v.second
                   << "), walk_to_next returned with vertex ("
                   << next_vtx.first << "," << next_vtx.second << ")");
@@ -898,7 +888,7 @@ namespace morph {
             dv->closed = true;
             domain.vertices.push_back (v);
 
-            typename list<DirichVtx<Flt>>::iterator dv2 = vertices.begin();
+            typename std::list<DirichVtx<Flt>>::iterator dv2 = vertices.begin();
             if (first_vtx.compare (next_vtx) == false) {
                 // Find a dv which matches next_vtx.
                 bool matched_next_vertex = false;
@@ -952,15 +942,15 @@ namespace morph {
          * different values of @f. @f is indexed by the HexGrid @hg. Return a list containing lists
          * of the vertices, each of which define a domain.
          */
-        static list<DirichDom<Flt>>
-        dirichlet_vertices (HexGrid* hg, vector<Flt>& f, list<DirichVtx<Flt>>& vertices) {
+        static std::list<DirichDom<Flt>>
+        dirichlet_vertices (HexGrid* hg, std::vector<Flt>& f, std::list<DirichVtx<Flt>>& vertices) {
 
             // 1. Go though and find a list of all vertices, in no particular order.  This will
             // lead to duplications because >1 domain for a given ID, f, is possible early in
             // simulations. From this list, I can find vertex sets, whilst deleting from the list
             // until it is empty, and know that I will have discovered all the domain vertex sets.
             // list<DirichVtx<Flt> > vertices;
-            list<Hex>::iterator h = hg->hexen.begin();
+            std::list<Hex>::iterator h = hg->hexen.begin();
             while (h != hg->hexen.end()) {
                 vertex_test (hg, f, h, vertices);
                 // Move on to the next Hex in hexen
@@ -972,8 +962,8 @@ namespace morph {
             // perimeter of the domain is traversed. I have to do Dirichlet domain boundary walks
             // to achieve this (to disambiguate between vertices from separate, but same-ID
             // domains).
-            list<DirichDom<Flt>> dirich_domains;
-            typename list<DirichVtx<Flt>>::iterator dv = vertices.begin();
+            std::list<DirichDom<Flt>> dirich_domains;
+            typename std::list<DirichVtx<Flt>>::iterator dv = vertices.begin();
             //unsigned int domcount = 0;
             while (dv != vertices.end() /* && domcount++ < 3 */) {
                 DirichDom<Flt> one_domain;
@@ -1004,7 +994,7 @@ namespace morph {
 
         //! Count number of instances of the value @val in the vector of values @vec.
         static unsigned int
-        count_up (const vector<Flt>& vec, const Flt val) {
+        count_up (const std::vector<Flt>& vec, const Flt val) {
             unsigned int count = 0;
             for (auto v : vec) { count += (v == val) ? 1 : 0; }
             return count;
@@ -1015,13 +1005,13 @@ namespace morph {
          * vertices after Honda1983.
          */
         static Flt
-        dirichlet_analyse (list<DirichDom<Flt>>& doms, vector<pair<Flt, Flt>>& d_centres) {
+        dirichlet_analyse (std::list<DirichDom<Flt>>& doms, std::vector<std::pair<Flt, Flt>>& d_centres) {
             Flt sum_delta_j = 0.0;
             Flt sum_areas = 0.0;
             d_centres.clear();
             auto di = doms.begin();
             while (di != doms.end()) {
-                pair<Flt, Flt> P;
+                std::pair<Flt, Flt> P;
                 // metric returns is delta_j, the mean_sos_per_vertex
                 Flt delta_j = di->dirichlet_analyse_single_domain (P);
                 //cout << "Domain delta_j = " << delta_j << endl;
@@ -1040,5 +1030,3 @@ namespace morph {
     }; // ShapeAnalysis
 
 } // namespace morph
-
-#endif // SHAPEANALYSIS

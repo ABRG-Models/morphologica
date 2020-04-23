@@ -1,12 +1,12 @@
 /*!
+ * \file
+ *
  * A class for reading SVG files containing paths defining the outline of a neocortex.
  *
- * Author: Seb James
- * Date: July 2018
+ * \author: Seb James
+ * \date: July 2018
  */
-
-#ifndef _READCURVES_H_
-#define _READCURVES_H_
+#pragma once
 
 #include <string>
 #include <list>
@@ -16,14 +16,6 @@
 #include "rapidxml.hpp"
 #include "BezCurvePath.h"
 #include "AllocAndRead.h"
-
-using std::string;
-using std::list;
-using std::vector;
-using std::map;
-using std::pair;
-using rapidxml::xml_node;
-using rapidxml::xml_document;
 
 namespace morph
 {
@@ -46,14 +38,14 @@ namespace morph
          * XML root node is found (an <svg> element). All initialisation is done; not need to call
          * init(const string& svgpath)
          */
-        ReadCurves (const string& svgpath);
+        ReadCurves (const std::string& svgpath);
 
         /*!
          * Initialise using the SVG file at svgpath. The text of the file is read into memory and
          * the XML root node is found (an <svg> element). If you constructed with a const string&
          * svgpath, then you don't need to call this init function.
          */
-        void init (const string& svgpath);
+        void init (const std::string& svgpath);
 
         /*!
          * Get the cortical path as a list of BezCurves
@@ -63,13 +55,13 @@ namespace morph
         /*!
          * Get the path of an enclosed structure by name, as a list of BezCurves.
          */
-        BezCurvePath<float> getEnclosedRegion (const string& structName) const;
+        BezCurvePath<float> getEnclosedRegion (const std::string& structName) const;
 
         /*!
          * Get all the paths of enclosed structures. This is a list of pairs, in which the name and
          * the structure path are the two parts of the pair.
          */
-        list<BezCurvePath<float>> getEnclosedRegions (void) const;
+        std::list<BezCurvePath<float>> getEnclosedRegions (void) const;
 
         /*!
          * Save the paths to named files, with the step size being approximately step in Cartesian
@@ -93,7 +85,7 @@ namespace morph
          * scheme up so that I could incorporate a set of coordinates marking out structures in the
          * cortex (specifically, barrels).
          */
-        map<string, pair<float, float>> circles;
+        std::map<std::string, std::pair<float, float>> circles;
 
     private:
 
@@ -111,18 +103,19 @@ namespace morph
         /*!
          * Read a <g> element; its id attribute and its enclosed <path> or <line> element.
          */
-        void readG (xml_node<>* g_node);
+        void readG (rapidxml::xml_node<>* g_node);
 
         /*!
          * Read a circle element and store it in circles.
          */
-        void readCircle (xml_node<>* circ_node);
+        void readCircle (rapidxml::xml_node<>* circ_node);
 
         /*!
          * Recursively search in a_node until a node with the tag name
          * @tagname is found. Return it.
          */
-        xml_node<>* findNodeRecursive (xml_node<>* a_node, const string& tagname) const;
+        rapidxml::xml_node<>* findNodeRecursive (rapidxml::xml_node<>* a_node,
+                                                 const std::string& tagname) const;
 
         /*!
          * Read a <path> element. A path will contain a series of commands in a d attribute. These
@@ -133,19 +126,19 @@ namespace morph
          *
          * layerName contains the name of the layer in which the path was found.
          */
-        void readPath (xml_node<>* path_node, const string& layerName);
+        void readPath (rapidxml::xml_node<>* path_node, const std::string& layerName);
 
         /*!
          * If g_id contains the string "mm", then treat it as a scale bar. If it contains "cortex",
          * then treat it as the special outer/main boundary
          */
-        void setupScaling (const string& g_id);
+        void setupScaling (const std::string& g_id);
 
         /*!
          * Read a <path> element, assuming that it contains an implicit set of lines encoded as
          * moveto commands.
          */
-        float readPathAsLine (xml_node<>* path_node);
+        float readPathAsLine (rapidxml::xml_node<>* path_node);
 
         /*!
          * Split up a string of SVG command numbers. These are delimited either by a comma, a space
@@ -155,9 +148,9 @@ namespace morph
          * extracted from s. When s contains a longer than numParams list of numbers, endOfCmd is
          * set to point to the end of the commands read into the return value.
          */
-        vector<float> splitSvgCmdString (const string& s, char cmd,
-                                         unsigned int numParams,
-                                         string::size_type& endOfCmd);
+        std::vector<float> splitSvgCmdString (const std::string& s, char cmd,
+                                              unsigned int numParams,
+                                              std::string::size_type& endOfCmd);
 
         /*!
          * This parses the d attribute string in an SVG path. I'm assuming this will always be a
@@ -167,13 +160,13 @@ namespace morph
          * positive down. This parsing does not change that coordinate system, and so the BezCoords
          * in the path may need to have their y coordinates reversed.
          */
-        BezCurvePath<float> parseD (const string& d);
+        BezCurvePath<float> parseD (const std::string& d);
 
         /*!
          * Read a <line> element. Read x1,y1,x2,y2 attributes from which line length can be
          * determined and lineToMillimetres populated.
          */
-        void readLine (xml_node<>* line_node, const string& layerName);
+        void readLine (rapidxml::xml_node<>* line_node, const std::string& layerName);
 
         /*!
          * Set up the scaling in all BezCurvePaths based on lineToMillimetres. Do this after file
@@ -194,7 +187,7 @@ namespace morph
         /*!
          * A list of paths marking out structures within the neocortex.
          */
-        list<BezCurvePath<float>> enclosedRegions;
+        std::list<BezCurvePath<float>> enclosedRegions;
 
         /*!
          * To hold the scale bar line.
@@ -205,7 +198,7 @@ namespace morph
          * lineToMillimetres.first is the length of the line in the units of the SVG
          * file. lineToMillimeteres.second is the length in mm that the line represents.
          */
-        pair<float, float> lineToMillimetres;
+        std::pair<float, float> lineToMillimetres;
 
         /*!
          * Set to true once a line was found to set lineToMillimetres.
@@ -220,12 +213,12 @@ namespace morph
         /*!
          * Main xml_document object.
          */
-        xml_document<> doc;
+        rapidxml::xml_document<> doc;
 
         /*!
          * the root node pointer.
          */
-        xml_node<>* root_node = static_cast<xml_node<>*>(0);
+        rapidxml::xml_node<>* root_node = static_cast<rapidxml::xml_node<>*>(0);
 
         /*!
          * Records the last command. Used when a string of identical commands needs to be parsed by
@@ -235,5 +228,3 @@ namespace morph
     };
 
 } // namespace morph
-
-#endif // _READCURVES_H_
