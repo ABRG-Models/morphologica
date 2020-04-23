@@ -1,6 +1,7 @@
 #include "Quaternion.h"
-
 using morph::Quaternion;
+#include "Vector3.h"
+using morph::Vector3;
 
 int main()
 {

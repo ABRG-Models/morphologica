@@ -5,20 +5,11 @@
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
 #include "Scale.h"
-using morph::Scale;
 #include <iostream>
-using std::cout;
-using std::endl;
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 #include <algorithm>
-using std::transform;
 #include <functional>
-using std::plus;
-using std::minus;
-using std::multiplies;
 
 namespace morph {
 
@@ -37,9 +28,9 @@ namespace morph {
     {
     public:
         QuiverVisual(GLuint sp,
-                     vector<array<Flt,3>>* _coords,
-                     const array<float, 3> _offset,
-                     const vector<array<Flt,3>>* _quivers,
+                     std::vector<std::array<Flt,3>>* _coords,
+                     const std::array<float, 3> _offset,
+                     const std::vector<std::array<Flt,3>>* _quivers,
                      ColourMapType _cmt,
                      const float _hue = 0.0f) {
             // Set up...
@@ -64,24 +55,24 @@ namespace morph {
             unsigned int nquiv = this->vectorData->size();
 
             if (ncoords != nquiv) {
-                cout << "ncoords != nquiv, return." << endl;
+                std::cout << "ncoords != nquiv, return." << std::endl;
                 return;
             }
 
-            array<Flt, 3> zero3 = {0.0,0.0,0.0};
-            vector<Flt> lengths;
+            std::array<Flt, 3> zero3 = {0.0,0.0,0.0};
+            std::vector<Flt> lengths;
             for (unsigned int i = 0; i < nquiv; ++i) {
                 lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
             }
             // Auto scale the lengths to get a full range of colours for the lengths.
-            vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, 0.0f, 1.0f);
+            std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, 0.0f, 1.0f);
 
             // The indices index
             GLushort idx = 0;
 
-            array<Flt,3> half = {0.5,0.5,0.5};
-            array<Flt, 3> start, end, coords_i, vectorData_i, halfquiv;
-            array<Flt, 3> clr;
+            std::array<Flt,3> half = {0.5,0.5,0.5};
+            std::array<Flt, 3> start, end, coords_i, vectorData_i, halfquiv;
+            std::array<Flt, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
                 coords_i = (*this->dataCoords)[i];
                 vectorData_i = (*this->vectorData)[i];
@@ -89,36 +80,39 @@ namespace morph {
                 if (this->qgoes == QuiverGoes::FromCoord) {
                     start = coords_i;
                     // end = (*this->dataCoords)[i] + (*this->vectorData)[i];
-                    transform (coords_i.begin(), coords_i.end(),
-                               vectorData_i.begin(), end.begin(), plus<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(),
+                                    vectorData_i.begin(), end.begin(), std::plus<Flt>());
 
 
                 } else if (this->qgoes == QuiverGoes::ToCoord) {
                     // start = (*this->dataCoords)[i] - (*this->vectorData)[i];
-                    transform (coords_i.begin(), coords_i.end(),
-                               vectorData_i.begin(), start.begin(), minus<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(),
+                                    vectorData_i.begin(), start.begin(), std::minus<Flt>());
 
                     end = coords_i;
                 } else /* if (this->qgoes == QuiverGoes::OnCoord) */ {
-                    transform (half.begin(), half.end(),
-                               vectorData_i.begin(), halfquiv.begin(), multiplies<Flt>());
+                    std::transform (half.begin(), half.end(),
+                                    vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
                     //start = (*this->dataCoords)[i] - 0.5 * (*this->vectorData)[i];
-                    transform (coords_i.begin(), coords_i.end(),
-                               halfquiv.begin(), start.begin(), minus<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(),
+                                    halfquiv.begin(), start.begin(), std::minus<Flt>());
                     //end = (*this->dataCoords)[i] + 0.5 * (*this->vectorData)[i];
-                    transform (coords_i.begin(), coords_i.end(),
-                               halfquiv.begin(), end.begin(), plus<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(),
+                                    halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
                 // Will need a fixed scale for some visualizations
                 this->computeTube (idx, start, end, clr, clr, lengths[i]/30.0);
                 // Plus sphere or cone:
                 this->computeSphere (idx, coords_i, clr, lengths[i]/10.0);
                 // Compute a tip for the cone.
-                array<Flt, 3> frac = {0.2,0.2,0.2};
-                array<Flt, 3> tip;
-                // Multiply vectorData_i by a fraction and that's the cone end. Note reuse of halfquiv variable
-                transform (frac.begin(), frac.end(), vectorData_i.begin(), halfquiv.begin(), multiplies<Flt>());
-                transform (end.begin(), end.end(), halfquiv.begin(), tip.begin(), plus<Flt>());
+                std::array<Flt, 3> frac = {0.2,0.2,0.2};
+                std::array<Flt, 3> tip;
+                // Multiply vectorData_i by a fraction and that's the cone end. Note
+                // reuse of halfquiv variable
+                std::transform (frac.begin(), frac.end(),
+                                vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
+                std::transform (end.begin(), end.end(),
+                                halfquiv.begin(), tip.begin(), std::plus<Flt>());
                 this->computeCone (idx, end, tip, -0.1f, clr, lengths[i]/10.0);
             }
         }

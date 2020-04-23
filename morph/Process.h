@@ -10,9 +10,7 @@
  *
  * Author: Seb James <seb.james@sheffield.ac.uk>
  */
-
-#ifndef _PROCESS_H_
-#define _PROCESS_H_
+#pragma once
 
 #include <list>
 #include <vector>
@@ -304,5 +302,3 @@ namespace morph {
         };
 
 } // namespace morph
-
-#endif // _PROCESS_H_

@@ -1,9 +1,7 @@
-#ifndef _MATHCONST_H_
-#define _MATHCONST_H_
-
 /*!
  * Mathematical constants in the morph namespace.
  */
+#pragma once
 
 namespace morph {
 
@@ -27,5 +25,3 @@ namespace morph {
     const float TWO_PI_F = 6.28318530717959;
     const double TWO_PI_D = 6.28318530717959;
 }
-
-#endif // MATHCONST

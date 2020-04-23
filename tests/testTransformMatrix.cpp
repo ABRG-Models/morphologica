@@ -1,5 +1,10 @@
 #include "TransformMatrix.h"
 using morph::TransformMatrix;
+#include <iostream>
+using std::cout;
+using std::endl;
+#include <array>
+using std::array;
 
 void setMatrixSequence (TransformMatrix<float>& tm)
 {

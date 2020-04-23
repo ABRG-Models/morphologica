@@ -1,38 +1,19 @@
-#ifndef _RD_BASE_H_
-#define _RD_BASE_H_
+#pragma once
 
 #include <morph/tools.h>
 #include <morph/ReadCurves.h>
 #include <morph/HexGrid.h>
 #include <morph/HdfData.h>
-#include <iostream>
 #include <sstream>
 #include <vector>
 #include <array>
-#include <map>
-#include <utility>
 #include <iomanip>
 #include <cmath>
 #include <hdf5.h>
 #include <unistd.h>
-
 #define DEBUG 1
 #define DBGSTREAM std::cout
 #include <morph/MorphDbg.h>
-
-using std::vector;
-using std::array;
-using std::map;
-using std::pair;
-using std::string;
-using std::stringstream;
-using std::cerr;
-using std::endl;
-using std::runtime_error;
-
-using morph::HexGrid;
-using morph::ReadCurves;
-using morph::HdfData;
 
 /*!
  * Macros for testing neighbours. The step along for neighbours on the
@@ -183,12 +164,12 @@ namespace morph {
         /*!
          * The logpath for this model. Used when saving data out.
          */
-        string logpath = "logs";
+        std::string logpath = "logs";
 
         /*!
          * Setter which attempts to ensure the path exists.
          */
-        void setLogpath (const string p) {
+        void setLogpath (const std::string p) {
             this->logpath = p;
             // Ensure log directory exists
             morph::Tools::createDir (this->logpath);
@@ -198,7 +179,7 @@ namespace morph {
          * Make the svgpath something that can be set by client code. If empty, then
          * set an elliptical boundary
          */
-        string svgpath = "./trial.svg";
+        std::string svgpath = "./trial.svg";
 
         /*!
          * Ellipse a and b values. Used to specify a boundary only if svgpath is empty.
@@ -228,24 +209,24 @@ namespace morph {
          * different RD variables.
          */
         //@{
-        void resize_vector_vector (vector<vector<Flt> >& vv, unsigned int N) {
+        void resize_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N) {
             vv.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 vv[i].resize (this->nhex, 0.0);
             }
         }
-        void zero_vector_vector (vector<vector<Flt> >& vv, unsigned int N) {
+        void zero_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N) {
             for (unsigned int i=0; i<N; ++i) {
                 vv[i].assign (this->nhex, 0.0);
             }
         }
-        void resize_vector_vector (vector<vector<Flt> >& vv, unsigned int N, unsigned int M) {
+        void resize_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, unsigned int M) {
             vv.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 vv[i].resize (M, 0.0);
             }
         }
-        void zero_vector_vector (vector<vector<Flt> >& vv, unsigned int N, unsigned int M) {
+        void zero_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, unsigned int M) {
             for (unsigned int i=0; i<N; ++i) {
                 vv[i].assign (M, 0.0);
             }
@@ -256,7 +237,7 @@ namespace morph {
          * Resize/zero M vectors of N vectors of nhex Flts.
          */
         //@{
-        void resize_vector_vector_vector (vector<vector<vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
+        void resize_vector_vector_vector (std::vector<std::vector<std::vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
             vvv.resize (M);
             for (unsigned int m=0; m<M; ++m) {
                 vvv[m].resize (N);
@@ -265,7 +246,7 @@ namespace morph {
                 }
             }
         }
-        void zero_vector_vector_vector (vector<vector<vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
+        void zero_vector_vector_vector (std::vector<std::vector<std::vector<Flt> > >& vvv, unsigned int N, unsigned int M) {
             for (unsigned int m=0; m<M; ++m) {
                 for (unsigned int i=0; i<N; ++i) {
                     vvv[m][i].assign (M, 0.0);
@@ -278,10 +259,10 @@ namespace morph {
          * Resize/zero a variable that'll be nhex elements long
          */
         //@{
-        void resize_vector_variable (vector<Flt>& v) {
+        void resize_vector_variable (std::vector<Flt>& v) {
             v.resize (this->nhex, 0.0);
         }
-        void zero_vector_variable (vector<Flt>& v) {
+        void zero_vector_variable (std::vector<Flt>& v) {
             v.assign (this->nhex, 0.0);
         }
         //@}
@@ -290,10 +271,10 @@ namespace morph {
          * Resize/zero a parameter that'll be N elements long
          */
         //@{
-        void resize_vector_param (vector<Flt>& p, unsigned int N) {
+        void resize_vector_param (std::vector<Flt>& p, unsigned int N) {
             p.resize (N, 0.0);
         }
-        void zero_vector_param (vector<Flt>& p, unsigned int N) {
+        void zero_vector_param (std::vector<Flt>& p, unsigned int N) {
             p.assign (N, 0.0);
         }
         //@}
@@ -303,13 +284,13 @@ namespace morph {
          * elements long
          */
         //@{
-        void resize_vector_vector_param (vector<vector<Flt> >& vp, unsigned int N, unsigned int M) {
+        void resize_vector_vector_param (std::vector<std::vector<Flt> >& vp, unsigned int N, unsigned int M) {
             vp.resize (M);
             for (unsigned int m = 0; m<M; ++m) {
                 vp[m].resize (N, 0.0);
             }
         }
-        void zero_vector_vector_param (vector<vector<Flt> >& vp, unsigned int N, unsigned int M) {
+        void zero_vector_vector_param (std::vector<std::vector<Flt> >& vp, unsigned int N, unsigned int M) {
             for (unsigned int m = 0; m<M; ++m) {
                 vp[m].assign (N, 0.0);
             }
@@ -320,11 +301,11 @@ namespace morph {
          * Resize/zero a gradient field
          */
         //@{
-        void resize_gradient_field (array<vector<Flt>, 2>& g) {
+        void resize_gradient_field (std::array<std::vector<Flt>, 2>& g) {
             g[0].resize (this->nhex, 0.0);
             g[1].resize (this->nhex, 0.0);
         }
-        void zero_gradient_field (array<vector<Flt>, 2>& g) {
+        void zero_gradient_field (std::array<std::vector<Flt>, 2>& g) {
             g[0].assign (this->nhex, 0.0);
             g[1].assign (this->nhex, 0.0);
         }
@@ -336,13 +317,13 @@ namespace morph {
          * field.
          */
         //@{
-        void resize_vector_array_vector (vector<array<vector<Flt>, 2> >& vav, unsigned int N) {
+        void resize_vector_array_vector (std::vector<std::array<std::vector<Flt>, 2> >& vav, unsigned int N) {
             vav.resize (N);
             for (unsigned int n = 0; n<N; ++n) {
                 this->resize_gradient_field (vav[n]);
             }
         }
-        void zero_vector_array_vector (vector<array<vector<Flt>, 2> >& vav, unsigned int N) {
+        void zero_vector_array_vector (std::vector<std::array<std::vector<Flt>, 2> >& vav, unsigned int N) {
             for (unsigned int i = 0; i<N; ++i) {
                 this->zero_gradient_field (vav[i]);
             }
@@ -355,7 +336,7 @@ namespace morph {
          * vector field.
          */
         //@{
-        void resize_vector_vector_array_vector (vector<vector<array<vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
+        void resize_vector_vector_array_vector (std::vector<std::vector<std::array<std::vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
             vvav.resize (M);
             for (unsigned int j = 0; j<M; ++j) {
                 vvav[j].resize (N);
@@ -364,7 +345,7 @@ namespace morph {
                 }
             }
         }
-        void zero_vector_vector_array_vector (vector<vector<array<vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
+        void zero_vector_vector_array_vector (std::vector<std::vector<std::array<std::vector<Flt>, 2> > >& vvav, unsigned int N, unsigned int M) {
             for (unsigned int j = 0; j<M; ++j) {
                 for (unsigned int i = 0; i<N; ++i) {
                     this->zero_gradient_field (vvav[j][i]);
@@ -380,7 +361,7 @@ namespace morph {
          * I apply a sigmoid to the boundary hexes, so that the noise
          * drops away towards the edge of the domain.
          */
-        void noiseify_vector_variable (vector<Flt>& v, Flt offset, Flt gain) {
+        void noiseify_vector_variable (std::vector<Flt>& v, Flt offset, Flt gain) {
             for (auto h : this->hg->hexen) {
                 // boundarySigmoid. Jumps sharply (100, larger is
                 // sharper) over length scale 0.05 to 1. So if
@@ -497,7 +478,7 @@ namespace morph {
          * Save position information
          */
         void savePositions (void) {
-            stringstream fname;
+            std::stringstream fname;
             fname << this->logpath << "/positions.h5";
             HdfData data(fname.str());
             data.add_val ("/area", this->hg->num() * this->hg->getHexArea());
@@ -514,8 +495,8 @@ namespace morph {
             dat.add_contained_vals ("/y", this->hg->d_y);
 
             // Add the neighbour information too.
-            vector<float> x_ne = this->hg->d_x;
-            vector<float> y_ne = this->hg->d_y;
+            std::vector<float> x_ne = this->hg->d_x;
+            std::vector<float> y_ne = this->hg->d_y;
             unsigned int count = 0;
             for (int i : this->hg->d_ne) {
                 if (i >= 0) {
@@ -527,8 +508,8 @@ namespace morph {
             dat.add_contained_vals ("/x_ne", x_ne);
             dat.add_contained_vals ("/y_ne", y_ne);
 
-            vector<float> x_nne = this->hg->d_x;
-            vector<float> y_nne = this->hg->d_y;
+            std::vector<float> x_nne = this->hg->d_x;
+            std::vector<float> y_nne = this->hg->d_y;
             count = 0;
             for (int i : this->hg->d_nne) {
                 if (i >= 0) {
@@ -540,8 +521,8 @@ namespace morph {
             dat.add_contained_vals ("/x_nne", x_nne);
             dat.add_contained_vals ("/y_nne", y_nne);
 
-            vector<float> x_nnw = this->hg->d_x;
-            vector<float> y_nnw = this->hg->d_y;
+            std::vector<float> x_nnw = this->hg->d_x;
+            std::vector<float> y_nnw = this->hg->d_y;
             count = 0;
             for (int i : this->hg->d_nnw) {
                 if (i >= 0) {
@@ -553,8 +534,8 @@ namespace morph {
             dat.add_contained_vals ("/x_nnw", x_nnw);
             dat.add_contained_vals ("/y_nnw", y_nnw);
 
-            vector<float> x_nw = this->hg->d_x;
-            vector<float> y_nw = this->hg->d_y;
+            std::vector<float> x_nw = this->hg->d_x;
+            std::vector<float> y_nw = this->hg->d_y;
             count = 0;
             for (int i : this->hg->d_nw) {
                 if (i >= 0) {
@@ -566,8 +547,8 @@ namespace morph {
             dat.add_contained_vals ("/x_nw", x_nw);
             dat.add_contained_vals ("/y_nw", y_nw);
 
-            vector<float> x_nsw = this->hg->d_x;
-            vector<float> y_nsw = this->hg->d_y;
+            std::vector<float> x_nsw = this->hg->d_x;
+            std::vector<float> y_nsw = this->hg->d_y;
             count = 0;
             for (int i : this->hg->d_nsw) {
                 if (i >= 0) {
@@ -579,8 +560,8 @@ namespace morph {
             dat.add_contained_vals ("/x_nsw", x_nsw);
             dat.add_contained_vals ("/y_nsw", y_nsw);
 
-            vector<float> x_nse = this->hg->d_x;
-            vector<float> y_nse = this->hg->d_y;
+            std::vector<float> x_nse = this->hg->d_x;
+            std::vector<float> y_nse = this->hg->d_y;
             count = 0;
             for (int i : this->hg->d_nse) {
                 if (i >= 0) {
@@ -605,7 +586,7 @@ namespace morph {
         /*!
          * Normalise the vector of Flts f.
          */
-        void normalise (vector<Flt>& f) {
+        void normalise (std::vector<Flt>& f) {
 
             Flt maxf = -1e7;
             Flt minf = +1e7;
@@ -617,7 +598,7 @@ namespace morph {
             }
             Flt scalef = 1.0 /(maxf - minf);
 
-            vector<vector<Flt> > norm_a;
+            std::vector<std::vector<Flt> > norm_a;
             this->resize_vector_vector (norm_a);
             for (unsigned int fi = 0; fi < f.size(); ++fi) {
                 f[fi] = fmin (fmax (((f[fi]) - minf) * scalef, 0.0), 1.0);
@@ -635,7 +616,7 @@ namespace morph {
          * For each Hex, work out the gradient in x and y directions
          * using whatever neighbours can contribute to an estimate.
          */
-        void spacegrad2D (vector<Flt>& f, array<vector<Flt>, 2>& gradf) {
+        void spacegrad2D (std::vector<Flt>& f, std::array<std::vector<Flt>, 2>& gradf) {
 
             // Note - East is positive x; North is positive y.
 #pragma omp parallel for schedule(static)
@@ -677,7 +658,7 @@ namespace morph {
         /*!
          * Compute laplacian of scalar field F, with result placed in lapF.
          */
-        virtual void compute_laplace (const vector<Flt>& F, vector<Flt>& lapF) {
+        virtual void compute_laplace (const std::vector<Flt>& F, std::vector<Flt>& lapF) {
 
             Flt norm  = (Flt)2 / (Flt)(3.0 * this->d * this->d);
 
@@ -726,5 +707,3 @@ namespace morph {
     }; // RD_Base
 
 } // namespace morph
-
-#endif // _RD_BASE_H_

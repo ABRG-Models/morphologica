@@ -4,8 +4,12 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+#include <string>
+using std::string;
 #include <vector>
 using std::vector;
+#include <array>
+using std::array;
 #include <cstring>
 using std::strlen;
 #include "Quaternion.h"

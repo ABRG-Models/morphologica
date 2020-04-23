@@ -2,24 +2,12 @@
  * A Quaternion class for computing rotations in the visualization
  * classes (morph::Visual, morph::HexGridVisual, etc).
  */
-#ifndef _QUATERNION_H_
-#define _QUATERNION_H_
+#pragma once
 
 #include "Vector3.h"
-using morph::Vector3;
-
 #include <cmath>
-using std::abs;
-using std::sqrt;
-using std::cos;
-using std::sin;
-
 #include <array>
-using std::array;
-
 #include <iostream>
-using std::cout;
-using std::endl;
 
 namespace morph {
 
@@ -56,7 +44,7 @@ namespace morph {
 
         //! An "output to stdout" function
         void output (void) const {
-            cout << "w,x,y,z: " << w << "," << x << "," << y << "," << z << endl;
+            std::cout << "w,x,y,z: " << w << "," << x << "," << y << "," << z << std::endl;
         }
 
         /*!
@@ -65,7 +53,7 @@ namespace morph {
          * significantly different from 1.
          */
         void renormalize (void) {
-            Flt oneovermag = 1.0 / sqrt (w*w + x*x + y*y + z*z);
+            Flt oneovermag = 1.0 / std::sqrt (w*w + x*x + y*y + z*z);
             this->w *= oneovermag;
             this->x *= oneovermag;
             this->y *= oneovermag;
@@ -84,7 +72,7 @@ namespace morph {
         bool checkunit (void) {
             bool rtn = true;
             Flt metric = 1.0 - (w*w + x*x + y*y + z*z);
-            if (abs(metric) > morph::Quaternion<Flt>::unitThresh) {
+            if (std::abs(metric) > morph::Quaternion<Flt>::unitThresh) {
                 rtn = false;
             }
             return rtn;
@@ -96,8 +84,8 @@ namespace morph {
         void initFromAxisAngle (const Vector3<Flt>& axis, const Flt& angle) {
 
             Flt a = piOver360 * angle; // angle/2 converted to rads
-            Flt s = sin(a);
-            Flt c = cos(a);
+            Flt s = std::sin(a);
+            Flt c = std::cos(a);
             Vector3<Flt> ax = axis;
             ax.renormalize();
 
@@ -171,15 +159,15 @@ namespace morph {
         //@{
         void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle) {
             Flt halfangle = angle*0.5;
-            Flt cosHalf = cos (halfangle);
-            Flt sinHalf = sin (halfangle);
+            Flt cosHalf = std::cos (halfangle);
+            Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
             this->premultiply (local);
         }
-        void rotate (const array<Flt, 3>& axis, const Flt angle) {
+        void rotate (const std::array<Flt, 3>& axis, const Flt angle) {
             Flt halfangle = angle*0.5;
-            Flt cosHalf = cos (halfangle);
-            Flt sinHalf = sin (halfangle);
+            Flt cosHalf = std::cos (halfangle);
+            Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
             this->premultiply (local);
         }
@@ -198,13 +186,13 @@ namespace morph {
          *  3  7 11 15
          */
         //@{
-        array<Flt, 16> rotationMatrix (void) const {
-            array<Flt, 16> mat;
+        std::array<Flt, 16> rotationMatrix (void) const {
+            std::array<Flt, 16> mat;
             this->rotationMatrix (mat);
             return mat;
         }
 
-        void rotationMatrix (array<Flt, 16>& mat) const {
+        void rotationMatrix (std::array<Flt, 16>& mat) const {
             mat[0] = w*w + x*x - y*y - z*z;
             mat[1] = 2*x*y + 2*w*z;
             mat[2] = 2*x*z - 2*w*y;
@@ -231,13 +219,13 @@ namespace morph {
          * Obtain rotation matrix assuming this IS a unit Quaternion
          */
         //@{
-        array<Flt, 16> unitRotationMatrix (void) const {
-            array<Flt, 16> mat;
+        std::array<Flt, 16> unitRotationMatrix (void) const {
+            std::array<Flt, 16> mat;
             this->unitRotationMatrix (mat);
             return mat;
         }
 
-        void unitRotationMatrix (array<Flt, 16>& mat) const {
+        void unitRotationMatrix (std::array<Flt, 16>& mat) const {
             mat[0] = 1.0 - 2*y*y - 2*z*z;
             mat[1] = 2*x*y + 2*w*z;
             mat[2] = 2*x*z - 2*w*y;
@@ -262,5 +250,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _QUATERNION_H_

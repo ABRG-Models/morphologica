@@ -177,7 +177,7 @@ namespace morph {
         //! Setter for zDefault
         void setZDefault (float f) {
             if (f>0.0f) {
-                cout << "WARNING setZDefault(): Normally, the default z value is negative." << endl;
+                std::cout << "WARNING setZDefault(): Normally, the default z value is negative." << std::endl;
             }
             this->zDefault = f;
             this->scenetrans.z = f;

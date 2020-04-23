@@ -5,23 +5,10 @@
 #define _VECTOR4_H_
 
 #include <cmath>
-using std::abs;
-using std::sqrt;
-using std::cos;
-using std::sin;
-
 #include <array>
-using std::array;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <string>
-using std::string;
 #include <sstream>
-using std::stringstream;
-
 #include "tools.h"
 
 namespace morph {
@@ -60,7 +47,7 @@ namespace morph {
             , z(_z)
             , w(_w) {}
 
-        Vector4 (const array<Flt, 4> v)
+        Vector4 (const std::array<Flt, 4> v)
             : x(v[0])
             , y(v[1])
             , z(v[2])
@@ -96,16 +83,16 @@ namespace morph {
         }
 
         //! Return the vector as an array
-        array<Flt, 4> asArray (void) const {
-            array<Flt, 4> v = {x, y, z, w};
+        std::array<Flt, 4> asArray (void) const {
+            std::array<Flt, 4> v = {x, y, z, w};
             return v;
         }
 
         void output (void) const {
-            cout << "Vector4(" << x << "," << y << "," << z << "," << w << ")" << endl;
+            std::cout << "Vector4(" << x << "," << y << "," << z << "," << w << ")" << std::endl;
         }
-        string asString (void) const {
-            stringstream ss;
+        std::string asString (void) const {
+            std::stringstream ss;
             ss << "(" << x << "," << y << "," << z << "," << w << ")";
             return ss.str();
         }
@@ -114,7 +101,7 @@ namespace morph {
          * Renormalize the vector to 1
          */
         void renormalize (void) {
-            Flt denom = sqrt (x*x + y*y + z*z + w*w);
+            Flt denom = std::sqrt (x*x + y*y + z*z + w*w);
             if (denom != static_cast<Flt>(0.0)) {
                 Flt oneovermag = 1.0 / denom;
                 this->x *= oneovermag;
@@ -140,7 +127,7 @@ namespace morph {
         bool checkunit (void) {
             bool rtn = true;
             Flt metric = 1.0 - (x*x + y*y + z*z + w*w);
-            if (abs(metric) > morph::Vector4<Flt>::unitThresh) {
+            if (std::abs(metric) > morph::Vector4<Flt>::unitThresh) {
                 rtn = false;
             }
             return rtn;
@@ -148,7 +135,7 @@ namespace morph {
 
         //! Return the length of the vector
         Flt length (void) const {
-            Flt len = sqrt (x*x + y*y + z*z + w*w);
+            Flt len = std::sqrt (x*x + y*y + z*z + w*w);
             return len;
         }
 
@@ -159,7 +146,7 @@ namespace morph {
             this->z = other.z;
             this->w = other.w;
         }
-        void operator= (const array<Flt, 4>& other) {
+        void operator= (const std::array<Flt, 4>& other) {
             this->x = other[0];
             this->y = other[1];
             this->z = other[2];

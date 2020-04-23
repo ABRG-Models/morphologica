@@ -1,9 +1,10 @@
 /*
  * Utility functions
+ *
+ * \author Seb James
+ * \author Stuart Wilson
  */
-
-#ifndef _TOOLS_H_
-#define _TOOLS_H_
+#pragma once
 
 #include <vector>
 #include <array>
@@ -948,5 +949,3 @@ morph::Tools::splitStringWithEncs (const ST& s,
     return theVec;
 }
 //@}
-
-#endif // _TOOLS_H_

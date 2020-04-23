@@ -1,5 +1,8 @@
 #include "Vector3.h"
 using morph::Vector3;
+#include <iostream>
+using std::cout;
+using std::endl;
 
 int main()
 {

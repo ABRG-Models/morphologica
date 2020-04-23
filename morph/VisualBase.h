@@ -1,5 +1,4 @@
-#ifndef _VISUALBASE_H_
-#define _VISUALBASE_H_
+#pragma once
 
 #include <GLFW/glfw3.h>
 
@@ -63,5 +62,3 @@ namespace morph {
 
 // Global static event_handling instance - will provide access to our Visual instance.
 morph::VisualBase* morph::VisualBase::event_handling;
-
-#endif // _VISUALBASE_H_

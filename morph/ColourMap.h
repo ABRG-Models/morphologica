@@ -49,8 +49,8 @@ namespace morph {
 
     public:
         //! Convert the scalar datum into an RGB (or BGR) colour
-        array<float, 3> convert (Flt datum) {
-            array<float, 3> c = {0.0f, 0.0f, 0.0f};
+        std::array<float, 3> convert (Flt datum) {
+            std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
             switch (this->type) {
             case ColourMapType::Jet:
             {
@@ -200,7 +200,7 @@ namespace morph {
             this->val = v;
         }
 
-        void setHSV (const array<float,3> hsv) {
+        void setHSV (const std::array<float,3> hsv) {
             this->setHSV (hsv[0],hsv[1],hsv[2]);
         }
 
@@ -214,7 +214,7 @@ namespace morph {
 #endif
 
         //! Get the hue, in its most saturated form
-        array<float, 3> getHueRGB (void) {
+        std::array<float, 3> getHueRGB (void) {
             return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f);
         }
 
@@ -226,7 +226,7 @@ namespace morph {
          *
          * @returns RGB value in jet colormap
          */
-        static array<float,3> jetcolour (Flt datum) {
+        static std::array<float,3> jetcolour (Flt datum) {
             float color_table[][3] = {
                 {0.0, 0.0, 0.5}, // #00007F
                 {0.0, 0.0, 1.0}, // blue
@@ -238,7 +238,7 @@ namespace morph {
                 {1.0, 0.0, 0.0}, // red
                 {0.5, 0.0, 0.0}, // #7F0000
             };
-            array<float,3> col = {0.0f, 0.0f, 0.0f};
+            std::array<float,3> col = {0.0f, 0.0f, 0.0f};
             float ivl = 1.0/8.0;
             for (int i=0; i<8; i++) {
                 Flt llim = (i==0) ? static_cast<Flt>(0.0) : (Flt)i/static_cast<Flt>(8.0);
@@ -257,8 +257,8 @@ namespace morph {
         /*!
          * Convert hue, saturation, value to RGB. single precision arguments.
          */
-        static array<float,3> hsv2rgb (float h, float s, float v) {
-            array<float, 3> rgb = {0.0f, 0.0f, 0.0f};
+        static std::array<float,3> hsv2rgb (float h, float s, float v) {
+            std::array<float, 3> rgb = {0.0f, 0.0f, 0.0f};
             int i = floor(h * 6);
             float f = h * 6. - i;
             float p = v * (1. - s);
@@ -282,7 +282,7 @@ namespace morph {
          *
          * @returns RGB value in a mono-colour map, with main colour this->hue;
          */
-        array<float,3> monochrome (Flt datum) {
+        std::array<float,3> monochrome (Flt datum) {
             return ColourMap::hsv2rgb (this->hue, static_cast<float>(datum), 1.0f);
         }
 
@@ -292,7 +292,7 @@ namespace morph {
          * @returns Generate RGB value for which all entries are equal and the
          * brightness gives the map value.
          */
-        array<float,3> greyscale (Flt datum) {
+        std::array<float,3> greyscale (Flt datum) {
             return ColourMap::hsv2rgb (this->hue, 0.0f, static_cast<float>(datum));
             // or
             //return {datum, datum, datum}; // assuming 0 <= datum <= 1
@@ -301,67 +301,67 @@ namespace morph {
         /*!
          * A colour map which is a rainbow through the colour space, varying the hue.
          */
-        array<float,3> rainbow (Flt datum) {
+        std::array<float,3> rainbow (Flt datum) {
             return ColourMap::hsv2rgb ((float)datum, 1.0f, 1.0f);
         }
 
         /*!
          * A copy of matplotlib's magma colourmap
          */
-        array<float,3> magma (Flt datum) {
+        std::array<float,3> magma (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_magma_len-1))));
-            array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
+            std::array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
             return c;
         }
 
         /*!
          * A copy of matplotlib's inferno colourmap
          */
-        array<float,3> inferno (Flt datum) {
+        std::array<float,3> inferno (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_inferno_len-1))));
-            array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
+            std::array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
             return c;
         }
 
         /*!
          * A copy of matplotlib's plasma colourmap
          */
-        array<float,3> plasma (Flt datum) {
+        std::array<float,3> plasma (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_plasma_len-1))));
-            array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
+            std::array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
             return c;
         }
 
         /*!
          * A copy of matplotlib's viridis colourmap
          */
-        array<float,3> viridis (Flt datum) {
+        std::array<float,3> viridis (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_viridis_len-1))));
-            array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
+            std::array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
             return c;
         }
 
         /*!
          * A copy of matplotlib's cividis colourmap
          */
-        array<float,3> cividis (Flt datum) {
+        std::array<float,3> cividis (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_cividis_len-1))));
-            array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
+            std::array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
             return c;
         }
 
         /*!
          * A copy of matplotlib's twilight colourmap
          */
-        array<float,3> twilight (Flt datum) {
+        std::array<float,3> twilight (Flt datum) {
             // let's just try the closest colour from the map, with no interpolation
             size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_twilight_len-1))));
-            array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
+            std::array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
             return c;
         }
     };

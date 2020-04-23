@@ -5,18 +5,10 @@
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
 #include "Scale.h"
-using morph::Scale;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 #include <stdexcept>
-using std::runtime_error;
 
 namespace morph {
 
@@ -25,9 +17,9 @@ namespace morph {
     {
     public:
         QuadsVisual(GLuint sp,
-                    const vector<array<Flt,12>>* _quads,
-                    const array<float, 3> _offset,
-                    const vector<Flt>* _data,
+                    const std::vector<std::array<Flt,12>>* _quads,
+                    const std::array<float, 3> _offset,
+                    const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f) {
@@ -44,7 +36,7 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new vector<array<float, 3>>;
+            this->dataCoords = new std::vector<std::array<float, 3>>;
             this->dataCoords->resize (this->quads->size());
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
@@ -68,8 +60,8 @@ namespace morph {
             delete this->dataCoords;
         }
 
-        virtual void updateCoords (vector<array<Flt, 3>>* _coords) {
-            throw runtime_error ("This won't work.");
+        virtual void updateCoords (std::vector<std::array<Flt, 3>>* _coords) {
+            throw std::runtime_error ("This won't work.");
         }
 
         //! Initialize the vertices that will represent the Quads.
@@ -79,24 +71,24 @@ namespace morph {
             unsigned int ndata = this->scalarData->size();
 
             if (nquads != ndata) {
-                cout << "nquads != ndata, return." << endl;
+                std::cout << "nquads != ndata, return." << std::endl;
                 return;
             }
 
-            vector<Flt> dcopy = *(this->scalarData);
+            std::vector<Flt> dcopy = *(this->scalarData);
             this->colourScale.do_autoscale = true;
             this->colourScale.transform ((*this->scalarData), dcopy);
 
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
-                array<float, 12> quad = (*this->quads)[qi];
+                std::array<float, 12> quad = (*this->quads)[qi];
                 this->vertex_push (quad[0], quad[1], quad[2], this->vertexPositions);   //1
                 this->vertex_push (quad[3], quad[4], quad[5], this->vertexPositions);   //2
                 this->vertex_push (quad[6], quad[7], quad[8], this->vertexPositions);   //3
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
 
                 // All same colours
-                array<float, 3> clr = this->cm.convert(dcopy[qi]);
+                std::array<float, 3> clr = this->cm.convert(dcopy[qi]);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
@@ -127,7 +119,7 @@ namespace morph {
         //! coordinates that define boxes (and we'll vis them as triangles). Note that
         //! the coordinates of the locations of the data are the centroids of each
         //! quad.
-        const vector<array<Flt,12>>* quads;
+        const std::vector<std::array<Flt,12>>* quads;
     };
 
 } // namespace morph

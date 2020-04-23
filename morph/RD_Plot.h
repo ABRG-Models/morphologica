@@ -17,12 +17,6 @@
 #include <array>
 #include <list>
 
-using std::vector;
-using std::array;
-using std::list;
-using morph::HexGrid;
-using morph::Gdisplay;
-
 namespace morph {
 
     /*!
@@ -48,7 +42,7 @@ namespace morph {
             this->rot = {3, r};
         }
 
-        RD_Plot (vector<double>& f, vector<double>& e, vector<double>& r) {
+        RD_Plot (std::vector<double>& f, std::vector<double>& e, std::vector<double>& r) {
             this->fix = f;
             this->eye = e;
             this->rot = r;
@@ -64,9 +58,9 @@ namespace morph {
          * Used by plotting functions
          */
         //@{
-        alignas(8) vector<double> fix = {3, 0.0};
-        alignas(8) vector<double> eye = {3, 0.0};
-        alignas(8) vector<double> rot = {3, 0.0};
+        alignas(8) std::vector<double> fix = {3, 0.0};
+        alignas(8) std::vector<double> eye = {3, 0.0};
+        alignas(8) std::vector<double> rot = {3, 0.0};
         //@}
 
         /*!
@@ -74,10 +68,10 @@ namespace morph {
          */
         void scalarfields (Gdisplay& disp,
                            HexGrid* hg,
-                           vector<Flt>& f,
+                           std::vector<Flt>& f,
                            Flt mina = +1e7,
                            Flt maxa = -1e7) {
-            vector<vector<Flt> > vf;
+            std::vector<std::vector<Flt> > vf;
             vf.push_back (f);
             this->scalarfields (disp, hg, vf, mina, maxa);
         }
@@ -86,11 +80,11 @@ namespace morph {
          * Take the first element of the array and create a
          * vector<vector<Flt> > to plot
          */
-        vector<vector<Flt> > separateVectorField (vector<array<vector<Flt>, 2> >& f,
-                                                  unsigned int arrayIdx) {
-            vector<vector<Flt> > vf;
-            for (array<vector<Flt>, 2> fia : f) {
-                vector<Flt> tmpv = fia[arrayIdx];
+        std::vector<std::vector<Flt> > separateVectorField (std::vector<std::array<std::vector<Flt>, 2> >& f,
+                                                            unsigned int arrayIdx) {
+            std::vector<std::vector<Flt> > vf;
+            for (std::array<std::vector<Flt>, 2> fia : f) {
+                std::vector<Flt> tmpv = fia[arrayIdx];
                 vf.push_back (tmpv);
             }
             return vf;
@@ -109,7 +103,7 @@ namespace morph {
          */
         void scalarfields (Gdisplay& disp,
                            HexGrid* hg,
-                           vector<vector<Flt> >& f,
+                           std::vector<std::vector<Flt> >& f,
                            Flt mina = +1e7, Flt maxa = -1e7, Flt overallOffset = 0.0) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
@@ -131,7 +125,7 @@ namespace morph {
             Flt scalea = 1.0 / (maxa-mina);
 
             // Determine a colour from min, max and current value
-            vector<vector<Flt> > norm_a;
+            std::vector<std::vector<Flt> > norm_a;
             norm_a.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_a[i].resize (nhex, 0.0);
@@ -149,7 +143,7 @@ namespace morph {
 
             // Need to correctly apply N/2 depending on whether N is even or odd.
             float w = hgwidth+(hgwidth/20.0f);
-            array<float,3> offset = { 0.0f , 0.0f, 0.0f };
+            std::array<float,3> offset = { 0.0f , 0.0f, 0.0f };
             float half_minus_half_N = 0.5f - ((float)N/2.0f) + overallOffset;
             for (unsigned int i = 0; i<N; ++i) {
                 offset[0] = (half_minus_half_N + (float)i) * w;
@@ -157,7 +151,7 @@ namespace morph {
                 for (auto h : hg->hexen) {
 
                     // Colour can be single colour or red through to blue.
-                    array<float,3> cl_a = {{0,0,0}};
+                    std::array<float,3> cl_a = {{0,0,0}};
                     if (this->scalarFieldsSingleColour == true) {
                         if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
                             cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
@@ -175,7 +169,7 @@ namespace morph {
 
         void scalarfields_noreset (Gdisplay& disp,
                                    HexGrid* hg,
-                                   vector<vector<Flt> >& f,
+                                   std::vector<std::vector<Flt> >& f,
                                    Flt mina = +1e7, Flt maxa = -1e7,
                                    Flt hOffset = 0.0, Flt vOffset = 0.0, Flt spacescale = 1.0) {
 
@@ -196,7 +190,7 @@ namespace morph {
             Flt scalea = 1.0 / (maxa-mina);
 
             // Determine a colour from min, max and current value
-            vector<vector<Flt> > norm_a;
+            std::vector<std::vector<Flt> > norm_a;
             norm_a.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_a[i].resize (nhex, 0.0);
@@ -214,14 +208,14 @@ namespace morph {
 
             // Need to correctly apply N/2 depending on whether N is even or odd.
             float w = (hgwidth + (hgwidth*0.05f)) * spacescale;
-            array<float,3> offset = { 0.0f , 0.0f, 0.0f };
+            std::array<float,3> offset = { 0.0f , 0.0f, 0.0f };
             offset[1] = vOffset;
             float half_minus_half_N = 0.5f - ((float)N/2.0f)*w + hOffset;
             for (unsigned int i = 0; i<N; ++i) {
                 offset[0] = (half_minus_half_N + (float)i) * w;
                 // Note: OpenGL isn't thread-safe, so no omp parallel for here.
                 for (auto h : hg->hexen) {
-                    array<float,3> cl_a = {{0,0,0}};
+                    std::array<float,3> cl_a = {{0,0,0}};
                     if (this->scalarFieldsSingleColour == true) {
                         if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
                             cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
@@ -235,7 +229,7 @@ namespace morph {
                     } else {
                         cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
                     }
-                    array<float,3> pn = h.position();
+                    std::array<float,3> pn = h.position();
                     pn[0] *= spacescale;
                     pn[1] *= spacescale;
                     pn[2] *= spacescale;
@@ -247,7 +241,7 @@ namespace morph {
         /*!
          * Plot the contour described by contourHexes, with these hexes coloured in.
          */
-        void plot_contour (Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes) {
+        void plot_contour (Gdisplay& disp, HexGrid* hg, std::vector<std::list<Hex> >& contourHexes) {
             disp.resetDisplay (this->fix, this->eye, this->rot);
             this->add_contour_plot (disp, hg, contourHexes);
             disp.redrawDisplay();
@@ -257,7 +251,7 @@ namespace morph {
          * Plot the contours where the fields f cross threshold. Plot on
          * disp.
          */
-        void plot_contour (morph::Gdisplay& disp, HexGrid* hg, vector<vector<Flt> >& f, Flt threshold) {
+        void plot_contour (morph::Gdisplay& disp, HexGrid* hg, std::vector<std::vector<Flt> >& f, Flt threshold) {
             disp.resetDisplay (this->fix, this->eye, this->rot);
             this->add_contour_plot (disp, hg, f, threshold);
             disp.redrawDisplay();
@@ -268,7 +262,7 @@ namespace morph {
          * AND a scalarfield graph. Next door to each other.
          */
         void plot_contour_and_scalar (Gdisplay& disp, HexGrid* hg,
-                                      vector<list<Hex> >& contourHexes, vector<Flt>& f,
+                                      std::vector<std::list<Hex> >& contourHexes, std::vector<Flt>& f,
                                       Flt hshift = 0.5, Flt hshift2 = 0.2) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
@@ -278,7 +272,7 @@ namespace morph {
 
             this->add_contour_plot (disp, hg, contourHexes, +hshift+hshift2);
 
-            vector<vector<Flt> > vf;
+            std::vector<std::vector<Flt> > vf;
             vf.push_back (f);
             Flt mina = +1e7;
             Flt maxa = -1e7;
@@ -299,8 +293,8 @@ namespace morph {
          * g_hshift, g_vshift: horz vert shifts for the guidance molecules
          */
         void plot_contour_and_scalar_and_guide (Gdisplay& disp, HexGrid* hg,
-                                                vector<list<Hex> >& contourHexes, vector<Flt>& f,
-                                                vector<vector<Flt> >& rho, vector<bool>& onstates,
+                                                std::vector<std::list<Hex> >& contourHexes, std::vector<Flt>& f,
+                                                std::vector<std::vector<Flt> >& rho, std::vector<bool>& onstates,
                                                 Flt hshift, Flt vshift, Flt g_hshift, Flt g_vshift) {
 
             disp.resetDisplay (this->fix, this->eye, this->rot);
@@ -310,7 +304,7 @@ namespace morph {
 
             this->add_contour_plot (disp, hg, contourHexes, +hshift, vshift);
 
-            vector<vector<Flt> > vf;
+            std::vector<std::vector<Flt> > vf;
             vf.push_back (f);
             Flt mina = +1e7;
             Flt maxa = -1e7;
@@ -321,7 +315,7 @@ namespace morph {
             this->scalarfields_noreset (disp, hg, vf, mina, maxa, -hshift, vshift);
 
             // Draw the guidance stuff
-            vector<vector<Flt>> rhocopy = rho;
+            std::vector<std::vector<Flt>> rhocopy = rho;
             for (unsigned int i = 0; i<onstates.size(); ++i) {
                 if (onstates[i] == false) {
                     cout << "zero rhocopy[i="<<i<<"]" << endl;
@@ -343,11 +337,11 @@ namespace morph {
          * Add a contour plot to the Gdisplay @disp for HexGrid hg. The
          * contourHexes are provided in contourHexes.
          */
-        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, vector<list<Hex> >& contourHexes, Flt hOffset = 0.0, Flt vOffset = 0.0) {
+        void add_contour_plot (morph::Gdisplay& disp, HexGrid* hg, std::vector<std::list<Hex> >& contourHexes, Flt hOffset = 0.0, Flt vOffset = 0.0) {
 
             unsigned int N = contourHexes.size();
 
-            array<float,3> offset_ar = {0.0f, 0.0f, 0.0f};
+            std::array<float,3> offset_ar = {0.0f, 0.0f, 0.0f};
             offset_ar[0] += hOffset;
             offset_ar[1] = vOffset;
 
@@ -355,9 +349,9 @@ namespace morph {
             float r = hg->hexen.begin()->getSR();
             for (unsigned int i = 0; i<N; ++i) {
 #ifdef _OLD_
-                array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
+                std::array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
 #else
-                array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
+                std::array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
 #endif
                 for (auto h : contourHexes[i]) {
                     disp.drawHex (h.position(), offset_ar, r, cl_b);
@@ -365,7 +359,7 @@ namespace morph {
             }
 
             // Used both for zero_offset and cl_blk
-            array<float,3> zero_ar = {0.0f, 0.0f, 0.0f};
+            std::array<float,3> zero_ar = {0.0f, 0.0f, 0.0f};
             for (auto h : hg->hexen) {
 #ifdef DEBUG__ // Show a black hex in a known location
                 if (h.ri==-28 && h.gi==-21) {
@@ -399,14 +393,14 @@ namespace morph {
          * Do the work of adding the contours of the fields f to the
          * display disp.
          */
-        void add_contour_plot (Gdisplay& disp, HexGrid* hg, vector<vector<Flt> >& f, Flt threshold) {
+        void add_contour_plot (Gdisplay& disp, HexGrid* hg, std::vector<std::vector<Flt> >& f, Flt threshold) {
 
             unsigned int N = f.size();
             unsigned int nhex = hg->num();
 
             // Copies data to plot out of the model
-            vector<Flt> maxf (N, -1e7);
-            vector<Flt> minf (N, +1e7);
+            std::vector<Flt> maxf (N, -1e7);
+            std::vector<Flt> minf (N, +1e7);
 
             // Determines min and max
             for (auto h : hg->hexen) {
@@ -418,13 +412,13 @@ namespace morph {
                 }
             }
 
-            vector<Flt> scalef (5, 0);
+            std::vector<Flt> scalef (5, 0);
             for (unsigned int i = 0; i<N; ++i) {
                 scalef[i] = 1.0 / (maxf[i]-minf[i]);
             }
 
             // Re-normalize
-            vector<vector<Flt> > norm_f;
+            std::vector<std::vector<Flt> > norm_f;
             norm_f.resize (N);
             for (unsigned int i=0; i<N; ++i) {
                 norm_f[i].resize (nhex, 0.0);
@@ -436,14 +430,14 @@ namespace morph {
             }
 
             // Draw
-            array<float,3> cl_blk = {0.0f, 0.0f, 0.0f};
-            array<float,3> zero_offset = {0.0f, 0.0f, 0.0f};
+            std::array<float,3> cl_blk = {0.0f, 0.0f, 0.0f};
+            std::array<float,3> zero_offset = {0.0f, 0.0f, 0.0f};
 
             for (unsigned int i = 0; i<N; ++i) {
 #ifdef _OLD_
-                array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
+                std::array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
 #else
-                array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
+                std::array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
 #endif
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {

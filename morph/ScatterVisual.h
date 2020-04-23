@@ -1,19 +1,18 @@
+/*!
+ * \file
+ *
+ * \author Seb James
+ * \date 2019
+ */
 #pragma once
 
 #include "GL3/gl3.h"
 #include "tools.h"
 #include "VisualDataModel.h"
 #include "Scale.h"
-using morph::Scale;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 
 namespace morph {
 
@@ -24,9 +23,9 @@ namespace morph {
     {
     public:
         ScatterVisual(GLuint sp,
-                      vector<array<float,3>>* _coords,
-                      const array<float, 3> _offset,
-                      const vector<Flt>* _data,
+                      std::vector<std::array<float,3>>* _coords,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
                       const Scale<Flt>& _scale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
@@ -46,9 +45,9 @@ namespace morph {
         }
 
         ScatterVisual(GLuint sp,
-                      vector<array<float,3>>* _coords,
-                      const array<float, 3> _offset,
-                      const vector<Flt>* _data,
+                      std::vector<std::array<float,3>>* _coords,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
                       const float fr,
                       const Scale<Flt>& _scale,
                       ColourMapType _cmt,
@@ -76,14 +75,14 @@ namespace morph {
             unsigned int ndata = this->scalarData->size();
 
             if (ndata > 0 && ncoords != ndata) {
-                cout << "ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return." << endl;
+                std::cout << "ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return." << std::endl;
                 return;
             }
 
             // Find the minimum distance between points to get a radius? Or just allow
             // client code to set it?
 
-            vector<Flt> dcopy;
+            std::vector<Flt> dcopy;
             if (ndata) {
                 dcopy = *(this->scalarData);
                 this->colourScale.do_autoscale = true;
@@ -95,7 +94,7 @@ namespace morph {
 
             for (unsigned int i = 0; i < ncoords; ++i) {
                 // Scale colour (or use single colour)
-                array<float, 3> clr = this->cm.getHueRGB();
+                std::array<float, 3> clr = this->cm.getHueRGB();
                 if (ndata) {
                     clr = this->cm.convert (dcopy[i]);
                 }

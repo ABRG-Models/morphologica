@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include "Scale.h"
 
 using namespace std;
 using morph::Visual;
@@ -17,6 +18,7 @@ using morph::HexGridVisual;
 using morph::Tools;
 using morph::HexDomainShape;
 using morph::ReadCurves;
+using morph::Scale;
 
 int main()
 {

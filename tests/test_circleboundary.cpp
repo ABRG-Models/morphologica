@@ -17,6 +17,8 @@ using morph::Tools;
 using morph::HexGrid;
 using morph::HexDomainShape;
 #include "ReadCurves.h"
+#include "Scale.h"
+using morph::Scale;
 
 using namespace std;
 

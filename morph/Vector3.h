@@ -5,23 +5,10 @@
 #define _VECTOR3_H_
 
 #include <cmath>
-using std::abs;
-using std::sqrt;
-using std::cos;
-using std::sin;
-
 #include <array>
-using std::array;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <string>
-using std::string;
 #include <sstream>
-using std::stringstream;
-
 #include "tools.h"
 
 namespace morph {
@@ -57,7 +44,7 @@ namespace morph {
             , y(_y)
             , z(_z) {}
 
-        Vector3 (const array<Flt, 3> v)
+        Vector3 (const std::array<Flt, 3> v)
             : x(v[0])
             , y(v[1])
             , z(v[2]) {}
@@ -65,7 +52,7 @@ namespace morph {
         //! Construct from an array of *four* floats, assuming that this is a 4d vector
         //! of the sort used with transfomration matrix and that v[3] is 'w', and can be
         //! discarded.
-        Vector3 (const array<Flt, 4> v)
+        Vector3 (const std::array<Flt, 4> v)
             : x(v[0])
             , y(v[1])
             , z(v[2]) {}
@@ -98,16 +85,16 @@ namespace morph {
         }
 
         //! Return the vector as an array
-        array<Flt, 3> asArray (void) const {
-            array<Flt, 3> v = {x, y, z};
+        std::array<Flt, 3> asArray (void) const {
+            std::array<Flt, 3> v = {x, y, z};
             return v;
         }
 
         void output (void) const {
-            cout << "Vector3(" << x << "," << y << "," << z << ")" << endl;
+            std::cout << "Vector3(" << x << "," << y << "," << z << ")" << std::endl;
         }
-        string asString (void) const {
-            stringstream ss;
+        std::string asString (void) const {
+            std::stringstream ss;
             ss << "(" << x << "," << y << "," << z << ")";
             return ss.str();
         }
@@ -116,7 +103,7 @@ namespace morph {
          * Renormalize the vector to 1
          */
         void renormalize (void) {
-            Flt denom = sqrt (x*x + y*y + z*z);
+            Flt denom = std::sqrt (x*x + y*y + z*z);
             if (denom != static_cast<Flt>(0.0)) {
                 Flt oneovermag = 1.0 / denom;
                 this->x *= oneovermag;
@@ -140,7 +127,7 @@ namespace morph {
         bool checkunit (void) {
             bool rtn = true;
             Flt metric = 1.0 - (x*x + y*y + z*z);
-            if (abs(metric) > morph::Vector3<Flt>::unitThresh) {
+            if (std::abs(metric) > morph::Vector3<Flt>::unitThresh) {
                 rtn = false;
             }
             return rtn;
@@ -148,7 +135,7 @@ namespace morph {
 
         //! Return the length of the vector
         Flt length (void) const {
-            Flt len = sqrt (x*x + y*y + z*z);
+            Flt len = std::sqrt (x*x + y*y + z*z);
             return len;
         }
 
@@ -158,13 +145,13 @@ namespace morph {
             this->y = other.y;
             this->z = other.z;
         }
-        void operator= (const array<Flt, 3>& other) {
+        void operator= (const std::array<Flt, 3>& other) {
             this->x = other[0];
             this->y = other[1];
             this->z = other[2];
         }
         //! Special assignment for array of 4, in form [x,y,z,w]. w is discarded.
-        void operator= (const array<Flt, 4>& other) {
+        void operator= (const std::array<Flt, 4>& other) {
             this->x = other[0];
             this->y = other[1];
             this->z = other[2];

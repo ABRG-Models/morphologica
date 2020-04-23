@@ -1,9 +1,12 @@
 /*
+ * \file
+ *
  * A testing visual class, following 01-triangles.
+ *
+ * \author Seb James
+ * \date 2019
  */
-
-#ifndef _TRIANGLEVISUAL_H_
-#define _TRIANGLEVISUAL_H_
+#pragma once
 
 #include "GL3/gl3.h"
 
@@ -83,7 +86,7 @@ namespace morph {
             glUseProgram (shaderprog);
         }
 
-        void render (void) {
+        void render() {
             //static const float colour[] = { 1.0f, 0.0f, 0.0f, 0.0f };
             //glClearBufferfv(GL_COLOR, 0, colour);
             glBindVertexArray(vao);
@@ -94,5 +97,3 @@ namespace morph {
     };
 
 } // namespace
-
-#endif // _TRIANGLEVISUAL_H_
