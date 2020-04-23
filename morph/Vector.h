@@ -2,7 +2,7 @@
  * \file
  * \brief An N dimensional vector class template which derives from std::array.
  *
- * \author Seb James (with thanks to Konrad Rudolph for code review)
+ * \author Seb James (with thanks to Konrad Rudolph and Miguel Avila for code review)
  * \date April 2020
  */
 #pragma once
