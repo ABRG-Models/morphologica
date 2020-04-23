@@ -37,9 +37,14 @@ using std::cerr;
 using std::endl;
 using std::stringstream;
 using std::vector;
+using std::list;
+using std::array;
 using std::set;
+using std::pair;
+using std::make_pair;
 using std::runtime_error;
 using std::numeric_limits;
+using std::string;
 using std::to_string;
 
 using morph::BezCurvePath;

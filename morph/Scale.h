@@ -31,13 +31,8 @@
 #pragma once
 
 #include <stdexcept>
-using std::runtime_error;
 #include <cmath>
-using std::sqrt;
-using std::log;
-using std::exp;
 #include "MathAlgo.h"
-using morph::MathAlgo;
 #include "number_type.h"
 
 namespace morph {
@@ -104,7 +99,7 @@ namespace morph {
         void transform (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
             size_t dsize = data.size();
             if (output.size() != dsize) {
-                throw runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
+                throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
             }
             if (this->do_autoscale == true && this->autoscaled == false) {
                 this->autoscale_from<Container> (data); // not const
@@ -125,10 +120,10 @@ namespace morph {
         void inverse (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
             size_t dsize = data.size();
             if (output.size() != dsize) {
-                throw runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
+                throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
             }
             if (this->do_autoscale == true && this->autoscaled == false) {
-                throw runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
+                throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
             }
             typename Container<TT, Allocator>::const_iterator di = data.begin();
             typename Container<TT, Allocator>::iterator oi = output.begin();
@@ -175,7 +170,7 @@ namespace morph {
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
         void autoscale_from (const Container<TT, Allocator>& data) {
-            pair<TT, TT> mm = MathAlgo::maxmin (data);
+            std::pair<TT, TT> mm = MathAlgo::maxmin (data);
             this->compute_autoscale (mm.second, mm.first);
         }
 
@@ -247,10 +242,10 @@ namespace morph {
 
         virtual T transform_one (const T& datum) const {
             if (this->type != ScaleFn::Linear) {
-                throw runtime_error ("This transform function is for Linear scaling only");
+                throw std::runtime_error ("This transform function is for Linear scaling only");
             }
             if (params.size() != 2) {
-                throw runtime_error ("For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
+                throw std::runtime_error ("For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
             }
             T rtn(datum);
             T_el vec_len = this->vec_length (datum);
@@ -264,12 +259,12 @@ namespace morph {
         }
 
         virtual T inverse_one (const T& datum) const {
-            throw runtime_error ("Inverse transform not yet implemented for vectors");
+            throw std::runtime_error ("Inverse transform not yet implemented for vectors");
         }
 
         virtual void compute_autoscale (T input_min, T input_max) {
             if (this->type != ScaleFn::Linear) {
-                throw runtime_error ("This autoscale function is for Linear scaling only");
+                throw std::runtime_error ("This autoscale function is for Linear scaling only");
             }
             this->params.resize (2, static_cast<T_el>(0.0));
             // Vector version: get lengths of input_min/max
@@ -312,7 +307,7 @@ namespace morph {
                 sos += (val * val);
                 ++vi;
             }
-            return sqrt (sos);
+            return std::sqrt (sos);
         }
 
         //! The parameters for the scaling. For linear scaling, this will contain two
@@ -353,7 +348,7 @@ namespace morph {
             } else if (this->type == ScaleFn::Linear) {
                 rtn = this->transform_one_linear (datum);
             } else {
-                throw runtime_error ("Unknown scaling");
+                throw std::runtime_error ("Unknown scaling");
             }
             return rtn;
         }
@@ -365,7 +360,7 @@ namespace morph {
             } else if (this->type == ScaleFn::Linear) {
                 rtn = this->inverse_one_linear (datum);
             } else {
-                throw runtime_error ("Unknown scaling");
+                throw std::runtime_error ("Unknown scaling");
             }
             return rtn;
         }
@@ -376,7 +371,7 @@ namespace morph {
             } else if (this->type == ScaleFn::Linear) {
                 this->compute_autoscale_linear (input_min, input_max);
             } else {
-                throw runtime_error ("Unknown scaling");
+                throw std::runtime_error ("Unknown scaling");
             }
             this->autoscaled = true;
         }
@@ -405,7 +400,7 @@ namespace morph {
 
         //! Log transform for scalar type
         T transform_one_log (const T& datum) const {
-            return (transform_one_linear (log(datum)));
+            return (transform_one_linear (std::log(datum)));
         }
 
         //! The inverse linear transform; x = (y-c)/m
@@ -416,7 +411,7 @@ namespace morph {
         //! The inverse of the log transform is exp.
         T inverse_one_log (const T& datum) const {
             T res = inverse_one_linear(datum);
-            return (exp (res));
+            return (std::exp (res));
         }
 
         void compute_autoscale_linear (T input_min, T input_max) {
@@ -428,8 +423,8 @@ namespace morph {
         }
 
         void compute_autoscale_log (T input_min, T input_max) {
-            T ln_imin = log(input_min);
-            T ln_imax = log(input_max);
+            T ln_imin = std::log(input_min);
+            T ln_imax = std::log(input_max);
             // Now just scale linearly between ln_imin and ln_imax
             this->compute_autoscale_linear (ln_imin, ln_imax);
         }

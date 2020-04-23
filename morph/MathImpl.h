@@ -15,28 +15,12 @@
 #pragma once
 
 #include <vector>
-using std::vector;
-#include <array>
-using std::array;
-#include <list>
-using std::list;
 #include <limits>
-using std::numeric_limits;
 #include <cmath>
-using std::sqrt;
-using std::min;
-using std::max;
 #include <utility>
-using std::pair;
-using std::make_pair;
 #include <iostream>
-using std::endl;
-using std::cout;
 #include <stdexcept>
-using std::runtime_error;
 #include <algorithm>
-using std::min;
-using std::max;
 #include <type_traits>
 #include <memory>
 #include "MathConst.h"
@@ -64,16 +48,16 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
+        static std::pair<T, T> maxmin (const Container<T, Allocator>& values) {
 
             // Example to get the type of the container T.
             // See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
             using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
-            T vmax = numeric_limits<T>::min();
-            T vmin = numeric_limits<T>::max();
+            T vmax = std::numeric_limits<T>::min();
+            T vmin = std::numeric_limits<T>::max();
             T_el maxlen = 0;
-            T_el minlen = numeric_limits<T_el>::max();
+            T_el minlen = std::numeric_limits<T_el>::max();
 
             for (auto v : values) {
 
@@ -82,7 +66,7 @@ namespace morph {
                 for (auto vi : v) {
                     vlen += vi*vi;
                 }
-                vlen = sqrt(vlen);
+                vlen = std::sqrt(vlen);
 
                 if (vlen > maxlen) {
                     maxlen = vlen;
@@ -94,7 +78,7 @@ namespace morph {
                 }
             }
 
-            return make_pair (vmax, vmin);
+            return std::make_pair (vmax, vmin);
         }
 
         //! common vector centroid implementation
@@ -145,7 +129,7 @@ namespace morph {
             // FIXME: Check S and T_el are same? What's the correct templating approach?
 
             // autoscale vectors (with fixed size vector aka std::array)
-            pair<T,T> mm = MathImpl<0>::maxmin (values);
+            std::pair<T,T> mm = MathImpl<0>::maxmin (values);
 
             // For simplicity with types, avoid using MathAlgo::distance here and
             // write the code out longhand.
@@ -156,7 +140,7 @@ namespace morph {
                 sos += (val * val);
                 ++vi;
             }
-            T_el max_v = sqrt (sos); // max length vector
+            T_el max_v = std::sqrt (sos); // max length vector
 
             sos = static_cast<T_el>(0);
             vi = mm.second.begin();
@@ -165,12 +149,12 @@ namespace morph {
                 sos += (val * val);
                 ++vi;
             }
-            T_el min_v = sqrt (sos); // min length vector in the input
+            T_el min_v = std::sqrt (sos); // min length vector in the input
 
             // For this vector implementation, min and max are min and max LENGTH of
             // the vectors and are thus always positive and max >= min.
             if (range_min < static_cast<S>(0) || range_min >= range_max) {
-                throw runtime_error ("Check your min and max. min >= 0 please and max > min");
+                throw std::runtime_error ("Check your min and max. min >= 0 please and max > min");
             }
 
             // Static cast redundant here, as the type S should be same as the type T_el
@@ -193,7 +177,7 @@ namespace morph {
                     sos += (*values_i_eli) * (*values_i_eli);
                     ++values_i_eli;
                 }
-                T_el vec_len = sqrt (sos);
+                T_el vec_len = std::sqrt (sos);
 
                 values_i_eli = values_i->begin();
                 while (values_i_eli != values_i->end()) {
@@ -229,14 +213,14 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static pair<T, T> maxmin (const Container<T, Allocator>& values) {
-            T vmax = numeric_limits<T>::lowest();
-            T vmin = numeric_limits<T>::max();
+        static std::pair<T, T> maxmin (const Container<T, Allocator>& values) {
+            T vmax = std::numeric_limits<T>::lowest();
+            T vmin = std::numeric_limits<T>::max();
             for (auto v : values) {
                 vmax = v > vmax ? v : vmax;
                 vmin = v < vmin ? v : vmin;
             }
-            return make_pair (vmax, vmin);
+            return std::make_pair (vmax, vmin);
         }
 
 #if 0
@@ -246,7 +230,7 @@ namespace morph {
                    typename T,
                    typename Allocator=std::allocator<T> >
         static T centroid (const Container<T, Allocator>& coords) {
-            throw runtime_error ("Call this with Container<T>& coords where T is a vector/array type");
+            throw std::runtime_error ("Call this with Container<T>& coords where T is a vector/array type");
             // OR, FIXME: Do the most natural thing for a container of scalars - find the mean!
         }
 #endif
@@ -256,11 +240,11 @@ namespace morph {
                    typename Allocator=std::allocator<T>,
                    typename S > // FIXME: Check T==S?
         static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            pair<T,T> mm = MathImpl<1>::maxmin (values);
+            std::pair<T,T> mm = MathImpl<1>::maxmin (values);
             T min_v = mm.second;
             T max_v = mm.first;
             T scale_v = (range_max - range_min) / (max_v - min_v);
-            vector<T> norm_v(values.size());
+            std::vector<T> norm_v(values.size());
             for (unsigned int i = 0; i<values.size(); ++i) {
                 norm_v[i] = std::min (std::max (((values[i]) - min_v) * scale_v, static_cast<T>(0.0)), static_cast<T>(1.0));
             }

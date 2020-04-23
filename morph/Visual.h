@@ -9,9 +9,7 @@
  * \author Seb James
  * \date May 2019
  */
-
-#ifndef _VISUAL_H_
-#define _VISUAL_H_
+#pragma once
 
 #ifdef USE_GLEW
 // Including glew.h and linking with libglew helps older platforms,
@@ -21,7 +19,6 @@
 #include <GLFW/glfw3.h>
 #include "HexGrid.h"
 #include "VisualModel.h"
-using morph::VisualModel;
 #include "HexGridVisual.h"
 #include "QuadsVisual.h"
 #include "PointRowsVisual.h"
@@ -44,11 +41,8 @@ using morph::VisualModel;
 #include "GL3/gl3.h"
 
 #include <string>
-using std::string;
 #include <array>
-using std::array;
 #include <vector>
-using std::vector;
 
 //! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
@@ -98,7 +92,7 @@ namespace morph {
          * Visual object. So, this creates a new window and a new
          * OpenGL context.
          */
-        Visual (int width, int height, const string& title);
+        Visual (int width, int height, const std::string& title);
         ~Visual();
 
         static void errorCallback (int error, const char* description);
@@ -106,7 +100,7 @@ namespace morph {
         /*!
          * Take a screenshot of the window
          */
-        void saveImage (const string& s);
+        void saveImage (const std::string& s);
 
         /*!
          * Add a VisualModel to the scene. The VisualModel* should be a pointer to a
@@ -165,7 +159,7 @@ namespace morph {
         bool sceneLocked = false;
 
         //! The background colour; black by default.
-        array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
+        std::array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         /*!
          * User can directly set bgcolour for any background colour they like, but
@@ -240,15 +234,15 @@ namespace morph {
 
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
-        vector<VisualModel*> vm;
+        std::vector<VisualModel*> vm;
 
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
         //! Position and length of coordinate arrows. Need to be configurable at Visual
         //! construction.
-        array<float, 3> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
-        array<float, 3> coordArrowsLength = {1., 1., 1.};
+        std::array<float, 3> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
+        std::array<float, 3> coordArrowsLength = {1., 1., 1.};
 
         /*!
          * Variables to manage projection and rotation of the object
@@ -310,5 +304,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _VISUAL_H_

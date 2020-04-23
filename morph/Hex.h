@@ -1,11 +1,12 @@
 /*
- * Author: Seb James
+ * \file
  *
- * Date: 2018/07
+ * Defines a class to manage a hexagon which lives in a grid of hexagons.
+ *
+ * \author: Seb James
+ * \date: 2018/07
  */
-
-#ifndef _HEX_H_
-#define _HEX_H_
+#pragma once
 
 #include <string>
 #include <list>
@@ -15,22 +16,9 @@
 #include "BezCoord.h"
 #include "HdfData.h"
 #include "MathConst.h"
-
-using std::string;
-using std::to_string;
-using std::list;
-using std::array;
-using std::abs;
-using std::sqrt;
-using std::pair;
-using morph::BezCoord;
-using morph::HdfData;
-
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>
-using std::cout;
-using std::endl;
 #endif
 
 /*!
@@ -149,7 +137,7 @@ namespace morph {
         /*!
          * Construct using the passed in HDF5 file and path.
          */
-        Hex (HdfData& h5data, const string& h5path) {
+        Hex (HdfData& h5data, const std::string& h5path) {
             this->load (h5data, h5path);
         }
 
@@ -186,8 +174,8 @@ namespace morph {
          * Save the data for this Hex into the already open HdfData object @h5data in the path
          * @h5path.
          */
-        void save (HdfData& h5data, const string& h5path) const {
-            string dpath = h5path + "/vi";
+        void save (HdfData& h5data, const std::string& h5path) const {
+            std::string dpath = h5path + "/vi";
             h5data.add_val (dpath.c_str(), this->vi);
             dpath = h5path + "/di";
             h5data.add_val (dpath.c_str(), this->di);
@@ -215,8 +203,8 @@ namespace morph {
             h5data.add_val (dpath.c_str(), this->flags);
         }
 
-        void load (HdfData& h5data, const string& h5path) {
-            string dpath = h5path + "/vi";
+        void load (HdfData& h5data, const std::string& h5path) {
+            std::string dpath = h5path + "/vi";
             h5data.read_val (dpath.c_str(), this->vi);
             dpath = h5path + "/di";
             h5data.read_val (dpath.c_str(), this->di);
@@ -250,29 +238,29 @@ namespace morph {
          * Produce a string containing information about this hex, showing grid location in
          * dimensionless r,g (but not b) units. Also show nearest neighbours.
          */
-        string output (void) const {
-            string s("Hex ");
-            s += to_string(this->vi) + " (";
-            s += to_string(this->ri).substr(0,4) + ",";
-            s += to_string(this->gi).substr(0,4) + "). ";
+        std::string output (void) const {
+            std::string s("Hex ");
+            s += std::to_string(this->vi) + " (";
+            s += std::to_string(this->ri).substr(0,4) + ",";
+            s += std::to_string(this->gi).substr(0,4) + "). ";
 
             if (this->has_ne()) {
-                s += "E: (" + to_string(this->ne->ri).substr(0,4) + "," + to_string(this->ne->gi).substr(0,4) + ") " + (this->ne->boundaryHex() == true ? "OB":"") + " ";
+                s += "E: (" + std::to_string(this->ne->ri).substr(0,4) + "," + std::to_string(this->ne->gi).substr(0,4) + ") " + (this->ne->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->has_nse()) {
-                s += "SE: (" + to_string(this->nse->ri).substr(0,4) + "," + to_string(this->nse->gi).substr(0,4) + ") " + (this->nse->boundaryHex() == true ? "OB":"") + " ";
+                s += "SE: (" + std::to_string(this->nse->ri).substr(0,4) + "," + std::to_string(this->nse->gi).substr(0,4) + ") " + (this->nse->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->has_nsw()) {
-                s += "SW: (" + to_string(this->nsw->ri).substr(0,4) + "," + to_string(this->nsw->gi).substr(0,4) + ") " + (this->nsw->boundaryHex() == true ? "OB":"") + " ";
+                s += "SW: (" + std::to_string(this->nsw->ri).substr(0,4) + "," + std::to_string(this->nsw->gi).substr(0,4) + ") " + (this->nsw->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->has_nw()) {
-                s += "W: (" + to_string(this->nw->ri).substr(0,4) + "," + to_string(this->nw->gi).substr(0,4) + ") " + (this->nw->boundaryHex() == true ? "OB":"") + " ";
+                s += "W: (" + std::to_string(this->nw->ri).substr(0,4) + "," + std::to_string(this->nw->gi).substr(0,4) + ") " + (this->nw->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->has_nnw()) {
-                s += "NW: (" + to_string(this->nnw->ri).substr(0,4) + "," + to_string(this->nnw->gi).substr(0,4) + ") " + (this->nnw->boundaryHex() == true ? "OB":"") + " ";
+                s += "NW: (" + std::to_string(this->nnw->ri).substr(0,4) + "," + std::to_string(this->nnw->gi).substr(0,4) + ") " + (this->nnw->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->has_nne()) {
-                s += "NE: (" + to_string(this->nne->ri).substr(0,4) + "," + to_string(this->nne->gi).substr(0,4) + ") " + (this->nne->boundaryHex() == true ? "OB":"") + " ";
+                s += "NE: (" + std::to_string(this->nne->ri).substr(0,4) + "," + std::to_string(this->nne->gi).substr(0,4) + ") " + (this->nne->boundaryHex() == true ? "OB":"") + " ";
             }
             if (this->boundaryHex()) {
                 s += "(ON boundary)";
@@ -286,31 +274,31 @@ namespace morph {
          * Produce a string containing information about this hex, focussing on Cartesian position
          * information.
          */
-        string outputCart (void) const {
-            string s("Hex ");
-            s += to_string(this->vi).substr(0,2) + " (";
-            s += to_string(this->ri).substr(0,4) + ",";
-            s += to_string(this->gi).substr(0,4) + ") is at (x,y) = ("
-                + to_string(this->x).substr(0,4) +"," + to_string(this->y).substr(0,4) + ")";
+        std::string outputCart (void) const {
+            std::string s("Hex ");
+            s += std::to_string(this->vi).substr(0,2) + " (";
+            s += std::to_string(this->ri).substr(0,4) + ",";
+            s += std::to_string(this->gi).substr(0,4) + ") is at (x,y) = ("
+                + std::to_string(this->x).substr(0,4) +"," + std::to_string(this->y).substr(0,4) + ")";
             return s;
         }
 
         /*!
          * Output "(x,y)" coordinate string
          */
-        string outputXY (void) const {
-            string s("(");
-            s += to_string(this->x).substr(0,4) + "," + to_string(this->y).substr(0,4) + ")";
+        std::string outputXY (void) const {
+            std::string s("(");
+            s += std::to_string(this->x).substr(0,4) + "," + std::to_string(this->y).substr(0,4) + ")";
             return s;
         }
 
         /*!
          * Output a string containing just "RG(ri, gi)"
          */
-        string outputRG (void) const {
-            string s("RG(");
-            s += to_string(this->ri).substr(0,4) + ",";
-            s += to_string(this->gi).substr(0,4) + ")";
+        std::string outputRG (void) const {
+            std::string s("RG(");
+            s += std::to_string(this->ri).substr(0,4) + ",";
+            s += std::to_string(this->gi).substr(0,4) + ")";
             return s;
         }
 
@@ -318,8 +306,8 @@ namespace morph {
          * Convert the neighbour position number into a short string representing the
          * direction/position of the neighbour.
          */
-        static string neighbour_pos (unsigned short dir) {
-            string s("");
+        static std::string neighbour_pos (unsigned short dir) {
+            std::string s("");
             switch (dir) {
             case HEX_NEIGHBOUR_POS_E:
             {
@@ -365,7 +353,7 @@ namespace morph {
             float v = this->getV();
             this->y = v*this->gi + v*this->bi;
             // And location in the Polar coordinate system
-            this->r = sqrt (x*x + y*y);
+            this->r = std::sqrt (x*x + y*y);
             this->phi = atan2 (y, x);
         }
 
@@ -374,10 +362,10 @@ namespace morph {
          * cartesianPoint to the centre of this Hex.
          */
         template <typename LFlt>
-        float distanceFrom (const pair<LFlt, LFlt> cartesianPoint) const {
+        float distanceFrom (const std::pair<LFlt, LFlt> cartesianPoint) const {
             float dx = cartesianPoint.first - x;
             float dy = cartesianPoint.second - y;
-            return sqrt (dx*dx + dy*dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         /*!
@@ -387,7 +375,7 @@ namespace morph {
         float distanceFrom (const BezCoord<float>& cartesianPoint) const {
             float dx = cartesianPoint.x() - x;
             float dy = cartesianPoint.y() - y;
-            return sqrt (dx*dx + dy*dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         /*!
@@ -396,7 +384,7 @@ namespace morph {
         float distanceFrom (const Hex& otherHex) const {
             float dx = otherHex.x - x;
             float dy = otherHex.y - y;
-            return sqrt (dx*dx + dy*dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         /*!
@@ -443,8 +431,8 @@ namespace morph {
         /*!
          * Get the Cartesian position of this Hex as a fixed size array.
          */
-        array<float, 3> position (void) const {
-            array<float,3> rtn = { { this->x, this->y, this->z } };
+        std::array<float, 3> position (void) const {
+            std::array<float,3> rtn = { { this->x, this->y, this->z } };
             return rtn;
         }
 
@@ -665,27 +653,27 @@ namespace morph {
          * Setters for neighbour iterators
          */
         //@{
-        void set_ne (list<Hex>::iterator it) {
+        void set_ne (std::list<Hex>::iterator it) {
             this->ne = it;
             this->flags |= HEX_HAS_NE;
         }
-        void set_nne (list<Hex>::iterator it) {
+        void set_nne (std::list<Hex>::iterator it) {
             this->nne = it;
             this->flags |= HEX_HAS_NNE;
         }
-        void set_nnw (list<Hex>::iterator it) {
+        void set_nnw (std::list<Hex>::iterator it) {
             this->nnw = it;
             this->flags |= HEX_HAS_NNW;
         }
-        void set_nw (list<Hex>::iterator it) {
+        void set_nw (std::list<Hex>::iterator it) {
             this->nw = it;
             this->flags |= HEX_HAS_NW;
         }
-        void set_nsw (list<Hex>::iterator it) {
+        void set_nsw (std::list<Hex>::iterator it) {
             this->nsw = it;
             this->flags |= HEX_HAS_NSW;
         }
-        void set_nse (list<Hex>::iterator it) {
+        void set_nse (std::list<Hex>::iterator it) {
             this->nse = it;
             this->flags |= HEX_HAS_NSE;
         }
@@ -780,8 +768,8 @@ namespace morph {
             return false;
         }
 
-        list<Hex>::iterator get_neighbour (unsigned short ni) {
-            list<Hex>::iterator hi;
+        std::list<Hex>::iterator get_neighbour (unsigned short ni) {
+            std::list<Hex>::iterator hi;
             switch (ni) {
             case HEX_NEIGHBOUR_POS_E:
             {
@@ -824,8 +812,8 @@ namespace morph {
         /*!
          * Turn the vertex index into a string name
          */
-        static string vertex_name (unsigned short ni) {
-            string s("");
+        static std::string vertex_name (unsigned short ni) {
+            std::string s("");
             switch (ni) {
             case HEX_VERTEX_POS_NE:
             {
@@ -871,8 +859,8 @@ namespace morph {
          * which vertex to return the coordinate for. Use the definitions HEX_VERTEX_POS_N, etc to
          * pass in a human-readable label for the vertex.
          */
-        pair<float, float> get_vertex_coord (unsigned short ni) const {
-            pair<float, float> rtn = {0.0, 0.0};
+        std::pair<float, float> get_vertex_coord (unsigned short ni) const {
+            std::pair<float, float> rtn = {0.0, 0.0};
             switch (ni) {
             case HEX_VERTEX_POS_NE:
             {
@@ -920,8 +908,8 @@ namespace morph {
             return rtn;
         }
 
-        pair<float, float> get_vertex_coord (unsigned int ni) const {
-            pair<float, float> rtn = {-2.0, -2.0};
+        std::pair<float, float> get_vertex_coord (unsigned int ni) const {
+            std::pair<float, float> rtn = {-2.0, -2.0};
             if (ni > 6) {
                 return rtn;
             }
@@ -929,8 +917,8 @@ namespace morph {
             return rtn;
         }
 
-        pair<float, float> get_vertex_coord (int ni) const {
-            pair<float, float> rtn = {-3.0, -3.0};
+        std::pair<float, float> get_vertex_coord (int ni) const {
+            std::pair<float, float> rtn = {-3.0, -3.0};
             if (ni > 6) {
                 rtn.first = -4.0f;
                 return rtn;
@@ -949,10 +937,10 @@ namespace morph {
          * distinguishing between vertices and hex centres on a HexGrid.
          */
         template <typename LFlt>
-        bool compare_vertex_coord (int ni, pair<LFlt, LFlt>& coord) const {
-            pair<float, float> vc = this->get_vertex_coord (ni);
-            if (abs(vc.first - coord.first) < this->d/100
-                && abs(vc.second - coord.second) < this->d/100) {
+        bool compare_vertex_coord (int ni, std::pair<LFlt, LFlt>& coord) const {
+            std::pair<float, float> vc = this->get_vertex_coord (ni);
+            if (std::abs(vc.first - coord.first) < this->d/100
+                && std::abs(vc.second - coord.second) < this->d/100) {
                 return true;
             }
             return false;
@@ -962,7 +950,7 @@ namespace morph {
          * Return true if the Hex contains the vertex
          */
         template <typename LFlt>
-        bool contains_vertex (pair<LFlt, LFlt>& coord) const {
+        bool contains_vertex (std::pair<LFlt, LFlt>& coord) const {
             // check each of my vertices, if any match coord, then return true.
             bool rtn = false;
             for (unsigned int ni = 0; ni < 6; ++ni) {
@@ -980,9 +968,9 @@ namespace morph {
          * distinguishing between vertices and hex centres on a HexGrid.
          */
         template <typename LFlt>
-        bool compare_coord (pair<LFlt, LFlt>& coord) const {
-            if (abs(this->x - coord.first) < this->d/100
-                && abs(this->y - coord.second) < this->d/100) {
+        bool compare_coord (std::pair<LFlt, LFlt>& coord) const {
+            if (std::abs(this->x - coord.first) < this->d/100
+                && std::abs(this->y - coord.second) < this->d/100) {
                 return true;
             }
             return false;
@@ -1037,32 +1025,32 @@ namespace morph {
         /*!
          * Nearest neighbour to the East; in the plus r direction.
          */
-        list<Hex>::iterator ne;
+        std::list<Hex>::iterator ne;
 
         /*!
          * Nearest neighbour to the NorthEast; in the plus g direction.
          */
-        list<Hex>::iterator nne;
+        std::list<Hex>::iterator nne;
 
         /*!
          * Nearest neighbour to the NorthWest; in the plus b direction.
          */
-        list<Hex>::iterator nnw;
+        std::list<Hex>::iterator nnw;
 
         /*!
          * Nearest neighbour to the West; in the minus r direction.
          */
-        list<Hex>::iterator nw;
+        std::list<Hex>::iterator nw;
 
         /*!
          * Nearest neighbour to the SouthWest; in the minus g direction.
          */
-        list<Hex>::iterator nsw;
+        std::list<Hex>::iterator nsw;
 
         /*!
          * Nearest neighbour to the SouthEast; in the minus b direction.
          */
-        list<Hex>::iterator nse;
+        std::list<Hex>::iterator nse;
         //@}
 
     private:
@@ -1073,5 +1061,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _HEX_H_

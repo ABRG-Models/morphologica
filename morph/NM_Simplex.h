@@ -8,19 +8,12 @@
  * Author: Seb James
  * Date: September 2019
  */
-
-#ifndef _NM_SIMPLEX_H_
-#define _NM_SIMPLEX_H_
+#pragma once
 
 #include <utility>
-using std::pair;
 #include <vector>
-using std::vector;
 #include <iostream>
-using std::cerr;
-using std::endl;
 #include "MathAlgo.h"
-using morph::MathAlgo;
 
 namespace morph {
 
@@ -84,34 +77,34 @@ namespace morph {
         Flt termination_threshold = 0.0001;
 
         //! The centroid of all points except vertex n (the last one)
-        vector<Flt> x0;
+        std::vector<Flt> x0;
 
         //! A container to hold the reflected point xr = x0 + alpha(x0 - vertex[vertex_order.back()])
-        vector<Flt> xr;
+        std::vector<Flt> xr;
         //! The objective function value of the reflected point
         Flt xr_value;
 
         //! A container for the expanded point xe
-        vector<Flt> xe;
+        std::vector<Flt> xe;
         //! The objective function value of the expanded point
         Flt xe_value;
 
         //! A container for the contracted point xc (can probably merge with xe)
-        vector<Flt> xc;
+        std::vector<Flt> xc;
         //! The objective function value of the contracted point
         Flt xc_value;
 
         //! The locations of the simplex vertices. A vector of n+1 vertices, each of n coordinates.
-        vector<vector<Flt>> vertices;
+        std::vector<std::vector<Flt>> vertices;
 
         //! The objective function value for each vertex.
-        vector<Flt> values;
+        std::vector<Flt> values;
 
         //! This vector contains the size order of the vector values and can be used to index into
         //! vertices and values in the order of the metric. The first index in this vector indexes
         //! the "best" value in values/vertices. If downhill==true, then the first index indexes the
         //! lowest value in values, otherwise it indexes the highest value in values.
-        vector<unsigned int> vertex_order;
+        std::vector<unsigned int> vertex_order;
 
         //! This tells client code what it needs to do next. It either needs to order the points or
         //! compute a new objective function value for the reflected point xr;
@@ -126,13 +119,13 @@ namespace morph {
         //! should be of size n, the outer vector of size n+1. Thus, for a simplex
         //! triangle flipping on a 2D surface, you'd have 3 vertices with 2 coordinates
         //! each.
-        NM_Simplex (const vector<vector<Flt>>& initial_vertices) {
+        NM_Simplex (const std::vector<std::vector<Flt>>& initial_vertices) {
             // dimensionality, n, is the number of simlex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
             this->allocate();
             unsigned int i = 0;
-            for (vector<Flt>& v : this->vertices) {
+            for (std::vector<Flt>& v : this->vertices) {
                 v = initial_vertices[i++];
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
@@ -146,7 +139,8 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! Special constructor for 3 vertices in 2 dimensions
-        NM_Simplex (const pair<Flt, Flt>& v0, const pair<Flt, Flt>& v1, const pair<Flt, Flt>& v2) {
+        NM_Simplex (const std::pair<Flt, Flt>& v0,
+                    const std::pair<Flt, Flt>& v1, const std::pair<Flt, Flt>& v2) {
             this->n = 2;
             this->allocate();
             this->vertices[0][0] = v0.first;
@@ -165,7 +159,7 @@ namespace morph {
         //@}
 
         //! Return the location of the best approximation, given the values of the vertices.
-        vector<Flt> best_vertex (void) {
+        std::vector<Flt> best_vertex (void) {
             return this->vertices[this->vertex_order[0]];
         }
         Flt best_value (void) {
@@ -192,7 +186,7 @@ namespace morph {
             } else if (this->too_many_operations > 0
                        && this->operation_count > this->too_many_operations) {
                 // If this is emitted, check your termination_threshold
-                cerr << "Warning: Reached too_many_operation. Setting state 'ReadyToStop'." << endl;
+                std::cerr << "Warning: Reached too_many_operation. Setting state 'ReadyToStop'." << std::endl;
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             }
@@ -346,7 +340,7 @@ namespace morph {
         //! Resize the various vectors based on the value of n.
         void allocate (void) {
             this->vertices.resize (this->n+1);
-            for (vector<Flt>& v : this->vertices) {
+            for (std::vector<Flt>& v : this->vertices) {
                 v.resize (this->n, 0.0);
             }
             this->x0.resize (this->n, 0.0);
@@ -363,5 +357,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _NM_SIMPLEX_H_
