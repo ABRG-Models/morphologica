@@ -1,24 +1,16 @@
 /*!
  * Wrappers around the HDF5 C API for use in morphologica simulations.
  */
-#ifndef _HDFDATA_H_
-#define _HDFDATA_H_
+#pragma once
 
 #include <opencv2/opencv.hpp>
-
 #include <hdf5.h>
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 #include <list>
-using std::list;
 #include <string>
-using std::string;
 #include <utility>
-using std::pair;
 #include <bitset>
-using std::bitset;
 
 namespace morph {
 
@@ -44,13 +36,13 @@ namespace morph {
          * If there's an error in status, output a context (given by
          * emsg) sensible message and throw an exception.
          */
-        void handle_error (const herr_t& status, const string& emsg);
+        void handle_error (const herr_t& status, const std::string& emsg);
 
     public:
         /*!
          * Construct, creating open file_id. If read_data is
          */
-        HdfData (const string fname, const bool read_data = false);
+        HdfData (const std::string fname, const bool read_data = false);
 
         /*!
          * Deconstruct, closing the file_id
@@ -67,49 +59,49 @@ namespace morph {
          * worthwhile because of number of possible overloads? Quite
          * possibly.
          */
-        void read_contained_vals (const char* path, vector<double>& vals);
-        void read_contained_vals (const char* path, vector<float>& vals);
-        void read_contained_vals (const char* path, vector<int>& vals);
-        void read_contained_vals (const char* path, vector<unsigned int>& vals);
-        void read_contained_vals (const char* path, vector<long long int>& vals);
-        void read_contained_vals (const char* path, vector<unsigned long long int>& vals);
+        void read_contained_vals (const char* path, std::vector<double>& vals);
+        void read_contained_vals (const char* path, std::vector<float>& vals);
+        void read_contained_vals (const char* path, std::vector<int>& vals);
+        void read_contained_vals (const char* path, std::vector<unsigned int>& vals);
+        void read_contained_vals (const char* path, std::vector<long long int>& vals);
+        void read_contained_vals (const char* path, std::vector<unsigned long long int>& vals);
 
         /*!
          * Read pairs
          */
         //@{
-        void read_contained_vals (const char* path, pair<float, float>& vals);
-        void read_contained_vals (const char* path, pair<double, double>& vals);
+        void read_contained_vals (const char* path, std::pair<float, float>& vals);
+        void read_contained_vals (const char* path, std::pair<double, double>& vals);
         //@}
 
         /*!
          * Read lists of pairs
          */
         //@{
-        void read_contained_vals (const char* path, list<pair<float, float>>& vals);
-        void read_contained_vals (const char* path, list<pair<double, double>>& vals);
+        void read_contained_vals (const char* path, std::list<std::pair<float, float>>& vals);
+        void read_contained_vals (const char* path, std::list<std::pair<double, double>>& vals);
         //@}
 
         /*!
          * 2D coordinates (or other pairs of values)
          */
         //@{
-        void read_contained_vals (const char* path, vector<array<float, 2>>& vals);
-        void read_contained_vals (const char* path, vector<array<double, 2>>& vals);
+        void read_contained_vals (const char* path, std::vector<std::array<float, 2>>& vals);
+        void read_contained_vals (const char* path, std::vector<std::array<double, 2>>& vals);
         //@}
 
         /*!
          * Vector of 3D coordinates
          */
         //@{
-        void read_contained_vals (const char* path, vector<array<float, 3>>& vals);
+        void read_contained_vals (const char* path, std::vector<std::array<float, 3>>& vals);
         //! 3D coordinates collected into groups of 4 (each specifying a quad)
-        void read_contained_vals (const char* path, vector<array<float, 12>>& vals);
+        void read_contained_vals (const char* path, std::vector<std::array<float, 12>>& vals);
         //! OpenCV-friendly overloads
         //@{
-        void read_contained_vals (const char* path, vector<cv::Point2i>& vals);
-        void read_contained_vals (const char* path, vector<cv::Point2f>& vals);
-        void read_contained_vals (const char* path, vector<cv::Point2d>& vals);
+        void read_contained_vals (const char* path, std::vector<cv::Point2i>& vals);
+        void read_contained_vals (const char* path, std::vector<cv::Point2f>& vals);
+        void read_contained_vals (const char* path, std::vector<cv::Point2d>& vals);
         //@}
         //@}
 
@@ -122,14 +114,14 @@ namespace morph {
         void read_val (const char* path, bool& val);
 
         //! Read a string of chars
-        void read_string (const char* path, string& str);
+        void read_string (const char* path, std::string& str);
 
         //! Templated read_val for bitsets
         template <size_t N>
-        void read_val (const char* path, bitset<N>& val) {
+        void read_val (const char* path, std::bitset<N>& val) {
             unsigned long long int bs_ullong = 0ULL;
             this->read_val (path, bs_ullong);
-            bitset<N> val_ (bs_ullong);
+            std::bitset<N> val_ (bs_ullong);
             val = val_;
         }
 
@@ -151,7 +143,7 @@ namespace morph {
          */
         //@{
         void process_groups (const char* path);
-        void verify_group (const string& path);
+        void verify_group (const std::string& path);
         //@}
 
         /*!
@@ -177,14 +169,14 @@ namespace morph {
          * so that's a bit of a FIXME for the future.
          */
         template <size_t N>
-        void add_val (const char* path, const bitset<N>& val) {
+        void add_val (const char* path, const std::bitset<N>& val) {
             unsigned long long int bs_ullong = val.to_ullong();
             this->add_val (path, bs_ullong);
         }
         //@}
 
         //! Add a string of chars
-        void add_string (const char* path, const string& str);
+        void add_string (const char* path, const std::string& str);
 
         /*!
          * Makes necessary calls to add a container of values to an
@@ -200,12 +192,12 @@ namespace morph {
          * code in libmorphologica, rather than being header-only,
          */
         //@{
-        void add_contained_vals (const char* path, const vector<double>& vals);
-        void add_contained_vals (const char* path, const vector<float>& vals);
-        void add_contained_vals (const char* path, const vector<int>& vals);
-        void add_contained_vals (const char* path, const vector<unsigned int>& vals);
-        void add_contained_vals (const char* path, const vector<long long int>& vals);
-        void add_contained_vals (const char* path, const vector<unsigned long long int>& vals);
+        void add_contained_vals (const char* path, const std::vector<double>& vals);
+        void add_contained_vals (const char* path, const std::vector<float>& vals);
+        void add_contained_vals (const char* path, const std::vector<int>& vals);
+        void add_contained_vals (const char* path, const std::vector<unsigned int>& vals);
+        void add_contained_vals (const char* path, const std::vector<long long int>& vals);
+        void add_contained_vals (const char* path, const std::vector<unsigned long long int>& vals);
         //@}
 
         /*!
@@ -213,16 +205,16 @@ namespace morph {
          */
         //@{
         //! 2D coordinates
-        void add_contained_vals (const char* path, const vector<array<float, 2>>& vals);
-        void add_contained_vals (const char* path, const vector<array<double, 2>>& vals);
+        void add_contained_vals (const char* path, const std::vector<std::array<float, 2>>& vals);
+        void add_contained_vals (const char* path, const std::vector<std::array<double, 2>>& vals);
         //! 3D coordinates
-        void add_contained_vals (const char* path, const vector<array<float, 3>>& vals);
+        void add_contained_vals (const char* path, const std::vector<std::array<float, 3>>& vals);
         //! Sets of 4 3D coordinates (if you like, or anything else that requires arrays of 12 floats)
-        void add_contained_vals (const char* path, const vector<array<float, 12>>& vals);
+        void add_contained_vals (const char* path, const std::vector<std::array<float, 12>>& vals);
         //! OpenCV Point objects
-        void add_contained_vals (const char* path, const vector<cv::Point2i>& vals);
-        void add_contained_vals (const char* path, const vector<cv::Point2d>& vals);
-        void add_contained_vals (const char* path, const vector<cv::Point2f>& vals);
+        void add_contained_vals (const char* path, const std::vector<cv::Point2i>& vals);
+        void add_contained_vals (const char* path, const std::vector<cv::Point2d>& vals);
+        void add_contained_vals (const char* path, const std::vector<cv::Point2f>& vals);
 
         //! Write out cv::Mat matrix data, along with the data type and the channels
         //! as metadata.
@@ -233,16 +225,16 @@ namespace morph {
          * Add pairs
          */
         //@{
-        void add_contained_vals (const char* path, const pair<float, float>& vals);
-        void add_contained_vals (const char* path, const pair<double, double>& vals);
+        void add_contained_vals (const char* path, const std::pair<float, float>& vals);
+        void add_contained_vals (const char* path, const std::pair<double, double>& vals);
         //@}
 
         /*!
          * Add lists of pairs
          */
         //@{
-        void add_contained_vals (const char* path, const list<pair<float, float>>& vals);
-        void add_contained_vals (const char* path, const list<pair<double, double>>& vals);
+        void add_contained_vals (const char* path, const std::list<std::pair<float, float>>& vals);
+        void add_contained_vals (const char* path, const std::list<std::pair<double, double>>& vals);
         //@}
 
         /*!
@@ -258,5 +250,3 @@ namespace morph {
     }; // class hdf5
 
 } // namespace morph
-
-#endif // _HDFDATA_H_
