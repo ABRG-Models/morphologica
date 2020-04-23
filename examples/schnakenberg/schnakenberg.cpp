@@ -14,7 +14,12 @@
 #endif
 
 /*!
- * General STL includes
+ * Include the reaction diffusion class
+ */
+#include "rd_schnakenberg.h"
+
+/*!
+ * General STL includes used here
  */
 #include <iostream>
 #include <fstream>
@@ -23,14 +28,10 @@
 #include <string>
 #include <limits>
 #include <chrono>
+
 using namespace std;
 using namespace std::chrono;
 using std::chrono::steady_clock;
-
-/*!
- * Include the reaction diffusion class
- */
-#include "rd_schnakenberg.h"
 
 #ifdef COMPILE_PLOTTING
 /*!

@@ -5,38 +5,35 @@
  */
 
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
+#include <sstream>
 #include "morph/RD_Base.h"
-using morph::RD_Base;
 #include "morph/HdfData.h"
-using morph::HdfData;
 
 /*!
  * Two component Schnakenberg Reaction Diffusion system
  */
 template <class Flt>
-class RD_Schnakenberg : public RD_Base<Flt>
+class RD_Schnakenberg : public morph::RD_Base<Flt>
 {
 public:
     /*!
      * Reactant A
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> A;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> A;
 
     /*!
      * Reactant B
      */
-    alignas(alignof(vector<Flt>))
-    vector<Flt> B;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> B;
 
     /*!
      * J(x,t) - the "flux current". This is a vector field. May need J_A and J_B.
      */
-    alignas(alignof(array<vector<Flt>, 2>))
-    array<vector<Flt>, 2> J;
+    alignas(alignof(std::array<std::vector<Flt>, 2>))
+    std::array<std::vector<Flt>, 2> J;
 
     /*!
      * Schnakenberg
@@ -60,7 +57,7 @@ public:
      * Simple constructor; no arguments. Simply call RD_Base constructor.
      */
     RD_Schnakenberg (void) :
-        RD_Base<Flt>() {
+        morph::RD_Base<Flt>() {
     }
 
     /*!
@@ -75,7 +72,7 @@ public:
      */
     void allocate (void) {
         // Always call allocate() from the base class first.
-        RD_Base<Flt>::allocate();
+        morph::RD_Base<Flt>::allocate();
         // Resize and zero-initialise the various containers. Note that the size of a
         // 'vector variable' is given by the number of hexes in the hex grid which is
         // a member of this class (via its parent, RD_Base)
@@ -103,13 +100,13 @@ public:
      * Save the variables.
      */
     void save (void) {
-        stringstream fname;
+        std::stringstream fname;
         fname << this->logpath << "/dat_";
         fname.width(5);
         fname.fill('0');
         fname << this->stepCount << ".h5";
-        HdfData data(fname.str());
-        stringstream path;
+        morph::HdfData data(fname.str());
+        std::stringstream path;
         // The A variables
         path << "/A";
         data.add_contained_vals (path.str().c_str(), this->A);
@@ -129,8 +126,8 @@ public:
      * Schnakenberg functions
      */
     //@{
-    void compute_dAdt (vector<Flt>& A_, vector<Flt>& dAdt) {
-        vector<Flt> lapA(this->nhex, 0.0);
+    void compute_dAdt (std::vector<Flt>& A_, std::vector<Flt>& dAdt) {
+        std::vector<Flt> lapA(this->nhex, 0.0);
         this->compute_laplace (A_, lapA);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; ++h) {
@@ -138,8 +135,8 @@ public:
                 + (this->k3 * A_[h] * A_[h] * this->B[h]) + this->D_A * lapA[h];
         }
     }
-    void compute_dBdt (vector<Flt>& B_, vector<Flt>& dBdt) {
-        vector<Flt> lapB(this->nhex, 0.0);
+    void compute_dBdt (std::vector<Flt>& B_, std::vector<Flt>& dBdt) {
+        std::vector<Flt> lapB(this->nhex, 0.0);
         this->compute_laplace (B_, lapB);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; ++h) {
@@ -159,12 +156,12 @@ public:
         // 1. 4th order Runge-Kutta computation for A
         {
             // Atst: "A at a test point". Atst is a temporary estimate for A.
-            vector<Flt> Atst(this->nhex, 0.0);
-            vector<Flt> dAdt(this->nhex, 0.0);
-            vector<Flt> K1(this->nhex, 0.0);
-            vector<Flt> K2(this->nhex, 0.0);
-            vector<Flt> K3(this->nhex, 0.0);
-            vector<Flt> K4(this->nhex, 0.0);
+            std::vector<Flt> Atst(this->nhex, 0.0);
+            std::vector<Flt> dAdt(this->nhex, 0.0);
+            std::vector<Flt> K1(this->nhex, 0.0);
+            std::vector<Flt> K2(this->nhex, 0.0);
+            std::vector<Flt> K3(this->nhex, 0.0);
+            std::vector<Flt> K4(this->nhex, 0.0);
 
             /*
              * Stage 1
@@ -218,12 +215,12 @@ public:
         // 2. 4th order Runge-Kutta computation of B
         {
             // Btst: "B at a test point". Btst is a temporary estimate for B.
-            vector<Flt> Btst(this->nhex, 0.0);
-            vector<Flt> dBdt(this->nhex, 0.0);
-            vector<Flt> K1(this->nhex, 0.0);
-            vector<Flt> K2(this->nhex, 0.0);
-            vector<Flt> K3(this->nhex, 0.0);
-            vector<Flt> K4(this->nhex, 0.0);
+            std::vector<Flt> Btst(this->nhex, 0.0);
+            std::vector<Flt> dBdt(this->nhex, 0.0);
+            std::vector<Flt> K1(this->nhex, 0.0);
+            std::vector<Flt> K2(this->nhex, 0.0);
+            std::vector<Flt> K3(this->nhex, 0.0);
+            std::vector<Flt> K4(this->nhex, 0.0);
 
             /*
              * Stage 1
