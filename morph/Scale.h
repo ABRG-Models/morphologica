@@ -312,7 +312,7 @@ namespace morph {
 
         //! The parameters for the scaling. For linear scaling, this will contain two
         //! scalar values.
-        vector<T_el> params;
+        std::vector<T_el> params;
     };
 
     /*!
@@ -431,7 +431,7 @@ namespace morph {
 
         //! The parameters for the scaling. If linear, this will contain two scalar
         //! values.
-        vector<T> params;
+        std::vector<T> params;
     };
 
     /*!

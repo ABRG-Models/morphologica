@@ -1,24 +1,14 @@
-#ifndef _HEXGRIDVISUAL_H_
-#define _HEXGRIDVISUAL_H_
+#pragma once
 
 #include "GL3/gl3.h"
-
 #include "tools.h"
-
 #include "VisualDataModel.h"
 #include "ColourMap.h"
 #include "HexGrid.h"
 #include "MathAlgo.h"
-using morph::MathAlgo;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 
 /*!
  * Macros for testing neighbours. The step along for neighbours on the
@@ -69,8 +59,8 @@ namespace morph {
         //! Constructor which does not set colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const array<float, 3> _offset,
-                      const vector<Flt>* _data) {
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -90,8 +80,8 @@ namespace morph {
         //! Constructor which sets default colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const array<float, 3> _offset,
-                      const vector<Flt>* _data,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
             // Set up...
@@ -116,8 +106,8 @@ namespace morph {
         //! Constructor which sets default colour map and z/colour Scale objects
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const array<float, 3> _offset,
-                      const vector<Flt>* _data,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
                       const Scale<Flt>& zscale,
                       const Scale<Flt>& cscale,
                       ColourMapType _cmt,
@@ -162,7 +152,7 @@ namespace morph {
                 //shouldn't need: datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
                 //datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
-                array<float, 3> clr = this->cm.convert (datum);
+                std::array<float, 3> clr = this->cm.convert (datum);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
@@ -171,14 +161,14 @@ namespace morph {
             // Build indices based on neighbour relations in the HexGrid
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
-                    //cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << endl;
+                    //std::cout << "1st triangle " << hi << "->" << NNE(hi) << "->" << NE(hi) << std::endl;
                     this->indices.push_back (hi);
                     this->indices.push_back (NNE(hi));
                     this->indices.push_back (NE(hi));
                 }
 
                 if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    //cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << endl;
+                    //std::cout << "2nd triangle " << hi << "->" << NW(hi) << "->" << NSW(hi) << std::endl;
                     this->indices.push_back (hi);
                     this->indices.push_back (NW(hi));
                     this->indices.push_back (NSW(hi));
@@ -197,9 +187,9 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
-            vector<Flt> dcopy = *(this->scalarData);
+            std::vector<Flt> dcopy = *(this->scalarData);
             this->zScale.transform (*(this->scalarData), dcopy);
-            vector<Flt> dcolour = *(this->scalarData);
+            std::vector<Flt> dcolour = *(this->scalarData);
             this->colourScale.transform (*(this->scalarData), dcolour);
 
             Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
@@ -226,7 +216,7 @@ namespace morph {
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
-                array<float, 3> clr = this->cm.convert (dcolour[hi]);
+                std::array<float, 3> clr = this->cm.convert (dcolour[hi]);
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -374,5 +364,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _HEXGRIDVISUAL_H_

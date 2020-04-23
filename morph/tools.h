@@ -11,19 +11,8 @@
 #include <set>
 #include <map>
 #include <string>
-
-using std::array;
-using std::vector;
-using std::list;
-using std::set;
-using std::map;
-using std::string;
-using std::istream;
-using std::ostream;
-
 #include <sys/stat.h>
 #include <stdlib.h>
-
 #include <json/json.h>
 #include "Process.h"
 
@@ -133,21 +122,21 @@ namespace morph
          * directory, then information to this effect will be inserted
          * into @root.
          */
-        static void insertGitInfo (Json::Value& root, const string& codedir);
+        static void insertGitInfo (Json::Value& root, const std::string& codedir);
 
-        static vector<double> getJetColor (double gray);
+        static std::vector<double> getJetColor (double gray);
 
         /*!
          * Floating point array version of getJetColor()
          */
-        static array<float, 3> getJetColorF (double gray);
+        static std::array<float, 3> getJetColorF (double gray);
 
-        static vector<double> getGrayScaleColor (double gray);
+        static std::vector<double> getGrayScaleColor (double gray);
 
         /*!
          * Hue-Saturation-Value to Red-Green-Blue.
          */
-        static array<float,3> HSVtoRGB (double, double, double);
+        static std::array<float,3> HSVtoRGB (double, double, double);
 
         /*!
          * For mixing up bits of three args; used to generate a good
@@ -190,15 +179,15 @@ namespace morph
         static double normalDistributionValue (void);
 
         static double wrapAngle(double);
-        static vector <vector <float> > rotateCloud (vector <vector <float> >, double, double, double);
+        static std::vector <std::vector <float> > rotateCloud (std::vector <std::vector <float> >, double, double, double);
 #ifdef SPHERE_ATTEMPT
-        static vector <vector <float> > sphere (int, double);
+        static std::vector <std::vector <float> > sphere (int, double);
 #endif
-        static vector<vector<int> > graph(vector<vector<int> >);
+        static std::vector<std::vector<int> > graph(std::vector<std::vector<int> >);
         /*!
          * return indices of descending value in unsorted
          */
-        static vector<int> sort (vector<double> unsorted);
+        static std::vector<int> sort (std::vector<double> unsorted);
 
         /*!
          * This removes all carriage return characters ('\\r'
@@ -209,25 +198,25 @@ namespace morph
          * removed, whether or not they are followed by a '\\n'
          * character.
          */
-        static int ensureUnixNewlines (string& input);
+        static int ensureUnixNewlines (std::string& input);
 
         /*!
          * Get the working directory
          */
-        static string getPwd (void);
+        static std::string getPwd (void);
 
         /*!
          * If the last character of input is a carriage return
          * ('\\r' 0xd), then it is erased from input.
          */
-        static int stripTrailingCarriageReturn (string& input);
+        static int stripTrailingCarriageReturn (std::string& input);
 
         /*!
          * Erase trailing spaces from input. Return the
          * number of spaces removed.
          */
         //@{
-        static int stripTrailingSpaces (string& input);
+        static int stripTrailingSpaces (std::string& input);
         //@}
 
         /*!
@@ -235,21 +224,21 @@ namespace morph
          * number of chars removed.
          */
         //@{
-        static int stripTrailingChars (string& input, const char c = ' ');
+        static int stripTrailingChars (std::string& input, const char c = ' ');
         //@}
 
         /*!
          * Erase trailing whitespace from input. Return the
          * number of whitespace characters removed.
          */
-        static int stripTrailingWhitespace (string& input);
+        static int stripTrailingWhitespace (std::string& input);
 
         /*!
          * Erase leading spaces from input. Return the
          * number of spaces removed.
          */
         //@{
-        static int stripLeadingSpaces (string& input);
+        static int stripLeadingSpaces (std::string& input);
         //@}
 
         /*!
@@ -257,35 +246,35 @@ namespace morph
          * number of chars removed.
          */
         //@{
-        static int stripLeadingChars (string& input, const char c = ' ');
+        static int stripLeadingChars (std::string& input, const char c = ' ');
         //@}
 
         /*!
          * Erase leading whitespace from input. Return the
          * number of whitespace characters removed.
          */
-        static int stripLeadingWhitespace (string& input);
+        static int stripLeadingWhitespace (std::string& input);
 
         /*!
          * Erase leading and trailing whitespace from
          * input. Return the number of whitespace characters
          * removed.
          */
-        static int stripWhitespace (string& input);
+        static int stripWhitespace (std::string& input);
 
         /*!
          * Return true if input contains only space, tab, newline
          * chars.
          */
-        static bool containsOnlyWhitespace (string& input);
+        static bool containsOnlyWhitespace (std::string& input);
 
         /*!
          * Strip any occurrences of the characters in charList
          * from input.
          */
         //@{
-        static int stripChars (string& input, const string& charList);
-        static int stripChars (string& input, const char charList);
+        static int stripChars (std::string& input, const std::string& charList);
+        static int stripChars (std::string& input, const char charList);
         //@}
 
         /*!
@@ -298,7 +287,7 @@ namespace morph
          * \return The number of hex sequences replaced in
          * \param input.
          */
-        static int convertCHexCharSequences (string& input);
+        static int convertCHexCharSequences (std::string& input);
 
         /*!
          * Do a search and replace, search for searchTerm,
@@ -309,16 +298,16 @@ namespace morph
          *
          * \return the number of terms replaced.
          */
-        static int searchReplace (const string& searchTerm,
-                                  const string& replaceTerm,
-                                  string& data,
+        static int searchReplace (const std::string& searchTerm,
+                                  const std::string& replaceTerm,
+                                  std::string& data,
                                   const bool replaceAll = true);
 
         /*!
          * Return the number of instances of the character c
          * in line.
          */
-        static unsigned int countChars (const string& line, const char c);
+        static unsigned int countChars (const std::string& line, const char c);
 
         /*!
          * Take the string str and condition it, so that it
@@ -326,50 +315,50 @@ namespace morph
          * characters with '_' and making sure it doesn't
          * start with a numeral.
          */
-        static void conditionAsXmlTag (string& str);
+        static void conditionAsXmlTag (std::string& str);
 
         /*!
          * split csv into a vector
          */
-        static vector<string> csvToVector (const string& csvList,
-                                           const char separator = ',',
-                                           const bool ignoreTrailingEmptyVal = true);
+        static std::vector<std::string> csvToVector (const std::string& csvList,
+                                                     const char separator = ',',
+                                                     const bool ignoreTrailingEmptyVal = true);
 
         /*!
          * split csv into a list
          */
-        static list<string> csvToList (const string& csvList,
-                                       const char separator = ',');
+        static std::list<std::string> csvToList (const std::string& csvList,
+                                                 const char separator = ',');
         /*!
          * split csv into a set
          */
-        static set<string> csvToSet (const string& csvList,
-                                     const char separator = ',');
+        static std::set<std::string> csvToSet (const std::string& csvList,
+                                               const char separator = ',');
 
         /*!
          * Output a vector of strings as a csv string.
          */
-        static string vectorToCsv (const vector<string>& vecList,
-                                   const char separator = ',');
+        static std::string vectorToCsv (const std::vector<std::string>& vecList,
+                                        const char separator = ',');
 
         /*!
          * Output a list of strings as a csv string.
          */
-        static string listToCsv (const list<string>& listList,
+        static std::string listToCsv (const std::list<std::string>& listList,
                                  const char separator = ',');
 
         /*!
          * Output a set of strings as a csv string.
          */
-        static string setToCsv (const set<string>& listList,
-                                const char separator = ',');
+        static std::string setToCsv (const std::set<std::string>& listList,
+                                     const char separator = ',');
 
         /*!
          * Split a comma-separated key/value pair list into a map.
          */
-        static map<string, string> csvToMap (const string& csvList,
-                                             const char relationship = '=',
-                                             const char separator = ',');
+        static std::map<std::string, std::string> csvToMap (const std::string& csvList,
+                                                            const char relationship = '=',
+                                                            const char separator = ',');
         /*!
          * Split a string of values into a vector using the
          * separator string (not char) passed in as
@@ -381,8 +370,9 @@ namespace morph
          * Similar to util::splitString but
          * FASTER. PREFER THIS OVER splitString.
          */
-        static vector<string> stringToVector (const string& s, const string& separator,
-                                              const bool ignoreTrailingEmptyVal = true);
+        static std::vector<std::string> stringToVector (const std::string& s,
+                                                        const std::string& separator,
+                                                        const bool ignoreTrailingEmptyVal = true);
 
         /*!
          * File and directory access methods
@@ -393,7 +383,7 @@ namespace morph
          * Stat a file, return true if the file exists and is
          * any kind of file except a directory.
          */
-        static bool fileExists (const string& path);
+        static bool fileExists (const std::string& path);
 
         /*!
          * Stat a file, return true if the file exists and is
@@ -402,44 +392,44 @@ namespace morph
          * pointing to a regular file, fileExists returns
          * true.
          */
-        static bool regfileExists (const string& path);
+        static bool regfileExists (const std::string& path);
 
         /*!
          * Like regfileExists, but also checks if the file has
          * the "executable by user" bit set (chmod u+x).
          */
-        static bool userExefileExists (const string& path);
+        static bool userExefileExists (const std::string& path);
 
         /*!
          * Like regfileExists, but for block devices
          */
-        static bool blockdevExists (const string& path);
+        static bool blockdevExists (const std::string& path);
 
         /*!
          * Like regfileExists, but for sockets
          */
-        static bool socketExists (const string& path);
+        static bool socketExists (const std::string& path);
 
         /*!
          * Like regfileExists, but for fifos
          */
-        static bool fifoExists (const string& path);
+        static bool fifoExists (const std::string& path);
 
         /*!
          * Like regfileExists, but for char devices
          */
-        static bool chardevExists (const string& path);
+        static bool chardevExists (const std::string& path);
 
         /*!
          * Like lnkExists, but for char devices
          */
-        static bool linkExists (const string& path);
+        static bool linkExists (const std::string& path);
 
         /*!
          * Stat a directory, return true if the directory
          * exists.
          */
-        static bool dirExists (const string& path);
+        static bool dirExists (const std::string& path);
 
         /*!
          * Create the directory and any parent directories
@@ -470,19 +460,19 @@ namespace morph
          * was not created. This is NOT applied if it is set
          * to -1.
          */
-        static void createDir (const string& path,
+        static void createDir (const std::string& path,
                                const mode_t mode = 0775,
                                const int uid = -1, const int gid = -1);
 
         /*!
          * Attempt to rmdir path.
          */
-        static void removeDir (const string& path);
+        static void removeDir (const std::string& path);
 
         /*!
          * Set the permissions for the provided file
          */
-        static void setPermissions (const string& filepath,
+        static void setPermissions (const std::string& filepath,
                                     const mode_t mode);
 
         /*!
@@ -496,20 +486,20 @@ namespace morph
          * \param accessType Indicates which access type(s) to
          * check. r=read, w=write.
          */
-        static bool checkAccess (const string& filepath,
-                                 const string& accessType);
+        static bool checkAccess (const std::string& filepath,
+                                 const std::string& accessType);
 
         /*!
          * Set the ownership for the provided file
          */
-        static void setOwnership (const string& filepath,
+        static void setOwnership (const std::string& filepath,
                                   const int uid = -1,
                                   const int gid = -1);
 
         /*!
          * Touch the file.
          */
-        static void touchFile (const string& path);
+        static void touchFile (const std::string& path);
 
         /*!
          * Copy a file. If from/to is a string or a char*,
@@ -522,11 +512,11 @@ namespace morph
          * case.
          */
         //@{
-        static void copyFile (const string& from, const string& to);
-        static void copyFile (const string& from, ostream& to);
-        static void copyFile (FILE* from, const string& to);
-        static void copyFile (istream& from, const string& to);
-        static void copyFile (const string& from, FILE* to);
+        static void copyFile (const std::string& from, const std::string& to);
+        static void copyFile (const std::string& from, std::ostream& to);
+        static void copyFile (FILE* from, const std::string& to);
+        static void copyFile (std::istream& from, const std::string& to);
+        static void copyFile (const std::string& from, FILE* to);
         //@}
 
         /*!
@@ -539,45 +529,45 @@ namespace morph
         /*!
          * Copy a file from an input stream into a string.
          */
-        static void copyFileToString (istream& from, string& to);
+        static void copyFileToString (std::istream& from, std::string& to);
 
         /*!
          * Append the file from to the filestream appendTo
          */
         //@{
-        static void appendFile (const string& from, ostream& appendTo);
-        static void appendFile (istream& from, ostream& appendTo);
-        static void appendFile (istream& from, const string& appendTo);
-        static void appendFile (const string& from, const string& appendTo);
+        static void appendFile (const std::string& from, std::ostream& appendTo);
+        static void appendFile (std::istream& from, std::ostream& appendTo);
+        static void appendFile (std::istream& from, const std::string& appendTo);
+        static void appendFile (const std::string& from, const std::string& appendTo);
         //@}
 
         /*!
          * Make a copy of \param bytes bytes of the file at
          * \param original to the file \param truncated.
          */
-        static void truncateFile (const string& original,
-                                  const string& truncated,
+        static void truncateFile (const std::string& original,
+                                  const std::string& truncated,
                                   const unsigned int bytes);
 
         /*!
          * Move a file. Throw exception on failure.
          */
-        static void moveFile (const string& from, const string& to);
+        static void moveFile (const std::string& from, const std::string& to);
 
         /*!
          * Call unlink() on the given file path fpath. If
          * unlinking fails, throw a descriptive error based on
          * the errno which was set on unlink's return.
          */
-        static void unlinkFile (const string& fpath);
+        static void unlinkFile (const std::string& fpath);
 
         /*!
          * Unlink files in dirPath which are older than
          * olerThanSeconds and which contain filePart.
          */
-        static void clearoutDir (const string& dirPath,
+        static void clearoutDir (const std::string& dirPath,
                                  const unsigned int olderThanSeconds = 0,
-                                 const string& filePart = "");
+                                 const std::string& filePart = "");
 
         /*!
          * This reads the contents of a directory tree, making
@@ -609,9 +599,9 @@ namespace morph
          * value, then only files older than olderThanSeconds
          * will be returned.
          */
-        static void readDirectoryTree (vector<string>& vec,
-                                       const string& baseDirPath,
-                                       const string& subDirPath,
+        static void readDirectoryTree (std::vector<std::string>& vec,
+                                       const std::string& baseDirPath,
+                                       const std::string& subDirPath,
                                        const unsigned int olderThanSeconds = 0);
 
         /*!
@@ -622,8 +612,8 @@ namespace morph
          * value, then only files older than olderThanSeconds
          * will be returned.
          */
-        static void readDirectoryTree (vector<string>& vec,
-                                       const string& dirPath,
+        static void readDirectoryTree (std::vector<std::string>& vec,
+                                       const std::string& dirPath,
                                        const unsigned int olderThanSeconds = 0);
 
         /*!
@@ -641,29 +631,29 @@ namespace morph
          *
          * The set dset would be filled only with dir2, dir1.
          */
-        static void readDirectoryDirs (set<string>& dset,
-                                       const string& dirPath);
+        static void readDirectoryDirs (std::set<std::string>& dset,
+                                       const std::string& dirPath);
 
         /*!
          * Return empty subdirectories in
          * dirPath/subDir. Recursive partner to
-         * readDirectoryEmptyDirs(set<string>&, const string&).
+         * readDirectoryEmptyDirs(set<std::string>&, const std::string&).
          *
          * The base directory path baseDirPath should have NO
          * TRAILING '/'. The subDirPath should have NO INITIAL
          * '/' character.
          */
-        static void readDirectoryEmptyDirs (set<string>& dset,
-                                            const string& baseDirPath,
-                                            const string& subDir = "");
+        static void readDirectoryEmptyDirs (std::set<std::string>& dset,
+                                            const std::string& baseDirPath,
+                                            const std::string& subDir = "");
 
         /*!
          * Attempts to remove all the unused directories in a tree.
          *
          * May throw exceptions.
          */
-        static void removeUnusedDirs (set<string>& dset,
-                                      const string& dirPath);
+        static void removeUnusedDirs (std::set<std::string>& dset,
+                                      const std::string& dirPath);
 
         /*!
          * Recursively remove all empty directories in baseDirPath(/subDir)
@@ -677,20 +667,20 @@ namespace morph
          * end-of-directories in a tree. If you want to remove
          * all "unused" directories in a tree, use removeUnusedDirs()
          */
-        static void removeEmptySubDirs (set<string>& dset,
-                                        const string& baseDirPath,
-                                        const string& subDir = "");
+        static void removeEmptySubDirs (std::set<std::string>& dset,
+                                        const std::string& baseDirPath,
+                                        const std::string& subDir = "");
 
         /*!
          * Return a datestamp - st_mtime; the file
          * modification time for the given file.
          */
-        static string fileModDatestamp (const string& filename);
+        static std::string fileModDatestamp (const std::string& filename);
 
         /*!
          * Check whether the specified files differ.
          */
-        static bool filesDiffer (const string& first, const string& second);
+        static bool filesDiffer (const std::string& first, const std::string& second);
         //@}
 
         /*!
@@ -787,7 +777,7 @@ namespace morph
          */
         //@{
         template <typename ST>
-        static vector<ST> splitStringWithEncs (const ST& s,
+        static std::vector<ST> splitStringWithEncs (const ST& s,
                                                const ST& separatorChars = ST(";, "),
                                                const ST& enclosureChars = ST("\"'"),
                                                const typename ST::value_type& escapeChar = typename ST::value_type(0));
@@ -815,7 +805,7 @@ morph::Tools::randF (void)
  */
 //@{
 template <typename ST>
-vector<ST>
+std::vector<ST>
 morph::Tools::splitStringWithEncs (const ST& s,
                                    const ST& separatorChars,
                                    const ST& enclosureChars,
@@ -824,7 +814,7 @@ morph::Tools::splitStringWithEncs (const ST& s,
     // Run through the string, searching for separator and
     // enclosure chars and finding tokens based on those.
 
-    vector<ST> theVec;
+    std::vector<ST> theVec;
     ST entry("");
     typename ST::size_type a=0, b=0, c=0;
     ST sepsAndEncsAndEsc = separatorChars + enclosureChars;

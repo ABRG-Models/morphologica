@@ -1,26 +1,25 @@
-#ifndef _DIRICHDOM_H_
-#define _DIRICHDOM_H_
+/*!
+ * \file
+ *
+ * Dirichlet domain class.
+ *
+ * Holds a list of DirichVtx objects, and a number of statistical metrics for the domain.
+ *
+ * \author Seb James
+ * \date 2019
+ */
+#pragma once
 
 #include <list>
-using std::list;
 #include <vector>
-using std::vector;
+#include <set>
 #include <utility>
-using std::pair;
-using std::make_pair;
 #include <sstream>
-using std::stringstream;
 #include "DirichVtx.h"
-using morph::DirichVtx;
 #include "NM_Simplex.h"
-using morph::NM_Simplex;
-using morph::NM_Simplex_State;
 #include "HdfData.h"
-using morph::HdfData;
 #include "Hex.h"
-using morph::Hex;
 #include "HexGrid.h"
-using morph::HexGrid;
 #define DEBUG 1
 #include "MorphDbg.h"
 
@@ -35,7 +34,7 @@ namespace morph {
     class DirichDom {
     public:
         //! The ordered list of vertices that make up this Dirichlet domain.
-        list<DirichVtx<Flt>> vertices;
+        std::list<DirichVtx<Flt>> vertices;
 
         //! The area of the domain
         Flt area = 0.0;
@@ -50,7 +49,7 @@ namespace morph {
         Flt edge_deviation = 0.0;
 
         //! The best centre for the domain. Called P in Honda 1983.
-        pair<Flt, Flt> centre;
+        std::pair<Flt, Flt> centre;
 
         //! Return the number of vertices
         unsigned int numVertices (void) const {
@@ -60,8 +59,8 @@ namespace morph {
         /*!
          * Compute the perpendicular distance from point p to the line defined by points a and b.
          */
-        static Flt compute_distance_to_line (const pair<Flt, Flt>& p,
-                                             const pair<Flt, Flt>& a, const pair<Flt, Flt>& b) {
+        static Flt compute_distance_to_line (const std::pair<Flt, Flt>& p,
+                                             const std::pair<Flt, Flt>& a, const std::pair<Flt, Flt>& b) {
             // Find angle between Ai--Pi and Ai--p
             Flt angle = DirichVtx<Flt>::compute_angle (p, a, b, 1);
             // And distance from p to Ai
@@ -82,7 +81,7 @@ namespace morph {
             Flt dcount = 0.0;
             for (DirichVtx<Flt> vtx : this->vertices) {
                 // vtx.v is the current coord, lastvtx.v is the prev coord. These mark the two ends of the line.
-                for (pair<Flt, Flt> xi : vtx.pathto_next) {
+                for (std::pair<Flt, Flt> xi : vtx.pathto_next) {
                     // Find perp. distance from xi to x0-x1 line.
                     Flt dist = DirichDom<Flt>::compute_distance_to_line (xi, vtx.v, lastvtx.v);
                     dist *= dist;
@@ -107,19 +106,19 @@ namespace morph {
          * means we go around the boundary, marking hexes in straight lines in all possible inward
          * directions from each boundary hex. Simples.
          */
-        void compute_area (HexGrid* hg, const vector<Flt>& f) {
+        void compute_area (HexGrid* hg, const std::vector<Flt>& f) {
 
             // Start at one of the vertices. Follow the edge of one vertex, counting/marking hexes
             // as you go. Continue around the perimeter until you get back to the start. Now fill in
             // the region (with 'laser beams') until all hexes in the domain are marked.
 
             // Find a coordinate that is situated on the border of the domain
-            typename list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
-            pair<Flt, Flt> firstborder = dv->pathto_next.front();
+            typename std::list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
+            std::pair<Flt, Flt> firstborder = dv->pathto_next.front();
 
             // Now find a hex in hg that a) has this coordinate on it as a vertex and b) has the
             // correct ID. This will be the first hex on the boundary.
-            list<Hex>::iterator firsthex = hg->hexen.begin();
+            std::list<Hex>::iterator firsthex = hg->hexen.begin();
             while (firsthex != hg->hexen.end()) {
                 if (firsthex->contains_vertex (firstborder) && f[firsthex->vi] == this->f) {
                     // This hex is on the border of this domain.
@@ -132,13 +131,13 @@ namespace morph {
             // and HEX_USER_FLAG_0 for every domain hex.
 
             // Boundary hex iterator
-            list<Hex>::iterator bhi = firsthex;
+            std::list<Hex>::iterator bhi = firsthex;
             // Previous boundary hex iterator
-            list<Hex>::iterator bhi_prev = firsthex;
+            std::list<Hex>::iterator bhi_prev = firsthex;
             // Neighbour hex iterator
-            list<Hex>::iterator nhi = firsthex;
+            std::list<Hex>::iterator nhi = firsthex;
             // A vector of Hex iterators to be filled with the hexes on the domain boundary
-            vector< list<Hex>::iterator > domBoundary;
+            std::vector< std::list<Hex>::iterator > domBoundary;
 
             // Set flags on first hex and add it to domBoundary
             firsthex->setUserFlags(HEX_USER_FLAG_0 | HEX_USER_FLAG_1);
@@ -151,7 +150,7 @@ namespace morph {
                     nhi = bhi->get_neighbour(i);
                     if (f[nhi->vi] == this->f) {
                         // Is a boundary hex if some of neighbours have id != f.
-                        set<Flt> neighbid;
+                        std::set<Flt> neighbid;
                         for (unsigned int j = 0; j<6; ++j) {
                             if (nhi->has_neighbour(j)) {
                                 neighbid.insert (f[nhi->get_neighbour(j)->vi]);
@@ -181,7 +180,7 @@ namespace morph {
                         if (f[nhi->vi] == this->f) {
                             DBG2 ("this neighbour matches ID");
                             // nhi is also a boundary hex if some of its neighbours have id != f.
-                            set<Flt> neighbid;
+                            std::set<Flt> neighbid;
                             neighbid.insert(f[nhi->vi]);
                             for (unsigned int j = 0; j<6; ++j) {
                                 if (nhi->has_neighbour(j)) {
@@ -218,7 +217,7 @@ namespace morph {
             // each other which are both on the boundary and a third hex protruding out - a sort of
             // boundary pimple. So, run through domBoundary to catch these cases and ensure that the
             // area measurement is accurate.
-            for (list<Hex>::iterator hi : domBoundary) {
+            for (std::list<Hex>::iterator hi : domBoundary) {
                 for (unsigned int i = 0; i<6; ++i) {
                     if (hi->has_neighbour(i)) {
                         nhi = hi->get_neighbour(i);
@@ -232,8 +231,8 @@ namespace morph {
 
             DBG2 ("foreach hex in domBoundary");
             // Now the domain boundary should have been found.
-            list<Hex>::iterator innerhex = hg->hexen.end();
-            for (list<Hex>::iterator hi : domBoundary) {
+            std::list<Hex>::iterator innerhex = hg->hexen.end();
+            for (std::list<Hex>::iterator hi : domBoundary) {
 
                 DBG2 ("boundary hex " << hi->outputRG());
                 // Mark inwards in all possible directions from nh.
@@ -313,11 +312,11 @@ namespace morph {
 
         //! This is the objective function for the gradient descent. Put it in DirichDom
         Flt compute_sos (const Flt& x, const Flt& y) const {
-            typename list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
+            typename std::list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
             Flt sos = 0.0;
             while (dv != this->vertices.end()) {
                 // Compute sum of square distances to the lines.
-                Flt dist = dv->compute_distance_to_line (make_pair(x, y));
+                Flt dist = dv->compute_distance_to_line (std::make_pair(x, y));
                 sos += dist * dist;
                 ++dv;
             }
@@ -328,11 +327,11 @@ namespace morph {
          * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
          * metric for the Dirichlet-ness of the vertices after Honda1983.
          */
-        Flt dirichlet_analyse_single_domain (pair<Flt, Flt>& P) {
+        Flt dirichlet_analyse_single_domain (std::pair<Flt, Flt>& P) {
 
-            typename list<DirichVtx<Flt>>::iterator dv = this->vertices.begin();
-            typename list<DirichVtx<Flt>>::iterator dvnext = dv;
-            typename list<DirichVtx<Flt>>::iterator dvprev = this->vertices.end();
+            typename std::list<DirichVtx<Flt>>::iterator dv = this->vertices.begin();
+            typename std::list<DirichVtx<Flt>>::iterator dvnext = dv;
+            typename std::list<DirichVtx<Flt>>::iterator dvprev = this->vertices.end();
 
             Flt mean_x = 0.0;
             Flt mean_y = 0.0;
@@ -346,7 +345,7 @@ namespace morph {
                     dvnext = this->vertices.begin();
                 }
 
-                pair<Flt, Flt> Aim1;
+                std::pair<Flt, Flt> Aim1;
                 if (dvprev == this->vertices.end()) {
                     dvprev--;
                     Aim1 = dvprev->v;
@@ -372,12 +371,12 @@ namespace morph {
 
             // Start out with a simplex with a vertex at the centroid of the domain vertices, and
             // then two other vertices at the first domain vertex (v) and its neighbour (vn).
-            pair<Flt, Flt> Pi_best;
+            std::pair<Flt, Flt> Pi_best;
             Pi_best.first = mean_x / this->vertices.size();
             Pi_best.second = mean_y / this->vertices.size();
             NM_Simplex<Flt> simp (Pi_best, this->vertices.begin()->v, this->vertices.begin()->vn);
             // Set a termination threshold for the SD of the vertices of the simplex
-            simp.termination_threshold = 2.0 * numeric_limits<Flt>::epsilon();
+            simp.termination_threshold = 2.0 * std::numeric_limits<Flt>::epsilon();
             // Set a 10000 operation limit, in case the above threshold can't be reached
             simp.too_many_operations = 10000;
 
@@ -406,7 +405,7 @@ namespace morph {
                     simp.apply_contraction (val);
                 }
             }
-            vector<Flt> vP = simp.best_vertex();
+            std::vector<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
             DBG2 ("FINISHED! Best approximation: (" << vP[0] << "," << vP[1] << ") has value " << min_sos);
             // We now have a P and a metric
@@ -425,8 +424,8 @@ namespace morph {
         }
 
         //! Save this domain data in HdfData& @data under path @pathroot
-        void save (HdfData& data, const string& pathroot) const {
-            string p("");
+        void save (HdfData& data, const std::string& pathroot) const {
+            std::string p("");
             p = pathroot + "/f";
             data.add_val (p.c_str(), this->f);
             p = pathroot + "/area";
@@ -440,7 +439,7 @@ namespace morph {
 
             unsigned int vcount = 0;
             for (auto dv : this->vertices) {
-                stringstream vname;
+                std::stringstream vname;
                 vname << pathroot << "/vtx";
                 vname.width(3);
                 vname.fill('0');
@@ -451,5 +450,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // _DIRICHDOM_H_

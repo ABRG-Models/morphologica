@@ -4,23 +4,24 @@
 
 #include "HdfData.h"
 #include "tools.h"
+#include <array>
+using std::array;
 #include <vector>
-#include <string>
-#include <sstream>
-#include <stdexcept>
-#include <utility>
-
 using std::vector;
+#include <list>
+using std::list;
+#include <string>
 using std::string;
-using std::runtime_error;
+#include <sstream>
 using std::stringstream;
+#include <stdexcept>
+using std::runtime_error;
+#include <utility>
 using std::pair;
 using std::make_pair;
-
 #include <iostream>
 using std::cout;
 using std::endl;
-
 #include <opencv2/opencv.hpp>
 
 morph::HdfData::HdfData (const string fname, const bool read_data)

@@ -12,18 +12,10 @@
 
 #include "GL3/gl3.h"
 #include "tools.h"
-
 #include "TransformMatrix.h"
-using morph::TransformMatrix;
-
 #include <iostream>
-using std::cout;
-using std::endl;
-
 #include <vector>
-using std::vector;
 #include <array>
-using std::array;
 
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
@@ -61,7 +53,7 @@ namespace morph {
         VisualModel () {
             this->offset = {0.0, 0.0, 0.0};
         }
-        VisualModel (GLuint sp, const array<float, 3> _offset) {
+        VisualModel (GLuint sp, const std::array<float, 3> _offset) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -98,7 +90,7 @@ namespace morph {
 
             // Set up the indices buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            //cout << "indices.size(): " << this->indices.size() << endl;
+            //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
 
@@ -127,14 +119,14 @@ namespace morph {
         TransformMatrix<float> viewmatrix;
 
         //! Setter for offset, also updates viewmatrix.
-        void setOffset (const array<float, 3>& _offset) {
+        void setOffset (const std::array<float, 3>& _offset) {
             this->offset = _offset;
             this->viewmatrix.setToIdentity();
             this->viewmatrix.translate (this->offset);
         }
 
         //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const array<float, 3>& _offset) {
+        void shiftOffset (const std::array<float, 3>& _offset) {
             for (unsigned int i = 0; i < 3; ++i) {
                 this->offset[i] += _offset[i];
             }
@@ -149,7 +141,7 @@ namespace morph {
          * vertices, but is instead applied when the object is rendered as part of
          * the model->world transformation.
          */
-        array<float, 3> offset;
+        std::array<float, 3> offset;
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
@@ -172,13 +164,13 @@ namespace morph {
         GLuint* vbos;
 
         //! CPU-side data for indices
-        vector<VBOint> indices;
+        std::vector<VBOint> indices;
         //! CPU-side data for vertex positions
-        vector<float> vertexPositions;
+        std::vector<float> vertexPositions;
         //! CPU-side data for vertex normals
-        vector<float> vertexNormals;
+        std::vector<float> vertexNormals;
         //! CPU-side data for vertex colours
-        vector<float> vertexColors;
+        std::vector<float> vertexColors;
         ///@}
 
         //! I guess we'll need a shader program.
@@ -186,17 +178,17 @@ namespace morph {
 
         //! Push three floats onto the vector of floats @vp
         ///@{
-        void vertex_push (const float& x, const float& y, const float& z, vector<float>& vp) {
+        void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp) {
             vp.push_back (x);
             vp.push_back (y);
             vp.push_back (z);
         }
-        void vertex_push (const array<float, 3>& arr, vector<float>& vp) {
+        void vertex_push (const std::array<float, 3>& arr, std::vector<float>& vp) {
             vp.push_back (arr[0]);
             vp.push_back (arr[1]);
             vp.push_back (arr[2]);
         }
-        void vertex_push (const Vector3<float>& vec, vector<float>& vp) {
+        void vertex_push (const Vector3<float>& vec, std::vector<float>& vp) {
             vp.push_back (vec.x);
             vp.push_back (vec.y);
             vp.push_back (vec.z);
@@ -204,7 +196,7 @@ namespace morph {
         ///@}
 
         //! Set up a vertex buffer object
-        void setupVBO (GLuint& buf, vector<float>& dat, unsigned int bufferAttribPosition) {
+        void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) {
             int sz = dat.size() * sizeof(float);
             glBindBuffer (GL_ARRAY_BUFFER, buf);
             glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
@@ -222,8 +214,8 @@ namespace morph {
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (GLushort& idx, array<float, 3> start, array<float, 3> end,
-                          array<float, 3> colStart, array<float, 3> colEnd,
+        void computeTube (GLushort& idx, std::array<float, 3> start, std::array<float, 3> end,
+                          std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12) {
 
             // First cap, draw as a triangle fan, but record indices so that
@@ -232,10 +224,10 @@ namespace morph {
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
             Vector3<float> vstart (start);
             Vector3<float> vend (end);
-            //cout << "Compute tube from " << vstart.asString() << "to " << vend.asString() << endl;
+            //std::cout << "Compute tube from " << vstart.asString() << "to " << vend.asString() << std::endl;
             Vector3<float> v = vend - vstart;
             v.renormalize();
-            //cout << "Normal vector v is " << v.asString() << endl;
+            //std::cout << "Normal vector v is " << v.asString() << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
@@ -245,44 +237,44 @@ namespace morph {
             rand_vec.randomize();
             Vector3<float> inplane = rand_vec * v;
             inplane.renormalize();
-            //cout << "in-plane vector is " << inplane.asString() << endl;
+            //std::cout << "in-plane vector is " << inplane.asString() << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector3<float> v_x_inplane = v * inplane;
-            //cout << "v ^ inplane vector is " << v_x_inplane.asString() << endl;
+            //std::cout << "v ^ inplane vector is " << v_x_inplane.asString() << std::endl;
             // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
-            //cout << "Central point of vstart cap is " << vstart.asString() << endl;
+            //std::cout << "Central point of vstart cap is " << vstart.asString() << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                //cout << "t is " << t << endl;
+                //std::cout << "t is " << t << std::endl;
                 Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
-                //cout << "point on vstart cap is " << (vstart+c).asString() << endl;
+                //std::cout << "point on vstart cap is " << (vstart+c).asString() << std::endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (colStart, this->vertexColors);
             }
 
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
-                //cout << "t is " << t << endl;
+                //std::cout << "t is " << t << std::endl;
                 Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
-                //cout << "point on vend cap is " << (vend+c).asString() << endl;
+                //std::cout << "point on vend cap is " << (vend+c).asString() << std::endl;
                 this->vertex_push (v, this->vertexNormals); // +v
                 this->vertex_push (colEnd, this->vertexColors);
             }
 
             // Bottom cap. Push centre vertex as the last vertex.
             this->vertex_push (vend, this->vertexPositions);
-            //cout << "vend cap is " << vend.asString() << endl;
+            //std::cout << "vend cap is " << vend.asString() << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colEnd, this->vertexColors);
 
@@ -295,73 +287,73 @@ namespace morph {
             GLushort endMiddle = idx + (GLushort)nverts - 1;
             GLushort endStartIdx = capStartIdx + segments;
 
-            //cout << "start cap" << endl;
+            //std::cout << "start cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
-                //cout << "add " << capMiddle << " to indices\n";
+                //std::cout << "add " << capMiddle << " to indices\n";
                 this->indices.push_back (capStartIdx + j);
-                //cout << "add " << (capStartIdx+j) << " to indices\n";
+                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
                 this->indices.push_back (capStartIdx + 1 + j);
-                //cout << "add " << (capStartIdx+1+j) << " to indices\n";
+                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
             }
             // Last one
             this->indices.push_back (capMiddle);
-            //cout << "add " << capMiddle << " to indices\n";
+            //std::cout << "add " << capMiddle << " to indices\n";
             this->indices.push_back (capStartIdx + segments - 1);
-            //cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
+            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
             this->indices.push_back (capStartIdx);
-            //cout << "add " << (capStartIdx) << " to indices\n";
+            //std::cout << "add " << (capStartIdx) << " to indices\n";
 
-            //cout << "sides" << endl;
+            //std::cout << "sides" << std::endl;
             for (int j = 0; j < segments; j++) {
                 // Two triangles per side; 1:
                 this->indices.push_back (capStartIdx + j);
-                //cout << "1. add " << (capStartIdx + j) << " to indices\n";
+                //std::cout << "1. add " << (capStartIdx + j) << " to indices\n";
                 if (j == (segments-1)) {
                     this->indices.push_back (capStartIdx);
-                    //cout << "1. add " << (capStartIdx) << " to indices\n";
+                    //std::cout << "1. add " << (capStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (capStartIdx + 1 + j);
-                    //cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
+                    //std::cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
                 }
                 this->indices.push_back (endStartIdx + j);
-                //cout << "1. add " << (endStartIdx + j) << " to indices\n";
+                //std::cout << "1. add " << (endStartIdx + j) << " to indices\n";
                 // 2:
                 this->indices.push_back (endStartIdx + j);
-                //cout << "2. add " << (endStartIdx + j) << " to indices\n";
+                //std::cout << "2. add " << (endStartIdx + j) << " to indices\n";
                 if (j == (segments-1)) {
                     this->indices.push_back (endStartIdx);
-                    //cout << "2. add " << (endStartIdx) << " to indices\n";
+                    //std::cout << "2. add " << (endStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (endStartIdx + 1 + j);
-                    //cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
+                    //std::cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
                 }
                 if (j == (segments-1)) {
                     this->indices.push_back (capStartIdx);
-                    //cout << "2. add " << (capStartIdx) << " to indices\n";
+                    //std::cout << "2. add " << (capStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (capStartIdx + j + 1);
-                    //cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
+                    //std::cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
                 }
             }
 
             // bottom cap
-            //cout << "vend cap" << endl;
+            //std::cout << "vend cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
-                //cout << "add " << (endMiddle) << " to indices\n";
+                //std::cout << "add " << (endMiddle) << " to indices\n";
                 this->indices.push_back (endStartIdx + j);
-                //cout << "add " << (endStartIdx + j) << " to indices\n";
+                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
                 this->indices.push_back (endStartIdx + 1 + j);
-                //cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
+                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
             }
             // Last one
             this->indices.push_back (endMiddle);
-            //cout << "add " << (endMiddle) << " to indices\n";
+            //std::cout << "add " << (endMiddle) << " to indices\n";
             this->indices.push_back (endStartIdx + segments - 1);
-            //cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
+            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
             this->indices.push_back (endStartIdx);
-            //cout << "add " << (endStartIdx) << " to indices\n";
+            //std::cout << "add " << (endStartIdx) << " to indices\n";
 
             // Update idx
             idx += nverts;
@@ -377,7 +369,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (GLushort& idx, array<float, 3> so, array<float, 3> sc, float r = 1.0f,
+        void computeSphere (GLushort& idx, std::array<float, 3> so, std::array<float, 3> sc, float r = 1.0f,
                             int rings = 10, int segments = 12) {
 
             // First cap, draw as a triangle fan, but record indices so that
@@ -501,7 +493,7 @@ namespace morph {
                 }
             }
             // end of sphere calculation
-            //cout << "Number of vertexPositions coords: " << (this->vertexPositions.size()/3) << endl;
+            //std::cout << "Number of vertexPositions coords: " << (this->vertexPositions.size()/3) << std::endl;
         }
 
         /*!
@@ -523,10 +515,10 @@ namespace morph {
          * \param segments Number of segments used to render the tube
          */
         void computeCone (GLushort& idx,
-                          array<float, 3> centre,
-                          array<float, 3> tip,
+                          std::array<float, 3> centre,
+                          std::array<float, 3> tip,
                           float ringoffset,
-                          array<float, 3> col,
+                          std::array<float, 3> col,
                           float r = 1.0f, int segments = 12) {
 
             // The cone is drawn as two "caps" a 'bottom cap' (or perhaps the 'back'
@@ -535,10 +527,10 @@ namespace morph {
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
             Vector3<float> vcentre (centre);
             Vector3<float> vtip (tip);
-            //cout << "Compute cone from " << vcentre.asString() << "to " << vtip.asString() << endl;
+            //std::cout << "Compute cone from " << vcentre.asString() << "to " << vtip.asString() << std::endl;
             Vector3<float> v = vtip - vcentre;
             v.renormalize();
-            //cout << "Normal vector v is " << v.asString() << endl;
+            //std::cout << "Normal vector v is " << v.asString() << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
@@ -548,13 +540,13 @@ namespace morph {
             rand_vec.randomize();
             Vector3<float> inplane = rand_vec * v;
             inplane.renormalize();
-            //cout << "in-plane vector is " << inplane.asString() << endl;
+            //std::cout << "in-plane vector is " << inplane.asString() << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector3<float> v_x_inplane = v * inplane;
-            //cout << "v ^ inplane vector is " << v_x_inplane.asString() << endl;
+            //std::cout << "v ^ inplane vector is " << v_x_inplane.asString() << std::endl;
             // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
@@ -564,12 +556,12 @@ namespace morph {
 
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                //cout << "t is " << t << endl;
+                //std::cout << "t is " << t << std::endl;
                 Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
                 this->vertex_push (vcentre+c, this->vertexPositions);
-                //cout << "point on vstart cap is " << (vstart+c).asString() << endl;
+                //std::cout << "point on vstart cap is " << (vstart+c).asString() << std::endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (col, this->vertexColors);
             }
@@ -588,41 +580,41 @@ namespace morph {
             GLushort endMiddle = idx + (GLushort)nverts - 1;
             GLushort endStartIdx = capStartIdx /*+ segments*/;
 
-            //cout << "bottom cap" << endl;
+            //std::cout << "bottom cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
-                //cout << "add " << capMiddle << " to indices\n";
+                //std::cout << "add " << capMiddle << " to indices\n";
                 this->indices.push_back (capStartIdx + j);
-                //cout << "add " << (capStartIdx+j) << " to indices\n";
+                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
                 this->indices.push_back (capStartIdx + 1 + j);
-                //cout << "add " << (capStartIdx+1+j) << " to indices\n";
+                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
             }
             // Last one
             this->indices.push_back (capMiddle);
-            //cout << "add " << capMiddle << " to indices\n";
+            //std::cout << "add " << capMiddle << " to indices\n";
             this->indices.push_back (capStartIdx + segments - 1);
-            //cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
+            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
             this->indices.push_back (capStartIdx);
-            //cout << "add " << (capStartIdx) << " to indices\n";
+            //std::cout << "add " << (capStartIdx) << " to indices\n";
 
 
             // 'outer' cap
-            //cout << "vend cap" << endl;
+            //std::cout << "vend cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
-                //cout << "add " << (endMiddle) << " to indices\n";
+                //std::cout << "add " << (endMiddle) << " to indices\n";
                 this->indices.push_back (endStartIdx + j);
-                //cout << "add " << (endStartIdx + j) << " to indices\n";
+                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
                 this->indices.push_back (endStartIdx + 1 + j);
-                //cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
+                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
             }
             // Last one
             this->indices.push_back (endMiddle);
-            //cout << "add " << (endMiddle) << " to indices\n";
+            //std::cout << "add " << (endMiddle) << " to indices\n";
             this->indices.push_back (endStartIdx + segments - 1);
-            //cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
+            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
             this->indices.push_back (endStartIdx);
-            //cout << "add " << (endStartIdx) << " to indices\n";
+            //std::cout << "add " << (endStartIdx) << " to indices\n";
 
             // Update idx
             idx += nverts;

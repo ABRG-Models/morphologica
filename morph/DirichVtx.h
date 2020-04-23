@@ -1,22 +1,20 @@
-#ifndef _DIRICHVTX_H_
-#define _DIRICHVTX_H_
+/*!
+ * \file
+ *
+ * Dirichlet domain vertex class.
+ *
+ * \author Seb James
+ * \date 2019
+ */
+#pragma once
 
 #include "MathConst.h"
 #include <cmath>
-using std::sqrt;
-using std::atan2;
 #include <limits>
-using std::numeric_limits;
 #include <utility>
-using std::pair;
 #include <list>
-using std::list;
-#include <vector>
-using std::vector;
 #include "HexGrid.h"
-using morph::Hex;
 #include "HdfData.h"
-using morph::HdfData;
 
 namespace morph {
 
@@ -31,24 +29,24 @@ namespace morph {
     class DirichVtx {
     public:
         //! The coordinate data for the main vertex represented.
-        pair<Flt, Flt> v;
+        std::pair<Flt, Flt> v;
 
         /*!
          * The series of points that make up the edge between the this vertex (v) and its vertex
          * neighbour (vn). Should order by size.
          */
-        list<pair<Flt, Flt> > pathto_neighbour;
+        std::list<std::pair<Flt, Flt> > pathto_neighbour;
 
         /*!
          * Series of points that make the edge between thsi vertex and the next one in the list.
          */
-        list<pair<Flt, Flt> > pathto_next;
+        std::list<std::pair<Flt, Flt> > pathto_next;
 
         /*! The location of the neighbouring vertex - necessary for computing a Dirichlet-ness
          * metric. Intended to be populated after a set of vertices has been created, in a "second
          * pass" of a program.
          */
-        pair<Flt, Flt> vn;
+        std::pair<Flt, Flt> vn;
 
         /*!
          * The value of the domain for which this vertex is a vertex. This is essentially the
@@ -76,7 +74,7 @@ namespace morph {
          * Dirichlet domain for which this vertex is a vertex, which is stored in @f. The other 2
          * domains are stored here. If one of the domains is "outside" the boundary set -1.0f.
          */
-        pair<Flt, Flt> neighb;
+        std::pair<Flt, Flt> neighb;
 
         /*!
          * An iterator into the accompanying list of Hexes. Intended to be an iterator into
@@ -84,13 +82,13 @@ namespace morph {
          * DirichVtx. Important so that from one DirichVtx, we can find our way along an edge to
          * the next vertex.
          */
-        list<Hex>::iterator hi;
+        std::list<Hex>::iterator hi;
 
         /*!
          * P_i is a point on the line. In this code, I project A_i+1 onto the line to find the
          * actual point P_i.
          */
-        pair<Flt, Flt> P_i;
+        std::pair<Flt, Flt> P_i;
 
         //! For marking vertices in a list as finsihed with, rather than erasing from that list.
         bool closed = false;
@@ -106,18 +104,18 @@ namespace morph {
 
         //! Default constructor
         DirichVtx (void) {
-            v.first = numeric_limits<Flt>::max();
-            v.second = numeric_limits<Flt>::max();
+            v.first = std::numeric_limits<Flt>::max();
+            v.second = std::numeric_limits<Flt>::max();
         }
 
         //! Construct with passed in float pair, using default threshold
-        DirichVtx (const pair<float, Flt>& p) : v(p) {}
+        DirichVtx (const std::pair<float, Flt>& p) : v(p) {}
 
         /*!
          * Construct with passed in Flt pair, set the threshold on the basis of being passed in
          * the Hex to Hex distance d.
          */
-        DirichVtx (const pair<Flt, Flt>& p, const Flt& d)
+        DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d)
             : v(p) {
             // This is half of the shortest possible distance in the y direction between two
             // adjacent Hex vertices.
@@ -128,7 +126,7 @@ namespace morph {
          * Construct with passed in Flt pair; set the threshold on the basis of being passed in
          * the Hex to Hex distance d and also set the value of the vertex to be @id
          */
-        DirichVtx (const pair<Flt, Flt>& p, const Flt& d, const Flt& id)
+        DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id)
             : v(p), f(id) {
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
@@ -138,7 +136,7 @@ namespace morph {
          * the Hex to Hex distance d, set the value of the vertex to be @id and finally, set
          * this->neighb (with @oth).
          */
-        DirichVtx (const pair<Flt, Flt>& p, const Flt& d, const Flt& id, const pair<Flt, Flt>& oth)
+        DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id, const std::pair<Flt, Flt>& oth)
             : v(p), f(id), neighb(oth) {
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
@@ -148,8 +146,8 @@ namespace morph {
          * the Hex to Hex distance d, set the value of the vertex to be @id, set this->neighb
          * (with @oth) and finally, set the list<Hex> iterator @hex.
          */
-        DirichVtx (const pair<Flt, Flt>& p, const Flt& d, const Flt& id,
-                   const pair<Flt, Flt>& oth, const list<Hex>::iterator hex)
+        DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id,
+                   const std::pair<Flt, Flt>& oth, const std::list<Hex>::iterator hex)
             : v(p), f(id), neighb(oth), hi(hex) {
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
@@ -195,11 +193,11 @@ namespace morph {
         }
 
         //! Compare @other with this->v. Return true if they're the same.
-        bool compare (const pair<Flt, Flt>& other) {
+        bool compare (const std::pair<Flt, Flt>& other) {
             // Equality too strong a test. Use this->threshold Is distance from v to other smaller
             // than threshold? If so return true.
-            Flt distance = sqrt ( (other.first-v.first)*(other.first-v.first)
-                                  + (other.second-v.second)*(other.second-v.second) );
+            Flt distance = std::sqrt ( (other.first-v.first)*(other.first-v.first)
+                                       + (other.second-v.second)*(other.second-v.second) );
             if (distance < this->threshold) {
                 return true;
             }
@@ -208,8 +206,8 @@ namespace morph {
 
         //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
         bool unset (void) {
-            if (this->v.first == numeric_limits<Flt>::max()
-                && this->v.second == numeric_limits<Flt>::max()) {
+            if (this->v.first == std::numeric_limits<Flt>::max()
+                && this->v.second == std::numeric_limits<Flt>::max()) {
                 return true;
             }
             return false;
@@ -218,9 +216,10 @@ namespace morph {
         /*!
          * Compute line length of the line between coordinates @coord0 and @coord1
          */
-        static Flt line_length (const pair<Flt, Flt>& coord0, const pair<Flt, Flt>& coord1) {
-            Flt c01 = sqrt ((coord0.first - coord1.first) * (coord0.first - coord1.first)
-                            + (coord0.second - coord1.second) * (coord0.second - coord1.second));
+        static Flt line_length (const std::pair<Flt, Flt>& coord0,
+                                const std::pair<Flt, Flt>& coord1) {
+            Flt c01 = std::sqrt ((coord0.first - coord1.first) * (coord0.first - coord1.first)
+                                 + (coord0.second - coord1.second) * (coord0.second - coord1.second));
             return c01;
         }
 
@@ -230,22 +229,22 @@ namespace morph {
          *
          * Could go into morph::tools or morph::maths or something.
          */
-        static Flt compute_angle (const pair<Flt, Flt>& c0,
-                                  const pair<Flt, Flt>& c1,
-                                  const pair<Flt, Flt>& c2,
+        static Flt compute_angle (const std::pair<Flt, Flt>& c0,
+                                  const std::pair<Flt, Flt>& c1,
+                                  const std::pair<Flt, Flt>& c2,
                                   const unsigned int angleFor) {
             Flt angle = -1.0f;
             if (angleFor == 0) {
-                angle = atan2 (c2.second - c0.second, c2.first - c0.first)
-                    - atan2 (c1.second - c0.second, c1.first - c0.first);
+                angle = std::atan2 (c2.second - c0.second, c2.first - c0.first)
+                    - std::atan2 (c1.second - c0.second, c1.first - c0.first);
 
             } else if (angleFor == 1) {
-                angle = atan2 (c0.second - c1.second, c0.first - c1.first)
-                    - atan2 (c2.second - c1.second, c2.first - c1.first);
+                angle = std::atan2 (c0.second - c1.second, c0.first - c1.first)
+                    - std::atan2 (c2.second - c1.second, c2.first - c1.first);
 
             } else if (angleFor == 2) {
-                angle = atan2 (c1.second - c2.second, c1.first - c2.first)
-                    - atan2 (c0.second - c2.second, c0.first - c2.first);
+                angle = std::atan2 (c1.second - c2.second, c1.first - c2.first)
+                    - std::atan2 (c0.second - c2.second, c0.first - c2.first);
             } // else throw error?
 
             return angle;
@@ -255,7 +254,7 @@ namespace morph {
          * Find the minimum distance from the point p to the Pi line defined in this object by P_i,
          * A_i (aka v).
          */
-        Flt compute_distance_to_line (const pair<Flt, Flt>& p) const {
+        Flt compute_distance_to_line (const std::pair<Flt, Flt>& p) const {
             // Find angle between Ai--Pi and Ai--p
             Flt angle = DirichVtx<Flt>::compute_angle (p, this->v, this->P_i, 1);
             // And distance from p to Ai
@@ -272,7 +271,8 @@ namespace morph {
          * information, it's possible to compute the gradient of the line that emerges from A_i
          * and heads towards the Dirichlet domain centre.
          */
-        void compute_line_to_centre (const pair<Flt, Flt>& Aim1, const pair<Flt, Flt>& Aip1) {
+        void compute_line_to_centre (const std::pair<Flt, Flt>& Aim1,
+                                     const std::pair<Flt, Flt>& Aip1) {
 
             /*
              * 1. Compute phi, the angle Bi Ai Ai-1 using law of cosines
@@ -289,7 +289,7 @@ namespace morph {
             Flt AiPi = Aip1Ai * cos (theta);
             // 2b Determine the coordinates of point Pi using theta and the angle from the x axis
             // to Aip1.
-            Flt xi = atan2 ((Aip1.second - this->v.second), (Aip1.first - this->v.first));
+            Flt xi = std::atan2 ((Aip1.second - this->v.second), (Aip1.first - this->v.first));
 
             Flt deltax = AiPi * cos (theta + xi);
             Flt deltay = AiPi * sin (theta + xi);
@@ -323,5 +323,3 @@ namespace morph {
     };
 
 } // namespace morph
-
-#endif // DIRICHVTX
