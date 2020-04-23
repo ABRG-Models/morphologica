@@ -16,6 +16,9 @@
 #include <vector>
 #include <array>
 #include <list>
+#include <string>
+#include <sstream>
+#include <iostream>
 
 namespace morph {
 
@@ -318,7 +321,7 @@ namespace morph {
             std::vector<std::vector<Flt>> rhocopy = rho;
             for (unsigned int i = 0; i<onstates.size(); ++i) {
                 if (onstates[i] == false) {
-                    cout << "zero rhocopy[i="<<i<<"]" << endl;
+                    std::cout << "zero rhocopy[i="<<i<<"]" << std::endl;
                     for (unsigned int j = 0; j<rhocopy[i].size(); ++j) {
                         rhocopy[i][j] = -1.0;
                     }
@@ -490,9 +493,9 @@ namespace morph {
         /*!
          * Save PNG images
          */
-        void savePngs (const string& logpath, const string& name,
+        void savePngs (const std::string& logpath, const std::string& name,
                        unsigned int frameN, Gdisplay& disp) {
-            stringstream ff1;
+            std::stringstream ff1;
             ff1 << logpath << "/" << name<< "_";
             ff1 << std::setw(5) << std::setfill('0') << frameN;
             ff1 << ".png";

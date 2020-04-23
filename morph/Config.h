@@ -4,6 +4,7 @@
 #pragma once
 
 #include <json/json.h>
+#include <list>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -116,7 +117,7 @@ namespace morph {
             Process p;
             std::string command ("/usr/bin/git");
 
-            list<std::string> args1;
+            std::list<std::string> args1;
             args1.push_back ("git");
             args1.push_back ("rev-parse");
             args1.push_back ("HEAD");
@@ -126,7 +127,7 @@ namespace morph {
                 p.start (command, args1);
                 p.probeProcess ();
                 if (!p.waitForStarted()) {
-                    throw runtime_error ("Process failed to start");
+                    throw std::runtime_error ("Process failed to start");
                 }
                 while (p.running() == true) {
                     p.probeProcess();
@@ -152,7 +153,7 @@ namespace morph {
             // Reset Process with arg true to keep callbacks
             p.reset (true);
 
-            list<std::string> args2;
+            std::list<std::string> args2;
             args2.push_back ("git");
             args2.push_back ("status");
 
@@ -160,7 +161,7 @@ namespace morph {
                 p.start (command, args2);
                 p.probeProcess ();
                 if (!p.waitForStarted()) {
-                    throw runtime_error ("Process failed to start");
+                    throw std::runtime_error ("Process failed to start");
                 }
                 while (p.running() == true) {
                     p.probeProcess();
@@ -203,7 +204,7 @@ namespace morph {
             p.reset (true);
 
             // This gets the git branch name
-            list<std::string> args3;
+            std::list<std::string> args3;
             args3.push_back ("git");
             args3.push_back ("rev-parse");
             args3.push_back ("--abbrev-ref");
@@ -213,7 +214,7 @@ namespace morph {
                 p.start (command, args3);
                 p.probeProcess ();
                 if (!p.waitForStarted()) {
-                    throw runtime_error ("Process failed to start");
+                    throw std::runtime_error ("Process failed to start");
                 }
                 while (p.running() == true) {
                     p.probeProcess();
