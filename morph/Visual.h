@@ -271,7 +271,7 @@ namespace morph {
         Vector<float,2> mousePressPosition = {0.0f, 0.0f};
 
         //! The current rotation axis. World frame?
-        Vector3<float> rotationAxis;
+        Vector<float> rotationAxis = {0.0f, 0.0f, 0.0f};
 
         //! A rotation quaternion. You could have guessed that, right?
         Quaternion<float> rotation;

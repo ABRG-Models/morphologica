@@ -1,7 +1,7 @@
 #include "Quaternion.h"
 using morph::Quaternion;
-#include "Vector3.h"
-using morph::Vector3;
+#include "Vector.h"
+using morph::Vector;
 
 int main()
 {
@@ -12,7 +12,7 @@ int main()
 
     Quaternion<float> rotationQuaternion;
     float angularSpeed = 0.2;
-    Vector3<float> rotationAxis(1.0f,0.0f,0.0f);
+    Vector<float> rotationAxis = {1.0f, 0.0f, 0.0f};
     rotationQuaternion.initFromAxisAngle (rotationAxis, angularSpeed);
     rotationQuaternion.output();
 

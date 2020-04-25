@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "Vector3.h"
+#include "Vector.h"
 #include <cmath>
 #include <array>
 #include <iostream>
@@ -81,18 +81,18 @@ namespace morph {
         /*!
          * Initialize the Quaternion from the given axis and angle.
          */
-        void initFromAxisAngle (const Vector3<Flt>& axis, const Flt& angle) {
+        void initFromAxisAngle (const Vector<Flt>& axis, const Flt& angle) {
 
             Flt a = piOver360 * angle; // angle/2 converted to rads
             Flt s = std::sin(a);
             Flt c = std::cos(a);
-            Vector3<Flt> ax = axis;
+            Vector<Flt> ax = axis;
             ax.renormalize();
 
             this->w = c;
-            this->x = ax.x * s;
-            this->y = ax.y * s;
-            this->z = ax.z * s;
+            this->x = ax.x() * s;
+            this->y = ax.y() * s;
+            this->z = ax.z() * s;
 
             this->renormalize();
         }

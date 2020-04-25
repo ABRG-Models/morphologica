@@ -644,12 +644,14 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // BUT we have to project into the model frame to determine how to rotate the model!
         float rotamount = mouseMoveWorld.length() * 40.0;
         // Calculate new rotation axis as weighted sum
-        this->rotationAxis = (mouseMoveWorld * rotamount);
+        Vector3<float> v_tmp = (mouseMoveWorld * rotamount);
+        this->rotationAxis.set_from (v_tmp);
         this->rotationAxis.renormalize();
 
         // Now inverse apply the rotation of the scene to the rotation axis, so that we
         // rotate the model the right way.
-        this->rotationAxis = this->invscene * this->rotationAxis;
+        array<float, 4> a_tmp = this->invscene * this->rotationAxis;
+        this->rotationAxis.set_from (a_tmp);
 
         // Update rotation from the saved position.
         this->rotation = this->savedRotation;
