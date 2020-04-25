@@ -595,7 +595,7 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
     this->cursorpos[0] = static_cast<float>(x);
     this->cursorpos[1] = static_cast<float>(y);
 
-    Vector3<float> mouseMoveWorld;
+    Vector<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
 
     // This is "rotate the scene" model. Will need "rotate one visual" mode.
     if (this->rotateMode) {
@@ -634,18 +634,17 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // world space. Note the swap between x and y
         if (this->rotateModMode) {
             // Sort of "rotate the page" mode.
-            mouseMoveWorld.z = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
+            mouseMoveWorld[2] = -((v1[1]/v1[3]) - (v0[1]/v0[3])) + ((v1[0]/v1[3]) - (v0[0]/v0[3]));
         } else {
-            mouseMoveWorld.y = -((v1[0]/v1[3]) - (v0[0]/v0[3]));
-            mouseMoveWorld.x = -((v1[1]/v1[3]) - (v0[1]/v0[3]));
+            mouseMoveWorld[1] = -((v1[0]/v1[3]) - (v0[0]/v0[3]));
+            mouseMoveWorld[0] = -((v1[1]/v1[3]) - (v0[1]/v0[3]));
         }
 
         // Rotation axis is perpendicular to the mouse position difference vector
         // BUT we have to project into the model frame to determine how to rotate the model!
         float rotamount = mouseMoveWorld.length() * 40.0;
         // Calculate new rotation axis as weighted sum
-        Vector3<float> v_tmp = (mouseMoveWorld * rotamount);
-        this->rotationAxis.set_from (v_tmp);
+        this->rotationAxis = (mouseMoveWorld * rotamount);
         this->rotationAxis.renormalize();
 
         // Now inverse apply the rotation of the scene to the rotation axis, so that we
@@ -690,14 +689,14 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         array<float, 4> v0 = this->invproj * p0;
         array<float, 4> v1 = this->invproj * p1;
         // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
-        mouseMoveWorld.x = (v1[0]/v1[3]) - (v0[0]/v0[3]);
-        mouseMoveWorld.y = (v1[1]/v1[3]) - (v0[1]/v0[3]);
+        mouseMoveWorld[0] = (v1[0]/v1[3]) - (v0[0]/v0[3]);
+        mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);
         //mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);// unmodified
 
         // This is "translate the scene" mode. Could also have a "translate one
         // HexGridVisual" mode, to adjust relative positions.
-        this->scenetrans[0] += mouseMoveWorld.x;
-        this->scenetrans[1] -= mouseMoveWorld.y;
+        this->scenetrans[0] += mouseMoveWorld[0];
+        this->scenetrans[1] -= mouseMoveWorld[1];
         this->render(); // updates viewproj; uses this->scenetrans
     }
 }

@@ -31,7 +31,6 @@
 #include "Quaternion.h"
 #include "TransformMatrix.h"
 #include "Vector.h"
-#include "Vector3.h"
 
 // A base class with static event handling dispatchers
 #include "VisualBase.h"
