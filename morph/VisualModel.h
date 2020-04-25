@@ -13,6 +13,8 @@
 #include "GL3/gl3.h"
 #include "tools.h"
 #include "TransformMatrix.h"
+#include "Vector.h"
+#include "Vector3.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -193,6 +195,11 @@ namespace morph {
             vp.push_back (vec.y);
             vp.push_back (vec.z);
         }
+        void vertex_push (const Vector<float>& vec, std::vector<float>& vp) {
+            vp.push_back (vec.x()); // FIXME change to std::copy
+            vp.push_back (vec.y());
+            vp.push_back (vec.z());
+        }
         ///@}
 
         //! Set up a vertex buffer object
@@ -222,42 +229,44 @@ namespace morph {
             // we only need a single call to glDrawElements.
 
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector3<float> vstart (start);
-            Vector3<float> vend (end);
-            //std::cout << "Compute tube from " << vstart.asString() << "to " << vend.asString() << std::endl;
-            Vector3<float> v = vend - vstart;
+            Vector<float> vstart;
+            vstart.set_from (start);
+            Vector<float> vend;
+            vend.set_from (end);
+            //std::cout << "Compute tube from " << vstart << "to " << vend << std::endl;
+            Vector<float> v = vend - vstart;
             v.renormalize();
-            //std::cout << "Normal vector v is " << v.asString() << std::endl;
+            //std::cout << "Normal vector v is " << v << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
             // v. The unit in-plane vector is inplane.normalise. Can now use that
             // vector in the plan to define a point on the circle.
-            Vector3<float> rand_vec;
+            Vector<float> rand_vec;
             rand_vec.randomize();
-            Vector3<float> inplane = rand_vec * v;
+            Vector<float> inplane = rand_vec * v;
             inplane.renormalize();
-            //std::cout << "in-plane vector is " << inplane.asString() << std::endl;
+            //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            Vector3<float> v_x_inplane = v * inplane;
-            //std::cout << "v ^ inplane vector is " << v_x_inplane.asString() << std::endl;
+            Vector<float> v_x_inplane = v * inplane;
+            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
             // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
-            //std::cout << "Central point of vstart cap is " << vstart.asString() << std::endl;
+            //std::cout << "Central point of vstart cap is " << vstart << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
                 //std::cout << "t is " << t << std::endl;
-                Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
-                //std::cout << "point on vstart cap is " << (vstart+c).asString() << std::endl;
+                //std::cout << "point on vstart cap is " << (vstart+c) << std::endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (colStart, this->vertexColors);
             }
@@ -265,16 +274,16 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
                 //std::cout << "t is " << t << std::endl;
-                Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
-                //std::cout << "point on vend cap is " << (vend+c).asString() << std::endl;
+                //std::cout << "point on vend cap is " << (vend+c) << std::endl;
                 this->vertex_push (v, this->vertexNormals); // +v
                 this->vertex_push (colEnd, this->vertexColors);
             }
 
             // Bottom cap. Push centre vertex as the last vertex.
             this->vertex_push (vend, this->vertexPositions);
-            //std::cout << "vend cap is " << vend.asString() << std::endl;
+            //std::cout << "vend cap is " << vend << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colEnd, this->vertexColors);
 
@@ -527,10 +536,10 @@ namespace morph {
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
             Vector3<float> vcentre (centre);
             Vector3<float> vtip (tip);
-            //std::cout << "Compute cone from " << vcentre.asString() << "to " << vtip.asString() << std::endl;
+            //std::cout << "Compute cone from " << vcentre << "to " << vtip << std::endl;
             Vector3<float> v = vtip - vcentre;
             v.renormalize();
-            //std::cout << "Normal vector v is " << v.asString() << std::endl;
+            //std::cout << "Normal vector v is " << v << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
@@ -540,13 +549,13 @@ namespace morph {
             rand_vec.randomize();
             Vector3<float> inplane = rand_vec * v;
             inplane.renormalize();
-            //std::cout << "in-plane vector is " << inplane.asString() << std::endl;
+            //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector3<float> v_x_inplane = v * inplane;
-            //std::cout << "v ^ inplane vector is " << v_x_inplane.asString() << std::endl;
+            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
             // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
@@ -561,7 +570,7 @@ namespace morph {
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
                 this->vertex_push (vcentre+c, this->vertexPositions);
-                //std::cout << "point on vstart cap is " << (vstart+c).asString() << std::endl;
+                //std::cout << "point on vstart cap is " << (vstart+c) << std::endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (col, this->vertexColors);
             }
