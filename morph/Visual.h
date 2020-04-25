@@ -180,20 +180,20 @@ namespace morph {
                 std::cout << "WARNING setZDefault(): Normally, the default z value is negative." << std::endl;
             }
             this->zDefault = f;
-            this->scenetrans.z = f;
+            this->scenetrans[2] = f;
         }
 
         //! Setters for x/y
         ///@{
         void setSceneTransXY (float _x, float _y) {
-            this->scenetrans.x = _x;
-            this->scenetrans.y = _y;
+            this->scenetrans[0] = _x;
+            this->scenetrans[1] = _y;
         }
         void setSceneTransX (float _x) {
-            this->scenetrans.x = _x;
+            this->scenetrans[0] = _x;
         }
         void setSceneTransY (float _y) {
-            this->scenetrans.y = _y;
+            this->scenetrans[1] = _y;
         }
         ///@}
 
@@ -253,10 +253,10 @@ namespace morph {
         Vector<float,2> cursorpos = {0.0f, 0.0f};
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector3<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
+        Vector<float,3> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
         //! Default for scenetrans
-        const Vector3<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+        const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;

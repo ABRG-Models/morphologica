@@ -226,7 +226,7 @@ morph::Visual::render (void)
     // Add the depth at which the object lies.  Use forward projection to determine
     // the correct z coordinate for the inverse projection. This assumes only one
     // object.
-    array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z, 1.0 };
+    array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
     array<float, 4> pp = this->projection * point;
     float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
@@ -516,9 +516,7 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
     }
 
     if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-        cout << "Scenetrans is: "
-             << "(" << this->scenetrans.x << "," << this->scenetrans.y
-             << "," << this->scenetrans.z << ")" << endl;
+        cout << "Scenetrans is: " << this->scenetrans << endl;
     }
 
     // Reset view to default
@@ -619,7 +617,7 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
-        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z, 1.0f };
+        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
         array<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
@@ -679,7 +677,7 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
-        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z, 1.0f };
+        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
         array<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
@@ -696,8 +694,8 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
 
         // This is "translate the scene" mode. Could also have a "translate one
         // HexGridVisual" mode, to adjust relative positions.
-        this->scenetrans.x += mouseMoveWorld.x;
-        this->scenetrans.y -= mouseMoveWorld.y;
+        this->scenetrans[0] += mouseMoveWorld.x;
+        this->scenetrans[1] -= mouseMoveWorld.y;
         this->render(); // updates viewproj; uses this->scenetrans
     }
 }
@@ -715,12 +713,12 @@ morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffs
 {
     if (this->sceneLocked) { return; }
     // x and y can be +/- 1
-    this->scenetrans.x -= xoffset * this->scenetrans_stepsize;
+    this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
     if (this->translateMode) {
-        this->scenetrans.y/*z really*/ += yoffset * this->scenetrans_stepsize;
-        cout << "scenetrans.y = " << this->scenetrans.y << endl;
+        this->scenetrans[1]/*z really*/ += yoffset * this->scenetrans_stepsize;
+        cout << "scenetrans.y = " << this->scenetrans[1] << endl;
     } else {
-        this->scenetrans.z += yoffset * this->scenetrans_stepsize;
+        this->scenetrans[2] += yoffset * this->scenetrans_stepsize;
     }
     this->render();
 }
