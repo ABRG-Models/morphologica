@@ -18,8 +18,6 @@ using morph::Quaternion;
 using morph::ShaderInfo;
 // Include the character constants containing the default shaders
 #include "VisualDefaultShaders.h"
-#include "Vector4.h"
-using morph::Vector4;
 #include "VisualModel.h"
 using morph::VisualModel;
 // imwrite() from OpenCV is used in saveImage()

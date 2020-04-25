@@ -10,7 +10,7 @@
 
 #include "Quaternion.h"
 #include "Vector3.h"
-#include "Vector4.h"
+#include "Vector.h"
 #include <cmath>
 #include <array>
 #include <iostream>
@@ -833,7 +833,7 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        std::array<Flt, 4> operator* (const Vector4<Flt>& v1) const {
+        std::array<Flt, 4> operator* (const Vector<Flt, 4>& v1) const {
             std::array<Flt, 4> v;
             v[0] = this->mat[0] * v1.x
                 + this->mat[4] * v1.y
