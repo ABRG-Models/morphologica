@@ -5,6 +5,8 @@ using std::cout;
 using std::endl;
 #include <array>
 using std::array;
+#include <Vector.h>
+using morph::Vector;
 
 void setMatrixSequence (TransformMatrix<float>& tm)
 {
@@ -191,5 +193,12 @@ int main()
         ++rtn;
     }
 
+    // test matrix times Vector<T,4> multiplication  std::array = mat * morph::Vector
+    Vector<float, 4> v4 = {1,0,0,0};
+    std::array<float, 4> r = mult4 * v4;
+    cout << " mult4 * " << v4 << ": (" << r[0] << "," << r[1] << "," << r[2] << "," << r[3] << ")\n";
+    if ((r[0]==15 && r[1]==17 && r[2]==0 && r[3]==0) == false) {
+        ++rtn;
+    }
     return rtn;
 }
