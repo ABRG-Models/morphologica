@@ -14,10 +14,11 @@
 #include "tools.h"
 #include "TransformMatrix.h"
 #include "Vector.h"
-#include "Vector3.h"
 #include <iostream>
 #include <vector>
 #include <array>
+#include <algorithm>
+#include <iterator>
 
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
@@ -190,15 +191,8 @@ namespace morph {
             vp.push_back (arr[1]);
             vp.push_back (arr[2]);
         }
-        void vertex_push (const Vector3<float>& vec, std::vector<float>& vp) {
-            vp.push_back (vec.x);
-            vp.push_back (vec.y);
-            vp.push_back (vec.z);
-        }
         void vertex_push (const Vector<float>& vec, std::vector<float>& vp) {
-            vp.push_back (vec.x()); // FIXME change to std::copy
-            vp.push_back (vec.y());
-            vp.push_back (vec.z());
+            std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
         ///@}
 
@@ -253,7 +247,7 @@ namespace morph {
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector<float> v_x_inplane = v * inplane;
             //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
-            // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
+            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
@@ -534,10 +528,12 @@ namespace morph {
             // cap) and an 'outer cap'
 
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector3<float> vcentre (centre);
-            Vector3<float> vtip (tip);
+            Vector<float> vcentre;
+            vcentre.set_from (centre);
+            Vector<float> vtip;
+            vtip.set_from (tip);
             //std::cout << "Compute cone from " << vcentre << "to " << vtip << std::endl;
-            Vector3<float> v = vtip - vcentre;
+            Vector<float> v = vtip - vcentre;
             v.renormalize();
             //std::cout << "Normal vector v is " << v << std::endl;
 
@@ -545,18 +541,18 @@ namespace morph {
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
             // v. The unit in-plane vector is inplane.normalise. Can now use that
             // vector in the plan to define a point on the circle.
-            Vector3<float> rand_vec;
+            Vector<float> rand_vec;
             rand_vec.randomize();
-            Vector3<float> inplane = rand_vec * v;
+            Vector<float> inplane = rand_vec * v;
             inplane.renormalize();
             //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            Vector3<float> v_x_inplane = v * inplane;
+            Vector<float> v_x_inplane = v * inplane;
             //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
-            // Point on circle: Vector3<float> c = inplane * sin(t) + v_x_inplane * cos(t);
+            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vcentre, this->vertexPositions);
@@ -566,7 +562,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
                 //std::cout << "t is " << t << std::endl;
-                Vector3<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
                 this->vertex_push (vcentre+c, this->vertexPositions);
