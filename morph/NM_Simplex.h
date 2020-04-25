@@ -186,7 +186,7 @@ namespace morph {
             } else if (this->too_many_operations > 0
                        && this->operation_count > this->too_many_operations) {
                 // If this is emitted, check your termination_threshold
-                std::cerr << "Warning: Reached too_many_operation. Setting state 'ReadyToStop'." << std::endl;
+                std::cerr << "Warning (NM_Simplex): Reached too_many_operations. Setting state 'ReadyToStop'. Check termination_threshold, which was: " << this->termination_threshold << ". SD of simplex vertices was " << sd <<" (i.e. >=termination_threshold)." << std::endl;
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             }
