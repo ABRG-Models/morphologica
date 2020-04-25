@@ -78,6 +78,17 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Constructor which does not set colour map and takes an std::array for
+        //! _offset for backwards compatibility
+        HexGridVisual(GLuint sp,
+                      const HexGrid* _hg,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data) {
+            Vector<float> offset_vec;
+            offset_vec.set_from(_offset);
+            HexGridVisual (sp, _hg, offset_vec, _data);
+        }
+
         //! Constructor which sets default colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
@@ -102,6 +113,19 @@ namespace morph {
 
             this->initializeVertices();
             this->postVertexInit();
+        }
+
+        //! Constructor which sets default colour map and takes an std::array for
+        //! _offset for backwards compatibility
+        HexGridVisual(GLuint sp,
+                      const HexGrid* _hg,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
+                      ColourMapType _cmt,
+                      const float _hue = 0.0f) {
+            Vector<float> offset_vec;
+            offset_vec.set_from(_offset);
+            HexGridVisual (sp, _hg, offset_vec, _data, _cmt, _hue);
         }
 
         //! Constructor which sets default colour map and z/colour Scale objects
@@ -129,6 +153,21 @@ namespace morph {
 
             this->initializeVertices();
             this->postVertexInit();
+        }
+
+        //! Constructor which sets default colour map and z/colour Scale objects and
+        //! takes an std::array for _offset for backwards compatibility
+        HexGridVisual(GLuint sp,
+                      const HexGrid* _hg,
+                      const std::array<float, 3> _offset,
+                      const std::vector<Flt>* _data,
+                      const Scale<Flt>& zscale,
+                      const Scale<Flt>& cscale,
+                      ColourMapType _cmt,
+                      const float _hue = 0.0f) {
+            Vector<float> offset_vec;
+            offset_vec.set_from(_offset);
+            HexGridVisual (sp, _hg, offset_vec, _data, zscale, cscale, _cmt, _hue);
         }
 
         //! Do the computations to initialize the vertices that will represent the

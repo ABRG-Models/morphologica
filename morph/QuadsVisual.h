@@ -57,6 +57,19 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Version with std::array \a _offset
+        QuadsVisual(GLuint sp,
+                    const std::vector<std::array<Flt,12>>* _quads,
+                    const std::array<float, 3> _offset,
+                    const std::vector<Flt>* _data,
+                    const Scale<Flt>& _scale,
+                    ColourMapType _cmt,
+                    const float _hue = 0.0f) {
+            Vector<float> offset_vec;
+            offset_vec.set_from(_offset);
+            QuadsVisual(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
+        }
+
         ~QuadsVisual() {
             delete this->dataCoords;
         }
