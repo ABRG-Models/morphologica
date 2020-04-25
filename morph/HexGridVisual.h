@@ -346,7 +346,7 @@ namespace morph {
                 }
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
 
-                // All normal point up
+                // All normals point up
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);

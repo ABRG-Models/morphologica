@@ -211,16 +211,18 @@ namespace morph {
         }
 
         /*!
-         * Create a tube from \a start to \a end, with radius \a r.
+         * Create a tube from \a start to \a end, with radius \a r and a colour which
+         * transitions from the colour \a colStart to \a colEnd.
          *
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param col The tube colour
+         * \param colStart The tube staring colour
+         * \param colEnd The tube's ending colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (GLushort& idx, std::array<float, 3> start, std::array<float, 3> end,
+        void computeTube (GLushort& idx, Vector<float> start, Vector<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12) {
 
@@ -228,10 +230,10 @@ namespace morph {
             // we only need a single call to glDrawElements.
 
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector<float> vstart;
-            vstart.set_from (start);
-            Vector<float> vend;
-            vend.set_from (end);
+            Vector<float> vstart = start;
+            //vstart.set_from (start);
+            Vector<float> vend = end;
+            //vend.set_from (end);
             //std::cout << "Compute tube from " << vstart << "to " << vend << std::endl;
             Vector<float> v = vend - vstart;
             v.renormalize();

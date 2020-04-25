@@ -29,9 +29,9 @@ namespace morph {
     {
     public:
         QuiverVisual(GLuint sp,
-                     std::vector<std::array<Flt,3>>* _coords,
-                     const Vector<float, 3> _offset,
-                     const std::vector<std::array<Flt,3>>* _quivers,
+                     std::vector<Vector<Flt>>* _coords,
+                     const Vector<float> _offset,
+                     const std::vector<Vector<Flt,3>>* _quivers,
                      ColourMapType _cmt,
                      const float _hue = 0.0f) {
             // Set up...
@@ -60,7 +60,7 @@ namespace morph {
                 return;
             }
 
-            std::array<Flt, 3> zero3 = {0.0,0.0,0.0};
+            Vector<Flt> zero3 = {0.0,0.0,0.0};
             std::vector<Flt> lengths;
             for (unsigned int i = 0; i < nquiv; ++i) {
                 lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
@@ -71,8 +71,8 @@ namespace morph {
             // The indices index
             GLushort idx = 0;
 
-            std::array<Flt,3> half = {0.5,0.5,0.5};
-            std::array<Flt, 3> start, end, coords_i, vectorData_i, halfquiv;
+            Vector<Flt> half = {0.5,0.5,0.5};
+            Vector<Flt> start, end, coords_i, vectorData_i, halfquiv;
             std::array<Flt, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
                 coords_i = (*this->dataCoords)[i];
@@ -106,8 +106,8 @@ namespace morph {
                 // Plus sphere or cone:
                 this->computeSphere (idx, coords_i, clr, lengths[i]/10.0);
                 // Compute a tip for the cone.
-                std::array<Flt, 3> frac = {0.2,0.2,0.2};
-                std::array<Flt, 3> tip;
+                Vector<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
+                Vector<Flt> tip;
                 // Multiply vectorData_i by a fraction and that's the cone end. Note
                 // reuse of halfquiv variable
                 std::transform (frac.begin(), frac.end(),

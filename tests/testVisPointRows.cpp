@@ -39,7 +39,7 @@ int main (int argc, char** argv)
         Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<array<float, 3>> points;
+        vector<Vector<float, 3>> points;
         vector<float> data; // copy points[:][2] into data
         points.push_back ({ 0, 0,   0.1 }); data.push_back(points.back()[2]);
         points.push_back ({ 0, 2,   0.7 }); data.push_back(points.back()[2]);

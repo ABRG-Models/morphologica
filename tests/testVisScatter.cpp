@@ -42,7 +42,7 @@ int main (int argc, char** argv)
         Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<array<float, 3>> points;
+        vector<Vector<float, 3>> points;
         points.push_back ({0,0,0});
         points.push_back ({1,1,0});
         points.push_back ({2,2.2,0});

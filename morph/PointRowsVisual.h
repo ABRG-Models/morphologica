@@ -25,7 +25,7 @@ namespace morph {
     {
     public:
         PointRowsVisual(GLuint sp,
-                        std::vector<std::array<float,3>>* _pointrows,
+                        std::vector<Vector<float,3>>* _pointrows,
                         const Vector<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& cscale,

@@ -4,7 +4,7 @@
 #pragma once
 
 #include <vector>
-#include <array>
+#include "Vector.h"
 #include "VisualModel.h"
 #include "ColourMap.h"
 #include "Scale.h"
@@ -20,7 +20,7 @@ namespace morph {
         VisualDataModel()
             : morph::VisualModel::VisualModel() {
         }
-        VisualDataModel (GLuint sp, const std::array<float, 3> _offset)
+        VisualDataModel (GLuint sp, const Vector<float, 3> _offset)
             : morph::VisualModel::VisualModel (sp, _offset) {
         }
         ~VisualDataModel() {
@@ -29,19 +29,19 @@ namespace morph {
         //! Reset the autoscaled flags so that the next time data is transformed by
         //! the Scale objects they will autoscale again (assuming they have
         //! do_autoscale set true).
-        void clearAutoscale (void) {
+        void clearAutoscale() {
             this->zScale.autoscaled = false;
             this->colourScale.autoscaled = false;
             this->vectorScale.autoscaled = false;
         }
 
-        void clearAutoscaleZ (void) {
+        void clearAutoscaleZ() {
             this->zScale.autoscaled = false;
         }
-        void clearAutoscaleColour (void) {
+        void clearAutoscaleColour() {
             this->colourScale.autoscaled = false;
         }
-        void clearAutoscaleVector (void) {
+        void clearAutoscaleVector() {
             this->vectorScale.autoscaled = false;
         }
 
@@ -53,7 +53,7 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        void setVectorScale (const Scale<std::array<T, 3>>& vscale) {
+        void setVectorScale (const Scale<Vector<T, 3>>& vscale) {
             this->vectorScale = vscale;
             this->reinit();
         }
@@ -76,14 +76,14 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<std::array<T, 3>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
             this->zScale = zscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<std::array<T, 3>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale, const Scale<T>& cscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -91,33 +91,22 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-#if 0
-        virtual void updateData (std::vector<std::array<T, 3>>* _coords,
-                                 const std::vector<T>* _data,
-                                 const std::array<T, 4> _scale) {
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-            this->zScale.setParams (_scale[0], _scale[1]);
-            this->colourScale.setParams (_scale[2], _scale[3]);
-            this->reinit();
-        }
-#endif
-        virtual void updateCoords (std::vector<std::array<T, 3>>* _coords) {
+        virtual void updateCoords (std::vector<Vector<T, 3>>* _coords) {
             this->dataCoords = _coords;
             this->reinit();
         }
-        void updateData (const std::vector<std::array<T, 3>>* _vectors) {
+        void updateData (const std::vector<Vector<T, 3>>* _vectors) {
             this->vectorData = _vectors;
             this->reinit();
         }
-        void updateData (std::vector<std::array<T, 3>>* _coords, const std::vector<std::array<T, 3>>* _vectors) {
+        void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<Vector<T, 3>>* _vectors) {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
             this->reinit();
         }
         //@}
 
-        void reinit (void) {
+        void reinit() {
             // Fixme: Better not to clear, then repeatedly pushback here:
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -145,20 +134,19 @@ namespace morph {
 
         //! A scaling function for the vectorData. This will scale the lengths of the
         //! vectorData.
-        Scale<std::array<T,3>> vectorScale;
+        Scale<Vector<T,3>> vectorScale;
 
-        //! The data to visualize. Tdata may simply be float or double, or, if the
+        //! The data to visualize. T may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
-        //! Tdata may be an array<float, 3> or array<double, 3>) etc. It's up to the
         const std::vector<T>* scalarData;
 
-        //! A container for vector data to visualize. FIXME: Change array<> to morph::Vector<>
-        const std::vector<std::array<T,3>>* vectorData;
+        //! A container for vector data to visualize.
+        const std::vector<Vector<T,3>>* vectorData;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates.
-        std::vector<std::array<float, 3>>* dataCoords;
+        std::vector<Vector<float, 3>>* dataCoords;
     };
 
 } // namespace morph

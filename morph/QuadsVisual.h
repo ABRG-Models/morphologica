@@ -19,7 +19,7 @@ namespace morph {
     public:
         QuadsVisual(GLuint sp,
                     const std::vector<std::array<Flt,12>>* _quads,
-                    const Vector<float, 3> _offset,
+                    const Vector<float> _offset,
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
@@ -37,7 +37,7 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<std::array<float, 3>>;
+            this->dataCoords = new std::vector<Vector<float>>;
             this->dataCoords->resize (this->quads->size());
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
@@ -74,7 +74,7 @@ namespace morph {
             delete this->dataCoords;
         }
 
-        virtual void updateCoords (std::vector<std::array<Flt, 3>>* _coords) {
+        virtual void updateCoords (std::vector<Vector<Flt>>* _coords) {
             throw std::runtime_error ("This won't work.");
         }
 

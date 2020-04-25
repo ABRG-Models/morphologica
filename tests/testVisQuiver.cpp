@@ -38,14 +38,14 @@ int main (int argc, char** argv)
     try {
         Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        vector<array<float, 3>> coords;
+        vector<Vector<float, 3>> coords;
         coords.push_back ({0, 0,   0});
         coords.push_back ({1, 1,   0});
         coords.push_back ({2, 0,   0});
         coords.push_back ({1, 0.8, 0});
         coords.push_back ({2, 0.5, 0});
 
-        vector<array<float, 3>> quivs;
+        vector<Vector<float, 3>> quivs;
         quivs.push_back ({0.3,   0.4,  0});
         quivs.push_back ({0.1,   0.2,  0.1});
         quivs.push_back ({-0.1,  0,    0});

@@ -24,7 +24,7 @@ namespace morph {
     {
     public:
         ScatterVisual(GLuint sp,
-                      std::vector<std::array<float,3>>* _coords,
+                      std::vector<Vector<float,3>>* _coords,
                       const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       const Scale<Flt>& _scale,
@@ -46,7 +46,7 @@ namespace morph {
         }
 
         ScatterVisual(GLuint sp,
-                      std::vector<std::array<float,3>>* _coords,
+                      std::vector<Vector<float,3>>* _coords,
                       const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       const float fr,
