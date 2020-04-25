@@ -17,6 +17,8 @@ using morph::Tools;
 using morph::HexGrid;
 using morph::HexDomainShape;
 #include "ReadCurves.h"
+#include "Vector.h"
+using morph::Vector;
 
 using namespace std;
 
@@ -59,7 +61,7 @@ int main (int argc, char** argv)
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int id = v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, ColourMapType::Magma));
         // Problem with doing it at this point is that the HexGrid was already initialised...
         static_cast<VisualDataModel<float>*>(v.getVisualModel(id))->zScale.setParams (0.0, 0.0);

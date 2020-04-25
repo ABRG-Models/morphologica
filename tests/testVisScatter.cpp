@@ -9,6 +9,8 @@ using morph::ColourMapType;
 using morph::ScatterVisual;
 #include "Scale.h"
 using morph::Scale;
+#include "Vector.h"
+using morph::Vector;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -36,7 +38,7 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
         Scale<float> scale;
         scale.setParams (1.0, 0.0);
 

@@ -5,6 +5,7 @@
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
 #include "Scale.h"
+#include "Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -18,7 +19,7 @@ namespace morph {
     public:
         QuadsVisual(GLuint sp,
                     const std::vector<std::array<Flt,12>>* _quads,
-                    const std::array<float, 3> _offset,
+                    const Vector<float, 3> _offset,
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,

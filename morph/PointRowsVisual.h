@@ -5,6 +5,7 @@
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
 #include "Scale.h"
+#include "Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -25,7 +26,7 @@ namespace morph {
     public:
         PointRowsVisual(GLuint sp,
                         std::vector<std::array<float,3>>* _pointrows,
-                        const std::array<float, 3> _offset,
+                        const Vector<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& cscale,
                         ColourMapType _cmt,

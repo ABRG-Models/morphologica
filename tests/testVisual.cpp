@@ -9,6 +9,7 @@
 #include <fstream>
 #include <cmath>
 #include "Scale.h"
+#include "Vector.h"
 
 using namespace std;
 using morph::Visual;
@@ -19,6 +20,7 @@ using morph::Tools;
 using morph::HexDomainShape;
 using morph::ReadCurves;
 using morph::Scale;
+using morph::Vector;
 
 int main()
 {
@@ -57,7 +59,7 @@ int main()
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
 

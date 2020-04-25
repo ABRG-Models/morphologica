@@ -10,6 +10,7 @@
 #include "tools.h"
 #include "VisualDataModel.h"
 #include "Scale.h"
+#include "Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -24,7 +25,7 @@ namespace morph {
     public:
         ScatterVisual(GLuint sp,
                       std::vector<std::array<float,3>>* _coords,
-                      const std::array<float, 3> _offset,
+                      const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       const Scale<Flt>& _scale,
                       ColourMapType _cmt,
@@ -46,7 +47,7 @@ namespace morph {
 
         ScatterVisual(GLuint sp,
                       std::vector<std::array<float,3>>* _coords,
-                      const std::array<float, 3> _offset,
+                      const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       const float fr,
                       const Scale<Flt>& _scale,

@@ -6,6 +6,7 @@
 #include "ColourMap.h"
 #include "HexGrid.h"
 #include "MathAlgo.h"
+#include "Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -59,7 +60,7 @@ namespace morph {
         //! Constructor which does not set colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
+                      const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data) {
             // Set up...
             this->shaderprog = sp;
@@ -80,7 +81,7 @@ namespace morph {
         //! Constructor which sets default colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
+                      const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
@@ -106,7 +107,7 @@ namespace morph {
         //! Constructor which sets default colour map and z/colour Scale objects
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
+                      const Vector<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       const Scale<Flt>& zscale,
                       const Scale<Flt>& cscale,

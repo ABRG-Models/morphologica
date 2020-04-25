@@ -56,7 +56,7 @@ namespace morph {
         VisualModel () {
             this->offset = {0.0, 0.0, 0.0};
         }
-        VisualModel (GLuint sp, const std::array<float, 3> _offset) {
+        VisualModel (GLuint sp, const Vector<float, 3> _offset) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -122,17 +122,22 @@ namespace morph {
         TransformMatrix<float> viewmatrix;
 
         //! Setter for offset, also updates viewmatrix.
-        void setOffset (const std::array<float, 3>& _offset) {
+        void setOffset (const Vector<float, 3>& _offset) {
             this->offset = _offset;
             this->viewmatrix.setToIdentity();
             this->viewmatrix.translate (this->offset);
         }
 
         //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const std::array<float, 3>& _offset) {
+        void shiftOffset (const Vector<float, 3>& _offset) {
+            // FIXME could be this->offset += _offset
+#if 1
+            this->offset += _offset;
+#else // replaces:
             for (unsigned int i = 0; i < 3; ++i) {
                 this->offset[i] += _offset[i];
             }
+#endif
             this->viewmatrix.translate (this->offset);
         }
 
@@ -144,7 +149,7 @@ namespace morph {
          * vertices, but is instead applied when the object is rendered as part of
          * the model->world transformation.
          */
-        std::array<float, 3> offset;
+        Vector<float> offset;
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects

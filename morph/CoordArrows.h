@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include "Vector.h"
 #include "VisualModel.h"
 #include "MathConst.h"
 #include <array>
@@ -25,16 +26,16 @@ namespace morph {
         }
 
         CoordArrows(GLuint sp,
-                    const std::array<float, 3> _offset,
-                    const std::array<float, 3> _scale) {
+                    const Vector<float, 3> _offset,
+                    const Vector<float, 3> _scale) {
             this->init (sp, _offset, _scale);
         }
 
         virtual ~CoordArrows () {}
 
         void init (GLuint sp,
-                   const std::array<float, 3> _offset,
-                   const std::array<float, 3> _scale) {
+                   const Vector<float, 3> _offset,
+                   const Vector<float, 3> _scale) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -73,7 +74,7 @@ namespace morph {
             GLushort idx = 0;
 
             // Draw four spheres to make up the coord frame
-            std::array<float, 3> reloffset = this->offset;
+            Vector<float, 3> reloffset = this->offset;
             this->computeSphere (idx, this->offset, centresphere_col, this->scale[0]/20.0);
 
             // x
@@ -95,7 +96,7 @@ namespace morph {
         }
 
         //! The lengths of the x, y and z arrows.
-        std::array<float, 3> scale;
+        Vector<float, 3> scale;
 
         //! The colours of the arrows, and of the centre sphere
         std::array<float, 3> centresphere_col = {1.0f, 1.0f, 1.0f};

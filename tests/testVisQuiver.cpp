@@ -7,6 +7,8 @@ using morph::Visual;
 using morph::ColourMapType;
 #include "QuiverVisual.h"
 using morph::QuiverVisual;
+#include "Vector.h"
+using morph::Vector;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -34,7 +36,7 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
         vector<array<float, 3>> coords;
         coords.push_back ({0, 0,   0});

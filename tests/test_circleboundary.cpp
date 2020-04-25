@@ -19,6 +19,8 @@ using morph::HexDomainShape;
 #include "ReadCurves.h"
 #include "Scale.h"
 using morph::Scale;
+#include "Vector.h"
+using morph::Vector;
 
 using namespace std;
 
@@ -61,7 +63,7 @@ int main (int argc, char** argv)
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
         unsigned int id = v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, ColourMapType::Rainbow));
         Scale<float> zscale;
         zscale.setParams (0, 0);

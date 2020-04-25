@@ -240,8 +240,8 @@ namespace morph {
 
         //! Position and length of coordinate arrows. Need to be configurable at Visual
         //! construction.
-        std::array<float, 3> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
-        std::array<float, 3> coordArrowsLength = {1., 1., 1.};
+        Vector<float> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
+        Vector<float> coordArrowsLength = {1., 1., 1.};
 
         /*!
          * Variables to manage projection and rotation of the object

@@ -5,6 +5,7 @@
 #include "VisualDataModel.h"
 #include "MathAlgo.h"
 #include "Scale.h"
+#include "Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -29,7 +30,7 @@ namespace morph {
     public:
         QuiverVisual(GLuint sp,
                      std::vector<std::array<Flt,3>>* _coords,
-                     const std::array<float, 3> _offset,
+                     const Vector<float, 3> _offset,
                      const std::vector<std::array<Flt,3>>* _quivers,
                      ColourMapType _cmt,
                      const float _hue = 0.0f) {
