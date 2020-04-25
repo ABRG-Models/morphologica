@@ -252,7 +252,7 @@ namespace morph {
         Vector<float,2> cursorpos = {0.0f, 0.0f};
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector<float,3> scenetrans = {0.0, 0.0, Z_DEFAULT};
+        Vector<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
         //! Default for scenetrans
         const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};

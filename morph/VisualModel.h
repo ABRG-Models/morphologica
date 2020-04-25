@@ -56,7 +56,7 @@ namespace morph {
         VisualModel () {
             this->offset = {0.0, 0.0, 0.0};
         }
-        VisualModel (GLuint sp, const Vector<float, 3> _offset) {
+        VisualModel (GLuint sp, const Vector<float> _offset) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -122,14 +122,14 @@ namespace morph {
         TransformMatrix<float> viewmatrix;
 
         //! Setter for offset, also updates viewmatrix.
-        void setOffset (const Vector<float, 3>& _offset) {
+        void setOffset (const Vector<float>& _offset) {
             this->offset = _offset;
             this->viewmatrix.setToIdentity();
             this->viewmatrix.translate (this->offset);
         }
 
         //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const Vector<float, 3>& _offset) {
+        void shiftOffset (const Vector<float>& _offset) {
             // FIXME could be this->offset += _offset
 #if 1
             this->offset += _offset;
@@ -379,7 +379,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (GLushort& idx, std::array<float, 3> so, std::array<float, 3> sc, float r = 1.0f,
+        void computeSphere (GLushort& idx, Vector<float> so, std::array<float, 3> sc, float r = 1.0f,
                             int rings = 10, int segments = 12) {
 
             // First cap, draw as a triangle fan, but record indices so that
@@ -525,8 +525,8 @@ namespace morph {
          * \param segments Number of segments used to render the tube
          */
         void computeCone (GLushort& idx,
-                          std::array<float, 3> centre,
-                          std::array<float, 3> tip,
+                          Vector<float> centre,
+                          Vector<float> tip,
                           float ringoffset,
                           std::array<float, 3> col,
                           float r = 1.0f, int segments = 12) {
@@ -535,10 +535,8 @@ namespace morph {
             // cap) and an 'outer cap'
 
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector<float> vcentre;
-            vcentre.set_from (centre);
-            Vector<float> vtip;
-            vtip.set_from (tip);
+            Vector<float> vcentre = centre;
+            Vector<float> vtip = tip;
             //std::cout << "Compute cone from " << vcentre << "to " << vtip << std::endl;
             Vector<float> v = vtip - vcentre;
             v.renormalize();

@@ -20,7 +20,7 @@ namespace morph {
         VisualDataModel()
             : morph::VisualModel::VisualModel() {
         }
-        VisualDataModel (GLuint sp, const Vector<float, 3> _offset)
+        VisualDataModel (GLuint sp, const Vector<float> _offset)
             : morph::VisualModel::VisualModel (sp, _offset) {
         }
         ~VisualDataModel() {
@@ -53,7 +53,7 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        void setVectorScale (const Scale<Vector<T, 3>>& vscale) {
+        void setVectorScale (const Scale<Vector<T>>& vscale) {
             this->vectorScale = vscale;
             this->reinit();
         }
@@ -76,14 +76,14 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<T>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
             this->zScale = zscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<T>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale, const Scale<T>& cscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -91,15 +91,15 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        virtual void updateCoords (std::vector<Vector<T, 3>>* _coords) {
+        virtual void updateCoords (std::vector<Vector<T>>* _coords) {
             this->dataCoords = _coords;
             this->reinit();
         }
-        void updateData (const std::vector<Vector<T, 3>>* _vectors) {
+        void updateData (const std::vector<Vector<T>>* _vectors) {
             this->vectorData = _vectors;
             this->reinit();
         }
-        void updateData (std::vector<Vector<T, 3>>* _coords, const std::vector<Vector<T, 3>>* _vectors) {
+        void updateData (std::vector<Vector<T>>* _coords, const std::vector<Vector<T>>* _vectors) {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
             this->reinit();
@@ -134,19 +134,19 @@ namespace morph {
 
         //! A scaling function for the vectorData. This will scale the lengths of the
         //! vectorData.
-        Scale<Vector<T,3>> vectorScale;
+        Scale<Vector<T>> vectorScale;
 
         //! The data to visualize. T may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
         const std::vector<T>* scalarData;
 
         //! A container for vector data to visualize.
-        const std::vector<Vector<T,3>>* vectorData;
+        const std::vector<Vector<T>>* vectorData;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates.
-        std::vector<Vector<float, 3>>* dataCoords;
+        std::vector<Vector<float>>* dataCoords;
     };
 
 } // namespace morph
