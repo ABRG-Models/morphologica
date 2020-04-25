@@ -3,16 +3,16 @@
 # libmorphologica (which must already have been built and installed).
 #
 
-# cmake 3.1 provides the set(CMAKE_CXX_STANDARD 11) feature
+# cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
 cmake_minimum_required(VERSION 3.1)
+
 # Give your project a name
 project(Schnakenberg)
 
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
-# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or
-# __WIN__ are required
+# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
   set(EXTRA_HOST_DEFINITION "-D__GLN__")
@@ -26,23 +26,20 @@ else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
+# morphologica uses c++-17 language features
 set(CMAKE_CXX_STANDARD 17)
 
-# Add the host definition to CXXFLAGS along with other switches
+# Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  # OpenMP: According to
-  # https://stackoverflow.com/questions/39979836/using-openmp-with-c11-on-mac-os#39983933
-  # it should now be a case of:
-  #
-  # You should be able to get away without the libomp that's mentioned
-  # in that post, as I don't use any of the runtime library OpenMP
-  # features. However, the code did not compile without it, so we've
-  # moved the links to omp to the later apple if case.
-  #
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++14 -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
 else()
-  # This assumes a gcc compiler (or a gcc mimic)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -std=c++14 -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  # This assumes a gcc compiler (or a gcc mimic like Clang)
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+endif()
+
+# Tell clang to be quiet about brace initialisers:
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
 # Additional GL compiler flags.
