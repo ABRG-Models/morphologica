@@ -226,17 +226,17 @@ morph::Visual::render (void)
     // Add the depth at which the object lies.  Use forward projection to determine
     // the correct z coordinate for the inverse projection. This assumes only one
     // object.
-    array<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
-    array<float, 4> pp = this->projection * point;
+    Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+    Vector<float, 4> pp = this->projection * point;
     float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
     cout << "Putting coords at coord-z: " << coord_z << endl;
 
     // Construct the point for the location of the coord arrows
-    array<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+    Vector<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
 
     // Inverse project
-    array<float, 4> v0 = this->invproj * p0;
+    Vector<float, 4> v0 = this->invproj * p0;
 
     // Apply to view matrix...
     this->coordArrows->viewmatrix.setToIdentity();
@@ -617,18 +617,18 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
-        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-        array<float, 4> pp = this->projection * point;
+        Vector<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+        Vector<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
         // Construct two points for the start and end of the mouse movement
-        array<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-        array<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+        Vector<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+        Vector<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
 
         // Apply the inverse projection to get two points in the world frame of
         // reference for the mouse movement
-        array<float, 4> v0 = this->invproj * p0;
-        array<float, 4> v1 = this->invproj * p1;
+        Vector<float, 4> v0 = this->invproj * p0;
+        Vector<float, 4> v1 = this->invproj * p1;
 
         // This computes the difference betwen v0 and v1, the 2 mouse positions in the
         // world space. Note the swap between x and y
@@ -647,10 +647,10 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         this->rotationAxis = (mouseMoveWorld * rotamount);
         this->rotationAxis.renormalize();
 
-        // Now inverse apply the rotation of the scene to the rotation axis, so that we
-        // rotate the model the right way.
-        array<float, 4> a_tmp = this->invscene * this->rotationAxis;
-        this->rotationAxis.set_from (a_tmp);
+        // Now inverse apply the rotation of the scene to the rotation axis
+        // (Vector<float,3>), so that we rotate the model the right way.
+        Vector<float, 4> tmp_4D = this->invscene * this->rotationAxis;
+        this->rotationAxis.set_from (tmp_4D); // Set rotationAxis from 4D result
 
         // Update rotation from the saved position.
         this->rotation = this->savedRotation;
@@ -678,16 +678,16 @@ morph::Visual::cursor_position_callback (GLFWwindow* window, double x, double y)
         // Add the depth at which the object lies.  Use forward projection to determine
         // the correct z coordinate for the inverse projection. This assumes only one
         // object.
-        array<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-        array<float, 4> pp = this->projection * point;
+        Vector<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+        Vector<float, 4> pp = this->projection * point;
         float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
         // Construct two points for the start and end of the mouse movement
-        array<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-        array<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+        Vector<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+        Vector<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
         // Apply the inverse projection to get two points in the world frame of reference:
-        array<float, 4> v0 = this->invproj * p0;
-        array<float, 4> v1 = this->invproj * p1;
+        Vector<float, 4> v0 = this->invproj * p0;
+        Vector<float, 4> v1 = this->invproj * p1;
         // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
         mouseMoveWorld[0] = (v1[0]/v1[3]) - (v0[0]/v0[3]);
         mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);

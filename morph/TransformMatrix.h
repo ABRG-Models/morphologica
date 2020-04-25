@@ -832,8 +832,8 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        std::array<Flt, 4> operator* (const Vector<Flt, 4>& v1) const {
-            std::array<Flt, 4> v;
+        Vector<Flt, 4> operator* (const Vector<Flt, 4>& v1) const {
+            Vector<Flt, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -854,8 +854,8 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1.
-        std::array<Flt, 4> operator* (const Vector<Flt, 3>& v1) const {
-            std::array<Flt, 4> v;
+        Vector<Flt, 4> operator* (const Vector<Flt, 3>& v1) const {
+            Vector<Flt, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
