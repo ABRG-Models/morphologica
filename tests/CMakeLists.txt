@@ -223,11 +223,6 @@ add_executable(testQuaternion testQuaternion.cpp)
 target_link_libraries(testQuaternion -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testQuaternion testQuaternion)
 
-# Test morph::Vector3
-add_executable(testVector3 testVector3.cpp)
-target_link_libraries(testVector3 -L${morphologica_BINARY_DIR}/src morphologica)
-add_test(testVector3 testVector3)
-
 # testVector. Note testVector.cpp requires c++-17 due to use of curly
 # brace initializers; only c++-17 permits a class derived from an
 # aggregate class such as std::array to ALSO be an aggregate class.

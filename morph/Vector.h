@@ -18,12 +18,6 @@
 #include <functional>
 #include "Random.h"
 
-#define TEMP_V3 1
-
-#ifdef TEMP_V3
-#include "Vector3.h"
-#endif
-
 namespace morph {
 
     /*!
@@ -137,14 +131,6 @@ namespace morph {
             }
         }
 
-#ifdef TEMP_V3
-        template <size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        void set_from (const Vector3<S>& v) {
-            (*this)[0] = v.x;
-            (*this)[1] = v.y;
-            (*this)[2] = v.z;
-        }
-#endif
         /*!
          * Create a string representation of the vector
          *

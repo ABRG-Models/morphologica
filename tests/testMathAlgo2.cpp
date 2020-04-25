@@ -1,8 +1,8 @@
 #include "MathAlgo.h"
 #include <iostream>
 #include <queue>
-
-#include "Vector3.h"
+#include <list>
+#include "Vector.h"
 
 using namespace morph;
 using namespace std;
@@ -87,9 +87,18 @@ int main()
     vector<float> cen2 = MathAlgo::centroid (vvf);
     cout << "centroid (" << cen2[0] << "," << cen2[1] << "," << cen2[2] << ")" << endl;
 
-    // Not currently possible:
-    //vector<Vector3<float>> vVec3 (4, Vector3<float>(0,0,0));
-    //Vector3<float> cen3 = MathAlgo::centroid (vVec3);
+    Vector<float> Vf1 = {0,0,0};
+    vector<Vector<float>> vVec3;
+    Vf1.randomize();
+    vVec3.push_back (Vf1);
+    Vf1.randomize();
+    vVec3.push_back (Vf1);
+    Vf1.randomize();
+    vVec3.push_back (Vf1);
+    Vf1.randomize();
+    vVec3.push_back (Vf1);
+    Vector<float> cen3 = MathAlgo::centroid (vVec3);
+    cout << "Centroid of vector of Vector<float> = " << cen3 << endl;
 
     list<int> li;
     li.push_back(2);
