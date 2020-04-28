@@ -84,9 +84,20 @@ namespace morph {
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
                       const std::vector<Flt>* _data) {
-            Vector<float> offset_vec;
-            offset_vec.set_from(_offset);
-            HexGridVisual (sp, _hg, offset_vec, _data);
+            // Set up...
+            this->shaderprog = sp;
+            this->offset.set_from (_offset);
+            this->viewmatrix.translate (this->offset);
+
+            // Defaults here. After init, you can reset (at computational cost) to get desired params
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+
+            this->hg = _hg;
+            this->scalarData = _data;
+
+            this->initializeVertices();
+            this->postVertexInit();
         }
 
         //! Constructor which sets default colour map
@@ -123,9 +134,24 @@ namespace morph {
                       const std::vector<Flt>* _data,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
-            Vector<float> offset_vec;
-            offset_vec.set_from(_offset);
-            HexGridVisual (sp, _hg, offset_vec, _data, _cmt, _hue);
+            // Set up...
+            this->shaderprog = sp;
+            this->offset.set_from (_offset);
+            this->viewmatrix.translate (this->offset);
+
+            // Defaults here. After init, you can reset (at computational cost) to get desired params
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+
+            this->hg = _hg;
+            this->scalarData = _data;
+
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+
+            this->initializeVertices();
+            this->postVertexInit();
+
         }
 
         //! Constructor which sets default colour map and z/colour Scale objects
@@ -165,9 +191,27 @@ namespace morph {
                       const Scale<Flt>& cscale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f) {
-            Vector<float> offset_vec;
-            offset_vec.set_from(_offset);
-            HexGridVisual (sp, _hg, offset_vec, _data, zscale, cscale, _cmt, _hue);
+            // This (subcalling another constructor) failed:
+            //Vector<float> offset_vec;
+            //offset_vec.set_from(_offset);
+            // HexGridVisual (sp, _hg, offset_vec, _data, zscale, cscale, _cmt, _hue);
+            //
+            // So do it long-hand:
+            this->shaderprog = sp;
+            this->offset.set_from (_offset);
+            this->viewmatrix.translate (this->offset);
+
+            this->zScale = zscale;
+            this->colourScale = cscale;
+
+            this->hg = _hg;
+            this->scalarData = _data;
+
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+
+            this->initializeVertices();
+            this->postVertexInit();
         }
 
         //! Do the computations to initialize the vertices that will represent the
