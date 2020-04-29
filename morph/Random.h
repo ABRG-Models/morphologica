@@ -24,12 +24,15 @@ namespace morph {
     // de-duplicated. max(), min() and get() methods all need the dist member
     // attribute, so each one has to be written out in each wrapper class. So it goes.
 
+    //! RandUniform to be specialised depending on whether T is integral or not
+    template <typename T = double, bool = std::is_integral<std::decay_t<T>>::value>
+    class RandUniform {};
+
     /*!
-     * Generate uniform random numbers in a floating point format - valid Ts are
-     * float, double and long double.
+     * Floating-point number specialization of RandUnifom.
      */
-    template <typename T = double>
-    class RandUniformReal
+    template <typename T>
+    class RandUniform<T, false>
     {
     private:
         //! Random device to provide a seed for the generator
@@ -40,23 +43,24 @@ namespace morph {
         std::uniform_real_distribution<T> dist;
     public:
         //! Default constructor gives RN generator which works in range [0,1)
-        RandUniformReal (void) {
+        RandUniform () {
             typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator which works in range [0,1) and sets a seed
-        RandUniformReal (unsigned int _seed) {
+        //! This constructor gives RN generator which works in range [0,1) and sets a
+        //! fixed seed
+        RandUniform (unsigned int _seed) {
             this->generator.seed (_seed);
             typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b)
-        RandUniformReal (T a, T b) {
+        RandUniform (T a, T b) {
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator which works in range [a,b) and sets a seed
-        RandUniformReal (T a, T b, unsigned int _seed) {
+        //! This constructor gives RN generator which works in range [a,b)
+        RandUniform (T a, T b, unsigned int _seed) {
             this->generator.seed (_seed);
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
@@ -76,12 +80,10 @@ namespace morph {
     };
 
     /*!
-     * Generate uniform random numbers in a integer format - valid Ts are short, int,
-     * long, long long, unsigned short, unsigned int, unsigned long, or unsigned long
-     * long.
+     * Integer specialization: Generate uniform random numbers in a integer format
      */
-    template <typename T = unsigned int>
-    class RandUniformInt
+    template<typename T>
+    class RandUniform<T, true>
     {
     private:
         //! Random device to provide a seed for the generator
@@ -93,27 +95,27 @@ namespace morph {
     public:
         //! Default constructor gives an integer random number generator which works
         //! in range [0,(type max))
-        RandUniformInt (void) {
+        RandUniform () {
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
                                                                         std::numeric_limits<T>::max());
             this->dist.param (prms);
         }
-        //! gives an integer random number generator which works in range [0,(type
-        //! max)) and sets a fixed seed.
-        RandUniformInt (unsigned int _seed) {
+        //! This constructor gives an integer random number generator which works
+        //! in range [0,(type max)) with fixed seed \a _seed.
+        RandUniform (unsigned int _seed) {
             this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
                                                                         std::numeric_limits<T>::max());
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b)
-        RandUniformInt (T a, T b) {
+        RandUniform (T a, T b) {
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
         //! This constructor gives RN generator which works in range [a,b) and sets a
         //! fixed seed.
-        RandUniformInt (T a, T b, unsigned int _seed) {
+        RandUniform (T a, T b, unsigned int _seed) {
             this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
@@ -133,92 +135,6 @@ namespace morph {
         //! max wrapper
         T max (void) { return this->dist.max(); }
     };
-
-#ifdef WORK_IN_PROGRESS // towards a unified RandUniform template class to replace RandUniformReal and RandUniformInt
-    /*!
-     * Floating-point number implementation of RandUnifom.
-     */
-    template <bool int_type = false, typename T=double>
-    class RandUniformImpl // possibly deriving from a base class
-    {
-    private:
-        //! Random device to provide a seed for the generator
-        std::random_device rd{};
-        //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
-        //! Our distribution
-        std::uniform_real_distribution<T> dist;
-    public:
-        //! Default constructor gives RN generator which works in range [0,1)
-        RandUniformImpl () {
-            typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
-            this->dist.param (prms);
-        }
-        //! This constructor gives RN generator which works in range [a,b)
-        RandUniformImpl (T a, T b) {
-            typename std::uniform_real_distribution<T>::param_type prms (a, b);
-            this->dist.param (prms);
-        }
-        //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
-        //! Get n random numbers from the generator
-        std::vector<T> get (size_t n) {
-            std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
-                rtn[i] = this->dist (this->generator);
-            }
-            return rtn;
-        }
-        T min (void) { return this->dist.min(); }
-        T max (void) { return this->dist.max(); }
-    };
-
-    /*!
-     * Integer implementation: Generate uniform random numbers in a integer format
-     */
-    template<typename T>
-    class RandUniformImpl<true, T> // possibly deriving from a base class
-    {
-    private:
-        //! Random device to provide a seed for the generator
-        std::random_device rd{};
-        //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
-        //! Our distribution
-        std::uniform_int_distribution<T> dist;
-    public:
-        //! Default constructor gives an integer random number generator which works
-        //! in range [0,(type max))
-        RandUniformImpl () {
-            typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
-                                                                        std::numeric_limits<T>::max());
-            this->dist.param (prms);
-        }
-        //! This constructor gives RN generator which works in range [a,b)
-        RandUniformImpl (T a, T b) {
-            typename std::uniform_int_distribution<T>::param_type prms (a, b);
-            this->dist.param (prms);
-        }
-        //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
-        //! Get n random numbers from the generator
-        std::vector<T> get (size_t n) {
-            std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
-                rtn[i] = this->dist (this->generator);
-            }
-            return rtn;
-        }
-        //! min wrapper
-        T min (void) { return this->dist.min(); }
-        //! max wrapper
-        T max (void) { return this->dist.max(); }
-    };
-
-    template <typename T>
-    struct RandUniform : public RandUniformImpl<std::is_integral<std::decay_t<T>>::value, T> {};
-
-#endif // WIP
 
     /*!
      * Generate numbers drawn from a random normal distribution.

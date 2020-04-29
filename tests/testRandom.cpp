@@ -8,27 +8,27 @@ int main()
     int rtn = 0;
 
     // A random uniform generator returning integer types
-    morph::RandUniformInt<unsigned char> rui;
+    morph::RandUniform<unsigned char> rui;
     cout << "Random number is " << (unsigned int)rui.get() << endl;
     // You can find the min and max:
     cout << "That integer RNG has min and max: " << (unsigned int)rui.min()
          << "/" << (unsigned int)rui.max() << endl;
 
     // A random uniform generator returning real/floating point types
-    morph::RandUniformReal<float> ruf;
+    morph::RandUniform<float> ruf;
     cout << "Random float number is " << ruf.get() << endl;
 
     // You can find the min and max:
     cout << "That float RNG has min and max: " << ruf.min() << "/" << ruf.max() << endl;
 
     // You can get a vector of numbers taken from a random number generator:
-    morph::RandUniformReal<double> rud;
+    morph::RandUniform<double> rud;
     vector<double> tenrns = rud.get(10);
     cout << "10 random doubles:" << endl;
     for (auto d : tenrns) { cout << d << endl; }
 
     // You can set up an RNG which has different max and min values:
-    morph::RandUniformInt<unsigned int> rubnd (0, 3);
+    morph::RandUniform<unsigned int> rubnd (0, 3);
     // You can find the min and max:
     cout << "That bounded, integer RNG has min and max: " << rubnd.min() << "/" << rubnd.max() << endl;
     cout << "Ten random numbers in that range:\n";
@@ -36,7 +36,7 @@ int main()
     for (auto d : tenrns2) { cout << d << endl; }
 
     // Similar for float
-    morph::RandUniformReal<float> rubndf (0.0f, 1000.0f, 1);
+    morph::RandUniform<float> rubndf (0.0f, 1000.0f, 1);
     // You can find the min and max:
     cout << "FIXED SEED: bounded, float RNG has min and max: " << rubndf.min() << "/" << rubndf.max() << endl;
     cout << "Ten random numbers in that range:\n";
