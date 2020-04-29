@@ -36,9 +36,9 @@ int main()
     for (auto d : tenrns2) { cout << d << endl; }
 
     // Similar for float
-    morph::RandUniformReal<float> rubndf (0.0f, 1000.0f);
+    morph::RandUniformReal<float> rubndf (0.0f, 1000.0f, 1);
     // You can find the min and max:
-    cout << "That bounded, float RNG has min and max: " << rubndf.min() << "/" << rubndf.max() << endl;
+    cout << "FIXED SEED: bounded, float RNG has min and max: " << rubndf.min() << "/" << rubndf.max() << endl;
     cout << "Ten random numbers in that range:\n";
     vector<float> tenrns3 = rubndf.get(10);
     for (auto d : tenrns3) { cout << d << endl; }

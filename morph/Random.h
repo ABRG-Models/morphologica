@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 #include <limits>
+#include <type_traits>
 
 /*!
  * Random numbers in the morph namespace, wrapping C++ <random> stuff, with a
@@ -43,8 +44,20 @@ namespace morph {
             typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
+        //! This constructor gives RN generator which works in range [0,1) and sets a seed
+        RandUniformReal (unsigned int _seed) {
+            this->generator.seed (_seed);
+            typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
+            this->dist.param (prms);
+        }
         //! This constructor gives RN generator which works in range [a,b)
         RandUniformReal (T a, T b) {
+            typename std::uniform_real_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator which works in range [a,b) and sets a seed
+        RandUniformReal (T a, T b, unsigned int _seed) {
+            this->generator.seed (_seed);
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
@@ -85,8 +98,23 @@ namespace morph {
                                                                         std::numeric_limits<T>::max());
             this->dist.param (prms);
         }
+        //! gives an integer random number generator which works in range [0,(type
+        //! max)) and sets a fixed seed.
+        RandUniformInt (unsigned int _seed) {
+            this->generator.seed (_seed);
+            typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
+                                                                        std::numeric_limits<T>::max());
+            this->dist.param (prms);
+        }
         //! This constructor gives RN generator which works in range [a,b)
         RandUniformInt (T a, T b) {
+            typename std::uniform_int_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator which works in range [a,b) and sets a
+        //! fixed seed.
+        RandUniformInt (T a, T b, unsigned int _seed) {
+            this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
@@ -105,6 +133,92 @@ namespace morph {
         //! max wrapper
         T max (void) { return this->dist.max(); }
     };
+
+#ifdef WORK_IN_PROGRESS // towards a unified RandUniform template class to replace RandUniformReal and RandUniformInt
+    /*!
+     * Floating-point number implementation of RandUnifom.
+     */
+    template <bool int_type = false, typename T=double>
+    class RandUniformImpl // possibly deriving from a base class
+    {
+    private:
+        //! Random device to provide a seed for the generator
+        std::random_device rd{};
+        //! Pseudo random number generator engine
+        std::mt19937_64 generator{rd()};
+        //! Our distribution
+        std::uniform_real_distribution<T> dist;
+    public:
+        //! Default constructor gives RN generator which works in range [0,1)
+        RandUniformImpl () {
+            typename std::uniform_real_distribution<T>::param_type prms (T{0}, T{1});
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator which works in range [a,b)
+        RandUniformImpl (T a, T b) {
+            typename std::uniform_real_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
+        //! Get 1 random number from the generator
+        T get (void) { return this->dist (this->generator); }
+        //! Get n random numbers from the generator
+        std::vector<T> get (size_t n) {
+            std::vector<T> rtn (n, T{0});
+            for (size_t i = 0; i < n; ++i) {
+                rtn[i] = this->dist (this->generator);
+            }
+            return rtn;
+        }
+        T min (void) { return this->dist.min(); }
+        T max (void) { return this->dist.max(); }
+    };
+
+    /*!
+     * Integer implementation: Generate uniform random numbers in a integer format
+     */
+    template<typename T>
+    class RandUniformImpl<true, T> // possibly deriving from a base class
+    {
+    private:
+        //! Random device to provide a seed for the generator
+        std::random_device rd{};
+        //! Pseudo random number generator engine
+        std::mt19937_64 generator{rd()};
+        //! Our distribution
+        std::uniform_int_distribution<T> dist;
+    public:
+        //! Default constructor gives an integer random number generator which works
+        //! in range [0,(type max))
+        RandUniformImpl () {
+            typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
+                                                                        std::numeric_limits<T>::max());
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator which works in range [a,b)
+        RandUniformImpl (T a, T b) {
+            typename std::uniform_int_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
+        //! Get 1 random number from the generator
+        T get (void) { return this->dist (this->generator); }
+        //! Get n random numbers from the generator
+        std::vector<T> get (size_t n) {
+            std::vector<T> rtn (n, T{0});
+            for (size_t i = 0; i < n; ++i) {
+                rtn[i] = this->dist (this->generator);
+            }
+            return rtn;
+        }
+        //! min wrapper
+        T min (void) { return this->dist.min(); }
+        //! max wrapper
+        T max (void) { return this->dist.max(); }
+    };
+
+    template <typename T>
+    struct RandUniform : public RandUniformImpl<std::is_integral<std::decay_t<T>>::value, T> {};
+
+#endif // WIP
 
     /*!
      * Generate numbers drawn from a random normal distribution.
@@ -125,8 +239,21 @@ namespace morph {
             typename std::normal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator with mean @mean and standard deviation @sigma
+        //! This constructor gives RN generator with mean 0 and standard deviation 1
+        //! and set a fixed seed.
+        RandNormal (unsigned int _seed) {
+            this->generator.seed (_seed);
+            typename std::normal_distribution<T>::param_type prms (T{0}, T{1});
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean \a mean and standard deviation \a sigma
         RandNormal (T mean, T sigma) {
+            typename std::normal_distribution<T>::param_type prms (mean, sigma);
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean \a mean and standard deviation \a sigma
+        RandNormal (T mean, T sigma, unsigned int _seed) {
+            this->generator.seed (_seed);
             typename std::normal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
@@ -164,9 +291,23 @@ namespace morph {
             typename std::lognormal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator with mean-of-the-log @mean and
-        //! standard deviation @sigma
+        //! This constructor gives RN generator with mean-of-the-log 0 and standard
+        //! deviation-of-the-log 1. Sets a fixed seed.
+        RandLogNormal (unsigned int _seed) {
+            this->generator.seed (_seed);
+            typename std::lognormal_distribution<T>::param_type prms (T{0}, T{1});
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean-of-the-log \a mean and
+        //! standard deviation \a sigma
         RandLogNormal (T mean, T sigma) {
+            typename std::lognormal_distribution<T>::param_type prms (mean, sigma);
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean-of-the-log \a mean and
+        //! standard deviation \a sigma and sets a seed.
+        RandLogNormal (T mean, T sigma, unsigned int _seed) {
+            this->generator.seed (_seed);
             typename std::lognormal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
@@ -205,8 +346,21 @@ namespace morph {
             typename std::poisson_distribution<T>::param_type prms (T{0});
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator with mean @mean.
+        //! Default constructor gives a Poisson random number generator with mean
+        //! 0. Sets fixed seed \a _seed.
+        RandPoisson (unsigned int _seed) {
+            this->generator.seed (_seed);
+            typename std::poisson_distribution<T>::param_type prms (T{0});
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean \a mean.
         RandPoisson (T mean) {
+            typename std::poisson_distribution<T>::param_type prms (mean);
+            this->dist.param (prms);
+        }
+        //! This constructor gives RN generator with mean \a mean.
+        RandPoisson (T mean, unsigned int _seed) {
+            this->generator.seed (_seed);
             typename std::poisson_distribution<T>::param_type prms (mean);
             this->dist.param (prms);
         }
