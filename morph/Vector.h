@@ -177,43 +177,16 @@ namespace morph {
         /*!
          * Randomize the vector
          *
-         * Randomly set the elements of the vector consisting of floating point
-         * coordinates. Coordinates are set to random numbers drawn from a uniform
-         * distribution between 0 and 1 (See morph::RandUniformReal for details).
-         *
-         * Note that I need a real or int implementation here, depending on the type of
-         * S. This allows me to use the correct type of randomizer.
-         *
-         * Note, if you omit the second template arg from enable_if_t (or enable_if)
-         * then the type defaults to void.
-         *
-         * \tparam F A floating point scalar type
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between 0 and 1 if S is a
+         * floating point type or to integers between std::numeric_limits<S>::min()
+         * and std::numeric_limits<S>::max() if S is an integral type (See
+         * morph::RandUniform for details).
          */
-        template <typename F=S, std::enable_if_t<!std::is_integral<std::decay_t<F>>::value, int> = 0 >
         void randomize() {
-            RandUniformReal<F> ruf (static_cast<F>(0), static_cast<F>(1));
+            RandUniform<S> ru;
             for (auto& i : *this) {
-                i = ruf.get();
-            }
-        }
-
-        /*!
-         * Randomize the vector
-         *
-         * Randomly set the elements of the vector consisting of integer
-         * coordinates. Coordinates are set to random numbers drawn from a uniform
-         * distribution between 0 and 255 (See morph::RandUniformInt for details).
-         *
-         * Note on the template syntax: Here, if I is integral, then enable_if_t's type
-         * is '0' and the function is defined (I think).
-         *
-         * \tparam I An integer scalar type
-         */
-        template <typename I=S, std::enable_if_t<std::is_integral<std::decay_t<I>>::value, int> = 0 >
-        void randomize() {
-            RandUniformInt<I> rui (static_cast<I>(0), static_cast<I>(255));
-            for (auto& i : *this) {
-                i = rui.get();
+                i = ru.get();
             }
         }
 

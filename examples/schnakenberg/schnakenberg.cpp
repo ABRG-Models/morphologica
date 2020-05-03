@@ -26,12 +26,9 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <sstream>
 #include <limits>
 #include <chrono>
-
-using namespace std;
-using namespace std::chrono;
-using std::chrono::steady_clock;
 
 #ifdef COMPILE_PLOTTING
 /*!
@@ -41,22 +38,18 @@ using std::chrono::steady_clock;
  * in which I am only going to be saving out HDF5 data.
  */
 # include "morph/Visual.h"
-using morph::Visual;
 # include "morph/HexGridVisual.h"
-using morph::HexGridVisual;
 # include "morph/ColourMap.h"
-using morph::ColourMapType;
 # include "morph/VisualDataModel.h"
-using morph::VisualDataModel;
 # include "morph/Scale.h"
-using morph::Scale;
+# include "morph/Vector.h"
 
 //! Helper function to save PNG images with a suitable name
-void savePngs (const string& logpath, const string& name,
-               unsigned int frameN, Visual& v) {
-    stringstream ff1;
+void savePngs (const std::string& logpath, const std::string& name,
+               unsigned int frameN, morph::Visual& v) {
+    std::stringstream ff1;
     ff1 << logpath << "/" << name<< "_";
-    ff1 << setw(5) << setfill('0') << frameN;
+    ff1 << std::setw(5) << std::setfill('0') << frameN;
     ff1 << ".png";
     v.saveImage (ff1.str());
 }
@@ -66,13 +59,35 @@ void savePngs (const string& logpath, const string& name,
  * Included for directory manipulation code
  */
 #include "morph/tools.h"
-using morph::Tools;
 
 /*!
  * A jsoncpp-wrapping class for configuration.
  */
 #include "morph/Config.h"
+
+/*
+ * using directives just before main()
+ */
+#ifdef COMPILE_PLOTTING
+using morph::Visual;
+using morph::HexGridVisual;
+using morph::ColourMap;
+using morph::ColourMapType;
+using morph::VisualDataModel;
+using morph::Scale;
+using morph::Vector;
+#endif
 using morph::Config;
+using morph::Tools;
+using std::string;
+using std::stringstream;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::vector;
+using std::chrono::milliseconds;
+using std::chrono::duration_cast;
+using std::chrono::steady_clock;
 
 /*!
  * main(): Run a simulation, using parameters obtained from a JSON file.
@@ -250,7 +265,7 @@ int main (int argc, char **argv)
     // Before starting the simulation, create the HexGridVisuals.
 
     // Spatial offset, for positioning of HexGridVisuals
-    array<float, 3> spatOff;
+    Vector<float> spatOff;
     float xzero = 0.0f;
 
     // A. Offset in x direction to the left.

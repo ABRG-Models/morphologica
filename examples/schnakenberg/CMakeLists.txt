@@ -31,10 +31,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Xpreprocessor -fopenmp")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
 endif()
 
 # Tell clang to be quiet about brace initialisers:
