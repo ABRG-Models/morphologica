@@ -168,6 +168,13 @@ namespace morph {
         }
 
         /*!
+         * Zero the vector. Set all coordinates to 0
+         */
+        void zero() {
+            std::fill (this->begin(), this->end(), S{0});
+        }
+
+        /*!
          * Randomize the vector
          *
          * Randomly set the elements of the vector consisting of floating point
