@@ -90,5 +90,11 @@ int main() {
     d1.set_from (a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
 
+    // Test hadamard operator (elementwize multiplication)
+    Vector<double, 3> h1 = {1.2, 1.5, 8.4};
+    Vector<double, 3> h2 = {.12, .15, .84};
+    Vector<double, 3> h3 = h1.hadamard(h2);
+    cout << h1 << "(o)" << h2 << " = " << h3 << endl;
+
     return rtn;
 }

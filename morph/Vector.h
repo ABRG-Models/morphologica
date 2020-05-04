@@ -281,6 +281,19 @@ namespace morph {
         }
 
         /*!
+         * Hadamard product - elementwise multiplication. FIXME: This better as
+         * default for operator* because it is useful for any number of dims. Cross
+         * product could then be a named cross() method.
+         */
+        Vector<S, N> hadamard (const Vector<S, N>& v) const {
+            Vector<S, N> rtn;
+            auto vi = v.begin();
+            auto mult_by_vi = [vi](S a) mutable { return a * (*vi++); };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_vi);
+            return rtn;
+        }
+
+        /*!
          * Scalar multiply * operator
          *
          * This function will only be defined if typename _S is a

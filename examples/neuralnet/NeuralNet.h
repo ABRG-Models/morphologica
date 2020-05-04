@@ -20,6 +20,7 @@ struct Connection
 {
     Vector<T, M>* in;  // Pointer to input layer
     Vector<T, N>* out; // Pointer to output layer
+    Vector<T, N> desout; // Desired output
     // Order of weights: in[0] to out[all], in[1] to out[all], in[2] to out[all] etc.
     Vector<T, MN> w;
     Vector<T, N> b;
@@ -31,20 +32,46 @@ struct Connection
 
     //! out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
     void compute() {
-        // Copy a part of w into a separate Vector
+        // A Vector for a 'part of w'
         Vector<T, M> wpart;
         // Get weights, outputs and biases iterators
         auto witer = this->w.begin();
         auto oiter = this->out->begin();
         auto biter = this->b.begin();
         // Carry out an N sized for loop computing each output
-        for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < N; ++j) {
             // Copy part of weights to wpart:
             std::copy (witer, witer+M, wpart.begin());
             // Compute dot product with input and add bias:
             T presig = wpart.dot (*in) + *biter++;
             *oiter++ = T{1} / (T{1} + std::exp(-presig));
         }
+    }
+
+    Vector<T, M> backprop (const Vector<T, N>& dEdyj) {
+        // Some notation here matches that in Plaut & Hinton 1987
+        Vector<T, N> one_minus_out = -(*out) + T{1};
+        // This is dEdyj * yj(1-yj):
+        Vector<T, N> dEdxj = dEdyj.hadamard((*out).hadamard(one_minus_out));
+        Vector<T, MN> dEdwji;
+        for (size_t j = 0; j < N; ++j) {
+            for (size_t i = 0; i < M; ++i) {
+                dEdwji[M*j+i] = dEdxj[j] * (*in)[i];
+            }
+        }
+        // Can now get dE/dyi for the next layer as sum_j dEdxj * wji or
+        // dEdxj.dot(wpart) as it was in compute(). RETURN dEdyi (so it can be passed
+        // to next layer)
+        Vector<T, M> dEdyi;
+        dEdyi.zero();
+        for (size_t i = 0; i < M; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+            // Note that we multiply dEdxj by this->w's elements i+0, i+M, i+2M,
+            // i+3M,...,i+(N-1)M etc.
+                dEdyi[i] += dEdxj[j] * this->w[i+(M*j)];
+            }
+        }
+        return dEdyi;
     }
 };
 
@@ -75,28 +102,45 @@ struct FeedForwardNet
         this->c3.randomize();
     }
 
+    //! Update the network's outputs from its inputs
     void update() {
-        // Update the network
         c1.compute();
         c2.compute();
         c3.compute();
+#if 0
         std::cout << output << std::endl;
+#endif
     }
 
-    // Set up an input
-    void setInput() {
+    //! Determine the error gradients by the backpropagation method. NB: Call
+    //! computeCost() first
+    void backprop() {
+        // Step back through the layers, computing error gradients as we go
+        dEdy_l2 = c3.backprop (dEdy_out);
+        dEdy_l1 = c2.backprop (dEdy_l2);
+        dEdy_in = c1.backprop (dEdy_l1);
+#if 0
+        std::cout << "dEdy_in: " << dEdy_in << std::endl;
+        std::cout << "dEdy_l1: " << dEdy_l1 << std::endl;
+        std::cout << "dEdy_l2: " << dEdy_l2 << std::endl;
+        std::cout << "dEdy_out: " << dEdy_out << std::endl;
+#endif
     }
 
-    // Compute the cost for one input and one desired output
-    void computeCost() {
+    // Set up an input along with desired output
+    void setInput (const Vector<T, 3>& theInput, const Vector<T, 2>& theOutput) {
+        this->input = theInput;
+        this->desiredOutput = theOutput;
+    }
+
+    //! Compute the cost for one input and one desired output
+    T computeCost() {
         // sum up the sos differences between output and desiredOutput
-        Vector<T, 2> outdiff = desiredOutput - output;
-        T l = outdiff.length();
+        this->dEdy_out = desiredOutput - output;
+        T l = this->dEdy_out.length();
         this->cost = l * l;
+        return this->cost;
     }
-
-    // What are we shooting for?
-    Vector<T, 2> desiredOutput;
 
     // What's the cost function of the current output?
     T cost;
@@ -106,10 +150,18 @@ struct FeedForwardNet
     // toy program, so it's manual. This is actually pretty awful and leads to a lot of
     // repeated code.
     Vector<T, 3> input;
+    Vector<T, 3> dEdy_in;
     Connection<T, 3, 4> c1;
+
     Vector<T, 4> l1;
+    Vector<T, 4> dEdy_l1;
     Connection<T, 4, 4> c2;
+
     Vector<T, 4> l2;
+    Vector<T, 4> dEdy_l2;
     Connection<T, 4, 2> c3;
+
     Vector<T, 2> output;
+    Vector<T, 2> dEdy_out;
+    Vector<T, 2> desiredOutput;
 };

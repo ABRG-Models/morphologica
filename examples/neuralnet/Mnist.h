@@ -60,7 +60,7 @@ public:
         lbl_f.open (lbl_p.c_str(), std::ios::in | std::ios::binary);
 
         if (!img_f.is_open() || !lbl_f.is_open()) {
-            throw std::runtime_error ("File access error");
+            throw std::runtime_error ("Mnist: File access error opening MNIST data files");
         }
 
         // Process training data magic number, stuff
@@ -74,10 +74,10 @@ public:
         img_f.read (buf, 4);
         this->nc = (buf[3]&0xff) | (buf[2]&0xff)<<8 | (buf[1]&0xff)<<16 | (buf[0]&0xff)<<24;
 
-        if (nr * nc != mnlen) { throw std::runtime_error ("Expecting 28x28 images in Mnist!"); }
+        if (nr * nc != mnlen) { throw std::runtime_error ("Mnist: Expecting 28x28 images in Mnist!"); }
 
         // Check images magic number
-        if (magic_imgs != 2051) { throw std::runtime_error ("Training data, images magic number is wrong"); }
+        if (magic_imgs != 2051) { throw std::runtime_error ("Mnist: Training data, images magic number is wrong"); }
 
         // Process labels magic number etc
         lbl_f.read (buf, 4);
@@ -86,11 +86,11 @@ public:
         int n_lbls = (buf[3]&0xff) | (buf[2]&0xff)<<8 | (buf[1]&0xff)<<16 | (buf[0]&0xff)<<24;
 
         // Check labels magic number
-        if (magic_lbls != 2049) { throw std::runtime_error ("Training data, labels magic number is wrong"); }
+        if (magic_lbls != 2049) { throw std::runtime_error ("Mnist: Training data, labels magic number is wrong"); }
 
         // Check reported number of images == number of labels
         if (n_lbls != n_imgs) {
-            throw std::runtime_error ("Training data, num labels != num images");
+            throw std::runtime_error ("Mnist: Training data, num labels != num images");
         }
 
         // Should now be able to read through each file, pulling in the data.
