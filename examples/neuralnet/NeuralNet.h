@@ -51,8 +51,9 @@ struct Connection
     Vector<T, M> backprop (const Vector<T, N>& dEdyj) {
         // Some notation here matches that in Plaut & Hinton 1987
         Vector<T, N> one_minus_out = -(*out) + T{1};
-        // This is dEdyj * yj(1-yj):
+        // This is dEdyj * yj(1-yj) and is equivalent to delta_j in neuralnetworksanddeeplearning.com
         Vector<T, N> dEdxj = dEdyj.hadamard((*out).hadamard(one_minus_out));
+        // In nn&dl.com, this is delta_out * a_in
         Vector<T, MN> dEdwji;
         for (size_t j = 0; j < N; ++j) {
             for (size_t i = 0; i < M; ++i) {
