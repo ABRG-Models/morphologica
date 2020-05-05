@@ -2,16 +2,14 @@
  * \file
  *
  * A toy neural net, for a NN example
+ *
+ * This one follows neuralnetworksanddeeplearning.com
  */
 
-#include <vector>
-#include <list>
 #include <morph/Vector.h>
 #include <iostream>
 
 // using directives for later removal
-using std::vector;
-using std::list;
 using morph::Vector;
 
 //! A connection between a source layer of size M and a destination layer of size N
@@ -20,10 +18,15 @@ struct Connection
 {
     Vector<T, M>* in;  // Pointer to input layer
     Vector<T, N>* out; // Pointer to output layer
-    Vector<T, N> desout; // Desired output
+    Vector<T, M> delta; // The errors in the input layer of neurons
+
     // Order of weights: in[0] to out[all], in[1] to out[all], in[2] to out[all] etc.
     Vector<T, MN> w;
     Vector<T, N> b;
+
+    // Activation of the output neurons. Computed in feedforward, used in backprop
+    // z = sum(w.in) + b.
+    Vector<T, N> z;
 
     void randomize() {
         this->w.randomize();
@@ -43,36 +46,37 @@ struct Connection
             // Copy part of weights to wpart:
             std::copy (witer, witer+M, wpart.begin());
             // Compute dot product with input and add bias:
-            T presig = wpart.dot (*in) + *biter++;
-            *oiter++ = T{1} / (T{1} + std::exp(-presig));
+            z[j] = wpart.dot (*in) + *biter++;
+            //sigz[j] = T{1} / (T{1} + std::exp(-z[j]));
+            //*oiter++ = sigz[j];
+            *oiter++ = T{1} / (T{1} + std::exp(-z[j]));
         }
     }
 
-    Vector<T, M> backprop (const Vector<T, N>& dEdyj) {
-        // Some notation here matches that in Plaut & Hinton 1987
-        Vector<T, N> one_minus_out = -(*out) + T{1};
-        // This is dEdyj * yj(1-yj) and is equivalent to delta_j in neuralnetworksanddeeplearning.com
-        Vector<T, N> dEdxj = dEdyj.hadamard((*out).hadamard(one_minus_out));
-        // In nn&dl.com, this is delta_out * a_in
-        Vector<T, MN> dEdwji;
+    //! The content of Connection::out is sigmoid(z^l+1)
+    Vector<T, N> sigmoid_prime_z_lplus1() {
+        return out->hadamard (-(*out)+T{1});
+    }
+
+    //! The content of Connection::in is sigmoid(z^l)
+    Vector<T, M> sigmoid_prime_z_l() {
+        return in->hadamard (-(*in)+T{1});
+    }
+
+    //! Compute this->delta using values computed in Connection::compute.
+    void backprop (const Vector<T, N>& delta_l_nxt) {
+        // we have to do weights * delta_l_nxt to give a Vector<T, N> result. This is
+        // the equivalent of the matrix multiplication:
+        Vector<T, M> w_times_delta;
+        w_times_delta.zero();
+        // Should be able to parallelize this:
         for (size_t j = 0; j < N; ++j) {
             for (size_t i = 0; i < M; ++i) {
-                dEdwji[M*j+i] = dEdxj[j] * (*in)[i];
+                w_times_delta[i] +=  this->w[i+(M*j)] * delta_l_nxt[j];
             }
         }
-        // Can now get dE/dyi for the next layer as sum_j dEdxj * wji or
-        // dEdxj.dot(wpart) as it was in compute(). RETURN dEdyi (so it can be passed
-        // to next layer)
-        Vector<T, M> dEdyi;
-        dEdyi.zero();
-        for (size_t i = 0; i < M; ++i) {
-            for (size_t j = 0; j < N; ++j) {
-            // Note that we multiply dEdxj by this->w's elements i+0, i+M, i+2M,
-            // i+3M,...,i+(N-1)M etc.
-                dEdyi[i] += dEdxj[j] * this->w[i+(M*j)];
-            }
-        }
-        return dEdyi;
+        Vector<T, M> spzl = this->sigmoid_prime_z_l();
+        this->delta = w_times_delta.hadamard (spzl);
     }
 };
 
@@ -88,57 +92,52 @@ struct FeedForwardNet
         c1.out = &this->l1;
 
         c2.in = &this->l1;
-        c2.out = &this->l2;
-
-        c3.in = &this->l2;
-        c3.out = &this->output;
+        c2.out = &this->output;
 
         this->input.randomize();
         this->l1.randomize();
-        this->l2.randomize();
         this->output.zero();
 
         this->c1.randomize();
         this->c2.randomize();
-        this->c3.randomize();
     }
 
     //! Update the network's outputs from its inputs
     void update() {
         c1.compute();
         c2.compute();
-        c3.compute();
-#if 0
-        std::cout << output << std::endl;
-#endif
     }
 
     //! Determine the error gradients by the backpropagation method. NB: Call
     //! computeCost() first
     void backprop() {
-        // Step back through the layers, computing error gradients as we go
-        dEdy_l2 = c3.backprop (dEdy_out);
-        dEdy_l1 = c2.backprop (dEdy_l2);
-        dEdy_in = c1.backprop (dEdy_l1);
-#if 0
-        std::cout << "dEdy_in: " << dEdy_in << std::endl;
-        std::cout << "dEdy_l1: " << dEdy_l1 << std::endl;
-        std::cout << "dEdy_l2: " << dEdy_l2 << std::endl;
-        std::cout << "dEdy_out: " << dEdy_out << std::endl;
-#endif
+        // Notation follows http://neuralnetworksanddeeplearning.com/chap2.html
+        // The output layer is special, as the error in the output layer is given by
+        //
+        // delta^L = grad_a(C) 0 sigma_prime(z^L)
+        //
+        // whereas for the intermediate layers
+        //
+        // delta^l = w^l+1 . delta^l+1 0 sigma_prime (z^l)
+        //
+        // (where 0 signifies hadamard product)
+        // delta = dC_x/da() * sigmoid_prime(z_out)
+        this->c2.backprop (this->delta_out); // c2.delta computed
+        this->c1.backprop (this->c2.delta); // c1.delta computed
     }
 
     // Set up an input along with desired output
-    void setInput (const Vector<T, 3>& theInput, const Vector<T, 2>& theOutput) {
+    void setInput (const Vector<T, 784>& theInput, const Vector<T, 10>& theOutput) {
         this->input = theInput;
         this->desiredOutput = theOutput;
     }
 
     //! Compute the cost for one input and one desired output
     T computeCost() {
+        // Here is where we compute delta_out:
+        this->delta_out = (desiredOutput-output).hadamard (c2.sigmoid_prime_z_lplus1()); // c2.z is the final activation
         // sum up the sos differences between output and desiredOutput
-        this->dEdy_out = desiredOutput - output;
-        T l = this->dEdy_out.length();
+        T l = this->delta_out.length();
         this->cost = l * l;
         return this->cost;
     }
@@ -148,21 +147,20 @@ struct FeedForwardNet
 
     // Because Vectors have their size set at compile time, we have to specify each
     // layer manually. A template algorithm could be created to do this, but this is a
-    // toy program, so it's manual. This is actually pretty awful and leads to a lot of
-    // repeated code.
-    Vector<T, 3> input;
-    Vector<T, 3> dEdy_in;
-    Connection<T, 3, 4> c1;
+    // toy program, so it's manual.
 
-    Vector<T, 4> l1;
-    Vector<T, 4> dEdy_l1;
-    Connection<T, 4, 4> c2;
+    // 28x28 neurons in the input layer
+    Vector<T, 784> input;
+    Vector<T, 784> delta_in;
+    Connection<T, 784, 15> c1;
 
-    Vector<T, 4> l2;
-    Vector<T, 4> dEdy_l2;
-    Connection<T, 4, 2> c3;
+    // 15 neurons in the hidden layer (as per the online example)
+    Vector<T, 15> l1; // activations of l1 = sigmoid (c1.z)
+    Vector<T, 15> delta_l1;
+    Connection<T, 15, 10> c2;
 
-    Vector<T, 2> output;
-    Vector<T, 2> dEdy_out;
-    Vector<T, 2> desiredOutput;
+    // 10 neurons in the output layer
+    Vector<T, 10> output; // activations of output layer - i.e. the output. = sigmoid(c2.z)
+    Vector<T, 10> delta_out;
+    Vector<T, 10> desiredOutput;
 };
