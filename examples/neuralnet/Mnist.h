@@ -35,9 +35,8 @@
 constexpr size_t mnlen = 784;
 
 // A class to read, and then manage the data of, the Mnist database.
-class Mnist
+struct Mnist
 {
-public:
     Mnist() {
         this->init();
     }
@@ -171,7 +170,6 @@ public:
     size_t num_training() {
         return this->training.size();
     }
-private:
 
     int chars_to_int (const char* buf) {
         int rtn = (buf[3]&0xff) | (buf[2]&0xff)<<8 | (buf[1]&0xff)<<16 | (buf[0]&0xff)<<24;
