@@ -14,6 +14,9 @@ int main()
     morph::RandUniform<unsigned char> rng((unsigned char)0, (unsigned char)9);
 
     // main loop, while m.training_f has values in:
+    unsigned int epochs = 10;
+    unsigned int mini_batch_size = 10;
+    float eta = 1.0;
 
     // Do this several times, accumulate the errors, then update the weights/biases
     auto t_iter = m.training_f.find (rng.get());
@@ -28,6 +31,8 @@ int main()
     ff1.update();
     float c = ff1.computeCost();
     ff1.backprop();
+
+    ff1.updateSomehow();
 
     return 0;
 }
