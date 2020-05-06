@@ -9,7 +9,9 @@
 #include <morph/Vector.h>
 #include <iostream>
 
-#define MID_LAYER 30
+#ifndef MID_LAYER
+# define MID_LAYER 30
+#endif
 
 //! A connection between a source layer of size M and a destination layer of size N
 template <typename T, size_t M, size_t N, size_t MN=M*N>

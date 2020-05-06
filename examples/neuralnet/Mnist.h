@@ -109,7 +109,11 @@ struct Mnist
                     img_f.read (cbuf, 1);
                     //oneimg.at<float>(r, c, 0) = static_cast<float>(cbuf[0])/255.0f;
                     unsigned char uc = cbuf[0];
+#if 0
                     float val = (float)uc/256.0f;
+#else
+                    float val = (float)uc;
+#endif
                     //std::cout << "Value: " << val << std::endl;
                     oneimg.at<float>(r, c) = val;
                     //std::cout << "Value in omeimg: " << oneimg.at<float>(r, c)  << std::endl;
@@ -183,10 +187,15 @@ struct Mnist
     std::string basepath = "mnist/";
 
     //! The training data. The key to this multimap is the label, the Mat contains
-    //! each training image
+    //! each training image. This is to be 50000 out of 60000 examples.
     std::multimap<unsigned char, cv::Mat> training;
     // Same data extracted into vectors of floats, rather than Mats.
     std::multimap<unsigned char, morph::Vector<float, mnlen>> training_f;
+
+    //! Validation - 10000 out of the 60000
+    //std::multimap<unsigned char, cv::Mat> validation;
+    //std::multimap<unsigned char, morph::Vector<float, mnlen>> validation_f;
+
 
     //! The training data. The key to this multimap is the label; the Mat contains
     //! each test image
