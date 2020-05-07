@@ -137,7 +137,7 @@ if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
   target_compile_definitions(nn1 PUBLIC FLT=float COMPILE_PLOTTING)
 
   if(APPLE)
-    target_link_libraries(nn1 ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw)
+    target_link_libraries(nn1 ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw ${OPENGL_LIBRARIES})
   else()
     target_link_libraries(nn1 ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
   endif()
