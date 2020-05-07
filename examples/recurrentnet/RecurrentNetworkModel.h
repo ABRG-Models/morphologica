@@ -117,7 +117,7 @@ public:
     }
     virtual void allocate (void) {
 
-        this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
+        this->hg = new morph::HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
         DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
         this->hg->setEllipticalBoundary (ellipseA, ellipseB);
         // Compute the distances from the boundary
