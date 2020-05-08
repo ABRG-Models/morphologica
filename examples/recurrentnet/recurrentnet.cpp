@@ -1,10 +1,10 @@
-#include "RecurrentNetworkModel.h"
+#include "morph/RecurrentNetworkModel.h"
 
 int main (int argc, char **argv){
-    if(argc<4){ cout<<"Run using e.g., './modelVis data/test 0 10000'.\n\n Supply path to folder containing the config.json file and any .h5 map files, seed, and training value T. Check when using T<1 values for plotting commands (some require additional command line params)."<<endl<<flush; return 0; }
+    if(argc<4){ std::cout<<"Run using e.g., './modelVis data/test 0 10000'.\n Supply path to folder containing the config.json file and any .h5 map files, seed, and training value T. Check when using T<1 values for plotting commands (some require additional command line params)."<<std::endl<<std::flush; return 0; }
     RecurrentNetworkModel N(argv[1]);
-    srand(stoi(argv[2]));
-    int T = stoi(argv[3]);
+    srand(std::stoi(argv[2]));
+    int T = std::stoi(argv[3]);
 
     if(T>0){
         // TRAINING
@@ -27,24 +27,27 @@ int main (int argc, char **argv){
                 N.plotMapResponsesAllMaps();
             } break;
             case(-3):{
+                if(argc<7){ std::cout<<"Supply contextIndex, nodeA, nodeB as additional arguments"<<std::endl; return 0; }
                 N.setColourMap(morph::ColourMapType::Jet);
                 // params: contextIndex, nodeA, nodeB
-                N.plotDomainNodeDiff(stoi(argv[4]), stoi(argv[5]), stoi(argv[6]));
+                N.plotDomainNodeDiff(std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[6]));
             } break;
             case(-4):{
+                if(argc<7){ std::cout<<"Supply nodeIndex, contextA, contextB as additional arguments"<<std::endl; return 0; }
                 N.setColourMap(morph::ColourMapType::Jet);
                 // params: nodeIndex, contextA, contextB
-                N.plotDomainContextDiff(stoi(argv[4]), stoi(argv[5]), stoi(argv[6]));
+                N.plotDomainContextDiff(std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[6]));
             } break;
             case(-5):{
+                if(argc<6){ std::cout<<"Supply contextA, contextB as additional arguments"<<std::endl; return 0; }
                 N.setColourMap(morph::ColourMapType::Jet);
                 // params: contextA, contextB
-                N.plotDomainContextDiffOutputNodes(stoi(argv[4]),stoi(argv[5]));
+                N.plotDomainContextDiffOutputNodes(std::stoi(argv[4]),std::stoi(argv[5]));
             } break;
 
 
             default:{
-                cout<<"Invalid option: "<< T << endl;
+                std::cout<<"Invalid option: "<< T << std::endl;
             } break;
         }
 
