@@ -39,6 +39,6 @@ h5f.close()
 # Run the model
 os.system('./build/recurrentnet '+dir+' '+str(seed)+' '+str(steps))
 
-print("run './build/recurrentnet "+dir+" 0 -1' to see the results")
+print("run './build/recurrentnet "+dir+" 0 -2' to see the results")
 
 
