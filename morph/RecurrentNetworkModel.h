@@ -15,7 +15,8 @@
 #include "morph/tools.h"
 #include <morph/Config.h>
 #include "morph/Scale.h"
-#include "tools.h"
+#include "Vector.h"
+#include "RecurrentNetworkTools.h"
 #include "RecurrentNetwork.h"
 
 #include "morph/ReadCurves.h"
@@ -29,13 +30,15 @@ using morph::QuadsVisual;
 using morph::HexGridVisual;
 using morph::Scale;
 using morph::HdfData;
+using morph::Vector;
+
 
 using namespace tools;
 
 
-vector<array<float, 12>> getQuads(vector<double> X, vector<double> Y){
+std::vector<std::array<float, 12>> getQuads(std::vector<double> X, std::vector<double> Y){
 
-    vector<array<float, 12>> quads;
+    std::vector<std::array<float, 12>> quads;
 
     double xRange = tools::getMax(X) - tools::getMin(X);
     double yRange = tools::getMax(Y) - tools::getMin(Y);
@@ -46,11 +49,11 @@ vector<array<float, 12>> getQuads(vector<double> X, vector<double> Y){
     double xScale = xRange/maxDim;
     double yScale = yRange/maxDim;
 
-    vector<double> uniqueX = tools::getUnique(X);
+    std::vector<double> uniqueX = tools::getUnique(X);
     int cols = uniqueX.size();
-    vector<int> colID(X.size(),0);
-    vector<vector<double> > yByCol(cols);
-    vector<int> count(cols,0);
+    std::vector<int> colID(X.size(),0);
+    std::vector<std::vector<double> > yByCol(cols);
+    std::vector<int> count(cols,0);
     for(int i=0;i<X.size();i++){
         for(int j=0;j<cols;j++){
             if(X[i]==uniqueX[j]){
@@ -61,17 +64,17 @@ vector<array<float, 12>> getQuads(vector<double> X, vector<double> Y){
         }
     }
 
-    vector<double> colRange(cols);
+    std::vector<double> colRange(cols);
     for(int i=0;i<cols;i++){
         colRange[i] = tools::getMax(yByCol[i])-tools::getMin(yByCol[i]);
     }
     double xSep = 0.5*xRange/((double)cols-1);
-    vector<double> ySep;
+    std::vector<double> ySep;
     for(int i=0;i<X.size();i++){
         ySep.push_back(0.5*colRange[colID[i]]/((double)count[colID[i]]-1));
     }
 
-    array<float, 12> sbox;
+    std::array<float, 12> sbox;
     for (int i=0; i<X.size(); i++) {
         // corner 1 x,y,z
         sbox[0] = xScale*(xOff+X[i]-xSep);
@@ -101,11 +104,11 @@ public:
     double ellipseA=1.0;
     double ellipseB=1.0;
 
-    alignas(alignof(vector<Flt>))
-    vector<Flt> X;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> X;
 
-    alignas(alignof(vector<Flt>))
-    vector<Flt> Y;
+    alignas(alignof(std::vector<Flt>))
+    std::vector<Flt> Y;
 
     virtual void init (void) {
         this->stepCount = 0;
@@ -122,7 +125,7 @@ public:
         this->hg->setEllipticalBoundary (ellipseA, ellipseB);
         // Compute the distances from the boundary
         this->hg->computeDistanceToBoundary();
-        // Vector size comes from number of Hexes in the HexGrid
+        // std::vector size comes from number of Hexes in the HexGrid
         this->nhex = this->hg->num();
         DBG ("After setting boundary, HexGrid has " << this->nhex << " hexes");
         // Spatial d comes from the HexGrid, too.
@@ -156,15 +159,15 @@ class Map{
 
 public:
     int N;
-    vector<vector<double> > X;
-    vector<double> maxX, minX;
-    vector<double> F, Fscaled;
+    std::vector<std::vector<double> > X;
+    std::vector<double> maxX, minX;
+    std::vector<double> F, Fscaled;
     double minF, maxF;
     int outputID, contextID;
     double contextVal;
-    vector<array<float, 12>> quads;
+    std::vector<std::array<float, 12>> quads;
 
-    void init(string filename){
+    void init(std::string filename){
 
         outputID = -1; // flag for not set
         contextID = -1; // flag for not set
@@ -175,12 +178,12 @@ public:
         network.read_contained_vals ("F", F);
         N = F.size();
 
-        vector<double> x;   network.read_contained_vals ("X", x);
-        vector<double> y;   network.read_contained_vals ("Y", y);
-        vector<double> z;   network.read_contained_vals ("Z", z);
+        std::vector<double> x;   network.read_contained_vals ("X", x);
+        std::vector<double> y;   network.read_contained_vals ("Y", y);
+        std::vector<double> z;   network.read_contained_vals ("Z", z);
 
         if((!(x.size()==N)) || (!(y.size()==N)) || (!(z.size()==N))){
-            cout<<"X, Y, Z, F not all the same size... all kinds of badness!"<<endl;
+            std::cout<<"X, Y, Z, F not all the same size... all kinds of badness!"<<std::endl;
         }
 
         X.push_back(x);
@@ -200,16 +203,16 @@ public:
 
     }
 
-    Map(string filename){
+    Map(std::string filename){
         init(filename);
     }
 
-    Map(string filename,int outputID){
+    Map(std::string filename,int outputID){
         init(filename);
         this->outputID = outputID;
     }
 
-    Map(string filename,int outputID, int contextID, double contextVal){
+    Map(std::string filename,int outputID, int contextID, double contextVal){
         init(filename);
         this->outputID = outputID;
         this->contextID = contextID;
@@ -222,31 +225,31 @@ public:
 class RecurrentNetworkModel{
 
 public:
-    string logpath;
-    ofstream logfile;
-    vector<double> inputs, Error, response;
+    std::string logpath;
+    std::ofstream logfile;
+    std::vector<double> inputs, Error, response;
     RecurrentNetwork P;
-    vector<Map> M;
+    std::vector<Map> M;
     Domain<double> domain;
-    vector<int> inputID;
-    vector<int> outputID;
-    vector<int> contextIDs;
-    vector<double> contextVals;
+    std::vector<int> inputID;
+    std::vector<int> outputID;
+    std::vector<int> contextIDs;
+    std::vector<double> contextVals;
     int nContext;
     morph::ColourMapType colourMap;
 
 
-    RecurrentNetworkModel(string logpath){
+    RecurrentNetworkModel(std::string logpath){
 
         // setup log file
         this->logpath = logpath;
         morph::Tools::createDir (logpath);
-        { stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str());}
-        logfile<<"Hello."<<endl;
+        { std::stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str());}
+        logfile<<"Hello."<<std::endl;
 
         // Read in network params
         Config conf;
-        { stringstream ss; ss << logpath <<"/config.json"; conf.init (ss.str()); }
+        { std::stringstream ss; ss << logpath <<"/config.json"; conf.init (ss.str()); }
         float dt = conf.getFloat("dt",1.0);
         float tauW = conf.getFloat("tauW",2.0);
         float tauX = conf.getFloat("tauX",1.0);
@@ -263,9 +266,9 @@ public:
         // Read in map info
         const Json::Value maps = conf.getArray("maps");
         for(int i=0;i<maps.size();i++){
-            string fn = maps[i].get("filename", "unknown map").asString();
-            stringstream ss; ss << logpath <<"/"<<fn;
-            logfile<<"Map["<<i<<"]:"<<ss.str()<<endl;
+            std::string fn = maps[i].get("filename", "unknown map").asString();
+            std::stringstream ss; ss << logpath <<"/"<<fn;
+            logfile<<"Map["<<i<<"]:"<<ss.str()<<std::endl;
             int oID = maps[i].get("outputID",-1).asInt();
             int cID = maps[i].get("contextID",-1).asInt();
             float cVal = maps[i].get("contextVal",0.0).asFloat();
@@ -288,13 +291,13 @@ public:
         inputID = tools::getUnique(inputID);
 
         // Setup network connectivity
-        vector<int> pre, post;
-        stringstream ss; ss << logpath << "/network.h5"; HdfData network(ss.str(),1);
+        std::vector<int> pre, post;
+        std::stringstream ss; ss << logpath << "/network.h5"; HdfData network(ss.str(),1);
         network.read_contained_vals ("pre", pre);
         network.read_contained_vals ("post", post);
 
-        if(pre.size()!=post.size()){ logfile<<"Pre/Post different sizes ("<<pre.size()<<"/"<<post.size()<<")"<<endl; exit(0);}
-        if(pre.size()<1){ logfile<<"No connections in network!"<<endl; exit(0);}
+        if(pre.size()!=post.size()){ logfile<<"Pre/Post different sizes ("<<pre.size()<<"/"<<post.size()<<")"<<std::endl; exit(0);}
+        if(pre.size()<1){ logfile<<"No connections in network!"<<std::endl; exit(0);}
 
         int N = tools::getMax(pre);
         if(tools::getMax(post)>N){
@@ -310,7 +313,7 @@ public:
         inputs.resize(inputID.size());
 
         // Define the domain over which it can be evaluated
-        //{ stringstream ss; ss << logpath <<"/domain.svg"; domain.svgpath = ss.str(); }
+        //{ std::stringstream ss; ss << logpath <<"/domain.svg"; domain.svgpath = ss.str(); }
         domain.init();
         domain.setEllipse(1.0,yAspect,dx);
         domain.allocate();
@@ -330,8 +333,8 @@ public:
         domain.setAxes(scale, scale, minX+(maxX-minX)*0.5, minY+(maxY-minY)*0.5);
 
         // identify the unique context conditions
-        vector<int> allContextIDs;
-        vector<double> allContextVals;
+        std::vector<int> allContextIDs;
+        std::vector<double> allContextVals;
         for(int i=0;i<M.size();i++){
             if(M[i].contextID!=-1){
                 allContextIDs.push_back(M[i].contextID);
@@ -357,29 +360,29 @@ public:
     }
 
     void saveOutputs(void) { // log outputs
-        stringstream fname; fname << logpath << "/outputs.h5";
+        std::stringstream fname; fname << logpath << "/outputs.h5";
         HdfData outdata(fname.str());
         outdata.add_contained_vals ("error", Error);
         outdata.add_contained_vals ("responses", response);
     }
 
     void saveWeights(void){ // log weights
-        stringstream fname; fname << logpath << "/weights.h5";
+        std::stringstream fname; fname << logpath << "/weights.h5";
         HdfData weightdata(fname.str());
         weightdata.add_contained_vals ("weights", P.W);
-        vector<double> flatweightmat = P.getWeightMatrix();
+        std::vector<double> flatweightmat = P.getWeightMatrix();
         weightdata.add_contained_vals ("weightmat", flatweightmat);
     }
 
     void loadWeights(void) { // log outputs
-        stringstream fname; fname << logpath << "/weights.h5";
+        std::stringstream fname; fname << logpath << "/weights.h5";
         HdfData loaded(fname.str(),1);
         loaded.read_contained_vals ("weights", P.W);
         P.Wbest = P.W;
     }
 
     ~RecurrentNetworkModel(void){
-        logfile<<"Goodbye."<<endl;
+        logfile<<"Goodbye."<<std::endl;
         logfile.close();
     }
 
@@ -392,15 +395,15 @@ public:
         }
     }
 
-    vector<int> setRandomInput(void){
+    std::vector<int> setRandomInput(void){
         // first is mapID, second is location ID
-        vector<int> sample(2,floor(morph::Tools::randDouble()*M.size()));
+        std::vector<int> sample(2,floor(morph::Tools::randDouble()*M.size()));
         sample[1] = floor(morph::Tools::randDouble()*M[sample[0]].N);;
         return sample;
     }
 
-    vector<vector<double> > testMap(int mapID){
-        vector<vector<double> > response(P.N,vector<double>(M[mapID].N,0.));
+    std::vector<std::vector<double> > testMap(int mapID){
+        std::vector<std::vector<double> > response(P.N,std::vector<double>(M[mapID].N,0.));
         for(int j=0;j<M[mapID].N;j++){
             setInput(mapID,j);
             P.convergeForward(-1,false);
@@ -412,9 +415,9 @@ public:
     }
 
 
-    vector<vector<double> > testDomainContext(int i){
+    std::vector<std::vector<double> > testDomainContext(int i){
 
-        vector<vector<double> > R(P.N,vector<double>(domain.nhex,0.));
+        std::vector<std::vector<double> > R(P.N,std::vector<double>(domain.nhex,0.));
 
         for (unsigned int j=0; j<domain.nhex; ++j) {
             P.reset();
@@ -432,9 +435,9 @@ public:
 
 /*  ********  */
 
-    vector<vector<vector<double> > > testDomains(void){
+    std::vector<std::vector<std::vector<double> > > testDomains(void){
 
-        vector<vector<vector<double> > > R;
+        std::vector<std::vector<std::vector<double> > > R;
         for(int i=0;i<nContext;i++){
             R.push_back(testDomainContext(i));
         }
@@ -449,10 +452,10 @@ public:
         for(int k=0;k<K;k++){
             if(k%errorSamplePeriod){
 
-                vector<int> sample = setRandomInput();
+                std::vector<int> sample = setRandomInput();
                 setInput(sample[0],sample[1]);
                 P.convergeForward(-1,true);
-                P.setError(vector<int> (1,M[sample[0]].outputID), vector<double> (1,M[sample[0]].F[sample[1]]));
+                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
                 P.convergeBackward(-1,false);
                 P.weightUpdate();
 
@@ -461,10 +464,10 @@ public:
                 double err = 0.;
                 for(int j=0;j<errorSampleSize;j++){
 
-                    vector<int> sample = setRandomInput();
+                    std::vector<int> sample = setRandomInput();
                     setInput(sample[0],sample[1]);
                     P.convergeForward(-1,false);
-                    P.setError(vector<int> (1,M[sample[0]].outputID), vector<double> (1,M[sample[0]].F[sample[1]]));
+                    P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
                     err += P.getError();
 
                 }
@@ -479,7 +482,7 @@ public:
             }
 
             if(fmod(k,K/100)==0){
-                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<endl;
+                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
             }
         }
         P.W = P.Wbest;
@@ -495,8 +498,8 @@ public:
         colourMap = cmap;
     }
 
-    void plotMapValues(vector<double> F, string fname, int mapIndex){
-        if(M[mapIndex].N != F.size()){ cout<<"Field supplied not correct size (Map)."<<endl;}
+    void plotMapValues(std::vector<double> F, std::string fname, int mapIndex){
+        if(M[mapIndex].N != F.size()){ std::cout<<"Field supplied not correct size (Map)."<<std::endl;}
         Visual v (500, 500, "Map");
         v.backgroundWhite();
         v.zNear = 0.001;
@@ -505,10 +508,10 @@ public:
         v.sceneLocked = false;
         v.setZDefault(-3.7f);
         v.setSceneTransXY (0.0f,0.0f);
-        array<float, 3> offset = { 0., 0., 0.0 };
+        Vector<float, 3> offset  = { 0., 0., 0.0 };
         Scale<float> scale;
         scale.do_autoscale = true;
-        vector<float> fFlt;
+        std::vector<float> fFlt;
         for (unsigned int i=0; i<M[mapIndex].N; i++){ fFlt.push_back (static_cast<float>(F[i])); }
         v.addVisualModel (new QuadsVisual<float> (v.shaderprog, &M[mapIndex].quads, offset, &fFlt, scale, colourMap));
         v.render();
@@ -517,8 +520,8 @@ public:
     }
 
 
-    void plotDomainValues(vector<double> F, string fname){
-        if(domain.nhex != F.size()){ cout<<"Field supplied not correct size (domain)"<<endl;}
+    void plotDomainValues(std::vector<double> F, std::string fname){
+        if(domain.nhex != F.size()){ std::cout<<"Field supplied not correct size (domain)"<<std::endl;}
         Visual v (500, 500, "Response");
         v.backgroundWhite();
         v.zNear = 0.001;
@@ -527,11 +530,11 @@ public:
         v.sceneLocked = false;
         v.setZDefault(-2.7f);
         v.setSceneTransXY (0.0f,0.0f);
-        array<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset  = { 0., 0., 0.0 };
         Scale<float> scale;
         scale.do_autoscale = true;
         Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
-        vector<float> fFlt;
+        std::vector<float> fFlt;
         for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
         v.addVisualModel (new HexGridVisual<float> (v.shaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
         v.render();
@@ -544,12 +547,12 @@ public:
 
     void plotMapTargets(void){
         for(int i=0;i<M.size();i++){
-            stringstream ss; ss<< logpath << "/targ_map_" << i << ".png";
+            std::stringstream ss; ss<< logpath << "/targ_map_" << i << ".png";
             plotMapTarget(i, ss.str().c_str());
         }
     }
 
-    void plotMapTarget(int i, string fname){
+    void plotMapTarget(int i, std::string fname){
         plotMapValues(M[i].Fscaled, fname, i);
     }
 
@@ -560,29 +563,29 @@ public:
     }
 
     void plotMapResponses(int i){
-        vector<vector<double> > R = testMap(i);
+        std::vector<std::vector<double> > R = testMap(i);
         for(int j=0;j<R.size();j++){
-            vector<double> F = normalize(R[j]);
-            stringstream ss; ss<< logpath << "/resp_map_" << i << "_node_" << j << ".png";
+            std::vector<double> F = normalize(R[j]);
+            std::stringstream ss; ss<< logpath << "/resp_map_" << i << "_node_" << j << ".png";
             plotMapValues(F, ss.str().c_str(), i);
         }
     }
 
     void plotDomainContext(int i){
-        vector<vector<double> > R = testDomainContext(i);
+        std::vector<std::vector<double> > R = testDomainContext(i);
         R = tools::normalize(R);
         for(int j=0;j<R.size();j++){
-            stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(indivNorm).png";
+            std::stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(indivNorm).png";
             plotDomainValues(R[j],ss.str().c_str());
         }
     }
 
     void plotDomainsAllContexts(void){
-        vector<vector<vector<double> > > R = testDomains();
+        std::vector<std::vector<std::vector<double> > > R = testDomains();
         R = tools::normalize(R);
         for(int i=0;i<R.size();i++){
             for(int j=0;j<R[i].size();j++){
-                stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(jointNorm).png";
+                std::stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(jointNorm).png";
                 plotDomainValues(R[i][j],ss.str().c_str());
             }
         }
@@ -590,37 +593,37 @@ public:
 
     void plotDomainNodeDiff(int contextIndex, int nodeA, int nodeB){
 
-        if(contextIndex>=nContext){cout<<"Invalid context ID "<<contextIndex<<". Only "<<nContext<<"contexts."<<endl;}
-        if(nodeA>=P.N){cout<<"Invalid node ID (A) "<<nodeA<<". Only "<<P.N<<"nodes."<<endl;}
-        if(nodeB>=P.N){cout<<"Invalid node ID (B) "<<nodeB<<". Only "<<P.N<<"nodes."<<endl;}
+        if(contextIndex>=nContext){std::cout<<"Invalid context ID "<<contextIndex<<". Only "<<nContext<<"contexts."<<std::endl;}
+        if(nodeA>=P.N){std::cout<<"Invalid node ID (A) "<<nodeA<<". Only "<<P.N<<"nodes."<<std::endl;}
+        if(nodeB>=P.N){std::cout<<"Invalid node ID (B) "<<nodeB<<". Only "<<P.N<<"nodes."<<std::endl;}
 
-        vector<vector<double> >  A = testDomainContext(contextIndex);
-        vector<double> diff = A[nodeA];
+        std::vector<std::vector<double> >  A = testDomainContext(contextIndex);
+        std::vector<double> diff = A[nodeA];
         for(int i=0;i<domain.nhex;i++){
             diff[i] -= A[nodeB][i];
         }
         diff = tools::normalize(diff);
 
-        stringstream ss; ss<< logpath << "/DIFF_node_"<<nodeA<<"_minus_node_"<<nodeB<<"_context_" << contextIDs[contextIndex] << "_val_" << contextVals[contextIndex]<<".png";
+        std::stringstream ss; ss<< logpath << "/DIFF_node_"<<nodeA<<"_minus_node_"<<nodeB<<"_context_" << contextIDs[contextIndex] << "_val_" << contextVals[contextIndex]<<".png";
         plotDomainValues(diff,ss.str().c_str());
 
     }
 
     void plotDomainContextDiff(int nodeIndex, int contextA, int contextB){
 
-        if(contextA>=nContext){cout<<"Invalid context ID (A) "<<contextA<<". Only "<<nContext<<"contexts."<<endl;}
-        if(contextB>=nContext){cout<<"Invalid context ID (B) "<<contextB<<". Only "<<nContext<<"contexts."<<endl;}
-        if(nodeIndex>=P.N){cout<<"Invalid node ID "<<nodeIndex<<". Only "<<P.N<<"nodes."<<endl;}
+        if(contextA>=nContext){std::cout<<"Invalid context ID (A) "<<contextA<<". Only "<<nContext<<"contexts."<<std::endl;}
+        if(contextB>=nContext){std::cout<<"Invalid context ID (B) "<<contextB<<". Only "<<nContext<<"contexts."<<std::endl;}
+        if(nodeIndex>=P.N){std::cout<<"Invalid node ID "<<nodeIndex<<". Only "<<P.N<<"nodes."<<std::endl;}
 
-        vector<vector<double> >  A = testDomainContext(contextA);
-        vector<vector<double> >  B = testDomainContext(contextB);
-        vector<double> diff = A[nodeIndex];
+        std::vector<std::vector<double> >  A = testDomainContext(contextA);
+        std::vector<std::vector<double> >  B = testDomainContext(contextB);
+        std::vector<double> diff = A[nodeIndex];
         for(int i=0;i<domain.nhex;i++){
             diff[i] -= B[nodeIndex][i];
         }
         diff = tools::normalize(diff);
 
-        stringstream ss; ss<< logpath << "/DIFF_context_("<<contextIDs[contextA]<<","<<contextVals[contextA]<<")_minus_context_("<<contextIDs[contextB]<<","<<contextVals[contextB]<<")_node"<<nodeIndex<<".png";
+        std::stringstream ss; ss<< logpath << "/DIFF_context_("<<contextIDs[contextA]<<","<<contextVals[contextA]<<")_minus_context_("<<contextIDs[contextB]<<","<<contextVals[contextB]<<")_node"<<nodeIndex<<".png";
         plotDomainValues(diff,ss.str().c_str());
 
     }

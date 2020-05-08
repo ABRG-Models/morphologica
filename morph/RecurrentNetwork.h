@@ -1,15 +1,29 @@
-#include <vector>
-#include <math.h>
-
-using namespace std;
 class RecurrentNetwork{
+
+/*!
+ * \brief The first line is marked brief and acts as a summary
+ *
+ * Further lines, a longer description
+ * Use \a somearg to refer to function arguments in your descriptive summary
+ * You can then describe each function arg like this:
+ *
+ * \param somearg An argument to do something
+ *
+ * Template params:
+ *
+ * \tparam T Some type
+ *
+ * Return values are:
+ * \return 0 on success and a bomb on failure
+ */
+ 
 public:
     int N, Nweight, Nplus1, maxConvergenceSteps;
-    vector<double> W, X, Input, U, Wbest, Y, F, V, Fprime, J;
+    std::vector<double> W, X, Input, U, Wbest, Y, F, V, Fprime, J;
     double dt, dtOverTauX, dtOverTauY, dtOverTauW;
-    vector<int> Pre, Post;
+    std::vector<int> Pre, Post;
     double zero, weightNudgeSize, divergenceThreshold;
-    vector<double*> Wptr;
+    std::vector<double*> Wptr;
 
     RecurrentNetwork(void){
 
@@ -110,7 +124,7 @@ public:
 
     }
 
-    void setError(vector<int> oID, vector<double> targetOutput){
+    void setError(std::vector<int> oID, std::vector<double> targetOutput){
         std::fill(J.begin(),J.end(),0.);
         for(int i=0;i<oID.size();i++){
             J[oID[i]] = targetOutput[i]-X[oID[i]];
@@ -155,8 +169,8 @@ public:
 
     }
 
-    vector<double> getWeightMatrix(void){
-        vector<double> flatweightmat(Wptr.size());
+    std::vector<double> getWeightMatrix(void){
+        std::vector<double> flatweightmat(Wptr.size());
         for(int i=0;i<Wptr.size();i++){
             flatweightmat[i] = *Wptr[i];
         }
@@ -165,7 +179,7 @@ public:
 
     void convergeForward(int ko, bool nudge){
         bool knockout = (ko>=0);
-        vector<double> Xpre(N,0.);
+        std::vector<double> Xpre(N,0.);
         double total = N;
         for(int t=0;t<maxConvergenceSteps;t++){
             if(total>divergenceThreshold){
@@ -192,7 +206,7 @@ public:
 
     void convergeBackward(int ko, bool nudge){
         bool knockout = (ko>=0);
-        vector<double> Ypre(N,0.);
+        std::vector<double> Ypre(N,0.);
         double total = N;
         for(int t=0;t<maxConvergenceSteps;t++){
             if(total>divergenceThreshold){
