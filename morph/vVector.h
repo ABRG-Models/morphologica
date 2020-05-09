@@ -37,8 +37,11 @@ namespace morph {
      * to them, either scalar (add a scalar to all elements; divide all elements by a
      * scalar, etc) or vector (including dot and cross products, normalization and so
      * on.
+     *
+     * This class is better for writing neural networks than morph::Vector, whose size
+     * has to be set at compile time.
      */
-    template <typename S> struct vVector;
+    template <typename S, typename Al> struct vVector;
 
     /*!
      * Template friendly mechanism to overload the stream operator.
@@ -47,15 +50,13 @@ namespace morph {
      * stream operator overloading. Example adapted from
      * https://stackoverflow.com/questions/4660123
      */
-    template <typename S> std::ostream& operator<< (std::ostream&, const vVector<S>&);
+    template <typename S, typename Al> std::ostream& operator<< (std::ostream&, const vVector<S, Al>&);
 
-    // Fixme: Consider an Alloc template parameter to allow use of allocators other than
-    // std::vector's default
-    template <typename S=float>
-    struct vVector : public std::vector<S>
+    template <typename S=float, typename Al=std::allocator<S>>
+    struct vVector : public std::vector<S, Al>
     {
         //! We inherit std::vector's constructors like this:
-        using std::vector<S>::vector;
+        using std::vector<S, Al>::vector;
 
         //! \return the first component of the vector
         S x() const {
@@ -94,7 +95,8 @@ namespace morph {
         /*!
          * Set data members from an std::vector (may not be necessary?)
          */
-        void set_from (const std::vector<S>& vec) {
+        template <typename _S=S>
+        void set_from (const std::vector<_S>& vec) {
             std::copy (vec.begin(), vec.end(), this->begin());
         }
 
@@ -112,7 +114,8 @@ namespace morph {
          * ignoring the last element of \a ar. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
          */
-        void set_from_onelonger (const std::vector<S>& v) {
+        template <typename _S=S>
+        void set_from_onelonger (const std::vector<_S>& v) {
             if (v.size() == (this->size()+1)) {
                 for (size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
@@ -138,7 +141,8 @@ namespace morph {
          * Set an N-D vVector from an N+1 D vVector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
-        void set_from_onelonger (const vVector<S>& v) {
+        template <typename _S=S>
+        void set_from_onelonger (const vVector<_S>& v) {
             if (v.size() == (this->size()+1)) {
                 for (size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
@@ -271,8 +275,9 @@ namespace morph {
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        vVector<S> operator* (const vVector<S>& v) const {
-            vVector<S> vrtn;
+        template<typename _S=S>
+        vVector<S, Al> operator* (const vVector<_S>& v) const {
+            vVector<S, Al> vrtn;
             if (this->size() == 3 && v.size() == 3) {
                 vrtn.resize(3);
                 vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
@@ -288,9 +293,10 @@ namespace morph {
          * Cross product of this with another vector v (if N==3). Result written into
          * this.
          */
-        void operator*= (const vVector<S>& v) {
+        template <typename _S=S>
+        void operator*= (const vVector<_S>& v) {
             if (this->size() == 3 && v.size() == 3) {
-                vVector<S> vtmp(3, S{0});
+                vVector<S, Al> vtmp(3, S{0});
                 vtmp[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
                 vtmp[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
                 vtmp[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
@@ -300,7 +306,8 @@ namespace morph {
 
 #if 0 // Haven't figured this out yet
         //! Assignment from std::vector
-        void operator= (const std::vector<S>& v) {
+        template <typename _S=S>
+          void operator= (const std::vector<_S>& v) {
             std::vector<S>::operator=(v);
             //this->resize (v.size());
             //std::copy (v.begin(), v.end(), this->begin());
@@ -321,9 +328,10 @@ namespace morph {
          *
          * \return scalar product
          */
-        S dot (const vVector<S>& v) const {
+        template<typename _S=S>
+        S dot (const vVector<_S>& v) const {
             auto vi = v.begin();
-            auto dot_product = [vi](S a, S b) mutable { return a + b * (*vi++); };
+            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
             return rtn;
         }
@@ -333,10 +341,11 @@ namespace morph {
          * default for operator* because it is useful for any number of dims. Cross
          * product could then be a named cross() method.
          */
-        vVector<S> hadamard (const vVector<S>& v) const {
+        template<typename _S=S>
+        vVector<S> hadamard (const vVector<_S>& v) const {
             vVector<S> rtn(v.size(), S{0});
             auto vi = v.begin();
-            auto mult_by_vi = [vi](S a) mutable { return a * (*vi++); };
+            auto mult_by_vi = [vi](_S a) mutable { return a * (*vi++); };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_vi);
             return rtn;
         }
@@ -390,7 +399,8 @@ namespace morph {
         /*!
          * vVector addition operator
          */
-        vVector<S> operator+ (const vVector<S>& v) const {
+        template<typename _S=S>
+        vVector<S> operator+ (const vVector<_S>& v) const {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -401,6 +411,7 @@ namespace morph {
         /*!
          * vVector addition operator
          */
+        template<typename _S=S>
         void operator+= (const vVector<S>& v) {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -410,7 +421,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        vVector<S> operator- (const vVector<S>& v) const {
+        template<typename _S=S>
+        vVector<S> operator- (const vVector<_S>& v) const {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
@@ -421,7 +433,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        void operator-= (const vVector<S>& v) {
+        template<typename _S=S>
+        void operator-= (const vVector<_S>& v) {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
@@ -473,8 +486,8 @@ namespace morph {
         friend std::ostream& operator<< <S> (std::ostream& os, const vVector<S>& v);
     };
 
-    template <typename S=float>
-    std::ostream& operator<< (std::ostream& os, const vVector<S>& v)
+    template <typename S=float, typename Al=std::allocator<S>>
+    std::ostream& operator<< (std::ostream& os, const vVector<S, Al>& v)
     {
         os << v.str();
         return os;

@@ -50,7 +50,7 @@ int main() {
     // Test init from array
     array<float, 3> arr = { 2,3,4 };
     std::vector<float> veccy(3);
-    vVector<float> varr = veccy; // Tried overloading operator= to no avail.
+    vVector<float> varr = arr; // Tried overloading operator= to no avail.
     cout << "vVector from array: " << varr << endl;
 #endif
     // Test scalar multiply
@@ -98,6 +98,12 @@ int main() {
     vVector<double> h2 = {.12, .15, .84};
     vVector<double> h3 = h1.hadamard(h2);
     cout << h1 << "(o)" << h2 << " = " << h3 << endl;
+
+    // Test different vVector types dotted:
+    vVector<double> left = h1;
+    vVector<int> right = { 2,2,3 };
+    double dotprod = left.dot(right);
+    cout << h1 << "." << right << " = " << dotprod << endl;
 
     return rtn;
 }
