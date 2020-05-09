@@ -1,6 +1,6 @@
 #include "Mnist.h"
 #include <morph/Random.h>
-
+#include <fstream>
 #include "NeuralNet.h"
 
 int main()
@@ -11,11 +11,11 @@ int main()
     std::vector<unsigned int> layer_spec = {2,3,2};
     FeedForwardNetS<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
-#if 1
+
     // main loop, while m.training_f has values in:
-    unsigned int epochs = 400; // For now this is 'number of mini batches'
+    unsigned int epochs = 1000; // For now this is 'number of mini batches'
     unsigned int mini_batch_size = 10;
-    float eta = 5;
+    float eta = 0.1;
     float cost = 0.0f;
 
     // Accumulate the dC/dw and dC/db values in graidents. for each pair, the first
@@ -29,6 +29,9 @@ int main()
     for (auto g : mean_gradients) {
         std::cout << "nabla_w: " << g.first << ", nabla_b: " << g.second << std::endl;
     }
+
+    std::ofstream costfile;
+    costfile.open ("cost.csv", std::ios::out|std::ios::trunc);
 
     // Used throughout as an iterator variable
     unsigned int i = 0;
@@ -73,6 +76,7 @@ int main()
             mean_gradients[i].second /= static_cast<float>(mini_batch_size);
         }
         cost /= (2.0f*static_cast<float>(mini_batch_size));
+        costfile << cost << std::endl;
 
         std::cout << "After division:\n";
         for (i = 0; i < ff1.num_connection_layers(); ++i) {
@@ -92,6 +96,8 @@ int main()
 
         std::cout << "After gradient alteration ff1:\n---------------\n" << ff1 << std::endl;
     }
-#endif
+
+    costfile.close();
+
     return 0;
 }

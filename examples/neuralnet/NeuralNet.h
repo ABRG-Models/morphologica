@@ -1,9 +1,12 @@
 /*!
  * \file
  *
- * A toy neural net, for a NN example
+ * This file contains a feed-forward neural network class, whose neuron sizes can be
+ * configured at runtime and a class to hold the information about the connection
+ * between layers of neurons in the network.
  *
- * This one follows neuralnetworksanddeeplearning.com
+ * \author Seb James
+ * \date May 2020
  */
 
 #include <morph/vVector.h>
@@ -11,11 +14,9 @@
 #include <list>
 #include <vector>
 #include <sstream>
+#include <ostream>
 
-template <typename T> struct Connection;
-template <typename T> std::ostream& operator<< (std::ostream&, const Connection<T>&);
-//! A connection between a source layer of size M and a destination layer of size N
-template <typename T>//, size_t M, size_t N, size_t MN=M*N>
+template <typename T>
 struct Connection
 {
     Connection (morph::vVector<T>* _in, morph::vVector<T>* _out) {
@@ -26,46 +27,57 @@ struct Connection
         this->delta.resize (M, T{0});
         this->w.resize (M*N, T{0});
         this->nabla_w.resize (M*N, T{0});
+        this->nabla_w.zero();
         this->b.resize (N, T{0});
         this->nabla_b.resize (N, T{0});
+        this->nabla_b.zero();
         this->z.resize (N, T{0});
+        this->z.zero();
     }
 
-    // Input layer has size M, output has size N. Weights size MbyN (or NbyM)
-    morph::vVector<T>* in;  // Pointer to input layer. Size M
-    morph::vVector<T>* out; // Pointer to output layer. Size N
-    morph::vVector<T> delta; // The errors in the input layer of neurons. Size M
-
-    // Order of weights: in[0] to out[all], in[1] to out[all], in[2] to out[all] etc.
-    morph::vVector<T> w; // MN
-    morph::vVector<T> b; // N
-    morph::vVector<T> nabla_w; // MN
-    morph::vVector<T> nabla_b;  // N
-
-    // Activation of the output neurons. Computed in feedforward, used in backprop
-    // z = sum(w.in) + b.
+    //! Input layer has size M, output has size N. Weights size MbyN (or NbyM)
+    morph::vVector<T>* in;
+    //! Pointer to output layer. Size N
+    morph::vVector<T>* out;
+    //! The errors in the input layer of neurons. Size M
+    morph::vVector<T> delta;
+    //! Weights. Order of weights: in[0] to out[all], in[1] to out[all], in[2] to
+    //! out[all] etc. Size M by N.
+    morph::vVector<T> w;
+    //! Biases. Size N.
+    morph::vVector<T> b;
+    //! The gradients of cost vs. weights. Size M by N.
+    morph::vVector<T> nabla_w;
+    //! The gradients of cost vs. biases. Size N.
+    morph::vVector<T> nabla_b;
+    //! Activation of the output neurons. Computed in feedforward, used in backprop
+    //! z = sum(w.in) + b.
     morph::vVector<T> z; // N
 
-    //! Getter for the gradients vs. w and b
-    std::pair<morph::vVector<T>, morph::vVector<T>> getGraidents() const {
-        return make_pair(this->nabla_w, this->nabla_w);
+#if 0
+    //! Getter for the gradients of cost vs. w and b
+    std::pair<morph::vVector<T>, morph::vVector<T>> getGradients() const {
+        return make_pair(this->nabla_w, this->nabla_b);
     }
+#endif
 
+    //! Output as a string
     std::string str() const {
         std::stringstream ss;
-        ss << "Weights: w" << w << "w\n";
-        ss << "nabla_w:nw" << nabla_w << "nw\n";
-        ss << " Biases: b" << b << "b\n";
-        ss << "nabla_b:nb" << nabla_b << "nb\n";
+        ss << "Weights: w" << w << "w (" << w.size() << ")\n";
+        ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+        ss << " Biases: b" << b << "b (" << b.size() << ")\n";
+        ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
         return ss.str();
     }
 
+    //! Randomize the weights and biases
     void randomize() {
-        this->w.randomize (T{0.0}, T{0.05});
-        this->b.randomize (T{0.0}, T{0.05});
+        this->w.randomize (T{0.0}, T{0.1});
+        this->b.randomize (T{0.0}, T{0.1});
     }
 
-    //! out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
+    //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
     void compute() {
         // A morph::vVector for a 'part of w'
         morph::vVector<T> wpart(this->in->size()); // Size M
@@ -75,11 +87,16 @@ struct Connection
         auto biter = this->b.begin();
         // Carry out an N sized for loop computing each output
         size_t N = this->out->size();
-        for (size_t j = 0; j < N; ++j) {
-            // Copy part of weights to wpart:
+        for (size_t j = 0; j < N; ++j) { // Each output
+            // Copy part of weights to wpart (M elements):
             std::copy (witer, witer+this->in->size(), wpart.begin());
             // Compute dot product with input and add bias:
-            z[j] = wpart.dot (*in) + *biter;
+            this->z[j] = wpart.dot (*in) + *biter;
+#if 0
+            if (this->z[j] > 1e3) {
+                std::cout << "z[" << j << "]: " << z[j] << std::endl;
+            }
+#endif
             //std::cout << "z[j]=" << z[j] << ", b=" << *biter << std::endl;
             biter++;
             //sigz[j] = T{1} / (T{1} + std::exp(-z[j]));
@@ -103,7 +120,7 @@ struct Connection
     }
 
     //! Compute this->delta using values computed in Connection::compute.
-    void backprop (const morph::vVector<T>& delta_l_nxt) { // delta_l_nxt has size N
+    void backprop (const morph::vVector<T>& delta_l_nxt/*, const morph::vVector<T>& z_prev*/) { // delta_l_nxt has size N.
         if (delta_l_nxt.size() != this->out->size()) {
             throw std::runtime_error ("backprop: Mismatched size");
         }
@@ -114,27 +131,34 @@ struct Connection
         // Should be able to parallelize this:
         size_t M = this->in->size();
         size_t N = this->out->size();
-        for (size_t j = 0; j < N; ++j) {
-            for (size_t i = 0; i < M; ++i) {
-                w_times_delta[i] +=  this->w[i+(M*j)] * delta_l_nxt[j];
+        for (size_t i = 0; i < M; ++i) { // Each input
+            for (size_t j = 0; j < N; ++j) { // Each output
+                w_times_delta[i] +=  this->w[i+(M*j)] * delta_l_nxt[j]; // For each weight fanning into neuron j in l_nxt, sum up
             }
         }
-        morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M
+        morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
         this->delta = w_times_delta.hadamard (spzl);
 
         // NB: We compute nabla_b and nabla_w on the OUTPUT neurons and the weights to
         // the output neurons..
-        this->nabla_b = delta_l_nxt; // Size is N in Michael's code
-        // nabla_w is a_in * delta_out, which means we compute a_in_last * delta? Or
-        // we can compute nabla_w as a_in * delta_l_nxt here. I'm confused and need to
-        // examine the example python code.
-        for (size_t j = 0; j < N; ++j) {
-            for (size_t i = 0; i < M; ++i) {
-                this->nabla_w[i+(M*j)] = z[i] * delta_l_nxt[j]; // Size is M*N in Michael's code
+        this->nabla_b = delta_l_nxt; // Size is N
+        // nabla_w is a_in * delta_out. We compute nabla_w as a_in * delta_l_nxt here.
+        for (size_t i = 0; i < M; ++i) { // Each input
+            for (size_t j = 0; j < N; ++j) { // Each output
+
+                // activation from previous layer is just *in!
+                this->nabla_w[i+(M*j)] = (*in)[i] * delta_l_nxt[j]; // Size is M*N in Michael's code
+#if 0
+                if (this->nabla_w[i+(M*j)] > 1e3 || this->nabla_w[i+(M*j)] < -1e3) {
+                    std::cout << "LARGE nabla_w[" << (i+(M*j)) << "]: " << "in["<<i<<"]=" << (*in)[i] << " * " << delta_l_nxt[j] << " = " << this->nabla_w[i+(M*j)] << std::endl;
+                }
+#endif
             }
         }
     }
 };
+
+//! Stream operator
 template <typename T>
 std::ostream& operator<< (std::ostream& os, const Connection<T>& c)
 {
@@ -142,8 +166,6 @@ std::ostream& operator<< (std::ostream& os, const Connection<T>& c)
     return os;
 }
 
-template <typename T> struct FeedForwardNetS;
-template <typename T> std::ostream& operator<< (std::ostream&, const FeedForwardNetS<T>&);
 /*!
  * Holds data and methods for updating our neural network
  */
@@ -198,7 +220,6 @@ struct FeedForwardNetS
         }
     }
 
-#if 0 // fix later
     //! Find how many of testData we successfully characterize
     unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000) {
         // For each image in testData, compute cost
@@ -208,7 +229,7 @@ struct FeedForwardNetS
         for (auto img : testData) {
             unsigned int key = static_cast<unsigned int>(img.first);
             // Set input
-            this->input = img.second;
+            this->neurons.front() = img.second;
             // Set output
             this->desiredOutput.zero();
             this->desiredOutput[key] = 1.0f;
@@ -216,6 +237,7 @@ struct FeedForwardNetS
             this->compute();
             evalcost += this->computeCost();
             // Success?
+            std::cout << "Comparing " << this->neurons.back() << " with target " << this->desiredOutput << " (key " << key << ")\n";
             if (this->argmax() == key) {
                 ++numMatches;
             }
@@ -226,16 +248,14 @@ struct FeedForwardNetS
         }
         return numMatches;
     }
-#endif
 
     //! Find the element in output with the max value
     size_t argmax() {
-        auto themax = std::max_element (this->output.begin(), this->output.end());
-        size_t i = themax - this->output.begin();
-        std::cout << "max output of " << this->output << " is element " << i << std::endl;
+        auto themax = std::max_element (this->neurons.back().begin(), this->neurons.back().end());
+        size_t i = themax - this->neurons.back().begin();
+        std::cout << "max output of " << this->neurons.back() << " is element " << i << std::endl;
         return i;
     }
-
 
     //! Determine the error gradients by the backpropagation method. NB: Call
     //! computeCost() first
@@ -255,8 +275,9 @@ struct FeedForwardNetS
         --citer; // Now points at output layer
         citer->backprop (this->delta_out); // Layer L delta computed
         for (;citer != this->connections.begin();) {
-            auto citerlast = citer--;
-            citer->backprop (citerlast->delta); // c1.delta computed
+            auto citer_closertooutput = citer--;
+            // Now citer is closer to input
+            citer->backprop (citer_closertooutput->delta); // c1.delta computed
         }
     }
 
@@ -270,6 +291,14 @@ struct FeedForwardNetS
     T computeCost() {
         // Here is where we compute delta_out:
         this->delta_out = (desiredOutput-this->neurons.back()).hadamard (this->connections.back().sigmoid_prime_z_lplus1()); // c2.z is the final activation
+#if 0
+        std::cout << "Desired out: "<< desiredOutput << std::endl;
+        std::cout << "neurons.back(): "<< this->neurons.back() << std::endl;
+        std::cout << "desiredOut - neurons.back(): "<< (desiredOutput-this->neurons.back()) << std::endl;
+        std::cout << "connections.back(): "<< this->connections.back() << std::endl;
+        std::cout << "connections.back().sigmoid_prime_z_lplus1(): "<< this->connections.back().sigmoid_prime_z_lplus1() << std::endl;
+        std::cout << "delta_out: " << this->delta_out << ", with length " << this->delta_out.length() << std::endl;
+#endif
         // sum up the sos differences between output and desiredOutput
         T l = this->delta_out.length();
         this->cost = l * l;
@@ -293,8 +322,8 @@ struct FeedForwardNetS
 };
 
 template <typename T>
-std::ostream& operator<< (std::ostream& os, const FeedForwardNetS<T>& v)
+std::ostream& operator<< (std::ostream& os, const FeedForwardNetS<T>& ff)
 {
-    os << v.str();
+    os << ff.str();
     return os;
 }

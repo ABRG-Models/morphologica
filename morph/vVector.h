@@ -151,6 +151,14 @@ namespace morph {
         }
 
         /*!
+         * A function to set the value of each element of the vector.
+         */
+        template <typename _S=S>
+        void set (const _S& val) {
+            std::fill (this->begin(), this->end(), val);
+        }
+
+        /*!
          * Create a string representation of the vector
          *
          * \return A 'coordinate format' string such as "(1,1,2)", "(0.2,0.4)" or

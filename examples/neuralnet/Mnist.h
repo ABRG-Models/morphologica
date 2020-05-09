@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-#include <morph/Vector.h>
+#include <morph/vVector.h>
 
 //! Mnist images are 28x28. As I used fixed size Vector to represent, have to fix
 //! this at compile time.
@@ -54,7 +54,7 @@ struct Mnist
 
     void loadData (const std::string& tag,
                    std::multimap<unsigned char, cv::Mat>& theMats,
-                   std::multimap<unsigned char, morph::Vector<float, mnlen>>& vecFloats) {
+                   std::multimap<unsigned char, morph::vVector<float>>& vecFloats) {
 
         // Training data
         std::ifstream img_f;
@@ -126,8 +126,7 @@ struct Mnist
             auto ii = theMats.insert ({lbl, tmp}); // create a new mat header in the list
             oneimg.copyTo (ii->second);
 
-            // How to get a copy of array into a vector<float>
-            morph::Vector<float, mnlen> ar;
+            morph::vVector<float> ar(nr*nc);
             size_t i = 0;
             for (int r = 0; r < this->nr; ++r) {
                 for (int c = 0; c < this->nc; ++c) {
@@ -193,7 +192,7 @@ struct Mnist
     //! each training image. This is to be 50000 out of 60000 examples.
     std::multimap<unsigned char, cv::Mat> training;
     // Same data extracted into vectors of floats, rather than Mats.
-    std::multimap<unsigned char, morph::Vector<float, mnlen>> training_f;
+    std::multimap<unsigned char, morph::vVector<float>> training_f;
 
     //! Validation - 10000 out of the 60000
     //std::multimap<unsigned char, cv::Mat> validation;
@@ -202,5 +201,5 @@ struct Mnist
     //! The training data. The key to this multimap is the label; the Mat contains
     //! each test image
     std::multimap<unsigned char, cv::Mat> test;
-    std::multimap<unsigned char, morph::Vector<float, mnlen>> test_f;
+    std::multimap<unsigned char, morph::vVector<float>> test_f;
 };
