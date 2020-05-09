@@ -48,13 +48,20 @@ struct Mnist
 
     void init() {
         // Read data. From two files, in sequence
+        this->loadData ("train", this->training, this->training_f);
+        this->loadData ("t10k", this->test, this->test_f);
+    }
+
+    void loadData (const std::string& tag,
+                   std::multimap<unsigned char, cv::Mat>& theMats,
+                   std::multimap<unsigned char, morph::Vector<float, mnlen>>& vecFloats) {
 
         // Training data
         std::ifstream img_f;
         std::ifstream lbl_f;
 
-        std::string img_p = basepath + "train-images-idx3-ubyte";
-        std::string lbl_p = basepath + "train-labels-idx1-ubyte";
+        std::string img_p = basepath + tag + "-images-idx3-ubyte";
+        std::string lbl_p = basepath + tag + "-labels-idx1-ubyte";
         img_f.open (img_p.c_str(), std::ios::in | std::ios::binary);
         lbl_f.open (lbl_p.c_str(), std::ios::in | std::ios::binary);
 
@@ -76,7 +83,7 @@ struct Mnist
         if (nr * nc != mnlen) { throw std::runtime_error ("Mnist: Expecting 28x28 images in Mnist!"); }
 
         // Check images magic number
-        if (magic_imgs != 2051) { throw std::runtime_error ("Mnist: Training data, images magic number is wrong"); }
+        if (magic_imgs != 2051) { throw std::runtime_error ("Mnist: data, images magic number is wrong"); }
 
         // Process labels magic number etc
         lbl_f.read (buf, 4);
@@ -85,7 +92,7 @@ struct Mnist
         int n_lbls = (buf[3]&0xff) | (buf[2]&0xff)<<8 | (buf[1]&0xff)<<16 | (buf[0]&0xff)<<24;
 
         // Check labels magic number
-        if (magic_lbls != 2049) { throw std::runtime_error ("Mnist: Training data, labels magic number is wrong"); }
+        if (magic_lbls != 2049) { throw std::runtime_error ("Mnist: data, labels magic number is wrong"); }
 
         // Check reported number of images == number of labels
         if (n_lbls != n_imgs) {
@@ -109,18 +116,14 @@ struct Mnist
                     img_f.read (cbuf, 1);
                     //oneimg.at<float>(r, c, 0) = static_cast<float>(cbuf[0])/255.0f;
                     unsigned char uc = cbuf[0];
-#if 0
                     float val = (float)uc/256.0f;
-#else
-                    float val = (float)uc;
-#endif
                     //std::cout << "Value: " << val << std::endl;
                     oneimg.at<float>(r, c) = val;
                     //std::cout << "Value in omeimg: " << oneimg.at<float>(r, c)  << std::endl;
                 }
             }
             cv::Mat tmp(this->nr, this->nc, CV_32F, cv::Scalar(0)); // create new empty mat
-            auto ii = this->training.insert ({lbl, tmp}); // create a new mat header in the list
+            auto ii = theMats.insert ({lbl, tmp}); // create a new mat header in the list
             oneimg.copyTo (ii->second);
 
             // How to get a copy of array into a vector<float>
@@ -131,7 +134,7 @@ struct Mnist
                     ar[i++] = oneimg.at<float>(r, c);
                 }
             }
-            this->training_f.insert ({lbl, ar});
+            vecFloats.insert ({lbl, ar});
         }
     }
 
@@ -196,8 +199,8 @@ struct Mnist
     //std::multimap<unsigned char, cv::Mat> validation;
     //std::multimap<unsigned char, morph::Vector<float, mnlen>> validation_f;
 
-
     //! The training data. The key to this multimap is the label; the Mat contains
     //! each test image
-//    std::multimap<unsigned char, cv::Mat> test;
+    std::multimap<unsigned char, cv::Mat> test;
+    std::multimap<unsigned char, morph::Vector<float, mnlen>> test_f;
 };

@@ -19,10 +19,8 @@ int main()
 
     // main loop, while m.training_f has values in:
     unsigned int epochs = 1;
-    unsigned int mini_batch_size = 10;
+    unsigned int mini_batch_size = 1;
     float eta = 3.0;
-
-    // Do this several times, accumulate the errors, then update the weights/biases
 
     // One epoch is one time through the whole dataset
     float cost = 0.0f;
@@ -34,7 +32,7 @@ int main()
         std::multimap<unsigned char,
                       morph::Vector<float, mnlen>> training_f = m.training_f;
 
-        for (unsigned int j = 0; j < training_f.size()/mini_batch_size; ++j) {
+        for (unsigned int j = 0; j < 1/*training_f.size()/mini_batch_size*/; ++j) {
 
             // Accumulate the dC/dw and dC/db values
             morph::Vector<float, MID_LAYER> c1_nabla_b;
@@ -89,9 +87,9 @@ int main()
         }
 
         // Evaluate
-        unsigned int numcorrect = ff1.evaluate (m.test_f, 33);
-        std::cout << "In that last Epoch, "<< numcorrect << "/10000 were characterized correctly" << std::endl;
-#if 1
+        unsigned int numcorrect = ff1.evaluate (m.test_f, 2);
+        std::cout << "In that Epoch, "<< numcorrect << "/10000 were characterized correctly" << std::endl;
+#if 0
         std::cout << "Network input: " << std::endl;
         std::cout << ff1.input << std::endl;
         std::cout << "Network input to layer 1 weights: " << std::endl;
