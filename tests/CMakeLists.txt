@@ -231,6 +231,12 @@ target_compile_features(testVector PUBLIC cxx_std_17)
 target_link_libraries(testVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector testVector)
 
+# Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
+add_executable(testvVector testvVector.cpp)
+target_compile_features(testvVector PUBLIC cxx_std_17)
+target_link_libraries(testvVector -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testvVector testvVector)
+
 # It's possible to modify testVector.cpp to be c++-11 or c++-14 friendly:
 add_executable(testVector14 testVector14.cpp)
 target_compile_features(testVector14 PUBLIC cxx_std_14)
