@@ -1,3 +1,12 @@
+/*
+ * Train a small feedforward neural network on some simple data points. This was a
+ * trial program to help develop ff_mnist, which uses a much larger (and more
+ * difficult to debug) network.
+ *
+ * \author Seb James
+ * \date May 2020
+ */
+
 #include "Mnist.h"
 #include <morph/Random.h>
 #include <fstream>

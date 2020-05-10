@@ -132,19 +132,18 @@ endif()
 # All the library finding is now done. It's time to compile the program.
 #
 if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
-  add_executable(nn3 nn3.cpp)
-  target_compile_definitions(nn3 PUBLIC FLT=float COMPILE_PLOTTING)
-  add_executable(nn4 nn4.cpp)
-  target_compile_definitions(nn3 PUBLIC FLT=float COMPILE_PLOTTING)
-  add_executable(nn5 nn5.cpp)
-  target_compile_definitions(nn5 PUBLIC FLT=float COMPILE_PLOTTING)
+  add_executable(ff_small ff_small.cpp)
+  add_executable(ff_mnist ff_mnist.cpp)
+  add_executable(ff_debug ff_debug.cpp)
 
   if(APPLE)
-    target_link_libraries(nn3 ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
+    target_link_libraries(ff_small ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
+    target_link_libraries(ff_mnist ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
+    target_link_libraries(ff_debug ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
   else()
-    target_link_libraries(nn3 ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
-    target_link_libraries(nn4 ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
-    target_link_libraries(nn5 ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
+    target_link_libraries(ff_small ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
+    target_link_libraries(ff_mnist ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
+    target_link_libraries(ff_debug ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
   endif()
 
 else()

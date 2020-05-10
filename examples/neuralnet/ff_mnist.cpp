@@ -1,3 +1,10 @@
+/*
+ * Train a neural network to characterise the MNIST database of numerals.
+ *
+ * \author Seb James
+ * \date May 2020
+ */
+
 #include "Mnist.h"
 #include <morph/Random.h>
 #include <fstream>

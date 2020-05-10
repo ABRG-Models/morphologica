@@ -1,11 +1,15 @@
+/*
+ * Create a small network with hand-set weights and biases to compare with Michael
+ * Nielsen's python code. Was used while debugging the code.
+ *
+ * \author Seb James
+ * \date May 2020
+ */
+
 #include "Mnist.h"
 #include <morph/Random.h>
 #include <fstream>
 #include "FeedForward.h"
-
-/*
- * Run a test to compare deltas etc with Nielsen's python code.
- */
 
 int main()
 {
