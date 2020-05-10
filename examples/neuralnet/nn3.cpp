@@ -10,12 +10,12 @@ int main()
     FeedForwardNet<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
 
-    // 5 examples of the function I want to find. This converts a quadratic input to a linear output
+    // 5 data points from the function I want to find. This converts a quadratic input to a ~linear output
     std::vector<morph::vVector<float>> ins = {{0.05, 0.0025}, {0.2, 0.04}, {0.4, 0.16}, {0.6, 0.36}, {0.8, 0.64}};
     std::vector<morph::vVector<float>> outs = {{0.8, 0.95}, {0.6, 0.7}, {0.4, 0.5}, {0.2, 0.2}, {0.05, 0.05}};
 
     // main loop, while m.training_f has values in:
-    unsigned int epochs = 10000; // Here, an epoch is a run through each batch.
+    unsigned int epochs = 2000; // Here, an epoch is a run through each batch of 5 in/outs.
     unsigned int mini_batch_size = ins.size();
     float eta = 0.5;
     float cost = 0.0f;
