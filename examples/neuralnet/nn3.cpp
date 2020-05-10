@@ -5,17 +5,19 @@
 
 int main()
 {
-    // Instantiate the network (What would be really cool would be a FeedForwardNet as a
-    // variadic template, so that FeedForwardNet<float, 785, 15, 10> ff1 would create
-    // the network the right way)
-    std::vector<unsigned int> layer_spec = {2,3,2};
+    // Create a feed-forward network
+    std::vector<unsigned int> layer_spec = {2,3,2}; // 2,2,2, 2,5,2; 2,4,2; 2,3,2. 2,11,2 all work
     FeedForwardNetS<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
 
+    // 5 examples of the function I want to find. This converts a quadratic input to a linear output
+    std::vector<morph::vVector<float>> ins = {{0.05, 0.0025}, {0.2, 0.04}, {0.4, 0.16}, {0.6, 0.36}, {0.8, 0.64}};
+    std::vector<morph::vVector<float>> outs = {{0.8, 0.95}, {0.6, 0.7}, {0.4, 0.5}, {0.2, 0.2}, {0.05, 0.05}};
+
     // main loop, while m.training_f has values in:
-    unsigned int epochs = 1000; // For now this is 'number of mini batches'
-    unsigned int mini_batch_size = 10;
-    float eta = 0.1;
+    unsigned int epochs = 10000; // Here, an epoch is a run through each batch.
+    unsigned int mini_batch_size = ins.size();
+    float eta = 0.5;
     float cost = 0.0f;
 
     // Accumulate the dC/dw and dC/db values in graidents. for each pair, the first
@@ -46,8 +48,9 @@ int main()
         cost = 0.0f;
         for (unsigned int mb = 0; mb < mini_batch_size; ++mb) {
 
-            morph::vVector<float> thein = {0.1, 0.3};
-            morph::vVector<float> theout = {1, 0};
+            // Note: NOT stochastic!
+            morph::vVector<float> thein = ins[mb];
+            morph::vVector<float> theout = outs[mb];
 
             ff1.setInput (thein, theout);
             ff1.compute();
@@ -63,28 +66,28 @@ int main()
                 ++i;
             }
         }
-
+#if 0
         std::cout << "Before division (after accumulation):\n";
         for (i = 0; i < ff1.num_connection_layers(); ++i) {
             std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
             std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].first << std::endl;
         }
-
+#endif
         // Have accumulated cost and mean_gradients, so now divide through to get the means
         for (i = 0; i < ff1.num_connection_layers(); ++i) {
             mean_gradients[i].first /= static_cast<float>(mini_batch_size);
             mean_gradients[i].second /= static_cast<float>(mini_batch_size);
         }
-        cost /= (2.0f*static_cast<float>(mini_batch_size));
+        cost /= (static_cast<float>(mini_batch_size));
         costfile << cost << std::endl;
-
+#if 0
         std::cout << "After division:\n";
         for (i = 0; i < ff1.num_connection_layers(); ++i) {
             std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
             std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].first << std::endl;
         }
-
         std::cout << "BEFORE gradient alteration ff1:\n---------------\n" << ff1 << std::endl;
+#endif
 
         // Gradient update. v -> v' = v - eta * gradC
         i = 0;
@@ -93,11 +96,15 @@ int main()
             c.b -= (mean_gradients[i].second * eta);
             ++i;
         }
-
+#if 0
         std::cout << "After gradient alteration ff1:\n---------------\n" << ff1 << std::endl;
-    }
+#endif
 
+    }
     costfile.close();
+
+    ff1.evaluate (ins, outs);
+    std::cout << ff1;
 
     return 0;
 }
