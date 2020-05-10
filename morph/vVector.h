@@ -222,12 +222,26 @@ namespace morph {
          *
          * Randomly set the elements of the vector. Coordinates are set to random
          * numbers drawn from a uniform distribution between \a min and \a
-         * max. Strictly, the rnage is [min, max)
+         * max. Strictly, the range is [min, max)
          */
-        void randomize(S min, S max) {
+        void randomize (S min, S max) {
             RandUniform<S> ru (min, max);
             for (auto& i : *this) {
                 i = ru.get();
+            }
+        }
+
+        /*!
+         * Randomize the vector from a Gaussian distribution
+         *
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between \a min and \a
+         * max. Strictly, the range is [min, max)
+         */
+        void randomizeN (S _mean, S _sd) {
+            RandNormal<S> rn (_mean, _sd);
+            for (auto& i : *this) {
+                i = rn.get();
             }
         }
 
