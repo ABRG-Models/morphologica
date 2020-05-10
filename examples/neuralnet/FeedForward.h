@@ -240,7 +240,6 @@ struct FeedForwardNet
             this->feedforward();
             evalcost += this->computeCost();
             // Success?
-            //std::cout << "Comparing " << this->neurons.back() << " with target " << this->desiredOutput << " (key " << key << ")\n";
             if (this->argmax() == key) {
                 ++numMatches;
             }
