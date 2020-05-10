@@ -237,7 +237,7 @@ struct FeedForwardNetS
             this->compute();
             evalcost += this->computeCost();
             // Success?
-            std::cout << "Comparing " << this->neurons.back() << " with target " << this->desiredOutput << " (key " << key << ")\n";
+            //std::cout << "Comparing " << this->neurons.back() << " with target " << this->desiredOutput << " (key " << key << ")\n";
             if (this->argmax() == key) {
                 ++numMatches;
             }
@@ -253,7 +253,7 @@ struct FeedForwardNetS
     size_t argmax() {
         auto themax = std::max_element (this->neurons.back().begin(), this->neurons.back().end());
         size_t i = themax - this->neurons.back().begin();
-        std::cout << "max output of " << this->neurons.back() << " is element " << i << std::endl;
+        //std::cout << "max output of " << this->neurons.back() << " is element " << i << std::endl;
         return i;
     }
 
@@ -290,18 +290,18 @@ struct FeedForwardNetS
     //! Compute the cost for one input and one desired output
     T computeCost() {
         // Here is where we compute delta_out:
-        this->delta_out = (desiredOutput-this->neurons.back()).hadamard (this->connections.back().sigmoid_prime_z_lplus1()); // c2.z is the final activation
+        this->delta_out = (this->neurons.back()-desiredOutput).hadamard (this->connections.back().sigmoid_prime_z_lplus1()); // c2.z is the final activation
 #if 0
         std::cout << "Desired out: "<< desiredOutput << std::endl;
         std::cout << "neurons.back(): "<< this->neurons.back() << std::endl;
         std::cout << "desiredOut - neurons.back(): "<< (desiredOutput-this->neurons.back()) << std::endl;
-        std::cout << "connections.back(): "<< this->connections.back() << std::endl;
+        //std::cout << "connections.back(): "<< this->connections.back() << std::endl;
         std::cout << "connections.back().sigmoid_prime_z_lplus1(): "<< this->connections.back().sigmoid_prime_z_lplus1() << std::endl;
         std::cout << "delta_out: " << this->delta_out << ", with length " << this->delta_out.length() << std::endl;
 #endif
-        // sum up the sos differences between output and desiredOutput
-        T l = this->delta_out.length();
-        this->cost = l * l;
+        // sum up the sos differences between output and desiredOutput to get the cost
+        T l = (desiredOutput-this->neurons.back()).length();
+        this->cost = T{0.5} * l * l;
         return this->cost;
     }
 
