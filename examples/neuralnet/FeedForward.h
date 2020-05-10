@@ -1,9 +1,9 @@
 /*!
  * \file
  *
- * This file contains a feed-forward neural network class, whose neuron sizes can be
- * configured at runtime and a class to hold the information about the connection
- * between layers of neurons in the network.
+ * This file contains two classes: a feed-forward neural network class, whose neuron
+ * sizes can be configured at runtime and a class to hold the information about the
+ * connections between layers of neurons in the network.
  *
  * \author Seb James
  * \date May 2020
@@ -16,10 +16,13 @@
 #include <sstream>
 #include <ostream>
 
+/*!
+ * A connection between neuron layers in a simple, stacked neural network.
+ */
 template <typename T>
-struct Connection
+struct FeedForwardConn
 {
-    Connection (morph::vVector<T>* _in, morph::vVector<T>* _out) {
+    FeedForwardConn (morph::vVector<T>* _in, morph::vVector<T>* _out) {
         this->in = _in;
         this->out = _out;
         this->M = this->in->size();
@@ -73,7 +76,7 @@ struct Connection
     }
 
     //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
-    void compute() {
+    void feedforward() {
         // A morph::vVector for a 'part of w'
         morph::vVector<T> wpart(this->in->size()); // Size M
         // Get weights, outputs and biases iterators
@@ -92,37 +95,41 @@ struct Connection
         }
     }
 
-    //! The content of Connection::out is sigmoid(z^l+1)
+    //! The content of *FeedForwardConn::out is sigmoid(z^l+1)
     //! \return has size N
     morph::vVector<T> sigmoid_prime_z_lplus1() {
         return out->hadamard (-(*out)+T{1});
     }
 
-    //! The content of Connection::in is sigmoid(z^l)
+    //! The content of *FeedForwardConn::in is sigmoid(z^l)
     //! \return has size M
     morph::vVector<T> sigmoid_prime_z_l() {
         return in->hadamard (-(*in)+T{1});
     }
 
-    //! Compute this->delta using values computed in Connection::compute.
-    void backprop (const morph::vVector<T>& delta_l_nxt/*, const morph::vVector<T>& z_prev*/) { // delta_l_nxt has size N.
+    /*!
+     * Compute this->delta using the values computed in FeedForwardConn::feedforward
+     * (which must have been executed beforehand).
+     */
+    void backprop (const morph::vVector<T>& delta_l_nxt) { // delta_l_nxt has size N.
         if (delta_l_nxt.size() != this->out->size()) {
             throw std::runtime_error ("backprop: Mismatched size");
         }
-        // we have to do weights * delta_l_nxt to give a morph::vVector<T, N> result. This is
-        // the equivalent of the matrix multiplication:
+        // we have to do weights * delta_l_nxt to give a morph::vVector<T>
+        // result. This is the equivalent of the matrix multiplication:
         morph::vVector<T> w_times_delta(this->in->size());
         w_times_delta.zero();
         for (size_t i = 0; i < this->M; ++i) { // Each input
             for (size_t j = 0; j < this->N; ++j) { // Each output
-                w_times_delta[i] +=  this->w[i+(this->M*j)] * delta_l_nxt[j]; // For each weight fanning into neuron j in l_nxt, sum up
+                // For each weight fanning into neuron j in l_nxt, sum up:
+                w_times_delta[i] += this->w[i+(this->M*j)] * delta_l_nxt[j];
             }
         }
         morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
         this->delta = w_times_delta.hadamard (spzl);
 
         // NB: In a given connection, we compute nabla_b and nabla_w relating to the
-        // OUTPUT neurons and the weights also relate to the output neurons.
+        // *output* neurons and the weights also related to the output neurons.
         this->nabla_b = delta_l_nxt; // Size is N
         for (size_t i = 0; i < this->M; ++i) { // Each input
             for (size_t j = 0; j < this->N; ++j) { // Each output
@@ -135,43 +142,48 @@ struct Connection
 
 //! Stream operator
 template <typename T>
-std::ostream& operator<< (std::ostream& os, const Connection<T>& c)
+std::ostream& operator<< (std::ostream& os, const FeedForwardConn<T>& c)
 {
     os << c.str();
     return os;
 }
 
 /*!
- * Holds data and methods for updating our neural network
+ * A feedforward network class which holds a runtime-selectable set of neuron layers
+ * and teh connections between the layers. Note that in this class, the connections
+ * are always between adjacent layers; from layer l to layer l+1.
  */
 template <typename T>
-struct FeedForwardNetS
+struct FeedForwardNet
 {
-    // Constructor with variable args to set layers and their contents? or just a vector?
-    FeedForwardNetS(const std::vector<unsigned int>& layer_spec) {
+    //! Constructor takes a vector specifying the number of neurons in each layer (\a
+    //! layer_spec)
+    FeedForwardNet (const std::vector<unsigned int>& layer_spec) {
         // Set up initial conditions
         for (auto nn : layer_spec) {
+            // Create, and zero, a layer containing nn neurons:
             morph::vVector<T> lyr(nn);
             lyr.zero();
             size_t lastLayerSize = 0;
-            if (!this->neurons.empty()) {
-                // Will add connection
+            if (!this->neurons.empty()) { // Set lastLayerSize
                 lastLayerSize = this->neurons.back().size();
             }
+            // Add the layer to this->neurons
             this->neurons.push_back (lyr);
+            // If there was a 'lastLayer', then add a connection between the layers
             if (lastLayerSize != 0) {
                 auto l = this->neurons.end();
                 --l;
                 auto lm1 = l;
                 --lm1;
-                Connection<T> c(&*lm1, &*l);
+                FeedForwardConn<T> c(&*lm1, &*l);
                 c.randomize();
                 this->connections.push_back (c);
             }
         }
     }
 
-    //! Output network as a string
+    //! Output the network as a string
     std::string str() const {
         std::stringstream ss;
         unsigned int i = 0;
@@ -189,13 +201,14 @@ struct FeedForwardNetS
     }
 
     //! Update the network's outputs from its inputs
-    void compute() {
+    void feedforward() {
         for (auto& c : this->connections) {
-            c.compute();
+            c.feedforward();
         }
     }
 
-    //! A function to just show the difference between out and desired out for debug
+    //! A function which shows the difference between the network output and
+    //! desiredOutput for debugging
     void evaluate (const std::vector<morph::vVector<float>>& ins,
                    const std::vector<morph::vVector<float>>& outs) {
         auto op = outs.begin();
@@ -204,7 +217,7 @@ struct FeedForwardNetS
             this->neurons.front() = ir;
             this->desiredOutput = *op++;
             // Compute network and cost
-            this->compute();
+            this->feedforward();
             float c = this->computeCost();
             std::cout << "Input " << ir << " --> " << this->neurons.back() << " cf. " << this->desiredOutput << " (cost: " << c << ")\n";
         }
@@ -224,7 +237,7 @@ struct FeedForwardNetS
             this->desiredOutput.zero();
             this->desiredOutput[key] = 1.0f;
             // Update
-            this->compute();
+            this->feedforward();
             evalcost += this->computeCost();
             // Success?
             //std::cout << "Comparing " << this->neurons.back() << " with target " << this->desiredOutput << " (key " << key << ")\n";
@@ -242,9 +255,7 @@ struct FeedForwardNetS
     //! Find the element in output with the max value
     size_t argmax() {
         auto themax = std::max_element (this->neurons.back().begin(), this->neurons.back().end());
-        size_t i = themax - this->neurons.back().begin();
-        //std::cout << "max output of " << this->neurons.back() << " is element " << i << std::endl;
-        return i;
+        return (themax - this->neurons.back().begin());
     }
 
     //! Determine the error gradients by the backpropagation method. NB: Call
@@ -264,10 +275,11 @@ struct FeedForwardNetS
         auto citer = this->connections.end();
         --citer; // Now points at output layer
         citer->backprop (this->delta_out); // Layer L delta computed
+        // After the output layer, loop through the rest of the layers:
         for (;citer != this->connections.begin();) {
             auto citer_closertooutput = citer--;
             // Now citer is closer to input
-            citer->backprop (citer_closertooutput->delta); // c1.delta computed
+            citer->backprop (citer_closertooutput->delta);
         }
     }
 
@@ -280,35 +292,28 @@ struct FeedForwardNetS
     //! Compute the cost for one input and one desired output
     T computeCost() {
         // Here is where we compute delta_out:
-        this->delta_out = (this->neurons.back()-desiredOutput).hadamard (this->connections.back().sigmoid_prime_z_lplus1()); // c2.z is the final activation
-#if 0
-        std::cout << "Desired out: "<< desiredOutput << std::endl;
-        std::cout << "neurons.back(): "<< this->neurons.back() << std::endl;
-        std::cout << "desiredOut - neurons.back(): "<< (desiredOutput-this->neurons.back()) << std::endl;
-        //std::cout << "connections.back(): "<< this->connections.back() << std::endl;
-        std::cout << "connections.back().sigmoid_prime_z_lplus1(): "<< this->connections.back().sigmoid_prime_z_lplus1() << std::endl;
-        std::cout << "delta_out: " << this->delta_out << ", with length " << this->delta_out.length() << std::endl;
-#endif
-        // sum up the sos differences between output and desiredOutput to get the cost
+        this->delta_out = (this->neurons.back()-desiredOutput).hadamard (this->connections.back().sigmoid_prime_z_lplus1());
+        // And the cost:
         T l = (desiredOutput-this->neurons.back()).length();
         this->cost = T{0.5} * l * l;
         return this->cost;
     }
 
-    // What's the cost function of the current output?
+    //! What's the cost function of the current output? Computed in computeCost()
     T cost = T{0};
 
-    // Variable number of neuron layers, each of variable size.
+    //! A variable number of neuron layers, each of variable size.
     std::list<morph::vVector<T>> neurons;
-    // Should be neurons.size()-1 connection layers
-    std::list<Connection<T>> connections;
-
-    morph::vVector<T> delta_out; // error (dC/dz) of the output layer
+    //! Connections. There should be neurons.size()-1 connection layers:
+    std::list<FeedForwardConn<T>> connections;
+    //! The error (dC/dz) of the output layer
+    morph::vVector<T> delta_out;
+    //! The desired output of the network
     morph::vVector<T> desiredOutput;
 };
 
 template <typename T>
-std::ostream& operator<< (std::ostream& os, const FeedForwardNetS<T>& ff)
+std::ostream& operator<< (std::ostream& os, const FeedForwardNet<T>& ff)
 {
     os << ff.str();
     return os;

@@ -1,13 +1,13 @@
 #include "Mnist.h"
 #include <morph/Random.h>
 #include <fstream>
-#include "NeuralNet.h"
+#include "FeedForward.h"
 
 int main()
 {
     // Create a feed-forward network
     std::vector<unsigned int> layer_spec = {2,3,2}; // 2,2,2, 2,5,2; 2,4,2; 2,3,2. 2,11,2 all work
-    FeedForwardNetS<float> ff1(layer_spec);
+    FeedForwardNet<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
 
     // 5 examples of the function I want to find. This converts a quadratic input to a linear output
@@ -53,7 +53,7 @@ int main()
             morph::vVector<float> theout = outs[mb];
 
             ff1.setInput (thein, theout);
-            ff1.compute();
+            ff1.feedforward();
             cost += ff1.computeCost();
             ff1.backprop();
             //std::cout << "After ff1.backprop():\n---------------\n" << ff1 << std::endl;

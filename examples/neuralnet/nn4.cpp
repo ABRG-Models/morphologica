@@ -1,7 +1,7 @@
 #include "Mnist.h"
 #include <morph/Random.h>
 #include <fstream>
-#include "NeuralNet.h"
+#include "FeedForward.h"
 
 int main()
 {
@@ -12,7 +12,7 @@ int main()
     // variadic template, so that FeedForwardNet<float, 785, 15, 10> ff1 would create
     // the network the right way)
     std::vector<unsigned int> layer_spec = {784,30,10};
-    FeedForwardNetS<float> ff1(layer_spec);
+    FeedForwardNet<float> ff1(layer_spec);
 
     // Create a random number generator
     morph::RandUniform<unsigned char> rng((unsigned char)0, (unsigned char)9);
@@ -67,7 +67,7 @@ int main()
                 training_f.erase (t_iter);
                 ff1.setInput (thein, theout);
 
-                ff1.compute();
+                ff1.feedforward();
                 cost += ff1.computeCost();
                 ff1.backprop();
                 //std::cout << "After ff1.backprop():\n---------------\n" << ff1 << std::endl;
