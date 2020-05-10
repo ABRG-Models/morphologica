@@ -22,8 +22,8 @@ struct Connection
     Connection (morph::vVector<T>* _in, morph::vVector<T>* _out) {
         this->in = _in;
         this->out = _out;
-        size_t M = this->in->size();
-        size_t N = this->out->size();
+        this->M = this->in->size();
+        this->N = this->out->size();
         this->delta.resize (M, T{0});
         this->w.resize (M*N, T{0});
         this->nabla_w.resize (M*N, T{0});
@@ -37,8 +37,10 @@ struct Connection
 
     //! Input layer has size M, output has size N. Weights size MbyN (or NbyM)
     morph::vVector<T>* in;
+    size_t M = 0;
     //! Pointer to output layer. Size N
     morph::vVector<T>* out;
+    size_t N = 0;
     //! The errors in the input layer of neurons. Size M
     morph::vVector<T> delta;
     //! Weights. Order of weights: in[0] to out[all], in[1] to out[all], in[2] to
@@ -54,27 +56,20 @@ struct Connection
     //! z = sum(w.in) + b.
     morph::vVector<T> z; // N
 
-#if 0
-    //! Getter for the gradients of cost vs. w and b
-    std::pair<morph::vVector<T>, morph::vVector<T>> getGradients() const {
-        return make_pair(this->nabla_w, this->nabla_b);
-    }
-#endif
-
     //! Output as a string
     std::string str() const {
         std::stringstream ss;
         ss << "Weights: w" << w << "w (" << w.size() << ")\n";
-        //ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+        ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
         ss << " Biases: b" << b << "b (" << b.size() << ")\n";
-        //ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
+        ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
         return ss.str();
     }
 
     //! Randomize the weights and biases
     void randomize() {
-        this->w.randomizeN (T{0.0}, T{1});
-        this->b.randomizeN (T{0.0}, T{1});
+        this->w.randomizeN (T{0.0}, T{1.0});
+        this->b.randomizeN (T{0.0}, T{1.0});
     }
 
     //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
@@ -86,24 +81,14 @@ struct Connection
         auto oiter = this->out->begin();
         auto biter = this->b.begin();
         // Carry out an N sized for loop computing each output
-        size_t N = this->out->size();
-        for (size_t j = 0; j < N; ++j) { // Each output
+        for (size_t j = 0; j < this->N; ++j) { // Each output
             // Copy part of weights to wpart (M elements):
-            std::copy (witer, witer+this->in->size(), wpart.begin());
+            std::copy (witer, witer+this->M, wpart.begin());
             // Compute dot product with input and add bias:
-            this->z[j] = wpart.dot (*in) + *biter;
-#if 0
-            if (this->z[j] > 1e3) {
-                std::cout << "z[" << j << "]: " << z[j] << std::endl;
-            }
-#endif
-            //std::cout << "z[j]=" << z[j] << ", b=" << *biter << std::endl;
-            biter++;
-            //sigz[j] = T{1} / (T{1} + std::exp(-z[j]));
-            //*oiter++ = sigz[j];
-            *oiter = T{1} / (T{1} + std::exp(-z[j]));
-            //std::cout << "Set output iter to " << *oiter << std::endl;
-            oiter++;
+            this->z[j] = wpart.dot (*in) + *biter++;
+            *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
+            // Move to the next part of the weight matrix for the next loop
+            witer += this->M;
         }
     }
 
@@ -128,31 +113,21 @@ struct Connection
         // the equivalent of the matrix multiplication:
         morph::vVector<T> w_times_delta(this->in->size());
         w_times_delta.zero();
-        // Should be able to parallelize this:
-        size_t M = this->in->size();
-        size_t N = this->out->size();
-        for (size_t i = 0; i < M; ++i) { // Each input
-            for (size_t j = 0; j < N; ++j) { // Each output
-                w_times_delta[i] +=  this->w[i+(M*j)] * delta_l_nxt[j]; // For each weight fanning into neuron j in l_nxt, sum up
+        for (size_t i = 0; i < this->M; ++i) { // Each input
+            for (size_t j = 0; j < this->N; ++j) { // Each output
+                w_times_delta[i] +=  this->w[i+(this->M*j)] * delta_l_nxt[j]; // For each weight fanning into neuron j in l_nxt, sum up
             }
         }
         morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
         this->delta = w_times_delta.hadamard (spzl);
 
-        // NB: We compute nabla_b and nabla_w on the OUTPUT neurons and the weights to
-        // the output neurons..
+        // NB: In a given connection, we compute nabla_b and nabla_w relating to the
+        // OUTPUT neurons and the weights also relate to the output neurons.
         this->nabla_b = delta_l_nxt; // Size is N
-        // nabla_w is a_in * delta_out. We compute nabla_w as a_in * delta_l_nxt here.
-        for (size_t i = 0; i < M; ++i) { // Each input
-            for (size_t j = 0; j < N; ++j) { // Each output
-
-                // activation from previous layer is just *in!
-                this->nabla_w[i+(M*j)] = (*in)[i] * delta_l_nxt[j]; // Size is M*N in Michael's code
-#if 0
-                if (this->nabla_w[i+(M*j)] > 1e3 || this->nabla_w[i+(M*j)] < -1e3) {
-                    std::cout << "LARGE nabla_w[" << (i+(M*j)) << "]: " << "in["<<i<<"]=" << (*in)[i] << " * " << delta_l_nxt[j] << " = " << this->nabla_w[i+(M*j)] << std::endl;
-                }
-#endif
+        for (size_t i = 0; i < this->M; ++i) { // Each input
+            for (size_t j = 0; j < this->N; ++j) { // Each output
+                // nabla_w is a_in * delta_out:
+                this->nabla_w[i+(this->M*j)] = (*in)[i] * delta_l_nxt[j];
             }
         }
     }
@@ -220,24 +195,22 @@ struct FeedForwardNetS
         }
     }
 
+    //! A function to just show the difference between out and desired out for debug
     void evaluate (const std::vector<morph::vVector<float>>& ins,
                    const std::vector<morph::vVector<float>>& outs) {
-
-        //! Just show the difference between out and desired out for debug
         auto op = outs.begin();
         for (auto ir : ins) {
-            // Set input
+            // Set input and output
             this->neurons.front() = ir;
-            // Set output
             this->desiredOutput = *op++;
-
+            // Compute network and cost
             this->compute();
             float c = this->computeCost();
-
             std::cout << "Input " << ir << " --> " << this->neurons.back() << " cf. " << this->desiredOutput << " (cost: " << c << ")\n";
         }
     }
 
+    //! Evaluate against the Mnist test image set
     unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000) {
         // For each image in testData, compute cost
         float evalcost = 0.0f;
@@ -298,7 +271,7 @@ struct FeedForwardNetS
         }
     }
 
-    // Set up an input along with desired output
+    //! Set up an input along with desired output
     void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput) {
         *(this->neurons.begin()) = theInput;
         this->desiredOutput = theOutput;
@@ -322,19 +295,15 @@ struct FeedForwardNetS
         return this->cost;
     }
 
-    size_t num_connection_layers() {
-        return this->connections.size();
-    }
-
     // What's the cost function of the current output?
-    T cost;
+    T cost = T{0};
 
     // Variable number of neuron layers, each of variable size.
     std::list<morph::vVector<T>> neurons;
     // Should be neurons.size()-1 connection layers
     std::list<Connection<T>> connections;
 
-    morph::vVector<T> delta_out; // error of the output layer
+    morph::vVector<T> delta_out; // error (dC/dz) of the output layer
     morph::vVector<T> desiredOutput;
 };
 

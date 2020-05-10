@@ -40,7 +40,7 @@ int main()
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
         // Zero mean grads
-        for (i = 0; i < ff1.num_connection_layers(); ++i) {
+        for (i = 0; i < ff1.connections.size(); ++i) {
             mean_gradients[i].first.zero();
             mean_gradients[i].second.zero();
         }
@@ -68,13 +68,13 @@ int main()
         }
 #if 0
         std::cout << "Before division (after accumulation):\n";
-        for (i = 0; i < ff1.num_connection_layers(); ++i) {
+        for (i = 0; i < ff1.connections.size(); ++i) {
             std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
             std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].first << std::endl;
         }
 #endif
         // Have accumulated cost and mean_gradients, so now divide through to get the means
-        for (i = 0; i < ff1.num_connection_layers(); ++i) {
+        for (i = 0; i < ff1.connections.size(); ++i) {
             mean_gradients[i].first /= static_cast<float>(mini_batch_size);
             mean_gradients[i].second /= static_cast<float>(mini_batch_size);
         }
@@ -82,7 +82,7 @@ int main()
         costfile << cost << std::endl;
 #if 0
         std::cout << "After division:\n";
-        for (i = 0; i < ff1.num_connection_layers(); ++i) {
+        for (i = 0; i < ff1.connections.size(); ++i) {
             std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
             std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].first << std::endl;
         }

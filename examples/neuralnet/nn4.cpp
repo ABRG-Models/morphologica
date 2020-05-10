@@ -11,7 +11,7 @@ int main()
     // Instantiate the network (What would be really cool would be a FeedForwardNet as a
     // variadic template, so that FeedForwardNet<float, 785, 15, 10> ff1 would create
     // the network the right way)
-    std::vector<unsigned int> layer_spec = {784,31,10};
+    std::vector<unsigned int> layer_spec = {784,30,10};
     FeedForwardNetS<float> ff1(layer_spec);
 
     // Create a random number generator
@@ -20,7 +20,7 @@ int main()
     // main loop parameters are number of epochs, the size of a mini-batch and the
     // learning rate eta
     unsigned int epochs = 30;
-    unsigned int mini_batch_size = 30;
+    unsigned int mini_batch_size = 10;
     float eta = 3.0f;
 
     // Accumulate the dC/dw and dC/db values in gradients. for each pair, the first is
@@ -48,7 +48,7 @@ int main()
             // Update the mini-batch
 
             // Zero mean grads and cost
-            for (i = 0; i < ff1.num_connection_layers(); ++i) {
+            for (i = 0; i < ff1.connections.size(); ++i) {
                 mean_gradients[i].first.zero();
                 mean_gradients[i].second.zero();
             }
@@ -87,13 +87,13 @@ int main()
             }
 #if 0
             std::cout << "Gradients before division (but after accumulation):\n";
-            for (i = 0; i < ff1.num_connection_layers(); ++i) {
+            for (i = 0; i < ff1.connections.size(); ++i) {
                 std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
                 std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].second << std::endl;
             }
 #endif
             // Have accumulated cost and mean_gradients, so now divide through to get the means
-            for (i = 0; i < ff1.num_connection_layers(); ++i) {
+            for (i = 0; i < ff1.connections.size(); ++i) {
                 mean_gradients[i].first /= static_cast<float>(mini_batch_size);
                 mean_gradients[i].second /= static_cast<float>(mini_batch_size);
             }
@@ -102,12 +102,14 @@ int main()
             //std::cout << cost << std::endl;
 #if 0
             std::cout << "Gradients after accumulation and division:\n";
-            for (i = 0; i < ff1.num_connection_layers(); ++i) {
+            for (i = 0; i < ff1.connections.size(); ++i) {
                 std::cout << "layer " << i << ", nabla_w: " << mean_gradients[i].first << std::endl;
                 std::cout << "      " << i << ", nabla_b: " << mean_gradients[i].second << std::endl;
             }
             std::cout << "BEFORE gradient alteration ff1:\n---------------\n" << ff1 << std::endl;
 #endif
+
+            costfile << cost << "," << mean_gradients[0].first[0] << "," << ff1.connections.front().nabla_w[0] << std::endl;
 
             // Gradient update. v -> v' = v - eta * gradC
             i = 0;

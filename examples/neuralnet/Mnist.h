@@ -188,8 +188,8 @@ struct Mnist
 
     std::string basepath = "mnist/";
 
-    //! The training data. The key to this multimap is the label, the Mat contains
-    //! each training image. This is to be 50000 out of 60000 examples.
+    //! The training data. The key to this multimap is the label, the Mat (or vVector)
+    //! contains each training image. This is to be 50000 out of 60000 examples.
     std::multimap<unsigned char, cv::Mat> training;
     // Same data extracted into vectors of floats, rather than Mats.
     std::multimap<unsigned char, morph::vVector<float>> training_f;
@@ -198,8 +198,8 @@ struct Mnist
     //std::multimap<unsigned char, cv::Mat> validation;
     //std::multimap<unsigned char, morph::Vector<float, mnlen>> validation_f;
 
-    //! The training data. The key to this multimap is the label; the Mat contains
-    //! each test image
+    //! The training data. The key to this multimap is the label; the Mat (or vVector)
+    //! contains each test image
     std::multimap<unsigned char, cv::Mat> test;
     std::multimap<unsigned char, morph::vVector<float>> test_f;
 };
