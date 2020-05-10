@@ -65,16 +65,16 @@ struct Connection
     std::string str() const {
         std::stringstream ss;
         ss << "Weights: w" << w << "w (" << w.size() << ")\n";
-        ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+        //ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
         ss << " Biases: b" << b << "b (" << b.size() << ")\n";
-        ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
+        //ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
         return ss.str();
     }
 
     //! Randomize the weights and biases
     void randomize() {
-        this->w.randomize (T{0.0}, T{0.1});
-        this->b.randomize (T{0.0}, T{0.1});
+        this->w.randomizeN (T{0.0}, T{1});
+        this->b.randomizeN (T{0.0}, T{1});
     }
 
     //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
@@ -220,7 +220,24 @@ struct FeedForwardNetS
         }
     }
 
-    //! Find how many of testData we successfully characterize
+    void evaluate (const std::vector<morph::vVector<float>>& ins,
+                   const std::vector<morph::vVector<float>>& outs) {
+
+        //! Just show the difference between out and desired out for debug
+        auto op = outs.begin();
+        for (auto ir : ins) {
+            // Set input
+            this->neurons.front() = ir;
+            // Set output
+            this->desiredOutput = *op++;
+
+            this->compute();
+            float c = this->computeCost();
+
+            std::cout << "Input " << ir << " --> " << this->neurons.back() << " cf. " << this->desiredOutput << " (cost: " << c << ")\n";
+        }
+    }
+
     unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000) {
         // For each image in testData, compute cost
         float evalcost = 0.0f;
