@@ -236,37 +236,6 @@ namespace morph {
         }
 
         /*!
-         * Vector multiply * operator.
-         *
-         * Cross product of this with another vector \a v (if N==3). In
-         * higher dimensions, its more complicated to define what the cross product is,
-         * and I'm unlikely to need anything other than the plain old 3D cross product.
-         */
-        template <size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        Vector<S, N> operator* (const Vector<S, _N>& v) const {
-            Vector<S, _N> vrtn;
-            vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-            vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-            vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
-            return vrtn;
-        }
-
-        /*!
-         * Vector multiply *= operator.
-         *
-         * Cross product of this with another vector v (if N==3). Result written into
-         * this.
-         */
-        template <size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        void operator*= (const Vector<S, _N>& v) {
-            Vector<S, _N> vtmp;
-            vtmp[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-            vtmp[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-            vtmp[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
-            std::copy (vtmp.begin(), vtmp.end(), this->begin());
-        }
-
-        /*!
          * \brief Scalar (dot) product
          *
          * Compute the scalar product of this Vector and the Vector, v.
@@ -281,16 +250,44 @@ namespace morph {
         }
 
         /*!
-         * Hadamard product - elementwise multiplication. FIXME: This better as
-         * default for operator* because it is useful for any number of dims. Cross
-         * product could then be a named cross() method.
+         * Vector cross product.
+         *
+         * Cross product of this with another vector \a v (if N==3). In
+         * higher dimensions, its more complicated to define what the cross product is,
+         * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        Vector<S, N> hadamard (const Vector<S, N>& v) const {
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+        Vector<S, _N> cross (const Vector<_S, _N>& v) const {
+            Vector<S, _N> vrtn;
+            vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
+            vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
+            vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
+            return vrtn;
+        }
+
+        /*!
+         * operator* gives the Hadamard product.
+         *
+         * Hadamard product - elementwise multiplication. If the vectors are of
+         * differing lengths, then an exception is thrown.
+         *
+         * \return Hadamard product of left hand size (*this) and right hand size (\a v)
+         */
+        template<typename _S=S>
+        Vector<S, N> operator* (const Vector<_S, N>& v) const {
             Vector<S, N> rtn;
-            auto vi = v.begin();
-            auto mult_by_vi = [vi](S a) mutable { return a * (*vi++); };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_vi);
+            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies());
             return rtn;
+        }
+
+        /*!
+         * Vector multiply *= operator.
+         *
+         * Hadamard product. Multiply *this vector with \a v, elementwise.
+         */
+        template <typename _S=S>
+        void operator*= (const Vector<_S, N>& v) {
+            std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies());
         }
 
         /*!

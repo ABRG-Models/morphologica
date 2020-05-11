@@ -39,13 +39,24 @@ int main() {
     // Test cross product (3D only
     vVector<double> a = {1,0,0};
     vVector<double> b = {0,1,0};
-    vVector<double> c = a * b;
-    cout << a << "*" << b << "=" << c << endl;
+    vVector<double> c = a.cross(b);
+    cout << a << " cross " << b << "=" << c << endl;
     // Test dot product
     vVector<int> vv1 = {1,1};
     vVector<int> vv2 = {2,2};
     int dp = vv1.dot (vv2);
     cout << vv1 << "." << vv2 << " = " << dp << endl;
+
+    // dot product of two different sized vectors
+    vVector<int> vv2_3 = {2,2,2};
+    try {
+        int dpmm = vv1.dot (vv2_3);
+        cout << vv1 << "." << vv2_3 << " = " << dpmm << endl;
+    } catch (const std::exception& e) {
+        cout << "Expected exception: ";
+        cout << e.what() << endl;
+    }
+
 #if 0 // No good here either, but may be able to fix by overloading operator=
     // Test init from array
     array<float, 3> arr = { 2,3,4 };
@@ -53,6 +64,12 @@ int main() {
     vVector<float> varr = arr; // Tried overloading operator= to no avail.
     cout << "vVector from array: " << varr << endl;
 #endif
+
+#if 0 // Haven't figured out assignment from a vector
+    std::vector<float> veccy(3); veccy[0]=3.0f;
+    vVector<float> varr = veccy;
+#endif
+
     // Test scalar multiply
     vv2 *= 2UL;
     cout << "vv2 after *2:" << vv2 << endl;
@@ -93,11 +110,59 @@ int main() {
     d1.set_from_onelonger(a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
 
-    // Test hadamard operator (elementwize multiplication)
-    vVector<double> h1 = {1.2, 1.5, 8.4};
-    vVector<double> h2 = {.12, .15, .84};
-    vVector<double> h3 = h1.hadamard(h2);
+    // Test hadamard operator* (elementwise multiplication)
+    vVector<double> h1 = {1.0, 2.0, 3.0};
+    vVector<double> h2 = {7.0, 6.0, 5.0};
+    vVector<double> h3 = h1 * h2;
     cout << h1 << "(o)" << h2 << " = " << h3 << endl;
+
+    h1 *= h2;
+    cout << "After h1 *= h2, h1: " << h1 << endl;
+
+    // Test operator *= with different types. Ok if lhs is same type as result.
+    vVector<int> h4 = {2, 2, 2};
+    //vVector<int> h5 = h2 * h4; // Not ok
+    vVector<int> h6 = h4 * h2;
+    vVector<double> h7 = h2 * h4;
+    //vVector<double> h8 = h4 * h2; // Not ok
+    cout << h2 << "(o)" << h4 << " = " << h6 << " or " << h7 << endl;
+
+    // Operator* and operator*= with different length vectors
+    vVector<double> dl1 = {2.0, 3.0, 4.0};
+    vVector<double> dl2 = {2.0, 3.0};
+    try {
+        vVector<double> dlresult = dl1 * dl2;
+        cout << dl1 << " * " << dl2 << " = " << dlresult << endl;
+    } catch (const std::exception& e) {
+        cout << "Expected exception: ";
+        cout << e.what() << endl;
+    }
+
+    vVector<double> dl1_ = {2.0, 3.0};
+    vVector<double> dl2_ = {2.0, 3.0, 4.0};
+    try {
+        vVector<double> dlresult_ = dl1_ * dl2_;
+        cout << dl1_ << " * " << dl2_ << " = " << dlresult_ << endl;
+    } catch (const std::exception& e) {
+        cout << "Expected exception: ";
+        cout << e.what() << endl;
+    }
+
+    try {
+        dl1_ *= dl2_;
+        cout << "{2, 3} *= {2, 3, 4} gives " << dl1_ << endl;
+    } catch (const std::exception& e) {
+        cout << "Expected exception: ";
+        cout << e.what() << endl;
+    }
+
+    try {
+        dl2_ *= dl2;
+        cout << "{2, 3, 4} *= {2, 3} gives " << dl2_ << endl;
+    } catch (const std::exception& e) {
+        cout << "Expected exception: ";
+        cout << e.what() << endl;
+    }
 
     // Test different vVector types dotted:
     vVector<double> left = h1;

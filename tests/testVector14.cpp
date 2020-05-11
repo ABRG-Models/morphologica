@@ -40,8 +40,8 @@ int main() {
     // Test cross product (3D only
     Vector<double, 3> a; a[0] = 1;
     Vector<double, 3> b; b[1] = 1;
-    Vector<double, 3> c = a * b;
-    cout << a << "*" << b << "=" << c << endl;
+    Vector<double, 3> c = a.cross(b);
+    cout << a << " cross " << b << "=" << c << endl;
     // Test dot product
     Vector<int, 2> vv1; vv1[0]=1; vv1[1]=1;
     Vector<int, 2> vv2; vv2[0]=2; vv2[1]=2;
