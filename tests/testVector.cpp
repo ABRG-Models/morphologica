@@ -17,11 +17,11 @@ int main() {
     // Test checkunit
     cout << "is it unit? " << v.checkunit() << endl;
     // Test randomize
-    v.randomize();
+    v.randomize(3,4);
     cout << "After randomize: " << v << endl;
     // Check ints are ok, too
     Vector<int, 2> vi;
-    vi.randomize();
+    vi.randomize(0,200);
     cout << "After randomize of int vector: " << vi << endl;
     cout << "Length: " << vi.length() << endl;
     // Test assignment
@@ -75,8 +75,8 @@ int main() {
     // So you want to do the dot product of a 1000000 D vector? Easy
     Vector<float, 1000> big1;
     Vector<float, 1000> big2;
-    big1.randomize();
-    big2.randomize();
+    big1.randomize(0,100);
+    big2.randomize(0,20);
     cout << "DP..." << endl;
     float bdp = big1.dot(big2);
     cout << "big1.big2=" << bdp << endl;

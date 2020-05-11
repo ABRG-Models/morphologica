@@ -396,9 +396,9 @@ namespace morph {
          * scalar type. Multiplies this vVector<S> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vVector<_S> operator* (const _S& s) const {
-            vVector<_S> rtn(this->size());
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+        vVector<S> operator* (const _S& s) const {
+            vVector<S> rtn(this->size());
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -411,7 +411,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s) {
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
@@ -419,9 +419,9 @@ namespace morph {
          * Scalar divide by s
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vVector<_S> operator/ (const _S& s) const {
-            vVector<_S> rtn(this->size());
-            auto div_by_s = [s](_S coord) { return coord / s; };
+        vVector<S> operator/ (const _S& s) const {
+            vVector<S> rtn(this->size());
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -431,7 +431,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s) {
-            auto div_by_s = [s](_S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
@@ -451,7 +451,7 @@ namespace morph {
          * vVector addition operator
          */
         template<typename _S=S>
-        void operator+= (const vVector<S>& v) {
+        void operator+= (const vVector<_S>& v) {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
@@ -483,9 +483,9 @@ namespace morph {
          * Scalar addition
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vVector<_S> operator+ (const _S& s) const {
-            vVector<_S> rtn(this->size());
-            auto add_s = [s](_S coord) { return coord + s; };
+        vVector<S> operator+ (const _S& s) const {
+            vVector<S> rtn(this->size());
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -495,7 +495,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s) {
-            auto add_s = [s](_S coord) { return coord + s; };
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -503,9 +503,9 @@ namespace morph {
          * Scalar subtraction
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        vVector<_S> operator- (const _S& s) const {
-            vVector<_S> rtn;
-            auto subtract_s = [s](_S coord) { return coord - s; };
+        vVector<S> operator- (const _S& s) const {
+            vVector<S> rtn;
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -515,7 +515,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s) {
-            auto subtract_s = [s](_S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 

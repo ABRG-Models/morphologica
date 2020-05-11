@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include <type_traits>
 #include <numeric>
 #include <algorithm>
@@ -103,9 +104,21 @@ namespace morph {
         static constexpr S unitThresh = 0.001;
 
         /*!
+         * Set data members from an std::vector
+         */
+        template <typename _S=S>
+        void set_from (const std::vector<_S>& vec) {
+            if (vec.size() != N) {
+                throw std::runtime_error ("Vector::set_from(): Ensure vector sizes match");
+            }
+            std::copy (vec.begin(), vec.end(), this->begin());
+        }
+
+        /*!
          * Set data members from an array the of same size and type.
          */
-        void set_from (const std::array<S, N>& ar) {
+        template <typename _S=S>
+        void set_from (const std::array<_S, N>& ar) {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
 
@@ -114,7 +127,8 @@ namespace morph {
          * ignoring the last element of \a ar. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
          */
-        void set_from (const std::array<S, (N+1)>& ar) {
+        template <typename _S=S>
+        void set_from (const std::array<_S, (N+1)>& ar) {
             // Don't use std::copy here, because ar has more elements than *this.
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = ar[i];
@@ -125,7 +139,8 @@ namespace morph {
          * Set an N-D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
-        void set_from (const Vector<S, (N+1)>& v) {
+        template <typename _S=S>
+        void set_from (const Vector<_S, (N+1)>& v) {
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = v[i];
             }
@@ -191,6 +206,34 @@ namespace morph {
         }
 
         /*!
+         * Randomize the vector with provided bounds
+         *
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between \a min and \a
+         * max. Strictly, the range is [min, max)
+         */
+        void randomize (S min, S max) {
+            RandUniform<S> ru (min, max);
+            for (auto& i : *this) {
+                i = ru.get();
+            }
+        }
+
+        /*!
+         * Randomize the vector from a Gaussian distribution
+         *
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between \a min and \a
+         * max. Strictly, the range is [min, max)
+         */
+        void randomizeN (S _mean, S _sd) {
+            RandNormal<S> rn (_mean, _sd);
+            for (auto& i : *this) {
+                i = rn.get();
+            }
+        }
+
+        /*!
          * Test to see if this vector is a unit vector (it doesn't *have* to be).
          *
          * \return true if the length of the vector is 1.
@@ -242,9 +285,10 @@ namespace morph {
          *
          * \return scalar product
          */
-        S dot (const Vector<S, N>& v) const {
+        template<typename _S=S>
+        S dot (const Vector<_S, N>& v) const {
             auto vi = v.begin();
-            auto dot_product = [vi](S a, S b) mutable { return a + b * (*vi++); };
+            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
             return rtn;
         }
@@ -297,9 +341,9 @@ namespace morph {
          * scalar type. Multiplies this Vector<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator* (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+        Vector<S, N> operator* (const _S& s) const {
+            Vector<S, N> rtn;
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -312,7 +356,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s) {
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
@@ -320,9 +364,9 @@ namespace morph {
          * Scalar divide by s
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator/ (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto div_by_s = [s](_S coord) { return coord / s; };
+        Vector<S, N> operator/ (const _S& s) const {
+            Vector<S, N> rtn;
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -332,14 +376,15 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s) {
-            auto div_by_s = [s](_S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
         /*!
          * Vector addition operator
          */
-        Vector<S, N> operator+ (const Vector<S, N>& v) const {
+        template<typename _S=S>
+        Vector<S, N> operator+ (const Vector<_S, N>& v) const {
             Vector<S, N> vrtn;
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -350,7 +395,8 @@ namespace morph {
         /*!
          * Vector addition operator
          */
-        void operator+= (const Vector<S, N>& v) {
+        template<typename _S=S>
+        void operator+= (const Vector<_S, N>& v) {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
@@ -359,7 +405,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        Vector<S, N> operator- (const Vector<S, N>& v) const {
+        template<typename _S=S>
+        Vector<S, N> operator- (const Vector<_S, N>& v) const {
             Vector<S, N> vrtn;
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
@@ -370,7 +417,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        void operator-= (const Vector<S, N>& v) {
+        template<typename _S=S>
+        void operator-= (const Vector<_S, N>& v) {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
@@ -380,9 +428,9 @@ namespace morph {
          * Scalar addition
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator+ (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto add_s = [s](_S coord) { return coord + s; };
+        Vector<S, N> operator+ (const _S& s) const {
+            Vector<S, N> rtn;
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -392,7 +440,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s) {
-            auto add_s = [s](_S coord) { return coord + s; };
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -400,9 +448,9 @@ namespace morph {
          * Scalar subtraction
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator- (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto subtract_s = [s](_S coord) { return coord - s; };
+        Vector<S, N> operator- (const _S& s) const {
+            Vector<S, N> rtn;
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -412,7 +460,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s) {
-            auto subtract_s = [s](_S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 

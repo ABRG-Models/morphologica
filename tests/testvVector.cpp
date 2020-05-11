@@ -73,8 +73,8 @@ int main() {
     // Test scalar multiply
     vv2 *= 2UL;
     cout << "vv2 after *2:" << vv2 << endl;
-    vVector<int> vv4 = vv1 * 98;
-    cout << "vv1 * 98:" << vv4 << endl;
+    vVector<int> vv4 = vv1 * (int)98;
+    cout << vv1 << " * 98:" << vv4 << endl;
     // Scalar division
     vVector<double> d = a/3.0;
     cout << "a/3.0:" << d << endl;
