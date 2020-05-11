@@ -240,7 +240,7 @@ struct FeedForwardNet
             this->feedforward();
             evalcost += this->computeCost();
             // Success?
-            if (this->argmax() == key) {
+            if (this->neurons.back().argmax() == key) {
                 ++numMatches;
             }
             ++count;
@@ -249,12 +249,6 @@ struct FeedForwardNet
             }
         }
         return numMatches;
-    }
-
-    //! Find the element in output with the max value
-    size_t argmax() {
-        auto themax = std::max_element (this->neurons.back().begin(), this->neurons.back().end());
-        return (themax - this->neurons.back().begin());
     }
 
     //! Determine the error gradients by the backpropagation method. NB: Call
