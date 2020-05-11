@@ -276,7 +276,7 @@ namespace morph {
         template<typename _S=S>
         Vector<S, N> operator* (const Vector<_S, N>& v) const {
             Vector<S, N> rtn;
-            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<_S>());
+            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<S>());
             return rtn;
         }
 
@@ -287,7 +287,7 @@ namespace morph {
          */
         template <typename _S=S>
         void operator*= (const Vector<_S, N>& v) {
-            std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<_S>());
+            std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<S>());
         }
 
         /*!

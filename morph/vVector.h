@@ -370,7 +370,7 @@ namespace morph {
                 throw std::runtime_error ("vVector::operator*: Hadamard product is defined here for vectors of same dimensionality only");
             }
             vVector<S, Al> rtn(this->size(), S{0});
-            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<_S>());
+            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<S>());
             return rtn;
         }
 
@@ -383,7 +383,7 @@ namespace morph {
         template <typename _S=S>
         void operator*= (const vVector<_S>& v) {
             if (v.size() == this->size()) {
-                std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<_S>());
+                std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<S>());
             } else {
                 throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
             }
