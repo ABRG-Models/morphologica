@@ -38,16 +38,16 @@ struct FeedForwardConn
         this->z.zero();
     }
 
-    //! Input layer has size M, output has size N. Weights size MbyN (or NbyM)
+    //! Input layer has size M.
     morph::vVector<T>* in;
     size_t M = 0;
-    //! Pointer to output layer. Size N
+    //! Pointer to output layer. Size N.
     morph::vVector<T>* out;
     size_t N = 0;
-    //! The errors in the input layer of neurons. Size M
+    //! The errors in the input layer of neurons. Size M.
     morph::vVector<T> delta;
-    //! Weights. Order of weights: in[0] to out[all], in[1] to out[all], in[2] to
-    //! out[all] etc. Size M by N.
+    //! Weights.
+    //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N.
     morph::vVector<T> w;
     //! Biases. Size N.
     morph::vVector<T> b;
@@ -56,8 +56,8 @@ struct FeedForwardConn
     //! The gradients of cost vs. biases. Size N.
     morph::vVector<T> nabla_b;
     //! Activation of the output neurons. Computed in feedforward, used in backprop
-    //! z = sum(w.in) + b.
-    morph::vVector<T> z; // N
+    //! z = sum(w.in) + b. Final output written into *out is the sigmoid(z). Size N.
+    morph::vVector<T> z;
 
     //! Output as a string
     std::string str() const {
@@ -75,7 +75,7 @@ struct FeedForwardConn
         this->b.randomizeN (T{0.0}, T{1.0});
     }
 
-    //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
+    //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
     void feedforward() {
         // A morph::vVector for a 'part of w'
         morph::vVector<T> wpart(this->in->size()); // Size M
