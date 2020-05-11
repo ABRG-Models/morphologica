@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include <type_traits>
 #include <numeric>
 #include <algorithm>
@@ -29,7 +30,9 @@ namespace morph {
      * such as int, long long int and so on. Thus, a typical (and in fact, the default)
      * signature would be:
      *
+     *\code{.cpp}
      * vVector<float> v(3);
+     *\endcode
      *
      * The class inherits std:vector's dynamnically-resizeable memory for storing the
      * components of the vector and std::vector's constructors.. It adds numerous
@@ -290,68 +293,42 @@ namespace morph {
             return (this->length() == S{0}) ? true : false;
         }
 
-        /*!
-         * vVector multiply * operator.
-         *
-         * Cross product of this with another vector \a v (if N==3). In
-         * higher dimensions, its more complicated to define what the cross product is,
-         * and I'm unlikely to need anything other than the plain old 3D cross product.
-         */
-        template<typename _S=S>
-        vVector<S, Al> operator* (const vVector<_S>& v) const {
-            vVector<S, Al> vrtn;
-            if (this->size() == 3 && v.size() == 3) {
-                vrtn.resize(3);
-                vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-                vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-                vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
-            }
-            return vrtn;
-        }
-
-        /*!
-         * vVector multiply *= operator.
-         *
-         * Cross product of this with another vector v (if N==3). Result written into
-         * this.
-         */
-        template <typename _S=S>
-        void operator*= (const vVector<_S>& v) {
-            if (this->size() == 3 && v.size() == 3) {
-                vVector<S, Al> vtmp(3, S{0});
-                vtmp[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-                vtmp[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-                vtmp[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
-                std::copy (vtmp.begin(), vtmp.end(), this->begin());
-            }
-        }
-
 #if 0 // Haven't figured this out yet
         //! Assignment from std::vector
-        template <typename _S=S>
-          void operator= (const std::vector<_S>& v) {
-            std::vector<S>::operator=(v);
+        template <typename _S=S, typename _Al=Al>
+        vVector<S, Al>& operator= (const std::vector<_S, _Al>& v) {
+            return std::vector<_S, _Al>::operator=(v);
+            // or:
             //this->resize (v.size());
             //std::copy (v.begin(), v.end(), this->begin());
+            //return *this;
         }
+#endif
 
+#if 0 // Haven't figured this out yet
         //! Assignment from std::array
         template <typename _S=S, size_t N>
-        void operator= (const std::array<_S, N>& ar) {
+        vVector<S>& operator= (const std::array<_S, N>& ar) {
             this->resize (N);
             std::copy (ar.begin(), ar.end(), this->begin());
+            return *this;
         }
 #endif
 
         /*!
-         * \brief Scalar (dot) product
+         * \brief Scalar (dot) product of two vVectors
          *
          * Compute the scalar product of this vVector and the vVector, v.
+         *
+         * If \a v and *this have different sizes, then throw exception.
          *
          * \return scalar product
          */
         template<typename _S=S>
         S dot (const vVector<_S>& v) const {
+            if (this->size() != v.size()) {
+                throw std::runtime_error ("vVector::dot(): vectors must have equal size");
+            }
             auto vi = v.begin();
             auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
@@ -359,17 +336,57 @@ namespace morph {
         }
 
         /*!
-         * Hadamard product - elementwise multiplication. FIXME: This better as
-         * default for operator* because it is useful for any number of dims. Cross
-         * product could then be a named cross() method.
+         * Vector cross product.
+         *
+         * Cross product of this with another vector \a v (if N==3). In
+         * higher dimensions, its more complicated to define what the cross product is,
+         * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
         template<typename _S=S>
-        vVector<S> hadamard (const vVector<_S>& v) const {
-            vVector<S> rtn(v.size(), S{0});
-            auto vi = v.begin();
-            auto mult_by_vi = [vi](_S a) mutable { return a * (*vi++); };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_vi);
+        vVector<S, Al> cross (const vVector<_S>& v) const {
+            vVector<S, Al> vrtn;
+            if (this->size() == 3 && v.size() == 3) {
+                vrtn.resize(3);
+                vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
+                vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
+                vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
+            } else {
+                throw std::runtime_error ("vVector::cross(): Cross product is defined here for 3 dimensions only");
+            }
+            return vrtn;
+        }
+
+        /*!
+         * operator* gives the Hadamard product.
+         *
+         * Hadamard product - elementwise multiplication. If the vectors are of
+         * differing lengths, then an exception is thrown.
+         *
+         * \return Hadamard product of left hand size (*this) and right hand size (\a v)
+         */
+        template<typename _S=S>
+        vVector<S, Al> operator* (const vVector<_S>& v) const {
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vVector::operator*: Hadamard product is defined here for vectors of same dimensionality only");
+            }
+            vVector<S, Al> rtn(this->size(), S{0});
+            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies());
             return rtn;
+        }
+
+        /*!
+         * vVector multiply *= operator.
+         *
+         * Hadamard product. Multiply *this vector with \a v, elementwise. If \a v has a
+         * different number of elements to *this, then an exception is thrown.
+         */
+        template <typename _S=S>
+        void operator*= (const vVector<_S>& v) {
+            if (v.size() == this->size()) {
+                std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies());
+            } else {
+                throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
+            }
         }
 
         /*!

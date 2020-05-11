@@ -98,13 +98,13 @@ struct FeedForwardConn
     //! The content of *FeedForwardConn::out is sigmoid(z^l+1)
     //! \return has size N
     morph::vVector<T> sigmoid_prime_z_lplus1() {
-        return out->hadamard (-(*out)+T{1});
+        return (*out) * (-(*out)+T{1});
     }
 
     //! The content of *FeedForwardConn::in is sigmoid(z^l)
     //! \return has size M
     morph::vVector<T> sigmoid_prime_z_l() {
-        return in->hadamard (-(*in)+T{1});
+        return (*in) * (-(*in)+T{1});
     }
 
     /*!
@@ -126,7 +126,7 @@ struct FeedForwardConn
             }
         }
         morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
-        this->delta = w_times_delta.hadamard (spzl);
+        this->delta = w_times_delta * spzl;
 
         // NB: In a given connection, we compute nabla_b and nabla_w relating to the
         // *output* neurons and the weights also related to the output neurons.
@@ -269,7 +269,7 @@ struct FeedForwardNet
         //
         // delta^l = w^l+1 . delta^l+1 0 sigma_prime (z^l)
         //
-        // (where 0 signifies hadamard product)
+        // (where 0 signifies hadamard product, as implemented by vVector's operator*)
         // delta = dC_x/da() * sigmoid_prime(z_out)
         auto citer = this->connections.end();
         --citer; // Now points at output layer
@@ -291,7 +291,7 @@ struct FeedForwardNet
     //! Compute the cost for one input and one desired output
     T computeCost() {
         // Here is where we compute delta_out:
-        this->delta_out = (this->neurons.back()-desiredOutput).hadamard (this->connections.back().sigmoid_prime_z_lplus1());
+        this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
         // And the cost:
         T l = (desiredOutput-this->neurons.back()).length();
         this->cost = T{0.5} * l * l;
