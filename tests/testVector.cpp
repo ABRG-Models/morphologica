@@ -37,8 +37,8 @@ int main() {
     // Test cross product (3D only
     Vector<double, 3> a = {1,0,0};
     Vector<double, 3> b = {0,1,0};
-    Vector<double, 3> c = a * b;
-    cout << a << "*" << b << "=" << c << endl;
+    Vector<double, 3> c = a.cross(b);
+    cout << a << " cross " << b << "=" << c << endl;
     // Test dot product
     Vector<int, 2> vv1 = {1,1};
     Vector<int, 2> vv2 = {2,2};
@@ -90,11 +90,22 @@ int main() {
     d1.set_from (a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
 
-    // Test hadamard operator (elementwize multiplication)
-    Vector<double, 3> h1 = {1.2, 1.5, 8.4};
-    Vector<double, 3> h2 = {.12, .15, .84};
-    Vector<double, 3> h3 = h1.hadamard(h2);
+    // Test hadamard operator* (elementwise multiplication)
+    Vector<double, 3> h1 = {1.0, 2.0, 3.0};
+    Vector<double, 3> h2 = {7.0, 6.0, 5.0};
+    Vector<double, 3> h3 = h1 * h2;
     cout << h1 << "(o)" << h2 << " = " << h3 << endl;
+
+    h1 *= h2;
+    cout << "After h1 *= h2, h1: " << h1 << endl;
+
+    // Test operator *= with different types. Ok if lhs is same type as result.
+    Vector<int, 3> h4 = {2, 2, 2};
+    //Vector<int, 3> h5 = h2 * h4; // Not ok
+    Vector<int, 3> h6 = h4 * h2;
+    Vector<double, 3> h7 = h2 * h4;
+    //Vector<double, 3> h8 = h4 * h2; // Not ok
+    cout << h2 << "(o)" << h4 << " = " << h6 << " or " << h7 << endl;
 
     return rtn;
 }
