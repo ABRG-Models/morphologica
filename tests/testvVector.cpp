@@ -170,5 +170,11 @@ int main() {
     double dotprod = left.dot(right);
     cout << h1 << "." << right << " = " << dotprod << endl;
 
+    vVector<float> maxlongest = {-1.1f, -7.0f, 3.0f, 6.0f };
+    cout << "For vector " << maxlongest
+         << ", max: " << maxlongest.max() << " (at index "<< maxlongest.argmax()
+         << "), longest component: " << maxlongest.longest() << " (at index "
+         << maxlongest.arglongest() << ")\n";
+
     return rtn;
 }

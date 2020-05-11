@@ -107,5 +107,11 @@ int main() {
     //Vector<double, 3> h8 = h4 * h2; // Not ok
     cout << h2 << "(o)" << h4 << " = " << h6 << " or " << h7 << endl;
 
+    Vector<float, 4> maxlongest = {-1.1f, -7.0f, 3.0f, 6.0f };
+    cout << "For vector " << maxlongest
+         << ", max: " << maxlongest.max() << " (at index "<< maxlongest.argmax()
+         << "), longest component: " << maxlongest.longest() << " (at index "
+         << maxlongest.arglongest() << ")\n";
+
     return rtn;
 }

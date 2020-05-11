@@ -259,6 +259,44 @@ namespace morph {
         }
 
         /*!
+         * Return the value of the longest component of the vector.
+         */
+        S longest() const {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+            S rtn = *thelongest;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the longest component of the vector.
+         */
+        size_t arglongest() const {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+            size_t idx = (thelongest - this->begin());
+            return idx;
+        }
+
+        /*!
+         * Return the value of the maximum (most positive) component of the vector.
+         */
+        S max() const {
+            auto themax = std::max_element (this->begin(), this->end());
+            S rtn = *themax;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the maximum (most positive) component of the vector.
+         */
+        size_t argmax() const {
+            auto themax = std::max_element (this->begin(), this->end());
+            size_t idx = (themax - this->begin());
+            return idx;
+        }
+
+        /*!
          * Unary negate operator
          *
          * \return a Vector whose elements have been negated.
