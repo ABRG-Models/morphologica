@@ -309,3 +309,8 @@ add_test(testNMSimplex testNMSimplex)
 add_executable(testRandom testRandom.cpp)
 target_link_libraries(testRandom -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testRandom testRandom)
+
+# Test winding number code
+add_executable(testWinder testWinder.cpp)
+target_link_libraries(testWinder -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testWinder testWinder)
