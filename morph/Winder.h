@@ -18,35 +18,36 @@ namespace morph {
     struct has_xy_methods
     {
     private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().x() == 1
+        // See the right arrow?                    v--- there it is. It's a different function declaration syntax
+	template<typename U> static auto test(int) -> decltype(std::declval<U>().x() == 1 // If pre-comma operator is valid, post-comma's type is returned by decltype().
                                                                && std::declval<U>().y() == 1, std::true_type());
-	template<typename> static std::false_type test(...);
+	template<typename> static std::false_type test(...); // This uses the more typical syntax for fn declaration
     public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
+	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-#if 0
-    // Expression SFINAE approach to testing for a-b
+    // Expression SFINAE approach to testing for possibility of a-b. NB: This is
+    // effectively the canonical example, but I'm not doing it the 'canonical' way
+    // (which would have test(U a, U b) -> decltype (a+b); // or a-b
     template<typename T>
     struct has_subtraction
     {
     private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>() - std::declval<U>()==std::declval<U>(), std::true_type());
+	template<typename U> static auto test(const U& u) -> decltype(std::declval<U>() - std::declval<U>() == u, std::true_type());
 	template<typename> static std::false_type test(...);
     public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
+	static constexpr bool value = std::is_same<decltype(test<T>(T{})),std::true_type>::value;
     };
-#endif
 
-    // Expression SFINAE approach to testing for resize() method
+    // Expression SFINAE approach to testing for resize(size_t) method
     template<typename T>
     struct has_resize_method
     {
     private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().resize() == 1, std::true_type());
+	template<typename U> static auto test(int sz) -> decltype(std::declval<U>().resize(sz), std::true_type());
 	template<typename> static std::false_type test(...);
     public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
+	static constexpr bool value = std::is_same< decltype(test<T>(2)), std::true_type >::value;
     };
 
     // Expression SFINAE approach to testing for x and y member attributes
@@ -120,18 +121,27 @@ namespace morph {
         }
 
     private:
-        //template <typename _T=T, std::enable_if_t<std::is_object<std::decay_t<typename _T::x>>::value, int> = 1 >
+
+        //! Function, with lots of if constexpr specialization, to convert two
+        //! coordinate objects, whatever they may be, into a double so that wind
+        //! (const double&) may be called.
         void wind (const T& px, const T& bp) {
-
             // Get angle from px to bp.
-
             T pt;
             if constexpr (array_access_possible<T>::value == true) {
-                if constexpr (has_resize<T>::value == true) {
+                if constexpr (has_resize_method<T>::value == true) {
+                    // If it's a vector, it's going to have to be resized
+                    std::cout << "RESIZE\n";
                     pt.resize(2);
                 }
-                pt[0] = bp[0] - px[0];
-                pt[1] = bp[1] - px[1];
+                if constexpr (has_subtraction<T>::value == true) {
+                    std::cout << "subtraction operator\n";
+                    pt = bp - px;
+                } else {
+                    std::cout << "subtracting array elements\n";
+                    pt[0] = bp[0] - px[0];
+                    pt[1] = bp[1] - px[1];
+                }
                 std::cout << "pt is " << pt[0]<< "," << pt[1]<< std::endl;
             } else if constexpr (has_firstsecond_members<T>::value == true) {
                 pt.first = bp.first - px.first;
@@ -142,7 +152,7 @@ namespace morph {
             double raw_angle = 0.0;
 
             if constexpr (has_xy_methods<T>::value == true) {
-                std::cout << "It's a type with a x() and y() functions\n";
+                std::cout << "It's a type with x() and y() functions\n";
                 raw_angle = std::atan2 (pt.y(), pt.x());
             } else if constexpr (has_xy_members<T>::value == true) {
                 std::cout << "It's a type with x and y member attributes\n";
