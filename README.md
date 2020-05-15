@@ -62,8 +62,8 @@ allows you to specific various boundary shapes for your domain)
 
 * **morph::NM_Simplex** An optimization algorithm.
 
-* **morph::Random** A nice wrapper around c++'s high quality random
-    number generation code.
+* **morph::RandUniform** and friends. Nice wrapper classes around
+    c++'s high quality random number generation code.
 
 * **morph::ReadCurves** Code to read SVG drawings to turn Bezier-curve
     based lines into paths containing evenly spaced coordinates.
