@@ -4,19 +4,22 @@ Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
 This c++ code builds a shared library called libmorphologica which
-contains **simulation support facilities**.
+contains **simulation support facilities** for our simulations of
+dynamical systems.
 
 It helps with:
 
 * **Configuration**: morphologica allows you to easily set up a simulation
   parameter configuration system, using the JSON reading and writing
-  abilities of morph::Config.
+  abilities of **morph::Config**.
 
 * **Saving data from your simulation**. morphologica provides a set of
-  easy-to-use convenience wrappers (morph::HdfData) around the HDF5 C API.
+  easy-to-use convenience wrappers (**morph::HdfData**) around the HDF5 C
+  API. By saving data in a standard format, it is easy to access
+  simulation data in python, MATLAB or Octave for analysis and graphing.
 
 * **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called morph::Visual provides the ability to visualise hex
+  scheme called **morph::Visual** provides the ability to visualise hex
   grids, surfaces, scatter plots and quiver plots with minimal
   processing overhead.
 
@@ -30,23 +33,42 @@ visualization. We then might call a function, or create a class object
 which defines the simulation. *This may or may not access features
 from libmorphologica*.
 
-As the simulation progresses, we update the data
-in the morph::Visual scene; save images from the scene for movie
-making and record data as often as we want it using morph::HdfData. At
-the end of the program, as well as saving any final data, we use
-morph::Config to save out a 'version of record' of the parameters that
-were used, along with git information which morph::Config can extract
-so that we could find the exact version of the simulation for future
-reproducion of the result.
+As the simulation progresses, we update the data in the morph::Visual
+scene; save images from the scene for movie making and record data as
+often as we want it using morph::HdfData. At the end of the program,
+as well as saving any final data, we use morph::Config to save out a
+'version of record' of the parameters that were used, along with git
+information which morph::Config can extract so that we could find the
+exact version of the simulation for future reproducion of the result.
 
 Although it need not be incorporated into your actual simulation,
 morphologica does also provide classes that you might find
-useful. Examples include a class for running simulations on hexagonal
+useful. Examples include:
+
+* **morph::HexGrid**: a class for running simulations on hexagonal
 grids (it manages all the neighbour relationships between hexes and
-allows you to specific various boundary shapes for your domain), a vector
-class, a class containing mathematical algorithms and classes for
-working with Bezier curves. It a way of storing our 'group knowledge'
-for posterity!
+allows you to specific various boundary shapes for your domain)
+
+* **morph::Vector** and **morph::vVector**: Cool vector classes.
+
+* **morph::MathAlgo** a class containing mathematical algorithms.
+
+* **morph::BezCurve** and friends: classes for working with Bezier
+    curves.
+
+* **morph::Winder** A class to compute the winding number of a path.
+
+* **morph::Scale** A class for simple scaling/transformation of numbers.
+
+* **morph::NM_Simplex** An optimization algorithm.
+
+* **morph::Random** A nice wrapper around c++'s high quality random
+    number generation code.
+
+* **morph::ReadCurves** Code to read SVG drawings to turn Bezier-curve
+    based lines into paths containing evenly spaced coordinates.
+
+morphologica is a way of storing our 'group knowledge' for posterity!
 
 Some existing projects which use morphologica are:
 * **BarrelEmerge** A reaction-diffusion style model: https://github.com/ABRG-Models/BarrelEmerge
