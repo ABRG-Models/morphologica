@@ -43,8 +43,8 @@ namespace morph {
      *
      *\code{c++}
      *  std::list<morph::Vector<float, 2>> path;
-     *  morph::Winder w(path);
      *  // Code which populates path goes here
+     *  morph::Winder w(path);
      *  morph::Vector<float, 2> pixel = {0.7, 0.6};
      *  int winding_number = w.wind (pixel);
      *\endcode
