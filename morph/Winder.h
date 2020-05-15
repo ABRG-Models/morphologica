@@ -1,5 +1,11 @@
 /*!
- * Compute the winding number of a boundary with respect to a given coordinate.
+ * \file
+ *
+ * Provides morph::Winder, a class to compute the winding number of a boundary with
+ * respect to a given coordinate.
+ *
+ * \author Seb James
+ * \date May 2020
  */
 
 #pragma once
@@ -16,6 +22,32 @@ namespace morph {
 
     /*!
      * A winding number class
+     *
+     * This class contains an algorithm to integrate the angle transected/traversed
+     * (what's the right word?) by a vector (think 'clock hand') drawn from a single
+     * coordinate to, in turn, each coordinate on a boundary path. If the single
+     * coordinate was inside the boundary, the integrated angle sum will be some
+     * multiple of +/-2pi. This gives the 'winding number'.
+     *
+     * To use, instantiate an object of this class passing the boundary of coordinates
+     * that is your path. Then call Winder::wind(const T& coordinate) for some
+     * coordinate to find out its winding number (and hence whether it was inside or
+     * outside the boundary, which is my motivation for writing this class).
+     *
+     * This class is specialised so that the container which contains the path
+     * coordinates can be any of the straightforward STL containers such as std::vector
+     * or std::list (but not std::map). The coordinate should be some type which has one
+     * of the following: .first and .second attributes (such as std::pair), .x and .y
+     * attributes (such as OpenCV's cv::Point), .x() and .y() methods or the ability to
+     * access members in an array-like fashion (std::vector or morph::Vector). For example:
+     *
+     *\code{c++}
+     *  std::list<morph::Vector<float, 2>> path;
+     *  morph::Winder w(path);
+     *  // Code which populates path goes here
+     *  morph::Vector<float, 2> pixel = {0.7, 0.6};
+     *  int winding_number = w.wind (pixel);
+     *\endcode
      *
      * \tparam T the (2D) coordinate type (this might be cv::Point, morph::BezCoord,
      * morph::vVector, morph::Vector, std::array or std::vector)
