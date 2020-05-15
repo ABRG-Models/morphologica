@@ -2,6 +2,9 @@
 #include <vector>
 #include "Winder.h"
 #include "BezCoord.h"
+#include "Vector.h"
+#include "vVector.h"
+
 using std::cout;
 using std::endl;
 using std::array;
@@ -68,37 +71,57 @@ int main() {
     lvec.push_back ({1000,1000});
     lvec.push_back ({0,1000});
     lvec.push_back ({0,0});
-    std::cout << "0\n";
     morph::Winder w4(lvec);
-    std::cout << "1\n";
     std::vector<float> px4 = {500,500};
-    std::cout << "2, px4: " << px4[0] << "," << px4[1] << "\n";
     int wn4 = w4.wind (px4);
     cout << "Winding number = " << wn4 << endl;
     if (wn4 != 1) {
         --rtn;
     }
 
-#if 0
     // Test with pair (has first and second attributes)
-    std::cout << "0\n";
     std::vector<std::pair<double, double>> vpair;
-    std::cout << "0.5\n";
     vpair.push_back (std::pair(0.0f,0.0));
     vpair.push_back (std::pair(1000.0f,0.0));
     vpair.push_back (std::pair(1000.0f,1000.0));
     vpair.push_back (std::pair(0.0f,1000.0));
     vpair.push_back (std::pair(0.0f,0.0));
-
-    std::cout << "1\n";
     morph::Winder w5(vpair);
-    std::cout << "2\n";
     int wn5 = w5.wind (std::pair(500.0f,500.0));
-    std::cout << "3\n";
     cout << "Winding number = " << wn5 << endl;
     if (wn5 != 1) {
         --rtn;
     }
-#endif
+
+    // morph::vVector
+    std::list<morph::vVector<float>> lvVec;
+    lvVec.push_back ({0,0});
+    lvVec.push_back ({1000,0});
+    lvVec.push_back ({1000,1000});
+    lvVec.push_back ({0,1000});
+    lvVec.push_back ({0,0});
+    morph::Winder w6(lvVec);
+    morph::vVector<float> px6 = {500,500};
+    int wn6 = w6.wind (px6);
+    cout << "Winding number = " << wn6 << endl;
+    if (wn6 != 1) {
+        --rtn;
+    }
+
+    // morph::Vector
+    std::vector<morph::Vector<float, 2>> lVec;
+    lVec.push_back ({0,0});
+    lVec.push_back ({1000,0});
+    lVec.push_back ({1000,1000});
+    lVec.push_back ({0,1000});
+    lVec.push_back ({0,0});
+    morph::Winder w7(lVec);
+    morph::Vector<float, 2> px7 = {500,500};
+    int wn7 = w7.wind (px7);
+    cout << "Winding number = " << wn7 << endl;
+    if (wn7 != 1) {
+        --rtn;
+    }
+
     return rtn;
 }

@@ -6,92 +6,23 @@
 
 #include <memory>
 #include <cmath>
+#include <stdexcept>
 #include "morph/MathConst.h"
-#include <type_traits>
+#include "morph/expression_sfinae.h"
 
 namespace morph {
 
-    const bool debug_mode = true;
-
-    // Expression SFINAE approach to testing for x() and y() methods
-    template<typename T>
-    struct has_xy_methods
-    {
-    private:
-        // See the right arrow?                    v--- there it is. It's a different function declaration syntax
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().x() == 1 // If pre-comma operator is valid, post-comma's type is returned by decltype().
-                                                               && std::declval<U>().y() == 1, std::true_type());
-	template<typename> static std::false_type test(...); // This uses the more typical syntax for fn declaration
-    public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
-    };
-
-    // Expression SFINAE approach to testing for possibility of a-b. NB: This is
-    // effectively the canonical example, but I'm not doing it the 'canonical' way
-    // (which would have test(U a, U b) -> decltype (a+b); // or a-b
-    template<typename T>
-    struct has_subtraction
-    {
-    private:
-	template<typename U> static auto test(const U& u) -> decltype(std::declval<U>() - std::declval<U>() == u, std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same<decltype(test<T>(T{})),std::true_type>::value;
-    };
-
-    // Expression SFINAE approach to testing for resize(size_t) method
-    template<typename T>
-    struct has_resize_method
-    {
-    private:
-	template<typename U> static auto test(int sz) -> decltype(std::declval<U>().resize(sz), std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same< decltype(test<T>(2)), std::true_type >::value;
-    };
-
-    // Expression SFINAE approach to testing for x and y member attributes
-    template<typename T>
-    struct has_xy_members
-    {
-    private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().x == 1
-                                                               && std::declval<U>().y == 1, std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
-    };
-
-    // Expression SFINAE approach to testing for first and second member attributes
-    template<typename T>
-    struct has_firstsecond_members
-    {
-    private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>().first == 1
-                                                               && std::declval<U>().second == 1, std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
-    };
-
-    // Expression SFINAE approach to testing for ability to access like an array (i.e. std::array, morph::Vector)
-    template<typename T>
-    struct array_access_possible
-    {
-    private:
-	template<typename U> static auto test(int) -> decltype(std::declval<U>()[0] == 1, std::true_type());
-	template<typename> static std::false_type test(...);
-    public:
-	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
-    };
+    const bool debug_mode = false;
 
     /*!
      * A winding number class
      *
-     * \tparam T the (2D) coordinate type (this might be cv::Point)
+     * \tparam T the (2D) coordinate type (this might be cv::Point, morph::BezCoord,
+     * morph::vVector, morph::Vector, std::array or std::vector)
      *
      * \tparam Container Something like an std::vector, std::list or std::array,
-     * containing a path of points.
+     * containing a path of points. The template-template is not flexible enough for
+     * Container to be std::map.
      */
     template < typename T,
                template <typename, typename> typename Container,
@@ -104,7 +35,6 @@ namespace morph {
         Winder (const Container<T, Alloc>& _boundary)
             : boundary(_boundary) {}
 
-
         //! Compute the winding number of the coordinate px with respect to the boundary.
         int wind (const T& px) {
             this->reset();
@@ -115,77 +45,91 @@ namespace morph {
             T firstpoint = this->boundary.front();
             this->wind (px, firstpoint);
             double winding_no_d = std::round (this->angle_sum/morph::TWO_PI_D);
-            std::cout << "winding_no: " << winding_no_d << std::endl;
+            if constexpr (debug_mode == true) { std::cout << "winding_no: " << winding_no_d << std::endl; }
             int winding_no = static_cast<int>(winding_no_d);
             return winding_no;
         }
 
     private:
 
-        //! Function, with lots of if constexpr specialization, to convert two
-        //! coordinate objects, whatever they may be, into a double so that wind
-        //! (const double&) may be called.
+        //! Convert two coordinate objects (whatever they may be) which define one
+        //! vector (pt) into an angle (using std::atan2) of type double so that the
+        //! method morph::Winder::wind (const double&) may be called.
         void wind (const T& px, const T& bp) {
-            // Get angle from px to bp.
+            // Get angle from px to bp. First create pt, the vector pointing from px to
+            // bp whose angle we will calculate.
             T pt;
             if constexpr (array_access_possible<T>::value == true) {
+                // In this case, T is a vector or array like thing
                 if constexpr (has_resize_method<T>::value == true) {
-                    // If it's a vector, it's going to have to be resized
-                    std::cout << "RESIZE\n";
+                    // If T has resize(), then we need to resize pt to have size 2
+                    if constexpr (debug_mode == true) { std::cout << "RESIZE\n"; }
                     pt.resize(2);
                 }
                 if constexpr (has_subtraction<T>::value == true) {
-                    std::cout << "subtraction operator\n";
+                    if constexpr (debug_mode == true) { std::cout << "subtraction operator\n"; }
                     pt = bp - px;
                 } else {
-                    std::cout << "subtracting array elements\n";
+                    if constexpr (debug_mode == true) { std::cout << "subtracting array elements\n"; }
                     pt[0] = bp[0] - px[0];
                     pt[1] = bp[1] - px[1];
                 }
-                std::cout << "pt is " << pt[0]<< "," << pt[1]<< std::endl;
+
             } else if constexpr (has_firstsecond_members<T>::value == true) {
+                // In this case, T is presumably a std::pair
                 pt.first = bp.first - px.first;
                 pt.second = bp.second - px.second;
-            } else {
-                pt = bp - px;
-            }
-            double raw_angle = 0.0;
 
+            } else {
+                // cv::Point, morph::BezCoord should fall through here.
+                if constexpr (has_subtraction<T>::value == true) {
+                    if constexpr (debug_mode == true) { std::cout << "has subtraction\n"; }
+                    pt = bp - px;
+                } else if constexpr (has_xy_members<T>::value == true) {
+                    pt.x = bp.x - px.x;
+                    pt.y = bp.y - px.y;
+                } else {
+                    throw std::runtime_error ("Template code failed to find out how to subtract one coordinate from another.");
+                }
+            }
+
+            // Now compute the angle of the vector pt using std::atan2. Multiple specializations here, too.
+            double raw_angle = 0.0;
             if constexpr (has_xy_methods<T>::value == true) {
-                std::cout << "It's a type with x() and y() functions\n";
+                if constexpr (debug_mode == true) { std::cout << "It's a type with x() and y() functions\n"; }
                 raw_angle = std::atan2 (pt.y(), pt.x());
             } else if constexpr (has_xy_members<T>::value == true) {
-                std::cout << "It's a type with x and y member attributes\n";
+                if constexpr (debug_mode == true) { std::cout << "It's a type with x and y member attributes\n"; }
                 raw_angle = std::atan2 (pt.y, pt.x);
             } else if constexpr (has_firstsecond_members<T>::value == true) {
-                std::cout << "It's a type with first and second member attributes\n";
+                if constexpr (debug_mode == true) { std::cout << "It's a type with first and second member attributes\n"; }
                 raw_angle = std::atan2 (pt.second, pt.first);
             } else if constexpr (array_access_possible<T>::value == true) {
-                std::cout << "It's a type with array access\n";
+                if constexpr (debug_mode == true) { std::cout << "It's a type with array access\n"; }
                 raw_angle = std::atan2 (pt[1], pt[0]);
             } else {
-                std::cout << "Maybe it's a type that behaves like an array\n";
+                if constexpr (debug_mode == true) { std::cout << "Maybe it's a type that behaves like an array\n"; }
                 raw_angle = std::atan2 (pt[1], pt[0]);
             }
-            std::cout << "3\n";
+
             this->wind (raw_angle);
         }
 
-        //! Update this->angle, this->angle_last and this->angle_sum based on \a raw_angle
+        //! Update this->angle, this->angle_last and this->angle_sum based on \a
+        //! raw_angle. Note that there is no template specialization in this method;
+        //! all the specialization is in morph::Winder::wind (const T&, const T&).
         void wind (const double& raw_angle) {
 
-            // Convert -pi -> 0 -> +pi range of atan2 to 0->2pi:
+            // Convert the raw angle which has range -pi -> 0 -> +pi into a tansformed angle with range 0->2pi:
             this->angle = raw_angle >= 0 ? raw_angle : (morph::TWO_PI_D + raw_angle);
-
-            if constexpr (morph::debug_mode == true) {
-                std::cout << "angle: " << this->angle << "\n";
-            }
+            if constexpr (morph::debug_mode == true) { std::cout << "angle: " << this->angle << "\n"; }
 
             // Set the initial angle.
             if (this->angle_last == double{-100.0}) {
                 this->angle_last = angle;
             }
 
+            // Compute the change in angle, delta
             double delta = double{0.0}; // delta is 'angle change'
             if (this->angle == double{0.0}) {
                 // Special treatment
@@ -212,6 +156,8 @@ namespace morph {
                     delta = (this->angle - this->angle_last);
                 }
             }
+
+            // Update angle_last and angle_sum
             this->angle_last = this->angle;
             this->angle_sum += delta;
         }
