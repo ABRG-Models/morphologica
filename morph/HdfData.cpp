@@ -51,7 +51,7 @@ morph::HdfData::~HdfData()
 }
 
 void
-morph::HdfData::handle_error (const herr_t& status, const string& emsg)
+morph::HdfData::handle_error (const herr_t& status, const string& emsg) const
 {
     if (status) {
         stringstream ee;
