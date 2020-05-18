@@ -10,17 +10,17 @@
  * Date: June 2019
  */
 
-#include "ReadCurves.h"
-#include "tools.h"
-#include "HexGrid.h"
+#include "morph/ReadCurves.h"
+#include "morph/tools.h"
+#include "morph/HexGrid.h"
 #include <utility>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <math.h>
-#include "BezCoord.h"
+#include "morph/BezCoord.h"
 
-#include "display.h"
+#include "morph/display.h"
 
 using namespace std;
 using morph::ReadCurves;
@@ -29,7 +29,7 @@ using std::vector;
 
 //#define DEBUG 1
 #define DBGSTREAM std::cout
-#include "MorphDbg.h"
+#include "morph/MorphDbg.h"
 
 int main(int argc, char** argv)
 {

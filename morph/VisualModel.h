@@ -11,9 +11,9 @@
 #pragma once
 
 #include "GL3/gl3.h"
-#include "tools.h"
-#include "TransformMatrix.h"
-#include "Vector.h"
+#include "morph/tools.h"
+#include "morph/TransformMatrix.h"
+#include "morph/Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>

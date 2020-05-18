@@ -4,10 +4,10 @@
 #pragma once
 
 #include <vector>
-#include "Vector.h"
-#include "VisualModel.h"
-#include "ColourMap.h"
-#include "Scale.h"
+#include "morph/Vector.h"
+#include "morph/VisualModel.h"
+#include "morph/ColourMap.h"
+#include "morph/Scale.h"
 
 namespace morph {
 

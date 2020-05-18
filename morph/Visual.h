@@ -17,25 +17,25 @@
 # include <GL/glew.h>
 #endif
 #include <GLFW/glfw3.h>
-#include "HexGrid.h"
-#include "VisualModel.h"
-#include "HexGridVisual.h"
-#include "QuadsVisual.h"
-#include "PointRowsVisual.h"
-#include "ScatterVisual.h"
-#include "QuiverVisual.h"
-#include "CoordArrows.h"
+#include "morph/HexGrid.h"
+#include "morph/VisualModel.h"
+#include "morph/HexGridVisual.h"
+#include "morph/QuadsVisual.h"
+#include "morph/PointRowsVisual.h"
+#include "morph/ScatterVisual.h"
+#include "morph/QuiverVisual.h"
+#include "morph/CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
-# include "TriangleVisual.h"
+# include "morph/TriangleVisual.h"
 #endif
-#include "Quaternion.h"
-#include "TransformMatrix.h"
-#include "Vector.h"
+#include "morph/Quaternion.h"
+#include "morph/TransformMatrix.h"
+#include "morph/Vector.h"
 
 // A base class with static event handling dispatchers
-#include "VisualBase.h"
+#include "morph/VisualBase.h"
 
-#include "ColourMap.h"
+#include "morph/ColourMap.h"
 
 #include "GL3/gl3.h"
 

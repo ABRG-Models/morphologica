@@ -5,9 +5,9 @@
  */
 #pragma once
 
-#include "Hex.h"
-#include "BezCurvePath.h"
-#include "MathConst.h"
+#include "morph/Hex.h"
+#include "morph/BezCurvePath.h"
+#include "morph/MathConst.h"
 
 #include <set>
 #include <list>

@@ -1,4 +1,4 @@
-#include "Visual.h"
+#include "morph/Visual.h"
 #include "GL3/gl3.h"
 #include <iostream>
 using std::cout;
@@ -12,13 +12,13 @@ using std::vector;
 using std::array;
 #include <cstring>
 using std::strlen;
-#include "Quaternion.h"
+#include "morph/Quaternion.h"
 using morph::Quaternion;
-#include "tools.h"
+#include "morph/tools.h"
 using morph::ShaderInfo;
 // Include the character constants containing the default shaders
-#include "VisualDefaultShaders.h"
-#include "VisualModel.h"
+#include "morph/VisualDefaultShaders.h"
+#include "morph/VisualModel.h"
 using morph::VisualModel;
 // imwrite() from OpenCV is used in saveImage()
 #include <opencv2/opencv.hpp>

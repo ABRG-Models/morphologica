@@ -6,8 +6,8 @@
  * Date: 2018/07
  */
 
-#include "HexGrid.h"
-#include "MathConst.h"
+#include "morph/HexGrid.h"
+#include "morph/MathConst.h"
 #include <string>
 #include <cmath>
 #include <float.h>
@@ -17,14 +17,14 @@
 #include <vector>
 #include <set>
 #include <stdexcept>
-#include "BezCurvePath.h"
-#include "BezCoord.h"
-#include "HdfData.h"
+#include "morph/BezCurvePath.h"
+#include "morph/BezCoord.h"
+#include "morph/HdfData.h"
 
 #define DBGSTREAM std::cout
 //#define DEBUG 1
 //#define DEBUG2 1
-#include "MorphDbg.h"
+#include "morph/MorphDbg.h"
 
 using std::ceil;
 using std::abs;

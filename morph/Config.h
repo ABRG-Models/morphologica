@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include "Process.h"
+#include "morph/Process.h"
 
 namespace morph {
 

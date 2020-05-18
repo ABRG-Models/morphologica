@@ -2,7 +2,7 @@
 //  world.cpp
 //
 
-#include "world.h"
+#include "morph/world.h"
 
 #include <iostream>
 #include <sstream>

@@ -32,8 +32,8 @@
 
 #include <stdexcept>
 #include <cmath>
-#include "MathAlgo.h"
-#include "number_type.h"
+#include "morph/MathAlgo.h"
+#include "morph/number_type.h"
 
 namespace morph {
 

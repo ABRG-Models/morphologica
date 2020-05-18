@@ -2,8 +2,8 @@
  * Implementation of HdfData; non templated functions.
  */
 
-#include "HdfData.h"
-#include "tools.h"
+#include "morph/HdfData.h"
+#include "morph/tools.h"
 #include <array>
 using std::array;
 #include <vector>

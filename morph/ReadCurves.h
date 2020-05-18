@@ -14,8 +14,8 @@
 #include <map>
 #include <utility>
 #include "rapidxml.hpp"
-#include "BezCurvePath.h"
-#include "AllocAndRead.h"
+#include "morph/BezCurvePath.h"
+#include "morph/AllocAndRead.h"
 
 namespace morph
 {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "GL3/gl3.h"
-#include "tools.h"
-#include "VisualDataModel.h"
-#include "MathAlgo.h"
-#include "Scale.h"
-#include "Vector.h"
+#include "morph/tools.h"
+#include "morph/VisualDataModel.h"
+#include "morph/MathAlgo.h"
+#include "morph/Scale.h"
+#include "morph/Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>

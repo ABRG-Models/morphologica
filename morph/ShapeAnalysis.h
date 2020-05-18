@@ -13,11 +13,11 @@
 #include <map>
 #include <limits>
 #include <stdexcept>
-#include "Hex.h"
-#include "HexGrid.h"
-#include "DirichDom.h"
-#include "DirichVtx.h"
-#include "MorphDbg.h"
+#include "morph/Hex.h"
+#include "morph/HexGrid.h"
+#include "morph/DirichDom.h"
+#include "morph/DirichVtx.h"
+#include "morph/MorphDbg.h"
 
 namespace morph {
 

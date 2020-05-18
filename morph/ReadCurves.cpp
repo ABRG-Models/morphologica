@@ -2,8 +2,8 @@
  * ReadCurves implementation
  */
 
-#include "ReadCurves.h"
-#include "BezCurvePath.h"
+#include "morph/ReadCurves.h"
+#include "morph/BezCurvePath.h"
 using morph::BezCurvePath;
 #include <stdexcept>
 using std::runtime_error;
@@ -30,7 +30,7 @@ using std::endl;
 //#define DEBUG 1
 //#define DEBUG2 1
 #define DBGSTREAM std::cout
-#include "MorphDbg.h"
+#include "morph/MorphDbg.h"
 #include "rapidxml.hpp"
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
