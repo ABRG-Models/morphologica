@@ -223,17 +223,13 @@ add_executable(testQuaternion testQuaternion.cpp)
 target_link_libraries(testQuaternion -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testQuaternion testQuaternion)
 
-# testVector. Note testVector.cpp requires c++-17 due to use of curly
-# brace initializers; only c++-17 permits a class derived from an
-# aggregate class such as std::array to ALSO be an aggregate class.
+# testVector.
 add_executable(testVector testVector.cpp)
-target_compile_features(testVector PUBLIC cxx_std_17)
 target_link_libraries(testVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector testVector)
 
 # Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
 add_executable(testvVector testvVector.cpp)
-target_compile_features(testvVector PUBLIC cxx_std_17)
 target_link_libraries(testvVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testvVector testvVector)
 
@@ -249,7 +245,6 @@ add_test(testVector11 testVector11)
 
 # Test the Scaling of vectors
 add_executable(testScaleVector testScaleVector.cpp)
-target_compile_features(testScaleVector PUBLIC cxx_std_17)
 target_link_libraries(testScaleVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testScaleVector testScaleVector)
 
