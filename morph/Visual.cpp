@@ -353,7 +353,9 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
     if (shaderCompilerPresent == GL_FALSE) {
         cerr << "Shader compiler NOT present!" << endl;
     } else {
-        cout << "Shader compiler present" << endl;
+        if constexpr (debug_shaders == true) {
+            cout << "Shader compiler present" << endl;
+        }
     }
 
     ShaderInfo* entry = shaders;
@@ -368,10 +370,14 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
             source = morph::Visual::ReadShader (entry->filename);
         } else {
             if (entry->type == GL_VERTEX_SHADER) {
-                cout << "Using compiled-in vertex shader" << endl;
+                if constexpr (debug_shaders == true) {
+                    cout << "Using compiled-in vertex shader" << endl;
+                }
                 source = morph::Visual::ReadDefaultShader (defaultVtxShader);
             } else if (entry->type == GL_FRAGMENT_SHADER) {
-                cout << "Using compiled-in fragment shader" << endl;
+                if constexpr (debug_shaders == true) {
+                    cout << "Using compiled-in fragment shader" << endl;
+                }
                 source = morph::Visual::ReadDefaultShader (defaultFragShader);
             } else {
                 cerr << "Visual::LoadShaders: Unknown shader entry->type..." << endl;
@@ -384,11 +390,12 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
                 entry->shader = 0;
             }
             return 0;
-#ifdef DEBUG
+
         } else {
-            cout << "Compiling this shader: " << endl << "-----" << endl;
-            cout << source << "-----" << endl;
-#endif
+            if constexpr (debug_shaders == true) {
+                cout << "Compiling this shader: " << endl << "-----" << endl;
+                cout << source << "-----" << endl;
+            }
         }
         GLint slen = (GLint)strlen (source);
         glShaderSource (shader, 1, &source, &slen);
@@ -401,31 +408,32 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
         if (!shaderCompileSuccess) {
             glGetShaderInfoLog(shader, 512, NULL, infoLog);
-            cout << "\nShader compilation failed!";
-            cout << "\n--------------------------\n";
-            cout << infoLog << endl;
-            cout << "Exiting." << endl;
+            cerr << "\nShader compilation failed!";
+            cerr << "\n--------------------------\n";
+            cerr << infoLog << endl;
+            cerr << "Exiting." << endl;
             exit (2);
         }
 
         // Test glGetError:
         GLenum shaderError = glGetError();
         if (shaderError == GL_INVALID_VALUE) {
-            cout << "Shader compilation resulted in GL_INVALID_VALUE" << endl;
+            cerr << "Shader compilation resulted in GL_INVALID_VALUE" << endl;
             exit (3);
         } else if (shaderError == GL_INVALID_OPERATION) {
-            cout << "Shader compilation resulted in GL_INVALID_OPERATION" << endl;
+            cerr << "Shader compilation resulted in GL_INVALID_OPERATION" << endl;
             exit (4);
         } // shaderError is 0
 
-        if (entry->type == GL_VERTEX_SHADER) {
-            cout << "Successfully compiled vertex shader!" << endl;
-        } else if (entry->type == GL_FRAGMENT_SHADER) {
-            cout << "Successfully compiled fragment shader!" << endl;
-        } else {
-            cout << "Successfully compiled shader!" << endl;
+        if constexpr (debug_shaders == true) {
+            if (entry->type == GL_VERTEX_SHADER) {
+                cout << "Successfully compiled vertex shader!" << endl;
+            } else if (entry->type == GL_FRAGMENT_SHADER) {
+                cout << "Successfully compiled fragment shader!" << endl;
+            } else {
+                cout << "Successfully compiled shader!" << endl;
+            }
         }
-
         glAttachShader (program, shader);
 
         ++entry;
@@ -449,12 +457,14 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
         exit (5);
 
     } else {
-        if (entry->type == GL_VERTEX_SHADER) {
-            cout << "Successfully linked vertex shader!" << endl;
-        } else if (entry->type == GL_FRAGMENT_SHADER) {
-            cout << "Successfully linked fragment shader!" << endl;
-        } else {
-            cout << "Successfully linked shader!" << endl;
+        if constexpr (debug_shaders == true) {
+            if (entry->type == GL_VERTEX_SHADER) {
+                cout << "Successfully linked vertex shader!" << endl;
+            } else if (entry->type == GL_FRAGMENT_SHADER) {
+                cout << "Successfully linked fragment shader!" << endl;
+            } else {
+                cout << "Successfully linked shader!" << endl;
+            }
         }
     }
 

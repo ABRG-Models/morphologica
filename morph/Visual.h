@@ -69,6 +69,9 @@ namespace morph {
         GLuint shader;
     } ShaderInfo;
 
+    // To enable debugging, set true.
+    const bool debug_shaders = false;
+
     /*!
      * Visual 'scene' class
      *
