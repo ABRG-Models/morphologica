@@ -76,14 +76,14 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<Vector<T>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
             this->zScale = zscale;
             this->reinit();
         }
-        virtual void updateData (std::vector<Vector<T>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
                                  const Scale<T>& zscale, const Scale<T>& cscale) {
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -91,15 +91,15 @@ namespace morph {
             this->colourScale = cscale;
             this->reinit();
         }
-        virtual void updateCoords (std::vector<Vector<T>>* _coords) {
+        virtual void updateCoords (std::vector<Vector<float>>* _coords) {
             this->dataCoords = _coords;
             this->reinit();
         }
-        void updateData (const std::vector<Vector<T>>* _vectors) {
+        void updateData (const std::vector<Vector<float>>* _vectors) {
             this->vectorData = _vectors;
             this->reinit();
         }
-        void updateData (std::vector<Vector<T>>* _coords, const std::vector<Vector<T>>* _vectors) {
+        void updateData (std::vector<Vector<float>>* _coords, const std::vector<Vector<T>>* _vectors) {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
             this->reinit();
