@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <list>
 #include "Winder.h"
 #include "BezCoord.h"
 #include "Vector.h"
