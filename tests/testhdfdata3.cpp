@@ -4,6 +4,7 @@
 #include <fstream>
 #include <math.h>
 #include <list>
+#include <vector>
 
 using namespace std;
 using morph::HdfData;
