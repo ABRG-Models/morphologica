@@ -385,6 +385,9 @@ namespace morph {
             if (kernelgrid.getd() != this->d) {
                 throw std::runtime_error ("The kernel HexGrid must have same d as this HexGrid to carry out convolution.");
             }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
 
             bool debug__ = false;
             // For each hex in this HexGrid, compute the convolution kernel

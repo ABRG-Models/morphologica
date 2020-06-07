@@ -53,11 +53,11 @@ int main()
         }
 
         // Create a circular HexGrid to contain the Gaussian convolution kernel
-        HexGrid kernel(0.01, 1, 0, HexDomainShape::Boundary);
-        kernel.setCircularBoundary (0.1);
+        float sigma = 0.025f;
+        HexGrid kernel(0.01, 20.0f*sigma, 0, HexDomainShape::Boundary);
+        kernel.setCircularBoundary (6.0f*sigma);
         vector<float> kerneldata (kernel.num(), 0.0f);
         // Once-only parts of the calculation of the Gaussian.
-        float sigma = 0.02f;
         float one_over_sigma_root_2_pi = 1 / sigma * 2.506628275;
         float two_sigma_sq = 2.0f * sigma * sigma;
         // Gaussian dist. result, and a running sum of the results:
