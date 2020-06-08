@@ -190,6 +190,13 @@ namespace morph {
          * any offset to the positions of the hexes in @a pHexes.
          */
         void setBoundary (const std::list<Hex>& pHexes);
+ 
+        /*!
+         * JMB change. This wrapper that sets boundary 
+         * given a BezCurvePath arguement. It reproduces the original behaviour
+         * of setBoundary by calling the setBoundary(bpoints, offset)
+         * with offset set to true
+         */
 
         /*!
          * Sets boundary to @a p, then runs the code to discard hexes lying outside
@@ -199,11 +206,46 @@ namespace morph {
          * boundary so that when it is applied to the HexGrid, the centroid IS (0,0).
          */
         void setBoundary (const BezCurvePath<float>& p);
+        
+        /*! 
+         * JMB change
+         * wrapper function to call setBoundary given a BezCurvePath argument
+         * with loffset=false.
+         * Sets boundary via BezCurvePath as above
+         * but does not reset the centroid. Changes the behaviour
+         * of the original setBoundary
+		 */
+        void setBoundaryDRegion (const BezCurvePath<float>& p);
+
+        /*!
+         * JMB Wrapper that sets boundary based on the vector of BezCoords.
+         * this version reproduces the original behaviour by calling the 
+         * extended method with loffset = true.
+		 */
 
         /*!
          * Sets boundary based on the vector of BezCoords.
          */
-        void setBoundary (std::vector<BezCoord<float>>& bpoints);
+        void setBoundary (std::vector<BezCoord<float>>& bpoints); 
+
+		/*!
+         * JMB Wrapper that sets the boundary based on the vector of BezCoords. 
+         * This is the version that calls the behaviour of setBoundary 
+         * without the centroid being reset.
+		 */
+        void setBoundaryDRegion (std::vector<BezCoord<float>>& bpoints);
+
+        /*!
+         *JMB change. Overloads with extra bool argument, if set to zero 
+         * the centroid is not reset, if set to 1 centroid is reset 
+         * to reflect new boundary. Sets boundary to @a p, then runs 
+         * the code to discard hexes lying outside this boundary. 
+         * Finishes up by calling discardOutside.
+		 * The BezCurvePath's centroid may not be 0,0. This method
+         * offsets the boundary so that when it is applied to the
+         * HexGrid, the centroid IS (0,0), provided loffset = 1.
+         */
+        void setBoundary (std::vector<BezCoord<float>>& p, bool loffset);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible

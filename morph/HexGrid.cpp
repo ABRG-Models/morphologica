@@ -600,6 +600,10 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
     return rtn;
 }
 
+ /*!
+  * JMB ensures that client code calling this function is not broken by the change
+  * to setBoundary(bpoints) which adds an extra bool argument
+  */
 void
 morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
 {
@@ -611,25 +615,77 @@ morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
         // size. The 'true' argument inverts the y axis.
         this->boundary.computePoints (this->d/2.0f, true);
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        this->setBoundary (bpoints);
+        this->setBoundary (bpoints,true);
     }
 }
+
+ /*!
+  * JMB wrapper for DRegion code, does not reset centroid
+  */
+
+void
+morph::HexGrid::setBoundaryDRegion (const BezCurvePath<float>& p)
+{
+    this->boundary = p;
+
+    if (!this->boundary.isNull()) {
+        DBG ("Applying boundary...");
+
+        // Compute the points on the boundary using half of the hex to hex spacing as the step
+        // size. The 'true' argument inverts the y axis.
+		this->boundary.computePoints(this->d/2.0f,true);
+        vector<BezCoord<float>> bpoints = this->boundary.getPoints();
+		// call to setBoundary without recentering the coodinates
+        this->setBoundary (bpoints,false);
+    }
+	else
+	{
+	    cout<<"in boundaryDRegion with Null boundary" << endl;
+	}
+}
+
+ /*!
+  * JMB  wrapper functions for setBoundary
+  *  this one ensures that current code does not break
+  */
 
 void
 morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints)
 {
+    morph::HexGrid::setBoundary (bpoints, true);
+}
+
+// this one works with DRegion class
+void
+morph::HexGrid::setBoundaryDRegion (vector<BezCoord<float>>& bpoints)
+{
+    morph::HexGrid::setBoundary (bpoints, false);
+}
+
+ /*! 
+  * JMB rewrite of this method to allow for an extra bool argument
+  * to determine if the centroid gets remapped (true) or not (false)
+  */
+void
+morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
+{
     this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
     DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
     auto bpi = bpoints.begin();
-    while (bpi != bpoints.end()) {
-        bpi->subtract (this->boundaryCentroid);
-        ++bpi;
-    }
-    // Copy the centroid
-    this->originalBoundaryCentroid = this->boundaryCentroid;
-    // Zero out the centroid, as the boundary is now centred on 0,0
-    this->boundaryCentroid = make_pair (0.0, 0.0);
-
+	// conditional executed if we reset the centre
+	if (loffset) {
+        while (bpi != bpoints.end()) {
+            bpi->subtract (this->boundaryCentroid);
+             ++bpi;
+        }
+        // Copy the centroid
+        this->originalBoundaryCentroid = this->boundaryCentroid;
+        // Zero out the centroid, as the boundary is now centred on 0,0
+        this->boundaryCentroid = make_pair (0.0, 0.0);
+        bpi = bpoints.begin();
+    } //end of code to reset centre 
+	
+    // now proceed with centroid changed or unchanged
     list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
     bpi = bpoints.begin();
     while (bpi != bpoints.end()) {
