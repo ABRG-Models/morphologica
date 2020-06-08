@@ -389,17 +389,10 @@ namespace morph {
                 throw std::runtime_error ("Pass in separate memory for the result.");
             }
 
-            bool debug__ = false;
             // For each hex in this HexGrid, compute the convolution kernel
             std::list<Hex>::iterator hi = this->hexen.begin();
             for (; hi != this->hexen.end(); ++hi) {
                 T sum = T{0};
-                if (hi->vi==1000) {
-                    debug__ = true;
-                    std::cout << "hex vi=1000 has r/g("<<hi->ri << "," << hi->gi << "), cart(" << hi->x << "," << hi->y << "), polar(" << hi->r<<","<<hi->phi<<")\n";
-                } else {
-                    debug__ = false;
-                }
                 // For each kernel hex, sum up.
                 for (auto kh : kernelgrid.hexen) {
                     std::list<Hex>::iterator dhi = hi;
@@ -414,9 +407,6 @@ namespace morph {
                     // the HexGrid.
                     int rr = kh.ri;
                     int gg = kh.gi;
-                    if (debug__) {
-                        std::cout << "kernel r/g: (" << rr << "," << gg << ")\n";
-                    }
                     bool failed = false;
                     bool finished = false;
                     //while (gg != 0 && rr != 0) {
@@ -425,14 +415,12 @@ namespace morph {
                         // Try to move in r direction
                         if (rr > 0) {
                             if (dhi->has_ne()) {
-                                if (debug__) { std::cout << "move +r\n"; }
                                 dhi = dhi->ne;
                                 --rr;
                                 moved = true;
                             } // Didn't move in +r direction
                         } else if (rr < 0) {
                             if (dhi->has_nw()) {
-                                if (debug__) { std::cout << "move -r\n"; }
                                 dhi = dhi->nw;
                                 ++rr;
                                 moved = true;
@@ -441,14 +429,12 @@ namespace morph {
                         // Try to move in g direction
                         if (gg > 0) {
                             if (dhi->has_nne()) {
-                                if (debug__) { std::cout << "move +g\n"; }
                                 dhi = dhi->nne;
                                 --gg;
                                 moved = true;
                             } // Didn't move in +g direction
                         } else if (gg < 0) {
                             if (dhi->has_nsw()) {
-                                if (debug__) { std::cout << "move -g\n"; }
                                 dhi = dhi->nsw;
                                 ++gg;
                                 moved = true;
@@ -461,23 +447,15 @@ namespace morph {
                         }
 
                         if (!moved) {
-                            if (debug__) { std::cout << "!moved\n"; }
                             // We're stuck; Can't move in r or g direction, so can't add a contribution
                             failed = true;
                             break;
-                        } else {
-                            if (debug__) { std::cout << "moved\n"; }
                         }
                     }
 
-                    if (!failed /*&& dhi != this->hexen.end()*/) {
-                        if (debug__) {
-                            std::cout << "kernel r/g corresponds to domain r/g(" << dhi->ri << "," << dhi->gi << ")\n";
-                        }
+                    if (!failed) {
                         // Can do the sum
-                        T data_val = data[dhi->vi];
-                        T kern_val = kerneldata[kh.vi];
-                        sum +=  data_val * kern_val;
+                        sum +=  data[dhi->vi] * kerneldata[kh.vi];
                     }
                 }
 
