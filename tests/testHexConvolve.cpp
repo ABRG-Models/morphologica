@@ -18,10 +18,11 @@
 
 int main()
 {
-    int rtn = -1;
+    int rtn = 0;
 
     morph::Visual v(800,600,"Convolution window");
     v.zNear = 0.001;
+    v.setSceneTransZ (-3.0f);
 
     try {
         std::string pwd = morph::Tools::getPwd();
@@ -38,8 +39,10 @@ int main()
         std::vector<float> data (hg.num(), 0.0f);
         //morph::RandNormal<float> rng (0.1f, 0.05f);
         morph::RandUniform<float> rng;
-        for (auto& d : data) {
+        float nonconvolvedSum = 0.0f;
+        for (float& d : data) {
             d = rng.get();
+            nonconvolvedSum += d;
         }
 
         // Create a circular HexGrid to contain the Gaussian convolution kernel
@@ -69,8 +72,13 @@ int main()
         // Call the convolution method from HexGrid:
         hg.convolve (kernel, kerneldata, data, convolved);
 
+        float convolvedSum = 0.0f;
+        for (float& d : convolved) { convolvedSum += d; }
+
+        std::cout << "Unconvolved sum: " << nonconvolvedSum << ", convolved sum: " << convolvedSum << "\n";
+
         // Visualize the 3 maps
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
         unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
         offset[1] += 0.6f;
         unsigned int gridId1 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &kernel, offset, &kerneldata));
