@@ -601,7 +601,7 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
 }
 
 void
-morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
+morph::HexGrid::setBoundary (const BezCurvePath<float>& p, bool loffset)
 {
     this->boundary = p;
 
@@ -611,22 +611,7 @@ morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
         // size. The 'true' argument inverts the y axis.
         this->boundary.computePoints (this->d/2.0f, true);
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        this->setBoundary (bpoints);
-    }
-}
-
-void
-morph::HexGrid::setBoundaryDRegion (const BezCurvePath<float>& p)
-{
-    this->boundary = p;
-
-    if (!this->boundary.isNull()) {
-        this->boundary.computePoints (this->d/2.0f, true);
-        vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        // second arg 'false' in call to setBoundary means 'don't recenter the coordinates'
-        this->setBoundary (bpoints, false);
-    } else {
-        cout << "in boundaryDRegion with Null boundary" << endl;
+        this->setBoundary (bpoints, loffset);
     }
 }
 
