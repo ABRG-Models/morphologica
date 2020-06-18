@@ -190,6 +190,7 @@ namespace morph {
          * any offset to the positions of the hexes in @a pHexes.
          */
         void setBoundary (const std::list<Hex>& pHexes);
+
         /*!
          * Sets boundary to @a p, then runs the code to discard hexes lying outside
          * this boundary. Finishes up by calling discardOutside.
@@ -200,27 +201,23 @@ namespace morph {
         void setBoundary (const BezCurvePath<float>& p);
 
         /*!
-         * JMB change
-         * wrapper function to call setBoundary given a BezCurvePath argument
+         * Wrapper function to call setBoundary given a BezCurvePath argument
          * with loffset=false.
          * Sets boundary via BezCurvePath as above
          * but does not reset the centroid. Changes the behaviour
          * of the original setBoundary
-        */
+         */
         void setBoundaryDRegion (const BezCurvePath<float>& p);
 
         /*!
-         *JMB change. Overloads with extra bool argument, set by default to true
-         * the centroid is reset to reflect the new boundary,
-         * if set to false centroid is left untouched
-         * Sets boundary to @a p, then runs
-         * the code to discard hexes lying outside this boundary.
-         * Finishes up by calling discardOutside.
-         * The BezCurvePath's centroid may not be 0,0. This method
-         * offsets the boundary so that when it is applied to the
-         * HexGrid, the centroid IS (0,0), provided loffset = 1.
+         * Sets the boundary of the hexgrid to \a bpoints, then runs the code to discard
+         * hexes lying outside this boundary. Finishes up by calling
+         * HexGrid::discardOutside. By default, this method translates \a bpoints so
+         * that when the boundary is applied to the HexGrid, its centroid is (0,0). If
+         * the default value of \a loffset is changed to false, \a bpoints is NOT
+         * translated.
          */
-        void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset=true);
+        void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset = true);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible

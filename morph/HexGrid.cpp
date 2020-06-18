@@ -621,25 +621,15 @@ morph::HexGrid::setBoundaryDRegion (const BezCurvePath<float>& p)
     this->boundary = p;
 
     if (!this->boundary.isNull()) {
-        DBG ("Applying boundary...");
-
-        // Compute the points on the boundary using half of the hex to hex spacing as the step
-        // size. The 'true' argument inverts the y axis.
-        this->boundary.computePoints(this->d/2.0f,true);
+        this->boundary.computePoints (this->d/2.0f, true);
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        // call to setBoundary without recentering the coodinates
-        this->setBoundary (bpoints,false);
-    }
-    else
-    {
-        cout<<"in boundaryDRegion with Null boundary" << endl;
+        // second arg 'false' in call to setBoundary means 'don't recenter the coordinates'
+        this->setBoundary (bpoints, false);
+    } else {
+        cout << "in boundaryDRegion with Null boundary" << endl;
     }
 }
 
- /*!
-  * JMB rewrite of this method to allow for an extra bool argument
-  * to determine if the centroid gets remapped (true) or not (false)
-  */
 void
 morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
 {
@@ -650,7 +640,7 @@ morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
     if (loffset) {
         while (bpi != bpoints.end()) {
             bpi->subtract (this->boundaryCentroid);
-             ++bpi;
+            ++bpi;
         }
         // Copy the centroid
         this->originalBoundaryCentroid = this->boundaryCentroid;
