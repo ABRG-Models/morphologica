@@ -466,6 +466,13 @@ namespace morph {
         }
 
         /*!
+         * Compute and return the area of the hex
+         */
+        float getArea (void) const {
+            return (this->d * this->d * morph::SQRT_OF_3_OVER_2F);
+        }
+
+        /*!
          * The vertical distance between hex centres on adjacent rows.
          */
         float getV (void) const {
