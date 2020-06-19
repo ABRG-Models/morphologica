@@ -601,7 +601,7 @@ morph::HexGrid::regionBoundaryContiguous (list<Hex>::const_iterator bhi, list<He
 }
 
 void
-morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
+morph::HexGrid::setBoundary (const BezCurvePath<float>& p, bool loffset)
 {
     this->boundary = p;
 
@@ -611,25 +611,30 @@ morph::HexGrid::setBoundary (const BezCurvePath<float>& p)
         // size. The 'true' argument inverts the y axis.
         this->boundary.computePoints (this->d/2.0f, true);
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
-        this->setBoundary (bpoints);
+        this->setBoundary (bpoints, loffset);
     }
 }
 
 void
-morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints)
+morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
 {
     this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
     DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
     auto bpi = bpoints.begin();
-    while (bpi != bpoints.end()) {
-        bpi->subtract (this->boundaryCentroid);
-        ++bpi;
-    }
-    // Copy the centroid
-    this->originalBoundaryCentroid = this->boundaryCentroid;
-    // Zero out the centroid, as the boundary is now centred on 0,0
-    this->boundaryCentroid = make_pair (0.0, 0.0);
+    // conditional executed if we reset the centre
+    if (loffset) {
+        while (bpi != bpoints.end()) {
+            bpi->subtract (this->boundaryCentroid);
+            ++bpi;
+        }
+        // Copy the centroid
+        this->originalBoundaryCentroid = this->boundaryCentroid;
+        // Zero out the centroid, as the boundary is now centred on 0,0
+        this->boundaryCentroid = make_pair (0.0, 0.0);
+        bpi = bpoints.begin();
+    } //end of code to reset centre
 
+    // now proceed with centroid changed or unchanged
     list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
     bpi = bpoints.begin();
     while (bpi != bpoints.end()) {

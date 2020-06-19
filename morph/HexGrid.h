@@ -193,18 +193,25 @@ namespace morph {
         void setBoundary (const std::list<Hex>& pHexes);
 
         /*!
-         * Sets boundary to @a p, then runs the code to discard hexes lying outside
-         * this boundary. Finishes up by calling discardOutside.
+         * Sets boundary to \a p, then runs the code to discard hexes lying outside
+         * this boundary. Finishes up by calling morph::HexGrid::discardOutside.
          *
-         * The BezCurvePath's centroid may not be 0,0. This method offsets the
-         * boundary so that when it is applied to the HexGrid, the centroid IS (0,0).
+         * The BezCurvePath's centroid may not be 0,0. If loffset has its default value
+         * of true, then this method offsets the boundary so that when it is applied to
+         * the HexGrid, the centroid IS (0,0). If \a loffset is false, then \a p is not
+         * translated in this way.
          */
-        void setBoundary (const BezCurvePath<float>& p);
+        void setBoundary (const BezCurvePath<float>& p, bool loffset = true);
 
         /*!
-         * Sets boundary based on the vector of BezCoords.
+         * Sets the boundary of the hexgrid to \a bpoints, then runs the code to discard
+         * hexes lying outside this boundary. Finishes up by calling
+         * HexGrid::discardOutside. By default, this method translates \a bpoints so
+         * that when the boundary is applied to the HexGrid, its centroid is (0,0). If
+         * the default value of \a loffset is changed to false, \a bpoints is NOT
+         * translated.
          */
-        void setBoundary (std::vector<BezCoord<float>>& bpoints);
+        void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset = true);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible
