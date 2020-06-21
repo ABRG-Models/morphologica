@@ -221,6 +221,11 @@ add_executable(testProcess testProcess.cpp)
 target_link_libraries(testProcess -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 add_test(testProcess testProcess)
 
+# Test morph::Config class
+add_executable(testConfig testConfig.cpp)
+target_link_libraries(testConfig -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testConfig testConfig)
+
 # Test morph::Quaternion
 add_executable(testQuaternion testQuaternion.cpp)
 target_link_libraries(testQuaternion -L${morphologica_BINARY_DIR}/src morphologica)
