@@ -30,7 +30,10 @@ namespace morph {
         hid_t file_id = -1;
 
         /*!
-         * Operate in read mode?
+         * Operate in read mode? If true, only HDF5 file in read-only mode. If false,
+         * open, and truncate the HDF5 file. If read-write access becomes useful or
+         * necessary in the future, then this will need to become an enumerated class or
+         * type, with read_only/read_write/write_only options.
          */
         bool read_mode = false;
 
