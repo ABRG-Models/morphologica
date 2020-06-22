@@ -112,6 +112,9 @@ namespace morph {
          * into this->root.
          */
         void insertGitInfo (const std::string& codedir) {
+
+            this->checkready (__FUNCTION__);
+
             ProcessData pD;
             ConfigProcessCallbacks cb(&pD);
             Process p;
@@ -242,6 +245,7 @@ namespace morph {
 
         //! Write out the JSON to file.
         void write (const std::string& outfile) {
+            this->checkready (__FUNCTION__);
             std::ofstream configout;
             configout.open (outfile.c_str(), std::ios::out|std::ios::trunc);
             if (configout.is_open()) {
@@ -256,24 +260,31 @@ namespace morph {
         //! Wrappers around gets
         //@{
         bool getBool (const std::string& thing, bool defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asBool();
         }
         int getInt (const std::string& thing, int defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asInt();
         }
         unsigned int getUInt (const std::string& thing, unsigned int defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asUInt();
         }
         float getFloat (const std::string& thing, float defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asFloat();
         }
         double getDouble (const std::string& thing, double defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asDouble();
         }
         std::string getString (const std::string& thing, const std::string& defaultval) {
+            this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asString();
         }
         Json::Value getArray (const std::string& arrayname) {
+            this->checkready (__FUNCTION__);
             return this->root[arrayname];
         }
         //@}
@@ -281,21 +292,27 @@ namespace morph {
         //! Setters
         //@{
         void set (const std::string& thing, bool value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         void set (const std::string& thing, int value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         void set (const std::string& thing, unsigned int value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         void set (const std::string& thing, float value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         void set (const std::string& thing, double value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         void set (const std::string& thing, const std::string& value) {
+            this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
         //@}
@@ -308,5 +325,16 @@ namespace morph {
 
         // The root object which is set up in the constructor
         Json::Value root;
+
+    private:
+        //! Private, only intended for getters/setters use. Client code can directly test Config::ready.
+        void checkready (const std::string& caller)
+        {
+            if (!this->ready) {
+                std::stringstream ee;
+                ee << "Config not ready. Error was: " << this->emsg << ". Can't " << caller << ". Check your JSON.";
+                throw std::runtime_error (ee.str());
+            }
+        }
     };
 } // namespace

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "morph/Config.h"
+#include "Config.h"
 
 int main()
 {
