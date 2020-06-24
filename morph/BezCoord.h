@@ -161,22 +161,15 @@ namespace morph
          * Operators
          */
         //@{
-        BezCoord operator- (const BezCoord& br) {
+        BezCoord<Flt> operator- (const BezCoord& br) const {
             std::pair<Flt,Flt> p;
             p.first = this->coord.first - br.x();
             p.second = this->coord.second - br.y();
-            return BezCoord(p); // Note returned object contains remaining and param == -1
+            return BezCoord<Flt>(p); // Note returned object contains remaining and param == -1
         }
 
         friend std::ostream& operator<< (std::ostream& output, const BezCoord& b) {
-#if 0
-            output << b.x() << "," << b.y() << " (t=" << b.t() << " rem: " << b.getRemaining() << ")";
-            if (b.getNullCoordinate() == true) {
-                output << " [null coord]";
-            }
-#else
             output << b.t() << "," << b.x() << "," << b.y();
-#endif
             return output;
         }
         //@}

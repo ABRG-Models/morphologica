@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <type_traits>
 #include <memory>
-#include "MathConst.h"
+#include "morph/MathConst.h"
 
 namespace morph {
 

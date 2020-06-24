@@ -16,8 +16,8 @@ extern "C" {
 #include <signal.h>
 }
 
-#include "MorphDbg.h"
-#include "Process.h"
+#include "morph/MorphDbg.h"
+#include "morph/Process.h"
 
 using namespace std;
 

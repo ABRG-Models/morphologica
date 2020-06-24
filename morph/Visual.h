@@ -17,25 +17,25 @@
 # include <GL/glew.h>
 #endif
 #include <GLFW/glfw3.h>
-#include "HexGrid.h"
-#include "VisualModel.h"
-#include "HexGridVisual.h"
-#include "QuadsVisual.h"
-#include "PointRowsVisual.h"
-#include "ScatterVisual.h"
-#include "QuiverVisual.h"
-#include "CoordArrows.h"
+#include "morph/HexGrid.h"
+#include "morph/VisualModel.h"
+#include "morph/HexGridVisual.h"
+#include "morph/QuadsVisual.h"
+#include "morph/PointRowsVisual.h"
+#include "morph/ScatterVisual.h"
+#include "morph/QuiverVisual.h"
+#include "morph/CoordArrows.h"
 #ifdef TRIANGLE_VIS_TESTING
-# include "TriangleVisual.h"
+# include "morph/TriangleVisual.h"
 #endif
-#include "Quaternion.h"
-#include "TransformMatrix.h"
-#include "Vector.h"
+#include "morph/Quaternion.h"
+#include "morph/TransformMatrix.h"
+#include "morph/Vector.h"
 
 // A base class with static event handling dispatchers
-#include "VisualBase.h"
+#include "morph/VisualBase.h"
 
-#include "ColourMap.h"
+#include "morph/ColourMap.h"
 
 #include "GL3/gl3.h"
 
@@ -69,19 +69,25 @@ namespace morph {
         GLuint shader;
     } ShaderInfo;
 
+    // To enable debugging, set true.
+    const bool debug_shaders = false;
+
     /*!
      * Visual 'scene' class
      *
-     * A class for visualising computational models on an OpenGL
-     * screen. Will be specialised for rendering HexGrids to begin
-     * with.
+     * A class for visualising computational models on an OpenGL screen. Will be
+     * specialised for rendering HexGrids to begin with.
      *
-     * Each Visual will have its own GLFW window and is essentially a
-     * "scene" containing a number of objects. One object might be the
-     * visualisation of some data expressed over a HexGrid. It should
-     * be possible to translate objects with respect to each other and
-     * also to rotate the entire scene, as well as use keys to
-     * generate particular effects/views.
+     * Each Visual will have its own GLFW window and is essentially a "scene" containing
+     * a number of objects. One object might be the visualisation of some data expressed
+     * over a HexGrid. It should be possible to translate objects with respect to each
+     * other and also to rotate the entire scene, as well as use keys to generate
+     * particular effects/views.
+     *
+     * It's possible to set the background colour of the scene (Visual::bgcolour), the
+     * location of the objects in the scene (Visual::setSceneTransZ and friends) and the
+     * position and field of view of the 'camera' (Visual::zNear, Visual::zFar and
+     * Visual::fov).
      */
     class Visual : VisualBase
     {
@@ -165,15 +171,17 @@ namespace morph {
          * here are convenience functions:
          */
         ///@{
+        //! Set a white background colour for the Visual scene
         void backgroundWhite (void) {
             this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
         }
+        //! Set a black background colour for the Visual scene
         void backgroundBlack (void) {
             this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
         }
         ///@}
 
-        //! Setter for zDefault
+        //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
         void setZDefault (float f) {
             if (f>0.0f) {
                 std::cout << "WARNING setZDefault(): Normally, the default z value is negative." << std::endl;
@@ -182,19 +190,27 @@ namespace morph {
             this->scenetrans[2] = f;
         }
 
-        //! Setters for x/y
-        ///@{
+        //! Set the scene's x and y values at the same time.
         void setSceneTransXY (float _x, float _y) {
             this->scenetrans[0] = _x;
             this->scenetrans[1] = _y;
         }
+        //! Set the scene's y value. Use this to shift your scene objects left or right
         void setSceneTransX (float _x) {
             this->scenetrans[0] = _x;
         }
+        //! Set the scene's y value. Use this to shift your scene objects up and down
         void setSceneTransY (float _y) {
             this->scenetrans[1] = _y;
         }
-        ///@}
+        //! Set the scene's z value. Use this to bring the 'camera' closer to your scene
+        //! objects (that is, your morph::VisualModel objects).
+        void setSceneTransZ (float _z) {
+            if (_z>0.0f) {
+                std::cout << "WARNING setSceneTransZ(): Normally, the default z value is negative." << std::endl;
+            }
+            this->setZDefault (_z);
+        }
 
     private:
 
@@ -254,7 +270,8 @@ namespace morph {
         //! Holds the translation coordinates for the current location of the entire scene
         Vector<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
-        //! Default for scenetrans
+        //! Default for scenetrans. This is a scene position that can be reverted to, to
+        //! 'reset the view'.
         const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! When true, cursor movements induce rotation of scene

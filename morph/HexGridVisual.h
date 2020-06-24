@@ -1,12 +1,12 @@
 #pragma once
 
 #include "GL3/gl3.h"
-#include "tools.h"
-#include "VisualDataModel.h"
-#include "ColourMap.h"
-#include "HexGrid.h"
-#include "MathAlgo.h"
-#include "Vector.h"
+#include "morph/tools.h"
+#include "morph/VisualDataModel.h"
+#include "morph/ColourMap.h"
+#include "morph/HexGrid.h"
+#include "morph/MathAlgo.h"
+#include "morph/Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>

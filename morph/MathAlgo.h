@@ -8,11 +8,10 @@
 #include <array>
 #include <utility>
 #include <iostream>
-//#include <type_traits>
 #include <memory>
-#include "MathConst.h"
-#include "number_type.h"
-#include "MathImpl.h"
+#include "morph/MathConst.h"
+#include "morph/number_type.h"
+#include "morph/MathImpl.h"
 
 namespace morph {
 

@@ -39,7 +39,7 @@ if (APPLE)
 else()
   # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -xHOST -O3 -D__ICC__")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
     set(OPENMP_SWITCH "-qopenmp")
   else () # GCC or Clang
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
@@ -179,6 +179,9 @@ include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
 # OpenGL code needs the local include directory, too
 include_directories("${PROJECT_SOURCE_DIR}/include")
+
+# We need the source code location included "raw" so that #include "morph/Header.h" works in all the code.
+include_directories("${PROJECT_SOURCE_DIR}")
 
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)

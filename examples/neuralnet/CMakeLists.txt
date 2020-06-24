@@ -12,6 +12,9 @@ project(NeuralNet)
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  (This can be changed with `cmake -DCMAKE_INSTALL_PREFIX=/some/place`")
 
+# morphologica uses c++-17 language features
+set(CMAKE_CXX_STANDARD 17)
+
 # From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
 message(STATUS "Operating system: " ${CMAKE_SYSTEM})
 if(CMAKE_SYSTEM MATCHES Linux.*)
@@ -26,15 +29,19 @@ else()
   message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
-# morphologica uses c++-17 language features
-set(CMAKE_CXX_STANDARD 17)
+# Flags common to all compilers
+set(FLAGS_COMMON "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g")
 
-# Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
+# Add different optimizing flags depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -Xpreprocessor -fopenmp")
 else()
-  # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__ -qopenmp")
+  else () # GCC or Clang
+    # This assumes a gcc compiler (or a gcc mimic like Clang)
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -fopenmp")
+  endif()
 endif()
 
 # Tell clang to be quiet about brace initialisers:

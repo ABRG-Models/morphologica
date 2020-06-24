@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <json/json.h>
-#include "Process.h"
+#include "morph/Process.h"
 
 /*!
  * Character sets useful when calling util::sanitize().

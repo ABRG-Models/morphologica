@@ -12,6 +12,8 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <array>
+#include <stdexcept>
 #include <unistd.h>
 
 #define DBGSTREAM std::cout

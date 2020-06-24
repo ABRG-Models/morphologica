@@ -13,9 +13,9 @@
 #include <array>
 #include <utility>
 #include <cmath>
-#include "BezCoord.h"
-#include "HdfData.h"
-#include "MathConst.h"
+#include "morph/BezCoord.h"
+#include "morph/HdfData.h"
+#include "morph/MathConst.h"
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>
@@ -463,6 +463,13 @@ namespace morph {
         float getLR (void) const {
             float lr = this->d/morph::SQRT_OF_3_F;
             return lr;
+        }
+
+        /*!
+         * Compute and return the area of the hex
+         */
+        float getArea (void) const {
+            return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F);
         }
 
         /*!

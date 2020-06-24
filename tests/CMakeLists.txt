@@ -189,6 +189,9 @@ if(${glfw3_FOUND})
   target_link_libraries(testVisual -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
   #add_test(testVisual testVisual)
 
+  add_executable(testHexConvolve testHexConvolve.cpp)
+  target_link_libraries(testHexConvolve -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+
   add_executable(testVisQuads testVisQuads.cpp)
   target_link_libraries(testVisQuads -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 
@@ -218,22 +221,23 @@ add_executable(testProcess testProcess.cpp)
 target_link_libraries(testProcess -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 add_test(testProcess testProcess)
 
+# Test morph::Config class
+add_executable(testConfig testConfig.cpp)
+target_link_libraries(testConfig -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testConfig testConfig)
+
 # Test morph::Quaternion
 add_executable(testQuaternion testQuaternion.cpp)
 target_link_libraries(testQuaternion -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testQuaternion testQuaternion)
 
-# testVector. Note testVector.cpp requires c++-17 due to use of curly
-# brace initializers; only c++-17 permits a class derived from an
-# aggregate class such as std::array to ALSO be an aggregate class.
+# testVector.
 add_executable(testVector testVector.cpp)
-target_compile_features(testVector PUBLIC cxx_std_17)
 target_link_libraries(testVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testVector testVector)
 
 # Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
 add_executable(testvVector testvVector.cpp)
-target_compile_features(testvVector PUBLIC cxx_std_17)
 target_link_libraries(testvVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testvVector testvVector)
 
@@ -249,7 +253,6 @@ add_test(testVector11 testVector11)
 
 # Test the Scaling of vectors
 add_executable(testScaleVector testScaleVector.cpp)
-target_compile_features(testScaleVector PUBLIC cxx_std_17)
 target_link_libraries(testScaleVector -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testScaleVector testScaleVector)
 
@@ -309,3 +312,8 @@ add_test(testNMSimplex testNMSimplex)
 add_executable(testRandom testRandom.cpp)
 target_link_libraries(testRandom -L${morphologica_BINARY_DIR}/src morphologica)
 add_test(testRandom testRandom)
+
+# Test winding number code
+add_executable(testWinder testWinder.cpp)
+target_link_libraries(testWinder -L${morphologica_BINARY_DIR}/src morphologica)
+add_test(testWinder testWinder)

@@ -11,6 +11,8 @@
 #include <string>
 #include <utility>
 #include <bitset>
+#include <stdexcept>
+#include "morph/Vector.h"
 
 namespace morph {
 
@@ -28,7 +30,10 @@ namespace morph {
         hid_t file_id = -1;
 
         /*!
-         * Operate in read mode?
+         * Operate in read mode? If true, open the HDF5 file in read-only mode. If
+         * false, open and truncate the HDF5 file. If read-write access becomes useful
+         * or necessary in the future, then this will need to become an enumerated class
+         * or type, with read_only/read_write/write_only options.
          */
         bool read_mode = false;
 
@@ -36,7 +41,7 @@ namespace morph {
          * If there's an error in status, output a context (given by
          * emsg) sensible message and throw an exception.
          */
-        void handle_error (const herr_t& status, const std::string& emsg);
+        void handle_error (const herr_t& status, const std::string& emsg) const;
 
     public:
         /*!
@@ -215,6 +220,53 @@ namespace morph {
         void add_contained_vals (const char* path, const std::vector<cv::Point2i>& vals);
         void add_contained_vals (const char* path, const std::vector<cv::Point2d>& vals);
         void add_contained_vals (const char* path, const std::vector<cv::Point2f>& vals);
+
+        // add_contained_vals for morph::Vector<T, N>
+        template<typename T, size_t N>
+        void add_contained_vals (const char* path, const std::vector<morph::Vector<T, N>>& vals)
+        {
+            this->process_groups (path);
+            hsize_t dim_vecNdcoords[N]; // N Dims
+            dim_vecNdcoords[0] = vals.size();
+            dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
+            // Note 2 dims (1st arg, which is rank = 2)
+            hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
+            // Now determine width of T and select the most suitable H5Dcreate2 call
+            hid_t dataset_id = 0;
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else {
+                throw std::runtime_error ("HdfData::add_contained_vals: Don't know how to store that type");
+            }
+            this->handle_error (status, "Error. status after H5Dwrite: ");
+            status = H5Dclose (dataset_id);
+            this->handle_error (status, "Error. status after H5Dclose: ");
+            status = H5Sclose (dataspace_id);
+            this->handle_error (status, "Error. status after H5Sclose: ");
+        }
 
         //! Write out cv::Mat matrix data, along with the data type and the channels
         //! as metadata.

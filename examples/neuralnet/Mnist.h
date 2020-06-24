@@ -30,8 +30,7 @@
 #include <opencv2/imgproc.hpp>
 #include <morph/vVector.h>
 
-//! Mnist images are 28x28. As I used fixed size Vector to represent, have to fix
-//! this at compile time.
+//! Mnist images are 28x28=784 pixels
 constexpr size_t mnlen = 784;
 
 // A class to read, and then manage the data of, the Mnist database.

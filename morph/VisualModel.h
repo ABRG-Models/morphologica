@@ -11,9 +11,9 @@
 #pragma once
 
 #include "GL3/gl3.h"
-#include "tools.h"
-#include "TransformMatrix.h"
-#include "Vector.h"
+#include "morph/tools.h"
+#include "morph/TransformMatrix.h"
+#include "morph/Vector.h"
 #include <iostream>
 #include <vector>
 #include <array>
@@ -245,14 +245,14 @@ namespace morph {
             // vector in the plan to define a point on the circle.
             Vector<float> rand_vec;
             rand_vec.randomize();
-            Vector<float> inplane = rand_vec * v;
+            Vector<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
             //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            Vector<float> v_x_inplane = v * inplane;
+            Vector<float> v_x_inplane = v.cross(inplane);
             //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
             // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
@@ -548,14 +548,14 @@ namespace morph {
             // vector in the plan to define a point on the circle.
             Vector<float> rand_vec;
             rand_vec.randomize();
-            Vector<float> inplane = rand_vec * v;
+            Vector<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
             //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            Vector<float> v_x_inplane = v * inplane;
+            Vector<float> v_x_inplane = v.cross(inplane);
             //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
             // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 

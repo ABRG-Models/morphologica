@@ -8,14 +8,14 @@
  */
 #pragma once
 
-#include "MathConst.h"
+#include "morph/MathConst.h"
 #include <cmath>
 #include <limits>
 #include <utility>
 #include <list>
 #include <string>
-#include "HexGrid.h"
-#include "HdfData.h"
+#include "morph/HexGrid.h"
+#include "morph/HdfData.h"
 
 namespace morph {
 

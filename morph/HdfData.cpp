@@ -2,8 +2,8 @@
  * Implementation of HdfData; non templated functions.
  */
 
-#include "HdfData.h"
-#include "tools.h"
+#include "morph/HdfData.h"
+#include "morph/tools.h"
 #include <array>
 using std::array;
 #include <vector>
@@ -28,7 +28,7 @@ morph::HdfData::HdfData (const string fname, const bool read_data)
 {
     this->read_mode = read_data;
     if (this->read_mode == true) {
-        this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+        this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
     } else {
         this->file_id = H5Fcreate (fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     }
@@ -51,7 +51,7 @@ morph::HdfData::~HdfData()
 }
 
 void
-morph::HdfData::handle_error (const herr_t& status, const string& emsg)
+morph::HdfData::handle_error (const herr_t& status, const string& emsg) const
 {
     if (status) {
         stringstream ee;

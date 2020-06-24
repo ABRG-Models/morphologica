@@ -15,13 +15,13 @@
 #include <set>
 #include <utility>
 #include <sstream>
-#include "DirichVtx.h"
-#include "NM_Simplex.h"
-#include "HdfData.h"
-#include "Hex.h"
-#include "HexGrid.h"
+#include "morph/DirichVtx.h"
+#include "morph/NM_Simplex.h"
+#include "morph/HdfData.h"
+#include "morph/Hex.h"
+#include "morph/HexGrid.h"
 #define DEBUG 1
-#include "MorphDbg.h"
+#include "morph/MorphDbg.h"
 
 namespace morph {
 

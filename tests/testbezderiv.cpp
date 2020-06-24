@@ -7,6 +7,8 @@
 #include <math.h>
 #include <limits>
 #include <unistd.h>
+#include <vector>
+#include <list>
 
 // For drawing the curves
 #include <opencv2/opencv.hpp>

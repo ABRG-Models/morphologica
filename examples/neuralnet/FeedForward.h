@@ -38,16 +38,16 @@ struct FeedForwardConn
         this->z.zero();
     }
 
-    //! Input layer has size M, output has size N. Weights size MbyN (or NbyM)
+    //! Input layer has size M.
     morph::vVector<T>* in;
     size_t M = 0;
-    //! Pointer to output layer. Size N
+    //! Pointer to output layer. Size N.
     morph::vVector<T>* out;
     size_t N = 0;
-    //! The errors in the input layer of neurons. Size M
+    //! The errors in the input layer of neurons. Size M.
     morph::vVector<T> delta;
-    //! Weights. Order of weights: in[0] to out[all], in[1] to out[all], in[2] to
-    //! out[all] etc. Size M by N.
+    //! Weights.
+    //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N.
     morph::vVector<T> w;
     //! Biases. Size N.
     morph::vVector<T> b;
@@ -56,8 +56,8 @@ struct FeedForwardConn
     //! The gradients of cost vs. biases. Size N.
     morph::vVector<T> nabla_b;
     //! Activation of the output neurons. Computed in feedforward, used in backprop
-    //! z = sum(w.in) + b.
-    morph::vVector<T> z; // N
+    //! z = sum(w.in) + b. Final output written into *out is the sigmoid(z). Size N.
+    morph::vVector<T> z;
 
     //! Output as a string
     std::string str() const {
@@ -75,7 +75,7 @@ struct FeedForwardConn
         this->b.randomizeN (T{0.0}, T{1.0});
     }
 
-    //! Feed-forward compute. out[i] = in[0,..,M] . w[i,..,i+M] + b[i]
+    //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
     void feedforward() {
         // A morph::vVector for a 'part of w'
         morph::vVector<T> wpart(this->in->size()); // Size M
@@ -98,13 +98,13 @@ struct FeedForwardConn
     //! The content of *FeedForwardConn::out is sigmoid(z^l+1)
     //! \return has size N
     morph::vVector<T> sigmoid_prime_z_lplus1() {
-        return out->hadamard (-(*out)+T{1});
+        return (*out) * (-(*out)+T{1});
     }
 
     //! The content of *FeedForwardConn::in is sigmoid(z^l)
     //! \return has size M
     morph::vVector<T> sigmoid_prime_z_l() {
-        return in->hadamard (-(*in)+T{1});
+        return (*in) * (-(*in)+T{1});
     }
 
     /*!
@@ -126,7 +126,7 @@ struct FeedForwardConn
             }
         }
         morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
-        this->delta = w_times_delta.hadamard (spzl);
+        this->delta = w_times_delta * spzl;
 
         // NB: In a given connection, we compute nabla_b and nabla_w relating to the
         // *output* neurons and the weights also related to the output neurons.
@@ -240,7 +240,7 @@ struct FeedForwardNet
             this->feedforward();
             evalcost += this->computeCost();
             // Success?
-            if (this->argmax() == key) {
+            if (this->neurons.back().argmax() == key) {
                 ++numMatches;
             }
             ++count;
@@ -249,12 +249,6 @@ struct FeedForwardNet
             }
         }
         return numMatches;
-    }
-
-    //! Find the element in output with the max value
-    size_t argmax() {
-        auto themax = std::max_element (this->neurons.back().begin(), this->neurons.back().end());
-        return (themax - this->neurons.back().begin());
     }
 
     //! Determine the error gradients by the backpropagation method. NB: Call
@@ -269,7 +263,7 @@ struct FeedForwardNet
         //
         // delta^l = w^l+1 . delta^l+1 0 sigma_prime (z^l)
         //
-        // (where 0 signifies hadamard product)
+        // (where 0 signifies hadamard product, as implemented by vVector's operator*)
         // delta = dC_x/da() * sigmoid_prime(z_out)
         auto citer = this->connections.end();
         --citer; // Now points at output layer
@@ -291,7 +285,7 @@ struct FeedForwardNet
     //! Compute the cost for one input and one desired output
     T computeCost() {
         // Here is where we compute delta_out:
-        this->delta_out = (this->neurons.back()-desiredOutput).hadamard (this->connections.back().sigmoid_prime_z_lplus1());
+        this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
         // And the cost:
         T l = (desiredOutput-this->neurons.back()).length();
         this->cost = T{0.5} * l * l;

@@ -5,14 +5,15 @@
  */
 #pragma once
 
-#include "Hex.h"
-#include "BezCurvePath.h"
-#include "MathConst.h"
+#include "morph/Hex.h"
+#include "morph/BezCurvePath.h"
+#include "morph/MathConst.h"
 
 #include <set>
 #include <list>
 #include <string>
 #include <array>
+#include <stdexcept>
 
 namespace morph {
 
@@ -192,18 +193,25 @@ namespace morph {
         void setBoundary (const std::list<Hex>& pHexes);
 
         /*!
-         * Sets boundary to @a p, then runs the code to discard hexes lying outside
-         * this boundary. Finishes up by calling discardOutside.
+         * Sets boundary to \a p, then runs the code to discard hexes lying outside
+         * this boundary. Finishes up by calling morph::HexGrid::discardOutside.
          *
-         * The BezCurvePath's centroid may not be 0,0. This method offsets the
-         * boundary so that when it is applied to the HexGrid, the centroid IS (0,0).
+         * The BezCurvePath's centroid may not be 0,0. If loffset has its default value
+         * of true, then this method offsets the boundary so that when it is applied to
+         * the HexGrid, the centroid IS (0,0). If \a loffset is false, then \a p is not
+         * translated in this way.
          */
-        void setBoundary (const BezCurvePath<float>& p);
+        void setBoundary (const BezCurvePath<float>& p, bool loffset = true);
 
         /*!
-         * Sets boundary based on the vector of BezCoords.
+         * Sets the boundary of the hexgrid to \a bpoints, then runs the code to discard
+         * hexes lying outside this boundary. Finishes up by calling
+         * HexGrid::discardOutside. By default, this method translates \a bpoints so
+         * that when the boundary is applied to the HexGrid, its centroid is (0,0). If
+         * the default value of \a loffset is changed to false, \a bpoints is NOT
+         * translated.
          */
-        void setBoundary (std::vector<BezCoord<float>>& bpoints);
+        void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset = true);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible
@@ -366,6 +374,101 @@ namespace morph {
          * HEX_INSIDE_REGION
          */
         void clearRegionBoundaryFlags (void);
+
+        /*!
+         * Using this HexGrid as the domain, convolve the domain data \a data with the
+         * kernel data \a kerneldata, which exists on another HexGrid, \a
+         * kernelgrid. Return the result in \a result.
+         */
+        template<typename T>
+        void convolve (const HexGrid& kernelgrid, const std::vector<T>& kerneldata, const std::vector<T>& data, std::vector<T>& result)
+        {
+            if (result.size() != this->hexen.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the HexGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the HexGrid.");
+            }
+            if (kernelgrid.getd() != this->d) {
+                throw std::runtime_error ("The kernel HexGrid must have same d as this HexGrid to carry out convolution.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+
+            // For each hex in this HexGrid, compute the convolution kernel
+            std::list<Hex>::iterator hi = this->hexen.begin();
+            for (; hi != this->hexen.end(); ++hi) {
+                T sum = T{0};
+                // For each kernel hex, sum up.
+                for (auto kh : kernelgrid.hexen) {
+                    std::list<Hex>::iterator dhi = hi;
+                    // Kernel hex coords r,g are: kh.ri, kh.gi, which may be (are EXPECTED to be) +ve or -ve
+                    //
+                    // Origin hex coords are h.ri, h.gi
+                    //
+                    // To get the hex whose data we want to multiply with kh's value,
+                    // can go via neighbour relations, but must be prepared to take a
+                    // variable path because going directly in r direction then directly
+                    // in g direction could take us temporarily outside the boundary of
+                    // the HexGrid.
+                    int rr = kh.ri;
+                    int gg = kh.gi;
+                    bool failed = false;
+                    bool finished = false;
+                    //while (gg != 0 && rr != 0) {
+                    while (!finished) {
+                        bool moved = false;
+                        // Try to move in r direction
+                        if (rr > 0) {
+                            if (dhi->has_ne()) {
+                                dhi = dhi->ne;
+                                --rr;
+                                moved = true;
+                            } // Didn't move in +r direction
+                        } else if (rr < 0) {
+                            if (dhi->has_nw()) {
+                                dhi = dhi->nw;
+                                ++rr;
+                                moved = true;
+                            } // Didn't move in -r direction
+                        }
+                        // Try to move in g direction
+                        if (gg > 0) {
+                            if (dhi->has_nne()) {
+                                dhi = dhi->nne;
+                                --gg;
+                                moved = true;
+                            } // Didn't move in +g direction
+                        } else if (gg < 0) {
+                            if (dhi->has_nsw()) {
+                                dhi = dhi->nsw;
+                                ++gg;
+                                moved = true;
+                            } // Didn't move in -g direction
+                        }
+
+                        if (rr == 0 && gg == 0) {
+                            finished = true;
+                            break;
+                        }
+
+                        if (!moved) {
+                            // We're stuck; Can't move in r or g direction, so can't add a contribution
+                            failed = true;
+                            break;
+                        }
+                    }
+
+                    if (!failed) {
+                        // Can do the sum
+                        sum +=  data[dhi->vi] * kerneldata[kh.vi];
+                    }
+                }
+
+                result[hi->vi] = sum;
+            }
+        }
 
         /*!
          * What shape domain to set? Set this to the non-default BEFORE calling

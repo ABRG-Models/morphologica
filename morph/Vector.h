@@ -12,11 +12,12 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include <type_traits>
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include "Random.h"
+#include "morph/Random.h"
 
 namespace morph {
 
@@ -103,9 +104,21 @@ namespace morph {
         static constexpr S unitThresh = 0.001;
 
         /*!
+         * Set data members from an std::vector
+         */
+        template <typename _S=S>
+        void set_from (const std::vector<_S>& vec) {
+            if (vec.size() != N) {
+                throw std::runtime_error ("Vector::set_from(): Ensure vector sizes match");
+            }
+            std::copy (vec.begin(), vec.end(), this->begin());
+        }
+
+        /*!
          * Set data members from an array the of same size and type.
          */
-        void set_from (const std::array<S, N>& ar) {
+        template <typename _S=S>
+        void set_from (const std::array<_S, N>& ar) {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
 
@@ -114,7 +127,8 @@ namespace morph {
          * ignoring the last element of \a ar. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
          */
-        void set_from (const std::array<S, (N+1)>& ar) {
+        template <typename _S=S>
+        void set_from (const std::array<_S, (N+1)>& ar) {
             // Don't use std::copy here, because ar has more elements than *this.
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = ar[i];
@@ -125,7 +139,8 @@ namespace morph {
          * Set an N-D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
-        void set_from (const Vector<S, (N+1)>& v) {
+        template <typename _S=S>
+        void set_from (const Vector<_S, (N+1)>& v) {
             for (size_t i = 0; i < N; ++i) {
                 (*this)[i] = v[i];
             }
@@ -191,6 +206,34 @@ namespace morph {
         }
 
         /*!
+         * Randomize the vector with provided bounds
+         *
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between \a min and \a
+         * max. Strictly, the range is [min, max)
+         */
+        void randomize (S min, S max) {
+            RandUniform<S> ru (min, max);
+            for (auto& i : *this) {
+                i = ru.get();
+            }
+        }
+
+        /*!
+         * Randomize the vector from a Gaussian distribution
+         *
+         * Randomly set the elements of the vector. Coordinates are set to random
+         * numbers drawn from a uniform distribution between \a min and \a
+         * max. Strictly, the range is [min, max)
+         */
+        void randomizeN (S _mean, S _sd) {
+            RandNormal<S> rn (_mean, _sd);
+            for (auto& i : *this) {
+                i = rn.get();
+            }
+        }
+
+        /*!
          * Test to see if this vector is a unit vector (it doesn't *have* to be).
          *
          * \return true if the length of the vector is 1.
@@ -216,6 +259,44 @@ namespace morph {
         }
 
         /*!
+         * Return the value of the longest component of the vector.
+         */
+        S longest() const {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+            S rtn = *thelongest;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the longest component of the vector.
+         */
+        size_t arglongest() const {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+            size_t idx = (thelongest - this->begin());
+            return idx;
+        }
+
+        /*!
+         * Return the value of the maximum (most positive) component of the vector.
+         */
+        S max() const {
+            auto themax = std::max_element (this->begin(), this->end());
+            S rtn = *themax;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the maximum (most positive) component of the vector.
+         */
+        size_t argmax() const {
+            auto themax = std::max_element (this->begin(), this->end());
+            size_t idx = (themax - this->begin());
+            return idx;
+        }
+
+        /*!
          * Unary negate operator
          *
          * \return a Vector whose elements have been negated.
@@ -236,14 +317,29 @@ namespace morph {
         }
 
         /*!
-         * Vector multiply * operator.
+         * \brief Scalar (dot) product
+         *
+         * Compute the scalar product of this Vector and the Vector, v.
+         *
+         * \return scalar product
+         */
+        template<typename _S=S>
+        S dot (const Vector<_S, N>& v) const {
+            auto vi = v.begin();
+            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
+            const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
+            return rtn;
+        }
+
+        /*!
+         * Vector cross product.
          *
          * Cross product of this with another vector \a v (if N==3). In
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        template <size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        Vector<S, N> operator* (const Vector<S, _N>& v) const {
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+        Vector<S, _N> cross (const Vector<_S, _N>& v) const {
             Vector<S, _N> vrtn;
             vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
             vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
@@ -252,45 +348,28 @@ namespace morph {
         }
 
         /*!
+         * operator* gives the Hadamard product.
+         *
+         * Hadamard product - elementwise multiplication. If the vectors are of
+         * differing lengths, then an exception is thrown.
+         *
+         * \return Hadamard product of left hand size (*this) and right hand size (\a v)
+         */
+        template<typename _S=S>
+        Vector<S, N> operator* (const Vector<_S, N>& v) const {
+            Vector<S, N> rtn;
+            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<S>());
+            return rtn;
+        }
+
+        /*!
          * Vector multiply *= operator.
          *
-         * Cross product of this with another vector v (if N==3). Result written into
-         * this.
+         * Hadamard product. Multiply *this vector with \a v, elementwise.
          */
-        template <size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        void operator*= (const Vector<S, _N>& v) {
-            Vector<S, _N> vtmp;
-            vtmp[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-            vtmp[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-            vtmp[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
-            std::copy (vtmp.begin(), vtmp.end(), this->begin());
-        }
-
-        /*!
-         * \brief Scalar (dot) product
-         *
-         * Compute the scalar product of this Vector and the Vector, v.
-         *
-         * \return scalar product
-         */
-        S dot (const Vector<S, N>& v) const {
-            auto vi = v.begin();
-            auto dot_product = [vi](S a, S b) mutable { return a + b * (*vi++); };
-            const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
-            return rtn;
-        }
-
-        /*!
-         * Hadamard product - elementwise multiplication. FIXME: This better as
-         * default for operator* because it is useful for any number of dims. Cross
-         * product could then be a named cross() method.
-         */
-        Vector<S, N> hadamard (const Vector<S, N>& v) const {
-            Vector<S, N> rtn;
-            auto vi = v.begin();
-            auto mult_by_vi = [vi](S a) mutable { return a * (*vi++); };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_vi);
-            return rtn;
+        template <typename _S=S>
+        void operator*= (const Vector<_S, N>& v) {
+            std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<S>());
         }
 
         /*!
@@ -300,9 +379,9 @@ namespace morph {
          * scalar type. Multiplies this Vector<S, N> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator* (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+        Vector<S, N> operator* (const _S& s) const {
+            Vector<S, N> rtn;
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -315,7 +394,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s) {
-            auto mult_by_s = [s](_S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
@@ -323,9 +402,9 @@ namespace morph {
          * Scalar divide by s
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator/ (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto div_by_s = [s](_S coord) { return coord / s; };
+        Vector<S, N> operator/ (const _S& s) const {
+            Vector<S, N> rtn;
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -335,14 +414,15 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s) {
-            auto div_by_s = [s](_S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) { return coord / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
         /*!
          * Vector addition operator
          */
-        Vector<S, N> operator+ (const Vector<S, N>& v) const {
+        template<typename _S=S>
+        Vector<S, N> operator+ (const Vector<_S, N>& v) const {
             Vector<S, N> vrtn;
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
@@ -353,7 +433,8 @@ namespace morph {
         /*!
          * Vector addition operator
          */
-        void operator+= (const Vector<S, N>& v) {
+        template<typename _S=S>
+        void operator+= (const Vector<_S, N>& v) {
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
@@ -362,7 +443,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        Vector<S, N> operator- (const Vector<S, N>& v) const {
+        template<typename _S=S>
+        Vector<S, N> operator- (const Vector<_S, N>& v) const {
             Vector<S, N> vrtn;
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
@@ -373,7 +455,8 @@ namespace morph {
         /*!
          * Vector subtraction operator
          */
-        void operator-= (const Vector<S, N>& v) {
+        template<typename _S=S>
+        void operator-= (const Vector<_S, N>& v) {
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
@@ -383,9 +466,9 @@ namespace morph {
          * Scalar addition
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator+ (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto add_s = [s](_S coord) { return coord + s; };
+        Vector<S, N> operator+ (const _S& s) const {
+            Vector<S, N> rtn;
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -395,7 +478,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s) {
-            auto add_s = [s](_S coord) { return coord + s; };
+            auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -403,9 +486,9 @@ namespace morph {
          * Scalar subtraction
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<_S, N> operator- (const _S& s) const {
-            Vector<_S, N> rtn;
-            auto subtract_s = [s](_S coord) { return coord - s; };
+        Vector<S, N> operator- (const _S& s) const {
+            Vector<S, N> rtn;
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -415,7 +498,7 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s) {
-            auto subtract_s = [s](_S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 

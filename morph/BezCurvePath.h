@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "BezCurve.h"
+#include "morph/BezCurve.h"
 
 #include <limits>
 #include <list>
