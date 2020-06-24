@@ -100,7 +100,8 @@ schanakenberg.json:
     "logpath" : "logs/",
     "saveplots" : false,
     "dt" : 0.000005,
-    //Schnakenberg_model_parameters
+
+    "Section_Parameters" : "Schnakenberg model parameters",
     "D_A" : 0.5,
     "D_B" : 0.6,
     "k1"  : 3,
