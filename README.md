@@ -95,6 +95,7 @@ example from our Schnakenberg reaction-diffusion example,
 schanakenberg.json:
 ```json
 {
+    "Section_Simulation" : "Simulation settings",
     "steps" : 125000,
     "logevery" : 5000,
     "logpath" : "logs/",
