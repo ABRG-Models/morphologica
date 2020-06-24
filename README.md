@@ -469,7 +469,9 @@ git clone https://github.com/ABRG-Models/morphologica.git
 cd morphologica
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+# If you have doxygen, you can build the docs with -DBUILD_DOC=1.
+# If you have OpenMP, you can remove the COMPILE_WITH_OPENMP option or set it to 1
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_DOC=0 -DCOMPILE_WITH_OPENMP=0
 make -j$(nproc)
 sudo make install
 sudo ldconfig # Probably Linux specific! Mac alternative?
