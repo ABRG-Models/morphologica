@@ -45,7 +45,6 @@ int main (int argc, char **argv){
                 N.plotDomainContextDiffOutputNodes(std::stoi(argv[4]),std::stoi(argv[5]));
             } break;
 
-
             default:{
                 std::cout<<"Invalid option: "<< T << std::endl;
             } break;

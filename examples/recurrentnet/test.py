@@ -16,7 +16,7 @@ def recur(pre, post, inds, selfconns=False):
 # Parameters
 dir = 'test' # This folder should exist. It should contain a config.json file
 steps = 10000
-seed = 3
+seed = 1
 N = 5
 
 # Define map (X-OR problem)
