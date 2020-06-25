@@ -1,3 +1,0 @@
-Hello.
-Map[0]:test/map.h5
-Goodbye.
