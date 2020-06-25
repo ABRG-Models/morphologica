@@ -4,7 +4,7 @@
 #include "Winder.h"
 #include "BezCoord.h"
 #include "Vector.h"
-#include "vVector.h"
+#include "morph/vVector.h"
 
 using std::cout;
 using std::endl;

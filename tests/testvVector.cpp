@@ -1,4 +1,5 @@
-#include "vVector.h"
+#include "morph/vVector.h"
+#include <array>
 using morph::vVector;
 using std::cout;
 using std::endl;

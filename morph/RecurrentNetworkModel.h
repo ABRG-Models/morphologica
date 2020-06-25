@@ -178,17 +178,33 @@ public:
         network.read_contained_vals ("F", F);
         N = F.size();
 
+        /*
         std::vector<double> x;   network.read_contained_vals ("X", x);
         std::vector<double> y;   network.read_contained_vals ("Y", y);
         std::vector<double> z;   network.read_contained_vals ("Z", z);
+        std::vector<double> q;   network.read_contained_vals ("Q", q);  // NOTE: Added for RW project (should be done in a more general way)
 
-        if((!(x.size()==N)) || (!(y.size()==N)) || (!(z.size()==N))){
-            std::cout<<"X, Y, Z, F not all the same size... all kinds of badness!"<<std::endl;
+        if((!(x.size()==N)) || (!(y.size()==N)) || (!(z.size()==N)) || (!(q.size()==N))){
+            std::cout<<"X, Y, Z, Q, F not all the same size... all kinds of badness!"<<std::endl;
         }
 
         X.push_back(x);
         X.push_back(y);
         X.push_back(z);
+        X.push_back(q); // NOTE: Added for RW project (should be done in a more general way)
+        */
+
+        // NOTE: Edited for RW project - now expects all input 1 vals then all input 2 vals etc. concatenated
+        std::vector<double> x;   network.read_contained_vals ("X", x);
+        int k=0;
+        for(int i=0;i<floor(x.size()/N);i++){
+            std::vector<double>tmp;
+            for(int j=0;j<N;j++){
+                tmp.push_back(x[k]);
+                k++;
+            }
+            X.push_back(tmp);
+        }
 
         minF = tools::getMin(F);
         maxF = tools::getMax(F);
@@ -388,8 +404,9 @@ public:
 
     void setInput(int mapID, int locID){
         P.reset();
-        P.Input[inputID[0]] = M[mapID].X[0][locID]; // Training on the supplied x-values
-        P.Input[inputID[1]] = M[mapID].X[1][locID];
+        for(int i=0; i<inputID.size(); i++){
+            P.Input[inputID[i]] = M[mapID].X[i][locID]; // Training on the supplied x-values
+        }
         if(M[mapID].contextID != -1){
             P.Input[M[mapID].contextID] = M[mapID].contextVal;
         }
@@ -636,3 +653,4 @@ public:
     }
 
 };
+
