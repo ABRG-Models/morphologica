@@ -436,6 +436,12 @@ sudo make install
 
 ## Installation on Windows
 
+While it is possible to compile and build morphologica on Windows (by using Windows subsystem for Linux to provide a Linux environment) I haven't had it fully working myself, and don't support it or suggest that you try. 
+
+If you *really* want to try here are some hints, but you'll have to solve the OpenGL-4.1-on-WSL problem that I wasn't able to.
+
+### How to fail to fully install morphologica on Windows with Windows subsytem for Linux
+
 To install on Windows, first install *Windows subsystem for Linux* https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
 Install the Ubuntu 18.04 image from the Windows store. Fully upgrade all packages before you start:
@@ -446,9 +452,18 @@ sudo apt update
 sudo apt upgrade
 ```
 
-(Optional) Install an X server on yoru Windows desktop, so that your graphical Windows subsystem for Linux programs can draw their output. This will be required for some of the morphologica test programs to run.
+Now you can follow instructions for installing on GNU/Linux, above, to get some of the morphologica code to compile.
 
-Now you can follow instructions for installing on GNU/Linux, above.
+In principle, if you install an X server on your Windows desktop, then the graphical morphologica programs should be compilable. This is required for some of the morphologica test programs to run. I tried Xming, and I payed a donation to the developer to get the up-to-date version of Xming (the free version will definitely not work for modern OpenGL applications). In my Windows subsystem for Linux Ubuntu 18.04 environment I exported the DISPLAY environment variable so that programs will know where to draw their output:
+
+```sh
+export DISPLAY=:0
+```
+(actually, I added this to my .bashrc).
+
+However, Xming version 7.7 didn't work for me (morphologica requires OpenGL version 4.1). I then tried VcXsrv, but that didn't work for me either.
+
+It *may* be possible to get one or other of these to work, but I gave up.
 
 ## Docker
 
