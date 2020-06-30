@@ -66,6 +66,7 @@ struct FeedForwardConn
         ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
         ss << " Biases: b" << b << "b (" << b.size() << ")\n";
         ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
+        ss << "delta  :  " << delta << "\n";
         return ss.str();
     }
 
