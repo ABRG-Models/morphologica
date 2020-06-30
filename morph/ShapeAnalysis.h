@@ -1001,14 +1001,22 @@ namespace morph {
         }
 
         /*!
-         * Take a list of Dirichlet domains and compute a metric for the Dirichlet-ness of the
-         * vertices after Honda1983.
+         * Take a list of Dirichlet domains and compute a metric for the Dirichlet-ness
+         * of the vertices after Honda1983. Return the overall Honda measure, and place
+         * all delta_j values in \a delta_j.
          */
         static Flt
         dirichlet_analyse (std::list<DirichDom<Flt>>& doms, std::vector<std::pair<Flt, Flt>>& d_centres) {
+            std::map<Flt, Flt> delta_js;
+            return ShapeAnalysis::dirichlet_analyse (doms, d_centres, delta_js);
+        }
+
+        static Flt
+        dirichlet_analyse (std::list<DirichDom<Flt>>& doms, std::vector<std::pair<Flt, Flt>>& d_centres, std::map<Flt, Flt>& delta_js) {
             Flt sum_delta_j = 0.0;
             Flt sum_areas = 0.0;
             d_centres.clear();
+            delta_js.clear();
             auto di = doms.begin();
             while (di != doms.end()) {
                 std::pair<Flt, Flt> P;
@@ -1016,6 +1024,7 @@ namespace morph {
                 Flt delta_j = di->dirichlet_analyse_single_domain (P);
                 //cout << "Domain delta_j = " << delta_j << endl;
                 sum_delta_j += delta_j;
+                delta_js[di->f] = delta_j;
                 d_centres.push_back (P);
                 // Sum up area too.
                 sum_areas += di->area;
