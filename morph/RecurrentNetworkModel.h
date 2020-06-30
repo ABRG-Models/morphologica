@@ -243,7 +243,8 @@ class RecurrentNetworkModel{
 public:
     std::string logpath;
     std::ofstream logfile;
-    std::vector<double> inputs, Error, response;
+    std::vector<double> inputs, Error;//, response;
+    std::vector<std::vector<double> > response;
     RecurrentNetwork P;
     std::vector<Map> M;
     Domain<double> domain;
