@@ -22,7 +22,7 @@ morph::World::World (const char* processName,
     ss<<logfileLocation;           // logfile location
     srand(seed);                   // random seed
     this->portID=portID;           // tcpip port ID
-    this->master.init(portID);
+    this->supervisor.init(portID);
     vector<Client> ports;          // Remember this can be used for multi inputs
 
     TIME = 0;
@@ -49,7 +49,7 @@ morph::World::World (const char* processName,
     ss<<logfileLocation;           // logfile location
     srand(seed);                   // random seed
     //this->portID=portID;           // tcpip port ID
-    //this->master.init(portID);
+    //this->supervisor.init(portID);
     //vector<Client> ports;          // Remember this can be used for multi inputs
 
     TIME = 0;
@@ -78,7 +78,7 @@ morph::World::getCommand (vector<double*> msgOut)
     }
 
     vector <string> command;
-    string messageI=master.exchange(out.str().c_str());
+    string messageI=supervisor.exchange(out.str().c_str());
     stringstream ss(messageI);
     while (ss.good()){
         string substr;
@@ -106,8 +106,8 @@ morph::World::~World()
     logfile<<"*********"<<endl<<flush;
 
     logfile.close();
-    // master.closeSocket();
-    master.~Client();
+    // supervisor.closeSocket();
+    supervisor.~Client();
 
     for(unsigned int i=0;i<ports.size();i++){
         // ports[i].closeSocket();

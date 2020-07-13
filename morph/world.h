@@ -40,7 +40,7 @@ namespace morph
         const char* processName;    // process name
         int seed;
         int portID;                 // tcpip port ID
-        Client master;
+        Client supervisor;
         vector<Client> ports;
         ofstream logfile;
         double TIME;
