@@ -178,23 +178,6 @@ public:
         network.read_contained_vals ("F", F);
         N = F.size();
 
-        /*
-        std::vector<double> x;   network.read_contained_vals ("X", x);
-        std::vector<double> y;   network.read_contained_vals ("Y", y);
-        std::vector<double> z;   network.read_contained_vals ("Z", z);
-        std::vector<double> q;   network.read_contained_vals ("Q", q);  // NOTE: Added for RW project (should be done in a more general way)
-
-        if((!(x.size()==N)) || (!(y.size()==N)) || (!(z.size()==N)) || (!(q.size()==N))){
-            std::cout<<"X, Y, Z, Q, F not all the same size... all kinds of badness!"<<std::endl;
-        }
-
-        X.push_back(x);
-        X.push_back(y);
-        X.push_back(z);
-        X.push_back(q); // NOTE: Added for RW project (should be done in a more general way)
-        */
-
-        // NOTE: Edited for RW project - now expects all input 1 vals then all input 2 vals etc. concatenated
         std::vector<double> x;   network.read_contained_vals ("X", x);
         int k=0;
         for(int i=0;i<floor(x.size()/N);i++){
@@ -416,11 +399,17 @@ public:
     std::vector<int> setRandomInput(void){
         // first is mapID, second is location ID
         std::vector<int> sample(2,floor(morph::Tools::randDouble()*M.size()));
-        sample[1] = floor(morph::Tools::randDouble()*M[sample[0]].N);;
+        sample[1] = floor(morph::Tools::randDouble()*M[sample[0]].N);
         return sample;
     }
 
     std::vector<std::vector<double> > testMap(int mapID){
+
+        /*
+        Tests the network by supplying each input value combination specified in the map indexed by mapID.
+        Returns a num-units x num-map-values array of settled node response values.
+        */
+
         std::vector<std::vector<double> > response(P.N,std::vector<double>(M[mapID].N,0.));
         for(int j=0;j<M[mapID].N;j++){
             setInput(mapID,j);
@@ -497,6 +486,60 @@ public:
                     P.W = P.Wbest;
                 }
                 Error.push_back(errMin);
+            }
+
+            if(fmod(k,K/100)==0){
+                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
+            }
+        }
+        P.W = P.Wbest;
+
+    }
+
+    void run2(int K, int errorSamplePeriod){
+
+        P.randomizeWeights(-1.0, +1.0);
+
+        double errMin = 1e9;
+        for(int k=0;k<K;k++){
+            if(k%errorSamplePeriod){
+
+                std::vector<int> sample = setRandomInput();
+                setInput(sample[0],sample[1]);
+
+                // RUN2 DOES NOT USE 'NUDGE' IN CONVERGEFORWARD
+                P.convergeForward(-1,false);
+                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
+                P.convergeBackward(-1,false);
+                P.weightUpdate();
+
+            } else {
+
+                double err = 0.;
+                int count = 0;
+
+                // RUN2 NEEDS TO ERROR OVER ***ALL*** MAP VALUES
+                for(int i=0;i<M.size();i++){
+                    for(int j=0;j<M[i].N;j++){
+                        setInput(i,j);
+                        P.convergeForward(-1,false);
+                        P.setError(std::vector<int> (1,M[i].outputID), std::vector<double> (1,M[i].F[j]));
+                        err += P.getError();
+                        count++;
+                    }
+                }
+                err /= (double)count;
+
+                // RUN2 HAS A REJECTION **TOLERANCE** ON ERROR<ERRORMIN
+                if(err<errMin){
+                    errMin = err;
+                }
+                if (err>2.0*errMin) {
+                    P.W = P.Wbest;
+                } else {
+                    P.Wbest = P.W;
+                }
+                Error.push_back(err);
             }
 
             if(fmod(k,K/100)==0){
