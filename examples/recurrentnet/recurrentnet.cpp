@@ -9,6 +9,15 @@ int main (int argc, char **argv){
     if(T>0){
         // TRAINING
         N.run(T,1000,100,false);
+
+        // populate response vector
+        std::vector<std::vector<double> > r = N.testMap(0);
+        for(int i=0;i<r.size();i++){
+            for(int j=0;j<r[i].size();j++){
+                N.response.push_back(r[i][j]);
+            }
+        }
+
         N.saveOutputs();
         N.saveWeights();
     } else {
