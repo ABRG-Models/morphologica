@@ -117,6 +117,8 @@ public:
         for(int i=0;i<N;i++){
             F[i] = 1./(1.+exp(-U[i]));
         }
+
+
         //#pragma omp parallel for
         for(int i=0;i<N;i++){
             X[i] +=dtOverTauX* ( -X[i] + F[i] + Input[i] );
@@ -150,14 +152,29 @@ public:
         for(int i=0;i<N;i++){
             Y[i] +=dtOverTauY * (V[i] - Y[i] + J[i]);
         }
+
     }
 
     void weightUpdate(void){
 
+        /*
+            Weight update. Note that large weight updates are rejected, which seems to fix a stability issue causing weights (and thus error) to jump to very large values when learning starts to converge.
+        */
+
+        //#pragma omp parallel for
+        double delta;
+        for(int k=0;k<Nweight;k++){
+            delta = (X[Pre[k]] * Y[Post[k]] * Fprime[Post[k]]);
+            if(fabs(delta)<1.0){
+                W[k] += dtOverTauW*delta;
+            }
+        }
+        /*
         //#pragma omp parallel for
         for(int k=0;k<Nweight;k++){
             W[k] +=dtOverTauW* (X[Pre[k]] * Y[Post[k]] * Fprime[Post[k]]);
         }
+        */
     }
 
     double getError(void){
