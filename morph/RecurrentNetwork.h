@@ -165,11 +165,16 @@ public:
         double delta;
         for(int k=0;k<Nweight;k++){
             delta = (X[Pre[k]] * Y[Post[k]] * Fprime[Post[k]]);
-            if(fabs(delta)<1.0){
+            if(delta<-1.0){
+                W[k] -= dtOverTauW;
+            } else if (delta>1.0) {
+                W[k] += dtOverTauW;
+            } else {
                 W[k] += dtOverTauW*delta;
             }
         }
-        /*
+
+        /* // ORIGINAL
         //#pragma omp parallel for
         for(int k=0;k<Nweight;k++){
             W[k] +=dtOverTauW* (X[Pre[k]] * Y[Post[k]] * Fprime[Post[k]]);
