@@ -1,3 +1,11 @@
+/*!
+ * \file
+ *
+ * \brief Some utility code relevant to RecurrentNetwork and friends
+ *
+ * \author Stuart Wilson
+ * \date 2020
+ */
 
 namespace tools{
 

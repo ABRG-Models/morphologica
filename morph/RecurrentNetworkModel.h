@@ -1,5 +1,10 @@
-/*
- Implementation of recurrent backprop algorithm following Pineda (1987)
+/*!
+ * \file
+ *
+ * \brief Implementation of recurrent backprop algorithm following Pineda (1987)
+ *
+ * \author Stuart Wilson
+ * \date 2020
  */
 
 // With the correct OpenGL definitions (-DGL3_PROTOTYPES etc) you probably don't need this for Apple
@@ -22,6 +27,7 @@
 #include "morph/ReadCurves.h"
 #include "morph/RD_Base.h"
 
+#if 0 // These using directives should be removed from RecurrentNetworkModel.h
 using morph::Config;
 using morph::Visual;
 using morph::ColourMapType;
@@ -32,9 +38,8 @@ using morph::Scale;
 using morph::HdfData;
 using morph::Vector;
 
-
 using namespace tools;
-
+#endif
 
 std::vector<std::array<float, 12>> getQuads(std::vector<double> X, std::vector<double> Y){
 
@@ -697,4 +702,3 @@ public:
     }
 
 };
-
