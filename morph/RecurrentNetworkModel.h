@@ -1,5 +1,10 @@
-/*
- Implementation of recurrent backprop algorithm following Pineda (1987)
+/*!
+ * \file
+ *
+ * \brief Implementation of recurrent backprop algorithm following Pineda (1987)
+ *
+ * \author Stuart Wilson
+ * \date 2020
  */
 
 // With the correct OpenGL definitions (-DGL3_PROTOTYPES etc) you probably don't need this for Apple
@@ -21,6 +26,7 @@
 #include "morph/ReadCurves.h"
 #include "morph/RD_Base.h"
 
+#if 0 // These using directives should be removed from RecurrentNetworkModel.h
 using morph::Config;
 using morph::Visual;
 using morph::ColourMapType;
@@ -650,45 +656,3 @@ public:
     }
 
 };
-
-
-
-
-    /*
-    void run(int K, int errorSamplePeriod, int errorSampleSize, bool resetWeights){
-        P.randomizeWeights(-1.0, +1.0);
-        double errMin = 1e9;
-        for(int k=0;k<K;k++){
-            if(k%errorSamplePeriod){
-                std::vector<int> sample = setRandomInput();
-                setInput(sample[0],sample[1]);
-                P.convergeForward(-1,true);
-                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                P.convergeBackward(-1,false);
-                P.weightUpdate();
-            } else {
-                double err = 0.;
-                for(int j=0;j<errorSampleSize;j++){
-                    std::vector<int> sample = setRandomInput();
-                    setInput(sample[0],sample[1]);
-                    P.convergeForward(-1,false);
-                    P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                    err += P.getError();
-                }
-                err /= (double)errorSampleSize;
-                if(err<errMin){
-                    errMin = err;
-                    P.Wbest = P.W;
-                } else if (resetWeights) {
-                    P.W = P.Wbest;
-                }
-                Error.push_back(errMin);
-            }
-
-            if(fmod(k,K/100)==0){
-                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
-            }
-        }
-        P.W = P.Wbest;
-    }
-    */

@@ -1,4 +1,16 @@
-class RecurrentNetwork{
+/*!
+ * \file
+ *
+ * \brief Provides a recurrent neural network class
+ *
+ * \author Stuart Wilson
+ * \date 2020
+ */
+
+#include <vector>
+#include <algorithm>
+
+class RecurrentNetwork {
 
 /*!
  * \brief The first line is marked brief and acts as a summary
@@ -16,7 +28,7 @@ class RecurrentNetwork{
  * Return values are:
  * \return 0 on success and a bomb on failure
  */
- 
+
 public:
     int N, Nweight, Nplus1, maxConvergenceSteps;
     std::vector<double> W, X, Input, U, Wbest, Y, F, V, Fprime, J;
@@ -33,7 +45,7 @@ public:
 
         init(N, dt, tauW, tauX, tauY, weightNudgeSize, divergenceThreshold, maxConvergenceSteps);
     }
-    
+
     void init(int N, double dt, double tauW, double tauX, double tauY, double weightNudgeSize, double divergenceThreshold, int maxConvergenceSteps){
 
         this->N=N;
@@ -147,7 +159,7 @@ public:
         for(int k=0;k<Nweight;k++){
             V[Pre[k]] += Fprime[Post[k]] * W[k] * Y[Post[k]];
         }
-        
+
         //#pragma omp parallel for
         for(int i=0;i<N;i++){
             Y[i] +=dtOverTauY * (V[i] - Y[i] + J[i]);
@@ -253,4 +265,3 @@ public:
         if(knockout){ Y[ko]=0.; }
     }
 };
-
