@@ -34,19 +34,19 @@ public:
     std::vector<double> W, X, Input, U, Wbest, Y, F, V, Fprime, J;
     double dt, dtOverTauX, dtOverTauY, dtOverTauW;
     std::vector<int> Pre, Post;
-    double zero, weightNudgeSize, divergenceThreshold;
+    double zero, divergenceThreshold;
     std::vector<double*> Wptr;
 
     RecurrentNetwork(void){
 
     }
 
-    RecurrentNetwork(int N, double dt, double tauW, double tauX, double tauY, double weightNudgeSize, double divergenceThreshold, int maxConvergenceSteps){
+    RecurrentNetwork(int N, double dt, double tauW, double tauX, double tauY, double divergenceThreshold, int maxConvergenceSteps){
 
-        init(N, dt, tauW, tauX, tauY, weightNudgeSize, divergenceThreshold, maxConvergenceSteps);
+        init(N, dt, tauW, tauX, tauY, divergenceThreshold, maxConvergenceSteps);
     }
 
-    void init(int N, double dt, double tauW, double tauX, double tauY, double weightNudgeSize, double divergenceThreshold, int maxConvergenceSteps){
+    void init(int N, double dt, double tauW, double tauX, double tauY, double divergenceThreshold, int maxConvergenceSteps){
 
         this->N=N;
         X.resize(N,0.);
@@ -56,7 +56,6 @@ public:
         J.resize(N,0.);
         Fprime.resize(N,0.);
         Nplus1 = N; // overwrite if bias
-        this->weightNudgeSize= weightNudgeSize;
         this->divergenceThreshold= divergenceThreshold * N;
         this->maxConvergenceSteps= maxConvergenceSteps;
         zero = 0.0;
@@ -130,7 +129,6 @@ public:
             F[i] = 1./(1.+exp(-U[i]));
         }
 
-
         //#pragma omp parallel for
         for(int i=0;i<N;i++){
             X[i] +=dtOverTauX* ( -X[i] + F[i] + Input[i] );
@@ -185,13 +183,6 @@ public:
                 W[k] += dtOverTauW*delta;
             }
         }
-
-        /* // ORIGINAL
-        //#pragma omp parallel for
-        for(int k=0;k<Nweight;k++){
-            W[k] +=dtOverTauW* (X[Pre[k]] * Y[Post[k]] * Fprime[Post[k]]);
-        }
-        */
     }
 
     double getError(void){
@@ -211,6 +202,66 @@ public:
         return flatweightmat;
     }
 
+
+    bool convergeForward(void){
+        std::vector<double> Xpre(N,0.);
+        double total = N;
+        for(int t=0;t<maxConvergenceSteps;t++){
+            if(total>divergenceThreshold){
+                Xpre=X;
+                forward();
+                total = 0.0;
+                for(int i=0;i<N;i++){ total +=(X[i]-Xpre[i])*(X[i]-Xpre[i]); }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool convergeBackward(void){
+        std::vector<double> Ypre(N,0.);
+        double total = N;
+        for(int t=0;t<maxConvergenceSteps;t++){
+            if(total>divergenceThreshold){
+                Ypre=Y;
+                backward();
+                total = 0.0;
+                for(int i=0;i<N;i++){ total +=(Y[i]-Ypre[i])*(Y[i]-Ypre[i]); }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+   void convergeForward(double weightNudgeSize){
+        bool converged = convergeForward();
+        if(!converged){
+            W = Wbest;
+            for(int k=0;k<Nweight;k++){
+                W[k] += (morph::Tools::randDouble()*2-1)*weightNudgeSize;
+            }
+        }
+    }
+
+    void convergeBackward(double weightNudgeSize){
+        bool converged = convergeBackward();
+        if(!converged){
+            W = Wbest;
+            for(int k=0;k<Nweight;k++){
+                W[k] += (morph::Tools::randDouble()*2-1)*weightNudgeSize;
+            }
+        }
+    }
+
+
+
+
+
+
+
+/*
     void convergeForward(int ko, bool nudge){
         bool knockout = (ko>=0);
         std::vector<double> Xpre(N,0.);
@@ -264,4 +315,5 @@ public:
         }
         if(knockout){ Y[ko]=0.; }
     }
+    */
 };

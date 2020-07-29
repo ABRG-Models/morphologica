@@ -26,7 +26,7 @@
 #include "morph/ReadCurves.h"
 #include "morph/RD_Base.h"
 
-#if 0 // These using directives should be removed from RecurrentNetworkModel.h
+//#if 0 // These using directives should be removed from RecurrentNetworkModel.h
 using morph::Config;
 using morph::Visual;
 using morph::ColourMapType;
@@ -276,7 +276,7 @@ public:
         N++;
 
         // Initiate network
-        P.init (N,dt,tauW,tauX,tauY,weightNudgeSize,divergenceThreshold,maxConvergenceSteps);
+        P.init (N,dt,tauW,tauX,tauY,divergenceThreshold,maxConvergenceSteps);
         for(int i=0;i<pre.size();i++){ P.connect(pre[i],post[i]); }
         P.addBias();
         P.setNet();
@@ -372,7 +372,7 @@ public:
         std::vector<std::vector<double> > response(P.N,std::vector<double>(M[mapID].N,0.));
         for(int j=0;j<M[mapID].N;j++){
             setInput(mapID,j);
-            P.convergeForward(-1,false);
+            P.convergeForward();
             for(int k=0;k<P.N;k++){
                 response[k][j] = P.X[k];
             }
@@ -394,7 +394,7 @@ public:
                 P.Input[C[i].nodeIDs[k]] = C[i].Vals[k];
             }
 
-            P.convergeForward(-1,false);
+            P.convergeForward();
             for(int k=0;k<P.N;k++){
                 R[k][j] = P.X[k];
             }
@@ -421,9 +421,9 @@ public:
             if(k%errorSamplePeriod){
                 std::vector<int> sample = setRandomInput();
                 setInput(sample[0],sample[1]);
-                P.convergeForward(-1,false);
+                P.convergeForward();
                 P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                P.convergeBackward(-1,false);
+                P.convergeBackward();
                 P.weightUpdate();
             } else {
                 double err = 0.;
@@ -431,7 +431,7 @@ public:
                 for(int i=0;i<M.size();i++){
                     for(int j=0;j<M[i].N;j++){
                         setInput(i,j);
-                        P.convergeForward(-1,false);
+                        P.convergeForward();
                         P.setError(std::vector<int> (1,M[i].outputID), std::vector<double> (1,M[i].F[j]));
                         err += P.getError();
                         count++;
@@ -666,16 +666,16 @@ public:
             if(k%errorSamplePeriod){
                 std::vector<int> sample = setRandomInput();
                 setInput(sample[0],sample[1]);
-                P.convergeForward(-1,true);
+                P.convergeForward(weightNudgeSize);
                 P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                P.convergeBackward(-1,false);
+                P.convergeBackward();
                 P.weightUpdate();
             } else {
                 double err = 0.;
                 for(int j=0;j<errorSampleSize;j++){
                     std::vector<int> sample = setRandomInput();
                     setInput(sample[0],sample[1]);
-                    P.convergeForward(-1,false);
+                    P.convergeForward();
                     P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
                     err += P.getError();
                 }
