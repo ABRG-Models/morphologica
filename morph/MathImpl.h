@@ -24,6 +24,7 @@
 #include <type_traits>
 #include <memory>
 #include "morph/MathConst.h"
+#include "morph/expression_sfinae.h"
 
 namespace morph {
 
@@ -87,29 +88,53 @@ namespace morph {
                    typename Allocator=std::allocator<T> >
         static T centroid (const Container<T, Allocator>& coords) {
 
-            using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
-
             T _centroid(*coords.begin());
 
-            // zero _centroid
-            typename T::iterator ci = _centroid.begin();
-            while (ci != _centroid.end()) {
-                *ci++ = static_cast<T_el>(0);
-            }
+            // If T has a .x and a .y as member attributes, assume it's a 2D point (e.g. cv::Point)
+            if constexpr (has_xy_members<T>::value == true) {
 
-            typename Container<T, Allocator>::const_iterator conti = coords.begin();
-            while (conti != coords.end()) {
-                ci = _centroid.begin();
-                typename T::const_iterator conti_eli = conti->begin(); // conti element iterator
-                while (ci != _centroid.end()) {
-                    *ci++ += *conti_eli++;
+                // using T_el = what? how to get the element type in a cv::Point_?
+                using T_el = std::remove_reference_t<decltype(T::x)>;
+
+                _centroid.x = T_el{0};
+                _centroid.y = T_el{0};
+
+                typename Container<T, Allocator>::const_iterator conti = coords.begin();
+                while (conti != coords.end()) {
+                    _centroid.x += conti->x;
+                    _centroid.y += conti->y;
+                    ++conti;
                 }
-                ++conti;
-            }
-            size_t csz = coords.size();
-            ci = _centroid.begin();
-            while (ci != _centroid.end()) {
-                *ci++ /= static_cast<T_el>(csz);
+
+                // Maybe T_el instead of double here?
+                T_el csz = static_cast<T_el>(coords.size());
+                _centroid.x /= csz;
+                _centroid.y /= csz;
+
+            } else { // This code is the default for iterable Ts (any number of dimensions)
+
+                using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
+
+                // zero _centroid
+                typename T::iterator ci = _centroid.begin();
+                while (ci != _centroid.end()) {
+                    *ci++ = static_cast<T_el>(0);
+                }
+
+                typename Container<T, Allocator>::const_iterator conti = coords.begin();
+                while (conti != coords.end()) {
+                    ci = _centroid.begin();
+                    typename T::const_iterator conti_eli = conti->begin(); // conti element iterator
+                    while (ci != _centroid.end()) {
+                        *ci++ += *conti_eli++;
+                    }
+                    ++conti;
+                }
+                size_t csz = coords.size();
+                ci = _centroid.begin();
+                while (ci != _centroid.end()) {
+                    *ci++ /= static_cast<T_el>(csz);
+                }
             }
 
             return _centroid;
