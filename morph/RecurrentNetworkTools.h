@@ -128,4 +128,62 @@ namespace tools{
         return X;
     }
 
+
+    std::vector<std::array<float, 12>> getQuads(std::vector<double> X, std::vector<double> Y){
+        std::vector<std::array<float, 12>> quads;
+        double xRange = getMax(X) - getMin(X);
+        double yRange = getMax(Y) - getMin(Y);
+        double xOff = -0.5*xRange;
+        double yOff = -0.5*yRange;
+        double maxDim = xRange;
+        if(yRange>maxDim){ maxDim = yRange; }
+        double xScale = xRange/maxDim;
+        double yScale = yRange/maxDim;
+        std::vector<double> uniqueX = getUnique(X);
+        int cols = uniqueX.size();
+        std::vector<int> colID(X.size(),0);
+        std::vector<std::vector<double> > yByCol(cols);
+        std::vector<int> count(cols,0);
+        for(int i=0;i<X.size();i++){
+            for(int j=0;j<cols;j++){
+                if(X[i]==uniqueX[j]){
+                    colID[i]=j;
+                    yByCol[j].push_back(Y[i]);
+                    count[j]++;
+                }
+            }
+        }
+        std::vector<double> colRange(cols);
+        for(int i=0;i<cols;i++){
+            colRange[i] = getMax(yByCol[i])-getMin(yByCol[i]);
+        }
+        double xSep = 0.5*xRange/((double)cols-1);
+        std::vector<double> ySep;
+        for(int i=0;i<X.size();i++){
+            ySep.push_back(0.5*colRange[colID[i]]/((double)count[colID[i]]-1));
+        }
+        std::array<float, 12> sbox;
+        for (int i=0; i<X.size(); i++) {
+            // corner 1 x,y,z
+            sbox[0] = xScale*(xOff+X[i]-xSep);
+            sbox[1] = yScale*(yOff+Y[i]-ySep[i]);
+            sbox[2] = 0.0;
+            // corner 2 x,y,z
+            sbox[3] = xScale*(xOff+X[i]-xSep);
+            sbox[4] = yScale*(yOff+Y[i]+ySep[i]);
+            sbox[5] = 0.0;
+            // corner 3 x,y,z
+            sbox[6] = xScale*(xOff+X[i]+xSep);
+            sbox[7] = yScale*(yOff+Y[i]+ySep[i]);
+            sbox[8] = 0.0;
+            // corner 4 x,y,z
+            sbox[9] = xScale*(xOff+X[i]+xSep);
+            sbox[10]= yScale*(yOff+Y[i]-ySep[i]);
+            sbox[11]= 0.0;
+            quads.push_back(sbox);
+        }
+        return quads;
+    }
+
+
 };

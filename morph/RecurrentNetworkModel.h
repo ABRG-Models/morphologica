@@ -18,7 +18,6 @@
 #include "Vector.h"
 #include "RecurrentNetworkTools.h"
 #include "RecurrentNetwork.h"
-
 #include "morph/ReadCurves.h"
 #include "morph/RD_Base.h"
 
@@ -32,71 +31,7 @@ using morph::Scale;
 using morph::HdfData;
 using morph::Vector;
 
-
 using namespace tools;
-
-
-std::vector<std::array<float, 12>> getQuads(std::vector<double> X, std::vector<double> Y){
-
-    std::vector<std::array<float, 12>> quads;
-
-    double xRange = tools::getMax(X) - tools::getMin(X);
-    double yRange = tools::getMax(Y) - tools::getMin(Y);
-    double xOff = -0.5*xRange;
-    double yOff = -0.5*yRange;
-    double maxDim = xRange;
-    if(yRange>maxDim){ maxDim = yRange; }
-    double xScale = xRange/maxDim;
-    double yScale = yRange/maxDim;
-
-    std::vector<double> uniqueX = tools::getUnique(X);
-    int cols = uniqueX.size();
-    std::vector<int> colID(X.size(),0);
-    std::vector<std::vector<double> > yByCol(cols);
-    std::vector<int> count(cols,0);
-    for(int i=0;i<X.size();i++){
-        for(int j=0;j<cols;j++){
-            if(X[i]==uniqueX[j]){
-                colID[i]=j;
-                yByCol[j].push_back(Y[i]);
-                count[j]++;
-            }
-        }
-    }
-
-    std::vector<double> colRange(cols);
-    for(int i=0;i<cols;i++){
-        colRange[i] = tools::getMax(yByCol[i])-tools::getMin(yByCol[i]);
-    }
-    double xSep = 0.5*xRange/((double)cols-1);
-    std::vector<double> ySep;
-    for(int i=0;i<X.size();i++){
-        ySep.push_back(0.5*colRange[colID[i]]/((double)count[colID[i]]-1));
-    }
-
-    std::array<float, 12> sbox;
-    for (int i=0; i<X.size(); i++) {
-        // corner 1 x,y,z
-        sbox[0] = xScale*(xOff+X[i]-xSep);
-        sbox[1] = yScale*(yOff+Y[i]-ySep[i]);
-        sbox[2] = 0.0;
-        // corner 2 x,y,z
-        sbox[3] = xScale*(xOff+X[i]-xSep);
-        sbox[4] = yScale*(yOff+Y[i]+ySep[i]);
-        sbox[5] = 0.0;
-        // corner 3 x,y,z
-        sbox[6] = xScale*(xOff+X[i]+xSep);
-        sbox[7] = yScale*(yOff+Y[i]+ySep[i]);
-        sbox[8] = 0.0;
-        // corner 4 x,y,z
-        sbox[9] = xScale*(xOff+X[i]+xSep);
-        sbox[10]= yScale*(yOff+Y[i]-ySep[i]);
-        sbox[11]= 0.0;
-        quads.push_back(sbox);
-    }
-    return quads;
-}
-
 
 template <class Flt>
 class Domain : public morph::RD_Base<Flt> {
@@ -150,6 +85,23 @@ public:
 };
 
 
+class Context{
+
+    /*
+    Structure for storing a context (context node identities and corresponding input values)
+    */
+public:
+    std::string name;
+    std::vector<int> nodeIDs;
+    std::vector<double> Vals;
+
+    Context(std::string name, std::vector<int> nodeIDs, std::vector<double> Vals){
+        this->name = name;
+        this->nodeIDs = nodeIDs;
+        this->Vals = Vals;
+    }
+};
+
 
 class Map{
 
@@ -198,7 +150,7 @@ public:
             minX.push_back(tools::getMin(X[i]));
         }
 
-        quads = getQuads(X[0],X[1]);
+        quads = tools::getQuads(X[0],X[1]);
 
     }
 
@@ -206,17 +158,12 @@ public:
         init(filename);
     }
 
-    Map(std::string filename,int outputID){
-        init(filename);
-        this->outputID = outputID;
-    }
-
-    Map(std::string filename,int outputID, int contextID, double contextVal){
+    Map(std::string filename,int outputID, int contextID){
         init(filename);
         this->outputID = outputID;
         this->contextID = contextID;
-        this->contextVal = contextVal;
     }
+
 };
 
 
@@ -227,14 +174,12 @@ public:
     std::string logpath;
     std::ofstream logfile;
     std::vector<double> inputs, Error;
-    std::vector<double> response;
     RecurrentNetwork P;
     std::vector<Map> M;
+    std::vector<Context> C;
     Domain<double> domain;
     std::vector<int> inputID;
     std::vector<int> outputID;
-    std::vector<int> contextIDs;
-    std::vector<double> contextVals;
     int nContext;
     morph::ColourMapType colourMap;
 
@@ -250,8 +195,9 @@ public:
         // Read in network params
         Config conf;
         { std::stringstream ss; ss << logpath <<"/config.json"; conf.init (ss.str()); }
+
         float dt = conf.getFloat("dt",1.0);
-        float tauW = conf.getFloat("tauW",2.0);
+        float tauW = conf.getFloat("tauW",32.0);
         float tauX = conf.getFloat("tauX",1.0);
         float tauY = conf.getFloat("tauY",1.0);
         float weightNudgeSize = conf.getFloat("weightNudgeSize",0.001);
@@ -262,8 +208,27 @@ public:
         float yAspect = conf.getFloat("yAspect",0.75);
         float scaleDomain = conf.getFloat("scaleDomain",1.5);
 
+        // Read in contexts info
+        const Json::Value ctx = conf.getArray ("contexts");
+        nContext = static_cast<unsigned int>(ctx.size());
+        for (unsigned int i = 0; i < ctx.size(); ++i) {
+            Json::Value ctxi = ctx[i];
+            Json::Value ctxname = ctxi["name"];
+            std::string name = ctxname.asString();
+            Json::Value cid = ctxi["ID"];
+            std::vector<int> cID;
+            for (unsigned int j = 0; j < cid.size(); ++j) {
+                cID.push_back(cid[j].asInt());
+            }
+            Json::Value cval = ctxi["Val"];
+            std::vector<double> cVal;
+            for (unsigned int j = 0; j < cval.size(); ++j) {
+                cVal.push_back(cval[j].asDouble());
+            }
+            C.push_back(Context(name, cID, cVal));
+        }
 
-        // Read in map info
+        // Read in maps info
         const Json::Value maps = conf.getArray("maps");
         for(int i=0;i<maps.size();i++){
             std::string fn = maps[i].get("filename", "unknown map").asString();
@@ -271,8 +236,7 @@ public:
             logfile<<"Map["<<i<<"]:"<<ss.str()<<std::endl;
             int oID = maps[i].get("outputID",-1).asInt();
             int cID = maps[i].get("contextID",-1).asInt();
-            float cVal = maps[i].get("contextVal",0.0).asFloat();
-            M.push_back(Map(ss.str(),oID,cID,cVal));
+            M.push_back(Map(ss.str(),oID,cID));
         }
 
         for(int i=0;i<M.size();i++){
@@ -332,38 +296,27 @@ public:
         double scale = (maxX-minX)/(2.0*domain.ellipseA) * scaleDomain;
         domain.setAxes(scale, scale, minX+(maxX-minX)*0.5, minY+(maxY-minY)*0.5);
 
-        // identify the unique context conditions
-        std::vector<int> allContextIDs;
-        std::vector<double> allContextVals;
-        for(int i=0;i<M.size();i++){
-            if(M[i].contextID!=-1){
-                allContextIDs.push_back(M[i].contextID);
-                allContextVals.push_back(M[i].contextVal);
-            }
-        }
-
-        for(int i=0;i<allContextIDs.size();i++){
-            bool uni = true;
-            for(int k=0;k<contextIDs.size();k++){
-                if((allContextIDs[i]==contextIDs[k]) && (allContextVals[i]==contextVals[k])){
-                    uni = false; break;
-                }
-            } if(uni){
-                contextIDs.push_back(allContextIDs[i]);
-                contextVals.push_back(allContextVals[i]);
-            }
-        }
-        nContext = contextIDs.size();
-
         setColourMap(morph::ColourMapType::Viridis);
 
     }
 
-    void saveOutputs(void) { // log outputs
-        std::stringstream fname; fname << logpath << "/outputs.h5";
+    void saveMapResponse(int mapID) { // log responses
+        std::vector<std::vector<double> > r = testMap(mapID);
+        std::vector<double> response;
+        for(int i=0;i<r.size();i++){
+            for(int j=0;j<r[i].size();j++){
+                response.push_back(r[i][j]);
+            }
+        }
+        std::stringstream fname; fname << logpath << "/responseForMap_"<<mapID<<".h5";
         HdfData outdata(fname.str());
-        outdata.add_contained_vals ("error", Error);
-        outdata.add_contained_vals ("responses", response);
+        outdata.add_contained_vals ("response", response);
+    }
+
+    void saveError(void) { // log error
+        std::stringstream fname; fname << logpath << "/error.h5";
+        HdfData errordata(fname.str());
+        errordata.add_contained_vals ("error", Error);
     }
 
     void saveWeights(void){ // log weights
@@ -389,10 +342,10 @@ public:
     void setInput(int mapID, int locID){
         P.reset();
         for(int i=0; i<inputID.size(); i++){
-            P.Input[inputID[i]] = M[mapID].X[i][locID]; // Training on the supplied x-values
+            P.Input[inputID[i]] = M[mapID].X[i][locID];
         }
-        if(M[mapID].contextID != -1){
-            P.Input[M[mapID].contextID] = M[mapID].contextVal;
+        for(int i=0;i<C[M[mapID].contextID].nodeIDs.size();i++){
+            P.Input[C[M[mapID].contextID].nodeIDs[i]] = C[M[mapID].contextID].Vals[i];
         }
     }
 
@@ -428,9 +381,13 @@ public:
 
         for (unsigned int j=0; j<domain.nhex; ++j) {
             P.reset();
-            P.Input[inputID[0]] = domain.X[j];
+            P.Input[inputID[0]] = domain.X[j];  // HACK: THIS ASSUMES FIRST 2 INPUTS ARE X and Y
             P.Input[inputID[1]] = domain.Y[j];
-            P.Input[contextIDs[i]] = contextVals[i];
+
+            for(int k=0;k<C[i].nodeIDs.size();k++){
+                P.Input[C[i].nodeIDs[k]] = C[i].Vals[k];
+            }
+
             P.convergeForward(-1,false);
             for(int k=0;k<P.N;k++){
                 R[k][j] = P.X[k];
@@ -451,74 +408,20 @@ public:
         return R;
     }
 
-    void run(int K, int errorSamplePeriod, int errorSampleSize, bool resetWeights){
-
+    void run(int K, int errorSamplePeriod){
         P.randomizeWeights(-1.0, +1.0);
-
         double errMin = 1e9;
         for(int k=0;k<K;k++){
             if(k%errorSamplePeriod){
-
                 std::vector<int> sample = setRandomInput();
                 setInput(sample[0],sample[1]);
-                P.convergeForward(-1,true);
-                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                P.convergeBackward(-1,false);
-                P.weightUpdate();
-
-            } else {
-
-                double err = 0.;
-                for(int j=0;j<errorSampleSize;j++){
-
-                    std::vector<int> sample = setRandomInput();
-                    setInput(sample[0],sample[1]);
-                    P.convergeForward(-1,false);
-                    P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                    err += P.getError();
-
-                }
-                err /= (double)errorSampleSize;
-                if(err<errMin){
-                    errMin = err;
-                    P.Wbest = P.W;
-                } else if (resetWeights) {
-                    P.W = P.Wbest;
-                }
-                Error.push_back(errMin);
-            }
-
-            if(fmod(k,K/100)==0){
-                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
-            }
-        }
-        P.W = P.Wbest;
-
-    }
-
-    void run2(int K, int errorSamplePeriod){
-
-        P.randomizeWeights(-1.0, +1.0);
-
-        double errMin = 1e9;
-        for(int k=0;k<K;k++){
-            if(k%errorSamplePeriod){
-
-                std::vector<int> sample = setRandomInput();
-                setInput(sample[0],sample[1]);
-
-                // RUN2 DOES NOT USE 'NUDGE' IN CONVERGEFORWARD
                 P.convergeForward(-1,false);
                 P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
                 P.convergeBackward(-1,false);
                 P.weightUpdate();
-
             } else {
-
                 double err = 0.;
                 int count = 0;
-
-                // RUN2 NEEDS TO ERROR OVER ***ALL*** MAP VALUES
                 for(int i=0;i<M.size();i++){
                     for(int j=0;j<M[i].N;j++){
                         setInput(i,j);
@@ -529,25 +432,14 @@ public:
                     }
                 }
                 err /= (double)count;
-
-                // RUN2 HAS A REJECTION **TOLERANCE** ON ERROR<ERRORMIN
-                if(err<errMin){
-                    errMin = err;
-                }
-                if (err>2.0*errMin) {
-                    P.W = P.Wbest;
-                } else {
-                    P.Wbest = P.W;
-                }
+                if(err<errMin){ errMin = err; }
+                if (err>2.0*errMin) { P.W = P.Wbest; }
+                else { P.Wbest = P.W; }
                 Error.push_back(err);
             }
-
-            if(fmod(k,K/100)==0){
-                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
-            }
+            if(fmod(k,K/100)==0){ logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl; }
         }
         P.W = P.Wbest;
-
     }
 
 
@@ -604,6 +496,35 @@ public:
     }
 
 
+    void plotDomainValues(std::vector<double> F, std::string fname, double color_min, double color_max){
+        if(domain.nhex != F.size()){ std::cout<<"Field supplied not correct size (domain)"<<std::endl;}
+        Visual v (500, 500, "Response");
+        v.backgroundWhite();
+        v.zNear = 0.001;
+        v.zFar = 20;
+        v.fov = 45;
+        v.sceneLocked = false;
+        v.setZDefault(-2.7f);
+        v.setSceneTransXY (0.0f,0.0f);
+        Vector<float, 3> offset  = { 0., 0., 0.0 };
+        Scale<float> scale;
+
+        if(color_min==color_max){
+            scale.do_autoscale = true;
+        } else {
+            scale.do_autoscale = false;
+            float color_grad = 1.0f/(color_max-color_min);
+            scale.setParams(color_grad,-(color_grad*color_min));
+        }
+        Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
+        std::vector<float> fFlt;
+        for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
+        v.addVisualModel (new HexGridVisual<float> (v.shaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+        v.render();
+        v.render();
+        v.saveImage(fname);
+    }
+
     // **************************************************** //
 
     void plotMapTargets(void){
@@ -636,7 +557,7 @@ public:
         std::vector<std::vector<double> > R = testDomainContext(i);
         R = tools::normalize(R);
         for(int j=0;j<R.size();j++){
-            std::stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(indivNorm).png";
+            std::stringstream ss; ss<< logpath << "/context_" << C[i].name << "_Node_" << j << "_(indivNorm).png";
             plotDomainValues(R[j],ss.str().c_str());
         }
     }
@@ -646,7 +567,7 @@ public:
         R = tools::normalize(R);
         for(int i=0;i<R.size();i++){
             for(int j=0;j<R[i].size();j++){
-                std::stringstream ss; ss<< logpath << "/context_" << contextIDs[i] << "_val_" << contextVals[i] << "_Node_" << j << "_(jointNorm).png";
+                std::stringstream ss; ss<< logpath << "/context_" << C[i].name << "_Node_" << j << "_(jointNorm).png";
                 plotDomainValues(R[i][j],ss.str().c_str());
             }
         }
@@ -663,14 +584,30 @@ public:
         for(int i=0;i<domain.nhex;i++){
             diff[i] -= A[nodeB][i];
         }
+        double minVal = tools::getMin(diff);
+        double maxVal = tools::getMax(diff);
         diff = tools::normalize(diff);
 
-        std::stringstream ss; ss<< logpath << "/DIFF_node_"<<nodeA<<"_minus_node_"<<nodeB<<"_context_" << contextIDs[contextIndex] << "_val_" << contextVals[contextIndex]<<".png";
+        std::stringstream ss; ss<< logpath << "/DIFF_node_"<<nodeA<<"_minus_node_"<<nodeB<<"_context_" << C[contextIndex].name << ".png";
         plotDomainValues(diff,ss.str().c_str());
+
+        // print out the colormap axis values
+        std::cout<<logpath<<std::endl;
+        std::cout<<"Min: "<<minVal<<std::endl;
+        std::cout<<"Max: "<<maxVal<<std::endl;
+        if((minVal<0) && (maxVal>0)){
+            std::cout<<"0 at: "<<(-minVal)/(maxVal-minVal)<<std::endl;
+        } else {
+            std::cout<<"0 at: off the scale."<<std::endl;
+        }
+
 
     }
 
-    void plotDomainContextDiff(int nodeIndex, int contextA, int contextB){
+    void plotDomainContextDiff(int nodeIndex, int contextA, int contextB, double cmin, double cmax){
+
+        //////////////////// set colors to range if false
+
 
         if(contextA>=nContext){std::cout<<"Invalid context ID (A) "<<contextA<<". Only "<<nContext<<"contexts."<<std::endl;}
         if(contextB>=nContext){std::cout<<"Invalid context ID (B) "<<contextB<<". Only "<<nContext<<"contexts."<<std::endl;}
@@ -682,19 +619,76 @@ public:
         for(int i=0;i<domain.nhex;i++){
             diff[i] -= B[nodeIndex][i];
         }
-        diff = tools::normalize(diff);
+        double minVal = tools::getMin(diff);
+        double maxVal = tools::getMax(diff);
 
-        std::stringstream ss; ss<< logpath << "/DIFF_context_("<<contextIDs[contextA]<<","<<contextVals[contextA]<<")_minus_context_("<<contextIDs[contextB]<<","<<contextVals[contextB]<<")_node"<<nodeIndex<<".png";
-        plotDomainValues(diff,ss.str().c_str());
+        if(cmin==cmax){
+        //    diff = tools::normalize(diff);
+        }
+
+
+        std::stringstream ss; ss<< logpath << "/DIFF_context_("<<C[contextA].name<<")_minus_context_("<< C[contextB].name<<")_node"<<nodeIndex<<".png";
+        plotDomainValues(diff,ss.str().c_str(),cmin,cmax);
+
+        std::cout<<logpath<<std::endl;
+        std::cout<<"Min: "<<minVal<<std::endl;
+        std::cout<<"Max: "<<maxVal<<std::endl;
+        if((minVal<0) && (maxVal>0)){
+            std::cout<<"0 at: "<<(-minVal)/(maxVal-minVal)<<std::endl;
+        } else {
+            std::cout<<"0 at: off the scale."<<std::endl;
+        }
+
 
     }
 
     void plotDomainContextDiffOutputNodes(int contextA, int contextB){
         for(int i=0;i<outputID.size();i++){
-            plotDomainContextDiff(outputID[i], contextA, contextB);
+            plotDomainContextDiff(outputID[i], contextA, contextB, 0.0, 0.0);
         }
 
     }
 
 };
 
+
+
+
+    /*
+    void run(int K, int errorSamplePeriod, int errorSampleSize, bool resetWeights){
+        P.randomizeWeights(-1.0, +1.0);
+        double errMin = 1e9;
+        for(int k=0;k<K;k++){
+            if(k%errorSamplePeriod){
+                std::vector<int> sample = setRandomInput();
+                setInput(sample[0],sample[1]);
+                P.convergeForward(-1,true);
+                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
+                P.convergeBackward(-1,false);
+                P.weightUpdate();
+            } else {
+                double err = 0.;
+                for(int j=0;j<errorSampleSize;j++){
+                    std::vector<int> sample = setRandomInput();
+                    setInput(sample[0],sample[1]);
+                    P.convergeForward(-1,false);
+                    P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
+                    err += P.getError();
+                }
+                err /= (double)errorSampleSize;
+                if(err<errMin){
+                    errMin = err;
+                    P.Wbest = P.W;
+                } else if (resetWeights) {
+                    P.W = P.Wbest;
+                }
+                Error.push_back(errMin);
+            }
+
+            if(fmod(k,K/100)==0){
+                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
+            }
+        }
+        P.W = P.Wbest;
+    }
+    */
