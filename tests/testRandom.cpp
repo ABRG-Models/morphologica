@@ -43,6 +43,23 @@ int main()
     vector<float> tenrns3 = rubndf.get(10);
     for (auto d : tenrns3) { cout << d << endl; }
 
+    // Another with seed 1 for float
+    morph::RandUniform<float> rubndf2 (0.0f, 1000.0f, 1);
+    cout << "Ten random numbers in that range from second rng with seed 1:\n";
+    vector<float> tenrns32 = rubndf2.get(10);
+    for (auto d : tenrns32) { cout << d << endl; }
+
+    // Test two rng generators where no seed is specified
+    morph::RandUniform<float> rubndf3 (0.0f, 1000.0f);
+    cout << "Ten random numbers from the first 'default seed rng':\n";
+    vector<float> tenrns33 = rubndf3.get(10);
+    for (auto d : tenrns33) { cout << d << endl; }
+    morph::RandUniform<float> rubndf4 (0.0f, 1000.0f);
+    cout << "Ten random numbers from the second 'default seed rng':\n";
+    vector<float> tenrns34 = rubndf4.get(10);
+    for (auto d : tenrns34) { cout << d << endl; }
+
+
     // Normally distributed numbers:
     morph::RandNormal<double> rnorm (5, 0.1);
     vector<double> tennorms = rnorm.get(10);
