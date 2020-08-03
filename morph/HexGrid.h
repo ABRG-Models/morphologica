@@ -233,13 +233,11 @@ namespace morph {
          */
         std::list<Hex> getBoundary (void) const;
 
-        /*!
-         * ellipse functions
-         */
-        //@{
+        //! Compute an elliptical boundary using the elliptical radii \a a and \a b.
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b);
+
+        //! Compute the length of the perimeter of an ellipse with radii \a a and \a b.
         float ellipsePerimeter (const float a, const float b);
-        //@}
 
         /*!
          * Set the boundary to be an ellipse with the given radii parameters a and b.

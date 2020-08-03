@@ -22,7 +22,7 @@
 #include "morph/HdfData.h"
 
 #define DBGSTREAM std::cout
-//#define DEBUG 1
+#define DEBUG 1
 //#define DEBUG2 1
 #include "morph/MorphDbg.h"
 
@@ -902,31 +902,32 @@ morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int i
     }
 
     // Mark a line in the first direction
-    //DBG ("Mark line in direction " << Hex::neighbour_pos(firsti));
+    DBG ("Mark line in direction " << Hex::neighbour_pos(firsti));
     this->markFromBoundaryCommon (first_inside, firsti, bdryFlag, insideFlag);
 
     // For each other direction also mark lines. Count direction upwards until we hit a boundary hex:
     short diri = (firsti + 1) % 6;
-    //DBG ("First count up direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG ("First count up direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
-        //DBG ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
+        DBG ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
         this->markFromBoundaryCommon (first_inside, diri, bdryFlag, insideFlag);
         diri = (diri + 1) % 6;
     }
     // Then count downwards until we hit the other boundary hex
     diri = (firsti - 1);
     if (diri < 0) { diri = 5; }
-    //DBG ("First count down direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG ("First count down direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
-        //DBG ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
+        DBG ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
         this->markFromBoundaryCommon (first_inside, diri, bdryFlag, insideFlag);
         diri = (diri - 1);
         if (diri < 0) { diri = 5; }
     }
 }
 
+#define DO_WARNINGS 1
 void
 morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsigned short firsti,
                                         unsigned int bdryFlag, unsigned int insideFlag)
@@ -958,6 +959,7 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
             }
         }
     }
+    DBG ("Got to boundary hex: " << straight->ri << "," << straight->gi);
 }
 
 bool
@@ -1021,6 +1023,8 @@ void
 morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
                                  unsigned int bdryFlag, unsigned int insideFlag)
 {
+    std::cout << "markHexesInside (list<>::iterator, uint, uint)" << std::endl;
+
     // Run to boundary, marking as we go
     list<Hex>::iterator bhi(centre_hi);
     while (bhi->testFlags (bdryFlag) == false && bhi->has_nne()) {
@@ -1030,7 +1034,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
     list<Hex>::iterator bhi_start = bhi;
 
     // Mark from first boundary hex and across the region
-    //DBG ("markFromBoundary with hex " << bhi->outputCart());
+    DBG ("markFromBoundary with hex " << bhi->outputCart());
     this->markFromBoundary (bhi, bdryFlag, insideFlag);
 
     // Find the first next neighbour:
@@ -1038,7 +1042,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
     bool gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last, bdryFlag, insideFlag);
     // Loop around boundary, marking inwards in all possible directions from each boundary hex
     while (gotnext && bhi != bhi_start) {
-        //DBG ("0 markFromBoundary with hex " << bhi->outputCart());
+        DBG ("0 markFromBoundary with hex " << bhi->outputCart());
         this->markFromBoundary (bhi, bdryFlag, insideFlag);
         gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last, bdryFlag, insideFlag);
     }
@@ -1047,6 +1051,8 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
 void
 morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
 {
+    std::cout << "markHexesInsideRectangularDomain (const array<int, 6>&)" << std::endl;
+
     // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.  Use gi to determine whether outside
     // top/bottom region Add gi contribution to ri to determine whether outside left/right region
 
@@ -1560,6 +1566,8 @@ morph::HexGrid::discardOutsideDomain (void)
 void
 morph::HexGrid::discardOutsideBoundary (void)
 {
+    std::cout << "discardOutsideBoundary()\n";
+
     // Mark those hexes inside the boundary
     list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
     this->markHexesInside (centroidHex);
@@ -1575,7 +1583,7 @@ morph::HexGrid::discardOutsideBoundary (void)
             ++numOutside;
         }
     }
-    DBG("Num inside: " << numInside << "; num outside: " << numOutside);
+    DBG ("Num inside: " << numInside << "; num outside: " << numOutside);
 #endif
 
     // Run through and discard those hexes outside the boundary:
