@@ -886,6 +886,7 @@ morph::HexGrid::markFromBoundary (list<Hex*>::iterator hi,
 void
 morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int insideFlag)
 {
+    DBG ("===called for hex (" << hi->ri << "," << hi->gi << ")");
     // Find a marked-inside Hex next to this boundary hex. This will be the first direction to mark
     // a line of inside hexes in.
     list<Hex>::iterator first_inside = this->hexen.begin();
@@ -902,22 +903,24 @@ morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int i
     }
 
     // Mark a line in the first direction
-    DBG ("Mark line in direction " << Hex::neighbour_pos(firsti));
+    DBG ("FIRST direction " << Hex::neighbour_pos(firsti));
     this->markFromBoundaryCommon (first_inside, firsti, bdryFlag, insideFlag);
 
     // For each other direction also mark lines. Count direction upwards until we hit a boundary hex:
     short diri = (firsti + 1) % 6;
-    DBG ("First count up direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG ("First *count up* direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
         DBG ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
         this->markFromBoundaryCommon (first_inside, diri, bdryFlag, insideFlag);
         diri = (diri + 1) % 6;
     }
+    DBG ("Counting up: Last direction was " << Hex::neighbour_pos(diri));
+
     // Then count downwards until we hit the other boundary hex
     diri = (firsti - 1);
     if (diri < 0) { diri = 5; }
-    DBG ("First count down direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG ("First *count down* direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
         DBG ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
@@ -925,6 +928,7 @@ morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int i
         diri = (diri - 1);
         if (diri < 0) { diri = 5; }
     }
+    DBG ("Counting down: Last direction was " << Hex::neighbour_pos(diri));
 }
 
 #define DO_WARNINGS 1
@@ -939,12 +943,14 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
 #ifdef DO_WARNINGS
     bool warning_given = false;
 #endif
+    unsigned int stepcount = 0;
     while (straight->testFlags(bdryFlag) == false) {
         DBG2 ("Set insideBoundary true");
         straight->setFlag (insideFlag);
         if (straight->has_neighbour(firsti)) {
             DBG2 ("has neighbour in " << firsti << " dirn");
             straight = straight->get_neighbour (firsti);
+            ++stepcount;
         } else {
             // no further neighbour in this direction
             if (straight->testFlags(bdryFlag) == false) {
@@ -959,7 +965,8 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
             }
         }
     }
-    DBG ("Got to boundary hex: " << straight->ri << "," << straight->gi);
+    DBG ("Got to boundary hex (with " << stepcount << " steps " << Hex::neighbour_pos(firsti)
+         << "): " << straight->ri << "," << straight->gi);
 }
 
 bool
