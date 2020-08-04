@@ -99,7 +99,7 @@
  \endcode
  *
  */
-#pragma once
+//#pragma once
 
 #ifndef DBGSTREAM
 # define DBGSTREAM morphDbg

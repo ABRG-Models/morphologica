@@ -54,10 +54,9 @@ namespace morph {
          */
         ~HdfData();
 
-        /*!
+        /*
          * Reading methods
          */
-        //@{
 
         /*!
          * Read the data at path into the container vals. Templating
@@ -74,41 +73,31 @@ namespace morph {
         /*!
          * Read pairs
          */
-        //@{
         void read_contained_vals (const char* path, std::pair<float, float>& vals);
         void read_contained_vals (const char* path, std::pair<double, double>& vals);
-        //@}
 
         /*!
          * Read lists of pairs
          */
-        //@{
         void read_contained_vals (const char* path, std::list<std::pair<float, float>>& vals);
         void read_contained_vals (const char* path, std::list<std::pair<double, double>>& vals);
-        //@}
 
         /*!
          * 2D coordinates (or other pairs of values)
          */
-        //@{
         void read_contained_vals (const char* path, std::vector<std::array<float, 2>>& vals);
         void read_contained_vals (const char* path, std::vector<std::array<double, 2>>& vals);
-        //@}
 
         /*!
          * Vector of 3D coordinates
          */
-        //@{
         void read_contained_vals (const char* path, std::vector<std::array<float, 3>>& vals);
         //! 3D coordinates collected into groups of 4 (each specifying a quad)
         void read_contained_vals (const char* path, std::vector<std::array<float, 12>>& vals);
         //! OpenCV-friendly overloads
-        //@{
         void read_contained_vals (const char* path, std::vector<cv::Point2i>& vals);
         void read_contained_vals (const char* path, std::vector<cv::Point2f>& vals);
         void read_contained_vals (const char* path, std::vector<cv::Point2d>& vals);
-        //@}
-        //@}
 
         void read_val (const char* path, double& val);
         void read_val (const char* path, float& val);
@@ -123,7 +112,8 @@ namespace morph {
 
         //! Templated read_val for bitsets
         template <size_t N>
-        void read_val (const char* path, std::bitset<N>& val) {
+        void read_val (const char* path, std::bitset<N>& val)
+        {
             unsigned long long int bs_ullong = 0ULL;
             this->read_val (path, bs_ullong);
             std::bitset<N> val_ (bs_ullong);
@@ -134,32 +124,27 @@ namespace morph {
         //! function (which also stores some necessary metadata).
         void read_contained_vals (const char* path, cv::Mat& vals);
 
-        //@} // reading methods
-
-        /*!
+        /*
          * Writing methods
          */
-        //@{
 
         /*!
          * Given a path like /a/b/c, verify and if necessary create
          * group a, then verify and if necessary create group b so
          * that the dataset c can be succesfully created.
          */
-        //@{
         void process_groups (const char* path);
         void verify_group (const std::string& path);
-        //@}
 
         /*!
-         * Makes necessary calls to add a double or float (or integer
-         * types if the overloads are added) to an HDF5 file store,
-         * using path as the name of the variable. Path could be
-         * /myvar or /somegroup/myvar, though I think you'd have to
-         * have created the group for the latter. I don't think
-         * templating is worthwhile for these functions.
+         * Makes necessary calls to add a double or float (or integer types if the
+         * overloads are added) to an HDF5 file store, using path as the name of the
+         * variable. Path could be /myvar or /somegroup/myvar, though I think you'd have
+         * to have created the group for the latter. I don't think templating is
+         * worthwhile for these functions. (2020 update: Having discovered expression
+         * sfinae and constexpr, I now think templating IS probably useful. See example:
+         * void add_contained_vals (const char*, const std::vector<morph::Vector<T, N>>&)
          */
-        //@{
         void add_val (const char* path, const double& val);
         void add_val (const char* path, const float& val);
         void add_val (const char* path, const int& val);
@@ -174,11 +159,11 @@ namespace morph {
          * so that's a bit of a FIXME for the future.
          */
         template <size_t N>
-        void add_val (const char* path, const std::bitset<N>& val) {
+        void add_val (const char* path, const std::bitset<N>& val)
+        {
             unsigned long long int bs_ullong = val.to_ullong();
             this->add_val (path, bs_ullong);
         }
-        //@}
 
         //! Add a string of chars
         void add_string (const char* path, const std::string& str);
@@ -196,19 +181,16 @@ namespace morph {
          * best solution. It also compiles to linkable, unchanging
          * code in libmorphologica, rather than being header-only,
          */
-        //@{
         void add_contained_vals (const char* path, const std::vector<double>& vals);
         void add_contained_vals (const char* path, const std::vector<float>& vals);
         void add_contained_vals (const char* path, const std::vector<int>& vals);
         void add_contained_vals (const char* path, const std::vector<unsigned int>& vals);
         void add_contained_vals (const char* path, const std::vector<long long int>& vals);
         void add_contained_vals (const char* path, const std::vector<unsigned long long int>& vals);
-        //@}
 
         /*!
          * Containers of coordinates
          */
-        //@{
         //! 2D coordinates
         void add_contained_vals (const char* path, const std::vector<std::array<float, 2>>& vals);
         void add_contained_vals (const char* path, const std::vector<std::array<double, 2>>& vals);
@@ -268,37 +250,80 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
+        //! Add a cv::Point_<T> to the HDF5 file
+        template <typename T>
+        void add_contained_vals (const char* path, const cv::Point_<T>& val)
+        {
+            this->process_groups (path);
+            hsize_t dim_vec2dcoord[2];
+            dim_vec2dcoord[0] = 1;
+            dim_vec2dcoord[1] = 2; // 2 coordinates in a cv::Point_
+            // Note 2 dims (1st arg, which is rank = 2)
+            hid_t dataspace_id = H5Screate_simple (2, dim_vec2dcoord, NULL);
+            // Now determine width of T and select the most suitable H5Dcreate2 call
+            hid_t dataset_id = 0;
+            herr_t status = 0;
+            // Copy the data out of the point and into a nice contiguous array
+            std::vector<T> data_array(2, 0);
+            data_array[0] = val.x;
+            //std::cout << "val: ("  << val.x << "," << val.y << ")" << std::endl;
+            data_array[1] = val.y;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
+
+            } else {
+                throw std::runtime_error ("HdfData::add_contained_vals: Don't know how to store a cv::Point_ of that type");
+            }
+            this->handle_error (status, "Error. status after H5Dwrite: ");
+            status = H5Dclose (dataset_id);
+            this->handle_error (status, "Error. status after H5Dclose: ");
+            status = H5Sclose (dataspace_id);
+            this->handle_error (status, "Error. status after H5Sclose: ");
+        }
+
         //! Write out cv::Mat matrix data, along with the data type and the channels
         //! as metadata.
         void add_contained_vals (const char* path, const cv::Mat& vals);
-        //@}
 
         /*!
-         * Add pairs
+         * Add pairs.
          */
-        //@{
         void add_contained_vals (const char* path, const std::pair<float, float>& vals);
         void add_contained_vals (const char* path, const std::pair<double, double>& vals);
-        //@}
 
         /*!
          * Add lists of pairs
          */
-        //@{
         void add_contained_vals (const char* path, const std::list<std::pair<float, float>>& vals);
         void add_contained_vals (const char* path, const std::list<std::pair<double, double>>& vals);
-        //@}
 
         /*!
          * Add nvals values from the pointer vals.
          */
-        //@{
         void add_ptrarray_vals (const char* path, double*& vals, const unsigned int nvals);
         void add_ptrarray_vals (const char* path, float*& vals, const unsigned int nvals);
-        //@}
 
-        //@} // writing methods
-
-    }; // class hdf5
+    }; // class HdfData
 
 } // namespace morph

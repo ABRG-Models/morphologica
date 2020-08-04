@@ -46,6 +46,26 @@ int main()
         }
     }
 
+    // Test the saving of cv::Points
+    {
+        HdfData data("test3.h5");
+
+        cv::Point p;
+        p.x = 1;
+        p.y = 45;
+        data.add_contained_vals ("/Point_i", p);
+
+        cv::Point2d pd;
+        pd.x = 7.6;
+        pd.y = 4.5;
+        data.add_contained_vals ("/Point_d", pd);
+
+        cv::Point2f pf;
+        pf.x = 1.1f;
+        pf.y = 3.3f;
+        data.add_contained_vals ("/Point_f", pf);
+    }
+
     cout << "Returning " << rtn << endl;
 
     return rtn;

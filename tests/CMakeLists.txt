@@ -189,6 +189,9 @@ if(${glfw3_FOUND})
   target_link_libraries(testVisual -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
   #add_test(testVisual testVisual)
 
+  add_executable(testbighexgrid testbighexgrid.cpp)
+  target_link_libraries(testbighexgrid -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
+
   add_executable(testHexConvolve testHexConvolve.cpp)
   target_link_libraries(testHexConvolve -L${morphologica_BINARY_DIR}/src morphologica ${X11_LIBRARIES})
 

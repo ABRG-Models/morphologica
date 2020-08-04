@@ -666,6 +666,19 @@ morph::HexGrid::setBoundary (vector<BezCoord<float>>& bpoints, bool loffset)
         // hexes outside the regular domain and populate all the d_ vectors.
         this->setDomain();
     }
+
+#if 0
+    // Check AGAIN that the boundary is contiguous.
+    {
+        set<unsigned int> seen;
+        list<Hex>::iterator hi = nearbyBoundaryPoint;
+        if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
+            stringstream ee;
+            ee << "(Second time) The constructed boundary is not a contiguous sequence of hexes.";
+            throw runtime_error (ee.str());
+        }
+    }
+#endif
 }
 
 list<Hex>::iterator
@@ -834,7 +847,7 @@ morph::HexGrid::boundaryContiguous (list<Hex>::const_iterator bhi, list<Hex>::co
     }
     if (rtn == false && hi->has_nne() && hi->nne->testFlags(HEX_IS_BOUNDARY) == true && seen.find(hi->nne->vi) == seen.end()) {
         hi_next = hi->nne;
-        rtn = this->boundaryContiguous (bhi, hi_next, seen);
+        rtn = (this->boundaryContiguous (bhi, hi_next, seen));
     }
     if (rtn == false && hi->has_nnw() && hi->nnw->testFlags(HEX_IS_BOUNDARY) == true && seen.find(hi->nnw->vi) == seen.end()) {
         hi_next = hi->nnw;
@@ -886,6 +899,7 @@ morph::HexGrid::markFromBoundary (list<Hex*>::iterator hi,
 void
 morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int insideFlag)
 {
+    DBG ("===called for hex (" << hi->ri << "," << hi->gi << ")");
     // Find a marked-inside Hex next to this boundary hex. This will be the first direction to mark
     // a line of inside hexes in.
     list<Hex>::iterator first_inside = this->hexen.begin();
@@ -902,29 +916,32 @@ morph::HexGrid::markFromBoundary (Hex* hi, unsigned int bdryFlag, unsigned int i
     }
 
     // Mark a line in the first direction
-    //DBG ("Mark line in direction " << Hex::neighbour_pos(firsti));
+    DBG2 ("FIRST direction " << Hex::neighbour_pos(firsti));
     this->markFromBoundaryCommon (first_inside, firsti, bdryFlag, insideFlag);
 
     // For each other direction also mark lines. Count direction upwards until we hit a boundary hex:
     short diri = (firsti + 1) % 6;
-    //DBG ("First count up direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG2 ("First *count up* direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
-        //DBG ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
+        DBG2 ("Counting up: Mark line in direction " << Hex::neighbour_pos(diri));
         this->markFromBoundaryCommon (first_inside, diri, bdryFlag, insideFlag);
         diri = (diri + 1) % 6;
     }
+    DBG2 ("Counting up: Last direction was " << Hex::neighbour_pos(diri));
+
     // Then count downwards until we hit the other boundary hex
     diri = (firsti - 1);
     if (diri < 0) { diri = 5; }
-    //DBG ("First count down direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
+    DBG2 ("First *count down* direction: " << Hex::neighbour_pos(diri) << " (" << diri << ")");
     while (hi->has_neighbour(diri) && hi->get_neighbour(diri)->testFlags(bdryFlag)==false && diri != firsti) {
         first_inside = hi->get_neighbour(diri);
-        //DBG ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
+        DBG2 ("Counting down: Mark line in direction " << Hex::neighbour_pos(diri));
         this->markFromBoundaryCommon (first_inside, diri, bdryFlag, insideFlag);
         diri = (diri - 1);
         if (diri < 0) { diri = 5; }
     }
+    DBG2 ("Counting down: Last direction was " << Hex::neighbour_pos(diri));
 }
 
 void
@@ -961,52 +978,76 @@ morph::HexGrid::markFromBoundaryCommon (list<Hex>::iterator first_inside, unsign
 }
 
 bool
-morph::HexGrid::findNextBoundaryNeighbour (list<Hex>::iterator& bhi, list<Hex>::iterator& bhi_last,
+morph::HexGrid::findNextBoundaryNeighbour (list<Hex>::iterator& bhi,
+                                           std::deque<std::list<Hex>::iterator>& recently_seen,
+                                           size_t n_recents,
                                            unsigned int bdryFlag, unsigned int insideFlag) const
 {
     bool gotnextneighbour = false;
+
     // From each boundary hex, loop round all 6 neighbours until we get to a new neighbour
     for (unsigned short i = 0; i < 6 && gotnextneighbour == false; ++i) {
 
-        //DBG ("Looking at boundary neighbour in dirn " << Hex::neighbour_pos(i));
+        DBG2 ("Looking at boundary neighbour in dirn i: " << Hex::neighbour_pos(i));
 
         // This is "if it's a neighbour and the neighbour is a boundary hex"
         if (bhi->has_neighbour(i) && bhi->get_neighbour(i)->testFlags(bdryFlag)) {
 
-            //DBG (Hex::neighbour_pos(i) << " is a candidate boundary hex");
+            DBG2 (Hex::neighbour_pos(i) << " is a candidate boundary hex");
             // cbhi is "candidate boundary hex iterator", now guaranteed to be a boundary hex
             list<Hex>::iterator cbhi = bhi->get_neighbour(i);
 
-            if (bhi_last != this->hexen.end() && cbhi == bhi_last) {
-                //DBG ("candidate was the last used boundary hex, continue: " << cbhi->outputCart());
-                continue;
+            // Test if the candidate boundary hex is in the 'recently seen' deque
+            bool hex_already_seen = false;
+            for (auto rs : recently_seen) {
+                DBG2 ("Comparing " << rs->outputCart() << " with " << cbhi->outputCart());
+                if (rs == cbhi) {
+                    DBG2 ("This candidate hex has been recently seen. continue to next i...");
+                    hex_already_seen = true;
+                }
             }
+            if (hex_already_seen) { continue; }
 
             unsigned short i_opp = ((i+3)%6);
-            //DBG2 ("Opp. dirn: " << Hex::neighbour_pos(i_opp));
 
             // Go round each of the candidate boundary hex's neighbours (but j!=i)
             for (unsigned short j = 0; j < 6; ++j) {
 
+                DBG2 ("Candidate neighbour dirn j: " << j);
+
                 // Ignore the candidate boundary hex itself
                 if (j==i_opp) {
-                    //DBG ("Neighbour to " << Hex::neighbour_pos (j) << " is the candidate iself");
+                    DBG2 ("i's neighbour to the " << Hex::neighbour_pos (j) << " is the candidate iself, continue to next i");
                     continue;
                 }
 #ifdef DEBUG2
                 if (cbhi->has_neighbour(j)) {
-                    DBG ("Candidate neighbour " << Hex::neighbour_pos (j)
-                         << " Inside:" << (cbhi->get_neighbour(j)->testFlags(insideFlag)?"Y":"N")
+                    DBG ("i candidate has another neighbour to the " << Hex::neighbour_pos (j)
+                         << " which is Inside:" << (cbhi->get_neighbour(j)->testFlags(insideFlag)?"Y":"N")
                          << " Boundary:" << (cbhi->get_neighbour(j)->testFlags(bdryFlag)?"Y":"N"));
                 } else {
                     DBG ("No neighbour to " << Hex::neighbour_pos (j));
                 }
 #endif
+
+                // What is this logic. If the candidate boundary hex (which is already
+                // known to be on the boundary) has a neighbour which is inside the
+                // boundary and not itself a boundary hex, then cbhi IS the next
+                // boundary hex.
                 if (cbhi->has_neighbour(j)
                     && cbhi->get_neighbour(j)->testFlags(insideFlag)==true
                     && cbhi->get_neighbour(j)->testFlags(bdryFlag)==false) {
-                    bhi_last = bhi;
+
+                    DBG2 ("Pushing " << bhi->outputCart() << " on to recently_seen");
+                    recently_seen.push_back (bhi);
+                    if (recently_seen.size() > n_recents) {
+                        DBG2 ("Popping front element off recently_seen");
+                        recently_seen.pop_front();
+                    }
+
                     bhi = cbhi;
+                    DBG2 ("Next boundary neighbour in direction " << Hex::neighbour_pos (i) << " from bhi");
+
                     gotnextneighbour = true;
                     break;
                 }
@@ -1021,6 +1062,8 @@ void
 morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
                                  unsigned int bdryFlag, unsigned int insideFlag)
 {
+    std::cout << "markHexesInside (list<>::iterator, uint, uint)" << std::endl;
+
     // Run to boundary, marking as we go
     list<Hex>::iterator bhi(centre_hi);
     while (bhi->testFlags (bdryFlag) == false && bhi->has_nne()) {
@@ -1030,23 +1073,26 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
     list<Hex>::iterator bhi_start = bhi;
 
     // Mark from first boundary hex and across the region
-    //DBG ("markFromBoundary with hex " << bhi->outputCart());
+    DBG ("markFromBoundary with hex " << bhi->outputCart());
     this->markFromBoundary (bhi, bdryFlag, insideFlag);
 
-    // Find the first next neighbour:
-    list<Hex>::iterator bhi_last = this->hexen.end();
-    bool gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last, bdryFlag, insideFlag);
+    // a deque to hold the 'n_recents' most recently seen boundary hexes.
+    std::deque<list<Hex>::iterator> recently_seen;
+    size_t n_recents = 2; // 2 should be sufficient for boundaries with double thickness
+                          // sections. If problems occur, trying increasing this.
+    bool gotnext = this->findNextBoundaryNeighbour (bhi, recently_seen, n_recents, bdryFlag, insideFlag);
     // Loop around boundary, marking inwards in all possible directions from each boundary hex
     while (gotnext && bhi != bhi_start) {
-        //DBG ("0 markFromBoundary with hex " << bhi->outputCart());
         this->markFromBoundary (bhi, bdryFlag, insideFlag);
-        gotnext = this->findNextBoundaryNeighbour (bhi, bhi_last, bdryFlag, insideFlag);
+        gotnext = this->findNextBoundaryNeighbour (bhi, recently_seen, n_recents, bdryFlag, insideFlag);
     }
 }
 
 void
 morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
 {
+    std::cout << "markHexesInsideRectangularDomain (const array<int, 6>&)" << std::endl;
+
     // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.  Use gi to determine whether outside
     // top/bottom region Add gi contribution to ri to determine whether outside left/right region
 
@@ -1560,6 +1606,8 @@ morph::HexGrid::discardOutsideDomain (void)
 void
 morph::HexGrid::discardOutsideBoundary (void)
 {
+    std::cout << "discardOutsideBoundary()\n";
+
     // Mark those hexes inside the boundary
     list<Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
     this->markHexesInside (centroidHex);
@@ -1575,7 +1623,7 @@ morph::HexGrid::discardOutsideBoundary (void)
             ++numOutside;
         }
     }
-    DBG("Num inside: " << numInside << "; num outside: " << numOutside);
+    DBG ("Num inside: " << numInside << "; num outside: " << numOutside);
 #endif
 
     // Run through and discard those hexes outside the boundary:
