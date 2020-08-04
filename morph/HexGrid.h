@@ -14,6 +14,7 @@
 #include <string>
 #include <array>
 #include <stdexcept>
+#include <deque>
 
 namespace morph {
 
@@ -598,11 +599,46 @@ namespace morph {
                                      unsigned int insideFlag = HEX_INSIDE_BOUNDARY);
 
         /*!
-         * Given the current boundary hex iterator, bhi and the last boundary hex
-         * iterator bhi_last, and assuming that bhi has had all its adjacent inside
+         * Given the current boundary hex iterator, bhi and the n_recents last boundary
+         * hexes in recently_seen, and assuming that bhi has had all its adjacent inside
          * hexes marked as insideBoundary, find the next boundary hex.
+         *
+         * \param bhi The boundary hex iterator. From this hex, find the next boundary
+         * hex.
+         *
+         * \param recently_seen a deque containing the recently processed boundary
+         * hexes. for a boundary which is always exactly one hex thick, you only need a
+         * memory of the last boundary hex to keep you going in the right direction
+         * around the boundary BUT if your boundary has some "double thickness"
+         * sections, then you need to know a few more recent hexes to avoid looping
+         * around and returning to the start!
+         *
+         * \param n_recents The number of hexes to record in \a recently_seen. The
+         * actual number you will need depends on the "thickness" of your boundary -
+         * does it have sections that are two hexes thick, or sections that are six
+         * hexes thick? It also depends on the length along which the boundary may be
+         * two hexes thick. In theory, if you have a boundary section two hexes thick
+         * for 5 pairs, then you need to store 10 previous hexes. However, due to the
+         * way that this algorithm tests hexes (always testing direction '0' which is
+         * East first, then going anti-clockwise to the next direction; North-East and
+         * so on), n_recents=2 appears to be sufficient for a thickness 2 boundary,
+         * which is what can occur when setting a boundary using the method
+         * HexGrid::setEllipticalBoundary. Boundaries that are more than thickness 2
+         * shouldn't really occur, whereas a boundary with a short section of thickness
+         * 2 can quite easily occur, as in setEllipticalBoundary, where insisting that
+         * the boundary was strictly always only 1 hex thick would make that algorithm
+         * more complex.
+         *
+         * \param bdryFlag The flag used to recognise a boundary hex.
+         *
+         * \param insideFlag The flag used to recognise a hex that is inside the
+         * boundary.
+         *
+         * \return true if a next boundary neighbour was found, false otherwise.
          */
-        bool findNextBoundaryNeighbour (std::list<Hex>::iterator& bhi, std::list<Hex>::iterator& bhi_last,
+        bool findNextBoundaryNeighbour (std::list<Hex>::iterator& bhi,
+                                        std::deque<std::list<Hex>::iterator>& recently_seen,
+                                        size_t n_recents = 2,
                                         unsigned int bdryFlag = HEX_IS_BOUNDARY,
                                         unsigned int insideFlag = HEX_INSIDE_BOUNDARY) const;
 
