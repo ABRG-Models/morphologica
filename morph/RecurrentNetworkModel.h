@@ -41,6 +41,12 @@ using namespace tools;
 
 template <class Flt>
 class Domain : public morph::RD_Base<Flt> {
+
+
+    /*
+        Provides a domain (a hexagonal lattice within a boundary) of 2D coordinates, to be used as input combinations for a 2-input network whose output is to be evaluated at each co-ordinate to obtain a color-map. Inherets from morph::RD_Base.
+    */
+
 public:
     double ellipseA=1.0;
     double ellipseB=1.0;
@@ -55,11 +61,16 @@ public:
         this->stepCount = 0;
     }
     void setEllipse(double ellipseA, double ellipseB, double hextohex_d){
+
+        // set size and shape of elliptical domain boundary (prior to memory allocation)
+
         this->ellipseA = ellipseA;
         this->ellipseB = ellipseB;
         this->hextohex_d = hextohex_d;
     }
     virtual void allocate (void) {
+
+        // set elliptical domain boundary and allocate memory
 
         this->hg = new morph::HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
         DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
@@ -94,7 +105,7 @@ public:
 class Context{
 
     /*
-    Structure for storing a context (context node identities and corresponding input values)
+    Structure for storing a context (array of context node identities and corresponding input values for those nodes)
     */
 public:
     std::string name;
@@ -112,10 +123,22 @@ public:
 class Map{
 
     /*
-     Structure for storing a map (pre-defined X F, in a HdfData file).
+     Structure for storing a map (pre-defined X and F vectors in a HdfData file). The number of map points N is determined by the length of the suppled F vector, and the length of X should be an integer multiple of N. This integer multiplier M should correspond to the number of input nodes, e.g., if M=3*N it is assumed the the first N values of X are the input values for the first input node, the second N values are for the second input node, and the third N values are for the third input node. The length of input node identities supplied via the 'inputID' array in config.json should be of length M. When using a common 'domain' onto which to project the network outputs the assumption is that the first two 'inputID' values correspond to X and Y coordinate, i.e., specifying locations on a 2D sheet.
      */
 
 public:
+
+    // N - number of map points
+    // X - (number of inputs) x (number of map points) matrix of input values
+    // maxX, minX - min and max values of the map points for each input
+    // F - target output value corresponding to the input combination at each map point
+    // Fscaled - copy of output values scaled between 0 and 1 (for plotting). SWHACKALERT: maybe redundant given that plotting functions do autoscaling (check not used elsewhere).
+    // minF, maxF - SWHACKALERT: looks to be unused.
+    // outputID - integer identity of the network node to which this map is assigned
+    // contextID - integer identity of the context (in the vector<int> C of RecurrentNetworkModel) in which training data from this map are to be sampled
+    // contextVal - SWHACKALERT: looks to now be unused.
+    // quads - specification of the quad information required to plot values from this map as a 2D image
+
     int N;
     std::vector<std::vector<double> > X;
     std::vector<double> maxX, minX;
@@ -126,6 +149,10 @@ public:
     std::vector<std::array<float, 12>> quads;
 
     void init(std::string filename){
+
+        /*
+            Initialize a map from a .h5 file (specified by filename), which should contain X and F vectors (both 1D).
+        */
 
         outputID = -1; // flag for not set
         contextID = -1; // flag for not set
@@ -176,7 +203,25 @@ public:
 
 class RecurrentNetworkModel{
 
+    /*
+        Combines the recurrent network algorithm (P) with a vector of input-output training 'maps' (M), a vector of training 'contexts' (C), and a domain for 2D color-map plotting, and provides methods for saving and plotting the responses of the network, and saving and loading the weights. Contains the run() method, which trains the network and keeps track of the error.
+    */
+
 public:
+
+    // logpath - path to directory containing config.json and to be populated with log.txt
+    // logfile - file object for logging details
+    // inputs - SWHACKALERT: maybe not actually used! consider removing
+    // Error - vector of (mean) error, updated during run()
+    // P - recurrent network object
+    // M - vector of input/output 'map' objects
+    // C - vector of training 'contexts' (each a combination of additional inputs for 'context nodes')
+    // domain - hexagonal lattice for constructing 2D network response plots
+    // inputID - integer identity of the input nodes
+    // outputID - SWHACKALERT: essentially redundant (each maps has an outputID) - update plotDomainContextDiffOutputNodes and remove.
+    // nContext - number of different contexts
+    // colorMap - global colorMap object to set before each plotting call.
+
     std::string logpath;
     std::ofstream logfile;
     std::vector<double> inputs, Error;
@@ -191,6 +236,12 @@ public:
 
 
     RecurrentNetworkModel(std::string logpath){
+
+        /*
+            Initialize the RecurrentNetworkModel. Logpath should be a folder containing a config.h which should contain 'contexts' and 'maps' arrays, and a network.h5 file containing the 'pre' and 'post' arrays that specify the network connectivity.
+
+            SWHACKALERT: The 'pre' and 'post' vectors could be specified in the config to simplify things, now that I know that its straightforward to write these into a config file from python.
+        */
 
         // setup log file
         this->logpath = logpath;
@@ -280,6 +331,7 @@ public:
         for(int i=0;i<pre.size();i++){ P.connect(pre[i],post[i]); }
         P.addBias();
         P.setNet();
+
         inputs.resize(inputID.size());
 
         // Define the domain over which it can be evaluated
@@ -306,7 +358,11 @@ public:
 
     }
 
-    void saveMapResponse(int mapID) { // log responses
+
+    void saveMapResponse(int mapID) {
+
+        // save the response of the network to all points in the map indexed (in M) by mapID.
+
         std::vector<std::vector<double> > r = testMap(mapID);
         std::vector<double> response;
         for(int i=0;i<r.size();i++){
@@ -319,13 +375,19 @@ public:
         outdata.add_contained_vals ("response", response);
     }
 
-    void saveError(void) { // log error
+    void saveError(void) {
+
+        // save the error (over time) into error.h5
+
         std::stringstream fname; fname << logpath << "/error.h5";
         HdfData errordata(fname.str());
         errordata.add_contained_vals ("error", Error);
     }
 
-    void saveWeights(void){ // log weights
+    void saveWeights(void){
+
+        // save the weights into weights.h5
+
         std::stringstream fname; fname << logpath << "/weights.h5";
         HdfData weightdata(fname.str());
         weightdata.add_contained_vals ("weights", P.W);
@@ -333,7 +395,10 @@ public:
         weightdata.add_contained_vals ("weightmat", flatweightmat);
     }
 
-    void loadWeights(void) { // log outputs
+    void loadWeights(void) {
+
+        // load the weights from weights.h5
+
         std::stringstream fname; fname << logpath << "/weights.h5";
         HdfData loaded(fname.str(),1);
         loaded.read_contained_vals ("weights", P.W);
@@ -341,11 +406,19 @@ public:
     }
 
     ~RecurrentNetworkModel(void){
+
+        // Destructor.
+
         logfile<<"Goodbye."<<std::endl;
         logfile.close();
     }
 
     void setInput(int mapID, int locID){
+
+        /*
+            Sets the values of P.Input corresponding to map mapID and map point locID, as well as the input values of the appropriate context nodes.
+        */
+
         P.reset();
         for(int i=0; i<inputID.size(); i++){
             P.Input[inputID[i]] = M[mapID].X[i][locID];
@@ -356,7 +429,11 @@ public:
     }
 
     std::vector<int> setRandomInput(void){
-        // first is mapID, second is location ID
+
+        /*
+            Rerurns a randomly chosen index into the vector of maps M (sample[0]), and a randomly chosen index into its map points (sample[1]).
+        */
+
         std::vector<int> sample(2,floor(morph::Tools::randDouble()*M.size()));
         sample[1] = floor(morph::Tools::randDouble()*M[sample[0]].N);
         return sample;
@@ -365,8 +442,9 @@ public:
     std::vector<std::vector<double> > testMap(int mapID){
 
         /*
-        Tests the network by supplying each input value combination specified in the map indexed by mapID.
-        Returns a num-units x num-map-values array of settled node response values.
+            Tests the network by supplying each input value combination specified in the map indexed by mapID.
+
+            Returns a (num. nodes) x (num. map values) array of settled node response values.
         */
 
         std::vector<std::vector<double> > response(P.N,std::vector<double>(M[mapID].N,0.));
@@ -383,11 +461,13 @@ public:
 
     std::vector<std::vector<double> > testDomainContext(int i){
 
+        // Evaluates input coordinates on the domain for context i. Return a (num. nodes) x (num. domain points) matrix of settled activation values.
+
         std::vector<std::vector<double> > R(P.N,std::vector<double>(domain.nhex,0.));
 
         for (unsigned int j=0; j<domain.nhex; ++j) {
             P.reset();
-            P.Input[inputID[0]] = domain.X[j];  // HACK: THIS ASSUMES FIRST 2 INPUTS ARE X and Y
+            P.Input[inputID[0]] = domain.X[j];  // SWHACKALERT: THIS ASSUMES FIRST 2 INPUTS ARE X and Y
             P.Input[inputID[1]] = domain.Y[j];
 
             for(int k=0;k<C[i].nodeIDs.size();k++){
@@ -407,6 +487,8 @@ public:
 
     std::vector<std::vector<std::vector<double> > > testDomains(void){
 
+        // Evaluates input coordinates on the domain for each context. Return a (num. contexts) x (num. nodes) x (num. domain points) matrix of settled activation values.
+
         std::vector<std::vector<std::vector<double> > > R;
         for(int i=0;i<nContext;i++){
             R.push_back(testDomainContext(i));
@@ -415,6 +497,15 @@ public:
     }
 
     void run(int K, int errorSamplePeriod){
+
+        /*
+            The top-level algorithm for training the network. Supply the number of training iterations K, and the number of iterations between sampling the error (across all map points in all maps).
+
+            Network weights are initialized to uniform random values in the range -1 and +1.
+
+            If the total error at a given sample exceeds twice the running minimum total error, the weights are reset to the value at which that running minimum error was obtained.
+        */
+
         P.randomizeWeights(-1.0, +1.0);
         double errMin = 1e9;
         for(int k=0;k<K;k++){
@@ -454,10 +545,17 @@ public:
      */
 
     void setColourMap(morph::ColourMapType cmap){
+
+        // set the colour map
+
         colourMap = cmap;
     }
 
     void plotMapValues(std::vector<double> F, std::string fname, int mapIndex){
+
+        // plot values from F over the map indexed (in M) by mapIndex, i.e., using its quads structure, and save the result in file fname.  F is assumed to be derived from a function that iterated over the map locations. SWHACKALERT: Shoulf really make this like plotDomainValues below so that if supplied color_min == color_max then the caxis is autoscaled.
+
+
         if(M[mapIndex].N != F.size()){ std::cout<<"Field supplied not correct size (Map)."<<std::endl;}
         Visual v (500, 500, "Map");
         v.backgroundWhite();
@@ -480,6 +578,9 @@ public:
 
 
     void plotDomainValues(std::vector<double> F, std::string fname){
+
+        // SWHACKALERT: Should probably remove this one, as the overloaded version below is equivalent when color_min == color_max
+
         if(domain.nhex != F.size()){ std::cout<<"Field supplied not correct size (domain)"<<std::endl;}
         Visual v (500, 500, "Response");
         v.backgroundWhite();
@@ -503,6 +604,9 @@ public:
 
 
     void plotDomainValues(std::vector<double> F, std::string fname, double color_min, double color_max){
+
+        // plot values from F over the domain (assumed to be derived from a function that iterated over the domain values) and save the result in file fname. If color_min == color_max then the caxis is autoscaled.
+
         if(domain.nhex != F.size()){ std::cout<<"Field supplied not correct size (domain)"<<std::endl;}
         Visual v (500, 500, "Response");
         v.backgroundWhite();
@@ -534,6 +638,9 @@ public:
     // **************************************************** //
 
     void plotMapTargets(void){
+
+    // plot the supplied data for all maps in M, saving as targ_map_i.png. SWHACKALERT: Probably don't need to supply Fscaled (plotting will autoscale anyway).
+
         for(int i=0;i<M.size();i++){
             std::stringstream ss; ss<< logpath << "/targ_map_" << i << ".png";
             plotMapTarget(i, ss.str().c_str());
@@ -541,16 +648,25 @@ public:
     }
 
     void plotMapTarget(int i, std::string fname){
+
+        // plot the supplied data for map indexed by i (in M), and save as fname. SWHACKALERT: Probably don't need to supply Fscaled (plotting will autoscale anyway).
+
         plotMapValues(M[i].Fscaled, fname, i);
     }
 
     void plotMapResponsesAllMaps(void){
+
+        //
+
         for(int i=0;i<M.size();i++){
             plotMapResponses(i);
         }
     }
 
     void plotMapResponses(int i){
+
+        // test the response of all nodes to input combinations specified by map i, plot, and save. Normalizes the responses across all nodes first.
+
         std::vector<std::vector<double> > R = testMap(i);
         for(int j=0;j<R.size();j++){
             std::vector<double> F = normalize(R[j]);
@@ -560,6 +676,9 @@ public:
     }
 
     void plotDomainContext(int i){
+
+        //
+
         std::vector<std::vector<double> > R = testDomainContext(i);
         R = tools::normalize(R);
         for(int j=0;j<R.size();j++){
@@ -612,9 +731,6 @@ public:
 
     void plotDomainContextDiff(int nodeIndex, int contextA, int contextB, double cmin, double cmax){
 
-        //////////////////// set colors to range if false
-
-
         if(contextA>=nContext){std::cout<<"Invalid context ID (A) "<<contextA<<". Only "<<nContext<<"contexts."<<std::endl;}
         if(contextB>=nContext){std::cout<<"Invalid context ID (B) "<<contextB<<". Only "<<nContext<<"contexts."<<std::endl;}
         if(nodeIndex>=P.N){std::cout<<"Invalid node ID "<<nodeIndex<<". Only "<<P.N<<"nodes."<<std::endl;}
@@ -627,11 +743,6 @@ public:
         }
         double minVal = tools::getMin(diff);
         double maxVal = tools::getMax(diff);
-
-        if(cmin==cmax){
-        //    diff = tools::normalize(diff);
-        }
-
 
         std::stringstream ss; ss<< logpath << "/DIFF_context_("<<C[contextA].name<<")_minus_context_("<< C[contextB].name<<")_node"<<nodeIndex<<".png";
         plotDomainValues(diff,ss.str().c_str(),cmin,cmax);
@@ -652,48 +763,6 @@ public:
         for(int i=0;i<outputID.size();i++){
             plotDomainContextDiff(outputID[i], contextA, contextB, 0.0, 0.0);
         }
-
     }
 
 };
-
-
-    /*
-    void run(int K, int errorSamplePeriod, int errorSampleSize, bool resetWeights){
-        P.randomizeWeights(-1.0, +1.0);
-        double errMin = 1e9;
-        for(int k=0;k<K;k++){
-            if(k%errorSamplePeriod){
-                std::vector<int> sample = setRandomInput();
-                setInput(sample[0],sample[1]);
-                P.convergeForward(weightNudgeSize);
-                P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                P.convergeBackward();
-                P.weightUpdate();
-            } else {
-                double err = 0.;
-                for(int j=0;j<errorSampleSize;j++){
-                    std::vector<int> sample = setRandomInput();
-                    setInput(sample[0],sample[1]);
-                    P.convergeForward();
-                    P.setError(std::vector<int> (1,M[sample[0]].outputID), std::vector<double> (1,M[sample[0]].F[sample[1]]));
-                    err += P.getError();
-                }
-                err /= (double)errorSampleSize;
-                if(err<errMin){
-                    errMin = err;
-                    P.Wbest = P.W;
-                } else if (resetWeights) {
-                    P.W = P.Wbest;
-                }
-                Error.push_back(errMin);
-            }
-
-            if(fmod(k,K/100)==0){
-                logfile<<"steps: "<<(int)(100*(float)k/(float)K)<<"% ("<<k<<")"<<std::endl;
-            }
-        }
-        P.W = P.Wbest;
-    }
-    */
-
