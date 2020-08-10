@@ -1,6 +1,3 @@
-//
-//  world.cpp
-//
 
 #include "morph/world.h"
 
@@ -18,7 +15,7 @@ morph::World::World (const char* processName,
                      double dt)
 {
     this->processName=processName; // process name
-    stringstream ss;          // logfile location
+    stringstream ss;               // logfile location
     ss<<logfileLocation;           // logfile location
     srand(seed);                   // random seed
     this->portID=portID;           // tcpip port ID
@@ -45,7 +42,7 @@ morph::World::World (const char* processName,
                      double dt)
 {
     this->processName=processName; // process name
-    stringstream ss;          // logfile location
+    stringstream ss;               // logfile location
     ss<<logfileLocation;           // logfile location
     srand(seed);                   // random seed
     //this->portID=portID;           // tcpip port ID

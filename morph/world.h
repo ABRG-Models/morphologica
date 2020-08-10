@@ -1,17 +1,8 @@
-//
-//  world.h
-//
-
-#ifndef ____world__
-#define ____world__
+#pragma once
 
 #include "sockserve.h"
 #include <fstream>
 #include <vector>
-
-using std::vector;
-using std::ofstream;
-using std::string;
 
 namespace morph
 {
@@ -33,7 +24,7 @@ namespace morph
               double dt);
 
         virtual ~World();
-        vector<string> getCommand(vector<double*>);
+        std::vector<std::string> getCommand(std::vector<double*>);
         const char* timeStamp(void);
         void waitForConnected(void);
 
@@ -41,12 +32,10 @@ namespace morph
         int seed;
         int portID;                 // tcpip port ID
         Client supervisor;
-        vector<Client> ports;
-        ofstream logfile;
+        std::vector<Client> ports;
+        std::ofstream logfile;
         double TIME;
         double dt;
     };
 
 } // namespace morph
-
-#endif /* defined(____world__) */

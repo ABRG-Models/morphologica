@@ -1,7 +1,4 @@
-//  sockserve.h
-
-#ifndef ____sockserve__
-#define ____sockserve__
+#pragma once
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -47,5 +44,3 @@ namespace morph
     };
 
 } // namespace morph
-
-#endif /* defined(____sockserve__) */
