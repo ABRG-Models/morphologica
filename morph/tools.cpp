@@ -291,6 +291,8 @@ morph::Tools::randomSeed (void)
 double
 morph::Tools::randDouble (void)
 {
+    // FIXME: Have this (and randSingle) instantiate a singleton RandUniform container,
+    // and then get instances from that.
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 }
 
