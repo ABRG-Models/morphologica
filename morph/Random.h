@@ -6,15 +6,27 @@
 #include <type_traits>
 
 /*!
- * Random numbers in the morph namespace, wrapping C++ <random> stuff, with a
- * particular favouring for mt19937_64, the 64 bit Mersenne Twister algorithm. With
- * these classes, generate random numbers using our choice of algorithms from
- * std::random plus I'd like to include a siderand approach to collecting entropy.
+ * \file Random.h
  *
- * I've wrapped a selection of distributions, including normal, poisson and
+ * Random numbers in the morph namespace, wrapping C++ <random> stuff, with a particular
+ * favouring for mt19937_64, the 64 bit Mersenne Twister algorithm. With these classes,
+ * generate random numbers using our choice of algorithms from std::random. In future,
+ * I'd like to include a siderand approach to collecting entropy.
+ *
+ * I've wrapped a selection of distributions, including normal, lognormal, poisson and
  * uniform. Copy the classes here to add additional ones that you might need from the
- * full list: https://en.cppreference.com/w/cpp/numeric/random (such as weibull,
- * exponential, lognormal and so on).
+ * full list: https://en.cppreference.com/w/cpp/numeric/random (such as weibull or
+ * exponential).
+ *
+ * See tests/testRandom.cpp for a variety of usage examples. Here is a single, simple
+ * example to replace morph::Tools::randDouble():
+ *
+ * \code
+ * #include <morph/Random.h>
+ * morph::RandUniform<double> randDouble;
+ * double sample = randDouble.get();
+ * double sample2 = randDouble.get();
+ * \endcode
  */
 
 namespace morph {
