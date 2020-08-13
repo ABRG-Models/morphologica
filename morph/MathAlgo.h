@@ -191,7 +191,7 @@ namespace morph {
         //! Compute standard deviation of the T values in @values. Return SD.
         template<typename T>
         static T compute_sd (const std::vector<T>& values) {
-            T mean = 0.0;
+            T mean = T{0};
             return MathAlgo::compute_mean_sd<T> (values, mean);
         }
 
@@ -199,18 +199,25 @@ namespace morph {
         //! mean into arg.
         template<typename T>
         static T compute_mean_sd (const std::vector<T>& values, T& mean) {
-            mean = 0.0;
+            mean = T{0};
+            if (values.empty()) {
+                return T{0};
+            }
             for (T val : values) {
                 mean += val;
             }
             mean /= values.size();
 
-            T sos_deviations = 0.0;
+            T sos_deviations = T{0};
             for (T val : values) {
                 sos_deviations += ((val-mean)*(val-mean));
             }
-            T variance = sos_deviations / (values.size()-1);
-            return std::sqrt(variance);
+            if (values.size() > 1) {
+                T variance = sos_deviations / (values.size()-1);
+                return std::sqrt(variance);
+            } else {
+                return T{0};
+            }
         }
 
         //! The bubble sort algorithm, high to low. T could be floating point or
