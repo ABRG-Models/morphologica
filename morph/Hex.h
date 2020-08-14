@@ -400,8 +400,9 @@ namespace morph {
         unsigned int vi;
 
         /*!
-         * Index into the d_ vectors in HexGrid. Used to populate HexGrid::d_nne, HexGrid::d_nnw,
-         * HexGrid::d_nsw and HexGrid::d_nse, etc.
+         * This is the index into the d_ vectors in HexGrid which can be used to find
+         * the variables recorded for this Hex. It's used in morph::HexGrid to populate
+         * HexGrid::d_nne, HexGrid::d_nnw, HexGrid::d_nsw and HexGrid::d_nse, etc.
          *
          * This indexes into the d_ vectors in the HexGrid object to which this Hex belongs. The d_
          * vectors are ordered differently from the list<Hex> object in HexGrid::hexen and hence we
