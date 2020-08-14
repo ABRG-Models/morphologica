@@ -68,7 +68,6 @@ int main()
         // Make some dummy data (a sine wave)
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.5 + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
-            //data[hi] = 0.5;// + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
