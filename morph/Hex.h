@@ -525,19 +525,14 @@ namespace morph {
         }
 
         /*!
-         * Setter for this->flags
-         */
-        void setFromFlags (unsigned int flgs) {
-            this->flags = flgs;
-        }
-        void setFlags (unsigned int flgs) {
-            this->flags = flgs;
-        }
-        /*!
          * Set one or more flags, defined by flg, true
          */
         void setFlag (unsigned int flg) {
             this->flags |= flg;
+        }
+        //! Alias for Hex::setFlag
+        void setFlags (unsigned int flgs) {
+            this->flags |= flgs;
         }
         /*!
          * Unset one or more flags, defined by flg, i.e. set false
@@ -545,11 +540,19 @@ namespace morph {
         void unsetFlag (unsigned int flg) {
             this->flags &= ~(flg);
         }
+        //! Alias for Hex::unsetFlag
+        void unsetFlags (unsigned int flgs) {
+            this->flags &= ~(flgs);
+        }
         /*!
          * If flags match flg, then return true
          */
-        bool testFlags (unsigned int flg) const {
+        bool testFlag (unsigned int flg) const {
             return (this->flags & flg) == flg ? true : false;
+        }
+        //! Alias for Hex::testFlag
+        bool testFlags (unsigned int flgs) const {
+            return (this->flags & flgs) == flgs ? true : false;
         }
 
         /*!
