@@ -27,7 +27,19 @@ int main()
     int rtn = -1;
 
     Visual v(800,600,"Test window");
+    // Set up the near and far cutoff distances for rendering objects
     v.zNear = 0.001;
+    v.zFar = 50;
+    // Set up a field of view (in degrees) for the camera
+    v.fov = 15;
+    // Should the scene be 'locked' so that movements and rotations are prevented?
+    v.sceneLocked = false;
+    // Whole-scene offsetting uses two methods - one to set the depth at which the object is drawn
+    v.setZDefault (-5.0f);
+    // and one to set the x/y offset. Try pressing 'z' in the app window to see what the current sceneTrans is
+    v.setSceneTransXY (0.0f, 0.0f);
+    // Make this larger to "scroll in and out of the image" faster
+    v.scenetrans_stepsize = 0.5;
 
     try {
         string pwd = Tools::getPwd();
@@ -56,6 +68,7 @@ int main()
         // Make some dummy data (a sine wave)
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.5 + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
+            //data[hi] = 0.5;// + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
