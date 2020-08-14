@@ -99,7 +99,8 @@
  \endcode
  *
  */
-//#pragma once
+#ifndef _MORPHDBG_H_
+#define _MORPHDBG_H_ 1
 
 #ifndef DBGSTREAM
 # define DBGSTREAM morphDbg
@@ -154,3 +155,5 @@ extern std::ofstream DBGSTREAM;
 # define DBG2(s)
 # define debuglog2(type, format, ...)
 #endif
+
+#endif // _MORPHDBG_H_
