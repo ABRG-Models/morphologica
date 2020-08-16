@@ -421,8 +421,9 @@ morph::HexGrid::ellipsePerimeter (const float a, const float b)
     return (float)p;
 }
 
+//JMB added argument to place centre of ellipse away from the origin
 vector<BezCoord<float>>
-morph::HexGrid::ellipseCompute (const float a, const float b)
+morph::HexGrid::ellipseCompute (const float a, const float b, const std::pair<float, float> c)
 {
     // Compute the points on the boundary using the parametric elliptical formula and
     // half of the hex to hex spacing as the angular step size. Return as bpoints.
@@ -440,8 +441,8 @@ morph::HexGrid::ellipseCompute (const float a, const float b)
 
     // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
     for (double phi = 0.0; phi < morph::TWO_PI_D; phi+=delta_phi) {
-        float x_pt = static_cast<float>(a * cos (phi));
-        float y_pt = static_cast<float>(b * sin (phi));
+        float x_pt = static_cast<float>(a * cos (phi) + c.first);
+        float y_pt = static_cast<float>(b * sin (phi) + c.second);
         BezCoord<float> b(make_pair(x_pt, y_pt));
         bpoints.push_back (b);
     }
@@ -449,18 +450,20 @@ morph::HexGrid::ellipseCompute (const float a, const float b)
     return bpoints;
 }
 
+//JMB added arguments to allow ellipse to be displaced from the origin
 void
-morph::HexGrid::setEllipticalBoundary (const float a, const float b)
+morph::HexGrid::setEllipticalBoundary (const float a, const float b, const std::pair<float, float> c, bool offset)
 {
-    vector<BezCoord<float>> bpoints = ellipseCompute (a, b);
-    this->setBoundary (bpoints);
+    vector<BezCoord<float>> bpoints = ellipseCompute (a, b, c);
+    this->setBoundary (bpoints, offset);
 }
 
+//JMB added arguments to allow circle to be displaced from the origin
 void
-morph::HexGrid::setCircularBoundary (const float a)
+morph::HexGrid::setCircularBoundary (const float a, const std::pair<float, float> c, bool offset)
 {
-    vector<BezCoord<float>> bpoints = ellipseCompute (a, a);
-    this->setBoundary (bpoints);
+    vector<BezCoord<float>> bpoints = ellipseCompute (a, a, c);
+    this->setBoundary (bpoints, offset);
 }
 
 void
@@ -613,6 +616,69 @@ morph::HexGrid::setBoundary (const BezCurvePath<float>& p, bool loffset)
         vector<BezCoord<float>> bpoints = this->boundary.getPoints();
         this->setBoundary (bpoints, loffset);
     }
+}
+
+void
+morph::HexGrid::setBoundaryOnly (const BezCurvePath<float>& p, bool loffset)
+{
+    this->boundary = p;
+
+    if (!this->boundary.isNull()) {
+        DBG ("Applying boundary...");
+        // Compute the points on the boundary using half of the hex to hex spacing as the step
+        // size. The 'true' argument inverts the y axis.
+        this->boundary.computePoints (this->d/2.0f, true);
+        vector<BezCoord<float>> bpoints = this->boundary.getPoints();
+        this->setBoundaryOnly (bpoints, loffset);
+    }
+}
+
+
+
+void
+morph::HexGrid::setBoundaryOnly (vector<BezCoord<float>>& bpoints, bool loffset)
+{
+    this->boundaryCentroid = BezCurvePath<float>::getCentroid (bpoints);
+    DBG ("Boundary centroid: " << boundaryCentroid.first << "," << boundaryCentroid.second);
+    auto bpi = bpoints.begin();
+    // conditional executed if we reset the centre
+    if (loffset) {
+        while (bpi != bpoints.end()) {
+            bpi->subtract (this->boundaryCentroid);
+            ++bpi;
+        }
+        // Copy the centroid
+        this->originalBoundaryCentroid = this->boundaryCentroid;
+        // Zero out the centroid, as the boundary is now centred on 0,0
+        this->boundaryCentroid = make_pair (0.0, 0.0);
+        bpi = bpoints.begin();
+    } //end of code to reset centre
+
+
+    // now proceed with centroid changed or unchanged
+    // clear all boundary flags
+    for (auto h : this->hexen) {
+        h.unsetUserFlag(HEX_IS_BOUNDARY);
+    }
+
+    list<Hex>::iterator nearbyBoundaryPoint = this->hexen.begin(); // i.e the Hex at 0,0
+    bpi = bpoints.begin();
+    while (bpi != bpoints.end()) {
+        nearbyBoundaryPoint = this->setBoundary (*bpi++, nearbyBoundaryPoint);
+        DBG2 ("Added boundary point " << nearbyBoundaryPoint->ri << "," << nearbyBoundaryPoint->gi);
+    }
+
+    // Check that the boundary is contiguous.
+    {
+        set<unsigned int> seen;
+        list<Hex>::iterator hi = nearbyBoundaryPoint;
+        if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
+            stringstream ee;
+            ee << "The constructed boundary is not a contiguous sequence of hexes.";
+            throw runtime_error (ee.str());
+        }
+    }
+
 }
 
 void
@@ -1078,7 +1144,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
 
     // a deque to hold the 'n_recents' most recently seen boundary hexes.
     std::deque<list<Hex>::iterator> recently_seen;
-    size_t n_recents = 2; // 2 should be sufficient for boundaries with double thickness
+    size_t n_recents = 16; // 2 should be sufficient for boundaries with double thickness
                           // sections. If problems occur, trying increasing this.
     bool gotnext = this->findNextBoundaryNeighbour (bhi, recently_seen, n_recents, bdryFlag, insideFlag);
     // Loop around boundary, marking inwards in all possible directions from each boundary hex

@@ -196,13 +196,21 @@ namespace morph {
         /*!
          * Sets boundary to \a p, then runs the code to discard hexes lying outside
          * this boundary. Finishes up by calling morph::HexGrid::discardOutside.
-         *
          * The BezCurvePath's centroid may not be 0,0. If loffset has its default value
          * of true, then this method offsets the boundary so that when it is applied to
          * the HexGrid, the centroid IS (0,0). If \a loffset is false, then \a p is not
          * translated in this way.
          */
         void setBoundary (const BezCurvePath<float>& p, bool loffset = true);
+
+        /*!
+         * This does exactly what setBoundary(const BezCurvePath<float> p, bool offset)
+         * does but it first of all clears the previous boundary flags so the new ones
+         * are the only ones marked on the boundary. It does this because it does not
+         * discard hexes outside the boundary or repopulate the HexGrid but it draws a new
+         * boundary that is used by the DRegion class
+         */
+        void setBoundaryOnly (const BezCurvePath<float>& p, bool loffset = true);
 
         /*!
          * Sets the boundary of the hexgrid to \a bpoints, then runs the code to discard
@@ -213,6 +221,15 @@ namespace morph {
          * translated.
          */
         void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset = true);
+
+        /*!
+         * This does exactly what setBoundary(vector<BezCoord<float>& bpoints, bool offset)
+         * does but it first of all clears the previous boundary flags so the new ones
+         * are the only ones marked on the boundary. It does this because it does not
+         * discard hexes outside the boundary or repopulate the HexGrid but it draws a new
+         * boundary that is used by the DRegion class
+         */
+        void setBoundaryOnly (std::vector<BezCoord<float>>& bpoints, bool loffset);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible
@@ -234,21 +251,31 @@ namespace morph {
          */
         std::list<Hex> getBoundary (void) const;
 
-        //! Compute an elliptical boundary using the elliptical radii \a a and \a b.
-        std::vector<BezCoord<float>> ellipseCompute (const float a, const float b);
 
-        //! Compute the length of the perimeter of an ellipse with radii \a a and \a b.
+        /*!
+         * ellipse functions
+         * JMB added centre argument so that the ellipse centre is offset from the coordinate origin
+         */
+        //@{
+        std::vector<BezCoord<float>> ellipseCompute (const float a, const float b, const std::pair<float, float> c = std::make_pair(0.0, 0.0));
+
+        //! calculater perimeter of ellipse
         float ellipsePerimeter (const float a, const float b);
+        //@}
 
         /*!
          * Set the boundary to be an ellipse with the given radii parameters a and b.
+         * JMB c allows the centre of the ellipse to be offset from the coordinate origin
+         * bool argument determines if boundary is recentred or remains in place
          */
-        void setEllipticalBoundary (const float a, const float b);
+        void setEllipticalBoundary (const float a, const float b, const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true);
 
         /*!
          * Set the boundary to be a circle with the given radius a.
+         * JMB c allows the centre of the circle to be offset from the coordinates origin
+         * JMB bool offset determines if the boundary is recentered or remains in place
          */
-        void setCircularBoundary (const float a);
+        void setCircularBoundary (const float a, const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true);
 
         /*!
          * \brief Accessor for the size of hexen.
@@ -363,9 +390,9 @@ namespace morph {
          */
         //@{
         std::vector<std::list<Hex>::iterator> getRegion (BezCurvePath<float>& p, std::pair<float, float>& regionCentroid,
-                                                         bool applyOriginalBoundaryCentroid = true);
+                                               bool applyOriginalBoundaryCentroid = true);
         std::vector<std::list<Hex>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints, std::pair<float, float>& regionCentroid,
-                                                         bool applyOriginalBoundaryCentroid = true);
+                                               bool applyOriginalBoundaryCentroid = true);
         //@}
 
         /*!

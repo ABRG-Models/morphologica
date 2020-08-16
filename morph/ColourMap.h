@@ -19,12 +19,13 @@ namespace morph {
         Viridis,
         Cividis,
         Twilight,
-        Greyscale,  // Greyscale is any hue; saturation=0; *value* varies.
-        Monochrome, // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
+        Greyscale,    // Greyscale is any hue; saturation=0; *value* varies. High signal (datum ->1) gives dark greys to black
+        GreyscaleInv, // Inverted Greyscale. High signal gives light greys to white
+        Monochrome,   // Monochrome is 'monohue': fixed hue; vary the *saturation* with value fixed at 1.
         MonochromeRed,
         MonochromeBlue,
         MonochromeGreen,
-        Fixed       // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
+        Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
     //! Different ways of specifying colour exist
@@ -110,6 +111,15 @@ namespace morph {
             }
             case ColourMapType::Greyscale:
             {
+                // The standard Greyscale Colourmap is best (and matches python Greys
+                // colour map) if white means minimum signal and black means maximum
+                // signal; hence pass 1-datum to ColourMap::greyscale().
+                c = this->greyscale (Flt{1.0}-datum);
+                break;
+            }
+            case ColourMapType::GreyscaleInv:
+            {
+                // The 'inverted' greyscale tends to white for maximum signal
                 c = this->greyscale (datum);
                 break;
             }
@@ -290,7 +300,8 @@ namespace morph {
          * @param datum gray value from 0.0 to 1.0
          *
          * @returns Generate RGB value for which all entries are equal and the
-         * brightness gives the map value.
+         * brightness gives the map value. Thus, \a datum = 1 gives white and \a datum =
+         * 0 gives black.
          */
         std::array<float,3> greyscale (Flt datum) {
             return ColourMap::hsv2rgb (this->hue, 0.0f, static_cast<float>(datum));
