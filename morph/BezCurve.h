@@ -214,7 +214,6 @@ namespace morph
             Flt ang_b = std::atan2 (vb_y, vb_x);
             // theta is the angle between vector a and vector b
             Flt theta = ang_a - ang_b;
-#define DEBUG__ 1
 #ifdef DEBUG__
             std::cout << "ang_a = " << ang_a << " rads "
                       << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
@@ -265,25 +264,33 @@ namespace morph
             arma::Mat<Flt> pm2_r_after;
             if (ang_b < Flt{0}) {
                 if (ang_a > Flt{0}) {
+#ifdef DEBUG__
                     std::cout << "BezCurve::fit(): Type I join" << std::endl;
                     std::cout << "                 Rotate va +phi, vb -phi." << std::endl;
+#endif
                     pm1_r_after = pm1_r * rotmat_pos;
                     pm2_r_after = pm2_r * rotmat_neg;
                 } else {
+#ifdef DEBUG__
                     std::cout << "BezCurve::fit(): Type II join" << std::endl;
                     std::cout << "                 Rotate va +phi, vb +phi." << std::endl;
+#endif
                     pm1_r_after = pm1_r * rotmat_pos;
                     pm2_r_after = pm2_r * rotmat_pos;
                 }
             } else {
                 if (ang_a > Flt{0}) {
+#ifdef DEBUG__
                     std::cout << "BezCurve::fit(): Type III join" << std::endl;
                     std::cout << "                 Rotate va -phi, vb -phi." << std::endl;
+#endif
                     pm1_r_after = pm1_r * rotmat_neg;
                     pm2_r_after = pm2_r * rotmat_neg;
                 } else {
+#ifdef DEBUG__
                     std::cout << "BezCurve::fit(): Type IV join" << std::endl;
                     std::cout << "                 Rotate va -phi, vb +phi." << std::endl;
+#endif
                     pm1_r_after = pm1_r * rotmat_neg;
                     pm2_r_after = pm2_r * rotmat_pos;
                 }
@@ -317,10 +324,14 @@ namespace morph
             // Optimization stage. Move control points other than those we just fixed to
             // be in line with each other, to minimize the deviation of this curve and
             // @c from the user-points provided.
+#ifdef DEBUG__
             std::cout << "Optimization..." << std::endl;
+#endif
 
             Flt startsos = this->computeObjective (points);
+#ifdef DEBUG__
             std::cout << "Objective with no optimization: " << startsos << std::endl;
+#endif
             arma::Mat<Flt> Copy = this->C;
 
             // Convert the middle rows of C to vector<Flt> to be the first NM vertex

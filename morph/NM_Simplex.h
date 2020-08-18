@@ -120,7 +120,7 @@ namespace morph {
         //! triangle flipping on a 2D surface, you'd have 3 vertices with 2 coordinates
         //! each.
         NM_Simplex (const std::vector<std::vector<Flt>>& initial_vertices) {
-            // dimensionality, n, is the number of simlex vertices minus one
+            // dimensionality, n, is the number of simplex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
             this->allocate();
