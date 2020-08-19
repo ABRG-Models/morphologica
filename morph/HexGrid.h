@@ -400,9 +400,9 @@ namespace morph {
          */
         //@{
         std::vector<std::list<Hex>::iterator> getRegion (BezCurvePath<float>& p, std::pair<float, float>& regionCentroid,
-                                               bool applyOriginalBoundaryCentroid = true);
+                                                         bool applyOriginalBoundaryCentroid = true);
         std::vector<std::list<Hex>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints, std::pair<float, float>& regionCentroid,
-                                               bool applyOriginalBoundaryCentroid = true);
+                                                         bool applyOriginalBoundaryCentroid = true);
         //@}
 
         /*!
