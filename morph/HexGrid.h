@@ -196,13 +196,22 @@ namespace morph {
         /*!
          * Sets boundary to \a p, then runs the code to discard hexes lying outside
          * this boundary. Finishes up by calling morph::HexGrid::discardOutside.
-         *
          * The BezCurvePath's centroid may not be 0,0. If loffset has its default value
          * of true, then this method offsets the boundary so that when it is applied to
          * the HexGrid, the centroid IS (0,0). If \a loffset is false, then \a p is not
          * translated in this way.
          */
         void setBoundary (const BezCurvePath<float>& p, bool loffset = true);
+
+        /*!
+         * This sets a boundary, just as morph::HexGrid::setBoundary(const
+         * morph::BezCurvePath<float> p, bool offset) does but WITHOUT discarding hexes
+         * outside the boundary. Also, it first clears the previous boundary flags so
+         * the new ones are the only ones marked on the boundary. It does this because
+         * it does not discard hexes outside the boundary or repopulate the HexGrid but
+         * it draws a new boundary that can be used by client code
+         */
+        void setBoundaryOnly (const BezCurvePath<float>& p, bool loffset = true);
 
         /*!
          * Sets the boundary of the hexgrid to \a bpoints, then runs the code to discard
@@ -213,6 +222,17 @@ namespace morph {
          * translated.
          */
         void setBoundary (std::vector<BezCoord<float>>& bpoints, bool loffset = true);
+
+        /*!
+         * This sets a boundary, just as
+         * morph::HexGrid::setBoundary(vector<morph::BezCoord<float>& bpoints, bool offset)
+         * does but WITHOUT discarding hexes outside the boundary. Also, it first clears
+         * the previous boundary flags so the new ones are the only ones marked on the
+         * boundary. It does this because it does not discard hexes outside the boundary
+         * or repopulate the HexGrid but it draws a new boundary that can be used by
+         * client code
+         */
+        void setBoundaryOnly (std::vector<BezCoord<float>>& bpoints, bool loffset);
 
         /*!
          * Set all the outer hexes as being "boundary" hexes. This makes it possible
@@ -234,21 +254,38 @@ namespace morph {
          */
         std::list<Hex> getBoundary (void) const;
 
-        //! Compute an elliptical boundary using the elliptical radii \a a and \a b.
-        std::vector<BezCoord<float>> ellipseCompute (const float a, const float b);
 
-        //! Compute the length of the perimeter of an ellipse with radii \a a and \a b.
+        /*!
+         * Compute a set of coordinates arranged on an ellipse
+         * \param a first elliptical radius
+         * \param b second elliptical radius
+         * \param c centre argument so that the ellipse centre is offset from the coordinate origin
+         * \return A vector of the coordinates of points on the generated ellipse
+         */
+        std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
+                                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0));
+
+        //! calculater perimeter of ellipse with radii \a a and \a b
         float ellipsePerimeter (const float a, const float b);
 
         /*!
          * Set the boundary to be an ellipse with the given radii parameters a and b.
+         * \param a first elliptical radius
+         * \param b second elliptical radius
+         * \param c allows the centre of the ellipse to be offset from the coordinate origin
+         * \param offset determines if boundary is recentred or remains in place
          */
-        void setEllipticalBoundary (const float a, const float b);
+        void setEllipticalBoundary (const float a, const float b,
+                                    const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true);
 
         /*!
          * Set the boundary to be a circle with the given radius a.
+         * \param a The radius of the circle
+         * \param c allows the centre of the circle to be offset from the coordinate origin
+         * \param offset determines if boundary is recentred or remains in place
          */
-        void setCircularBoundary (const float a);
+        void setCircularBoundary (const float a,
+                                  const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true);
 
         /*!
          * \brief Accessor for the size of hexen.
@@ -363,9 +400,9 @@ namespace morph {
          */
         //@{
         std::vector<std::list<Hex>::iterator> getRegion (BezCurvePath<float>& p, std::pair<float, float>& regionCentroid,
-                                                         bool applyOriginalBoundaryCentroid = true);
+                                               bool applyOriginalBoundaryCentroid = true);
         std::vector<std::list<Hex>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints, std::pair<float, float>& regionCentroid,
-                                                         bool applyOriginalBoundaryCentroid = true);
+                                               bool applyOriginalBoundaryCentroid = true);
         //@}
 
         /*!
