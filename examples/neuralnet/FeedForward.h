@@ -22,7 +22,8 @@
 template <typename T>
 struct FeedForwardConn
 {
-    FeedForwardConn (morph::vVector<T>* _in, morph::vVector<T>* _out) {
+    FeedForwardConn (morph::vVector<T>* _in, morph::vVector<T>* _out)
+    {
         this->in = _in;
         this->out = _out;
         this->M = this->in->size();
@@ -36,6 +37,14 @@ struct FeedForwardConn
         this->nabla_b.zero();
         this->z.resize (N, T{0});
         this->z.zero();
+    }
+
+    void updateInput (morph::vVector<T>* _in)
+    {
+        if (_in->size() != this->M) {
+            throw std::runtime_error ("Replace with same sized input!");
+        }
+        this->in = _in;
     }
 
     //! Input layer has size M.
@@ -60,7 +69,8 @@ struct FeedForwardConn
     morph::vVector<T> z;
 
     //! Output as a string
-    std::string str() const {
+    std::string str() const
+    {
         std::stringstream ss;
         ss << "Weights: w" << w << "w (" << w.size() << ")\n";
         ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
@@ -71,13 +81,15 @@ struct FeedForwardConn
     }
 
     //! Randomize the weights and biases
-    void randomize() {
+    void randomize()
+    {
         this->w.randomizeN (T{0.0}, T{1.0});
         this->b.randomizeN (T{0.0}, T{1.0});
     }
 
     //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
-    void feedforward() {
+    void feedforward()
+    {
         // A morph::vVector for a 'part of w'
         morph::vVector<T> wpart(this->in->size()); // Size M
         // Get weights, outputs and biases iterators
@@ -98,21 +110,18 @@ struct FeedForwardConn
 
     //! The content of *FeedForwardConn::out is sigmoid(z^l+1)
     //! \return has size N
-    morph::vVector<T> sigmoid_prime_z_lplus1() {
-        return (*out) * (-(*out)+T{1});
-    }
+    morph::vVector<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
 
     //! The content of *FeedForwardConn::in is sigmoid(z^l)
     //! \return has size M
-    morph::vVector<T> sigmoid_prime_z_l() {
-        return (*in) * (-(*in)+T{1});
-    }
+    morph::vVector<T> sigmoid_prime_z_l() { return (*in) * (-(*in)+T{1}); }
 
     /*!
      * Compute this->delta using the values computed in FeedForwardConn::feedforward
      * (which must have been executed beforehand).
      */
-    void backprop (const morph::vVector<T>& delta_l_nxt) { // delta_l_nxt has size N.
+    void backprop (const morph::vVector<T>& delta_l_nxt) // delta_l_nxt has size N.
+    {
         if (delta_l_nxt.size() != this->out->size()) {
             throw std::runtime_error ("backprop: Mismatched size");
         }
@@ -159,38 +168,64 @@ struct FeedForwardNet
 {
     //! Constructor takes a vector specifying the number of neurons in each layer (\a
     //! layer_spec)
-    FeedForwardNet (const std::vector<unsigned int>& layer_spec) {
+    FeedForwardNet (const std::vector<unsigned int>& layer_spec, morph::vVector<T>* example_input)
+    {
+        this->inputneurons = example_input;
         // Set up initial conditions
+        bool firstlayer = true;
+        size_t firstLayerSize = 0;
         for (auto nn : layer_spec) {
-            // Create, and zero, a layer containing nn neurons:
-            morph::vVector<T> lyr(nn);
-            lyr.zero();
-            size_t lastLayerSize = 0;
-            if (!this->neurons.empty()) { // Set lastLayerSize
-                lastLayerSize = this->neurons.back().size();
-            }
-            // Add the layer to this->neurons
-            this->neurons.push_back (lyr);
-            // If there was a 'lastLayer', then add a connection between the layers
-            if (lastLayerSize != 0) {
-                auto l = this->neurons.end();
-                --l;
-                auto lm1 = l;
-                --lm1;
-                FeedForwardConn<T> c(&*lm1, &*l);
-                c.randomize();
-                this->connections.push_back (c);
+            if (firstlayer) {
+                // Don't create inputneurons, it will point to already-allocated memory
+                firstlayer = false;
+                firstLayerSize = nn;
+                std::cout << "First layer size: " << firstLayerSize << std::endl;
+            } else {
+                // Create, and zero, a layer containing nn neurons:
+                std::cout << "Create second layer size: " << nn << std::endl;
+                morph::vVector<T> lyr(nn);
+                lyr.zero();
+                size_t lastLayerSize = 0;
+                // If neurons is empty, then create the connection that connects the inputneurons and this.
+                if (!this->neurons.empty()) { // Set lastLayerSize
+                    lastLayerSize = this->neurons.back().size();
+                    // Add the layer to this->neurons
+                    this->neurons.push_back (lyr);
+                    // If there was a 'lastLayer', then add a connection between the layers
+                    if (lastLayerSize != 0) {
+                        auto l = this->neurons.end();
+                        --l;
+                        auto lm1 = l;
+                        --lm1;
+                        FeedForwardConn<T> c(&*lm1, &*l);
+                        c.randomize();
+                        this->connections.push_back (c);
+                    }
+
+                } else {
+                    // Special for connection between inputneurons and the next layer
+                    lastLayerSize = firstLayerSize;
+                    this->neurons.push_back (lyr);
+                    auto l = this->neurons.begin();
+                    std::cout << "Create connection from input size "  << this->inputneurons->size() << " to " << l->size() << std::endl;
+                    FeedForwardConn<T> c(this->inputneurons, &*l);
+                    c.randomize();
+                    this->connections.push_back (c);
+                }
             }
         }
     }
 
     //! Output the network as a string
-    std::string str() const {
+    std::string str() const
+    {
         std::stringstream ss;
-        unsigned int i = 0;
+        ss << "Input layer: " << (*this->inputneurons) << "\n";
+        unsigned int i = 1;
         auto c = this->connections.begin();
+        ss << *c++;
         for (auto n : this->neurons) {
-            if (i>0 && c != this->connections.end()) {
+            if (c != this->connections.end()) {
                 ss << *c++;
             }
             ss << "Layer " << i++ << ":  "  << n << "\n";
@@ -202,7 +237,8 @@ struct FeedForwardNet
     }
 
     //! Update the network's outputs from its inputs
-    void feedforward() {
+    void feedforward()
+    {
         for (auto& c : this->connections) {
             c.feedforward();
         }
@@ -211,11 +247,12 @@ struct FeedForwardNet
     //! A function which shows the difference between the network output and
     //! desiredOutput for debugging
     void evaluate (const std::vector<morph::vVector<float>>& ins,
-                   const std::vector<morph::vVector<float>>& outs) {
+                   const std::vector<morph::vVector<float>>& outs)
+    {
         auto op = outs.begin();
         for (auto ir : ins) {
             // Set input and output
-            this->neurons.front() = ir;
+            this->inputneurons = &ir;
             this->desiredOutput = *op++;
             // Compute network and cost
             this->feedforward();
@@ -225,7 +262,8 @@ struct FeedForwardNet
     }
 
     //! Evaluate against the Mnist test image set
-    unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000) {
+    unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000)
+    {
         // For each image in testData, compute cost
         float evalcost = 0.0f;
         unsigned int numMatches = 0;
@@ -233,7 +271,8 @@ struct FeedForwardNet
         for (auto img : testData) {
             unsigned int key = static_cast<unsigned int>(img.first);
             // Set input
-            this->neurons.front() = img.second;
+            this->inputneurons = &(img.second);
+            this->connections.begin()->updateInput (this->inputneurons);
             // Set output
             this->desiredOutput.zero();
             this->desiredOutput[key] = 1.0f;
@@ -252,9 +291,45 @@ struct FeedForwardNet
         return numMatches;
     }
 
+    //! Evaluate against the Mnist test image set
+    unsigned int evaluate (std::vector<morph::vVector<float>>& testData,
+                           const std::vector<unsigned char>& testLabels, int num=10000)
+    {
+        // For each image in testData, compute cost
+        float evalcost = 0.0f;
+        unsigned int numMatches = 0;
+        int count = 0;
+        if (testData.size() != testLabels.size()) {
+            std::stringstream ee;
+            ee << "sizes: dataData: "<< testData.size() << " vs. labels: " << testLabels.size();
+            throw std::runtime_error (ee.str());
+        }
+        for (unsigned int i = 0; i < testData.size(); ++i) {
+            // Set input
+            this->inputneurons = &(testData[i]);
+            this->connections.begin()->updateInput (this->inputneurons);
+            // Set output
+            this->desiredOutput.zero();
+            this->desiredOutput[testLabels[i]] = 1.0f;
+            // Update
+            this->feedforward();
+            evalcost += this->computeCost();
+            // Success?
+            if (this->neurons.back().argmax() == testLabels[i]) {
+                ++numMatches;
+            }
+            ++count;
+            if (count >= num) {
+                break;
+            }
+        }
+        return numMatches;
+    }
+
     //! Determine the error gradients by the backpropagation method. NB: Call
     //! computeCost() first
-    void backprop() {
+    void backprop()
+    {
         // Notation follows http://neuralnetworksanddeeplearning.com/chap2.html
         // The output layer is special, as the error in the output layer is given by
         //
@@ -277,14 +352,24 @@ struct FeedForwardNet
         }
     }
 
-    //! Set up an input along with desired output
-    void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput) {
-        *(this->neurons.begin()) = theInput;
+    //! Set up an input along with desired output. This *copies* the input image in memory and could be optimized.
+    void setInput (morph::vVector<T>& theInput, morph::vVector<T>& theOutput)
+    {
+        this->inputneurons = &theInput;
+        this->connections.begin()->updateInput (&theInput);
+        this->desiredOutput = theOutput;
+    }
+
+    void setInput (morph::vVector<T>* theInput, morph::vVector<T>& theOutput)
+    {
+        this->inputneurons = theInput;
+        this->connections.begin()->updateInput (theInput);
         this->desiredOutput = theOutput;
     }
 
     //! Compute the cost for one input and one desired output
-    T computeCost() {
+    T computeCost()
+    {
         // Here is where we compute delta_out:
         this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
         // And the cost:
@@ -296,7 +381,9 @@ struct FeedForwardNet
     //! What's the cost function of the current output? Computed in computeCost()
     T cost = T{0};
 
-    //! A variable number of neuron layers, each of variable size.
+    morph::vVector<T>* inputneurons;
+    //! A variable number of neuron layers, each of variable size. This does NOT include
+    //! the input layer, whose memory is not managed here.
     std::list<morph::vVector<T>> neurons;
     //! Connections. There should be neurons.size()-1 connection layers:
     std::list<FeedForwardConn<T>> connections;

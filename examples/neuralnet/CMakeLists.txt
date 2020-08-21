@@ -37,10 +37,10 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -Xpreprocessor -fopenmp")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__ -qopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -g -O3 -D__ICC__ -qopenmp")
   else () # GCC or Clang
     # This assumes a gcc compiler (or a gcc mimic like Clang)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -fopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -g -O3 -fopenmp")
   endif()
 endif()
 

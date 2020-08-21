@@ -33,7 +33,12 @@
 //! Mnist images are 28x28=784 pixels
 constexpr size_t mnlen = 784;
 
-// A class to read, and then manage the data of, the Mnist database.
+//! To hold an image, with a flag recording whether or not it has been used.
+struct MnistImage
+{
+};
+
+//! A class to read, and then manage the data of, the Mnist database.
 struct Mnist
 {
     Mnist() {

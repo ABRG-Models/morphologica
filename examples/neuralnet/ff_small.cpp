@@ -16,12 +16,13 @@ int main()
 {
     // Create a feed-forward network
     std::vector<unsigned int> layer_spec = {2,3,2}; // 2,2,2, 2,5,2; 2,4,2; 2,3,2. 2,11,2 all work
-    FeedForwardNet<float> ff1(layer_spec);
-    std::cout << ff1 << std::endl;
 
     // 5 data points from the function I want to find. This converts a quadratic input to a ~linear output
     std::vector<morph::vVector<float>> ins = {{0.05, 0.0025}, {0.2, 0.04}, {0.4, 0.16}, {0.6, 0.36}, {0.8, 0.64}};
     std::vector<morph::vVector<float>> outs = {{0.8, 0.95}, {0.6, 0.7}, {0.4, 0.5}, {0.2, 0.2}, {0.05, 0.05}};
+
+    FeedForwardNet<float> ff1(layer_spec, &ins[0]);
+    std::cout << ff1 << std::endl;
 
     // main loop, while m.training_f has values in:
     unsigned int epochs = 2000; // Here, an epoch is a run through each batch of 5 in/outs.
@@ -48,6 +49,9 @@ int main()
     unsigned int i = 0;
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
+        morph::vVector<float> thein;
+        morph::vVector<float> theout;
+
         // Zero mean grads
         for (i = 0; i < ff1.connections.size(); ++i) {
             mean_gradients[i].first.zero();
@@ -58,8 +62,8 @@ int main()
         for (unsigned int mb = 0; mb < mini_batch_size; ++mb) {
 
             // Note: NOT stochastic!
-            morph::vVector<float> thein = ins[mb];
-            morph::vVector<float> theout = outs[mb];
+            thein = ins[mb];
+            theout = outs[mb];
 
             ff1.setInput (thein, theout);
             ff1.feedforward();
@@ -105,7 +109,7 @@ int main()
             c.b -= (mean_gradients[i].second * eta);
             ++i;
         }
-#if 0
+#if 1
         std::cout << "After gradient alteration ff1:\n---------------\n" << ff1 << std::endl;
 #endif
 
