@@ -47,7 +47,8 @@ int main()
         // At start of epoch, make a copy of the training data:
         std::multimap<unsigned char, morph::vVector<float>> training_f = m.training_f;
 
-        for (unsigned int j = 0; j < training_f.size()/mini_batch_size; ++j) {
+        unsigned int jj = training_f.size()/mini_batch_size;
+        for (unsigned int j = 0; j < jj; ++j) {
 
             // Learn from one mini-batch...
 
@@ -63,6 +64,12 @@ int main()
 
                 // Set up input
                 auto t_iter = training_f.find (rng.get());
+                // Might have run out of that kind of image, so need this:
+                if (t_iter == training_f.end()) {
+                    while (t_iter == training_f.end()) {
+                        t_iter = training_f.find (rng.get());
+                    }
+                }
                 unsigned int key = static_cast<unsigned int>(t_iter->first);
                 morph::vVector<float> thein = t_iter->second;
                 morph::vVector<float> theout(10);
