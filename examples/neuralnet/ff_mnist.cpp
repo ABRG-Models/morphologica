@@ -10,8 +10,6 @@
 #include "FeedForward.h"
 #include <random>
 #include <algorithm>
-#include <chrono>
-using namespace std::chrono;
 
 int main()
 {
@@ -19,7 +17,7 @@ int main()
     Mnist2 m;
 
     // Instantiate the network
-    FeedForwardNet<float> ff1({784,30,10}, &(m.training_f.front()));
+    FeedForwardNet<float> ff1({784,32,10}, &(m.training_f.front()));
 
     // main loop parameters are number of epochs, the size of a mini-batch and the
     // learning rate eta
@@ -55,9 +53,6 @@ int main()
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
         std::cout << "Epoch " << ep << "...\n";
-        unsigned int ff_count = 0;
-        milliseconds ff_time = std::chrono::milliseconds::zero();
-        milliseconds bp_time = std::chrono::milliseconds::zero();
 
         // Shuffle index order
         std::shuffle (idxOrdered.begin(), idxOrdered.end(), g);
@@ -95,15 +90,9 @@ int main()
                 ff1.setInput (&m.training_f[idx], theout);
 
                 // Feedforward, then back-propagate errors
-                milliseconds ms1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
                 ff1.feedforward();
                 cost += ff1.computeCost();
-                milliseconds ms2 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
                 ff1.backprop();
-                milliseconds ms3 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-                ff_time += (ms2-ms1);
-                bp_time += (ms3-ms2);
-                ff_count++;
 
                 // Now collect up the nabla_w and nabla_bs for the learning step (already summed up cost)
                 i = 0;
@@ -133,11 +122,8 @@ int main()
         }
 
         // Evaluate the latest network at the end of the epoch (we just trained on the 60000 input patterns)
-        unsigned int numcorrect = 0;//ff1.evaluate (m.test_f, m.test_label);
+        unsigned int numcorrect = ff1.evaluate (m.test_f, m.test_label);
         std::cout << "In that last Epoch, "<< numcorrect << "/10000 were characterized correctly" << std::endl;
-
-        std::cout << "For " << ff_count << " Feedforwards took " << ff_time.count() << " ms\n";
-        std::cout << "backprop took " << bp_time.count() << " ms\n";
     }
 
 #ifdef COSTFILE
