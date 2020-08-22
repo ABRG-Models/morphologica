@@ -30,6 +30,10 @@ struct FeedForwardConn
         this->N = this->out->size();
         this->delta.resize (M, T{0});
         this->w.resize (M*N, T{0});
+        this->wmat.resize(M);
+        for (size_t i = 0; i < M; ++i) {
+            this->wmat[i].resize(N, T{0});
+        }
         this->nabla_w.resize (M*N, T{0});
         this->nabla_w.zero();
         this->b.resize (N, T{0});
@@ -58,6 +62,8 @@ struct FeedForwardConn
     //! Weights.
     //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N.
     morph::vVector<T> w;
+    //! To hold weights as a matrix, temporarily (see backprop)
+    std::vector<morph::vVector<T>> wmat;
     //! Biases. Size N.
     morph::vVector<T> b;
     //! The gradients of cost vs. weights. Size M by N.
@@ -90,21 +96,11 @@ struct FeedForwardConn
     //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
     void feedforward()
     {
-        // A morph::vVector for a 'part of w'
-        morph::vVector<T> wpart(this->in->size()); // Size M
-        // Get weights, outputs and biases iterators
-        auto witer = this->w.begin();
-        auto oiter = this->out->begin();
-        auto biter = this->b.begin();
         // Carry out an N sized for loop computing each output
         for (size_t j = 0; j < this->N; ++j) { // Each output
-            // Copy part of weights to wpart (M elements):
-            std::copy (witer, witer+this->M, wpart.begin());
-            // Compute dot product with input and add bias:
-            this->z[j] = wpart.dot (*in) + *biter++;
-            *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
-            // Move to the next part of the weight matrix for the next loop
-            witer += this->M;
+            // Compute dot product with input and add bias (note dot product with a shift)
+            this->z[j] = this->w.dot(*in, j*M) + this->b[j];
+            (*this->out)[j] = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
         }
     }
 
@@ -125,6 +121,12 @@ struct FeedForwardConn
         if (delta_l_nxt.size() != this->out->size()) {
             throw std::runtime_error ("backprop: Mismatched size");
         }
+
+        for (size_t i = 0; i < this->M; ++i) { // Each input
+            for (size_t j = 0; j < this->N; ++j) { // Each output
+            }
+        }
+
         // we have to do weights * delta_l_nxt to give a morph::vVector<T>
         // result. This is the equivalent of the matrix multiplication:
         morph::vVector<T> w_times_delta(this->in->size());
