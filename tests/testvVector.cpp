@@ -45,8 +45,12 @@ int main() {
     // Test dot product
     vVector<int> vv1 = {1,1};
     vVector<int> vv2 = {2,2};
-    int dp = vv1.dot (vv2);
-    cout << vv1 << "." << vv2 << " = " << dp << endl;
+    int pdp = vv1.dot (vv2);
+    cout << vv1 << "." << vv2 << " = " << pdp << endl;
+    // Shifted (partial) dot product
+    vVector<int> vv3 = {1,1,4,5};
+    int dp = vv3.dot (vv2, 1);
+    cout << "Partial DP: " << vv3 << "(shift 1) ." << vv2 << " = " << dp << endl;
 
     // dot product of two different sized vectors
     vVector<int> vv2_3 = {2,2,2};

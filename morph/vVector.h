@@ -401,6 +401,25 @@ namespace morph {
         }
 
         /*!
+         * \brief Scalar (dot) product of two vVectors where sizes differ
+         *
+         * Compute the scalar product of A PORTION of this vVector and the vVector, v.
+         *
+         * Move along shift spaces in this vVector, then compute v.size() computations
+         * for the partial dot product.
+         *
+         * \return scalar product of the portion.
+         */
+        template<typename _S=S>
+        S dot (const vVector<_S>& v, size_t shift) const
+        {
+            auto this_i = this->begin() + shift;
+            auto dot_product = [this_i](S a, _S b) mutable { return a + b * (*this_i++); };
+            const S rtn = std::accumulate (v.begin(), v.end(), S{0}, dot_product);
+            return rtn;
+        }
+
+        /*!
          * Vector cross product.
          *
          * Cross product of this with another vector \a v (if N==3). In
