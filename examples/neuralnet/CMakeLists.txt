@@ -37,10 +37,10 @@ if (APPLE)
   set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -Xpreprocessor -fopenmp")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -g -O3 -D__ICC__ -qopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__ -qopenmp")
   else () # GCC or Clang
     # This assumes a gcc compiler (or a gcc mimic like Clang)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -g -O3 -fopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -fopenmp")
   endif()
 endif()
 
@@ -142,15 +142,18 @@ if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
   add_executable(ff_small ff_small.cpp)
   add_executable(ff_mnist ff_mnist.cpp)
   add_executable(ff_debug ff_debug.cpp)
+  add_executable(ff_profile ff_profile.cpp)
 
   if(APPLE)
     target_link_libraries(ff_small ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
     target_link_libraries(ff_mnist ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
     target_link_libraries(ff_debug ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
+    target_link_libraries(ff_profile ${OpenCV_LIBS} ${MORPH_LDFLAGS}  ${GLFW_LIBRARIES} glfw armadillo ${OPENGL_LIBRARIES}) # etc
   else()
     target_link_libraries(ff_small ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
     target_link_libraries(ff_mnist ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
     target_link_libraries(ff_debug ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
+    target_link_libraries(ff_profile ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
   endif()
 
 else()
