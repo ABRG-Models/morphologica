@@ -10,6 +10,8 @@
 #include "FeedForward.h"
 #include <random>
 #include <algorithm>
+#include <chrono>
+using namespace std::chrono;
 
 int main()
 {
@@ -21,7 +23,7 @@ int main()
 
     // main loop parameters are number of epochs, the size of a mini-batch and the
     // learning rate eta
-    unsigned int epochs = 2;
+    unsigned int epochs = 10;
     unsigned int mini_batch_size = 10;
     float eta = 3.0f;
 
@@ -49,6 +51,10 @@ int main()
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
         std::cout << "Epoch " << ep << "...\n";
+        milliseconds ff_time = std::chrono::milliseconds::zero();
+        milliseconds cc_time = std::chrono::milliseconds::zero();
+        milliseconds bp_time = std::chrono::milliseconds::zero();
+        milliseconds ln_time = std::chrono::milliseconds::zero();
 
         // Shuffle index order
         std::shuffle (idxOrdered.begin(), idxOrdered.end(), g);
@@ -78,9 +84,17 @@ int main()
                 ff1.setInput (&m.training_f[idx], theout);
 
                 // Feedforward, then back-propagate errors
+                milliseconds ms1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
                 ff1.feedforward();
+                milliseconds ms1_2 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
                 ff1.computeCost();
+                milliseconds ms2 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+                ff_time += (ms1_2-ms1);
+                cc_time += (ms2-ms1_2);
+                milliseconds ms3 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
                 ff1.backprop();
+                milliseconds ms4 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+                bp_time += (ms4-ms3);
 
                 // Now collect up the nabla_w and nabla_bs for the learning step (already summed up cost)
                 i = 0;
@@ -89,6 +103,8 @@ int main()
                     mean_gradients[i].second += c.nabla_b;
                     ++i;
                 }
+                milliseconds ms5 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+                ln_time += (ms5-ms4);
             }
 
             // Have accumulated cost and mean_gradients, so now divide through to get the means
@@ -109,6 +125,7 @@ int main()
         // Evaluate the latest network at the end of the epoch (we just trained on the 60000 input patterns)
         unsigned int numcorrect = ff1.evaluate (m.test_f, m.test_label);
         std::cout << "In that last Epoch, "<< numcorrect << "/10000 were characterized correctly" << std::endl;
+        std::cout << "FF/CC/BP/LN times: " << ff_time.count() << "/" << cc_time.count() << "/" << bp_time.count() << "/" << ln_time.count() << "\n";
     }
 
     return 0;

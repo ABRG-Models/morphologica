@@ -29,11 +29,8 @@ struct FeedForwardConn
         this->M = this->in->size();
         this->N = this->out->size();
         this->delta.resize (M, T{0});
+        this->w_times_delta.resize (M, T{0});
         this->w.resize (M*N, T{0});
-        this->wmat.resize(M);
-        for (size_t i = 0; i < M; ++i) {
-            this->wmat[i].resize(N, T{0});
-        }
         this->nabla_w.resize (M*N, T{0});
         this->nabla_w.zero();
         this->b.resize (N, T{0});
@@ -62,8 +59,8 @@ struct FeedForwardConn
     //! Weights.
     //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N.
     morph::vVector<T> w;
-    //! To hold weights as a matrix, temporarily (see backprop)
-    std::vector<morph::vVector<T>> wmat;
+    //! Holds a temporary result in backprop(). Size M.
+    morph::vVector<T> w_times_delta;
     //! Biases. Size N.
     morph::vVector<T> b;
     //! The gradients of cost vs. weights. Size M by N.
@@ -122,29 +119,22 @@ struct FeedForwardConn
             throw std::runtime_error ("backprop: Mismatched size");
         }
 
-        for (size_t i = 0; i < this->M; ++i) { // Each input
-            for (size_t j = 0; j < this->N; ++j) { // Each output
-            }
-        }
-
         // we have to do weights * delta_l_nxt to give a morph::vVector<T>
         // result. This is the equivalent of the matrix multiplication:
-        morph::vVector<T> w_times_delta(this->in->size());
-        w_times_delta.zero();
-        for (size_t i = 0; i < this->M; ++i) { // Each input
-            for (size_t j = 0; j < this->N; ++j) { // Each output
+        this->w_times_delta.zero();
+        for (size_t j = 0; j < this->N; ++j) { // Each output
+            for (size_t i = 0; i < this->M; ++i) { // Each input
                 // For each weight fanning into neuron j in l_nxt, sum up:
-                w_times_delta[i] += this->w[i+(this->M*j)] * delta_l_nxt[j];
+                this->w_times_delta[i] += this->w[i+(this->M*j)] * delta_l_nxt[j];
             }
         }
-        morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
-        this->delta = w_times_delta * spzl;
+        this->delta = this->w_times_delta * this->sigmoid_prime_z_l();
 
         // NB: In a given connection, we compute nabla_b and nabla_w relating to the
         // *output* neurons and the weights also related to the output neurons.
         this->nabla_b = delta_l_nxt; // Size is N
-        for (size_t i = 0; i < this->M; ++i) { // Each input
-            for (size_t j = 0; j < this->N; ++j) { // Each output
+        for (size_t j = 0; j < this->N; ++j) { // Each output
+            for (size_t i = 0; i < this->M; ++i) { // Each input
                 // nabla_w is a_in * delta_out:
                 this->nabla_w[i+(this->M*j)] = (*in)[i] * delta_l_nxt[j];
             }
