@@ -401,7 +401,15 @@ namespace morph {
 #else // Simpler is more optimizable by the compiler, which does SIMD via its optimizations
             S rtn = S{0};
             size_t vsz = v.size();
-            size_t par_threshold = 12000; // 1024 * num threads?
+
+            // Parallel/single thread crossover point. 2000 * num threads? 12000
+            // represents the vector length for a 6 core i9 CPU for which parallel and
+            // single thread operation achieves the same performance. The difference is
+            // really noticable for par_threshold=40000, for which the parallel code
+            // achieves 0.19 seconds vs 0.48 s for single thread (on a test which
+            // repeatedly calls this dot() function).
+            size_t par_threshold = 12000;
+
             if (vsz < par_threshold) {
                 //std::cout << "non parallel\n";
                 for (size_t i = 0; i < vsz; ++i) {
