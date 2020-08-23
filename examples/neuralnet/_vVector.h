@@ -398,7 +398,7 @@ namespace morph {
             auto vi = v.begin();
             auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
-#else // Simpler is more optimizable by the compiler, which does SIMD via its optimizations
+#else // An implementation amenable to OpenMP
             S rtn = S{0};
             size_t vsz = v.size();
 
@@ -413,35 +413,34 @@ namespace morph {
             size_t par_threshold = 12000;
 
             if (vsz < par_threshold) {
-                //std::cout << "non parallel\n";
+                // Non-parallel: A simple implementation which compilers can optimise well with SIMD
                 for (size_t i = 0; i < vsz; ++i) {
                     rtn += v[i] * (*this)[i];
                 }
             } else {
-                //std::cout << "parallel\n";
 # if 0
-                // This approach, attempting to do parallel for and simd by chunking the
-                // data, is slower than a straightforward parallel for reduction.
-
                 // divide into chunks and do parallel/simd
                 size_t vchunks = vsz / par_threshold;
                 size_t vleftover = vsz % par_threshold;
                 //std::cout << "vsz: " << vsz << ", vchunks: " << vchunks << ", vleftover: " << vleftover << "\n";
 
+                // This approach, attempting to do parallel for and simd by chunking the
+                // data, is slower than a single parallel for reduction.
                 #pragma omp parallel for reduction(+:rtn)
-                for (size_t j = 0; j < vchunks; ++j) {
-                    #pragma omp simd
-                    for (size_t i = 0; i < par_threshold; ++i) {
-                        rtn += v[i+j] * (*this)[i+j];
+                for (size_t j = 0; j < par_threshold; ++j) {
+                    #pragma omp simd reduction(+:rtn)
+                    for (size_t i = 0; i < vchunks; ++i) {
+                        rtn += v[j+i] * (*this)[j+i];
                     }
                 }
                 // Leftovers
                 size_t pastthechunks = vchunks * par_threshold;
-                for (size_t i = 0; i < vleftover; ++i) {
-                    rtn += v[pastthechunks+i] * (*this)[pastthechunks+i];
+                for (size_t i = pastthechunks; i < vsz; ++i) {
+                    rtn += v[i] * (*this)[i];
                 }
-
 # else
+                // Parallel: Allow optimization with OpenMP, applying a reduce operation
+                // schedule(guided) or schedule(static) seems to make no difference here.
                 #pragma omp parallel for reduction(+:rtn)
                 for (size_t i = 0; i < vsz; ++i) {
                     rtn += v[i] * (*this)[i];
