@@ -402,12 +402,14 @@ namespace morph {
             S rtn = S{0};
             size_t vsz = v.size();
 
-            // Parallel/single thread crossover point. 2000 * num threads? 12000
-            // represents the vector length for a 6 core i9 CPU for which parallel and
-            // single thread operation achieves the same performance. The difference is
-            // really noticable for par_threshold=40000, for which the parallel code
-            // achieves 0.19 seconds vs 0.48 s for single thread (on a test which
-            // repeatedly calls this dot() function).
+            // Parallel/single thread crossover point. 12000 represents the vector
+            // length for a 6 core i9 CPU for which parallel and single thread operation
+            // achieves the same performance. The difference is really noticable for
+            // par_threshold=40000, for which the parallel code achieves 0.19 seconds vs
+            // 0.48 s for single thread (on a test which repeatedly calls this dot()
+            // function). On a dual core i5, the threshold is between 1000 and 2000. So
+            // a fair rule of thumb might be 1024 * num threads. However, finding num
+            // threads means requiring link access to libomp.
             size_t par_threshold = 12000;
 
             if (vsz < par_threshold) {
