@@ -7,8 +7,6 @@
  * \date May 2020
  */
 
-#include "Mnist.h"
-#include <morph/Random.h>
 #include <fstream>
 #include "FeedForward.h"
 

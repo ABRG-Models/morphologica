@@ -394,11 +394,7 @@ namespace morph {
             if (this->size() != v.size()) {
                 throw std::runtime_error ("vVector::dot(): vectors must have equal size");
             }
-#ifdef USING_ACCUMULATE
-            auto vi = v.begin();
-            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
-            const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
-#else // An implementation amenable to OpenMP
+
             S rtn = S{0};
             size_t vsz = v.size();
 
@@ -418,36 +414,13 @@ namespace morph {
                     rtn += v[i] * (*this)[i];
                 }
             } else {
-# if 0
-                // divide into chunks and do parallel/simd
-                size_t vchunks = vsz / par_threshold;
-                size_t vleftover = vsz % par_threshold;
-                //std::cout << "vsz: " << vsz << ", vchunks: " << vchunks << ", vleftover: " << vleftover << "\n";
-
-                // This approach, attempting to do parallel for and simd by chunking the
-                // data, is slower than a single parallel for reduction.
-                #pragma omp parallel for reduction(+:rtn)
-                for (size_t j = 0; j < par_threshold; ++j) {
-                    #pragma omp simd reduction(+:rtn)
-                    for (size_t i = 0; i < vchunks; ++i) {
-                        rtn += v[j+i] * (*this)[j+i];
-                    }
-                }
-                // Leftovers
-                size_t pastthechunks = vchunks * par_threshold;
-                for (size_t i = pastthechunks; i < vsz; ++i) {
-                    rtn += v[i] * (*this)[i];
-                }
-# else
                 // Parallel: Allow optimization with OpenMP, applying a reduce operation
-                // schedule(guided) or schedule(static) seems to make no difference here.
                 #pragma omp parallel for reduction(+:rtn)
                 for (size_t i = 0; i < vsz; ++i) {
                     rtn += v[i] * (*this)[i];
                 }
-# endif
             }
-#endif
+
             return rtn;
         }
 

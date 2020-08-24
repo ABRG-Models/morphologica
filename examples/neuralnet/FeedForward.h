@@ -9,12 +9,14 @@
  * \date May 2020
  */
 
-#include <morph/vVector.h>
+//#include <morph/vVector.h>
+#include "_vVector.h"
 #include <iostream>
 #include <list>
 #include <vector>
 #include <sstream>
 #include <ostream>
+#include <map>
 
 /*!
  * A connection between neuron layers in a simple, stacked neural network.
@@ -122,21 +124,27 @@ struct FeedForwardConn
         // we have to do weights * delta_l_nxt to give a morph::vVector<T>
         // result. This is the equivalent of the matrix multiplication:
         this->w_times_delta.zero();
+
+        size_t k = 0;
         for (size_t j = 0; j < this->N; ++j) { // Each output
+            k = this->M*j;
             for (size_t i = 0; i < this->M; ++i) { // Each input
                 // For each weight fanning into neuron j in l_nxt, sum up:
-                this->w_times_delta[i] += this->w[i+(this->M*j)] * delta_l_nxt[j];
+                this->w_times_delta[i] += this->w[i+k] * delta_l_nxt[j];
             }
         }
         this->delta = this->w_times_delta * this->sigmoid_prime_z_l();
 
         // NB: In a given connection, we compute nabla_b and nabla_w relating to the
         // *output* neurons and the weights also related to the output neurons.
-        this->nabla_b = delta_l_nxt; // Size is N
+        //this->nabla_b = delta_l_nxt; // Size is N // now in loop below
+
         for (size_t j = 0; j < this->N; ++j) { // Each output
+            this->nabla_b[j] = delta_l_nxt[j];
+            k = this->M*j;
             for (size_t i = 0; i < this->M; ++i) { // Each input
                 // nabla_w is a_in * delta_out:
-                this->nabla_w[i+(this->M*j)] = (*in)[i] * delta_l_nxt[j];
+                this->nabla_w[i+k] = (*in)[i] * delta_l_nxt[j];
             }
         }
     }

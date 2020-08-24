@@ -28,7 +28,8 @@
 #include <stdexcept>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-#include <morph/vVector.h>
+//#include <morph/vVector.h>
+#include "_vVector.h"
 
 //! Mnist images are 28x28=784 pixels
 constexpr size_t mnlen = 784;
