@@ -74,15 +74,14 @@ namespace morph
     public: // methods
 
         //! Do-nothing constructor
-        BezCurve (void) {
-            this->order = 0;
-        }
+        BezCurve (void) { this->order = 0; }
 
         /*!
          * Construct a Bezier curve of order cp.size()-1 with the initial and final
          * points making up part of cp.
          */
-        BezCurve (std::vector<std::pair<Flt, Flt>> cp) {
+        BezCurve (std::vector<std::pair<Flt, Flt>> cp)
+        {
             this->C.set_size (cp.size(), 2);
             int i = 0;
             for (auto c : cp) {
@@ -93,10 +92,9 @@ namespace morph
             this->init();
         }
 
-        /*!
-         * Construct a Bezier curve using the control points provided in the matrix @cmat.
-         */
-        BezCurve (const arma::Mat<Flt>& cmat) {
+        //! Construct a Bezier curve using the control points provided in the matrix @cmat.
+        BezCurve (const arma::Mat<Flt>& cmat)
+        {
             //this->C.copy_size (cmat); // necessary?
             this->C = cmat;
             this->init();
@@ -109,8 +107,8 @@ namespace morph
         BezCurve (std::pair<Flt,Flt> ip,
                   std::pair<Flt,Flt> fp,
                   std::pair<Flt,Flt> c1,
-                  std::pair<Flt,Flt> c2) {
-
+                  std::pair<Flt,Flt> c2)
+        {
             this->C.set_size (4,2);
             this->C(0,0) = ip.first;
             this->C(0,1) = ip.second;
@@ -120,7 +118,6 @@ namespace morph
             this->C(2,1) = c2.second;
             this->C(3,0) = fp.first;
             this->C(3,1) = fp.second;
-
             this->init();
         }
 
@@ -130,7 +127,8 @@ namespace morph
          */
         BezCurve (std::pair<Flt,Flt> ip,
                   std::pair<Flt,Flt> fp,
-                  std::pair<Flt,Flt> c1) {
+                  std::pair<Flt,Flt> c1)
+        {
             this->C.set_size (3,2);
             this->C(0,0) = ip.first;
             this->C(0,1) = ip.second;
@@ -141,11 +139,10 @@ namespace morph
             this->init();
         }
 
-        /*!
-         * Construct a linear Bezier curve for production of straight lines.
-         */
+        //! Construct a linear Bezier curve for production of straight lines.
         BezCurve (std::pair<Flt,Flt> ip,
-                  std::pair<Flt,Flt> fp) {
+                  std::pair<Flt,Flt> fp)
+        {
             this->C.set_size (2,2);
             this->C(0,0) = ip.first;
             this->C(0,1) = ip.second;
@@ -154,12 +151,11 @@ namespace morph
             this->init();
         }
 
-        /*!
-         * Construct a Bezier curve of order cp.size()+1
-         */
+        //! Construct a Bezier curve of order cp.size()+1
         BezCurve (std::pair<Flt,Flt> ip,
                   std::pair<Flt,Flt> fp,
-                  std::vector<std::pair<Flt, Flt>> cp){
+                  std::vector<std::pair<Flt, Flt>> cp)
+        {
             unsigned int n_ctrls = cp.size()+2;
             this->C.set_size (n_ctrls, 2);
             this->C(0,0) = ip.first;
@@ -175,7 +171,8 @@ namespace morph
             this->init();
         }
 
-        void updateControls (std::vector<std::pair<Flt, Flt>> cp) {
+        void updateControls (std::vector<std::pair<Flt, Flt>> cp)
+        {
             this->C.set_size (cp.size(), 2);
             int i = 0;
             for (auto c : cp) {
@@ -191,8 +188,8 @@ namespace morph
          * appends to the end of @c. *May also modify @c*. Set @optimize to true to try
          * out experimental fit improvements.
          */
-        void fit (std::vector<std::pair<Flt, Flt>> points, BezCurve<Flt>& preceding, bool optimize=false) {
-
+        void fit (std::vector<std::pair<Flt, Flt>> points, BezCurve<Flt>& preceding, bool optimize=false)
+        {
             // First, find the best fit for @points, without reference to the @preceding curve.
             this->fit (points);
 
@@ -463,7 +460,8 @@ namespace morph
             }
         }
 
-        Flt computeObjective (const std::vector<std::pair<Flt, Flt>>& points) const {
+        Flt computeObjective (const std::vector<std::pair<Flt, Flt>>& points) const
+        {
             // Compute relative positions of pairs in @points
             std::vector<Flt> sample_t;
             sample_t.push_back (Flt{0});
@@ -517,8 +515,8 @@ namespace morph
          * 2) Can I do a version of the fitting which then finds the optimum position
          * on the line segment by a gradient descent to minimise the objective error? Possibly.
          */
-        void fit (std::vector<std::pair<Flt, Flt>> points, const std::pair<Flt, Flt> c) {
-
+        void fit (std::vector<std::pair<Flt, Flt>> points, const std::pair<Flt, Flt> c)
+        {
             // First fit with the analytic solution for points on their
             // own. this->controls and this->C then contain the fitted points.
             this->fit (points);
@@ -563,8 +561,8 @@ namespace morph
          * Using the given points, make this a best-fit Bezier curve with
          * points.size()-1 control points.
          */
-        void fit (std::vector<std::pair<Flt, Flt>> points) {
-
+        void fit (std::vector<std::pair<Flt, Flt>> points)
+        {
             // Set the order for the curve
             int n = points.size();
             this->order = n - 1;
@@ -634,10 +632,9 @@ namespace morph
             this->init();
         }
 
-        /*!
-         * Obtain the derivative of this Bezier curve
-         */
-        BezCurve<Flt> derivative (void) const {
+        //! Obtain and return the derivative of this Bezier curve
+        BezCurve<Flt> derivative (void) const
+        {
             arma::Mat<Flt> deriv_cp(this->order, 2);
             for (unsigned int i = 0; i < this->order; ++i) {
                 deriv_cp.row(i) = this->order * (this->C.row(i+1) - this->C.row(i));
@@ -651,8 +648,8 @@ namespace morph
          * Using the matrix representation find, from this->C, a C1 and C2 that trace
          * the same trajectory.
          */
-        std::pair<arma::Mat<Flt>, arma::Mat<Flt>>
-        split (Flt z) const {
+        std::pair<arma::Mat<Flt>, arma::Mat<Flt>> split (Flt z) const
+        {
             int n = this->order + 1;
             // 'z prime':
             Flt zp = z-Flt{1};
@@ -685,7 +682,8 @@ namespace morph
          * parameter space. The first point will be the start of the curve (t==0) and
          * the last point will be at the end of the curve (t==1).
          */
-        std::vector<BezCoord<Flt>> computePoints (unsigned int n) const {
+        std::vector<BezCoord<Flt>> computePoints (unsigned int n) const
+        {
             std::vector<BezCoord<Flt>> rtn;
             for (unsigned int i = 0; i < n; ++i) {
                 Flt t = i/static_cast<Flt>(n);
@@ -704,7 +702,8 @@ namespace morph
          * distance firstl from the initial point of the curve, rather than being a
          * distance l from the initial point.
          */
-        std::vector<BezCoord<Flt>> computePoints (Flt l, Flt firstl = Flt{0}) const {
+        std::vector<BezCoord<Flt>> computePoints (Flt l, Flt firstl = Flt{0}) const
+        {
             DBG2 ("computePoints (Flt l="<<l<<", Flt firstl="<<firstl<<") called");
             std::vector<BezCoord<Flt>> rtn;
             Flt t = Flt{0};
@@ -730,10 +729,9 @@ namespace morph
             return rtn;
         }
 
-        /*!
-         * Get a vector of points on the curve with horizontal spacing x.
-         */
-        std::vector<BezCoord<Flt>> computePointsHorz (Flt x) const {
+        //! Get a vector of points on the curve with horizontal spacing x.
+        std::vector<BezCoord<Flt>> computePointsHorz (Flt x) const
+        {
             std::vector<BezCoord<Flt>> rtn;
             Flt t = Flt{0};
             bool lastnull = false;
@@ -751,7 +749,8 @@ namespace morph
          * position with t in range [0,1]. This chooses either optimzed quartic/cubic
          * functions, or defaults to the matrix computation method.
          */
-        BezCoord<Flt> computePoint (Flt t) const {
+        BezCoord<Flt> computePoint (Flt t) const
+        {
             switch (this->order) {
             case 1:
                 return this->computePointLinear (t);
@@ -765,10 +764,9 @@ namespace morph
             }
         }
 
-        /*!
-         * Compute a Bezier curve of general order using the matrix method.
-         */
-        BezCoord<Flt> computePointMatrix (Flt t) const {
+        //! Compute a Bezier curve of general order using the matrix method.
+        BezCoord<Flt> computePointMatrix (Flt t) const
+        {
             this->checkt(t);
             int mp = this->order+1;
             arma::Mat<Flt> T(1, mp, arma::fill::ones);// First element is one anyway
@@ -779,10 +777,9 @@ namespace morph
             return BezCoord<Flt> (t, std::make_pair(static_cast<Flt>(bp(0)), static_cast<Flt>(bp(1))));
         }
 
-        /*!
-         * Compute a Bezier curve of general order using the conventional method.
-         */
-        BezCoord<Flt> computePointGeneral (Flt t) const {
+        //! Compute a Bezier curve of general order using the conventional method.
+        BezCoord<Flt> computePointGeneral (Flt t) const
+        {
             this->checkt (t);
             Flt t_ = 1-t;
             std::pair<Flt,Flt> b;
@@ -814,21 +811,19 @@ namespace morph
          * If it is not possible, without exceeding t, to advance a distance l, then set
          * a null BezCoord and return that.
          */
-        BezCoord<Flt> computePoint (Flt t, Flt l) const {
+        BezCoord<Flt> computePoint (Flt t, Flt l) const
+        {
             switch (this->order) {
             case 1:
                 return this->computePointLinear (t, l);
-            case 2:
-            case 3:
-            default:
+            default: // (including order 2 or 3)
                 return this->computePointBySearch (t, l);
             }
         }
 
-        /*!
-         * Compute the tangent and normal at t.
-         */
-        std::pair<BezCoord<Flt>, BezCoord<Flt>> computeTangentNormal (const Flt t) const {
+        //! Compute the unit tangent and unit normal at t.
+        std::pair<BezCoord<Flt>, BezCoord<Flt>> computeTangentNormal (const Flt t) const
+        {
             BezCoord<Flt> tang;
             if (this->C.n_rows == 2/*this->controls.size() == 2*/) {
                 // Can't compute tangent using the derivative as derivative would be a
@@ -850,7 +845,8 @@ namespace morph
          * For debugging - output, as a string, the BezCoords of this curve, choosing
          * numPoints points evenly spaced in the parameter space t=[0,1].
          */
-        std::string output (unsigned int numPoints) const {
+        std::string output (unsigned int numPoints) const
+        {
             std::stringstream ss;
             std::vector<BezCoord<Flt>> points = this->computePoints (numPoints);
             typename std::vector<BezCoord<Flt>>::const_iterator i = points.begin();
@@ -867,7 +863,8 @@ namespace morph
          * For debugging/file use. Output, as a string, the BezCoords of this curve with
          * the step size step in Cartesian space.
          */
-        std::string output (Flt step) const {
+        std::string output (Flt step) const
+        {
             std::stringstream ss;
             std::vector<BezCoord<Flt>> points = this->computePoints (step);
             typename std::vector<BezCoord<Flt>>::const_iterator i = points.begin();
@@ -880,57 +877,54 @@ namespace morph
             return ss.str();
         }
 
-        /*!
-         * Output the control points.
-         */
-        std::string outputControl (void) const {
+        //! Output the control points.
+        std::string outputControl (void) const
+        {
             std::stringstream ss;
             ss << this->C;
             return ss.str();
         }
 
-        /*!
-         * A setter for the scaling factor.
-         */
-        void setScale (const Flt s) {
+        //! A setter for the scaling factor.
+        void setScale (const Flt s)
+        {
             this->scale = s;
             this->linlengthscaled = this->scale * this->linlength;
         }
 
-        /*!
-         * A setter for the length threshold.
-         */
-        void setLthresh (const Flt l) {
-            this->lthresh = l;
-        }
+        //! A setter for the length threshold.
+        void setLthresh (const Flt l) { this->lthresh = l; }
 
-        /*!
-         * Getters for p0 and p1, the initial and final positions on the curve, either
-         * unscaled or scaled by @scale
-         */
-        //@{
-        std::pair<Flt,Flt> getInitialPointUnscaled (void) const {
+        //! Gets the initial control point, unscaled
+        std::pair<Flt,Flt> getInitialPointUnscaled (void) const
+        {
             std::pair<Flt,Flt> ip_unscaled;
             ip_unscaled.first = this->C(0,0);
             ip_unscaled.second = this->C(0,1);
             return ip_unscaled;
         }
 
-        std::pair<Flt,Flt> getFinalPointUnscaled (void) const {
+        //! Gets the final control point, unscaled
+        std::pair<Flt,Flt> getFinalPointUnscaled (void) const
+        {
             std::pair<Flt,Flt> fp_unscaled;
             fp_unscaled.first = this->C(this->order,0);
             fp_unscaled.second = this->C(this->order,1);
             return fp_unscaled;
         }
 
-        std::pair<Flt,Flt> getInitialPointScaled (void) const {
+        //! Gets the initial control point, scaled by the factor BezCurve::scale
+        std::pair<Flt,Flt> getInitialPointScaled (void) const
+        {
             std::pair<Flt,Flt> ip_scaled;
             ip_scaled.first = this->scale * this->C(0,0);
             ip_scaled.second = this->scale * this->C(0,1);
             return ip_scaled;
         }
 
-        std::pair<Flt,Flt> getFinalPointScaled (void) const {
+        //! Gets the final control point, scaled by the factor BezCurve::scale
+        std::pair<Flt,Flt> getFinalPointScaled (void) const
+        {
             std::pair<Flt,Flt> fp_scaled;
             fp_scaled.first = this->scale * this->C(this->order,0);
             fp_scaled.second = this->scale * this->C(this->order,1);
@@ -946,21 +940,14 @@ namespace morph
             return rtn;
         }
 
-        //@}
-
-        /*!
-         * Get the order of the curve
-         */
-        unsigned int getOrder (void) const {
-            return this->order;
-        }
+        //! Get the order of the curve
+        unsigned int getOrder (void) const { return this->order; }
 
     private: // methods
 
-        /*!
-         * Perform common initialization tasks.
-         */
-        void init (void) {
+        //! Perform common initialization tasks.
+        void init (void)
+        {
             this->order = this->C.n_rows-1;
             this->linlength = std::sqrt ((C(order,0)-C(0,0)) * (C(order,0) - C(0,0))
                                          + (C(order,1)-C(0,1)) * (C(order,1) - C(0,1)));
@@ -968,26 +955,25 @@ namespace morph
             this->matrixSetup();
         }
 
-        //! Set C from the vector for floats vf, which ONLY changes the rows of C from startrow and on.
-        void setCFromV (const std::vector<Flt>& vf, int r) {
-            //std::cout << "Setting C from row " << r << std::endl;
+        /*!
+         * Set C from the vector for floats vf, which ONLY changes the rows of C from
+         * startrow and on.
+         */
+        void setCFromV (const std::vector<Flt>& vf, int r)
+        {
             for (size_t i = 0; i<vf.size(); i+=2) {
                 this->C(r,0) = vf[i];
                 this->C(r,1) = vf[i+1];
-                //std::cout << "Set C row " << r << " to ";
-                //std::cout.precision(12);
-                //std::cout << C(r,0) << "," << C(r,1)<<std::endl;
                 ++r;
             }
-            //--r;
-            //std::cout << "Last row set in C was " << r << std::endl;
         }
 
         /*!
          * Compute an approximation to the distance along the curve, by computing
          * npoints and summing their linear separations.
          */
-        Flt computeLength (unsigned int npoints) const {
+        Flt computeLength (unsigned int npoints) const
+        {
             std::vector<BezCoord<Flt>> pts = this->computePoints (npoints);
             Flt dist = Flt{0};
             for (size_t i = 1; i<pts.size(); ++i) {
@@ -1000,7 +986,8 @@ namespace morph
          * Compute one point on the linear curve, distance t along the curve from the
          * starting position.
          */
-        BezCoord<Flt> computePointLinear (Flt t) const {
+        BezCoord<Flt> computePointLinear (Flt t) const
+        {
             DBG2 ("computePointLinear (t=" << t << ")");
             this->checkt(t);
             std::pair<Flt,Flt> b;
@@ -1018,7 +1005,8 @@ namespace morph
          * along the line. It's not hard to do the maths for the linear case; see
          * LinearBez1.jpg and LinearBez2.jpg for the sums.
          */
-        BezCoord<Flt> computePointLinear (Flt t, Flt l) const {
+        BezCoord<Flt> computePointLinear (Flt t, Flt l) const
+        {
             DBG2 ("Called computePointLinear(Flt t="<<t<<", Flt l="<<l<<")");
             BezCoord<Flt> b1 = this->computePoint (t);
             BezCoord<Flt> e1 = this->computePoint (Flt{1});
@@ -1041,7 +1029,8 @@ namespace morph
          * Compute one point on the quadratic curve, distance t along the curve from the
          * starting position.
          */
-        BezCoord<Flt> computePointQuadratic (Flt t) const {
+        BezCoord<Flt> computePointQuadratic (Flt t) const
+        {
             this->checkt (t);
             std::pair<Flt,Flt> b;
             Flt t_ = 1-t;
@@ -1058,7 +1047,8 @@ namespace morph
          * Compute one point on the cubic curve, distance t along the curve from the
          * starting position.
          */
-        BezCoord<Flt> computePointCubic (Flt t) const {
+        BezCoord<Flt> computePointCubic (Flt t) const
+        {
             this->checkt (t);
             std::pair<Flt,Flt> b;
             Flt t_ = 1-t;
@@ -1075,12 +1065,14 @@ namespace morph
 
         /*!
          * Look up the binomial coefficient (n,k) from morph::Pascal.
+         *
+         * To get the values from row n, where n starts at 0 (and ends at N-1), you step
+         * along a number given by the triangle sequence (n(n+1)/2) and then read n+1
+         * values. OR to get n,k, step along a number given by the triangle sequence
+         * (n(n+1)/2) and then step another k space to the result.
          */
-        static unsigned int binomial_lookup (unsigned int n, unsigned int k) {
-            /* To get the values from row n, where n starts at 0 (and ends at N-1), you
-               step along a number given by the triangle sequence (n(n+1)/2) and then
-               read n+1 values. OR to get n,k, step along a number given by the triangle
-               sequence (n(n+1)/2) and then step another k space to the result. */
+        static unsigned int binomial_lookup (unsigned int n, unsigned int k)
+        {
             unsigned int idx = (n * (n+1) / 2) + k;
             return morph::Pascal[idx];
         }
@@ -1093,7 +1085,8 @@ namespace morph
          * and cubic Bezier curves for which it is difficult to compute the t that would
          * give a Euclidean extension l (it would work for linear curves too).
          */
-        BezCoord<Flt> computePointBySearch (Flt t, Flt l) const {
+        BezCoord<Flt> computePointBySearch (Flt t, Flt l) const
+        {
             // Min and max of possible range for dt to make a step of length l in posn space
             Flt dtmin = Flt{0};
             Flt dtmax = Flt{1} - t;
@@ -1156,7 +1149,8 @@ namespace morph
          * space points with x between them in the first coordinate - the horizonal
          * coordinate.
          */
-        BezCoord<Flt> computePointBySearchHorz (Flt t, Flt x) const {
+        BezCoord<Flt> computePointBySearchHorz (Flt t, Flt x) const
+        {
             // Min and max of possible range for dt to make a step of length l in posn space
             Flt dtmin = Flt{0};
             Flt dtmax = Flt{1} - t;
@@ -1215,16 +1209,16 @@ namespace morph
             return b2;
         }
 
-        /*!
-         * Test that t is in range [0,1]. Throw exception otherwise.
-         */
-        void checkt (Flt t) const {
+        //! Test that t is in range [0,1]. Throw exception otherwise.
+        void checkt (Flt t) const
+        {
             if (t < Flt{0} || t > Flt{1}) {
                 throw std::runtime_error ("t out of range [0,1]");
             }
         }
 
     private: // attributes
+
         /*!
          * A scaling factor to convert from the SVG drawing units into mm (or
          * whatever). This is used when computing the BezCoords to output.
@@ -1260,18 +1254,17 @@ namespace morph
          */
         unsigned int order = 0;
 
-        /*!
+        /*
          * Matrix representation
          */
-        //@{
 
         /*!
          * Set up M and MC. Called from constructors.  A description of how to write
          * out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
-         * Representations...
+         * Representations.
          */
-        void matrixSetup (void) {
-
+        void matrixSetup (void)
+        {
             // Check order here
             if (this->order >= PascalRows) {
                 std::stringstream ee;
@@ -1311,7 +1304,6 @@ namespace morph
 
         //! M*C
         arma::Mat<Flt> MC;
-        //@}
     };
 
 } // namespace morph

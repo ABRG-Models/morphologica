@@ -37,19 +37,13 @@ namespace morph
          */
         std::string name = "";
 
-        /*!
-         * The initial coordinate for the BezCurvePath.
-         */
+        //! The initial coordinate for the BezCurvePath.
         std::pair<Flt, Flt> initialCoordinate = std::make_pair (Flt{0}, Flt{0});
 
-        /*!
-         * A list of the BezCurves that make up the full BezCurvePath.
-         */
+        //! A list of the BezCurves that make up the full BezCurvePath.
         std::list<BezCurve<Flt>> curves;
 
-        /*!
-         * A scaling factor that's used to convert the path into mm.
-         */
+        //! A scaling factor that's used to convert the path into mm.
         Flt scale = Flt{1};
 
         /*!
@@ -58,36 +52,33 @@ namespace morph
          */
         std::vector<BezCoord<Flt>> points;
 
-        /*!
-         * As for points, store tangents and normals.
-         */
-        //@{
+        //! The tangents to the curve at each point
         std::vector<BezCoord<Flt>> tangents;
+
+        //! Unit? normals
         std::vector<BezCoord<Flt>> normals;
-        //@}
 
         /*!
          * A null BezCurvePath is one which has no curves. If curves
          * is empty then the BezCurvePath is null.
          */
-        bool isNull (void) const {
+        bool isNull (void) const
+        {
             return this->curves.empty();
         }
 
-        /*!
-         * Reset this BezCurvePath
-         */
-        void reset (void) {
+        //! Reset this BezCurvePath
+        void reset (void)
+        {
             this->curves.clear();
             this->initialCoordinate = std::make_pair (Flt{0}, Flt{0});
             this->scale = Flt{1};
             this->name = "";
         }
 
-        /*!
-         * Set scaling on all member Bezier curves.
-         */
-        void setScale (const Flt s) {
+        //! Set scaling on all member Bezier curves.
+        void setScale (const Flt s)
+        {
             this->scale = s;
             this->initialCoordinate.first = this->initialCoordinate.first * this->scale;
             this->initialCoordinate.second = this->initialCoordinate.second * this->scale;
@@ -98,10 +89,9 @@ namespace morph
             }
         }
 
-        /*!
-         * Add a curve to this->curves.
-         */
-        void addCurve (BezCurve<Flt>& c) {
+        //! Add a curve to this->curves.
+        void addCurve (BezCurve<Flt>& c)
+        {
             if (c.getOrder() == 0) {
                 std::cout << "Not adding 0th order curve." << std::endl;
             } else {
@@ -112,16 +102,17 @@ namespace morph
             }
         }
 
-        void removeCurve (void) {
+        //! Remove a curve from this->curves.
+        void removeCurve (void)
+        {
             if (!this->curves.empty()) {
                 this->curves.pop_back();
             }
         }
 
-        /*!
-         * Output for debugging.
-         */
-        void output (void) const {
+        //! Output for debugging.
+        void output (void) const
+        {
             std::cout << "------ BezCurvePath ------" << std::endl;
             std::cout << "Name: " << this->name << std::endl;
             std::cout << "Initial coord: (" << this->initialCoordinate.first
@@ -140,7 +131,8 @@ namespace morph
          * assumed to have been pre-scaled - step is in mm, not in SVG
          * drawing units.
          */
-        void save (Flt step) const {
+        void save (Flt step) const
+        {
             std::ofstream f;
             std::string fname = this->name + ".csv";
             f.open (fname.c_str(), std::ios::out|std::ios::trunc);
@@ -161,7 +153,8 @@ namespace morph
          * coordinate of this BezCurvePath to the final
          * coordinate. Uses the scale factor.
          */
-        Flt getEndToEnd (void) const {
+        Flt getEndToEnd (void) const
+        {
             // Distance from this->initialCoordinate to:
             if (this->curves.empty()) {
                 return Flt{0};
@@ -172,10 +165,9 @@ namespace morph
             return std::sqrt (dx * dx + dy * dy);
         }
 
-        /*!
-         * Compute the centroid of the passed in set of positions.
-         */
-        static std::pair<Flt,Flt> getCentroid (const std::vector<BezCoord<Flt>>& points) {
+        //! Compute & return the centroid of the passed in set of positions.
+        static std::pair<Flt,Flt> getCentroid (const std::vector<BezCoord<Flt>>& points)
+        {
             Flt c_x = Flt{0};
             Flt c_y = Flt{0};
             for (const BezCoord<Flt>& i : points) {
@@ -199,8 +191,8 @@ namespace morph
          * system, so if you're going to plot the BezCoord points in a
          * right hand system, set invertY to true.
          */
-        void computePoints (Flt step, bool invertY = false) {
-
+        void computePoints (Flt step, bool invertY = false)
+        {
             this->points.clear();
             this->tangents.clear();
             this->normals.clear();
@@ -247,25 +239,18 @@ namespace morph
             }
         }
 
-        //! Getters
-        //@{
-        std::vector<BezCoord<Flt>> getPoints (void) const {
-            return this->points;
-        }
-        std::vector<BezCoord<Flt>> getTangents (void) const {
-            return this->tangents;
-        }
-        std::vector<BezCoord<Flt>> getNormals (void) const {
-            return this->normals;
-        }
-        //@}
+        // Getters
+        std::vector<BezCoord<Flt>> getPoints (void) const { return this->points; }
+        std::vector<BezCoord<Flt>> getTangents (void) const { return this->tangents; }
+        std::vector<BezCoord<Flt>> getNormals (void) const { return this->normals; }
 
         /*!
          * Similar to the above, but ensure that there are @nPoints evenly spaced
          * points along the curve. @invertY has the same meaning as in the other
          * overload of this function.
          */
-        void computePoints (unsigned int nPoints, bool invertY = false) {
+        void computePoints (unsigned int nPoints, bool invertY = false)
+        {
             // Get end-to-end distance and compute a candidate step, then call other
             // overload.
             if (nPoints == 0) {
