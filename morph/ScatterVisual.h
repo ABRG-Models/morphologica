@@ -76,7 +76,7 @@ namespace morph {
             unsigned int ndata = this->scalarData->size();
 
             if (ndata > 0 && ncoords != ndata) {
-                std::cout << "ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return." << std::endl;
+                std::cout << "ScatterVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
                 return;
             }
 
