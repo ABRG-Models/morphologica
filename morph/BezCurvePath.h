@@ -52,10 +52,10 @@ namespace morph
          */
         std::vector<BezCoord<Flt>> points;
 
-        //! The tangents to the curve at each point
+        //! The unit tangents to the curve at each point
         std::vector<BezCoord<Flt>> tangents;
 
-        //! Unit? normals
+        //! Unit normals
         std::vector<BezCoord<Flt>> normals;
 
         /*!
