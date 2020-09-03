@@ -5,6 +5,7 @@
 #include <math.h>
 #include <list>
 #include <vector>
+#include <deque>
 
 using namespace std;
 using morph::HdfData;
@@ -13,13 +14,13 @@ int main()
 {
     int rtn = 0;
 
-    vector<double> vd = { 1.0, 2.0, 3.0, 4.0 };
+    deque<double> vd = { 1.0, 2.0, 3.0, 4.0 };
     {
         HdfData data("test.h5");
         data.add_contained_vals ("/testvectordouble", vd);
     } // data closes when out of scope
 
-    vector<double> vdread;
+    deque<double> vdread;
     {
         HdfData data("test.h5", true); // true for read data
         data.read_contained_vals ("/testvectordouble", vdread);
