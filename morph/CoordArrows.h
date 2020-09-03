@@ -20,22 +20,21 @@ namespace morph {
     class CoordArrows : public VisualModel
     {
     public:
-        CoordArrows (void) {
+        CoordArrows (void)
+        {
             this->scale = {1.0, 1.0, 1.0};
             this->offset = {0.0, 0.0, 0.0};
         }
 
-        CoordArrows(GLuint sp,
-                    const Vector<float, 3> _offset,
-                    const Vector<float, 3> _scale) {
+        CoordArrows(GLuint sp, const Vector<float, 3> _offset, const Vector<float, 3> _scale)
+        {
             this->init (sp, _offset, _scale);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (GLuint sp,
-                   const Vector<float, 3> _offset,
-                   const Vector<float, 3> _scale) {
+        void init (GLuint sp, const Vector<float, 3> _offset, const Vector<float, 3> _scale)
+        {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -50,7 +49,8 @@ namespace morph {
         }
 
         //! Make sure coord arrow colours are ok on the given background colour
-        void setColourForBackground (const std::array<float, 4>& bgcolour) {
+        void setColourForBackground (const std::array<float, 4>& bgcolour)
+        {
             // For now, only worry about the centresphere:
             std::array<float, 3> cscol = {1.0f-bgcolour[0],
                                           1.0f-bgcolour[1],
@@ -63,9 +63,8 @@ namespace morph {
         }
 
         //! Initialize vertex buffer objects and vertex array object.
-        //@{
-        void initializeVertices (void) {
-
+        void initializeVertices (void)
+        {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
@@ -100,9 +99,9 @@ namespace morph {
 
         //! The colours of the arrows, and of the centre sphere
         std::array<float, 3> centresphere_col = {1.0f, 1.0f, 1.0f};
-        std::array<float, 3> x_axis_col = {1.0f, 0.0f, 0.0f};
-        std::array<float, 3> z_axis_col = {0.0f, 0.0f, 1.0f};
-        std::array<float, 3> y_axis_col = {0.0f, 1.0f, 0.0f};
+        std::array<float, 3> x_axis_col = {1.0f, 0.0f, 0.0f}; // Red
+        std::array<float, 3> y_axis_col = {0.0f, 1.0f, 0.0f}; // Green
+        std::array<float, 3> z_axis_col = {0.0f, 0.0f, 1.0f}; // Blue
     };
 
 } // namespace morph
