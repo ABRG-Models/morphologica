@@ -24,7 +24,7 @@ using std::cout;
 using std::endl;
 #include <opencv2/opencv.hpp>
 
-morph::HdfData::HdfData (const string fname, const bool read_data)
+morph::HdfData::HdfData (const string fname, const bool read_data, const bool show_hdf_internal_errors)
 {
     this->read_mode = read_data;
     if (this->read_mode == true) {
@@ -38,16 +38,16 @@ morph::HdfData::HdfData (const string fname, const bool read_data)
         ee << "Error opening HDF5 file '" << fname << "'";
         throw runtime_error (ee.str());
     }
+    if (show_hdf_internal_errors == false) {
+        // Turn off the hdf5 library's own error handling
+        H5Eset_auto (H5E_DEFAULT, NULL, NULL);
+    }
 }
 
 morph::HdfData::~HdfData()
 {
     herr_t status = H5Fclose (this->file_id);
-    if (status) {
-        //stringstream ee;
-        //ee << "Error closing HDF5 file; status: " << status;
-        //throw runtime_error (ee.str());
-    }
+    if (status) { std::cerr << "Error closing HDF5 file; status: " << status << std::endl; }
 }
 
 void
@@ -60,10 +60,37 @@ morph::HdfData::handle_error (const herr_t& status, const string& emsg) const
     }
 }
 
+int
+morph::HdfData::check_dataset_id (const hid_t dataset_id, const char* path) const
+{
+    if (dataset_id < 0) {
+        if (this->read_error_action == ReadErrorAction::Continue) {
+            // Return with no action; vals will not be modified.
+            return -1;
+        } else if (this->read_error_action == ReadErrorAction::Info) {
+            std::stringstream ii;
+            ii << "Info: " << path << " does not exist in this Hdf5 file";
+            std::cout << ii.str() << std::endl;
+            return -1;
+        } else if (this->read_error_action == ReadErrorAction::Warning) {
+            std::stringstream ww;
+            ww << "Info: " << path << " does not exist in this Hdf5 file";
+            std::cerr << ww.str() << std::endl;
+            return -1;
+        } else { // ReadErrorAction::Exception
+            std::stringstream ee;
+            ee << "Error: " << path << " does not exist in this Hdf5 file";
+            throw std::runtime_error (ee.str());
+        }
+    }
+    return 0;
+}
+
 void
 morph::HdfData::read_contained_vals (const char* path, vector<array<float, 3>>& vals)
 {
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    if (this->check_dataset_id (dataset_id, path) == -1) { return; }
     hid_t space_id = H5Dget_space (dataset_id);
     hsize_t dims[2] = {0,0};
     int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
@@ -88,6 +115,7 @@ void
 morph::HdfData::read_contained_vals (const char* path, vector<array<float, 12>>& vals)
 {
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    if (this->check_dataset_id (dataset_id, path) == -1) { return; }
     hid_t space_id = H5Dget_space (dataset_id);
     hsize_t dims[2] = {0,0};
     int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
@@ -122,6 +150,7 @@ morph::HdfData::read_contained_vals (const char* path, cv::Mat& vals)
 
     // Now read the matrix
     hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+    if (this->check_dataset_id (dataset_id, path) == -1) { return; }
     hid_t space_id = H5Dget_space (dataset_id);
     hsize_t dims[2] = {0,0};
     int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);

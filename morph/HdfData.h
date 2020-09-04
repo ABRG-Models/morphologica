@@ -18,6 +18,19 @@
 namespace morph {
 
     /*!
+     * Encodes the action to take on a read error. e.g. if you try to read /vars/A but
+     * /vars/A does not exist inside the opened Hdf5 file. Choices are throw an
+     * exception; output some information to stdout, output a warning to stderr or just
+     * carry on and accept that you can't read that thing.
+     */
+    enum class ReadErrorAction {
+        Exception,
+        Warning,
+        Info,
+        Continue
+    };
+
+    /*!
      * Very simple data access class, wrapping around the HDF5 C API. Operates either in
      * write mode (the default) or read mode. Choose which when constructing.
      */
@@ -41,11 +54,43 @@ namespace morph {
          */
         void handle_error (const herr_t& status, const std::string& emsg) const;
 
+        /*!
+         * Check the dataset_id, perform correct action and return a value which says
+         * whether the calling function should itself return.
+         *
+         * \param dataset_id the return value from call to H5Dopen2()
+         * \param path The path of the thing opened; used to construct info message
+         *
+         * \return 0 if dataset_id was ok; -1 if dataset_id was -1 and caller should
+         * return.
+         */
+        int check_dataset_id (const hid_t dataset_id, const char* path) const;
+
     public:
-        //! Construct, creating open file_id. If read_data is
-        HdfData (const std::string fname, const bool read_data = false);
+        /*!
+         * Construct, creating open file_id. If read_data is true, then open in read
+         * mode; if read_data is false, then truncate on opening. Note that this HDF5
+         * wrapper library doesn't attempt to carry out HDF5 file modification
+         * operations - it's all-or-nothing - a file is truncated and recreated if it's
+         * going to have data written into it at all. Finally, set
+         * show_hdf_internal_errors to true to switch on libhdf's verbose error output.
+         */
+        HdfData (const std::string fname, const bool read_data = false, const bool show_hdf_internal_errors = false);
         //! Deconstruct, closing the file_id
         ~HdfData();
+
+        /*!
+         * When reading a field in a file that doesn't exist, client code could want the
+         * library to either gracefully handle its missing-ness and carry on -
+         * i.e. read_contained_vals("/non-existent/path", vals) should just return
+         * without changing the content of \a vals. Client code could instead need it to
+         * throw an exception in such a case. Finally, it might be desirable to output a
+         * message to stdout or stderr, but carry on anyway.
+         *
+         * When *writing* I think you always want an error if the write action fails,
+         * which is why this is a ReadErrorAction.
+         */
+        ReadErrorAction read_error_action = ReadErrorAction::Info;
 
         /*!
          * Templated version of read_contained_vals, for vector/list/deque (but not map)
@@ -60,7 +105,16 @@ namespace morph {
         void read_contained_vals (const char* path, Container<T, Allocator>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+            if (this->check_dataset_id (dataset_id, path) == -1) { return; }
+
             hid_t space_id = H5Dget_space (dataset_id);
+            // Regardless of read_error_action, throw exception here; missing paths
+            // should cause missing dataset_id
+            if (space_id < 0) {
+                std::stringstream ee;
+                ee << "Error: Failed to get a dataset space_id for dataset_id " << dataset_id;
+                throw std::runtime_error (ee.str());
+            }
 
             // If cv::Point like. Could add pair<float, float> and pair<double, double>,
             // also container of array<T, 2> also.
@@ -69,16 +123,18 @@ namespace morph {
                           || std::is_same<std::decay_t<T>, cv::Point2d>::value == true
                           || std::is_same<std::decay_t<T>, std::array<float, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true) {
-                    hsize_t dims[2] = {0,0}; // 2D
+                hsize_t dims[2] = {0,0}; // 2D
                 int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
                 if (ndims != 2) {
                     std::stringstream ee;
-                    ee << "Error. Expected 2D data to be stored in " << path;
+                    ee << "In:\n" << __PRETTY_FUNCTION__
+                       << "\nError: Expected 2D data to be stored in " << path << ". ndims=" << ndims;
                     throw std::runtime_error (ee.str());
                 }
                 if (dims[1] != 2) {
                     std::stringstream ee;
-                    ee << "Error. Expected 2 coordinates to be stored in each cv::Point of " << path;
+                    ee << "In:\n" << __PRETTY_FUNCTION__
+                       << ":\nError: Expected 2 coordinates to be stored in each cv::Point of " << path;
                     throw std::runtime_error (ee.str());
                 }
                 vals.resize (dims[0]);
@@ -89,7 +145,8 @@ namespace morph {
                 int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
                 if (ndims != 1) {
                     std::stringstream ee;
-                    ee << "Error. Expected 1D data to be stored in " << path;
+                    ee << "In:\n" << __PRETTY_FUNCTION__
+                       << ":\nError: Expected 1D data to be stored in " << path << ". ndims=" << ndims;
                     throw std::runtime_error (ee.str());
                 }
                 vals.resize (dims[0], T{0});
@@ -154,6 +211,8 @@ namespace morph {
         void read_val (const char* path, T& val)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+            if (this->check_dataset_id (dataset_id, path) == -1) { return; }
+
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
