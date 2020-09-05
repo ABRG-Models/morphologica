@@ -14,28 +14,16 @@
 
 namespace morph {
 
-    /*!
-     * Callbacks class extends ProcessCallbacks
-     */
+    //! Callbacks class extends ProcessCallbacks
     class ConfigProcessCallbacks : public ProcessCallbacks
     {
     public:
-        ConfigProcessCallbacks (ProcessData* p) {
-            this->parent = p;
-        }
+        ConfigProcessCallbacks (ProcessData* p) { this->parent = p; }
         void startedSignal (std::string msg) {}
-        void errorSignal (int err) {
-            this->parent->setErrorNum (err);
-        }
-        void processFinishedSignal (std::string msg) {
-            this->parent->setProcessFinishedMsg (msg);
-        }
-        void readyReadStandardOutputSignal (void) {
-            this->parent->setStdOutReady (true);
-        }
-        void readyReadStandardErrorSignal (void) {
-            this->parent->setStdErrReady (true);
-        }
+        void errorSignal (int err) { this->parent->setErrorNum (err); }
+        void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
+        void readyReadStandardOutputSignal (void) { this->parent->setStdOutReady (true); }
+        void readyReadStandardErrorSignal (void) { this->parent->setStdErrReady (true); }
     private:
         ProcessData* parent;
     };
@@ -50,19 +38,18 @@ namespace morph {
      * into the log directory to make a record of the parameters used to generate a set of
      * simulation data.
      */
-    class Config {
-
+    class Config
+    {
     public:
         //! Default constructor, when config should be a class member. Call init() before use.
         Config() : ready(false) {}
 
         //! Constructor which takes the path to the file that contains the JSON.
-        Config (const std::string& configfile) {
-            this->init (configfile);
-        }
+        Config (const std::string& configfile) { this->init (configfile); }
 
         //! Perform config file initialization.
-        void init (const std::string& configfile) {
+        void init (const std::string& configfile)
+        {
             std::stringstream ess;
             // Test for existence of the JSON file.
             std::ifstream jsonfile_test;
@@ -102,17 +89,16 @@ namespace morph {
         }
 
         /*!
-         * Launch git sub-processes to determine info about the
-         * current repository. Intended for use with code that will
-         * save a Json formatted log of a simulation run.
+         * Launch git sub-processes to determine info about the current
+         * repository. Intended for use with code that will save a Json formatted log of
+         * a simulation run.
          *
-         * @codedir The name of the directory in which significant
-         * code is located. If git status detects changes in this
-         * directory, then information to this effect will be inserted
-         * into this->root.
+         * \a codedir The name of the directory in which significant code is located. If
+         * git status detects changes in this directory, then information to this effect
+         * will be inserted into this->root.
          */
-        void insertGitInfo (const std::string& codedir) {
-
+        void insertGitInfo (const std::string& codedir)
+        {
             this->checkready (__FUNCTION__);
 
             ProcessData pD;
@@ -244,7 +230,8 @@ namespace morph {
         }
 
         //! Write out the JSON to file.
-        void write (const std::string& outfile) {
+        void write (const std::string& outfile)
+        {
             this->checkready (__FUNCTION__);
             std::ofstream configout;
             configout.open (outfile.c_str(), std::ios::out|std::ios::trunc);
@@ -257,65 +244,83 @@ namespace morph {
             }
         }
 
-        //! Wrappers around gets
-        //@{
-        bool getBool (const std::string& thing, bool defaultval) {
+        //! Output the config as a string of text
+        std::string str() const
+        {
+            this->checkready (__FUNCTION__);
+            std::stringstream ss;
+            ss << this->root;
+            return ss.str();
+        }
+
+        // Wrappers around gets
+        bool getBool (const std::string& thing, bool defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asBool();
         }
-        int getInt (const std::string& thing, int defaultval) {
+        int getInt (const std::string& thing, int defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asInt();
         }
-        unsigned int getUInt (const std::string& thing, unsigned int defaultval) {
+        unsigned int getUInt (const std::string& thing, unsigned int defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asUInt();
         }
-        float getFloat (const std::string& thing, float defaultval) {
+        float getFloat (const std::string& thing, float defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asFloat();
         }
-        double getDouble (const std::string& thing, double defaultval) {
+        double getDouble (const std::string& thing, double defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asDouble();
         }
-        std::string getString (const std::string& thing, const std::string& defaultval) {
+        std::string getString (const std::string& thing, const std::string& defaultval) const
+        {
             this->checkready (__FUNCTION__);
             return this->root.get (thing, defaultval).asString();
         }
-        Json::Value getArray (const std::string& arrayname) {
+        Json::Value getArray (const std::string& arrayname) const
+        {
             this->checkready (__FUNCTION__);
             return this->root[arrayname];
         }
-        //@}
 
-        //! Setters
-        //@{
-        void set (const std::string& thing, bool value) {
+        // Setters
+        void set (const std::string& thing, bool value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        void set (const std::string& thing, int value) {
+        void set (const std::string& thing, int value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        void set (const std::string& thing, unsigned int value) {
+        void set (const std::string& thing, unsigned int value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        void set (const std::string& thing, float value) {
+        void set (const std::string& thing, float value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        void set (const std::string& thing, double value) {
+        void set (const std::string& thing, double value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        void set (const std::string& thing, const std::string& value) {
+        void set (const std::string& thing, const std::string& value)
+        {
             this->checkready (__FUNCTION__);
             this->root[thing] = value;
         }
-        //@}
 
         //! Set true when config object ready to be used
         bool ready = false;
@@ -328,7 +333,7 @@ namespace morph {
 
     private:
         //! Private, only intended for getters/setters use. Client code can directly test Config::ready.
-        void checkready (const std::string& caller)
+        void checkready (const std::string& caller) const
         {
             if (!this->ready) {
                 std::stringstream ee;
