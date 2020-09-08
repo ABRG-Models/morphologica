@@ -381,7 +381,12 @@ You'll then need to add the switch -DUSE_GLEW=ON when calling cmake.
 
 ## Installation dependencies for Mac
 
-You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store.
+You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.org/ and XCode from the App Store. If you just installed XCode, then you'll need to agree to its licence terms. To do this, run
+
+```
+sudo xcodebuild -license
+```
+scroll through the legalese and type 'agree' (assuming that you do).
 
 Installation of the other dependencies is best achieved using Mac ports. Install Mac ports, following the instructions on http://www.macports.org/. This will guide you to install the XCode command line tools, then install the Mac ports installation package.
 
