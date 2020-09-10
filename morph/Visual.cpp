@@ -306,6 +306,13 @@ morph::Visual::getVisualModel (unsigned int gridId)
     return (this->vm[gridId]);
 }
 
+void
+morph::Visual::removeVisualModel (unsigned int gridId)
+{
+    delete this->vm[gridId];
+    this->vm.erase (this->vm.begin() + gridId);
+}
+
 const GLchar*
 morph::Visual::ReadShader (const char* filename)
 {

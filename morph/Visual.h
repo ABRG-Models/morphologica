@@ -125,6 +125,9 @@ namespace morph {
          */
         VisualModel* getVisualModel (unsigned int modelId);
 
+        //! Remove the VisualModel with ID \a modelId from the scene.
+        void removeVisualModel (unsigned int modelId);
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
