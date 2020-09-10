@@ -386,7 +386,11 @@ You will need XQuartz, XCode and Mac Ports. Install XQuartz from http://xquartz.
 ```
 sudo xcodebuild -license
 ```
-scroll through the legalese and type 'agree' (assuming that you do).
+scroll through the legalese and type 'agree' (assuming that you do). Also, do make sure to run XCode at least once from the launcher as this will prompt it to download and install some additional components. Finally, it seems to be necessary to "install command line tools" to get a working compiler. To do so (at least on MacOS Catalina):
+
+```
+xcode-select --install
+```
 
 Installation of the other dependencies is best achieved using Mac ports. Install Mac ports, following the instructions on http://www.macports.org/. This will guide you to install the XCode command line tools, then install the Mac ports installation package.
 

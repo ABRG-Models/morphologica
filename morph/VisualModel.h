@@ -53,10 +53,10 @@ namespace morph {
     class VisualModel
     {
     public:
-        VisualModel () {
-            this->offset = {0.0, 0.0, 0.0};
-        }
-        VisualModel (GLuint sp, const Vector<float> _offset) {
+        VisualModel () { this->offset = {0.0, 0.0, 0.0}; }
+
+        VisualModel (GLuint sp, const Vector<float> _offset)
+        {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
@@ -74,23 +74,30 @@ namespace morph {
         }
 
         //! destroy gl buffers in the deconstructor
-        virtual ~VisualModel() {
+        virtual ~VisualModel()
+        {
             glDeleteBuffers (4, vbos);
             delete (this->vbos);
         }
 
         //! Common code to call after the vertices have been set up.
-        void postVertexInit (void) {
+        void postVertexInit (void)
+        {
             // Create vertex array object
-            //glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
+#ifdef __MACS_HAD_OPENGL_450__
+            glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
+#else
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
+#endif
             glBindVertexArray (this->vao);
 
             // Allocate/create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
-            //glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+#ifdef __MACS_HAD_OPENGL_450__
+            glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+#else
             glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
-
+#endif
             // Set up the indices buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
@@ -112,7 +119,8 @@ namespace morph {
         virtual void initializeVertices (void) = 0;
 
         //! Render the VisualModel
-        void render (void) {
+        void render (void)
+        {
             glBindVertexArray (this->vao);
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
             glBindVertexArray(0);
@@ -122,22 +130,17 @@ namespace morph {
         TransformMatrix<float> viewmatrix;
 
         //! Setter for offset, also updates viewmatrix.
-        void setOffset (const Vector<float>& _offset) {
+        void setOffset (const Vector<float>& _offset)
+        {
             this->offset = _offset;
             this->viewmatrix.setToIdentity();
             this->viewmatrix.translate (this->offset);
         }
 
         //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const Vector<float>& _offset) {
-            // FIXME could be this->offset += _offset
-#if 1
+        void shiftOffset (const Vector<float>& _offset)
+        {
             this->offset += _offset;
-#else // replaces:
-            for (unsigned int i = 0; i < 3; ++i) {
-                this->offset[i] += _offset[i];
-            }
-#endif
             this->viewmatrix.translate (this->offset);
         }
 
@@ -161,10 +164,10 @@ namespace morph {
         //! A copy of the reference to the shader program
         GLuint shaderprog;
 
-        /*!
+        /*
          * Compute positions and colours of vertices for the hexes and store in these:
          */
-        ///@{
+
         //! The OpenGL Vertex Array Object
         GLuint vao;
 
@@ -179,30 +182,30 @@ namespace morph {
         std::vector<float> vertexNormals;
         //! CPU-side data for vertex colours
         std::vector<float> vertexColors;
-        ///@}
 
-        //! I guess we'll need a shader program.
-        GLuint* shaderProgram;
-
-        //! Push three floats onto the vector of floats @vp
-        ///@{
-        void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp) {
+        //! Push three floats onto the vector of floats \a vp
+        void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
+        {
             vp.push_back (x);
             vp.push_back (y);
             vp.push_back (z);
         }
-        void vertex_push (const std::array<float, 3>& arr, std::vector<float>& vp) {
+        //! Push array of 3 floats onto the vector of floats \a vp
+        void vertex_push (const std::array<float, 3>& arr, std::vector<float>& vp)
+        {
             vp.push_back (arr[0]);
             vp.push_back (arr[1]);
             vp.push_back (arr[2]);
         }
-        void vertex_push (const Vector<float>& vec, std::vector<float>& vp) {
+        //! Push morph::Vector of 3 floats onto the vector of floats \a vp
+        void vertex_push (const Vector<float>& vec, std::vector<float>& vp)
+        {
             std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
-        ///@}
 
         //! Set up a vertex buffer object
-        void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition) {
+        void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
+        {
             int sz = dat.size() * sizeof(float);
             glBindBuffer (GL_ARRAY_BUFFER, buf);
             glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
@@ -224,8 +227,8 @@ namespace morph {
          */
         void computeTube (GLushort& idx, Vector<float> start, Vector<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
-                          float r = 1.0f, int segments = 12) {
-
+                          float r = 1.0f, int segments = 12)
+        {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
 
@@ -380,8 +383,8 @@ namespace morph {
          * \param segments Number of segments used to render the sphere
          */
         void computeSphere (GLushort& idx, Vector<float> so, std::array<float, 3> sc, float r = 1.0f,
-                            int rings = 10, int segments = 12) {
-
+                            int rings = 10, int segments = 12)
+        {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
             float rings0 = M_PI * -0.5;
@@ -529,8 +532,8 @@ namespace morph {
                           Vector<float> tip,
                           float ringoffset,
                           std::array<float, 3> col,
-                          float r = 1.0f, int segments = 12) {
-
+                          float r = 1.0f, int segments = 12)
+        {
             // The cone is drawn as two "caps" a 'bottom cap' (or perhaps the 'back'
             // cap) and an 'outer cap'
 

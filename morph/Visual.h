@@ -125,6 +125,9 @@ namespace morph {
          */
         VisualModel* getVisualModel (unsigned int modelId);
 
+        //! Remove the VisualModel with ID \a modelId from the scene.
+        void removeVisualModel (unsigned int modelId);
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
@@ -143,15 +146,14 @@ namespace morph {
         //! Set to true when the program should end
         bool readyToFinish = false;
 
-        /*!
+        /*
          * User-settable projection values for the near clipping distance, the far
          * clipping distance and the field of view of the camera.
          */
-        ///@{
+
         float zNear = 1.0;
         float zFar = 15.0;
         float fov = 30.0;
-        ///@}
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
@@ -166,11 +168,11 @@ namespace morph {
         //! The background colour; black by default.
         std::array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        /*!
+        /*
          * User can directly set bgcolour for any background colour they like, but
          * here are convenience functions:
          */
-        ///@{
+
         //! Set a white background colour for the Visual scene
         void backgroundWhite (void) {
             this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
@@ -179,7 +181,6 @@ namespace morph {
         void backgroundBlack (void) {
             this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
         }
-        ///@}
 
         //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
         void setZDefault (float f) {
@@ -217,9 +218,7 @@ namespace morph {
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
 
-        /*!
-         * Read a shader from a file.
-         */
+        //! Read a shader from a file.
         const GLchar* ReadShader (const char* filename);
 
         /*!
@@ -229,23 +228,16 @@ namespace morph {
          */
         const GLchar* ReadDefaultShader (const char* shadercontent);
 
-        /*!
-         * Shader loading code
-         */
+        //! Shader loading code
         GLuint LoadShaders (ShaderInfo* si);
 
-        /*!
-         * The window (and OpenGL context) for this Visual
-         */
+        //! The window (and OpenGL context) for this Visual
         GLFWwindow* window;
 
-        /*!
-         * Current window width and height
-         */
-        ///@{
+        //! Current window width
         int window_w;
+        //! Current window height
         int window_h;
-        ///@}
 
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
@@ -259,10 +251,9 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
         Vector<float> coordArrowsLength = {1., 1., 1.};
 
-        /*!
+        /*
          * Variables to manage projection and rotation of the object
          */
-        ///@{
 
         //! Current cursor position
         Vector<float,2> cursorpos = {0.0f, 0.0f};
@@ -298,25 +289,22 @@ namespace morph {
         //! The inverse of the projection
         TransformMatrix<float> invproj;
 
-        //! A scene transformation and associated inverse
-        ///@{
+        //! A scene transformation
         TransformMatrix<float> scene;
+        //! Scene transformation inverse
         TransformMatrix<float> invscene;
-        ///@}
+
         Quaternion<float> savedRotation;
 
-        ///@}
-
-        /*!
+        /*
          * GLFW callback handlers
          */
-        ///@{
+
         virtual void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods);
         virtual void cursor_position_callback (GLFWwindow* window, double x, double y);
         virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods);
         virtual void window_size_callback (GLFWwindow* window, int width, int height);
         virtual void scroll_callback (GLFWwindow* window, double xoffset, double yoffset);
-        ///@}
     };
 
 } // namespace morph
