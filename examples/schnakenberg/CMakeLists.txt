@@ -31,7 +31,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Xpreprocessor -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Xpreprocessor")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
   set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
@@ -58,11 +58,10 @@ find_package(X11 REQUIRED)
 # Find HDF5 and jsoncpp by different methods on Apple and Linux:
 if(APPLE)
   find_package (HDF5 REQUIRED)
-  set (HDF5LIBLINK ${HDF5_C_LIBRARY_hdf5})
   set (JSONLIBLINK /usr/local/lib/libjsoncpp.dylib)
   # On Apple, add the links for libomp:
-  include_directories(/opt/local/include/libomp)
-  link_libraries(-L/opt/local/lib/libomp omp)
+  #include_directories(/opt/local/include/libomp)
+  #link_libraries(-L/opt/local/lib/libomp omp)
 else()
   set (LIB_TYPE SHARED) # STATIC or SHARED
   string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
@@ -110,8 +109,7 @@ if(PKG_CONFIG_FOUND)
   message(STATUS "Have pkg_config, searching for libmorphologica...")
 
   if(APPLE)
-    # Manually set PKG_CONFIG_PATH on Mac, as mac ports with by
-    # default search only in /opt/local
+    # Manually set PKG_CONFIG_PATH on Mac, as mac ports will by default search only in /opt/local
     set(ENV{PKG_CONFIG_PATH}  "ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
   endif(APPLE)
 
@@ -143,7 +141,7 @@ if(${glfw3_FOUND}) # This example *requires* the modern OpenGL code
   target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
 
   if(APPLE)
-    target_link_libraries(schnakenberg ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${GLFW_LIBRARIES} glfw ${OPENGL_LIBRARIES})
+    target_link_libraries(schnakenberg ${OpenCV_LIBS} ${MORPH_LDFLAGS} ${HDF5_C_LIBRARIES} ${GLFW_LIBRARIES} glfw ${OPENGL_LIBRARIES})
   else()
     target_link_libraries(schnakenberg ${MORPH_LDFLAGS} armadillo ${OPENGL_LIBRARIES})
   endif()

@@ -15,8 +15,7 @@ set(morphdisplay0src display.cpp)
 # Define which cpp files will be compiled into libmorphologica:
 set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
 
-# If we have glfw3 then attempt to compile Seb's modern opengl
-# visualization code into libmorphologica
+# If we have glfw3 then attempt to compile in Seb's modern opengl visualization code
 if (${glfw3_FOUND})
   message (INFO ": libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
@@ -31,74 +30,59 @@ if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
   link_directories(${MORPH_ARMADILLO_LIBPATH})
 endif()
 
-# Compile shared library
+#
+# Compile shared library morphologica
+#
 add_library(morphologica SHARED ${morphlibsrc})
-
-# Compile display code separately
-add_library(morphdisplay0 SHARED ${morphdisplay0src})
-
-# Library linking
+target_link_libraries(morphologica ${OPENGL_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS})
 if(APPLE)
-  # Note hard-coded linking of libX11.dylib, to avoid linking to one
-  # in /opt/local. There's probably a better way to do this; ideally,
-  # find_package(X11) should be pointed towards the X11 located in
-  # /opt/X11.
-  #
-  # Linking incantations suitable for old OpenGL code:
-  target_link_libraries(
-    morphdisplay0 GL ${OpenCV_LIBS} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} /opt/X11/lib/libX11.dylib
-    )
-  # and for modern OpenGL:
-  target_link_libraries(
-    morphologica
-    armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS}
-    )
+  target_link_libraries(morphologica armadillo "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 else()
-  # Old OpenGL:
-  target_link_libraries(
-    morphdisplay0 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_X11_LIB}
-    )
-  # Modern OpenGL. X11_X11_LIB linking may be unnecessary
-  target_link_libraries(
-    morphologica
-    ${ARMADILLO_LIBRARY} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS}
-    )
+  target_link_libraries(morphologica ${ARMADILLO_LIBRARY} ${X11_X11_LIB})
 endif(APPLE)
-
 if (${glfw3_FOUND})
   target_link_libraries (morphologica ${GLFW_LIBRARIES})
   if (USE_GLEW)
     target_link_libraries (morphologica ${GLEW_LIBRARIES})
   endif (USE_GLEW)
 endif()
+install(TARGETS morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-install(TARGETS morphologica
-  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-  )
-install(TARGETS morphdisplay0
-  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-  )
+#
+# Link the old display code separately - morphdisplay0
+#
+add_library(morphdisplay0 SHARED ${morphdisplay0src})
+# Common links
+target_link_libraries(morphdisplay0 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+if(APPLE)
+  # Note hard-coded linking of libX11.dylib, to avoid linking to one
+  # in /opt/local. There's probably a better way to do this; ideally,
+  # find_package(X11) should be pointed towards the X11 located in
+  # /opt/X11.
+  target_link_libraries(morphdisplay0 GL ${OpenCV_LIBS} /opt/X11/lib/libX11.dylib)
+else() # Linux
+  target_link_libraries(morphdisplay0 ${X11_X11_LIB})
+endif(APPLE)
+install(TARGETS morphdisplay0 LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-# Static library
+#
+# Static library morphstatic
+#
 add_library(morphstatic STATIC ${morphlibsrc})
 # Give static library same name as shared (ok on Linux & Mac?)
 set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
-if(APPLE)
-target_link_libraries(
-  morphstatic
-  armadillo ${OpenCV_LIBS} ${OPENGL_LIBRARIES} /opt/X11/lib/libX11.dylib ${HDF5_C_LIBRARY_hdf5} ${JSONCPP_LDFLAGS}
-  )
-else()
-target_link_libraries(
-  morphstatic
-  ${ARMADILLO_LIBRARY} ${OPENGL_LIBRARIES} ${X11_X11_LIB} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS}
-  )
-endif(APPLE)
-
+# Common linking for Apple and Linux
+target_link_libraries(morphstatic ${OPENGL_LIBRARIES} ${HDF5_C_LIBRARIES} ${JSONCPP_LDFLAGS} ${OpenCV_LIBS})
+# The glfw3 link is common for both platforms, too, but only if found:
 if (${glfw3_FOUND})
   target_link_libraries (morphstatic ${GLFW_LIBRARIES})
 endif()
-
+# Then any platform-specific links:
+if(APPLE)
+  target_link_libraries(morphstatic armadillo "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+else()
+  target_link_libraries(morphstatic ${ARMADILLO_LIBRARY} ${LAPACK_LIBRARIES})
+endif(APPLE)
 install(TARGETS morphstatic
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
   ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
