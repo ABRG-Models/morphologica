@@ -110,58 +110,20 @@ if(APPLE)
 endif(APPLE)
 
 # Lib finding
+find_package(jsoncpp REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
 endif(USE_GLEW)
+# X11 is required only for morphdisplay0 on Apple, which uses Cocoa for glfw3/GL.
 find_package(X11 REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
 find_package(LAPACK REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
+#set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5 REQUIRED)
-# pkgconfig is used to find JSON adn also to find lib paths for glfw3.
-find_package(PkgConfig)
-
-if(APPLE)
-  # Manually set PKG_CONFIG_PATH on Mac, as mac ports will, by default, search only in /opt/local
-  set(ENV{PKG_CONFIG_PATH}  "ENV{PKG_CONFIG_PATH}:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
-endif(APPLE)
-
-# JSON
-if(${PKG_CONFIG_FOUND})
-  message(STATUS "pkg-config was found. Search for JSON.")
-  pkg_search_module(JSONCPP REQUIRED jsoncpp)
-  if(${JSONCPP_FOUND})
-    message(STATUS "pkg-config found jsoncpp. Excellent.")
-  else(${JSONCPP_FOUND})
-    message(WARNING ": jsoncpp was NOT found by pkg-config. Try default: /usr/local/lib/jsoncpp.a")
-    set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
-    set(JSONCPP_INCLUDE_DIRS "/usr/local/include")
-  endif(${JSONCPP_FOUND})
-else(${PKG_CONFIG_FOUND})
-  message(STATUS "No pkg-config. Tryign default /usr/local/lib/libjsoncpp.a for jsoncpp.")
-  set(JSONCPP_LDFLAGS "/usr/local/lib/libjsoncpp.a")
-  set(JSONCPP_INCLUDE_DIRS "/usr/local/include")
-endif(${PKG_CONFIG_FOUND})
-
-# glfw3 provides a cmake find_package script. Because it doesn't set
-# lib paths, we go on and use pkg-config to do this.
-find_package(glfw3 QUIET)
-if(${glfw3_FOUND})
-  message(STATUS "cmake's find_package() found glfw3, using pkg-config to get details...")
-  if(${PKG_CONFIG_FOUND})
-    # Use pkg-config to check GLFW3 is present:
-    pkg_search_module(GLFW REQUIRED glfw3)
-    if(${GLFW_FOUND})
-      message(STATUS "pkg-config found glfw(3). Excellent.")
-    else(${GLFW_FOUND})
-      message(ERROR ": glfw(3) was NOT found by pkg-config. Uh oh.")
-    endif(${GLFW_FOUND})
-  else(${PKG_CONFIG_FOUND})
-    message(WARNING "There's no pkg-config on this system to find exact details for glfw3. You may need to try `sudo apt-get install pkg-config` or similar")
-  endif(${PKG_CONFIG_FOUND})
-endif(${glfw3_FOUND})
 
 # Armadillo
 if(APPLE)
@@ -172,7 +134,14 @@ else(APPLE)
   find_package(Armadillo REQUIRED)
 endif(APPLE)
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${X11_INC_SEARCH_PATH} ${HDF5_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${JSONCPP_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
+include_directories(${X11_INC_SEARCH_PATH})
+include_directories(${HDF5_INCLUDE_DIR})
+# Two possible values for the armadillo include dirs
+include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
+include_directories(${GLFW3_INCLUDE_DIR})
+include_directories(${JSONCPP_INCLUDE_DIRS})
 
 # rapidxml is bundled in the source:
 include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
@@ -195,7 +164,7 @@ add_subdirectory(include)
 enable_testing()
 add_subdirectory(tests)
 
-# pkgconfig file installation
+# pkgconfig file installation.
 add_subdirectory(pc)
 
 # Example code (you can also see tests/ for examples)
