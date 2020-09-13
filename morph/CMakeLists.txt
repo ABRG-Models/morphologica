@@ -36,7 +36,7 @@ endif()
 add_library(morphologica SHARED ${morphlibsrc})
 # Should add link_directories stuff here, to make sure all the libs WILL link
 # Linking common to all platforms
-target_link_libraries(morphologica ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp OpenGL::GL)
+target_link_libraries(morphologica ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL)
 target_link_libraries(morphologica ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 # Optional glfw3 linking
 if (${glfw3_FOUND})
@@ -55,7 +55,7 @@ install(TARGETS morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 #
 add_library(morphdisplay0 SHARED ${morphdisplay0src})
 # Common links
-##target_link_libraries(morphdisplay0 ${GLUT_LIBRARY}) # glut? glu?
+target_link_libraries(morphdisplay0 OpenGL::GLU)
 if(APPLE)
   # Note hard-coded linking of libX11.dylib, to avoid linking to one
   # in /opt/local. There's probably a better way to do this; ideally,
@@ -63,7 +63,7 @@ if(APPLE)
   # /opt/X11. Also hard-coded GL here.
   target_link_libraries(morphdisplay0 GL ${OpenCV_LIBS} /opt/X11/lib/libX11.dylib)
 else() # Linux
-  target_link_libraries(morphdisplay0 OpenGL::GLU ${X11_X11_LIB})
+  target_link_libraries(morphdisplay0 ${X11_X11_LIB})
 endif(APPLE)
 install(TARGETS morphdisplay0 LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -74,7 +74,7 @@ add_library(morphstatic STATIC ${morphlibsrc})
 # Give static library same name as shared (ok on Linux & Mac?)
 set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 # Common linking for Apple and Linux
-target_link_libraries(morphstatic ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp OpenGL::GL)
+target_link_libraries(morphstatic ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL)
 target_link_libraries(morphstatic ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 # The glfw3 link is common for both platforms, too, but only if found:
 if (${glfw3_FOUND})

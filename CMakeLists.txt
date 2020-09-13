@@ -30,7 +30,7 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 set (CMAKE_CXX_STANDARD 17)
 
 # An option to allow users without OpenMP (that's some Macs) to compile
-option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to compile lines, as appropriate)" ON)
+option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to compile lines, as appropriate)" OFF)
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
