@@ -63,7 +63,7 @@ if(APPLE)
   # Note hard-coded linking of libX11.dylib, to avoid linking to one
   # in /opt/local. There's probably a better way to do this; ideally,
   # find_package(X11) should be pointed towards the X11 located in
-  # /opt/X11.
+  # /opt/X11. Also hard-coded GL here.
   target_link_libraries(morphdisplay0 GL ${OpenCV_LIBS} /opt/X11/lib/libX11.dylib)
 else() # Linux
   target_link_libraries(morphdisplay0 ${X11_X11_LIB})
@@ -83,7 +83,7 @@ if (${glfw3_FOUND})
   if(APPLE)
     target_link_libraries (morphstatic glfw)
   else(APPLE)
-    target_link_libraries (morphstatic ${GLFW_LIBRARIES})
+    target_link_libraries (morphstatic glfw) # FIXME: If this works on Linux, can remove the if(APPLE)
   endif(APPLE)
 endif()
 # Then any platform-specific links:
