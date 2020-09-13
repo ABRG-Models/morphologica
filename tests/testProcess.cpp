@@ -1,5 +1,5 @@
-#include "Process.h"
-#include "MorphDbg.h"
+#include "morph/Process.h"
+#include "morph/MorphDbg.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>

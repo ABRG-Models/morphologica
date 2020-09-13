@@ -1,12 +1,12 @@
-#include "tools.h"
+#include "morph/tools.h"
 #include <utility>
 #include <iostream>
 #include <unistd.h>
 
-#include "HexGrid.h"
-#include "ReadCurves.h"
+#include "morph/HexGrid.h"
+#include "morph/ReadCurves.h"
 
-#include "display.h"
+#include "morph/display.h"
 
 using namespace morph;
 using namespace std;
@@ -93,7 +93,7 @@ int main()
         usleep (100000);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 1;
+        unsigned int sleep_seconds = 100;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second

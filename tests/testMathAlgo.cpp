@@ -1,4 +1,4 @@
-#include "MathAlgo.h"
+#include "morph/MathAlgo.h"
 #include <iostream>
 
 using namespace morph;

@@ -2,9 +2,9 @@
  * Test the code which determines distance to boundary
  */
 
-#include "HexGrid.h"
-#include "tools.h"
-#include "ReadCurves.h"
+#include "morph/HexGrid.h"
+#include "morph/tools.h"
+#include "morph/ReadCurves.h"
 #include <iostream>
 
 using namespace morph;

@@ -1,5 +1,5 @@
-#include "BezCurve.h"
-#include "BezCurvePath.h"
+#include "morph/BezCurve.h"
+#include "morph/BezCurvePath.h"
 #include <utility>
 #include <iostream>
 #include <fstream>

@@ -3,21 +3,21 @@
 #include <unistd.h>
 #include <cmath>
 
-#include "Visual.h"
+#include "morph/Visual.h"
 using morph::Visual;
-#include "VisualDataModel.h"
+#include "morph/VisualDataModel.h"
 using morph::VisualDataModel;
-#include "HexGridVisual.h"
+#include "morph/HexGridVisual.h"
 using morph::HexGridVisual;
-#include "ColourMap.h"
+#include "morph/ColourMap.h"
 using morph::ColourMapType;
-#include "tools.h"
+#include "morph/tools.h"
 using morph::Tools;
-#include "HexGrid.h"
+#include "morph/HexGrid.h"
 using morph::HexGrid;
 using morph::HexDomainShape;
-#include "ReadCurves.h"
-#include "Vector.h"
+#include "morph/ReadCurves.h"
+#include "morph/Vector.h"
 using morph::Vector;
 
 using namespace std;

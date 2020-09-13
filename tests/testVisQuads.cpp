@@ -1,13 +1,13 @@
 /*
  * Visualize a test surface
  */
-#include "Visual.h"
+#include "morph/Visual.h"
 using morph::Visual;
-#include "QuadsVisual.h"
+#include "morph/QuadsVisual.h"
 using morph::QuadsVisual;
-#include "Scale.h"
+#include "morph/Scale.h"
 using morph::Scale;
-#include "Vector.h"
+#include "morph/Vector.h"
 using morph::Vector;
 #include <iostream>
 #include <fstream>

@@ -2,10 +2,10 @@
 // Testing/debugging Dirichlet boundary code
 //
 
-#include "HexGrid.h"
-#include "ReadCurves.h"
-#include "display.h"
-#include "tools.h"
+#include "morph/HexGrid.h"
+#include "morph/ReadCurves.h"
+#include "morph/display.h"
+#include "morph/tools.h"
 #include <iostream>
 #include <vector>
 #include <list>
@@ -15,9 +15,9 @@
 
 #define DBGSTREAM std::cout
 #define DEBUG 1
-#include "MorphDbg.h"
+#include "morph/MorphDbg.h"
 
-#include "ShapeAnalysis.h"
+#include "morph/ShapeAnalysis.h"
 
 using namespace morph;
 using namespace std;

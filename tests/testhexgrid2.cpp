@@ -1,6 +1,6 @@
-#include "HexGrid.h"
-#include "ReadCurves.h"
-#include "tools.h"
+#include "morph/HexGrid.h"
+#include "morph/ReadCurves.h"
+#include "morph/tools.h"
 #include <iostream>
 
 using namespace morph;

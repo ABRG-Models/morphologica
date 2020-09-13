@@ -1,15 +1,15 @@
 /*
  * Visualize a test surface
  */
-#include "Visual.h"
+#include "morph/Visual.h"
 using morph::Visual;
-#include "ColourMap.h"
+#include "morph/ColourMap.h"
 using morph::ColourMapType;
-#include "ScatterVisual.h"
+#include "morph/ScatterVisual.h"
 using morph::ScatterVisual;
-#include "Scale.h"
+#include "morph/Scale.h"
 using morph::Scale;
-#include "Vector.h"
+#include "morph/Vector.h"
 using morph::Vector;
 #include <iostream>
 #include <fstream>

@@ -1,8 +1,8 @@
-#include "MathAlgo.h"
+#include "morph/MathAlgo.h"
 #include <iostream>
 #include <queue>
 #include <list>
-#include "Vector.h"
+#include "morph/Vector.h"
 
 using namespace morph;
 using namespace std;

@@ -1,9 +1,9 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <list>
-#include "Winder.h"
-#include "BezCoord.h"
-#include "Vector.h"
+#include "morph/Winder.h"
+#include "morph/BezCoord.h"
+#include "morph/Vector.h"
 #include "morph/vVector.h"
 
 using std::cout;

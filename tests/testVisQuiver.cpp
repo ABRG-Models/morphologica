@@ -1,13 +1,13 @@
 /*
  * Visualize a quiver field
  */
-#include "Visual.h"
+#include "morph/Visual.h"
 using morph::Visual;
-#include "ColourMap.h"
+#include "morph/ColourMap.h"
 using morph::ColourMapType;
-#include "QuiverVisual.h"
+#include "morph/QuiverVisual.h"
 using morph::QuiverVisual;
-#include "Vector.h"
+#include "morph/Vector.h"
 using morph::Vector;
 #include <iostream>
 #include <fstream>

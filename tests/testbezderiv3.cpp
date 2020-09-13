@@ -1,9 +1,9 @@
 /*
  * Another test program. This one is for use as a paper figure.
  */
-#include "HexGrid.h"
-#include "BezCurve.h"
-#include "BezCurvePath.h"
+#include "morph/HexGrid.h"
+#include "morph/BezCurve.h"
+#include "morph/BezCurvePath.h"
 #include <utility>
 #include <iostream>
 #include <fstream>

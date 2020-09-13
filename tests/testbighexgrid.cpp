@@ -2,18 +2,18 @@
  * Test a big hex grid with many hexes. Apply boundary as an ellipse.
  */
 
-#include "Visual.h"
-#include "VisualDataModel.h"
-#include "HexGridVisual.h"
-#include "HexGrid.h"
-#include "ReadCurves.h"
-#include "tools.h"
+#include "morph/Visual.h"
+#include "morph/VisualDataModel.h"
+#include "morph/HexGridVisual.h"
+#include "morph/HexGrid.h"
+#include "morph/ReadCurves.h"
+#include "morph/tools.h"
 #include <utility>
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include "Scale.h"
-#include "Vector.h"
+#include "morph/Scale.h"
+#include "morph/Vector.h"
 
 using namespace std;
 using morph::Visual;

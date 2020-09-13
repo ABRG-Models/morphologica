@@ -6,15 +6,15 @@
 #include <string>
 #include <cmath>
 
-#include "Visual.h"
-#include "VisualDataModel.h"
-#include "HexGridVisual.h"
-#include "HexGrid.h"
-#include "ReadCurves.h"
-#include "tools.h"
-#include "Random.h"
-#include "Scale.h"
-#include "Vector.h"
+#include "morph/Visual.h"
+#include "morph/VisualDataModel.h"
+#include "morph/HexGridVisual.h"
+#include "morph/HexGrid.h"
+#include "morph/ReadCurves.h"
+#include "morph/tools.h"
+#include "morph/Random.h"
+#include "morph/Scale.h"
+#include "morph/Vector.h"
 
 int main()
 {

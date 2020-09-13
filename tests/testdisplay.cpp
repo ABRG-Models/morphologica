@@ -1,5 +1,5 @@
-#include "display.h"
-#include "tools.h"
+#include "morph/display.h"
+#include "morph/tools.h"
 #include <utility>
 #include <iostream>
 #include <unistd.h>

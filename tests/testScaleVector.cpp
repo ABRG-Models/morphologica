@@ -11,9 +11,9 @@ using std::array;
 #include <iostream>
 using std::cout;
 using std::endl;
-#include "Vector.h"
+#include "morph/Vector.h"
 using morph::Vector;
-#include "Scale.h"
+#include "morph/Scale.h"
 using morph::Scale;
 
 int main () {

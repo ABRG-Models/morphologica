@@ -148,9 +148,6 @@ include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 # OpenGL code needs the local include directory, too
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
-# We need the source code location included "raw" so that #include "morph/Header.h" works in all the code.
-include_directories("${PROJECT_SOURCE_DIR}")
-
 # Library code is compiled up as a shared library in lib/ (could also
 # be compiled static if needed)
 add_subdirectory(morph)

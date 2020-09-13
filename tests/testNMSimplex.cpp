@@ -2,7 +2,7 @@
  * Test Nelder Mead Simplex algorithm on the Rosenbrock banana function.
  */
 
-#include "NM_Simplex.h"
+#include "morph/NM_Simplex.h"
 #include <iostream>
 #include <unistd.h>
 

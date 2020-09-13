@@ -15,16 +15,13 @@ set(morphdisplay0src display.cpp)
 # Define which cpp files will be compiled into libmorphologica:
 set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp Process.cpp)
 
-# If we have glfw3 then attempt to compile in Seb's modern opengl visualization code
+# If we have glfw3 then compile in Seb's modern opengl visualization code
 if (${glfw3_FOUND})
   message (INFO ": libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
 endif()
 
-if(APPLE)
-  link_directories(/usr/X11R6/lib)
-endif(APPLE)
-
+# Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
   message (INFO ": Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")
   link_directories(${MORPH_ARMADILLO_LIBPATH})
@@ -34,6 +31,12 @@ endif()
 # Compile shared library morphologica
 #
 add_library(morphologica SHARED ${morphlibsrc})
+# target-specific include directories, which are different depending
+# on whether we're building or for a "cmake-using client project"
+target_include_directories(morphologica PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works
+  $<INSTALL_INTERFACE:include>  # <prefix>/include so that include <morph/blah.h> works
+)
 # Should add link_directories stuff here, to make sure all the libs WILL link
 # Linking common to all platforms
 target_link_libraries(morphologica ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL)
@@ -48,20 +51,21 @@ if (${glfw3_FOUND})
     target_link_libraries (morphologica ${GLEW_LIBRARIES})
   endif (USE_GLEW)
 endif()
-install(TARGETS morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS morphologica EXPORT morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 #
 # Link the old display code separately - morphdisplay0
 #
 add_library(morphdisplay0 SHARED ${morphdisplay0src})
+target_include_directories(morphdisplay0 PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works
+  $<INSTALL_INTERFACE:include>  # <prefix>/include so that include <morph/blah.h> works
+)
 # Common links
 target_link_libraries(morphdisplay0 OpenGL::GLU)
 if(APPLE)
-  # Note hard-coded linking of libX11.dylib, to avoid linking to one
-  # in /opt/local. There's probably a better way to do this; ideally,
-  # find_package(X11) should be pointed towards the X11 located in
-  # /opt/X11. Also hard-coded GL here.
-  target_link_libraries(morphdisplay0 GL ${OpenCV_LIBS} /opt/X11/lib/libX11.dylib)
+  # Note hard-coded linking of libX11.dylib and libGL.dylib
+  target_link_libraries(morphdisplay0 /opt/X11/lib/libGL.dylib ${OpenCV_LIBS} /opt/X11/lib/libX11.dylib)
 else() # Linux
   target_link_libraries(morphdisplay0 ${X11_X11_LIB})
 endif(APPLE)
@@ -71,6 +75,10 @@ install(TARGETS morphdisplay0 LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 # Static library morphstatic
 #
 add_library(morphstatic STATIC ${morphlibsrc})
+target_include_directories(morphstatic PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works
+  $<INSTALL_INTERFACE:include>  # <prefix>/include so that include <morph/blah.h> works
+)
 # Give static library same name as shared (ok on Linux & Mac?)
 set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 # Common linking for Apple and Linux

@@ -1,11 +1,11 @@
-#include "TransformMatrix.h"
+#include "morph/TransformMatrix.h"
 using morph::TransformMatrix;
 #include <iostream>
 using std::cout;
 using std::endl;
 #include <array>
 using std::array;
-#include <Vector.h>
+#include <morph/Vector.h>
 using morph::Vector;
 
 void setMatrixSequence (TransformMatrix<float>& tm)
