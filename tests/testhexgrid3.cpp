@@ -93,7 +93,7 @@ int main()
         usleep (100000);
         disp.redrawDisplay();
 
-        unsigned int sleep_seconds = 100;
+        unsigned int sleep_seconds = 1;
         cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
         while (sleep_seconds--) {
             usleep (1000000); // one second
