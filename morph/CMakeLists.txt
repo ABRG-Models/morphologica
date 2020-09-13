@@ -31,10 +31,12 @@ endif()
 # Compile shared library morphologica
 #
 add_library(morphologica SHARED ${morphlibsrc})
+# add something like: link_directories(morphologic BLAH BLAH)??
 # target-specific include directories, which are different depending
 # on whether we're building or for a "cmake-using client project"
 target_include_directories(morphologica PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works
+  # need INTERFACE_LINK_DIRECTORIES?
   $<INSTALL_INTERFACE:include>  # <prefix>/include so that include <morph/blah.h> works
 )
 # Should add link_directories stuff here, to make sure all the libs WILL link
@@ -69,7 +71,7 @@ if(APPLE)
 else() # Linux
   target_link_libraries(morphdisplay0 ${X11_X11_LIB})
 endif(APPLE)
-install(TARGETS morphdisplay0 LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS morphdisplay0 EXPORT morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 #
 # Static library morphstatic
@@ -89,6 +91,7 @@ if (${glfw3_FOUND})
   target_link_libraries (morphstatic glfw)
 endif()
 install(TARGETS morphstatic
+  EXPORT morphologica
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
   ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/morph
   )
@@ -102,6 +105,10 @@ install(
 if (${glfw3_FOUND})
   install( FILES VisualBase.h Visual.h VisualModel.h VisualDataModel.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
 endif()
+
+# Install the EXPORT so that morphologica has its own .cmake file and find_package(morphologica) should work
+install(FILES morphologica-config.cmake DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/morphologica)
+install(EXPORT morphologica DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/morphologica)
 
 # The testboundary utility program
 add_executable(testboundary testboundary.cpp)
