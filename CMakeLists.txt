@@ -141,7 +141,6 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
-include_directories(${JSONCPP_INCLUDE_DIRS})
 
 # rapidxml is bundled in the source:
 include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
