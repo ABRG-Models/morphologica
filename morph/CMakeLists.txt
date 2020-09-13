@@ -58,7 +58,7 @@ install(TARGETS morphologica LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 #
 add_library(morphdisplay0 SHARED ${morphdisplay0src})
 # Common links
-target_link_libraries(morphdisplay0 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(morphdisplay0 OpenGL::GL ${GLUT_LIBRARY})
 if(APPLE)
   # Note hard-coded linking of libX11.dylib, to avoid linking to one
   # in /opt/local. There's probably a better way to do this; ideally,
