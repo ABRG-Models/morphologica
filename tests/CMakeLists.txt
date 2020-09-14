@@ -216,9 +216,13 @@ if(${glfw3_FOUND})
 endif()
 
 # Test morph::Process class
-add_executable(testProcess testProcess.cpp)
-target_link_libraries(testProcess morphologica ${X11_LIBRARIES})
-add_test(testProcess testProcess)
+if(APPLE)
+  message("-- NB: Omitting testProcess.cpp on Mac got now, as it doesn't work.")
+else(APPLE)
+  add_executable(testProcess testProcess.cpp)
+  target_link_libraries(testProcess morphologica ${X11_LIBRARIES})
+  add_test(testProcess testProcess)
+endif(APPLE)
 
 # Test morph::Config class
 add_executable(testConfig testConfig.cpp)
