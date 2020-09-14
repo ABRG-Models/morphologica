@@ -54,30 +54,43 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
-find_package(morphologica)
-#find_package(Armadillo REQUIRED) # Oddly, the build succeeds on Mac without this one - it's passed through with the config, unlike all the others.
+
+# Oddly, the build succeeds (at least on Mac) without
+# find_package(Armadillo) - the link to the library is passed through
+# with morphologic-config.cmake, unlike all the others. I think it's
+# down to differences in the way the different packages create their
+# package-config.cmake files.
+if(0)
+  find_package(Armadillo REQUIRED)
+endif(0)
 
 # Find HDF5 and jsoncpp by different methods on Apple and Linux:
 if(APPLE)
   find_package (HDF5 REQUIRED)
-  # On Apple, possibly add the links for libomp:
+  # On Apple, possibly add the links for libomp if you have it:
   #include_directories(/opt/local/include/libomp)
   #link_libraries(-L/opt/local/lib/libomp omp)
 else()
-  set (LIB_TYPE SHARED) # STATIC or SHARED
-  string(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
-  find_package (HDF5 NAMES hdf5 COMPONENTS C ${SEARCH_TYPE} REQUIRED)
+  # I found this slightly more complex call to find_package
+  find_package (HDF5 NAMES hdf5 COMPONENTS C shared REQUIRED)
 endif(APPLE)
+
+# The config keyword means find the morphologica that was compiled and
+# installed on this computer, i.e. it has configured locations for
+# library paths.
+find_package(morphologica CONFIG REQUIRED)
 
 #
 # All the library finding is now done. It's time to compile the program.
 #
-# Schnakenberg RD system
+# The Schnakenberg RD system is compiled from a single c++ file
 add_executable(schnakenberg schnakenberg.cpp)
+# Set compiler definitions. The size of our floats and the option to
+# compile in the realtime visualization.
 target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
-#link_directories(schnakenberg -L/usr/local/lib) # TEMPORARY!
-target_link_libraries(schnakenberg morphologica) # Should be enough
-#target_link_libraries(schnakenberg morphologica ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+# Only one link is mentioned - to morphologica. Other links are pulled
+# in from morphologica-config.cmake.
+target_link_libraries(schnakenberg morphologica)
 
 # For debugging of variables:
 option(DEBUG_VARIABLES OFF)

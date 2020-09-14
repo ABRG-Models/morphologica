@@ -48,7 +48,7 @@ if (${glfw3_FOUND})
   # This brings in the links to the Cocoa, IOKit and CoreFoundation
   # frameworks on Mac and links to X11 on Linux (though perhaps only
   # if using shared glfw?)
-  target_link_libraries (morphologica glfw)
+  target_link_libraries (morphologica glfw) # pushed through to dependent as '-lglfw' with no -L to help.
   if (USE_GLEW)
     target_link_libraries (morphologica ${GLEW_LIBRARIES})
   endif (USE_GLEW)
