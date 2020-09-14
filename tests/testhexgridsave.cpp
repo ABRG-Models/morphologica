@@ -22,10 +22,8 @@ int main()
     // Create and then write a HexGrid
     try {
         string pwd = Tools::getPwd();
-        string curvepath = "../tests/trial.svg";
-        if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/trial.svg";
-        }
+        string curvepath = "../../tests/trial.svg";
+
         ReadCurves r(curvepath);
 
         HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);

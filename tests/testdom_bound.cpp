@@ -20,10 +20,8 @@ int main()
     int rtn = 0;
     try {
         string pwd = morph::Tools::getPwd();
-        string curvepath = "../tests/trial.svg";
-        if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/trial.svg";
-        }
+        string curvepath = "../../tests/trial.svg";
+
         morph::ReadCurves r(curvepath);
 
         morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);

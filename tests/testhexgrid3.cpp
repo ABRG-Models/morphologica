@@ -21,10 +21,7 @@ int main()
     int rtn = 0;
     try {
         string pwd = Tools::getPwd();
-        string curvepath = "../tests/trialmod.svg";
-        if (pwd.substr(pwd.length()-11) == "build/tests") {
-            curvepath = "../../tests/trialmod.svg";
-        }
+        string curvepath = "../../tests/trialmod.svg";
         ReadCurves r(curvepath);
 
         HexGrid hg(0.02, 7, 0, HexDomainShape::Boundary);
