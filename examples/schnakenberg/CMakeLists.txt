@@ -57,8 +57,8 @@ find_package(glfw3 3.3 REQUIRED)
 
 # Oddly, the build succeeds (at least on Mac) without
 # find_package(Armadillo) - the link to the library is passed through
-# with morphologic-config.cmake, unlike all the others. I think it's
-# down to differences in the way the different packages create their
+# with morphologica-config.cmake, unlike all the others. I think it's
+# down to differences in the ways that packages create their
 # package-config.cmake files.
 if(0)
   find_package(Armadillo REQUIRED)
@@ -71,7 +71,9 @@ if(APPLE)
   #include_directories(/opt/local/include/libomp)
   #link_libraries(-L/opt/local/lib/libomp omp)
 else()
-  # I found this slightly more complex call to find_package
+  # I found this slightly more complex call to find_package to be
+  # necessary/favourable at some point. Must test to see if this is
+  # still the case.
   find_package (HDF5 NAMES hdf5 COMPONENTS C shared REQUIRED)
 endif(APPLE)
 
