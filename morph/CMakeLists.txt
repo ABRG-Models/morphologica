@@ -84,6 +84,7 @@ target_include_directories(morphstatic PUBLIC
 # Give static library same name as shared (ok on Linux & Mac?)
 set_target_properties(morphstatic PROPERTIES OUTPUT_NAME morphologica)
 # Common linking for Apple and Linux
+link_directories(morphstatic ${ARMADILLO_LIBRARY_DIRS})
 target_link_libraries(morphstatic ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL)
 target_link_libraries(morphstatic ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 # The glfw3 link is common for both platforms, too, but only if found:

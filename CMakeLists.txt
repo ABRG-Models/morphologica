@@ -88,8 +88,8 @@ endif()
 # this.
 set(MORPH_ARMADILLO_LIBPATH "" CACHE PATH "The path to the armadillo library (e.g. /usr/local/lib)")
 
-# A section to ensure library linking works on Apple.
-if(APPLE)
+# A section to ensure library linking works on Apple. No longer necessary? Doesn't seem to be.
+if(0)#APPLE
   set(CMAKE_MACOSX_RPATH ON)
   # use, i.e. don't skip the full RPATH for the build tree
   set(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -107,7 +107,7 @@ if(APPLE)
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
   endif("${isSystemDir}" STREQUAL "-1")
   include_directories(/usr/local/include)
-endif(APPLE)
+endif()
 
 # Lib finding
 find_package(jsoncpp REQUIRED)
@@ -128,7 +128,9 @@ find_package(HDF5 REQUIRED)
 # Armadillo
 if(APPLE)
   # Give a hint on where to find Armadillo on Mac
-  find_package(Armadillo 9.20 HINTS /opt/local/lib REQUIRED)
+  message(INFO " Doing find_package Armadillo")
+  find_package(Armadillo REQUIRED)
+  message(INFO " arma lib dirs: ${ARMADILLO_LIBRARY_DIRS}")
 else(APPLE)
   # A simpler find package for armadillo on non-mac:
   find_package(Armadillo REQUIRED)

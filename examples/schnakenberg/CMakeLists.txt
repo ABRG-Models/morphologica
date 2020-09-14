@@ -52,10 +52,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 # Find the libraries which will be needed
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(Armadillo REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(morphologica)
+#find_package(Armadillo REQUIRED) # Oddly, the build succeeds on Mac without this one - it's passed through with the config, unlike all the others.
 
 # Find HDF5 and jsoncpp by different methods on Apple and Linux:
 if(APPLE)
@@ -75,7 +75,7 @@ endif(APPLE)
 # Schnakenberg RD system
 add_executable(schnakenberg schnakenberg.cpp)
 target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
-link_directories(schnakenberg -L/usr/local/lib) # TEMPORARY!
+#link_directories(schnakenberg -L/usr/local/lib) # TEMPORARY!
 target_link_libraries(schnakenberg morphologica) # Should be enough
 #target_link_libraries(schnakenberg morphologica ${OpenCV_LIBS} ${HDF5_C_LIBRARIES} jsoncpp_lib OpenGL::GL ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 
