@@ -124,17 +124,7 @@ find_package(LAPACK REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
 #set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5 REQUIRED)
-
-# Armadillo
-if(APPLE)
-  # Give a hint on where to find Armadillo on Mac
-  message(INFO " Doing find_package Armadillo")
-  find_package(Armadillo REQUIRED)
-  message(INFO " arma lib dirs: ${ARMADILLO_LIBRARY_DIRS}")
-else(APPLE)
-  # A simpler find package for armadillo on non-mac:
-  find_package(Armadillo REQUIRED)
-endif(APPLE)
+find_package(Armadillo REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})

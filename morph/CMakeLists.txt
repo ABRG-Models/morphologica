@@ -17,13 +17,13 @@ set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp Hdf
 
 # If we have glfw3 then compile in Seb's modern opengl visualization code
 if (${glfw3_FOUND})
-  message (INFO ": libglfw3 was found, compiling in Visual.cpp, etc")
+  message ("-- libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
 endif()
 
 # Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
-  message (INFO ": Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")
+  message ("-- Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")
   link_directories(${MORPH_ARMADILLO_LIBPATH})
 endif()
 

@@ -1,7 +1,6 @@
 # CTests
 
 # All #includes in test programs have to be #include "morph/header.h"
-message(INFO "Including dir ${PROJECT_SOURCE_DIR}")
 include_directories(${PROJECT_SOURCE_DIR})
 
 # BezCurve class
