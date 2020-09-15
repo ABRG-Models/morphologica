@@ -61,8 +61,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 # Find the libraries which will be needed
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(jsoncpp REQUIRED)
 find_package(morphologica CONFIG REQUIRED)
 
 add_executable(recurrentnet recurrentnet.cpp)
