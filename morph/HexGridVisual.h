@@ -222,8 +222,8 @@ namespace morph {
             // this->initializeVerticesTris();
         }
 
-        //! Initialize vertex buffer objects and vertex array object.
-        //@{
+        // Initialize vertex buffer objects and vertex array object.
+
         //! Initialize as triangled. Gives a smooth surface with much
         //! less compute than initializeVerticesHexesInterpolated.
         void initializeVerticesTris (void) {
@@ -233,8 +233,6 @@ namespace morph {
                 Flt datumC = this->zScale.transform ((*this->data)[hi]);
                 // Scale colour
                 Flt datum = this->colourScale.transform ((*this->data)[hi]);
-                //shouldn't need: datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
-                //datum = datum < static_cast<Flt>(0.0) ? static_cast<Flt>(0.0) : datum;
                 // And turn it into a colour:
                 std::array<float, 3> clr = this->cm.convert (datum);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -290,13 +288,13 @@ namespace morph {
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
                 // Use the linear scaled copy of the data, dcopy.
-                datumC = dcopy[hi];
-                datumNE = dcopy[NE(hi)];   // datum Neighbour East
-                datumNNE = dcopy[NNE(hi)]; // datum Neighbour North East
-                datumNNW = dcopy[NNW(hi)]; // etc
-                datumNW = dcopy[NW(hi)];
-                datumNSW = dcopy[NSW(hi)];
-                datumNSE = dcopy[NSE(hi)];
+                datumC   = dcopy[hi];
+                datumNE  = HAS_NE(hi)  ? dcopy[NE(hi)]  : datumC; // datum Neighbour East
+                datumNNE = HAS_NNE(hi) ? dcopy[NNE(hi)] : datumC; // datum Neighbour North East
+                datumNNW = HAS_NNW(hi) ? dcopy[NNW(hi)] : datumC; // etc
+                datumNW  = HAS_NW(hi)  ? dcopy[NW(hi)]  : datumC;
+                datumNSW = HAS_NSW(hi) ? dcopy[NSW(hi)] : datumC;
+                datumNSE = HAS_NSE(hi) ? dcopy[NSE(hi)] : datumC;
 
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
@@ -440,7 +438,6 @@ namespace morph {
         //! Initialize as hexes, with a step quad between each
         //! hex. Might look cool. Writeme.
         void initializeVerticesHexesStepped (void) {}
-        //@}
 
     private:
         //! The HexGrid to visualize

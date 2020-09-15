@@ -52,6 +52,11 @@ namespace morph {
         //! Convert the scalar datum into an RGB (or BGR) colour
         std::array<float, 3> convert (Flt datum) {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+
+            // Enforce range of datum
+            datum = datum > Flt{1.0} ? Flt{1.0} : datum;
+            datum = datum < Flt{0.0} ? Flt{0.0} : datum;
+
             switch (this->type) {
             case ColourMapType::Jet:
             {
@@ -65,14 +70,14 @@ namespace morph {
             }
             case ColourMapType::RainbowZeroBlack:
             {
-                if (datum != static_cast<Flt>(0.0)) {
+                if (datum != Flt{0.0}) {
                     c = ColourMap::rainbow (datum);
                 }
                 break;
             }
             case ColourMapType::RainbowZeroWhite:
             {
-                if (datum != static_cast<Flt>(0.0)) {
+                if (datum != Flt{0.0}) {
                     c = ColourMap::rainbow (datum);
                 } else {
                     c = {1.0f, 1.0f, 1.0f};
@@ -251,8 +256,8 @@ namespace morph {
             std::array<float,3> col = {0.0f, 0.0f, 0.0f};
             float ivl = 1.0/8.0;
             for (int i=0; i<8; i++) {
-                Flt llim = (i==0) ? static_cast<Flt>(0.0) : (Flt)i/static_cast<Flt>(8.0);
-                Flt ulim = (i==7) ? static_cast<Flt>(1.0) : ((Flt)(i+1))/static_cast<Flt>(8.0);
+                Flt llim = (i==0) ? Flt{0.0} : (Flt)i/Flt{8.0};
+                Flt ulim = (i==7) ? Flt{1.0} : ((Flt)(i+1))/Flt{8.0};
                 if (datum >= llim && datum <= ulim) {
                     for (int j=0; j<3; j++) {
                         float c = static_cast<float>(datum - llim);
