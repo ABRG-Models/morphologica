@@ -92,7 +92,7 @@ armadillo, GLFW and HDF5 libraries as dependencies. The process to
 build and install morphologica is given in README.install.linux.md for
 GNU/Linux and README.install.mac.md for Apple Mac.
 
-# Credits
+## Credits
 
 Authorship of morphologica code is given in each file. Copyright in
 the software is owned by the authors. morphologica is distributed
