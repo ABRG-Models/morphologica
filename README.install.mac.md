@@ -58,14 +58,82 @@ sudo port install cmake armadillo opencv
 
 ### Option 2: Manual dependency builds
 
-It's much cleaner to build each of the dependencies by hand.
+It's much cleaner to build each of the dependencies by hand. That
+means first installing cmake, which I do with a binary package from
+https://cmake.org/download/, and then compiling hdf5, opencv and
+armadillo (all of which support a cmake build process).
+
+
+#### Armadillo
+
+Armadillo is a library for matrix manipulation. One place it's used in
+morphologica is within the Bezier curve code,
+morph::BezCurve. Download a package - I downloaded
+armadillo-9.900.3.tar.xz, though older versions back to 8.400.0 should
+work.
+
+```sh
+mkdir -p ~/src
+cd ~/src
+tar xvf path/to/downloaded/armadillo-9.900.3.tar.xz
+cd armadillo-9.900.3
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+#### HDF5
+
+Hierarchical data format is a standard format for saving binary
+data. morph::HdfData wraps the HDF5 API and hence HDF5 is a required
+dependency to build morphologica. Build version 1.10.x.
+
+
+```sh
+mkdir -p ~/src
+cd ~/src
+tar xvf path/to/downloaded/hdf5-1.10.7.tar.gz
+cd hdf5-1.10.7
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+#### OpenCV
+
+Computer vision. Used to save views of the OpenGL
+environment. morph::HdfData is also OpenCV-aware (and can save
+cv::Points and cv::Mats). I compiled OpenCV master from git that's
+probably about version 4.4.0. OpenCV versions as old as 3.2.0 also work.
+
+```sh
+mkdir -p ~/src
+cd ~/src
+git clone git@github.com:opencv/opencv.git
+cd opencv
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ### Common manual dependency builds
 
-jsoncpp needs to be built separately. glfw3 also builds separately,
-though it's possible this may work via mac ports.
+Whether or not you used mac ports to install hdf5, opencv and
+armadillo, the JSON-reading library jsoncpp needs to be built
+separately, as I don't believe it is currently available as a
+port. glfw3 also needs to be built separately (I've not investigated
+whether there is a mac ports version of glfw).
 
-Compile and install jsoncpp in /usr/local like this:
+#### jsoncpp
+
+jsoncpp allows morph::Config to read from and write to JSON text
+files. Compile and install jsoncpp in /usr/local like this:
 
 ```sh
 mkdir -p ~/src
@@ -79,8 +147,11 @@ make
 sudo make install
 ```
 
-The modern OpenGL code in morphologica requires the library GLFW3 and
-only compiles if GLFW3 is present. Compile it like this:
+#### glfw3
+
+The modern OpenGL code in morphologica requires the GL-window managing
+library GLFW3 and only compiles if GLFW3 is present. Compile it like
+this:
 
 ```
 cd ~/src
@@ -95,7 +166,7 @@ sudo make install
 
 ## Build morphologica on Mac
 
-To build morphologica, it's the usual CMake process:
+To build morphologica itself, it's the usual CMake process:
 
 ```sh
 cd ~/src
