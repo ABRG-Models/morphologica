@@ -63,6 +63,13 @@ means first installing cmake, which I do with a binary package from
 https://cmake.org/download/, and then compiling hdf5, opencv and
 armadillo (all of which support a cmake build process).
 
+After downloading and installing cmake using the MacOS installer, I
+add these lines to ~/.zprofile so that I can type cmake at the terminal:
+
+```sh
+# Add cmake bin directory to path so you can type 'cmake'
+export PATH="/Applications/CMake.app/Contents/bin:${PATH}"
+```
 
 #### Armadillo
 
