@@ -56,6 +56,9 @@ sudo port install cmake armadillo opencv
  libraries in another location (such as /usr/local), you may run into
  problems during the build.*
 
+Now skip Option 2 and go to **Common manual dependency builds** to
+compile jsoncpp and glfw3 by hand.
+
 ### Option 2: Manual dependency builds
 
 It's much cleaner to build each of the dependencies by hand. That
@@ -114,8 +117,9 @@ sudo make install
 
 Computer vision. Used to save views of the OpenGL
 environment. morph::HdfData is also OpenCV-aware (and can save
-cv::Points and cv::Mats). I compiled OpenCV master from git that's
-probably about version 4.4.0. OpenCV versions as old as 3.2.0 also work.
+cv::Points and cv::Mats). I compiled OpenCV master from git. That
+probably corresponded to version 4.4.0. OpenCV versions as old as
+3.2.0 also work.
 
 ```sh
 mkdir -p ~/src
