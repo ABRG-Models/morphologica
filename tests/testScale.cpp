@@ -1,3 +1,4 @@
+#include <limits>
 #include <vector>
 using std::vector;
 #include <list>
@@ -26,7 +27,7 @@ int main () {
     cout << endl;
 
     // Test scalar scaling
-    if (result.back() != 1.0f) {
+    if (std::abs(result.back() - 1.0f) > std::numeric_limits<float>::epsilon()) {
         cout << "Error in scalar scaling" << endl;
         rtn--;
     }
