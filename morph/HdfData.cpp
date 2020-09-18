@@ -22,7 +22,8 @@ using std::make_pair;
 #include <iostream>
 using std::cout;
 using std::endl;
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/core/mat.hpp>
 
 morph::HdfData::HdfData (const string fname, const bool read_data, const bool show_hdf_internal_errors)
 {

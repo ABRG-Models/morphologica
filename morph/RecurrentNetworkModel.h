@@ -7,11 +7,6 @@
  * \date 2020
  */
 
-// With the correct OpenGL definitions (-DGL3_PROTOTYPES etc) you probably don't need this for Apple
-#ifdef __OSX__
-# include "OpenGL/gl3.h"
-#endif
-
 #include "morph/HdfData.h"
 #include "morph/Visual.h"
 #include "morph/QuadsVisual.h"

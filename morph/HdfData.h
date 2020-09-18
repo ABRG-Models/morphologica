@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/types.hpp>
 #include <hdf5.h>
 #include <vector>
 #include <array>

@@ -1,5 +1,9 @@
 #include "morph/Visual.h"
-#include "GL3/gl3.h"
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include "GL3/gl3.h"
+#endif
 #include <iostream>
 using std::cout;
 using std::cerr;
@@ -21,7 +25,7 @@ using morph::ShaderInfo;
 #include "morph/VisualModel.h"
 using morph::VisualModel;
 // imwrite() from OpenCV is used in saveImage()
-#include <opencv2/opencv.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)

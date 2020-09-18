@@ -1,4 +1,5 @@
 #include "morph/HdfData.h"
+#include <opencv2/opencv.hpp>
 #include <utility>
 #include <iostream>
 #include <fstream>

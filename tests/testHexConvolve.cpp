@@ -82,6 +82,7 @@ int main()
         unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
         offset[1] += 0.6f;
         unsigned int gridId1 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &kernel, offset, &kerneldata));
+        std::cout << "gridId1 is " << gridId1 << std::endl;
         offset[1] -= 0.6f;
         offset[0] += 1.0f;
         unsigned int gridId2 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &hg, offset, &convolved));

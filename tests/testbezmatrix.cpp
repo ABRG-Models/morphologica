@@ -68,7 +68,7 @@ int main()
     float tstep = 0.00001f;
     milliseconds m_b4 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     for (float t = 0.0f; t < 1.0f; t+=tstep) {
-        BezCoord<FLT> bm = cv.computePointMatrix (t);
+        cv.computePointMatrix (t);
     }
     milliseconds m_af = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     milliseconds matrix_time = m_af - m_b4;
@@ -76,7 +76,7 @@ int main()
 
     milliseconds g_b4 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     for (float t = 0.0f; t < 1.0f; t+=tstep) {
-        BezCoord<FLT> bm = cv.computePointGeneral (t);
+        cv.computePointGeneral (t);
     }
     milliseconds g_af = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     milliseconds general_time = g_af - g_b4;
@@ -85,7 +85,7 @@ int main()
     if (cv.getOrder() < 4) {
         milliseconds o_b4 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         for (float t = 0.0f; t < 1.0f; t+=tstep) {
-            BezCoord<FLT> bm = cv.computePoint (t);
+            cv.computePoint (t);
         }
         milliseconds o_af = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         milliseconds opt_time = o_af - o_b4;

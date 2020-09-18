@@ -10,10 +10,15 @@
 
 #pragma once
 
-#include "GL3/gl3.h"
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include "GL3/gl3.h"
+#endif
 #include "morph/tools.h"
 #include "morph/TransformMatrix.h"
 #include "morph/Vector.h"
+#include "morph/MathConst.h"
 #include <iostream>
 #include <vector>
 #include <array>

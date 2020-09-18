@@ -16,9 +16,18 @@
 // such as Ubuntu 16.04. Not necessary on later platforms.
 # include <GL/glew.h>
 #endif
-#include <GLFW/glfw3.h>
-#include "morph/HexGrid.h"
+
 #include "morph/VisualModel.h"
+// Include glfw3 AFTER VisualModel
+#include <GLFW/glfw3.h>
+// For GLuint and GLenum (though redundant, as already included in VisualModela
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include "GL3/gl3.h"
+#endif
+
+#include "morph/HexGrid.h"
 #include "morph/HexGridVisual.h"
 #include "morph/QuadsVisual.h"
 #include "morph/PointRowsVisual.h"
@@ -31,13 +40,9 @@
 #include "morph/Quaternion.h"
 #include "morph/TransformMatrix.h"
 #include "morph/Vector.h"
-
 // A base class with static event handling dispatchers
 #include "morph/VisualBase.h"
-
 #include "morph/ColourMap.h"
-
-#include "GL3/gl3.h"
 
 #include <string>
 #include <array>

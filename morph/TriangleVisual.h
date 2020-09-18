@@ -8,7 +8,11 @@
  */
 #pragma once
 
-#include "GL3/gl3.h"
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include "GL3/gl3.h"
+#endif
 
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT

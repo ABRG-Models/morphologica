@@ -31,7 +31,7 @@ set(TARGETTEST1_3 testbezmatrix)
 set(SOURCETEST1_3 testbezmatrix.cpp)
 add_executable(${TARGETTEST1_3} ${SOURCETEST1_3})
 # Disable warning -Wunused-but-set-variable:
-target_compile_options(${TARGETTEST1_3} PRIVATE -Wno-unused-but-set-variable)
+#target_compile_options(${TARGETTEST1_3} PRIVATE -Wno-unused-but-set-variable)
 target_compile_definitions(${TARGETTEST1_3} PUBLIC FLT=float)
 target_link_libraries(${TARGETTEST1_3} morphologica)
 add_test(testbezmatrix ${TARGETTEST1_3})
