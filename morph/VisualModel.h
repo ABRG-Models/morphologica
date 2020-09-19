@@ -28,6 +28,11 @@
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
+// Switches on some changes where I carefully unbind gl buffers after calling
+// glBufferData() and rebind when changing the vertex model. Makes no difference on my
+// Macbook Air, but should be more correct. Dotting my 'i's and 't's
+#define CAREFULLY_UNBIND_AND_REBIND 1
+
 namespace morph {
 
     //! Forward declaration of a Visual class
@@ -96,14 +101,14 @@ namespace morph {
 #endif
             glBindVertexArray (this->vao);
 
-            // Allocate/create the vertex buffer objects
+            // Create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
 #ifdef __MACS_HAD_OPENGL_450__
             glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
 #else
             glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
 #endif
-            // Set up the indices buffer
+            // Set up the indices buffer - bind and buffer the data in this->indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(VBOint);
@@ -111,11 +116,20 @@ namespace morph {
 
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
+            // (bind, buffer and set vertex array object attribute)
             this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
             this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
 
-            // Possibly release (unbind) the vertex buffers (but not index buffer)
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            // Possibly release (unbind) the vertex buffers, but have to unbind vertex
+            // array object first.
+            glBindVertexArray(0);
+            glBindBuffer (0, this->vbos[posnVBO]);
+            glBindBuffer (0, this->vbos[normVBO]);
+            glBindBuffer (0, this->vbos[colVBO]);
+            glBindBuffer (0, this->vbos[idxVBO]);
+#endif
             // Possible glVertexAttribPointer and glEnableVertexAttribArray?
             glUseProgram (this->shaderprog);
         }
@@ -126,6 +140,7 @@ namespace morph {
         //! Render the VisualModel
         void render (void)
         {
+            // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
             glBindVertexArray(0);
@@ -208,7 +223,7 @@ namespace morph {
             std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
 
-        //! Set up a vertex buffer object
+        //! Set up a vertex buffer object - bind, buffer and set vertex array object attribute
         void setupVBO (GLuint& buf, std::vector<float>& dat, unsigned int bufferAttribPosition)
         {
             int sz = dat.size() * sizeof(float);

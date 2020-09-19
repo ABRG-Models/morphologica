@@ -113,11 +113,23 @@ namespace morph {
             this->vertexColors.clear();
             this->initializeVertices();
             // Now re-set up the VBOs
+#ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
+            glBindVertexArray (this->vao);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+#endif
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
             this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            glBindVertexArray(0);
+            glBindBuffer (0, this->vbos[posnVBO]);
+            glBindBuffer (0, this->vbos[normVBO]);
+            glBindBuffer (0, this->vbos[colVBO]);
+            glBindBuffer (0, this->vbos[idxVBO]);
+#endif
         }
 
         //! All data models use a a colour map. Change the type/hue of this colour map
