@@ -1112,7 +1112,7 @@ void
 morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
                                  unsigned int bdryFlag, unsigned int insideFlag)
 {
-    std::cout << "markHexesInside (list<>::iterator, uint, uint)" << std::endl;
+    //std::cout << "markHexesInside (list<>::iterator, uint, uint)" << std::endl;
 
     // Run to boundary, marking as we go
     list<Hex>::iterator bhi(centre_hi);
@@ -1141,7 +1141,7 @@ morph::HexGrid::markHexesInside (list<Hex>::iterator centre_hi,
 void
 morph::HexGrid::markHexesInsideRectangularDomain (const array<int, 6>& extnts)
 {
-    std::cout << "markHexesInsideRectangularDomain (const array<int, 6>&)" << std::endl;
+    //std::cout << "markHexesInsideRectangularDomain (const array<int, 6>&)" << std::endl;
 
     // Check ri,gi,bi and reduce to equivalent ri,gi,bi=0.  Use gi to determine whether outside
     // top/bottom region Add gi contribution to ri to determine whether outside left/right region
