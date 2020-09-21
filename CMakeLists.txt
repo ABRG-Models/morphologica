@@ -29,18 +29,13 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 # required to allow brace initializers for the morph::Vector class
 set (CMAKE_CXX_STANDARD 17)
 
-# An option to allow users without OpenMP (that's some Macs) to compile
-option(COMPILE_WITH_OPENMP "Compile with OpenMP (adds -fopenmp or -qopenmp to compile lines, as appropriate)" OFF)
-
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g")
-    set(OPENMP_SWITCH "-Xpreprocessor -fopenmp")
 else()
   # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
-    set(OPENMP_SWITCH "-qopenmp")
   else () # GCC or Clang
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
       # Add compiler version check, to ensure gcc is version 7 or later.
@@ -51,7 +46,6 @@ else()
       endif()
     endif()
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
-    set(OPENMP_SWITCH "-fopenmp")
   endif()
 endif()
 
@@ -59,15 +53,6 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
-
-if (COMPILE_WITH_OPENMP)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_SWITCH}")
-  if(APPLE)
-    # On Apple, add the links for libomp:
-    include_directories(/opt/local/include/libomp)
-    link_libraries(-L/opt/local/lib/libomp omp)
-  endif(APPLE)
-endif (COMPILE_WITH_OPENMP)
 
 # Following `cmake --help-policy CMP0072`
 set(OpenGL_GL_PREFERENCE "GLVND")
