@@ -36,7 +36,6 @@ add_library(morphologica SHARED ${morphlibsrc})
 # on whether we're building or for a "cmake-using client project"
 target_include_directories(morphologica PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works
-  # need INTERFACE_LINK_DIRECTORIES?
   $<INSTALL_INTERFACE:include>  # <prefix>/include so that include <morph/blah.h> works
 )
 # Should add link_directories stuff here, to make sure all the libs WILL link
