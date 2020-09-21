@@ -31,15 +31,21 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches, depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Xpreprocessor")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3 -fopenmp")
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
 endif()
 
 # Tell clang to be quiet about brace initialisers:
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+endif()
+
+# Add OpenMP flags here, if necessary
+find_package(OpenMP)
+if(OpenMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 # Additional GL compiler flags.
@@ -53,6 +59,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(jsoncpp REQUIRED)
+find_package(HDF5 REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 
 # Oddly, the build succeeds (at least on Mac) without
@@ -62,20 +69,8 @@ find_package(glfw3 3.3 REQUIRED)
 # package-config.cmake files.
 if(0)
   find_package(Armadillo REQUIRED)
-endif(0)
+endif()
 
-# Find HDF5 and jsoncpp by different methods on Apple and Linux:
-if(APPLE)
-  find_package (HDF5 REQUIRED)
-  # On Apple, possibly add the links for libomp if you have it:
-  #include_directories(/opt/local/include/libomp)
-  #link_libraries(-L/opt/local/lib/libomp omp)
-else()
-  # I found this slightly more complex call to find_package to be
-  # necessary/favourable at some point. Must test to see if this is
-  # still the case.
-  find_package (HDF5 NAMES hdf5 COMPONENTS C shared REQUIRED)
-endif(APPLE)
 
 # The config keyword means find the morphologica that was compiled and
 # installed on this computer, i.e. it has configured locations for
@@ -93,6 +88,9 @@ target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
 # Only one link is mentioned - to morphologica. Other links are pulled
 # in from morphologica-config.cmake.
 target_link_libraries(schnakenberg morphologica)
+if(OpenMP_FOUND)
+  target_link_libraries(schnakenberg OpenMP::OpenMP_CXX)
+endif()
 
 # For debugging of variables:
 option(DEBUG_VARIABLES OFF)
