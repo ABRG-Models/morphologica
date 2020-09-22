@@ -31,7 +31,7 @@ set (CMAKE_CXX_STANDARD 17)
 
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g")
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
 else()
   # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
