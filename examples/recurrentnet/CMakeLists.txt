@@ -34,7 +34,7 @@ set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -Wno-sign-com
 
 # OS dependent cflags
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 else()
   # This assumes a gcc compiler (or a gcc mimic like Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
@@ -47,8 +47,8 @@ endif()
 
 # Correct way to determine if OpenMP is available
 find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+if(OpenMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 # Additional GL compiler flags.
@@ -61,6 +61,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 # Find the libraries which will be needed
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(HDF5 REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(morphologica CONFIG REQUIRED)
@@ -68,8 +69,8 @@ find_package(morphologica CONFIG REQUIRED)
 add_executable(recurrentnet recurrentnet.cpp)
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
 target_link_libraries(recurrentnet morphologica)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(recurrentnet PUBLIC OpenMP::OpenMP_CXX)
+if(OpenMP_FOUND)
+  target_link_libraries(recurrentnet OpenMP::OpenMP_CXX)
 endif()
 
 # For debugging of variables:

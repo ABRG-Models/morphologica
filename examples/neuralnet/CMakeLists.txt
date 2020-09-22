@@ -34,13 +34,13 @@ set(FLAGS_COMMON "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g")
 
 # Add different optimizing flags depending on OS/Compiler
 if (APPLE)
-  set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -Xpreprocessor")
+  set(CMAKE_CXX_FLAGS "${FLAGS_COMMON}")
 else()
   if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__ -qopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -D__ICC__")
   else () # GCC or Clang
     # This assumes a gcc compiler (or a gcc mimic like Clang)
-    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3 -fopenmp")
+    set(CMAKE_CXX_FLAGS "${FLAGS_COMMON} -march=native -O3")
   endif()
 endif()
 

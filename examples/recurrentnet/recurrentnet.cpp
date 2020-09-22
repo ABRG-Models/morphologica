@@ -37,7 +37,8 @@ int main (int argc, char **argv){
                 if(argc<7){ std::cout<<"Supply nodeIndex, contextA, contextB as additional arguments"<<std::endl; return 0; }
                 N.setColourMap(morph::ColourMapType::Jet);
                 // params: nodeIndex, contextA, contextB
-                N.plotDomainContextDiff(std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[6]));
+                int dummy = 0; // NB: Seb hack as this function call does not match fn declaration in library. Sturat to fix.
+                N.plotDomainContextDiff(std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[6]), dummy, dummy);
             } break;
             case(-5):{
                 if(argc<6){ std::cout<<"Supply contextA, contextB as additional arguments"<<std::endl; return 0; }
