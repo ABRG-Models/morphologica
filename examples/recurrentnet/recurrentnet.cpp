@@ -2,7 +2,7 @@
 
 int main (int argc, char **argv){
     if(argc<4){ std::cout<<"Run using e.g., './recurrentnet data/test 0 10000'.\n Supply path to folder containing the config.json file and any .h5 map files, seed, and training value T. Check when using T<1 values for plotting commands (some require additional command line params)."<<std::endl<<std::flush; return 0; }
-    RecurrentNetworkModel N(argv[1]);
+    morph::recurrentnet::RecurrentNetworkModel N(argv[1]);
     srand(std::stoi(argv[2]));
     int T = std::stoi(argv[3]);
 
