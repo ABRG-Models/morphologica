@@ -1,8 +1,11 @@
 # Morphologica examples
 
 This directory provides some example models demonstrating the use of
-Morphologica. They build alongside the rest of the library, though
-they are not installed with a 'make install'.
+Morphologica. They build as if they were external code - so they don't
+build as part of the morphologica build process; instead you build and
+install the morphologica library, then cd into one of the examples and
+start a fresh cmake build process there. These provide templates for
+developing your own programs using morphologica.
 
 Morphologica intends to provide you with the scaffolding you need to
 write a C++ simulation. It gives you a way to write and load
@@ -57,3 +60,48 @@ ran through the build instructions above):
 You can interact with the window using your mouse. For some help
 (which will appear on stdout) press 'h' (with the graphical window
 focussed).
+
+## neuralnet
+
+This implements a feedforward neural network which can be trained to
+classify the MNIST database of handwritten numerals. It demonstrates
+the use of morph::RandUniform<> and morph::vVector<>. It shows how to
+set up a CMakeLists.txt file to use morphologica. Because it doesn't
+use any OpenMP pragmas for parallel execution, it shows how to write
+the CMakeLists.txt *without* OpenMP.
+
+```bash
+cd morphologica/examples/neuralnet
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+```
+
+Then to run the example:
+
+```bash
+./build/ff_mnist # see also ff_small and ff_debug for debugging
+```
+
+## recurrentnet
+
+A recurrent neural network example. Demonstrates the use of code in
+the morph::recurrentnet namespace in RecurrentNetwork.h and
+RecurrentNetworkModel.h.
+
+```bash
+cd morphologica/examples/recurrentnet
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+```
+
+Then to run the example:
+
+```bash
+# Fixme - the dummy variable on line 40 of recurrentnet.cpp needs to be sorted out
+```
