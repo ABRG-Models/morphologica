@@ -127,11 +127,11 @@ libmorphologica by means of the src/CMakeLists.txt file. I'm using the
 HEAD of the master branch of the jsoncpp repository, which installs a
 library with version about 1.8.4.
 
-### glfw3 library (Optional)
+### glfw3 library
 
 There is some OpenGL 2 style OpenGL code in display.h/cpp and also
 some more modern OpenGL code in Visual/HexGridVisual. This modern code
-requires the library GLFW3 and only compiles if GLFW3 is present.
+requires the library GLFW3 and only compiles if GLFW3 is present. No longer optional!
 
 It's possible to apt install glfw on recent versions of Ubuntu. Doing so
 will install libglfw.a. These build instructions install libglfw3.a (into
@@ -176,8 +176,7 @@ cd morphologica
 mkdir build
 cd build
 # If you have doxygen, you can build the docs with -DBUILD_DOC=1.
-# If you have OpenMP, you can remove the COMPILE_WITH_OPENMP option or set it to 1
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_DOC=0 -DCOMPILE_WITH_OPENMP=0
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_DOC=0
 make -j$(nproc)
 sudo make install
 sudo ldconfig # Probably Linux specific! Mac alternative?
