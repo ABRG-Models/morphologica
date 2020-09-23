@@ -1,18 +1,22 @@
 {
-    // Global simulation parameters
-    "steps" : 125000,                // Number of steps to simulate for
+    "sect_global" : "Global simulation parameters",
+    "desc_steps" : "The number of steps to simulate for",
+    "steps" : 125000,
     "logevery": 5000,
     "plotevery": 500,
     "saveplots": false,
     "overwrite_logs": true,
-    "hextohex_d" : 0.02,           // Hex to hex distance, determines num hexes
+    "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
+    "hextohex_d" : 0.02,
     "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
     "dt" : 0.000005,
-    // Ellipse parameters
+
+    "sect_ellipse" : "Ellipse parameters",
     "ellipse_a" : 0.8,
     "ellipse_b" : 0.6,
-    // Schnakenberg model parameters
+
+    "sect_model_params" : "Schnakenberg model parameters",
     "D_A" : 0.5,
     "D_B" : 0.6,
     "k1"  : 3,
