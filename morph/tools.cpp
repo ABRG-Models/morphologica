@@ -2131,6 +2131,37 @@ morph::Tools::filesDiffer (const string& first, const string& second)
     // differ.
     return (system (diffcmd.c_str()) != 0);
 }
+
+void
+morph::Tools::stripUnixPath (std::string& unixPath)
+{
+    std::string::size_type pos (unixPath.find_last_of ('/'));
+    if (pos != std::string::npos) {
+        unixPath = unixPath.substr (++pos);
+    }
+}
+
+void
+morph::Tools::stripUnixFile (std::string& unixPath)
+{
+    std::string::size_type pos (unixPath.find_last_of ('/'));
+    if (pos != std::string::npos) {
+        unixPath = unixPath.substr (0, pos);
+    }
+}
+
+void
+morph::Tools::stripFileSuffix (std::string& unixPath)
+{
+    std::string::size_type pos (unixPath.rfind('.'));
+    if (pos != std::string::npos) {
+        // We have a '.' character
+        std::string tmp (unixPath.substr (0, pos));
+        if (!tmp.empty()) {
+            unixPath = tmp;
+        }
+    }
+}
 //@}
 
 /*!

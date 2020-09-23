@@ -682,6 +682,24 @@ namespace morph
          * Check whether the specified files differ.
          */
         static bool filesDiffer (const std::string& first, const std::string& second);
+
+        /*!
+         * Given a path like /path/to/file in str, remove all the preceding /path/to/
+         * stuff to leave just the filename.
+         */
+        static void stripUnixPath (std::string& unixPath);
+
+        /*!
+         * Given a path like /path/to/file in str, remove the final filename, leaving
+         * just the path, "/path/to".
+         */
+        static void stripUnixFile (std::string& unixPath);
+
+        /*!
+         * Given a path like /path/to/file.ext or just file.ext in str, remove the file
+         * suffix.
+         */
+        static void stripFileSuffix (std::string& unixPath);
         //@}
 
         /*!
