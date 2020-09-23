@@ -320,3 +320,8 @@ add_test(testRandom testRandom)
 add_executable(testWinder testWinder.cpp)
 target_link_libraries(testWinder morphologica)
 add_test(testWinder testWinder)
+
+# Test RandString generation
+add_executable(testRandString testRandString.cpp)
+#target_link_libraries(testRandString morphologica) // Header only
+add_test(testRandString testRandString)

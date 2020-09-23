@@ -4,6 +4,8 @@
 #include <vector>
 #include <limits>
 #include <type_traits>
+#include <string>
+#include <ostream>
 
 /*!
  * \file Random.h
@@ -106,26 +108,26 @@ namespace morph {
         std::uniform_int_distribution<T> dist;
     public:
         //! Default constructor gives an integer random number generator which works
-        //! in range [0,(type max))
+        //! in range [0,(type max)]
         RandUniform () {
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
                                                                         std::numeric_limits<T>::max());
             this->dist.param (prms);
         }
         //! This constructor gives an integer random number generator which works
-        //! in range [0,(type max)) with fixed seed \a _seed.
+        //! in range [0,(type max)] with fixed seed \a _seed.
         RandUniform (unsigned int _seed) {
             this->generator.seed (_seed);
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
                                                                         std::numeric_limits<T>::max());
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator which works in range [a,b)
+        //! This constructor gives RN generator which works in range [a,b]
         RandUniform (T a, T b) {
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
-        //! This constructor gives RN generator which works in range [a,b) and sets a
+        //! This constructor gives RN generator which works in range [a,b] and sets a
         //! fixed seed.
         RandUniform (T a, T b, unsigned int _seed) {
             this->generator.seed (_seed);
@@ -307,4 +309,189 @@ namespace morph {
         //! max wrapper
         T max (void) { return this->dist.max(); }
     };
+
+    //! Enumerated class defining groups of characters, such as AlphaNumericUpperCase,
+    //! AlphaNumericLowerCase etc.
+    enum class CharGroup
+    {
+        AlphaNumeric,          // 0-9A-Za-z                   62 chars
+        Alpha,                 // A-Za-z                      52 chars
+        AlphaNumericUpperCase, // 0123456789ABCDEF... ...XYZ  36 chars
+        AlphaNumericLowerCase, // 0123456789abcdef... ...xyz  36 chars
+        AlphaUpperCase,        // A-Z                         26 chars
+        AlphaLowerCase,        // a-z                         26 chars
+        HexUpperCase,          // 0123456789ABCDEF            16 chars
+        HexLowerCase,          // 0123456789abcdef            16 chars
+        Decimal,               // 0123456789                  10 chars
+        BinaryTF,              // TF                           2 chars
+        Binary                 // 01                           2 chars
+    };
+
+    //! Generate strings of random characters
+    class RandString
+    {
+    public:
+        //! Default constructor gives a string generator that generates 8 HexLowerCase characters
+        RandString() : length(8) { this->setupRNG(); }
+        //! Construct to generate a string of a particular length \a l, in default HexLowerCase format
+        RandString(const size_t l) : length(l) { this->setupRNG(); }
+        //! Construct with given length \a l and character group \a _cg.
+        RandString(const size_t l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
+        //! Deconstructor cleans up memory
+        ~RandString()
+        {
+            if (this->rng != (RandUniform<unsigned char>*)0) {
+                delete this->rng;
+            }
+        }
+
+        //! Get a random string of RandString::length characters chosen from the given
+        //! CharGroup RandString::cg
+        std::string get() const
+        {
+            // Initialise a string of the correct length
+            std::string s(this->length, ' ');
+
+            for (size_t i = 0; i < this->length; ++i) {
+
+                // Get a random number
+                unsigned char rn = this->rng->get();
+
+                // Turn the random number into a character, depending on the CharGroup
+                switch (this->cg) {
+                case CharGroup::AlphaNumeric:
+                {
+                    if (rn < 26) {
+                        // lower case
+                        s[i] = (char)0x61 + (char)rn;
+                    } else if (rn > 51) {
+                        // numerals
+                        s[i] = (char)0x30 + (char)rn - 52;
+                    } else {
+                        // upper case
+                        s[i] = (char)0x41 + (char)rn - 26;
+                    }
+                    break;
+                }
+                case CharGroup::Alpha:
+                {
+                    s[i] = (rn < 26 ? (char)0x61 + (char)rn : (char)0x41 + (char)rn - 26);
+                    break;
+                }
+                case CharGroup::AlphaNumericUpperCase:
+                {
+                    s[i] = (rn < 26 ? (char)0x41 + (char)rn : (char)0x30 + (char)rn - 26);
+                    break;
+                }
+                case CharGroup::AlphaNumericLowerCase:
+                {
+                    s[i] = (rn < 26 ? (char)0x61 + (char)rn : (char)0x30 + (char)rn - 26);
+                    break;
+                }
+                case CharGroup::AlphaUpperCase:
+                {
+                    s[i] = (char)0x41 + (char)rn;
+                    break;
+                }
+                case CharGroup::AlphaLowerCase:
+                {
+                    s[i] = (char)0x61 + (char)rn;
+                    break;
+                }
+                case CharGroup::HexUpperCase:
+                {
+                    s[i] = (rn < 10 ? (char)rn + 0x30 : (char)rn + 0x41 - 10);
+                    break;
+                }
+                case CharGroup::HexLowerCase:
+                {
+                    s[i] = (rn < 10 ? (char)rn + 0x30 : (char)rn + 0x61 - 10);
+                    break;
+                }
+                case CharGroup::Decimal:
+                {
+                    s[i] = (char)rn + 0x30;
+                    break;
+                }
+                case CharGroup::BinaryTF:
+                {
+                    s[i] = rn ? 'T' : 'F';
+                    break;
+                }
+                case CharGroup::Binary:
+                {
+                    s[i] = rn ? '1' : '0';
+                    break;
+                }
+                default: { break; }
+                }
+            }
+            return s;
+        }
+
+        //! Get a particular length of string - updates RandString::length first
+        std::string get (const size_t l)
+        {
+            this->length = l;
+            return this->get();
+        }
+
+        //! Set a new CharGroup
+        void setCharGroup (const CharGroup& _cg)
+        {
+            this->cg = _cg;
+            this->setupRNG();
+        }
+
+        friend std::ostream& operator<< (std::ostream& os, const RandString& rs);
+
+    private:
+
+        //! When CharGroup changes, the rng has to be re-set up.
+        void setupRNG()
+        {
+            // Set rng to generate random numbers in correct range
+            if (this->rng != (RandUniform<unsigned char>*)0) {
+                delete this->rng;
+                this->rng = (RandUniform<unsigned char>*)0;
+            }
+            this->rng = new RandUniform<unsigned char>(0, this->numChars()-1);
+        }
+
+        //! Return the number of characters total in each CharGroup
+        unsigned char numChars() const
+        {
+            unsigned char n = 0;
+            switch (this->cg) {
+            case CharGroup::AlphaNumeric: { n = 62; break; }
+            case CharGroup::Alpha: { n = 52; break; }
+            case CharGroup::AlphaNumericUpperCase:
+            case CharGroup::AlphaNumericLowerCase: { n = 36; break; }
+            case CharGroup::AlphaUpperCase:
+            case CharGroup::AlphaLowerCase: { n = 26; break; }
+            case CharGroup::HexUpperCase:
+            case CharGroup::HexLowerCase: { n = 16; break; }
+            case CharGroup::Decimal: { n = 10; break; }
+            case CharGroup::BinaryTF:
+            case CharGroup::Binary: { n = 2; break; }
+            default: { n = 0; break; }
+            }
+            return n;
+        }
+
+        //! The number generator
+        RandUniform<unsigned char>* rng = (RandUniform<unsigned char>*)0;
+
+        //! The number of characters to generate
+        size_t length;
+
+        //! The group of characters from which to generate a string
+        CharGroup cg = CharGroup::HexLowerCase;
+    };
+
+    std::ostream& operator<< (std::ostream& os, const RandString& rs)
+    {
+        os << rs.get();
+        return os;
+    }
 }
