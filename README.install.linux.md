@@ -62,12 +62,14 @@ sudo apt install gcc-7 g++-7
 
 ### HDF5 library
 
-You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install like this:
+You will also need HDF5 installed on your system. There _is_ an HDF5 package for Ubuntu, but I couldn't get the morphologica cmake build process to find it nicely, so I compiled my own version of HDF5 and installed in /usr/local. To do what I did, download HDF5 (https://portal.hdfgroup.org/display/support/Downloads), and do a compile and install as follows.
+
+**Notes:** Use the "Latest 1.10 Software", rather than the 1.12 version. Download, the hdf5-1.10.x.tar.gz "Source release"
 
 ```sh
 mkdir -p ~/src
 cd ~/src
-cp path/to/hdf5-1.10.x.tar.gz ./
+cp path/to/hdf5-1.10.x.tar.gz ./ # Where "path/to" is wherever you downloaded the file to
 gunzip hdf5-1.10.x.tar.gz
 tar xvf hdf5-1.10.x.tar
 cd hdf5-1.10.x
@@ -80,7 +82,7 @@ sudo make install
 
 ### armadillo for older systems (if required)
 
-On Ubuntu 16.04, the packaged armadillo is too old, so first remove that:
+On Ubuntu 16.04, the packaged armadillo is too old, so first remove that (while ensuring that openblas is present)
 
 ```sh
 sudo apt remove libarmadillo-dev
