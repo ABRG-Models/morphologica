@@ -443,8 +443,6 @@ namespace morph {
             this->setupRNG();
         }
 
-        friend std::ostream& operator<< (std::ostream& os, const RandString& rs);
-
     private:
 
         //! When CharGroup changes, the rng has to be re-set up.
@@ -488,10 +486,4 @@ namespace morph {
         //! The group of characters from which to generate a string
         CharGroup cg = CharGroup::HexLowerCase;
     };
-
-    std::ostream& operator<< (std::ostream& os, const RandString& rs)
-    {
-        os << rs.get();
-        return os;
-    }
 }
