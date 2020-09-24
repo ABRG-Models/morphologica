@@ -347,6 +347,7 @@ namespace morph {
                    typename Allocator=std::allocator<T> >
         void add_contained_vals (const char* path, const Container<T, Allocator>& vals)
         {
+            if (vals.empty()) { return; }
             this->process_groups (path);
 
             hid_t dataspace_id = 0;
@@ -431,6 +432,7 @@ namespace morph {
         template<typename T, size_t N>
         void add_contained_vals (const char* path, const std::vector<morph::Vector<T, N>>& vals)
         {
+            if (vals.empty()) { return; }
             this->process_groups (path);
             hsize_t dim_vecNdcoords[N]; // N Dims
             dim_vecNdcoords[0] = vals.size();
