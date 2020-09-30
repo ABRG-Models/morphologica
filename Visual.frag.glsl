@@ -3,10 +3,11 @@
 in VERTEX
 {
     vec4 normal;
-    vec4 color;
+    vec3 color;
+    float alpha;
 } vertex;
 
 out vec4 finalcolor;
 void main() {
-    finalcolor = vertex.color;
+    finalcolor = vec4(vertex.color, vertex.alpha);
 }

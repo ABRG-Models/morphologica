@@ -142,6 +142,9 @@ namespace morph {
         {
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
+            // Pass this->float to GLSL so the model can have an alpha value.
+            GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
+            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
             glBindVertexArray(0);
         }
@@ -162,6 +165,18 @@ namespace morph {
         {
             this->offset += _offset;
             this->viewmatrix.translate (this->offset);
+        }
+
+        void incAlpha()
+        {
+            this->alpha += 0.1f;
+            this->alpha = this->alpha > 1.0f ? 1.0f : this->alpha;
+        }
+
+        void decAlpha()
+        {
+            this->alpha -= 0.1f;
+            this->alpha = this->alpha < 0.0f ? 0.0f : this->alpha;
         }
 
     protected:
@@ -202,6 +217,8 @@ namespace morph {
         std::vector<float> vertexNormals;
         //! CPU-side data for vertex colours
         std::vector<float> vertexColors;
+        //! A model-wide alpha value for the shader
+        float alpha = 1.0f;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)

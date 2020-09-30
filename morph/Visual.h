@@ -248,6 +248,9 @@ namespace morph {
         //! ScatterVisual, etc) which are going to be rendered in the scene.
         std::vector<VisualModel*> vm;
 
+        //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
+        unsigned int selectedVisualModel = 0;
+
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 

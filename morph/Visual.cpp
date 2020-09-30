@@ -98,9 +98,13 @@ morph::Visual::Visual(int width, int height, const string& title)
 
     // Now client code can set up HexGridVisuals.
     glEnable (GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+
+    // Make it possible to specify alpha
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable (GL_CULL_FACE);
+
     //glDisable(GL_DEPTH_TEST);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     this->coordArrows = new CoordArrows(this->shaderprog, coordArrowsOffset, coordArrowsLength);
 }
@@ -524,6 +528,9 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         cout << "z: Show the current scenetrans (x,y,z)" << endl;
         cout << "u: Reduce zNear cutoff plane" << endl;
         cout << "i: Increase zNear cutoff plane" << endl;
+        cout << "0-9: Select model index" << endl;
+        cout << "Left: Decrease opacity of selected model" << endl;
+        cout << "Right: Increase opacity of selected model" << endl;
     }
 
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
@@ -538,6 +545,47 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
 
     if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
         cout << "Scenetrans is: " << this->scenetrans << endl;
+    }
+
+    // Set selected model
+    if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+        this->selectedVisualModel = 0;
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+        if (this->vm.size() > 1) { this->selectedVisualModel = 1; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        if (this->vm.size() > 2) { this->selectedVisualModel = 2; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+        if (this->vm.size() > 3) { this->selectedVisualModel = 3; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+        if (this->vm.size() > 4) { this->selectedVisualModel = 4; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+        if (this->vm.size() > 5) { this->selectedVisualModel = 5; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
+        if (this->vm.size() > 6) { this->selectedVisualModel = 6; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+        if (this->vm.size() > 7) { this->selectedVisualModel = 7; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+        if (this->vm.size() > 8) { this->selectedVisualModel = 8; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    } else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+        if (this->vm.size() > 9) { this->selectedVisualModel = 9; }
+        cout << "Selected visual model index " << this->selectedVisualModel << endl;
+    }
+
+    // Increment/decrement alpha for selected model
+    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
+    }
+    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
     }
 
     // Reset view to default
