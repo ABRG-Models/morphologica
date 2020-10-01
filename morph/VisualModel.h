@@ -167,6 +167,9 @@ namespace morph {
             this->viewmatrix.translate (this->offset);
         }
 
+        void setAlpha (const float _a) { this->alpha = _a; }
+        float getAlpha() const { return this->alpha; }
+
         void incAlpha()
         {
             this->alpha += 0.1f;
