@@ -95,18 +95,21 @@ OpenGL 4.5
 // code comments.
 const char* defaultVtxShader = OpenGL_VersionString
     "uniform mat4 mvp_matrix;\n"
+    "uniform float alpha;\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec4 normalin;\n"
-    "layout(location = 2) in vec4 color;\n"
+    "layout(location = 2) in vec3 color;\n"
     "out VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
-    "    vec4 color;\n"
+    "    vec3 color;\n"
+    "    float alpha;\n"
     "} vertex;\n"
     "void main (void)\n"
     "{\n"
     "    gl_Position = (mvp_matrix * position);\n"
     "    vertex.color = color;\n"
+    "    vertex.alpha = alpha;\n"
     "    vertex.normal = mvp_matrix * normalin;\n"
     "}";
 
@@ -115,9 +118,10 @@ const char* defaultFragShader = OpenGL_VersionString
     "in VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
-    "    vec4 color;\n"
+    "    vec3 color;\n"
+    "    float alpha;\n"
     "} vertex;\n"
     "out vec4 finalcolor;\n"
     "void main() {\n"
-    "    finalcolor = vertex.color;\n"
+    "    finalcolor = vec4(vertex.color, vertex.alpha);\n"
     "}";
