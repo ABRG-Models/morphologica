@@ -19,6 +19,9 @@ set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp Hdf
 if (${glfw3_FOUND})
   message ("-- libglfw3 was found, compiling in Visual.cpp, etc")
   set(morphlibsrc ${morphlibsrc} Visual.cpp)
+  # Add headers which contain functional code, so that changes in those files trigger rebuilds in relevant programs
+  set(morphlibsrc ${morphlibsrc} Visual.h VisualBase.h VisualModel.h VisualDataModel.h VisualDefaultShaders.h)
+  set(morphlibsrc ${morphlibsrc} QuiverVisual.h ScatterVisual.h TriangleVisual.h QuadsVisual.h PointRowsVisual.h HexGridVisual.h)
 endif()
 
 # Link to the special armadillo libpath, if requested
