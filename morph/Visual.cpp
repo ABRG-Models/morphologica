@@ -31,10 +31,24 @@ morph::Visual::Visual(int width, int height, const string& title)
     : window_w(width)
     , window_h(height)
 {
-    if (!glfwInit()) {
-        // Initialization failed
-        cerr << "GLFW initialization failed!" << endl;
-    }
+    this->init (title);
+}
+
+morph::Visual::Visual(int width, int height, const string& title,
+                      const Vector<float> caOffset, const Vector<float> caLength, const float caThickness)
+    : window_w(width)
+    , window_h(height)
+    , coordArrowsOffset(caOffset)
+    , coordArrowsLength(caLength)
+    , coordArrowsThickness(caThickness)
+{
+    this->init (title);
+}
+
+void
+morph::Visual::init (const string& title)
+{
+    if (!glfwInit()) { cerr << "GLFW initialization failed!" << endl; }
 
     // Set up error callback
     glfwSetErrorCallback (morph::Visual::errorCallback);
@@ -51,7 +65,7 @@ morph::Visual::Visual(int width, int height, const string& title)
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-    this->window = glfwCreateWindow (width, height, title.c_str(), NULL, NULL);
+    this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
     if (!this->window) {
         // Window or OpenGL context creation failed
         cerr << "GLFW window creation failed!" << endl;
@@ -61,11 +75,11 @@ morph::Visual::Visual(int width, int height, const string& title)
     this->setEventHandling();
 
     // Set up callbacks
-    glfwSetKeyCallback (this->window,         VisualBase::key_callback_dispatch);
+    glfwSetKeyCallback (this->window, VisualBase::key_callback_dispatch);
     glfwSetMouseButtonCallback (this->window, VisualBase::mouse_button_callback_dispatch);
-    glfwSetCursorPosCallback (this->window,   VisualBase::cursor_position_callback_dispatch);
-    glfwSetWindowSizeCallback (this->window,  VisualBase::window_size_callback_dispatch);
-    glfwSetScrollCallback (this->window,  VisualBase::scroll_callback_dispatch);
+    glfwSetCursorPosCallback (this->window, VisualBase::cursor_position_callback_dispatch);
+    glfwSetWindowSizeCallback (this->window, VisualBase::window_size_callback_dispatch);
+    glfwSetScrollCallback (this->window, VisualBase::scroll_callback_dispatch);
 
     glfwMakeContextCurrent (this->window);
 
@@ -104,9 +118,10 @@ morph::Visual::Visual(int width, int height, const string& title)
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable (GL_CULL_FACE);
 
-    //glDisable(GL_DEPTH_TEST);
-
-    this->coordArrows = new CoordArrows(this->shaderprog, coordArrowsOffset, coordArrowsLength);
+    this->coordArrows = new CoordArrows(this->shaderprog,
+                                        this->coordArrowsOffset,
+                                        this->coordArrowsLength,
+                                        this->coordArrowsThickness);
 }
 
 morph::Visual::~Visual()

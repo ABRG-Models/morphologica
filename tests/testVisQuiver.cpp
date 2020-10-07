@@ -20,7 +20,9 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization");
+    // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
+    // scaling factor (0.5) for the coordinate arrows
+    Visual v(1024, 768, "Visualization", {0,0,0}, {3,2,1}, 0.5f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     // For a white background:

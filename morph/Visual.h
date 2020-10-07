@@ -98,18 +98,25 @@ namespace morph {
     {
     public:
         /*!
-         * Construct a new visualiser. The rule is 1 window to one
-         * Visual object. So, this creates a new window and a new
-         * OpenGL context.
+         * Construct a new visualiser. The rule is 1 window to one Visual object. So,
+         * this creates a new window and a new OpenGL context.
          */
         Visual (int width, int height, const std::string& title);
-        ~Visual();
-
-        static void errorCallback (int error, const char* description);
 
         /*!
-         * Take a screenshot of the window
+         * Construct with specified coordinate arrows offset (caOffset) lengths
+         * (caLength) and thickness scaling factor (caThickness)
          */
+        Visual (int width, int height, const std::string& title,
+                const Vector<float> caOffset, const Vector<float> caLength, const float caThickness);
+
+        //! Deconstructor deallocates CoordArrows and destroys GLFW windows
+        ~Visual();
+
+        //! An error callback function for the GLFW windowing library
+        static void errorCallback (int error, const char* description);
+
+        //! Take a screenshot of the window
         void saveImage (const std::string& s);
 
         /*!
@@ -166,8 +173,7 @@ namespace morph {
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
 
-        //! If you set this to true, then the mouse movements won't change scenetrans
-        //! or rotation.
+        //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
         bool sceneLocked = false;
 
         //! The background colour; black by default.
@@ -219,6 +225,8 @@ namespace morph {
         }
 
     private:
+        //! Private initialization, used by constructors. \a title sets the window title.
+        void init (const std::string& title);
 
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
@@ -227,9 +235,9 @@ namespace morph {
         const GLchar* ReadShader (const char* filename);
 
         /*!
-         * Read a default shader, stored as a const char* like ReadShader reads a
-         * file: allocate some memory, copy the text into the new memory and then
-         * return a (GLchar*) pointer to the memory.
+         * Read a default shader, stored as a const char* like ReadShader reads a file:
+         * allocate some memory, copy the text into the new memory and then return a
+         * (GLchar*) pointer to the memory.
          */
         const GLchar* ReadDefaultShader (const char* shadercontent);
 
@@ -254,10 +262,10 @@ namespace morph {
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
-        //! Position and length of coordinate arrows. Need to be configurable at Visual
-        //! construction.
-        Vector<float> coordArrowsOffset = {0.0/* -1.5 */, 0.0, 0.0};
-        Vector<float> coordArrowsLength = {1., 1., 1.};
+        //! Position and length of coordinate arrows. Configurable at morph::Visual construction.
+        Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
+        Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
+        float coordArrowsThickness = 1.0f;
 
         /*
          * Variables to manage projection and rotation of the object
@@ -269,8 +277,7 @@ namespace morph {
         //! Holds the translation coordinates for the current location of the entire scene
         Vector<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
-        //! Default for scenetrans. This is a scene position that can be reverted to, to
-        //! 'reset the view'.
+        //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
         const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! When true, cursor movements induce rotation of scene
