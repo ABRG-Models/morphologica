@@ -9,7 +9,7 @@ dir = 'test' # This folder should exist. It should contain a config.json file
 N = 5
 outputID = 2
 
-h5f = h5py.File(dir+'/outputs.h5','r')
+h5f = h5py.File(dir+'/error.h5','r')
 e = h5f['error'][:]
 h5f.close()
 
