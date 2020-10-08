@@ -501,10 +501,9 @@ morph::Visual::LoadShaders (ShaderInfo* shaders)
     return program;
 }
 
-/*!
+/*
  * GLFW callback functions
  */
-//@{
 
 void
 morph::Visual::errorCallback (int error, const char* description)
@@ -543,7 +542,7 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         cout << "z: Show the current scenetrans (x,y,z)" << endl;
         cout << "u: Reduce zNear cutoff plane" << endl;
         cout << "i: Increase zNear cutoff plane" << endl;
-        cout << "0-9: Select model index (with shift: toggle opacity max/min)" << endl;
+        cout << "0-9: Select model index (with shift: toggle hide)" << endl;
         cout << "Left: Decrease opacity of selected model" << endl;
         cout << "Right: Increase opacity of selected model" << endl;
     }
@@ -595,12 +594,12 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         cout << "Selected visual model index " << this->selectedVisualModel << endl;
     }
 
-    // Toggle alpha on/off if the shift key is down
+    // Toggle hide model if the shift key is down
     if ((key == GLFW_KEY_0 || key == GLFW_KEY_1 || key == GLFW_KEY_2 || key == GLFW_KEY_3
          || key == GLFW_KEY_4 || key == GLFW_KEY_5 || key == GLFW_KEY_6
          || key == GLFW_KEY_7 || key == GLFW_KEY_8 || key == GLFW_KEY_9)
         && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
-        this->vm[this->selectedVisualModel]->setAlpha (this->vm[this->selectedVisualModel]->getAlpha() < 0.5f ? 1.0f : 0.0f);
+        this->vm[this->selectedVisualModel]->toggleHide();
     }
 
     // Increment/decrement alpha for selected model
@@ -645,6 +644,8 @@ morph::Visual::key_callback (GLFWwindow* window, int key, int scancode, int acti
         this->zNear *= 2;
         cout << "zNear increased to " << this->zNear << endl;
     }
+
+    this->key_callback_extra (window, key, scancode, action, mods);
 }
 
 void
@@ -679,6 +680,8 @@ morph::Visual::mouse_button_callback (GLFWwindow* window, int button, int action
     } else if (button == 1) { // Secondary button means translate
         this->translateMode = (action == 1);
     }
+
+    this->mouse_button_callback_extra (window, button, action, mods);
 }
 
 void
@@ -815,4 +818,3 @@ morph::Visual::scroll_callback (GLFWwindow* window, double xoffset, double yoffs
     }
     this->render();
 }
-//@}
