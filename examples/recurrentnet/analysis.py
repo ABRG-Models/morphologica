@@ -10,9 +10,13 @@ N = 5
 outputID = 2
 
 h5f = h5py.File(dir+'/outputs.h5','r')
-r = h5f['responses'][:]
 e = h5f['error'][:]
 h5f.close()
+
+h5f = h5py.File(dir+'/responseForMap_0.h5','r')
+r = h5f['response'][:]
+h5f.close()
+
 
 # 'response' r is (num. units) x (num. map points)
 M = int(len(r)/N)

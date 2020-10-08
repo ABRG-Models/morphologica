@@ -11,6 +11,7 @@ int main (int argc, char **argv){
         N.run(T,1000);
         N.saveError();
         N.saveWeights();
+        N.saveMapResponse(0);
 
     } else {
         // TESTING

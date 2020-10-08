@@ -294,6 +294,9 @@ namespace morph {
                     }
                     C.push_back(Context(name, cID, cVal));
                 }
+                if(nContext==0){
+                    C.push_back(Context("null",std::vector<int>(1,0), std::vector<double>(1,0.0))); ////////CHECK THIS *******!!!!!
+                }
 
                 // Read in maps info
                 const Json::Value maps = conf.getArray("maps");
@@ -302,7 +305,7 @@ namespace morph {
                     std::stringstream ss; ss << logpath <<"/"<<fn;
                     logfile<<"Map["<<i<<"]:"<<ss.str()<<std::endl;
                     int oID = maps[i].get("outputID",-1).asInt();
-                    int cID = maps[i].get("contextID",-1).asInt();
+                    int cID = maps[i].get("contextID",0).asInt();
                     M.push_back(Map(ss.str(),oID,cID));
                 }
 
@@ -428,7 +431,7 @@ namespace morph {
                     P.Input[inputID[i]] = M[mapID].X[i][locID];
                 }
                 for(int i=0;i<C[M[mapID].contextID].nodeIDs.size();i++){
-                    P.Input[C[M[mapID].contextID].nodeIDs[i]] = C[M[mapID].contextID].Vals[i];
+                    P.Input[C[M[mapID].contextID].nodeIDs[i]] += C[M[mapID].contextID].Vals[i];
                 }
             }
 
