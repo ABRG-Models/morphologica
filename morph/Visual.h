@@ -185,16 +185,13 @@ namespace morph {
          */
 
         //! Set a white background colour for the Visual scene
-        void backgroundWhite (void) {
-            this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
-        }
+        void backgroundWhite (void) { this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f }; }
         //! Set a black background colour for the Visual scene
-        void backgroundBlack (void) {
-            this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
-        }
+        void backgroundBlack (void) { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
 
         //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
-        void setZDefault (float f) {
+        void setZDefault (float f)
+        {
             if (f>0.0f) {
                 std::cout << "WARNING setZDefault(): Normally, the default z value is negative." << std::endl;
             }
@@ -203,26 +200,29 @@ namespace morph {
         }
 
         //! Set the scene's x and y values at the same time.
-        void setSceneTransXY (float _x, float _y) {
+        void setSceneTransXY (float _x, float _y)
+        {
             this->scenetrans[0] = _x;
             this->scenetrans[1] = _y;
         }
         //! Set the scene's y value. Use this to shift your scene objects left or right
-        void setSceneTransX (float _x) {
-            this->scenetrans[0] = _x;
-        }
+        void setSceneTransX (float _x) { this->scenetrans[0] = _x; }
         //! Set the scene's y value. Use this to shift your scene objects up and down
-        void setSceneTransY (float _y) {
-            this->scenetrans[1] = _y;
-        }
+        void setSceneTransY (float _y) { this->scenetrans[1] = _y; }
         //! Set the scene's z value. Use this to bring the 'camera' closer to your scene
         //! objects (that is, your morph::VisualModel objects).
-        void setSceneTransZ (float _z) {
+        void setSceneTransZ (float _z)
+        {
             if (_z>0.0f) {
                 std::cout << "WARNING setSceneTransZ(): Normally, the default z value is negative." << std::endl;
             }
             this->setZDefault (_z);
         }
+
+    protected:
+        //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
+        //! ScatterVisual, etc) which are going to be rendered in the scene.
+        std::vector<VisualModel*> vm;
 
     private:
         //! Private initialization, used by constructors. \a title sets the window title.
@@ -251,10 +251,6 @@ namespace morph {
         int window_w;
         //! Current window height
         int window_h;
-
-        //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
-        //! ScatterVisual, etc) which are going to be rendered in the scene.
-        std::vector<VisualModel*> vm;
 
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0;
@@ -320,6 +316,11 @@ namespace morph {
         virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods);
         virtual void window_size_callback (GLFWwindow* window, int width, int height);
         virtual void scroll_callback (GLFWwindow* window, double xoffset, double yoffset);
+
+        //! Extra key callback handling, making it easy for client programs to implement their own actions
+        virtual void key_callback_extra (GLFWwindow* window, int key, int scancode, int action, int mods) {}
+        //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
+        virtual void mouse_button_callback_extra (GLFWwindow* window, int button, int action, int mods) {}
     };
 
 } // namespace morph

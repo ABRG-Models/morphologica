@@ -140,6 +140,7 @@ namespace morph {
         //! Render the VisualModel
         void render (void)
         {
+            if (this->hide == true) { return; }
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
             // Pass this->float to GLSL so the model can have an alpha value.
@@ -169,6 +170,10 @@ namespace morph {
 
         void setAlpha (const float _a) { this->alpha = _a; }
         float getAlpha() const { return this->alpha; }
+
+        void setHide (const bool _h = true) { this->hide = _h; }
+        void toggleHide() { this->hide = this->hide ? false : true; }
+        float hidden() const { return this->hide; }
 
         void incAlpha()
         {
@@ -222,6 +227,8 @@ namespace morph {
         std::vector<float> vertexColors;
         //! A model-wide alpha value for the shader
         float alpha = 1.0f;
+        //! If true, then calls to VisualModel::render should return
+        bool hide = false;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
