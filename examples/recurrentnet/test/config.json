@@ -1,4 +1,5 @@
 {
     "inputID"  : [0,1],
-    "maps": [{"filename": "map.h5", "outputID" : 2}]
+    "contexts": [{"name": "null", "ID" : [0], "Val" : [0]}],
+    "maps": [{"filename": "map.h5", "outputID" : 2, "contextID" : 0}]
 }
