@@ -20,10 +20,6 @@
 #include "morph/BezCurvePath.h"
 #include "morph/BezCoord.h"
 #include "morph/HdfData.h"
-
-#define DBGSTREAM std::cout
-//#define DEBUG 1
-//#define DEBUG2 1
 #include "morph/MorphDbg.h"
 
 using std::ceil;
@@ -1351,97 +1347,6 @@ morph::HexGrid::depth (void)
     float ymin = this->v * float(extents[2]);
     float ymax = this->v * float(extents[3]);
     return (ymax - ymin);
-}
-
-void
-morph::HexGrid::d_clear (void)
-{
-    this->d_x.clear();
-    this->d_y.clear();
-    this->d_ri.clear();
-    this->d_gi.clear();
-    this->d_bi.clear();
-    this->d_flags.clear();
-}
-
-void
-morph::HexGrid::d_push_back (list<Hex>::iterator hi)
-{
-    d_x.push_back (hi->x);
-    d_y.push_back (hi->y);
-    d_ri.push_back (hi->ri);
-    d_gi.push_back (hi->gi);
-    d_bi.push_back (hi->bi);
-    d_flags.push_back (hi->getFlags());
-    d_distToBoundary.push_back (hi->distToBoundary);
-
-    // record in the Hex the iterator in the d_ vectors so that d_nne and friends can be set up
-    // later.
-    hi->di = d_x.size()-1;
-}
-
-void
-morph::HexGrid::populate_d_neighbours (void)
-{
-    // Resize d_nne and friends
-    this->d_nne.resize (this->d_x.size(), 0);
-    this->d_ne.resize (this->d_x.size(), 0);
-    this->d_nnw.resize (this->d_x.size(), 0);
-    this->d_nw.resize (this->d_x.size(), 0);
-    this->d_nsw.resize (this->d_x.size(), 0);
-    this->d_nse.resize (this->d_x.size(), 0);
-
-    list<Hex>::iterator hi = this->hexen.begin();
-    while (hi != this->hexen.end()) {
-
-        if (hi->has_ne() == true) {
-            this->d_ne[hi->di] = hi->ne->di;
-        } else {
-            this->d_ne[hi->di] = -1;
-        }
-
-        if (hi->has_nne() == true) {
-            this->d_nne[hi->di] = hi->nne->di;
-        } else {
-            this->d_nne[hi->di] = -1;
-        }
-
-        if (hi->has_nnw() == true) {
-            this->d_nnw[hi->di] = hi->nnw->di;
-        } else {
-            this->d_nnw[hi->di] = -1;
-        }
-
-        if (hi->has_nw() == true) {
-            this->d_nw[hi->di] = hi->nw->di;
-        } else {
-            this->d_nw[hi->di] = -1;
-        }
-
-        if (hi->has_nsw() == true) {
-            this->d_nsw[hi->di] = hi->nsw->di;
-        } else {
-            this->d_nsw[hi->di] = -1;
-        }
-
-        if (hi->has_nse() == true) {
-            this->d_nse[hi->di] = hi->nse->di;
-        } else {
-            this->d_nse[hi->di] = -1;
-        }
-
-#ifdef DEBUG__
-        //if (hi->di == 1075 || hi->di == 1076) {
-        DBG("d_[" << hi->di << "] has NNE: " << this->d_nne[hi->di]
-            << ", NNW: " << this->d_nnw[hi->di]
-            << ", NW: " << this->d_nw[hi->di]
-            << ", NSW: " << this->d_nsw[hi->di]
-            << ", NSE: " << this->d_nse[hi->di]
-            << ", NE: " << this->d_ne[hi->di]);
-        //}
-#endif
-        ++hi;
-    }
 }
 
 void

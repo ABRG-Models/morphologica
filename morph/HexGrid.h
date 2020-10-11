@@ -122,26 +122,96 @@ namespace morph {
          * bottom? Set this to a larger number if the boundary is expected to grow
          * during a simulation.
          */
-        //@{
         unsigned int d_growthbuffer_horz = 5;
         unsigned int d_growthbuffer_vert = 0;
-        //@}
 
-        /*!
-         * Add entries to all the d_ vectors for the Hex pointed to by hi.
-         */
-        void d_push_back (std::list<Hex>::iterator hi);
+        //! Add entries to all the d_ vectors for the Hex pointed to by hi.
+        void d_push_back (std::list<Hex>::iterator hi)
+        {
+            d_x.push_back (hi->x);
+            d_y.push_back (hi->y);
+            d_ri.push_back (hi->ri);
+            d_gi.push_back (hi->gi);
+            d_bi.push_back (hi->bi);
+            d_flags.push_back (hi->getFlags());
+            d_distToBoundary.push_back (hi->distToBoundary);
 
-        /*!
-         * Once Hex::di attributes have been set, populate d_nne and friends.
-         */
-        void populate_d_neighbours (void);
+            // record in the Hex the iterator in the d_ vectors so that d_nne and friends can be set up later.
+            hi->di = d_x.size()-1;
+        }
 
-        /*!
-         * Clear out all the d_ vectors
-         */
-        void d_clear (void);
-        //@}
+        //! Once Hex::di attributes have been set, populate d_nne and friends.
+        void populate_d_neighbours (void)
+        {
+            // Resize d_nne and friends
+            this->d_nne.resize (this->d_x.size(), 0);
+            this->d_ne.resize (this->d_x.size(), 0);
+            this->d_nnw.resize (this->d_x.size(), 0);
+            this->d_nw.resize (this->d_x.size(), 0);
+            this->d_nsw.resize (this->d_x.size(), 0);
+            this->d_nse.resize (this->d_x.size(), 0);
+
+            std::list<morph::Hex>::iterator hi = this->hexen.begin();
+            while (hi != this->hexen.end()) {
+
+                if (hi->has_ne() == true) {
+                    this->d_ne[hi->di] = hi->ne->di;
+                } else {
+                    this->d_ne[hi->di] = -1;
+                }
+
+                if (hi->has_nne() == true) {
+                    this->d_nne[hi->di] = hi->nne->di;
+                } else {
+                    this->d_nne[hi->di] = -1;
+                }
+
+                if (hi->has_nnw() == true) {
+                    this->d_nnw[hi->di] = hi->nnw->di;
+                } else {
+                    this->d_nnw[hi->di] = -1;
+                }
+
+                if (hi->has_nw() == true) {
+                    this->d_nw[hi->di] = hi->nw->di;
+                } else {
+                    this->d_nw[hi->di] = -1;
+                }
+
+                if (hi->has_nsw() == true) {
+                    this->d_nsw[hi->di] = hi->nsw->di;
+                } else {
+                    this->d_nsw[hi->di] = -1;
+                }
+
+                if (hi->has_nse() == true) {
+                    this->d_nse[hi->di] = hi->nse->di;
+                } else {
+                    this->d_nse[hi->di] = -1;
+                }
+
+#ifdef DEBUG__
+                DBG("d_[" << hi->di << "] has NNE: " << this->d_nne[hi->di]
+                    << ", NNW: " << this->d_nnw[hi->di]
+                    << ", NW: " << this->d_nw[hi->di]
+                    << ", NSW: " << this->d_nsw[hi->di]
+                    << ", NSE: " << this->d_nse[hi->di]
+                    << ", NE: " << this->d_ne[hi->di]);
+#endif
+                ++hi;
+            }
+        }
+
+        //! Clear out all the d_ vectors
+        void d_clear (void)
+        {
+            this->d_x.clear();
+            this->d_y.clear();
+            this->d_ri.clear();
+            this->d_gi.clear();
+            this->d_bi.clear();
+            this->d_flags.clear();
+        }
 
         /*!
          * Save this HexGrid (and all the Hexes in it) into the HDF5 file at the
