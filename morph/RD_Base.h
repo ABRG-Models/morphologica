@@ -11,8 +11,6 @@
 #include <cmath>
 #include <hdf5.h>
 #include <unistd.h>
-#define DEBUG 1
-#define DBGSTREAM std::cout
 #include <morph/MorphDbg.h>
 
 /*!

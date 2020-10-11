@@ -25,7 +25,6 @@
 #include <random>
 
 #include "morph/BezCoord.h"
-#define DBGSTREAM std::cout
 #include "morph/MorphDbg.h"
 
 namespace morph

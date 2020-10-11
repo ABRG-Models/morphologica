@@ -29,7 +29,6 @@ using std::endl;
 // To enable debug cout messages:
 //#define DEBUG 1
 //#define DEBUG2 1
-#define DBGSTREAM std::cout
 #include "morph/MorphDbg.h"
 #include "rapidxml.hpp"
 using rapidxml::xml_node;
