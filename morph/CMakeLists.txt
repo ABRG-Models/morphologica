@@ -13,7 +13,7 @@
 set(morphdisplay0src display.cpp)
 
 # Define which cpp files will be compiled into libmorphologica:
-set(morphlibsrc sockserve.cpp tools.cpp world.cpp ReadCurves.cpp HexGrid.cpp HdfData.cpp)
+set(morphlibsrc sockserve.cpp world.cpp ReadCurves.cpp HexGrid.cpp tools.cpp)
 
 # If we have glfw3 then compile in Seb's modern opengl visualization code
 if (${glfw3_FOUND})
