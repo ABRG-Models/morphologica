@@ -10,12 +10,16 @@
  * Date: June 2019
  */
 
+#include <iostream>
+//#define DEBUG 1
+#define DBGSTREAM std::cout
+#include "morph/MorphDbg.h"
+
 #include "morph/ReadCurves.h"
 #include "morph/tools.h"
 #include "morph/HexGrid.h"
 #include <utility>
 #include <vector>
-#include <iostream>
 #include <fstream>
 #include <math.h>
 #include "morph/BezCoord.h"
@@ -26,10 +30,6 @@ using namespace std;
 using morph::ReadCurves;
 using morph::BezCoord;
 using std::vector;
-
-//#define DEBUG 1
-#define DBGSTREAM std::cout
-#include "morph/MorphDbg.h"
 
 int main(int argc, char** argv)
 {

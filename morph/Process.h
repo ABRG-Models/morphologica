@@ -232,7 +232,7 @@ namespace morph {
             if (pipe(this->parentToChild) == -1
                 || pipe(this->childToParent) == -1
                 || pipe(this->childErrToParent) == -1) {
-                DBG ("Failed to set up pipes, return PROCESS_FAILURE" << flush);
+                DBG ("Failed to set up pipes, return PROCESS_FAILURE" << std::flush);
                 this->error = PROCESSNOMOREPIPES;
                 return PROCESS_FAILURE;
             }
@@ -240,7 +240,7 @@ namespace morph {
             this->pid = fork();
             switch (this->pid) {
             case -1:
-                DBG ("fork() returned -1, return PROCESS_FAILURE" << flush);
+                DBG ("fork() returned -1, return PROCESS_FAILURE" << std::flush);
                 this->error = PROCESSFORKFAILED;
                 return PROCESS_FAILURE;
             case 0:

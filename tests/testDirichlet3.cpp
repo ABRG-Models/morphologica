@@ -4,20 +4,20 @@
 // A single domain of a single hex in this one.
 //
 
+#include <iostream>
+#define DBGSTREAM std::cout
+#define DEBUG 1
+#include "MorphDbg.h"
+
 #include "HexGrid.h"
 #include "ReadCurves.h"
 #include "display.h"
 #include "tools.h"
-#include <iostream>
 #include <vector>
 #include <list>
 #include <array>
 #include <stdexcept>
 #include <unistd.h>
-
-#define DBGSTREAM std::cout
-#define DEBUG 1
-#include "MorphDbg.h"
 
 #include "ShapeAnalysis.h"
 
