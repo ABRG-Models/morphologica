@@ -1,6 +1,5 @@
 #include "tools.h"
 #include <math.h>
-#include <vector>
 #ifdef __ICC__
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
@@ -29,22 +28,20 @@ extern "C" {
 #include <time.h>
 }
 
-using namespace std;
-
 /*
  * Make external process calls to insert git information (current
  * revision, whether or not the git repo has any modified or untracked
  * files) into the given Json::Value object.
  */
 void
-morph::Tools::insertGitInfo (Json::Value& root, const string& codedir)
+morph::Tools::insertGitInfo (Json::Value& root, const std::string& codedir)
 {
     ProcessData pD;
     ToolsProcessCallbacks cb(&pD);
     Process p;
-    string command ("/usr/bin/git");
+    std::string command ("/usr/bin/git");
 
-    list<string> args1;
+    std::list<std::string> args1;
     args1.push_back ("git");
     args1.push_back ("rev-parse");
     args1.push_back ("HEAD");
@@ -54,33 +51,33 @@ morph::Tools::insertGitInfo (Json::Value& root, const string& codedir)
         p.start (command, args1);
         p.probeProcess ();
         if (!p.waitForStarted()) {
-            throw runtime_error ("Process failed to start");
+            throw std::runtime_error ("Process failed to start");
         }
         while (p.running() == true) {
             p.probeProcess();
         }
 
-        stringstream theOutput;
+        std::stringstream theOutput;
         theOutput << p.readAllStandardOutput();
-        string line = "";
+        std::string line = "";
         int nlines = 0;
         while (getline (theOutput, line, '\n')) {
-            cout << "Current git HEAD: " << line << endl;
+            std::cout << "Current git HEAD: " << line << std::endl;
             if (nlines++ > 0) {
                 break;
             }
             root["git_head"] = line; // Should be one line only
         }
 
-    } catch (const exception& e) {
-        cerr << "Exception: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
         root["git_head"] = "unknown";
     }
 
     // Reset Process with arg true to keep callbacks
     p.reset (true);
 
-    list<string> args2;
+    std::list<std::string> args2;
     args2.push_back ("git");
     args2.push_back ("status");
 
@@ -88,40 +85,40 @@ morph::Tools::insertGitInfo (Json::Value& root, const string& codedir)
         p.start (command, args2);
         p.probeProcess ();
         if (!p.waitForStarted()) {
-            throw runtime_error ("Process failed to start");
+            throw std::runtime_error ("Process failed to start");
         }
         while (p.running() == true) {
             p.probeProcess();
         }
 
-        stringstream theOutput;
+        std::stringstream theOutput;
         theOutput << p.readAllStandardOutput();
-        string line = "";
+        std::string line = "";
         bool lm = false;
         bool ut = false;
         while (getline (theOutput, line, '\n')) {
-            if (line.find("modified:") != string::npos) {
-                if (line.find(codedir) != string::npos) {
+            if (line.find("modified:") != std::string::npos) {
+                if (line.find(codedir) != std::string::npos) {
                     if (!lm) {
                         root["git_modified_sim"] = true;
-                        cout << "Repository has local modifications in " << codedir << " dir" << endl;
+                        std::cout << "Repository has local modifications in " << codedir << " dir\n";
                     }
                     lm = true;
                 }
             }
-            if (line.find("Untracked files:") != string::npos) {
-                if (line.find(codedir) != string::npos) {
+            if (line.find("Untracked files:") != std::string::npos) {
+                if (line.find(codedir) != std::string::npos) {
                     if (!ut) {
                         root["git_untracked_sim"] = true;
-                        cout << "Repository has untracked files present in " << codedir << " dir" << endl;
+                        std::cout << "Repository has untracked files present in " << codedir << " dir\n";
                     }
                     ut = true;
                 }
             }
         }
 
-    } catch (const exception& e) {
-        cerr << "Exception: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
         root["git_status"] = "unknown";
     }
 
@@ -129,7 +126,7 @@ morph::Tools::insertGitInfo (Json::Value& root, const string& codedir)
     p.reset (true);
 
     // This gets the git branch name
-    list<string> args3;
+    std::list<std::string> args3;
     args3.push_back ("git");
     args3.push_back ("rev-parse");
     args3.push_back ("--abbrev-ref");
@@ -139,33 +136,33 @@ morph::Tools::insertGitInfo (Json::Value& root, const string& codedir)
         p.start (command, args3);
         p.probeProcess ();
         if (!p.waitForStarted()) {
-            throw runtime_error ("Process failed to start");
+            throw std::runtime_error ("Process failed to start");
         }
         while (p.running() == true) {
             p.probeProcess();
         }
 
-        stringstream theOutput;
+        std::stringstream theOutput;
         theOutput << p.readAllStandardOutput();
-        string line = "";
+        std::string line = "";
         int nlines = 0;
         while (getline (theOutput, line, '\n')) {
-            cout << "Current git branch: " << line << endl;
+            std::cout << "Current git branch: " << line << std::endl;
             if (nlines++ > 0) {
                 break;
             }
             root["git_branch"] = line; // Should be one line only
         }
 
-    } catch (const exception& e) {
-        cerr << "Exception: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
         root["git_branch"] = "unknown";
     }
 }
 
 /// @param gray gray value from 0.0 to 1.0
 /// @returns RGB value in jet colormap
-array<float,3>
+std::array<float,3>
 morph::Tools::getJetColorF (double gray)
 {
     float color_table[][3] = {
@@ -180,7 +177,7 @@ morph::Tools::getJetColorF (double gray)
         {0.5, 0.0, 0.0}, // #7F0000
     };
 
-    array<float,3> col;
+    std::array<float,3> col;
     float ivl = 1.0/8.0;
     for (int i=0; i<8; i++) {
         double llim = (i==0)?0.:(double)i/8.;
@@ -196,7 +193,7 @@ morph::Tools::getJetColorF (double gray)
     return col;
 }
 
-vector<double>
+std::vector<double>
 morph::Tools::getJetColor (double gray)
 {
     double color_table[][3] = {
@@ -211,7 +208,7 @@ morph::Tools::getJetColor (double gray)
         {0.5, 0.0, 0.0}, // #7F0000
     };
 
-    vector<double> col;
+    std::vector<double> col;
     double ivl = 1.0/8.0;
     for (int i=0; i<8; i++) {
         double llim = (i==0)?0.:(double)i/8.;
@@ -227,17 +224,17 @@ morph::Tools::getJetColor (double gray)
     return col;
 }
 
-vector<double>
+std::vector<double>
 morph::Tools::getGrayScaleColor(double gray)
 {
-    vector<double> col;
+    std::vector<double> col;
     for (int i=0; i<3; i++) {
         col.push_back(1.0 - gray);
     }
     return col;
 }
 
-array<float,3>
+std::array<float,3>
 morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
 {
     double r=0.0, g=0.0, b=0.0;
@@ -255,7 +252,7 @@ morph::Tools::HSVtoRGB(double h,double s,double v) // all in range 0,1
     case 4: r = t, g = p, b = v; break;
     case 5: r = v, g = p, b = q; break;
     }
-    array<float, 3> rgb;
+    std::array<float, 3> rgb;
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
@@ -315,7 +312,7 @@ morph::Tools::wrapAngle(double a)
     return a-6.283185307179586*floor(a/6.283185307179586);
 }
 
-vector < vector <double> > rotateCloud (vector < vector <double> > cloud, double Rx, double Ry, double Rz)
+std::vector < std::vector <double> > rotateCloud (std::vector < std::vector <double> > cloud, double Rx, double Ry, double Rz)
 {
     // expects a n by 3 cloud as input
     arma::mat Cloud (3,static_cast<unsigned int>(cloud.size()));
@@ -343,10 +340,10 @@ vector < vector <double> > rotateCloud (vector < vector <double> > cloud, double
 }
 
 #ifdef SPHERE_ATTEMPT
-vector<vector<float> >
+std::vector<std::vector<float> >
 morph::Tools::sphere (int n, double rad)
 {
-    vector <vector <float> > S (n);
+    std::vector <std::vector <float> > S (n);
     float golden_angle = acos(-1.0) * (3. - sqrt(5.));
     for (int i=0; i<n; i++){
         S[i].resize(3);
@@ -361,13 +358,13 @@ morph::Tools::sphere (int n, double rad)
 #endif
 
 // TAKES A LIST OF PAIRS AND NUMBER OF PAIRS AND RETURNS A VECTOR OF CLUSTERS SORTED BY CLUSTER SIZE
-vector<vector<int> >
-morph::Tools::graph (vector<vector<int> > agg)
+std::vector<std::vector<int> >
+morph::Tools::graph (std::vector<std::vector<int> > agg)
 {
     int N = agg.size();
 
-    vector<vector<int> > conn;
-    vector<int> con (2,0);
+    std::vector<std::vector<int> > conn;
+    std::vector<int> con (2,0);
     for(int i=0;i<N;i++){
         for(int j=0;j<N;j++){
             if(agg[i][j]){
@@ -378,7 +375,7 @@ morph::Tools::graph (vector<vector<int> > agg)
         }
     }
 
-    vector<vector<int> > graph;
+    std::vector<std::vector<int> > graph;
     int a, b, Ain, Bin;
     bool nov, ain, bin;
     for(unsigned int k=0;k<conn.size();k++){
@@ -444,13 +441,13 @@ morph::Tools::graph (vector<vector<int> > agg)
             }
         }
         if(isolated){
-            vector<int> isolate(1,k);
+            std::vector<int> isolate(1,k);
             graph.push_back(isolate);
         }
     }
 
     // sort by descending group size
-    vector<vector<int> > graphSorted;
+    std::vector<std::vector<int> > graphSorted;
     while(graph.size()){
         unsigned int maxVal = 0;
         int maxInd = 0;
@@ -467,15 +464,15 @@ morph::Tools::graph (vector<vector<int> > agg)
     return graphSorted;
 }
 
-vector<int>
-morph::Tools::sort (vector<double> unsorted)
+std::vector<int>
+morph::Tools::sort (std::vector<double> unsorted)
 {
-    vector<int> unsortID;
+    std::vector<int> unsortID;
     for(int i=0;i<static_cast<int>(unsorted.size());i++){
         unsortID.push_back(i);
     }
-    vector<int> sortID;
-    vector<double> sorted;
+    std::vector<int> sortID;
+    std::vector<double> sorted;
 
     while(unsorted.size()){
         double maxVal = 0.;
@@ -495,8 +492,8 @@ morph::Tools::sort (vector<double> unsorted)
 }
 
 #ifdef MATRIX_MULTIPLY_ATTEMPT
-vector<vector<double> >
-morph::Tools::matrixMultiply (vector < vector <double> > a, vector < vector <double> > b)
+std::vector<std::vector<double> >
+morph::Tools::matrixMultiply (std::vector < std::vector <double> > a, std::vector < std::vector <double> > b)
 {
     // expects a n by 3 cloud as input
     arma::mat A (3,a.size());
@@ -527,7 +524,7 @@ morph::Tools::matrixMultiply (vector < vector <double> > a, vector < vector <dou
 #endif
 
 int
-morph::Tools::ensureUnixNewlines (string& input)
+morph::Tools::ensureUnixNewlines (std::string& input)
 {
     int num = 0;
 
@@ -541,16 +538,16 @@ morph::Tools::ensureUnixNewlines (string& input)
     return num; // The number of \r characters we found in the string.
 }
 
-string
+std::string
 morph::Tools::getPwd (void)
 {
     char b[FILENAME_MAX];
     GetCurrentDir (b, FILENAME_MAX);
-    return string(b);
+    return std::string(b);
 }
 
 int
-morph::Tools::stripTrailingCarriageReturn (string& input)
+morph::Tools::stripTrailingCarriageReturn (std::string& input)
 {
     if (input[input.size()-1] == '\r') {
         input.erase(input.size()-1, 1);
@@ -560,10 +557,10 @@ morph::Tools::stripTrailingCarriageReturn (string& input)
 }
 
 int
-morph::Tools::stripTrailingWhitespace (string& input)
+morph::Tools::stripTrailingWhitespace (std::string& input)
 {
     char c;
-    string::size_type len = input.size(), pos = len;
+    std::string::size_type len = input.size(), pos = len;
     while (pos > 0 &&
            ((c = input[pos-1]) == ' '
             || c == '\t'
@@ -576,11 +573,11 @@ morph::Tools::stripTrailingWhitespace (string& input)
 }
 
 int
-morph::Tools::stripChars (string& input, const string& charList)
+morph::Tools::stripChars (std::string& input, const std::string& charList)
 {
     int rtn(0);
-    string::size_type pos(0);
-    while ((pos = input.find_last_of (charList)) != string::npos) {
+    std::string::size_type pos(0);
+    while ((pos = input.find_last_of (charList)) != std::string::npos) {
         input.erase (pos, 1);
         ++rtn;
     }
@@ -588,11 +585,11 @@ morph::Tools::stripChars (string& input, const string& charList)
 }
 
 int
-morph::Tools::stripChars (string& input, const char charList)
+morph::Tools::stripChars (std::string& input, const char charList)
 {
     int rtn(0);
-    string::size_type pos(0);
-    while ((pos = input.find_last_of (charList)) != string::npos) {
+    std::string::size_type pos(0);
+    while ((pos = input.find_last_of (charList)) != std::string::npos) {
         input.erase (pos, 1);
         ++rtn;
     }
@@ -600,15 +597,15 @@ morph::Tools::stripChars (string& input, const char charList)
 }
 
 int
-morph::Tools::convertCHexCharSequences (string& input)
+morph::Tools::convertCHexCharSequences (std::string& input)
 {
     // This converts a string containing C style hex sequences
     // like "\x41\x42\x43" into the corresponding characters
     // ("ABC" for the example).
 
-    string::iterator readPos = input.begin();
-    string::iterator writePos = input.begin();
-    string::size_type newSize = 0;
+    std::string::iterator readPos = input.begin();
+    std::string::iterator writePos = input.begin();
+    std::string::size_type newSize = 0;
     char n1 = '\0', n2 = '\0'; // two Ns in "1xNN"
     char c = 0;
     int count = 0;
@@ -785,13 +782,13 @@ morph::Tools::convertCHexCharSequences (string& input)
 }
 
 int
-morph::Tools::stripTrailingSpaces (string& input)
+morph::Tools::stripTrailingSpaces (std::string& input)
 {
     return Tools::stripTrailingChars (input);
 }
 
 int
-morph::Tools::stripTrailingChars (string& input, const char c)
+morph::Tools::stripTrailingChars (std::string& input, const char c)
 {
     int i = 0;
     while (input.size()>0 && input[input.size()-1] == c) {
@@ -802,10 +799,10 @@ morph::Tools::stripTrailingChars (string& input, const char c)
 }
 
 int
-morph::Tools::stripLeadingWhitespace (string& input)
+morph::Tools::stripLeadingWhitespace (std::string& input)
 {
     char c;
-    string::size_type pos = 0;
+    std::string::size_type pos = 0;
     while (pos<input.size() &&
            ((c = input[pos]) == ' '
             || c == '\t'
@@ -818,7 +815,7 @@ morph::Tools::stripLeadingWhitespace (string& input)
 }
 
 int
-morph::Tools::stripWhitespace (string& input)
+morph::Tools::stripWhitespace (std::string& input)
 {
     int n = Tools::stripLeadingWhitespace (input);
     n += Tools::stripTrailingWhitespace (input);
@@ -826,10 +823,10 @@ morph::Tools::stripWhitespace (string& input)
 }
 
 bool
-morph::Tools::containsOnlyWhitespace (string& input)
+morph::Tools::containsOnlyWhitespace (std::string& input)
 {
     bool rtn = true;
-    for (string::size_type i = 0; i < input.size(); ++i) {
+    for (std::string::size_type i = 0; i < input.size(); ++i) {
         if (input[i] == ' ' || input[i] == '\t' || input[i] == '\n' || input[i] == '\r') {
             // continue.
         } else {
@@ -841,13 +838,13 @@ morph::Tools::containsOnlyWhitespace (string& input)
 }
 
 int
-morph::Tools::stripLeadingSpaces (string& input)
+morph::Tools::stripLeadingSpaces (std::string& input)
 {
     return Tools::stripLeadingChars (input);
 }
 
 int
-morph::Tools::stripLeadingChars (string& input, const char c)
+morph::Tools::stripLeadingChars (std::string& input, const char c)
 {
     int i = 0;
     while (input.size()>0 && input[0] == c) {
@@ -858,18 +855,18 @@ morph::Tools::stripLeadingChars (string& input, const char c)
 }
 
 int
-morph::Tools::searchReplace (const string& searchTerm,
-                             const string& replaceTerm,
-                             string& data,
+morph::Tools::searchReplace (const std::string& searchTerm,
+                             const std::string& replaceTerm,
+                             std::string& data,
                              const bool replaceAll)
 {
     int count = 0;
-    string::size_type pos = 0;
-    string::size_type ptr = string::npos;
-    string::size_type stl = searchTerm.size();
+    std::string::size_type pos = 0;
+    std::string::size_type ptr = std::string::npos;
+    std::string::size_type stl = searchTerm.size();
     if (replaceAll) {
         pos = data.size();
-        while ((ptr = data.rfind (searchTerm, pos)) != string::npos) {
+        while ((ptr = data.rfind (searchTerm, pos)) != std::string::npos) {
             data.erase (ptr, stl);
             data.insert (ptr, replaceTerm);
             count++;
@@ -885,7 +882,7 @@ morph::Tools::searchReplace (const string& searchTerm,
         }
     } else {
         // Replace first only
-        if ((ptr = data.find (searchTerm, pos)) != string::npos) {
+        if ((ptr = data.find (searchTerm, pos)) != std::string::npos) {
             data.erase (ptr, stl);
             data.insert (ptr, replaceTerm);
             count++;
@@ -896,26 +893,26 @@ morph::Tools::searchReplace (const string& searchTerm,
 }
 
 void
-morph::Tools::conditionAsXmlTag (string& str)
+morph::Tools::conditionAsXmlTag (std::string& str)
 {
     // 1) Replace chars which are disallowed in an XML tag
-    string::size_type ptr = string::npos;
+    std::string::size_type ptr = std::string::npos;
 
     // We allow numeric and alpha chars, the underscore and the
     // hyphen. colon strictly allowed, but best avoided.
-    while ((ptr = str.find_last_not_of (CHARS_NUMERIC_ALPHA"_-", ptr)) != string::npos) {
+    while ((ptr = str.find_last_not_of (CHARS_NUMERIC_ALPHA"_-", ptr)) != std::string::npos) {
         // Replace the char with an underscore:
         str[ptr] = '_';
         ptr--;
     }
 
     // 2) Check first 3 chars don't spell xml (in any case)
-    string firstThree = str.substr (0,3);
+    std::string firstThree = str.substr (0,3);
     transform (firstThree.begin(), firstThree.end(),
                firstThree.begin(), morph::to_lower());
     if (firstThree == "xml") {
         // Prepend 'A'
-        string newStr("_");
+        std::string newStr("_");
         newStr += str;
         str = newStr;
     }
@@ -923,17 +920,17 @@ morph::Tools::conditionAsXmlTag (string& str)
     // 3) Prepend an '_' if initial char begins with a numeral or hyphen
     if (str[0] > 0x29 && str[0] < 0x3a) {
         // Prepend '_'
-        string newStr("_");
+        std::string newStr("_");
         newStr += str;
         str = newStr;
     }
 }
 
 unsigned int
-morph::Tools::countChars (const string& line, const char c)
+morph::Tools::countChars (const std::string& line, const char c)
 {
     unsigned int count(0);
-    string::const_iterator i = line.begin();
+    std::string::const_iterator i = line.begin();
     while (i != line.end()) {
         if (*i++ == c) { ++count; }
     }
@@ -945,7 +942,7 @@ morph::Tools::countChars (const string& line, const char c)
  */
 //@{
 bool
-morph::Tools::fileExists (const string& path)
+morph::Tools::fileExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -976,7 +973,7 @@ morph::Tools::fileExists (const string& path)
 }
 
 bool
-morph::Tools::regfileExists (const string& path)
+morph::Tools::regfileExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -998,7 +995,7 @@ morph::Tools::regfileExists (const string& path)
 }
 
 bool
-morph::Tools::userExefileExists (const string& path)
+morph::Tools::userExefileExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1020,7 +1017,7 @@ morph::Tools::userExefileExists (const string& path)
 }
 
 bool
-morph::Tools::blockdevExists (const string& path)
+morph::Tools::blockdevExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1042,7 +1039,7 @@ morph::Tools::blockdevExists (const string& path)
 }
 
 bool
-morph::Tools::socketExists (const string& path)
+morph::Tools::socketExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1064,7 +1061,7 @@ morph::Tools::socketExists (const string& path)
 }
 
 bool
-morph::Tools::fifoExists (const string& path)
+morph::Tools::fifoExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1086,7 +1083,7 @@ morph::Tools::fifoExists (const string& path)
 }
 
 bool
-morph::Tools::chardevExists (const string& path)
+morph::Tools::chardevExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1108,7 +1105,7 @@ morph::Tools::chardevExists (const string& path)
 }
 
 bool
-morph::Tools::linkExists (const string& path)
+morph::Tools::linkExists (const std::string& path)
 {
     struct stat * buf = NULL;
 
@@ -1130,7 +1127,7 @@ morph::Tools::linkExists (const string& path)
 }
 
 bool
-morph::Tools::dirExists (const string& path)
+morph::Tools::dirExists (const std::string& path)
 {
     DIR* d;
     if (!(d = opendir (path.c_str()))) {
@@ -1144,7 +1141,7 @@ morph::Tools::dirExists (const string& path)
 }
 
 void
-morph::Tools::createDir (const string& path,
+morph::Tools::createDir (const std::string& path,
                          const mode_t mode,
                          const int uid, const int gid)
 {
@@ -1158,9 +1155,9 @@ morph::Tools::createDir (const string& path,
 
     // Set umask to 0000 to stop it interfering with mode
     int oldUmask = umask (0000);
-    string::size_type pos, lastPos = path.size()-1;
-    vector<string> dirs;
-    if ((pos = path.find_last_of ('/', lastPos)) == string::npos) {
+    std::string::size_type pos, lastPos = path.size()-1;
+    std::vector<std::string> dirs;
+    if ((pos = path.find_last_of ('/', lastPos)) == std::string::npos) {
         // Path is single directory.
         dirs.push_back (path);
     } else {
@@ -1177,15 +1174,15 @@ morph::Tools::createDir (const string& path,
             while ((pos = path.find_last_of ('/', lastPos)) != 0) {
                 dirs.push_back (path.substr(pos+1, lastPos-pos));
                 lastPos = pos-1;
-                if (pos == string::npos) {
+                if (pos == std::string::npos) {
                     break;
                 }
             }
         }
     }
 
-    vector<string>::reverse_iterator i = dirs.rbegin();
-    string prePath("");
+    std::vector<std::string>::reverse_iterator i = dirs.rbegin();
+    std::string prePath("");
     bool first(true);
     while (i != dirs.rend()) {
         if (first && !pathIsAbsolute) {
@@ -1197,7 +1194,7 @@ morph::Tools::createDir (const string& path,
         int rtn = mkdir (prePath.c_str(), mode);
         if (rtn) {
             int e = errno;
-            stringstream emsg;
+            std::stringstream emsg;
             emsg << "createDir(): mkdir() set error: ";
             switch (e) {
             case EACCES:
@@ -1244,7 +1241,7 @@ morph::Tools::createDir (const string& path,
                 emsg << "unknown error";
                 break;
             }
-            throw runtime_error (emsg.str());
+            throw std::runtime_error (emsg.str());
         }
         if (uid>-1 && gid>-1) {
             chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
@@ -1257,12 +1254,12 @@ morph::Tools::createDir (const string& path,
 }
 
 void
-morph::Tools::removeDir (const string& path)
+morph::Tools::removeDir (const std::string& path)
 {
     int rtn = rmdir (path.c_str());
     if (rtn) {
         int e = errno;
-        stringstream emsg;
+        std::stringstream emsg;
         emsg << "setPermissions(): chmod() set error: ";
         switch (e) {
         case EACCES:
@@ -1302,17 +1299,17 @@ morph::Tools::removeDir (const string& path)
             emsg << "unknown error";
             break;
         }
-        throw runtime_error (emsg.str());
+        throw std::runtime_error (emsg.str());
     }
 }
 
 void
-morph::Tools::setPermissions (const string& filepath, const mode_t mode)
+morph::Tools::setPermissions (const std::string& filepath, const mode_t mode)
 {
     int rtn = chmod (filepath.c_str(), mode);
     if (rtn) {
         int e = errno;
-        stringstream emsg;
+        std::stringstream emsg;
         emsg << "setPermissions(): chmod() set error: ";
         switch (e) {
         case EACCES:
@@ -1352,25 +1349,25 @@ morph::Tools::setPermissions (const string& filepath, const mode_t mode)
             emsg << "unknown error";
             break;
         }
-        throw runtime_error (emsg.str());
+        throw std::runtime_error (emsg.str());
     }
 }
 
 bool
-morph::Tools::checkAccess (const string& filepath,
-                           const string& accessType)
+morph::Tools::checkAccess (const std::string& filepath,
+                           const std::string& accessType)
 {
-    if (accessType.find("r") != string::npos) {
-        ifstream in;
-        in.open (filepath.c_str(), ios::in);
+    if (accessType.find("r") != std::string::npos) {
+        std::ifstream in;
+        in.open (filepath.c_str(), std::ios::in);
         if (!in.is_open()) {
             return false;
         }
         in.close();
     }
-    if (accessType.find("w") != string::npos) {
-        ofstream out;
-        out.open (filepath.c_str(), ios::out);
+    if (accessType.find("w") != std::string::npos) {
+        std::ofstream out;
+        out.open (filepath.c_str(), std::ios::out);
         if (!out.is_open()) {
             return false;
         }
@@ -1380,12 +1377,12 @@ morph::Tools::checkAccess (const string& filepath,
 }
 
 void
-morph::Tools::setOwnership (const string& filepath, const int uid, const int gid)
+morph::Tools::setOwnership (const std::string& filepath, const int uid, const int gid)
 {
     int rtn = chown (filepath.c_str(), uid, gid);
     if (rtn) {
         int e = errno;
-        stringstream emsg;
+        std::stringstream emsg;
         emsg << "setOwnership(): chown() set error: ";
         switch (e) {
         case EACCES:
@@ -1425,20 +1422,20 @@ morph::Tools::setOwnership (const string& filepath, const int uid, const int gid
             emsg << "unknown error";
             break;
         }
-        throw runtime_error (emsg.str());
+        throw std::runtime_error (emsg.str());
     }
 }
 
 void
-morph::Tools::touchFile (const string& path)
+morph::Tools::touchFile (const std::string& path)
 {
-    ofstream f;
-    f.open (path.c_str(), ios::out|ios::app);
+    std::ofstream f;
+    f.open (path.c_str(), std::ios::out|std::ios::app);
     if (!f.is_open()) {
-        f.open (path.c_str(), ios::out|ios::trunc);
+        f.open (path.c_str(), std::ios::out|std::ios::trunc);
         if (!f.is_open()) {
-            string emsg = "Failed to create file '" + path + "'";
-            throw runtime_error (emsg);
+            std::string emsg = "Failed to create file '" + path + "'";
+            throw std::runtime_error (emsg);
         } else {
             f.close();
         }
@@ -1449,14 +1446,14 @@ morph::Tools::touchFile (const string& path)
 }
 
 void
-morph::Tools::copyFile (const string& from, const string& to)
+morph::Tools::copyFile (const std::string& from, const std::string& to)
 {
-    ofstream out;
+    std::ofstream out;
 
-    out.open (to.c_str(), ios::out|ios::trunc);
+    out.open (to.c_str(), std::ios::out|std::ios::trunc);
     if (!out.is_open()) {
-        string emsg = "Tools::copyFile(): Couldn't open TO file '" + to + "'";
-        throw runtime_error (emsg);
+        std::string emsg = "Tools::copyFile(): Couldn't open TO file '" + to + "'";
+        throw std::runtime_error (emsg);
     }
 
     Tools::copyFile (from, out);
@@ -1465,25 +1462,25 @@ morph::Tools::copyFile (const string& from, const string& to)
 }
 
 void
-morph::Tools::copyFile (const string& from, ostream& to)
+morph::Tools::copyFile (const std::string& from, std::ostream& to)
 {
-    ifstream in;
+    std::ifstream in;
 
     // Test that "from" is a regular file
     if (!Tools::regfileExists (from)) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Tools::copyFile(): FROM file '"
            << from << "' is not a regular file";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
 
-    in.open (from.c_str(), ios::in);
+    in.open (from.c_str(), std::ios::in);
     if (!in.is_open()) {
-        throw runtime_error ("Tools::copyFile(): Couldn't open FROM file");
+        throw std::runtime_error ("Tools::copyFile(): Couldn't open FROM file");
     }
 
     if (!to) {
-        throw runtime_error ("Tools::copyFile(): Error occurred in TO stream");
+        throw std::runtime_error ("Tools::copyFile(): Error occurred in TO stream");
     }
 
     char buf[64];
@@ -1505,7 +1502,7 @@ morph::Tools::copyFile (const string& from, ostream& to)
 #define COPYFILE_BUFFERSIZE    32768
 #define COPYFILE_BUFFERSIZE_MM 32767 // MM: Minus Minus
 void
-morph::Tools::copyFile (FILE * from, const string& to)
+morph::Tools::copyFile (FILE * from, const std::string& to)
 {
     FILE * ofp = NULL;
     long pos;
@@ -1517,13 +1514,13 @@ morph::Tools::copyFile (FILE * from, const string& to)
 
     ofp = fopen (to.c_str(), "w");
     if (!ofp) {
-        throw runtime_error ("Tools::copyFile(): Can't open output for writing");
+        throw std::runtime_error ("Tools::copyFile(): Can't open output for writing");
     }
     while ((bytes = fread (inputBuffer, 1, COPYFILE_BUFFERSIZE_MM, from)) > 0) {
         output = fwrite (inputBuffer, 1, bytes, ofp);
         if (output != bytes) {
             fseek (from, pos, SEEK_SET); /* reset input */
-            throw runtime_error ("Tools::copyFile(): Error writing data");
+            throw std::runtime_error ("Tools::copyFile(): Error writing data");
         }
     }
     fclose (ofp); /* close output */
@@ -1531,15 +1528,15 @@ morph::Tools::copyFile (FILE * from, const string& to)
 }
 
 void
-morph::Tools::copyFile (istream& from, const string& to)
+morph::Tools::copyFile (std::istream& from, const std::string& to)
 {
     char buf[64];
-    ofstream f;
-    f.open (to.c_str(), ios::out|ios::trunc);
+    std::ofstream f;
+    f.open (to.c_str(), std::ios::out|std::ios::trunc);
     if (!f.is_open()) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Failed to open output file '" << to << "'";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
     while (!from.eof()) {
         from.read (buf, 63);
@@ -1548,7 +1545,7 @@ morph::Tools::copyFile (istream& from, const string& to)
 }
 
 void
-morph::Tools::copyFile (const string& from, FILE * to)
+morph::Tools::copyFile (const std::string& from, FILE * to)
 {
     FILE* ifp = fopen (from.c_str(), "r");
     Tools::copyFile (ifp, to);
@@ -1566,20 +1563,20 @@ morph::Tools::copyFile (FILE * from, FILE * to)
     pos = ftell (from);
 
     if (!to) {
-        throw runtime_error ("Tools::copyFile(): output is not open for writing");
+        throw std::runtime_error ("Tools::copyFile(): output is not open for writing");
     }
     while ((bytes = fread (inputBuffer, 1, COPYFILE_BUFFERSIZE_MM, from)) > 0) {
         output = fwrite (inputBuffer, 1, bytes, to);
         if (output != bytes) {
             fseek (from, pos, SEEK_SET); /* reset input */
-            throw runtime_error ("Tools::copyFile(): Error writing data");
+            throw std::runtime_error ("Tools::copyFile(): Error writing data");
         }
     }
     fseek (from, pos, SEEK_SET); /* reset input */
 }
 
 void
-morph::Tools::copyFileToString (istream& from, string& to)
+morph::Tools::copyFileToString (std::istream& from, std::string& to)
 {
     char buf[64];
     while (!from.eof()) {
@@ -1589,15 +1586,15 @@ morph::Tools::copyFileToString (istream& from, string& to)
 }
 
 void
-morph::Tools::appendFile (const string& from, ostream& appendTo)
+morph::Tools::appendFile (const std::string& from, std::ostream& appendTo)
 {
     if (!appendTo.good()) {
-        throw runtime_error ("Can't append to appendTo, it's not good()");
+        throw std::runtime_error ("Can't append to appendTo, it's not good()");
     }
-    ifstream in;
-    in.open (from.c_str(), ios::in);
+    std::ifstream in;
+    in.open (from.c_str(), std::ios::in);
     if (!in.is_open()) {
-        throw runtime_error ("Tools::appendFile(): Couldn't open FROM file");
+        throw std::runtime_error ("Tools::appendFile(): Couldn't open FROM file");
     }
 
     char buf[64];
@@ -1612,10 +1609,10 @@ morph::Tools::appendFile (const string& from, ostream& appendTo)
 // AH - because USER opens the ostream, then the USER/client controls if copy or append.
 // This would be the same as copyFile(istream&, ostream&
 void
-morph::Tools::appendFile (istream& from, ostream& appendTo)
+morph::Tools::appendFile (std::istream& from, std::ostream& appendTo)
 {
     if (!appendTo.good()) {
-        throw runtime_error ("Can't append to appendTo, it's not good()");
+        throw std::runtime_error ("Can't append to appendTo, it's not good()");
     }
 
     char buf[64];
@@ -1627,14 +1624,14 @@ morph::Tools::appendFile (istream& from, ostream& appendTo)
 }
 
 void
-morph::Tools::appendFile (istream& from, const string& appendTo)
+morph::Tools::appendFile (std::istream& from, const std::string& appendTo)
 {
-    ofstream f;
-    f.open (appendTo.c_str(), ios::out|ios::app);
+    std::ofstream f;
+    f.open (appendTo.c_str(), std::ios::out|std::ios::app);
     if (!f.is_open()) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Failed to open output file '" << appendTo << "'";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
 
     char buf[64];
@@ -1646,22 +1643,22 @@ morph::Tools::appendFile (istream& from, const string& appendTo)
 }
 
 void
-morph::Tools::appendFile (const string& from, const string& appendTo)
+morph::Tools::appendFile (const std::string& from, const std::string& appendTo)
 {
-    ifstream fin;
-    fin.open (from.c_str(), ios::in);
+    std::ifstream fin;
+    fin.open (from.c_str(), std::ios::in);
     if (!fin.is_open()) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Failed to open input file '" << from << "'";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
 
-    ofstream f;
-    f.open (appendTo.c_str(), ios::out|ios::app);
+    std::ofstream f;
+    f.open (appendTo.c_str(), std::ios::out|std::ios::app);
     if (!f.is_open()) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Failed to open output file '" << appendTo << "'";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
 
     char buf[64];
@@ -1673,35 +1670,35 @@ morph::Tools::appendFile (const string& from, const string& appendTo)
 }
 
 void
-morph::Tools::truncateFile (const string& from,
-                            const string& to,
+morph::Tools::truncateFile (const std::string& from,
+                            const std::string& to,
                             const unsigned int bytes)
 {
-    ofstream out;
+    std::ofstream out;
 
-    out.open (to.c_str(), ios::out|ios::trunc);
+    out.open (to.c_str(), std::ios::out|std::ios::trunc);
     if (!out.is_open()) {
-        string emsg = "Tools::copyFile(): Couldn't open TO file '" + to + "'";
-        throw runtime_error (emsg);
+        std::string emsg = "Tools::copyFile(): Couldn't open TO file '" + to + "'";
+        throw std::runtime_error (emsg);
     }
 
-    ifstream in;
+    std::ifstream in;
 
     // Test that "from" is a regular file
     if (!Tools::regfileExists (from)) {
-        stringstream ee;
+        std::stringstream ee;
         ee << "Tools::truncateFile(): FROM file '"
            << from << "' is not a regular file";
-        throw runtime_error (ee.str());
+        throw std::runtime_error (ee.str());
     }
 
-    in.open (from.c_str(), ios::in);
+    in.open (from.c_str(), std::ios::in);
     if (!in.is_open()) {
-        throw runtime_error ("Tools::truncateFile(): Couldn't open FROM file");
+        throw std::runtime_error ("Tools::truncateFile(): Couldn't open FROM file");
     }
 
     if (!out) {
-        throw runtime_error ("Tools::truncateFile(): Error occurred in TO stream");
+        throw std::runtime_error ("Tools::truncateFile(): Error occurred in TO stream");
     }
 
     unsigned int loops(0);
@@ -1722,7 +1719,7 @@ morph::Tools::truncateFile (const string& from,
         // Find out how many were read
         unsigned int bytesCopied = in.gcount();
         if (bytesCopied != remaining) {
-            throw runtime_error ("copy error bytesCopied != remaining");
+            throw std::runtime_error ("copy error bytesCopied != remaining");
         }
         // and write that many to the output stream
         out.write (buf, bytesCopied);
@@ -1737,19 +1734,19 @@ morph::Tools::truncateFile (const string& from,
 }
 
 void
-morph::Tools::moveFile (const string& from, const string& to)
+morph::Tools::moveFile (const std::string& from, const std::string& to)
 {
     Tools::copyFile (from, to);
     Tools::unlinkFile (from);
 }
 
 void
-morph::Tools::unlinkFile (const string& fpath)
+morph::Tools::unlinkFile (const std::string& fpath)
 {
     int rtn = unlink (fpath.c_str());
     if (rtn) {
         int theError = errno;
-        string emsg;
+        std::string emsg;
         switch (theError) {
         case EPERM:
         case EACCES:
@@ -1790,36 +1787,36 @@ morph::Tools::unlinkFile (const string& fpath)
             break;
         }
 
-        throw runtime_error (emsg);
+        throw std::runtime_error (emsg);
     }
 }
 
 void
-morph::Tools::clearoutDir (const string& dirPath,
+morph::Tools::clearoutDir (const std::string& dirPath,
                            const unsigned int olderThanSeconds,
-                           const string& filePart)
+                           const std::string& filePart)
 {
-    vector<string> files;
+    std::vector<std::string> files;
     try {
         Tools::readDirectoryTree (files, dirPath, olderThanSeconds);
-    } catch (const exception& e) {
+    } catch (const std::exception& e) {
         //DBG ("Failed to read dir tree: " << e.what());
         return;
     }
-    vector<string>::iterator i = files.begin();
+    std::vector<std::string>::iterator i = files.begin();
     while (i != files.end()) {
-        string fpath = dirPath + "/" + *i;
+        std::string fpath = dirPath + "/" + *i;
         try {
             if (filePart.empty()) {
                 Tools::unlinkFile (fpath);
             } else {
                 // Must find filePart to unlink
-                if (i->find (filePart, 0) != string::npos) {
+                if (i->find (filePart, 0) != std::string::npos) {
                     Tools::unlinkFile (fpath);
                 } // else do nothing
             }
 
-        } catch (const exception& e) {
+        } catch (const std::exception& e) {
             //DBG ("Failed to unlink " << *i << ": " << e.what());
         }
         ++i;
@@ -1827,51 +1824,51 @@ morph::Tools::clearoutDir (const string& dirPath,
 }
 
 void
-morph::Tools::readDirectoryTree (vector<string>& vec,
-                                 const string& dirPath,
+morph::Tools::readDirectoryTree (std::vector<std::string>& vec,
+                                 const std::string& dirPath,
                                  const unsigned int olderThanSeconds)
 {
     Tools::readDirectoryTree (vec, dirPath, "", olderThanSeconds);
 }
 
 void
-morph::Tools::readDirectoryTree (vector<string>& vec,
-                                 const string& baseDirPath,
-                                 const string& subDirPath,
+morph::Tools::readDirectoryTree (std::vector<std::string>& vec,
+                                 const std::string& baseDirPath,
+                                 const std::string& subDirPath,
                                  const unsigned int olderThanSeconds)
 {
     DIR* d;
     struct dirent *ep;
     size_t entry_len = 0;
 
-    string dirPath (baseDirPath);
-    string sd (subDirPath);
+    std::string dirPath (baseDirPath);
+    std::string sd (subDirPath);
     if (!sd.empty()) {
         dirPath += "/" + sd;
     }
 
     if (!(d = opendir (dirPath.c_str()))) {
-        string msg = "Failed to open directory " + dirPath;
-        throw runtime_error (msg);
+        std::string msg = "Failed to open directory " + dirPath;
+        throw std::runtime_error (msg);
     }
 
     struct stat buf;
     while ((ep = readdir (d))) {
 
         unsigned char fileType;
-        string fileName = dirPath + "/" + (string)ep->d_name;
+        std::string fileName = dirPath + "/" + (std::string)ep->d_name;
 
         if (ep->d_type == DT_LNK) {
             // Is it a link to a directory or a file?
             struct stat * buf = NULL;
             buf = (struct stat*) malloc (sizeof (struct stat));
             if (!buf) { // Malloc error.
-                throw runtime_error ("Failed to malloc buf; "
+                throw std::runtime_error ("Failed to malloc buf; "
                                      "could not stat link " + fileName);
             }
             memset (buf, 0, sizeof(struct stat));
             if (stat (fileName.c_str(), buf)) {
-                throw runtime_error ("Failed to stat link " + fileName);
+                throw std::runtime_error ("Failed to stat link " + fileName);
             } else {
                 if (S_ISREG(buf->st_mode)) {
                     fileType = DT_REG;
@@ -1889,13 +1886,13 @@ morph::Tools::readDirectoryTree (vector<string>& vec,
         if (fileType == DT_DIR) {
 
             // Skip "." and ".." directories
-            if ( ((entry_len = strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
+            if ( ((entry_len = std::strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
                  (ep->d_name[1] == '\0' || ep->d_name[1] == '.') ) {
                 continue;
             }
 
             // For all other directories, recurse.
-            string newPath;
+            std::string newPath;
             if (sd.size() == 0) {
                 newPath = ep->d_name;
             } else {
@@ -1905,7 +1902,7 @@ morph::Tools::readDirectoryTree (vector<string>& vec,
                                       newPath.c_str(), olderThanSeconds);
         } else {
             // Non-directories are simply added to the vector
-            string newEntry;
+            std::string newEntry;
             if (sd.size() == 0) {
                 newEntry = ep->d_name;
             } else {
@@ -1941,16 +1938,16 @@ morph::Tools::readDirectoryTree (vector<string>& vec,
 }
 
 void
-morph::Tools::readDirectoryDirs (set<string>& dset,
-                                 const string& dirPath)
+morph::Tools::readDirectoryDirs (std::set<std::string>& dset,
+                                 const std::string& dirPath)
 {
     DIR* d;
     struct dirent *ep;
     size_t entry_len = 0;
 
     if (!(d = opendir (dirPath.c_str()))) {
-        string msg = "Failed to open directory " + dirPath;
-        throw runtime_error (msg);
+        std::string msg = "Failed to open directory " + dirPath;
+        throw std::runtime_error (msg);
     }
 
     while ((ep = readdir (d))) {
@@ -1958,7 +1955,7 @@ morph::Tools::readDirectoryDirs (set<string>& dset,
         if (ep->d_type == DT_DIR) {
 
             // Skip "." and ".." directories
-            if ( ((entry_len = strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
+            if ( ((entry_len = std::strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
                  (ep->d_name[1] == '\0' || ep->d_name[1] == '.') ) {
                 continue;
             }
@@ -1972,22 +1969,22 @@ morph::Tools::readDirectoryDirs (set<string>& dset,
 }
 
 void
-morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
-                                      const string& baseDirPath,
-                                      const string& subDir)
+morph::Tools::readDirectoryEmptyDirs (std::set<std::string>& dset,
+                                      const std::string& baseDirPath,
+                                      const std::string& subDir)
 {
     DIR* d;
     struct dirent *ep;
     size_t entry_len = 0;
 
-    string dirPath (baseDirPath);
+    std::string dirPath (baseDirPath);
     if (!subDir.empty()) {
         dirPath += "/" + subDir;
     }
 
     if (!(d = opendir (dirPath.c_str()))) {
-        string msg = "Failed to open directory " + dirPath;
-        throw runtime_error (msg);
+        std::string msg = "Failed to open directory " + dirPath;
+        throw std::runtime_error (msg);
     }
 
     unsigned int levelDirCount = 0;
@@ -1995,7 +1992,7 @@ morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
 
         if (ep->d_type == DT_DIR) {
             // Skip "." and ".." directories
-            if ( ((entry_len = strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
+            if ( ((entry_len = std::strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
                  (ep->d_name[1] == '\0' || ep->d_name[1] == '.') ) {
                 continue;
             }
@@ -2004,7 +2001,7 @@ morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
             // Because we found a directory, this current
             // directory ain't empty - recurse with a new
             // directory in the subDir path:
-            string newSubDir;
+            std::string newSubDir;
             if (subDir.empty()) {
                 newSubDir = (const char*)ep->d_name;
             } else {
@@ -2016,7 +2013,7 @@ morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
 
     if (levelDirCount == 0) {
         // No directories found here, check for files
-        vector<string> foundfiles;
+        std::vector<std::string> foundfiles;
         Tools::readDirectoryTree (foundfiles, dirPath);
         if (foundfiles.empty()) {
             dset.insert (subDir);
@@ -2027,10 +2024,10 @@ morph::Tools::readDirectoryEmptyDirs (set<string>& dset,
 }
 
 void
-morph::Tools::removeUnusedDirs (set<string>& dset,
-                                const string& dirPath)
+morph::Tools::removeUnusedDirs (std::set<std::string>& dset,
+                                const std::string& dirPath)
 {
-    set<string> onepass;
+    std::set<std::string> onepass;
     do {
         onepass.clear();
         Tools::removeEmptySubDirs (onepass, dirPath);
@@ -2039,22 +2036,22 @@ morph::Tools::removeUnusedDirs (set<string>& dset,
 }
 
 void
-morph::Tools::removeEmptySubDirs (set<string>& dset,
-                                  const string& baseDirPath,
-                                  const string& subDir)
+morph::Tools::removeEmptySubDirs (std::set<std::string>& dset,
+                                  const std::string& baseDirPath,
+                                  const std::string& subDir)
 {
     DIR* d;
     struct dirent *ep;
     size_t entry_len = 0;
 
-    string dirPath (baseDirPath);
+    std::string dirPath (baseDirPath);
     if (!subDir.empty()) {
         dirPath += "/" + subDir;
     }
 
     if (!(d = opendir (dirPath.c_str()))) {
-        string msg = "Failed to open directory " + dirPath;
-        throw runtime_error (msg);
+        std::string msg = "Failed to open directory " + dirPath;
+        throw std::runtime_error (msg);
     }
 
     unsigned int levelDirCount = 0;
@@ -2062,7 +2059,7 @@ morph::Tools::removeEmptySubDirs (set<string>& dset,
 
         if (ep->d_type == DT_DIR) {
             // Skip "." and ".." directories
-            if ( ((entry_len = strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
+            if ( ((entry_len = std::strlen (ep->d_name)) > 0 && ep->d_name[0] == '.') &&
                  (ep->d_name[1] == '\0' || ep->d_name[1] == '.') ) {
                 continue;
             }
@@ -2071,7 +2068,7 @@ morph::Tools::removeEmptySubDirs (set<string>& dset,
             // Because we found a directory, this current
             // directory ain't empty - recurse with a new
             // directory in the subDir path:
-            string newSubDir;
+            std::string newSubDir;
             if (subDir.empty()) {
                 newSubDir = (const char*)ep->d_name;
             } else {
@@ -2083,7 +2080,7 @@ morph::Tools::removeEmptySubDirs (set<string>& dset,
 
     if (levelDirCount == 0) {
         // No directories found here, check for files
-        vector<string> foundfiles;
+        std::vector<std::string> foundfiles;
         Tools::readDirectoryTree (foundfiles, dirPath);
 
         if (foundfiles.empty()) {
@@ -2097,15 +2094,15 @@ morph::Tools::removeEmptySubDirs (set<string>& dset,
     (void) closedir (d);
 }
 
-string
-morph::Tools::fileModDatestamp (const string& filename)
+std::string
+morph::Tools::fileModDatestamp (const std::string& filename)
 {
     struct stat * buf = NULL;
-    stringstream datestamp;
+    std::stringstream datestamp;
 
     buf = (struct stat*) malloc (sizeof (struct stat));
     if (!buf) { // Malloc error.
-        cout << "malloc error" << endl;
+        std::cout << "malloc error\n";
     }
     memset (buf, 0, sizeof(struct stat));
     if (stat (filename.c_str(), buf)) {
@@ -2115,18 +2112,18 @@ morph::Tools::fileModDatestamp (const string& filename)
     }
     if (buf) { free (buf); }
 
-    string dstr = datestamp.str();
+    std::string dstr = datestamp.str();
     return dstr;
 }
 
 bool
-morph::Tools::filesDiffer (const string& first, const string& second)
+morph::Tools::filesDiffer (const std::string& first, const std::string& second)
 {
     if (!(Tools::regfileExists (first)
           && Tools::regfileExists (second))) {
-        throw runtime_error ("Error: expecting two regular files");
+        throw std::runtime_error ("Error: expecting two regular files");
     }
-    string diffcmd = "diff " + first + " " + second + " >/dev/null 2>&1";
+    std::string diffcmd = "diff " + first + " " + second + " >/dev/null 2>&1";
     // diff returns zero if files are identical, non-zero if files
     // differ.
     return (system (diffcmd.c_str()) != 0);
@@ -2201,10 +2198,10 @@ morph::Tools::dateNow (void)
     return theDate;
 }
 
-string
+std::string
 morph::Tools::monthStr (const int month, const bool shortFormat)
 {
-    string rtn("");
+    std::string rtn("");
 
     if (shortFormat == true) {
         switch (month) {
@@ -2322,9 +2319,9 @@ morph::Tools::dateToNum (const std::string& dateStr)
         return -4;
     }
 
-    string year;
-    string month;
-    string day;
+    std::string year;
+    std::string month;
+    std::string day;
     unsigned int yearN=0, monthN=0, dayN=0;
 
     if (bigEndian) {
@@ -2350,7 +2347,7 @@ morph::Tools::dateToNum (const std::string& dateStr)
         }
     }
 
-    stringstream yearss, monthss, dayss;
+    std::stringstream yearss, monthss, dayss;
     yearss << year;
     yearss.width(4);
     yearss.fill ('0');
@@ -2377,7 +2374,7 @@ morph::Tools::dateToNum (const std::string& dateStr)
     t->tm_isdst = -1;
     time_t rtnTime = mktime (t);
     if (rtnTime == -1) {
-        throw runtime_error ("mktime() returned -1");
+        throw std::runtime_error ("mktime() returned -1");
     }
     free (t);
 
@@ -2406,9 +2403,9 @@ morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
         }
     }
 
-    string year;
-    string month;
-    string day;
+    std::string year;
+    std::string month;
+    std::string day;
     unsigned int yearN=0, monthN=0, dayN=0;
 
     year = dateTimeStr.substr (0,4);
@@ -2421,7 +2418,7 @@ morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
         day = dateTimeStr.substr (8,2);
     }
 
-    stringstream yearss, monthss, dayss;
+    std::stringstream yearss, monthss, dayss;
     yearss << year;
     yearss.width(4);
     yearss.fill ('0');
@@ -2437,13 +2434,13 @@ morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
     dayss.fill ('0');
     dayss >> dayN;
 
-    string hour;
-    string min;
-    string sec;
+    std::string hour;
+    std::string min;
+    std::string sec;
     unsigned int hourN=0, minN=0, secN=0;
 
-    string::size_type spacePos = dateTimeStr.find (" ", 0);
-    if (spacePos != string::npos) {
+    std::string::size_type spacePos = dateTimeStr.find (" ", 0);
+    if (spacePos != std::string::npos) {
         if (dateTimeStr[spacePos+3] < '0'
             || dateTimeStr[spacePos+3] > '9') {
             timeSeparator = dateTimeStr[spacePos+3];
@@ -2461,7 +2458,7 @@ morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
 
         //DBG ("hour: " << hour << " min: " << min << " sec: " << sec);
 
-        stringstream hourss, minss, secss;
+        std::stringstream hourss, minss, secss;
         hourss << hour;
         hourss.width(2);
         hourss.fill ('0');
@@ -2489,7 +2486,7 @@ morph::Tools::dateTimeToNum (const std::string &dateTimeStr)
     t->tm_isdst = -1;
     time_t rtnTime = mktime (t);
     if (rtnTime == -1) {
-        throw runtime_error ("mktime() returned -1");
+        throw std::runtime_error ("mktime() returned -1");
     }
     free (t);
 
@@ -2517,7 +2514,7 @@ morph::Tools::numToDateTime (const time_t epochSeconds,
     int theSec = t->tm_sec;
     free (t);
 
-    stringstream rtn;
+    std::stringstream rtn;
 
     // Date part
     rtn.width(4);
@@ -2571,7 +2568,7 @@ morph::Tools::numToDate (const time_t epochSeconds,
     int theYear = t->tm_year+1900;
     free (t);
 
-    stringstream rtn;
+    std::stringstream rtn;
     if (separator == '\0') {
         rtn.width(4);
         rtn.fill('0');
@@ -2597,7 +2594,7 @@ morph::Tools::numToDate (const time_t epochSeconds,
     return rtn.str();
 }
 
-string
+std::string
 morph::Tools::timeNow (void)
 {
     time_t curtime;
@@ -2608,19 +2605,19 @@ morph::Tools::timeNow (void)
 }
 
 // Similiar to futil::splitString() but FASTER.
-vector<string>
-morph::Tools::stringToVector (const string& s, const string& separator,
+std::vector<std::string>
+morph::Tools::stringToVector (const std::string& s, const std::string& separator,
                               const bool ignoreTrailingEmptyVal)
 {
     if (separator.empty()) {
-        throw runtime_error ("Can't split the string; the separator is empty.");
+        throw std::runtime_error ("Can't split the string; the separator is empty.");
     }
-    vector<string> theVec;
-    string entry("");
-    string::size_type sepLen = separator.size();
-    string::size_type a=0, b=0;
+    std::vector<std::string> theVec;
+    std::string entry("");
+    std::string::size_type sepLen = separator.size();
+    std::string::size_type a=0, b=0;
     while (a < s.size()
-           && (b = s.find (separator, a)) != string::npos) {
+           && (b = s.find (separator, a)) != std::string::npos) {
         entry = s.substr (a, b-a);
         theVec.push_back (entry);
         a=b+sepLen;
