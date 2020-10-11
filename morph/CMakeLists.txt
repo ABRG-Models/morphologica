@@ -13,7 +13,7 @@
 set(morphdisplay0src display.cpp)
 
 # Define which cpp files will be compiled into libmorphologica:
-set(morphlibsrc sockserve.cpp world.cpp ReadCurves.cpp HexGrid.cpp tools.cpp)
+set(morphlibsrc sockserve.cpp world.cpp ReadCurves.cpp HexGrid.cpp)
 
 # Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
