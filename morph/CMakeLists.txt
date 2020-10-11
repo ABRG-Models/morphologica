@@ -97,7 +97,7 @@ install(
   )
 
 if (${glfw3_FOUND})
-  install( FILES VisualBase.h Visual.h VisualModel.h VisualDataModel.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
+  install( FILES VisualBase.h Visual.h VisualModel.h VisualDataModel.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
 endif()
 
 # Install the EXPORT so that morphologica has its own .cmake file and find_package(morphologica) should work
