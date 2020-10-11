@@ -15,15 +15,6 @@ set(morphdisplay0src display.cpp)
 # Define which cpp files will be compiled into libmorphologica:
 set(morphlibsrc sockserve.cpp world.cpp ReadCurves.cpp HexGrid.cpp tools.cpp)
 
-# If we have glfw3 then compile in Seb's modern opengl visualization code
-if (${glfw3_FOUND})
-  message ("-- libglfw3 was found, compiling in Visual.cpp, etc")
-  set(morphlibsrc ${morphlibsrc} Visual.cpp)
-  # Add headers which contain functional code, so that changes in those files trigger rebuilds in relevant programs
-  set(morphlibsrc ${morphlibsrc} Visual.h VisualBase.h VisualModel.h VisualDataModel.h VisualDefaultShaders.h)
-  set(morphlibsrc ${morphlibsrc} QuiverVisual.h ScatterVisual.h TriangleVisual.h QuadsVisual.h PointRowsVisual.h HexGridVisual.h)
-endif()
-
 # Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
   message ("-- Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")
