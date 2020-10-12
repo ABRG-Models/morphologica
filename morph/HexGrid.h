@@ -198,14 +198,6 @@ namespace morph {
                     this->d_nse[hi->di] = -1;
                 }
 
-#ifdef DEBUG__
-                DBG("d_[" << hi->di << "] has NNE: " << this->d_nne[hi->di]
-                    << ", NNW: " << this->d_nnw[hi->di]
-                    << ", NW: " << this->d_nw[hi->di]
-                    << ", NSW: " << this->d_nsw[hi->di]
-                    << ", NSE: " << this->d_nse[hi->di]
-                    << ", NE: " << this->d_ne[hi->di]);
-#endif
                 ++hi;
             }
         }
@@ -1037,8 +1029,6 @@ namespace morph {
                         }
                     }
                 }
-                DBG2 ("Hex: " << h->vi <<"  d to bndry: " << h->distToBoundary
-                      << " on bndry? " << (h->testFlags(HEX_IS_BOUNDARY)?"Y":"N"));
                 ++h;
             }
         }
@@ -1075,13 +1065,8 @@ namespace morph {
                     }
                     ++hi;
                 }
-                DBG ("hi is on bottom row, posn xy:" << hi->x << "," << hi->y
-                     << " or rg:" << hi->ri << "," << hi->gi);
-                while (hi->has_nw() == true) {
-                    hi = hi->nw;
-                }
-                DBG ("hi is at bottom left posn xy:" << hi->x << "," << hi->y
-                     << " or rg:" << hi->ri << "," << hi->gi);
+                // hi now on bottom row; so travel west
+                while (hi->has_nw() == true) { hi = hi->nw; }
 
                 // hi should now be the bottom left hex.
                 blh = hi;
@@ -1111,16 +1096,11 @@ namespace morph {
 
                     this->d_push_back (hi);
 
-                    DBG2 ("Pushed back flags: " << hi->getFlags()
-                          << " for r/g: " << hi->ri << "," << hi->gi);
-
                     if (hi->has_ne() == false) {
                         if (hi->gi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
-                            DBG ("Fin. (top row)");
                             break;
                         } else {
-
                             if (next_row_ne == true) {
                                 hi = blh->nne;
                                 next_row_ne = false;
@@ -1130,7 +1110,6 @@ namespace morph {
                                 next_row_ne = true;
                                 blh = hi;
                             }
-
                             this->d_push_back (hi);
                         }
                     }
@@ -1147,9 +1126,7 @@ namespace morph {
                     if (hi->has_ne() == false) {
                         // New hex has no NE, so it is on end of row.
                         if (hi->gi == extnts[3]) {
-                            // on end of top row and no neighbour east, so finished.
-                            DBG ("Fin. (top row)");
-                            // push back and break
+                            // on end of top row and no neighbour east, so finished; push back and break
                             this->d_push_back (hi);
                             break;
                         } else {
@@ -1175,7 +1152,7 @@ namespace morph {
                     hi++;
                 }
             }
-            DBG ("Size of d_x: " << this->d_x.size() << " and d_size=" << this->d_size);
+
             this->populate_d_neighbours();
         }
 
@@ -1421,10 +1398,7 @@ namespace morph {
         {
             // Use span_x to determine how many rings out to traverse.
             float halfX = this->x_span/2.0f;
-            DBG ("halfX:" << halfX);
-            DBG ("d:" << d);
             unsigned int maxRing = std::abs(std::ceil(halfX/this->d));
-            DBG ("ceil(halfX/d):" << std::ceil(halfX/d));
 
             DBG ("Creating hexagonal hex grid with maxRing: " << maxRing);
 
@@ -1471,8 +1445,6 @@ namespace morph {
 
             for (unsigned int ring = 1; ring <= maxRing; ++ring) {
 
-                DBG2 ("\n\n************** numInRing: " << numInRing << " ******************");
-
                 // Set start ri, gi. This moves up a hex and left a hex onto the start hex of the new ring.
                 --ri; ++gi;
 
@@ -1480,14 +1452,10 @@ namespace morph {
 
                 // Now walk around the ring, in 6 walks, that will bring us round to just before we
                 // started. walkstart has the starting iterator number for the vertices of the hexagon.
-                DBG2 ("Before r; walkinc: " << walkinc << ", walkmin: " << walkmin
-                      << ", walkmax: " << walkmax);
 
                 // Walk in the r direction first:
-                DBG2 ("============ r walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
 
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri++, gi);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1499,39 +1467,26 @@ namespace morph {
                     // 1. Set my W neighbour to be the previous hex in THIS ring, if possible
                     if (i > 0) {
                         hi->set_nw (lasthi);
-                        DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as E neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
-                        // Set me as E neighbour to previous hex in the ring:
+                        // Set me (hi) as E neighbour to previous hex in the ring (lasthi):
                         lasthi->set_ne (hi);
-                    } else {
-                        // i must be 0 in this case, we would set the SW neighbour now, but as this won't
-                        // have been added to the ring, we have to leave it.
-                        DBG2 (" r walk: I am (" << hi->ri << "," << hi->gi
-                              << "). Omitting SW neighbour of first hex in ring.");
                     }
+                    // else i must be 0 in this case, we would set the SW neighbour now,
+                    // but as this won't have been added to the ring, we have to leave it
 
                     // 2. SW neighbour
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j << ", walk min/max: " << walkmin << " " << walkmax);
                     if (j>walkmin && j<walkmax) {
                         // Set my SW neighbour:
                         hi->set_nsw ((*prevRing)[j]);
                         // Set me as NE neighbour to those in prevRing:
-                        DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NE neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nne (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my SE neighbour:
                     if (j<=walkmax) {
                         hi->set_nse ((*prevRing)[j]);
                         // Set me as NW neighbour:
-                        DBG2 (" r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NW neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nnw (hi);
                     }
 
@@ -1543,11 +1498,7 @@ namespace morph {
                 walkmax   += walkinc;
 
                 // Walk in -b direction
-                DBG2 ("Before -b; walkinc: " << walkinc << ", walkmin: " << walkmin
-                      << ", walkmax: " << walkmax);
-                DBG2 ("=========== -b walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri++, gi--);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1559,44 +1510,29 @@ namespace morph {
                     // 1. Set my NW neighbour to be the previous hex in THIS ring, if possible
                     if (i > 0) {
                         hi->set_nnw (lasthi);
-                        DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SE neighbour for hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as SE neighbour to previous hex in the ring:
                         lasthi->set_nse (hi);
                     } else {
                         // Set my W neighbour for the first hex in the row.
                         hi->set_nw (lasthi);
-                        DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as E neighbour for last walk's hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as E neighbour to previous hex in the ring:
                         lasthi->set_ne (hi);
                     }
 
                     // 2. W neighbour
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j << " prevRing->size(): " <<prevRing->size() );
                     if (j>walkmin && j<walkmax) {
                         // Set my W neighbour:
                         hi->set_nw ((*prevRing)[j]);
                         // Set me as E neighbour to those in prevRing:
-                        DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as E neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_ne (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my SW neighbour:
-                    DBG2 ("i is " << i << ", j is " << j);
                     if (j<=walkmax) {
                         hi->set_nsw ((*prevRing)[j]);
                         // Set me as NE neighbour:
-                        DBG2 ("-b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NE neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nne (hi);
                     }
 
@@ -1605,13 +1541,10 @@ namespace morph {
                 walkstart += walkinc;
                 walkmin += walkinc;
                 walkmax += walkinc;
-                DBG2 ("walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
 
                 // Walk in -g direction
-                DBG2 ("=========== -g walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
 
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri, gi--);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1623,43 +1556,29 @@ namespace morph {
                     // 1. Set my NE neighbour to be the previous hex in THIS ring, if possible
                     if (i > 0) {
                         hi->set_nne (lasthi);
-                        DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SW neighbour for hex at (" << lasthi->ri << ","
-                              << lasthi->gi << ")");
                         // Set me as SW neighbour to previous hex in the ring:
                         lasthi->set_nsw (hi);
                     } else {
                         // Set my NW neighbour for the first hex in the row.
                         hi->set_nnw (lasthi);
-                        DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SE neighbour for last walk's hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as SE neighbour to previous hex in the ring:
                         lasthi->set_nse (hi);
                     }
 
                     // 2. NW neighbour
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j);
                     if (j>walkmin && j<walkmax) {
                         // Set my NW neighbour:
                         hi->set_nnw ((*prevRing)[j]);
                         // Set me as SE neighbour to those in prevRing:
-                        DBG2 ("-g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SE neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nse (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my W neighbour:
                     if (j<=walkmax) {
                         hi->set_nw ((*prevRing)[j]);
                         // Set me as E neighbour:
-                        DBG2 ("-g walk: Set me (" << hi->ri << ","
-                              << hi->gi << ") as E neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_ne (hi);
                     }
 
@@ -1669,13 +1588,10 @@ namespace morph {
                 walkstart += walkinc;
                 walkmin += walkinc;
                 walkmax += walkinc;
-                DBG2 ("walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
 
                 // Walk in -r direction
-                DBG2 ("=========== -r walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
 
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri--, gi);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1687,42 +1603,29 @@ namespace morph {
                     // 1. Set my E neighbour to be the previous hex in THIS ring, if possible
                     if (i > 0) {
                         hi->set_ne (lasthi);
-                        DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as W neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as W neighbour to previous hex in the ring:
                         lasthi->set_nw (hi);
                     } else {
                         // Set my NE neighbour for the first hex in the row.
                         hi->set_nne (lasthi);
-                        DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SW neighbour for last walk's hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as SW neighbour to previous hex in the ring:
                         lasthi->set_nsw (hi);
                     }
 
                     // 2. NE neighbour:
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j);
                     if (j>walkmin && j<walkmax) {
                         // Set my NE neighbour:
                         hi->set_nne ((*prevRing)[j]);
                         // Set me as SW neighbour to those in prevRing:
-                        DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SW neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nsw (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my NW neighbour:
                     if (j<=walkmax) {
                         hi->set_nnw ((*prevRing)[j]);
                         // Set me as SE neighbour:
-                        DBG2 ("-r walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SE neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nse (hi);
                     }
 
@@ -1731,12 +1634,9 @@ namespace morph {
                 walkstart += walkinc;
                 walkmin += walkinc;
                 walkmax += walkinc;
-                DBG2 ("walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
 
                 // Walk in b direction
-                DBG2 ("============ b walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri--, gi++);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1748,43 +1648,29 @@ namespace morph {
                     // 1. Set my SE neighbour to be the previous hex in THIS ring, if possible
                     if (i > 0) {
                         hi->set_nse (lasthi);
-                        DBG2 (" b in-ring: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NW neighbour for hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as NW neighbour to previous hex in the ring:
                         lasthi->set_nnw (hi);
                     } else { // i == 0
                         // Set my E neighbour for the first hex in the row.
                         hi->set_ne (lasthi);
-                        DBG2 (" b in-ring: Set me (" << hi->ri << ","
-                              << hi->gi << ") as W neighbour for last walk's hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as W neighbour to previous hex in the ring:
                         lasthi->set_nw (hi);
                     }
 
                     // 2. E neighbour:
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j);
                     if (j>walkmin && j<walkmax) {
                         // Set my E neighbour:
                         hi->set_ne ((*prevRing)[j]);
                         // Set me as W neighbour to those in prevRing:
-                        DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as W neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nw (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my NE neighbour:
                     if (j<=walkmax) {
                         hi->set_nne ((*prevRing)[j]);
                         // Set me as SW neighbour:
-                        DBG2 (" b walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as SW neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nsw (hi);
                     }
 
@@ -1793,13 +1679,10 @@ namespace morph {
                 walkstart += walkinc;
                 walkmin += walkinc;
                 walkmax += walkinc;
-                DBG2 ("walkinc: " << walkinc << ", walkmin: " << walkmin << ", walkmax: " << walkmax);
 
                 // Walk in g direction up to almost the last hex
-                DBG2 ("============ g walk =================");
                 for (unsigned int i = 0; i<ringSideLen; ++i) {
 
-                    DBG2 ("Adding hex at " << ri << "," << gi);
                     this->hexen.emplace_back (vi++, this->d, ri, gi++);
                     auto hi = this->hexen.end(); hi--;
                     auto lasthi = hi;
@@ -1809,67 +1692,44 @@ namespace morph {
                     if (i==0) { vertexW = hi; }
 
                     // 1. Set my SW neighbour to be the previous hex in THIS ring, if possible
-                    DBG2(" g walk: i is " << i << " and ringSideLen-1 is " << (ringSideLen-1));
                     if (i == (ringSideLen-1)) {
                         // Special case at end; on last g walk hex, set the NE neighbour Set my NE neighbour
                         // for the first hex in the row.
-                        hi->set_nne ((*nextPrevRing)[0]); // (*nextPrevRing)[0] is an iterator to the first
-                        // hex
-
-                        DBG2 (" g in-ring: Set me (" << hi->ri << ","
-                              << hi->gi << ") as SW neighbour for this ring's first hex at ("
-                              << (*nextPrevRing)[0]->ri << "," << (*nextPrevRing)[0]->gi << ")");
+                        hi->set_nne ((*nextPrevRing)[0]); // (*nextPrevRing)[0] is an iterator to the first hex
                         // Set me as NW neighbour to previous hex in the ring:
                         (*nextPrevRing)[0]->set_nsw (hi);
-
                     }
                     if (i > 0) {
                         hi->set_nsw (lasthi);
-                        DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NE neighbour for hex at (" << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as NE neighbour to previous hex in the ring:
                         lasthi->set_nne (hi);
                     } else {
                         // Set my SE neighbour for the first hex in the row.
                         hi->set_nse (lasthi);
-                        DBG2 (" g in-ring: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NW neighbour for last walk's hex at ("
-                              << lasthi->ri << "," << lasthi->gi << ")");
                         // Set me as NW neighbour to previous hex in the ring:
                         lasthi->set_nnw (hi);
                     }
 
                     // 2. E neighbour:
                     int j = walkstart + (int)i - 1;
-                    DBG2 ("i is " << i << ", j is " << j);
                     if (j>walkmin && j<walkmax) {
                         // Set my SE neighbour:
                         hi->set_nse ((*prevRing)[j]);
                         // Set me as NW neighbour to those in prevRing:
-                        DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as NW neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nnw (hi);
                     }
                     ++j;
-                    DBG2 ("i is " << i << ", j is " << j);
 
                     // 3. Set my E neighbour:
                     if (j==walkmax) { // We're on the last square and need to set the East neighbour of the
                         // first hex in the last ring.
                         hi->set_ne ((*prevRing)[0]);
                         // Set me as W neighbour:
-                        DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as W neighbour for hex at ("
-                              << (*prevRing)[0]->ri << "," << (*prevRing)[0]->gi << ")");
                         (*prevRing)[0]->set_nw (hi);
 
                     } else if (j<walkmax) {
                         hi->set_ne ((*prevRing)[j]);
                         // Set me as W neighbour:
-                        DBG2 (" g walk: Set me (" << hi->ri << "," << hi->gi
-                              << ") as W neighbour for hex at ("
-                              << (*prevRing)[j]->ri << "," << (*prevRing)[j]->gi << ")");
                         (*prevRing)[j]->set_nw (hi);
                     }
 
@@ -1895,10 +1755,8 @@ namespace morph {
                 // Swap prevRing and nextPrevRing.
                 std::vector<std::list<morph::Hex>::iterator>* tmp = prevRing;
                 prevRing = nextPrevRing;
-                DBG2 ("New prevRing contains " << prevRing->size() << " elements");
                 nextPrevRing = tmp;
             }
-
             DBG ("Finished creating " << this->hexen.size() << " hexes in " << maxRing << " rings.");
         }
 
@@ -2008,13 +1866,9 @@ namespace morph {
         {
             bool rtn = false;
             std::list<morph::Hex>::const_iterator hi_next;
-
-            DBG2 ("Inserting " << hi->vi << " into seen (and bhexen) which is Hex (" << hi->ri << "," << hi->gi<<")");
             seen.insert (hi->vi);
             // Insert into the list of Hex pointers, too
             this->bhexen.push_back ((morph::Hex*)&(*hi));
-
-            DBG2 (hi->output());
 
             if (rtn == false && hi->has_ne() && hi->ne->testFlags(HEX_IS_REGION_BOUNDARY) == true && seen.find(hi->ne->vi) == seen.end()) {
                 hi_next = hi->ne;
@@ -2043,16 +1897,8 @@ namespace morph {
 
             if (rtn == false) {
                 // Checked all neighbours
-                if (hi == bhi) {
-                    DBG2 ("Back at start, nowhere left to go! return true.");
-                    rtn = true;
-                } else {
-                    DBG2 ("Back at hi=(" << hi->ri << "," << hi->gi << "), while bhi=(" <<  bhi->ri << "," << bhi->gi << "), return false");
-                    rtn = false;
-                }
+                if (hi == bhi) { rtn = true; }
             }
-
-            DBG2 ("Region boundary " << (rtn ? "IS" : "isn't") << " contiguous so far...");
 
             return rtn;
         }
@@ -2269,10 +2115,9 @@ namespace morph {
             bool warning_given = false;
 #endif
             while (straight->testFlags(bdryFlag) == false) {
-                DBG2 ("Set insideBoundary true");
+                // Set insideBoundary true
                 straight->setFlag (insideFlag);
                 if (straight->has_neighbour(firsti)) {
-                    DBG2 ("has neighbour in " << firsti << " dirn");
                     straight = straight->get_neighbour (firsti);
                 } else {
                     // no further neighbour in this direction
@@ -2339,21 +2184,17 @@ namespace morph {
             // From each boundary hex, loop round all 6 neighbours until we get to a new neighbour
             for (unsigned short i = 0; i < 6 && gotnextneighbour == false; ++i) {
 
-                DBG2 ("Looking at boundary neighbour in dirn i: " << morph::Hex::neighbour_pos(i));
-
                 // This is "if it's a neighbour and the neighbour is a boundary hex"
                 if (bhi->has_neighbour(i) && bhi->get_neighbour(i)->testFlags(bdryFlag)) {
 
-                    DBG2 (morph::Hex::neighbour_pos(i) << " is a candidate boundary hex");
                     // cbhi is "candidate boundary hex iterator", now guaranteed to be a boundary hex
                     std::list<morph::Hex>::iterator cbhi = bhi->get_neighbour(i);
 
                     // Test if the candidate boundary hex is in the 'recently seen' deque
                     bool hex_already_seen = false;
                     for (auto rs : recently_seen) {
-                        DBG2 ("Comparing " << rs->outputCart() << " with " << cbhi->outputCart());
                         if (rs == cbhi) {
-                            DBG2 ("This candidate hex has been recently seen. continue to next i...");
+                            // This candidate hex has been recently seen. continue to next i
                             hex_already_seen = true;
                         }
                     }
@@ -2364,22 +2205,10 @@ namespace morph {
                     // Go round each of the candidate boundary hex's neighbours (but j!=i)
                     for (unsigned short j = 0; j < 6; ++j) {
 
-                        DBG2 ("Candidate neighbour dirn j: " << j);
-
-                        // Ignore the candidate boundary hex itself
-                        if (j==i_opp) {
-                            DBG2 ("i's neighbour to the " << morph::Hex::neighbour_pos (j) << " is the candidate iself, continue to next i");
-                            continue;
-                        }
-#ifdef DEBUG2
-                        if (cbhi->has_neighbour(j)) {
-                            DBG ("i candidate has another neighbour to the " << morph::Hex::neighbour_pos (j)
-                                 << " which is Inside:" << (cbhi->get_neighbour(j)->testFlags(insideFlag)?"Y":"N")
-                                 << " Boundary:" << (cbhi->get_neighbour(j)->testFlags(bdryFlag)?"Y":"N"));
-                        } else {
-                            DBG ("No neighbour to " << morph::Hex::neighbour_pos (j));
-                        }
-#endif
+                        // Ignore the candidate boundary hex itself. if j==i_opp, then
+                        // i's neighbour in dirn morph::Hex::neighbour_pos(j) is the
+                        // candidate iself, continue to next i
+                        if (j==i_opp) { continue; }
 
                         // What is this logic. If the candidate boundary hex (which is already
                         // known to be on the boundary) has a neighbour which is inside the
@@ -2388,17 +2217,9 @@ namespace morph {
                         if (cbhi->has_neighbour(j)
                             && cbhi->get_neighbour(j)->testFlags(insideFlag)==true
                             && cbhi->get_neighbour(j)->testFlags(bdryFlag)==false) {
-
-                            DBG2 ("Pushing " << bhi->outputCart() << " on to recently_seen");
                             recently_seen.push_back (bhi);
-                            if (recently_seen.size() > n_recents) {
-                                DBG2 ("Popping front element off recently_seen");
-                                recently_seen.pop_front();
-                            }
-
+                            if (recently_seen.size() > n_recents) { recently_seen.pop_front(); }
                             bhi = cbhi;
-                            DBG2 ("Next boundary neighbour in direction " << morph::Hex::neighbour_pos (i) << " from bhi");
-
                             gotnextneighbour = true;
                             break;
                         }
@@ -2427,7 +2248,6 @@ namespace morph {
             std::list<morph::Hex>::iterator bhi_start = bhi;
 
             // Mark from first boundary hex and across the region
-            DBG ("markFromBoundary with hex " << bhi->outputCart());
             this->markFromBoundary (bhi, bdryFlag, insideFlag);
 
             // a deque to hold the 'n_recents' most recently seen boundary hexes.
@@ -2457,35 +2277,29 @@ namespace morph {
             float odd_addn = 0.0f;
             float addleft = 0;
             if (extnts[2]%2 == 0) {
-                DBG ("bottom row has EVEN gi (" << extnts[2] << ")");
+                // bottom row has EVEN gi (extnts[2])
                 even_addn = 0.0f;
                 odd_addn = 0.5f;
             } else {
-                DBG ("bottom row has ODD gi (" << extnts[2] << ")");
+                // bottom row has odd gi (extnts[2])
                 addleft += 0.5f;
             }
 
             if (std::abs(extnts[2]%2) == std::abs(extnts[4]%2)) {
                 // Left most hex is on a parity-matching line to bottom line, no need to add left.
-                DBG("Left most hex on line matching parity of bottom line");
             } else {
                 // Need to add left.
-                DBG("Left most hex NOT on line matching parity of bottom line add left to BL hex");
                 if (extnts[2]%2 == 0) {
                     addleft += 1.0f;
                     // For some reason, only in this case do we addleft (and not in the case where BR is
                     // ODD and Left most hex NOT matching, which makes addleft = 0.5 + 0.5). I can't work
                     // it out.
-                    DBG ("Before: d_rowlen " << d_rowlen << " d_size " << d_size);
                     this->d_rowlen += addleft;
                     this->d_size = this->d_rowlen * this->d_numrows;
-                    DBG ("after: d_rowlen " << d_rowlen << " d_size " << d_size);
                 } else {
                     addleft += 0.5f;
                 }
             }
-
-            DBG ("FINAL addleft is: " << addleft);
 
             auto hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
@@ -2499,22 +2313,14 @@ namespace morph {
 
                 if (hz < (extnts[0] - addleft + parityhalf)) {
                     // outside
-                    DBG2 ("Outside. gi:" << hi->gi << ". Horz idx: " << hz
-                          << " < extnts[0]-addleft+parityhalf: " << extnts[0] << "-" << addleft
-                          << "+" << parityhalf);
                 } else if (hz > (extnts[1] + parityhalf)) {
                     // outside
-                    DBG2 ("Outside. gi:" << hi->gi << ". Horz idx: " << hz
-                          << " > extnts[1]+parityhalf: " << extnts[0] << "+" << parityhalf);
                 } else if (hi->gi < extnts[2]) {
                     // outside
-                    DBG2 ("Outside. Vert idx: " << hi->gi << " < extnts[2]: " << extnts[2]);
                 } else if (hi->gi > extnts[3]) {
                     // outside
-                    DBG2 ("Outside. Vert idx: " << hi->gi << " > extnts[3]: " << extnts[3]);
                 } else {
                     // inside
-                    DBG2 ("INSIDE. Horz,vert index: " << hz << "," << hi->gi);
                     hi->setInsideDomain();
                 }
                 ++hi;
@@ -2658,11 +2464,6 @@ namespace morph {
             rtn[2] = (int)(limits[2] / d_gi);
             rtn[3] = (int)(limits[3] / d_gi);
 
-            DBG ("ll,lr,lb,lt:     {" << limits[0] << "," << limits[1] << "," << limits[2]
-                 << "," << limits[3] << "}");
-            DBG ("d_ri: " << d_ri << ", d_gi: " << d_gi);
-            DBG ("ril,rir,gib,git: {" << rtn[0] << "," << rtn[1] << "," << rtn[2] << "," << rtn[3] << "}");
-
             // Add 'growth buffer'
             rtn[0] -= this->d_growthbuffer_horz;
             rtn[1] += this->d_growthbuffer_horz;
@@ -2725,9 +2526,6 @@ namespace morph {
                 }
                 ++hi;
             }
-            DBG ("Nearest Hex to " << pos.first << "," << pos.second
-                 << " is (r,g):" << nearest->ri << "," << nearest->gi
-                 << " (x,y):" << nearest->x << "," << nearest->y);
             return nearest;
         }
 
