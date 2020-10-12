@@ -63,11 +63,7 @@ find_package(OpenCV REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
-
-# The config keyword means find the morphologica that was compiled and
-# installed on this computer, i.e. it has configured locations for
-# library paths.
-find_package(morphologica CONFIG REQUIRED)
+find_package(morphologica REQUIRED)
 
 #
 # All the library finding is now done. It's time to compile the program.
@@ -87,7 +83,6 @@ target_link_libraries(schnakenberg ${OpenCV_LIBS})
 target_link_libraries(schnakenberg ${LAPACK_LIBRARIES})
 target_link_libraries(schnakenberg OpenGL::GL)
 target_link_libraries(schnakenberg glfw)
-target_link_libraries(schnakenberg morphologica) # For ReadCurves only, now
 
 if(OpenMP_FOUND)
   target_link_libraries(schnakenberg OpenMP::OpenMP_CXX)
