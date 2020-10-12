@@ -9,11 +9,11 @@
 # morphologica code can read an Adobe Illustrator or Inkscape file.
 #
 
-# Old display code:
-set(morphdisplay0src display.cpp)
+# Old display code (and world and sockserv):
+set(morphdisplay0src display.cpp world.cpp sockserve.cpp)
 
 # Define which cpp files will be compiled into libmorphologica:
-set(morphlibsrc sockserve.cpp world.cpp ReadCurves.cpp)
+set(morphlibsrc ReadCurves.cpp)
 
 # Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
