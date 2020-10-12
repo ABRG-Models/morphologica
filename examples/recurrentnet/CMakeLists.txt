@@ -68,6 +68,7 @@ find_package(morphologica CONFIG REQUIRED)
 
 add_executable(recurrentnet recurrentnet.cpp)
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
+# Use of HexGridVisual brings requirement for HexGrid, which is not yet header-only.
 target_link_libraries(recurrentnet morphologica)
 if(OpenMP_FOUND)
   target_link_libraries(recurrentnet OpenMP::OpenMP_CXX)
