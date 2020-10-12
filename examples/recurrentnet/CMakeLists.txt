@@ -64,12 +64,26 @@ find_package(OpenGL REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(jsoncpp REQUIRED)
-find_package(morphologica CONFIG REQUIRED)
+find_package(Armadillo REQUIRED)
+find_package(morphologica REQUIRED)
 
+# Define which code makes up the recurrent net program
 add_executable(recurrentnet recurrentnet.cpp)
+
+# Define how recurrentnet will be compiled
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
-# Use of HexGridVisual brings requirement for HexGrid, which is not yet header-only.
-target_link_libraries(recurrentnet morphologica)
+
+# Set the linking for the recurrentnet program:
+#
+# jsoncpp is required for morph::Config:
+target_link_libraries(recurrentnet jsoncpp_lib)
+# For morph::HdfData:
+target_link_libraries(recurrentnet ${HDF5_C_LIBRARIES})
+# Armadillo is used by Bezier class code which is used in morph::HexGrid:
+target_link_libraries(recurrentnet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+# To enable morph::Visual we need OpenCV and GL libraries:
+target_link_libraries(recurrentnet ${OpenCV_LIBS} OpenGL::GL glfw)
+# Here's the right way to enable libomp for parallel processing:
 if(OpenMP_FOUND)
   target_link_libraries(recurrentnet OpenMP::OpenMP_CXX)
 endif()
