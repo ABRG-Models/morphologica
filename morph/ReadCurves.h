@@ -14,7 +14,7 @@
 #include <vector>
 #include <map>
 #include <utility>
-#include <rapidxml.hpp>
+#include <morph/rapidxml.hpp>
 #include <morph/BezCurvePath.h>
 #include <morph/AllocAndRead.h>
 #include <morph/tools.h>

@@ -12,9 +12,6 @@
 # Old display code (and world and sockserv):
 set(morphdisplay0src display.cpp world.cpp sockserve.cpp)
 
-# Define which cpp files will be compiled into libmorphologica:
-set(morphlibsrc "")
-
 # Link to the special armadillo libpath, if requested
 if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
   message ("-- Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")

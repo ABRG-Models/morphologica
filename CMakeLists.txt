@@ -118,8 +118,8 @@ include_directories(${HDF5_INCLUDE_DIR})
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
 
-# rapidxml is bundled in the source:
-include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
+# rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
+#include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
 # OpenGL code needs the local include directory, too
 include_directories("${PROJECT_SOURCE_DIR}/include")
