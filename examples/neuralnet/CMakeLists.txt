@@ -56,23 +56,20 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# Find the libraries which will be needed
+# Find the libraries which will be needed.
 find_package(OpenCV REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(HDF5 REQUIRED)
-find_package(jsoncpp REQUIRED)
-find_package(glfw3 QUIET)
-find_package(morphologica CONFIG REQUIRED)
+# Find morphologica to ensure that its headers are available.
+find_package(morphologica REQUIRED)
 
 # 3 executables
 add_executable(ff_small ff_small.cpp)
 add_executable(ff_mnist ff_mnist.cpp)
 add_executable(ff_debug ff_debug.cpp)
 
-# All the linking is set up here
-target_link_libraries(ff_small morphologica)
-target_link_libraries(ff_mnist morphologica)
-target_link_libraries(ff_debug morphologica)
+# All the linking is set up here. Only header-only morph includes are used.
+target_link_libraries(ff_small ${OpenCV_LIBS})
+target_link_libraries(ff_mnist ${OpenCV_LIBS})
+target_link_libraries(ff_debug ${OpenCV_LIBS})
 
 # For debugging of variables:
 option(DEBUG_VARIABLES OFF)
