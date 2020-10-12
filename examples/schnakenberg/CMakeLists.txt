@@ -56,21 +56,13 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
 # Find the libraries which will be needed
-find_package(OpenCV REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(HDF5 REQUIRED)
+find_package(Armadillo REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
-
-# Oddly, the build succeeds (at least on Mac) without
-# find_package(Armadillo) - the link to the library is passed through
-# with morphologica-config.cmake, unlike all the others. I think it's
-# down to differences in the ways that packages create their
-# package-config.cmake files.
-if(0)
-  find_package(Armadillo REQUIRED)
-endif()
-
 
 # The config keyword means find the morphologica that was compiled and
 # installed on this computer, i.e. it has configured locations for
@@ -85,9 +77,18 @@ add_executable(schnakenberg schnakenberg.cpp)
 # Set compiler definitions. The size of our floats and the option to
 # compile in the realtime visualization.
 target_compile_definitions(schnakenberg PUBLIC FLT=float COMPILE_PLOTTING)
-# Only one link is mentioned - to morphologica. Other links are pulled
-# in from morphologica-config.cmake.
-target_link_libraries(schnakenberg morphologica)
+
+# Morphologica code requires a number of libraries. I've listed one
+# target_link_libraries() line for each of these.
+target_link_libraries(schnakenberg jsoncpp_lib)
+target_link_libraries(schnakenberg ${HDF5_C_LIBRARIES})
+target_link_libraries(schnakenberg ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
+target_link_libraries(schnakenberg ${OpenCV_LIBS})
+target_link_libraries(schnakenberg ${LAPACK_LIBRARIES})
+target_link_libraries(schnakenberg OpenGL::GL)
+target_link_libraries(schnakenberg glfw)
+target_link_libraries(schnakenberg morphologica) # For ReadCurves only, now
+
 if(OpenMP_FOUND)
   target_link_libraries(schnakenberg OpenMP::OpenMP_CXX)
 endif()
