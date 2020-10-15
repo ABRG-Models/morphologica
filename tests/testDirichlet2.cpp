@@ -8,19 +8,20 @@
 #include <iostream>
 #define DBGSTREAM std::cout
 #define DEBUG 1
-#include "morph/MorphDbg.h"
+#include <morph/MorphDbg.h>
 
-#include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
-#include "morph/display.h"
-#include "morph/tools.h"
+#include <morph/HexGrid.h>
+#include <morph/ReadCurves.h>
+#include <morph/display.h>
+#include <morph/tools.h>
+#include <morph/ColourMap.h>
 #include <vector>
 #include <list>
 #include <array>
 #include <stdexcept>
 #include <unistd.h>
 
-#include "morph/ShapeAnalysis.h"
+#include <morph/ShapeAnalysis.h>
 
 using namespace morph;
 using namespace std;
@@ -112,32 +113,32 @@ int main()
         // plot stuff here.
         array<float,3> offset = {{0, 0, 0}};
         array<float,3> offset2 = {{0, 0, 0.001}};
-        array<float,3> cl_b = morph::Tools::getJetColorF (0.78);
+        array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.78);
         float sz = hg.hexen.front().d;
         for (auto h : hg.hexen) {
-            array<float,3> cl_a = morph::Tools::getJetColorF (f[h.vi]);
+            array<float,3> cl_a = morph::ColourMap<float>::jetcolour (f[h.vi]);
             disp.drawHex (h.position(), offset, (sz/2.0f), cl_a);
             if (h.boundaryHex()) {
                 disp.drawHex (h.position(), offset2, (sz/12.0f), cl_b);
             }
         }
 
-        array<float,3> cl_c = morph::Tools::getJetColorF (0.98);
+        array<float,3> cl_c = morph::ColourMap<float>::jetcolour (0.98);
         for (auto verti : vertices) {
             array<float,3> posn = {{0,0,0.002}};
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
             if (verti.onBoundary == true) {
-                cl_c = morph::Tools::getJetColorF (0.98);
+                cl_c = morph::ColourMap<float>::jetcolour (0.98);
             } else {
-                cl_c = morph::Tools::getJetColorF (0.18);
+                cl_c = morph::ColourMap<float>::jetcolour (0.18);
             }
             disp.drawHex (posn, offset2, (sz/8.0f), cl_c);
         }
 
         array<float,3> offset3 = {{0, 0, 0.001}};
-        array<float,3> cl_d = morph::Tools::getJetColorF (0.7);
-        array<float,3> cl_e = morph::Tools::getJetColorF (0.01);
+        array<float,3> cl_d = morph::ColourMap<float>::jetcolour (0.7);
+        array<float,3> cl_e = morph::ColourMap<float>::jetcolour (0.01);
         for (auto dom_outer : domains) {
             for (auto dom_inner : dom_outer.vertices) {
                 // Draw the paths

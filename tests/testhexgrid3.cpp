@@ -1,12 +1,11 @@
-#include "morph/tools.h"
+#include <morph/tools.h>
+#include <morph/ColourMap.h>
 #include <utility>
 #include <iostream>
 #include <unistd.h>
-
-#include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
-
-#include "morph/display.h"
+#include <morph/HexGrid.h>
+#include <morph/ReadCurves.h>
+#include <morph/display.h>
 
 using namespace morph;
 using namespace std;
@@ -44,8 +43,8 @@ int main()
         disp.resetDisplay (fix, eye, rot);
 
         // plot stuff here.
-        array<float,3> cl_a = morph::Tools::getJetColorF (0.78);
-        array<float,3> cl_b = morph::Tools::getJetColorF (0.58);
+        array<float,3> cl_a = morph::ColourMap<float>::jetcolour (0.78);
+        array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.58);
         array<float,3> offset = {{0, 0, 0}};
         for (auto h : hg.hexen) {
             if (h.boundaryHex()) {
@@ -60,8 +59,8 @@ int main()
         hg.offsetCentroid(); // FAILS
 
         // Redraw
-        cl_a = morph::Tools::getJetColorF (0.08);
-        cl_b = morph::Tools::getJetColorF (0.28);
+        cl_a = morph::ColourMap<float>::jetcolour (0.08);
+        cl_b = morph::ColourMap<float>::jetcolour (0.28);
         for (auto h : hg.hexen) {
             h.z-=0.1;
             if (h.boundaryHex()) {
@@ -83,7 +82,7 @@ int main()
         cout << "boundaryCentroid x,y: " << c[0] << "," << c[1] << endl;
 
         // red hex at zero
-        array<float,3> cl_aa = morph::Tools::getJetColorF (0.98);
+        array<float,3> cl_aa = morph::ColourMap<float>::jetcolour (0.98);
         array<float,3> pos = { { 0, 0, 0} };
         disp.drawHex (pos, 0.05, cl_aa);
 

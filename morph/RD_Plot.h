@@ -10,8 +10,9 @@
 
 #warning "Use of RD_Plot.h is now deprecated in favour of morph::Visual"
 
-#include "morph/display.h"
-#include "morph/HexGrid.h"
+#include <morph/display.h>
+#include <morph/HexGrid.h>
+#include <morph/ColourMap.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -157,12 +158,12 @@ namespace morph {
                     std::array<float,3> cl_a = {{0,0,0}};
                     if (this->scalarFieldsSingleColour == true) {
                         if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
-                            cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
+                            cl_a = morph::ColourMap<float>::hsv2rgb (this->singleColourHue, norm_a[i][h.vi], 1.0);
                         } else {
-                            cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                            cl_a = morph::ColourMap<float>::hsv2rgb ((float)i/(float)N, norm_a[i][h.vi], 1.0);
                         }
                     } else {
-                        cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
+                        cl_a = morph::ColourMap<float>::jetcolour (norm_a[i][h.vi]);
                     }
                     disp.drawHex (h.position(), offset, (h.d/2.0f), cl_a);
                 }
@@ -221,16 +222,16 @@ namespace morph {
                     std::array<float,3> cl_a = {{0,0,0}};
                     if (this->scalarFieldsSingleColour == true) {
                         if (this->singleColourHue >= 0.0 && this->singleColourHue <= 1.0) {
-                            cl_a = morph::Tools::HSVtoRGB (this->singleColourHue, norm_a[i][h.vi], 1.0);
+                            cl_a = morph::ColourMap<float>::hsv2rgb (this->singleColourHue, norm_a[i][h.vi], 1.0);
                         } else {
                             if (f[i][h.vi] == -1) {
                                 cl_a = {{1.0,1.0,1.0}};
                             } else {
-                                cl_a = morph::Tools::HSVtoRGB ((float)i/(float)N, norm_a[i][h.vi], 1.0);
+                                cl_a = morph::ColourMap<float>::hsv2rgb ((float)i/(float)N, norm_a[i][h.vi], 1.0);
                             }
                         }
                     } else {
-                        cl_a = morph::Tools::getJetColorF (norm_a[i][h.vi]);
+                        cl_a = morph::ColourMap<float>::jetcolour (norm_a[i][h.vi]);
                     }
                     std::array<float,3> pn = h.position();
                     pn[0] *= spacescale;
@@ -351,11 +352,7 @@ namespace morph {
             // Coloured boundaries
             float r = hg->hexen.begin()->getSR();
             for (unsigned int i = 0; i<N; ++i) {
-#ifdef _OLD_
-                std::array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
-#else
-                std::array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
-#endif
+                std::array<float,3> cl_b = morph::ColourMap<float>::jetcolour ((Flt)i/(Flt)N);
                 for (auto h : contourHexes[i]) {
                     disp.drawHex (h.position(), offset_ar, r, cl_b);
                 }
@@ -437,11 +434,7 @@ namespace morph {
             std::array<float,3> zero_offset = {0.0f, 0.0f, 0.0f};
 
             for (unsigned int i = 0; i<N; ++i) {
-#ifdef _OLD_
-                std::array<float,3> cl_b = morph::Tools::HSVtoRGB ((Flt)i/(Flt)N, 1.0, 1.0);
-#else
-                std::array<float,3> cl_b = morph::Tools::getJetColorF ((Flt)i/(Flt)N);
-#endif
+                std::array<float,3> cl_b = morph::ColourMap<float>::jetcolour ((float)i/(float)N);
                 for (auto h : hg->hexen) {
                     if (h.onBoundary() == false) {
                         if (norm_f[i][h.vi]<threshold) {

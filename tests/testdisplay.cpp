@@ -1,5 +1,6 @@
-#include "morph/display.h"
-#include "morph/tools.h"
+#include <morph/display.h>
+#include <morph/tools.h>
+#include <morph/ColourMap.h>
 #include <utility>
 #include <iostream>
 #include <unistd.h>
@@ -29,7 +30,7 @@ int main()
 
         d.resetDisplay (fix, eye, rot);
 
-        array<float,3> cl_a = morph::Tools::getJetColorF (0.98);
+        array<float,3> cl_a = morph::ColourMap<float>::jetcolour (0.98);
         array<float,3> pos = { { 0, 0, 0} };
         d.drawHex (pos, 0.5, cl_a);
         d.redrawDisplay();

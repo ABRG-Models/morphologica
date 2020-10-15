@@ -1,8 +1,9 @@
-#include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
-#include "morph/tools.h"
+#include <morph/HexGrid.h>
+#include <morph/ReadCurves.h>
+#include <morph/tools.h>
+#include <morph/ColourMap.h>
 #include <iostream>
-#include "morph/display.h"
+#include <morph/display.h>
 #include <unistd.h>
 
 using namespace morph;
@@ -62,8 +63,8 @@ int main()
         disp.resetDisplay (fix, eye, rot);
 
         // plot stuff here.
-        array<float,3> cl_a = morph::Tools::getJetColorF (0.78);
-        array<float,3> cl_b = morph::Tools::getJetColorF (0.58);
+        array<float,3> cl_a = morph::ColourMap<float>::jetcolour (0.78);
+        array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.58);
         array<float,3> offset = {{0, 0, 0}};
         for (auto h : hg.hexen) {
             if (h.boundaryHex()) {

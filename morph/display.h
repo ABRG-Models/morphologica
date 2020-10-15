@@ -118,7 +118,7 @@ namespace morph {
         void redrawDisplay();
         void closeDisplay();
 
-        //! Copied from Tools
+        //! For use only in this deprecated code. Normally, prefer morph::ColourMap<>::jetcolour()
         static array<float,3> getJetColorF (double gray);
 
         void drawHex(double,double,double,double,double,double,double);

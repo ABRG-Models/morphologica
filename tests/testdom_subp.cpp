@@ -1,11 +1,11 @@
-#include "morph/display.h"
-#include "morph/tools.h"
+#include <morph/display.h>
+#include <morph/tools.h>
+#include <morph/ColourMap.h>
 #include <utility>
 #include <iostream>
 #include <unistd.h>
-
-#include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
+#include <morph/HexGrid.h>
+#include <morph/ReadCurves.h>
 
 using namespace std;
 
@@ -42,11 +42,11 @@ int main()
         disp.resetDisplay (fix, eye, rot);
 
         // plot stuff here.
-        array<float,3> cl_boundary_and_in = morph::Tools::getJetColorF (0.9);
-        array<float,3> cl_bndryonly = morph::Tools::getJetColorF (0.8);
-        array<float,3> cl_domain = morph::Tools::getJetColorF (0.5);
-        array<float,3> cl_inside = morph::Tools::getJetColorF (0.15);
-        array<float,3> cl_subp = morph::Tools::getJetColorF (0.25);
+        array<float,3> cl_boundary_and_in = morph::ColourMap<float>::jetcolour (0.9);
+        array<float,3> cl_bndryonly = morph::ColourMap<float>::jetcolour (0.8);
+        array<float,3> cl_domain = morph::ColourMap<float>::jetcolour (0.5);
+        array<float,3> cl_inside = morph::ColourMap<float>::jetcolour (0.15);
+        array<float,3> cl_subp = morph::ColourMap<float>::jetcolour (0.25);
         array<float,3> offset = {{0, 0, 0}};
         for (auto h : hg.hexen) {
             if (h.boundaryHex && h.insideBoundary) {
@@ -68,7 +68,7 @@ int main()
         }
 
         // Draw small hex at boundary centroid
-        array<float,3> cl_aa = morph::Tools::getJetColorF (0.98);
+        array<float,3> cl_aa = morph::ColourMap<float>::jetcolour (0.98);
         array<float,3> c;
         c[2] = 0;
         c[0] = hg.boundaryCentroid.first;
