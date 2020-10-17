@@ -3,8 +3,8 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
-This c++ code builds a shared library called libmorphologica which
-contains **simulation support facilities** for our simulations of
+This header-only c++ code installs headers which
+contain **simulation support facilities** for our simulations of
 dynamical systems.
 
 It helps with:
@@ -87,10 +87,16 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Installation
 
-morphologica is built with cmake and requires OpenCV, OpenGL,
-armadillo, GLFW and HDF5 libraries as dependencies. The process to
-build and install morphologica is given in README.install.linux.md for
-GNU/Linux and README.install.mac.md for Apple Mac.
+Morphologica can be used in your code tree without installation. Just
+include the path to morphologica when compiling, so that 
+```c++
+#include <morph/Header.h>
+```
+will work. morphologica has a
+library of legacy code and some test programs which are built with cmake
+and require OpenCV, OpenGL, armadillo, GLFW and HDF5 libraries as 
+dependencies. The process to build and install morphologica is given in 
+README.install.linux.md for GNU/Linux and README.install.mac.md for Apple Mac.
 
 ## Credits
 
