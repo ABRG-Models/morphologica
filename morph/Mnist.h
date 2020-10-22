@@ -34,6 +34,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <map>
 #include <vector>
@@ -79,7 +80,10 @@ namespace morph {
             lbl_f.open (lbl_p.c_str(), std::ios::in | std::ios::binary);
 
             if (!img_f.is_open() || !lbl_f.is_open()) {
-                throw std::runtime_error ("Mnist: File access error opening MNIST data files");
+                std::stringstream ee;
+                ee << "Mnist: File access error opening MNIST data files: "
+                   << img_p << " (images) and " << lbl_p << " (labels)";
+                throw std::runtime_error (ee.str());
             }
 
             // Process training data magic number, stuff
