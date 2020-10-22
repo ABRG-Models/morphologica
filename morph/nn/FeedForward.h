@@ -99,14 +99,14 @@ namespace morph {
                     // Copy part of weights to wpart (M elements):
                     std::copy (witer, witer+this->M, wpart.begin());
                     // Compute dot product with input and add bias:
-                    this->z[j] += wpart.dot (*in) + *biter++;
-                    std::cout << "z[j=" << j << "]=" << this->z[j] << std::endl;
+                    this->z[j] = wpart.dot (*in) + *biter++;
+                    //std::cout << "z[j=" << j << "]=" << this->z[j] << std::endl;
                     *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
                     // Move to the next part of the weight matrix for the next loop
                     witer += this->M;
                 }
             }
-
+#if 0 // Will need this
             void applyTransfer()
             {
                 auto oiter = this->out->begin();
@@ -114,7 +114,7 @@ namespace morph {
                     *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
                 }
             }
-
+#endif
             //! The content of *FeedForwardConn::out is sigmoid(z^l+1). \return has size N
             morph::vVector<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
 
