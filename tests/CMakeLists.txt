@@ -215,7 +215,7 @@ endif()
 
 # Test morph::Process class
 if(APPLE)
-  message("-- NB: Omitting testProcess.cpp on Mac got now, as it doesn't work.")
+  message("-- NB: Omitting testProcess.cpp on Mac for now, as it doesn't work.")
 else(APPLE)
   add_executable(testProcess testProcess.cpp)
   add_test(testProcess testProcess)
@@ -307,3 +307,13 @@ add_test(testWinder testWinder)
 # Test RandString generation
 add_executable(testRandString testRandString.cpp)
 add_test(testRandString testRandString)
+
+# Neural nets
+add_executable(elman1 elman1.cpp)
+add_test(elman1 elman1)
+add_executable(ff_debug ff_debug.cpp)
+add_test(ff_debug ff_debug)
+
+# Remove (leave this in examples/neuralnet)
+#add_executable(ff_mnist ff_mnist.cpp)
+#target_link_libraries(ff_mnist ${OpenCV_LIBS})

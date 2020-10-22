@@ -13,27 +13,61 @@
 #include <iostream>
 #include <sstream>
 #include <ostream>
+#include <vector>
 
 namespace morph {
     namespace nn {
 
         /*!
-         * A connection between neuron layers in a simple, stacked neural network. This
-         * connects a number of input neuron populations to a single output population.
+         * A connection between neuron layers in a feed forward neural network. This
+         * connects any number of input neuron populations to a single output
+         * population.
          */
         template <typename T>
         struct FeedForwardConn
         {
+            //! Construct for connection from single input layer to single output layer
             FeedForwardConn (morph::vVector<T>* _in, morph::vVector<T>* _out)
             {
-                this->in = _in;
+                this->ins.resize(1);
+                this->ins[0] = _in;
+                this->M = _in->size();
+
+                this->commonInit (_out);
+            }
+
+            //! Construct for connection from many input layers to single output layer
+            FeedForwardConn (std::vector<morph::vVector<T>*> _ins, morph::vVector<T>* _out)
+            {
+                this->ins = _ins;
+                this->M = 0;
+                for (auto _in : this->ins) { this->M += _in->size(); }
+
+                this->commonInit(_out);
+            }
+
+            //! Init common to all constructors
+            void commonInit (morph::vVector<T>* _out)
+            {
                 this->out = _out;
-                this->M = this->in->size();
                 this->N = this->out->size();
-                this->delta.resize (M, T{0});
-                this->w.resize (M*N, T{0});
-                this->nabla_w.resize (M*N, T{0});
-                this->nabla_w.zero();
+                //this->delta.resize (M, T{0});
+                this->deltas.resize (this->ins.size());
+                for (unsigned int i = 0; i < this->deltas.size(); ++i) {
+                    this->deltas[i].resize (this->ins[i]->size(), T{0});
+                }
+                //this->w.resize (M*N, T{0});
+                this->ws.resize (this->ins.size());
+                for (unsigned int i = 0; i < this->ws.size(); ++i) {
+                    this->ws[i].resize(this->ins[i]->size() * this->N, T{0});
+                }
+                //this->nabla_w.resize (M*N, T{0});
+                this->nabla_ws.resize (this->ins.size());
+                for (unsigned int i = 0; i < this->nabla_ws.size(); ++i) {
+                    this->nabla_ws[i].resize(this->ins[i]->size() * this->N, T{0});
+                    this->nabla_ws[i].zero();
+                }
+                //this->nabla_w.zero();
                 this->b.resize (N, T{0});
                 this->nabla_b.resize (N, T{0});
                 this->nabla_b.zero();
@@ -42,20 +76,20 @@ namespace morph {
             }
 
             //! Input layer has size M.
-            morph::vVector<T>* in;
+            std::vector<morph::vVector<T>*> ins;
             size_t M = 0;
             //! Pointer to output layer. Size N.
             morph::vVector<T>* out;
             size_t N = 0;
-            //! The errors in the input layer of neurons. Size M.
-            morph::vVector<T> delta;
+            //! The errors in the input layer of neurons. Size M = m1 + m2 +...
+            std::vector<morph::vVector<T>> deltas;
             //! Weights.
-            //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N.
-            morph::vVector<T> w;
+            //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N = m1xN + m2xN +...
+            std::vector<morph::vVector<T>> ws;
             //! Biases. Size N.
             morph::vVector<T> b;
-            //! The gradients of cost vs. weights. Size M by N.
-            morph::vVector<T> nabla_w;
+            //! The gradients of cost vs. weights. Size M by N = m1xN + m2xN +...
+            std::vector<morph::vVector<T>> nabla_ws;
             //! The gradients of cost vs. biases. Size N.
             morph::vVector<T> nabla_b;
             //! Activation of the output neurons. Computed in feedforward, used in backprop
@@ -66,18 +100,21 @@ namespace morph {
             std::string str() const
             {
                 std::stringstream ss;
+                ss << "FIXME\n";
+#if 0
                 ss << "Weights: w" << w << "w (" << w.size() << ")\n";
                 ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
                 ss << " Biases: b" << b << "b (" << b.size() << ")\n";
                 ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
                 ss << "delta  :  " << delta << "\n";
+#endif
                 return ss.str();
             }
 
             //! Randomize the weights and biases
             void randomize()
             {
-                this->w.randomizeN (T{0.0}, T{1.0});
+                for (auto& w : this->ws) { w.randomizeN (T{0.0}, T{1.0}); }
                 this->b.randomizeN (T{0.0}, T{1.0});
             }
 
@@ -88,38 +125,53 @@ namespace morph {
             //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
             void feedforward()
             {
-                // A morph::vVector for a 'part of w'
-                morph::vVector<T> wpart(this->in->size()); // Size M
-                // Get weights, outputs and biases iterators
-                auto witer = this->w.begin();
-                auto oiter = this->out->begin();
-                auto biter = this->b.begin();
-                // Carry out an N sized for loop computing each output
-                for (size_t j = 0; j < this->N; ++j) { // Each output
-                    // Copy part of weights to wpart (M elements):
-                    std::copy (witer, witer+this->M, wpart.begin());
-                    // Compute dot product with input and add bias:
-                    this->z[j] = wpart.dot (*in) + *biter++;
-                    //std::cout << "z[j=" << j << "]=" << this->z[j] << std::endl;
-                    *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
-                    // Move to the next part of the weight matrix for the next loop
-                    witer += this->M;
+                // First, for each output, set the activation, z to 0
+                for (size_t j = 0; j < this->N; ++j) { this->z[j] = 0; }
+
+                // For each input population:
+                for (size_t i = 0; i < this->ins.size(); ++i) {
+                    // A morph::vVector for a 'part of w'
+                    size_t m = this->ins[i]->size();// Size m[i]
+                    morph::vVector<T> wpart(m);
+                    // Get weights, outputs and biases iterators
+                    auto witer = this->ws[i].begin();
+                    // Carry out an N sized for loop computing each output
+                    for (size_t j = 0; j < this->N; ++j) { // Each output
+                        // Copy part of weights to wpart (M elements):
+                        std::copy (witer, witer+m, wpart.begin());
+                        // Compute/accumulate dot product with input
+                        this->z[j] += wpart.dot (*ins[i]);
+                        // Move to the next part of the weight matrix for the next loop
+                        witer += m;
+                    }
                 }
+
+                // Finally, for each output, apply the transfer function
+                this->applyTransfer();
             }
-#if 0 // Will need this
+
+            //! For each output, add bias and apply transfer
             void applyTransfer()
             {
                 auto oiter = this->out->begin();
-                for (size_t j = 0; j < this->N; ++j) { // Each output
+                auto biter = this->b.begin();
+                for (size_t j = 0; j < this->N; ++j) {
+                    this->z[j] += *biter++;
                     *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
                 }
             }
-#endif
+
             //! The content of *FeedForwardConn::out is sigmoid(z^l+1). \return has size N
             morph::vVector<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
 
-            //! The content of *FeedForwardConn::in is sigmoid(z^l). \return has size M
-            morph::vVector<T> sigmoid_prime_z_l() { return (*in) * (-(*in)+T{1}); }
+            //! The content of *FeedForwardConn::in is sigmoid(z^l). \return has size M = m1 + m2 +...
+            std::vector<morph::vVector<T>> sigmoid_prime_z_l() {
+                std::vector<morph::vVector<T>> rtn (this->ins.size());
+                for (size_t i = 0; i < this->ins.size(); ++i) {
+                    rtn[i] = (*ins[i]) * (-(*ins[i])+T{1});
+                }
+                return rtn;
+            }
 
             /*!
              * Compute this->delta using the values computed in FeedForwardConn::feedforward
@@ -127,6 +179,7 @@ namespace morph {
              */
             void backprop (const morph::vVector<T>& delta_l_nxt) // delta_l_nxt has size N.
             {
+#if 0 // Urgh
                 if (delta_l_nxt.size() != this->out->size()) {
                     throw std::runtime_error ("backprop: Mismatched size");
                 }
@@ -152,6 +205,7 @@ namespace morph {
                         this->nabla_w[i+(this->M*j)] = (*in)[i] * delta_l_nxt[j];
                     }
                 }
+#endif
             }
         };
 
