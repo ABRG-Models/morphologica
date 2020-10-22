@@ -315,5 +315,5 @@ add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
 
 # Remove (leave this in examples/neuralnet)
-#add_executable(ff_mnist ff_mnist.cpp)
-#target_link_libraries(ff_mnist ${OpenCV_LIBS})
+add_executable(ff_mnist ff_mnist.cpp)
+target_link_libraries(ff_mnist ${OpenCV_LIBS})

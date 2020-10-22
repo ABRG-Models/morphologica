@@ -150,7 +150,7 @@ namespace morph {
                 for (;citer != this->connections.begin();) {
                     auto citer_closertooutput = citer--;
                     // Now citer is closer to input
-                    citer->backprop (citer_closertooutput->delta);
+                    citer->backprop (citer_closertooutput->deltas[0]);
                 }
             }
 

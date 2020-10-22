@@ -34,7 +34,7 @@ int main()
 
     ff1.feedforward();
     ff1.computeCost();
-    //ff1.backprop();
+    ff1.backprop();
 
     std::cout << "\n\nAFTER feedforward/backprop\n---------------------------\n";
     std::cout << ff1 << std::endl;

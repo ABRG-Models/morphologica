@@ -179,33 +179,48 @@ namespace morph {
              */
             void backprop (const morph::vVector<T>& delta_l_nxt) // delta_l_nxt has size N.
             {
-#if 0 // Urgh
                 if (delta_l_nxt.size() != this->out->size()) {
                     throw std::runtime_error ("backprop: Mismatched size");
                 }
                 // we have to do weights * delta_l_nxt to give a morph::vVector<T>
                 // result. This is the equivalent of the matrix multiplication:
-                morph::vVector<T> w_times_delta(this->in->size());
-                w_times_delta.zero();
-                for (size_t i = 0; i < this->M; ++i) { // Each input
-                    for (size_t j = 0; j < this->N; ++j) { // Each output
-                        // For each weight fanning into neuron j in l_nxt, sum up:
-                        w_times_delta[i] += this->w[i+(this->M*j)] * delta_l_nxt[j];
+                std::vector<morph::vVector<T>> w_times_deltas(this->ins.size());
+                for (size_t idx = 0; idx < this->ins.size(); ++idx) {
+                    size_t m = this->ins[idx]->size();
+                    w_times_deltas[idx].resize(m);
+                    w_times_deltas[idx].zero();
+                    for (size_t i = 0; i < m; ++i) { // Each input
+                        for (size_t j = 0; j < this->N; ++j) { // Each output
+                            // For each weight fanning into neuron j in l_nxt, sum up:
+                            w_times_deltas[idx][i] += this->ws[idx][i+(m*j)] * delta_l_nxt[j];
+                        }
                     }
                 }
-                morph::vVector<T> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
-                this->delta = w_times_delta * spzl;
+
+                std::vector<morph::vVector<T>> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
+
+                if (spzl.size() < this->deltas.size()) {
+                    throw std::runtime_error ("Sizes error (spzl and deltas)");
+                }
+
+                for (size_t idx = 0; idx < this->deltas.size(); ++idx) {
+                    this->deltas[idx] = w_times_deltas[idx] * spzl[idx];
+                }
 
                 // NB: In a given connection, we compute nabla_b and nabla_w relating to the
                 // *output* neurons and the weights also related to the output neurons.
+
                 this->nabla_b = delta_l_nxt; // Size is N
-                for (size_t i = 0; i < this->M; ++i) { // Each input
-                    for (size_t j = 0; j < this->N; ++j) { // Each output
-                        // nabla_w is a_in * delta_out:
-                        this->nabla_w[i+(this->M*j)] = (*in)[i] * delta_l_nxt[j];
+
+                for (size_t idx = 0; idx < this->ins.size(); ++idx) {
+                    size_t m = this->ins[idx]->size();
+                    for (size_t i = 0; i < m; ++i) { // Each input
+                        for (size_t j = 0; j < this->N; ++j) { // Each output
+                            // nabla_w is a_in * delta_out:
+                            this->nabla_ws[idx][i+(m*j)] = (*(ins[idx]))[i] * delta_l_nxt[j];
+                        }
                     }
                 }
-#endif
             }
         };
 
