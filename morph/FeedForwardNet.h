@@ -1,36 +1,38 @@
 /*!
  * \file
  *
- * This file contains an Elman neural network class, whose neuron layer sizes can be
- * configured at runtime.
+ * This file contains a feed-forward neural network class, whose neuron
+ * sizes can be configured at runtime.
  *
  * \author Seb James
- * \date October 2020
+ * \date May 2020
  */
 #pragma once
 
-#include <ostream>
+#include <morph/FeedForward.h>
+#include <morph/vVector.h>
+#include <iostream>
 #include <list>
 #include <vector>
 #include <sstream>
-#include <iostream>
-#include <morph/vVector.h>
-#include <morph/FeedForward.h>
+#include <ostream>
+#include <map>
 
 namespace morph {
     namespace nn {
 
         /*!
-         * An Elman network, in which an input layer feeds forward to a hidden layer,
-         * which feeds forward to an output layer, and also back to a context (or
-         * memory) layer, which then feeds forward to the hidden layer.
+         * A feedforward network class which holds a runtime-selectable set of neuron
+         * layers and the connections between the layers. Note that in this class, the
+         * connections are always between adjacent layers; from layer l to layer l+1.
          */
         template <typename T>
-        struct ElmanNet
+        struct FeedForwardNet
         {
             //! Constructor takes a vector specifying the number of neurons in each layer (\a
             //! layer_spec)
-            ElmanNet (const std::vector<unsigned int>& layer_spec) {
+            FeedForwardNet (const std::vector<unsigned int>& layer_spec)
+            {
                 // Set up initial conditions
                 for (auto nn : layer_spec) {
                     // Create, and zero, a layer containing nn neurons:
@@ -48,7 +50,7 @@ namespace morph {
                         --l;
                         auto lm1 = l;
                         --lm1;
-                        FeedForwardConn<T> c(&*lm1, &*l);
+                        morph::nn::FeedForwardConn<T> c(&*lm1, &*l);
                         c.randomize();
                         this->connections.push_back (c);
                     }
@@ -56,7 +58,8 @@ namespace morph {
             }
 
             //! Output the network as a string
-            std::string str() const {
+            std::string str() const
+            {
                 std::stringstream ss;
                 unsigned int i = 0;
                 auto c = this->connections.begin();
@@ -73,17 +76,16 @@ namespace morph {
             }
 
             //! Update the network's outputs from its inputs
-            void feedforward() {
-                size_t cn = this->connections.size();
-                for (auto& c : this->connections) {
-                    this->connections[i].feedforward();
-                }
+            void feedforward()
+            {
+                for (auto& c : this->connections) { c.feedforward(); }
             }
 
             //! A function which shows the difference between the network output and
             //! desiredOutput for debugging
             void evaluate (const std::vector<morph::vVector<float>>& ins,
-                           const std::vector<morph::vVector<float>>& outs) {
+                           const std::vector<morph::vVector<float>>& outs)
+            {
                 auto op = outs.begin();
                 for (auto ir : ins) {
                     // Set input and output
@@ -96,14 +98,40 @@ namespace morph {
                 }
             }
 
-#if 0
-            //! Evaluate against a test dataset
-            unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData) {}
-#endif
+            // FIXME: Put in a derived class specifically for Mnist handling.
+            //! Evaluate against the Mnist test image set
+            unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000)
+            {
+                // For each image in testData, compute cost
+                float evalcost = 0.0f;
+                unsigned int numMatches = 0;
+                int count = 0;
+                for (auto img : testData) {
+                    unsigned int key = static_cast<unsigned int>(img.first);
+                    // Set input
+                    this->neurons.front() = img.second;
+                    // Set output
+                    this->desiredOutput.zero();
+                    this->desiredOutput[key] = 1.0f;
+                    // Update
+                    this->feedforward();
+                    evalcost += this->computeCost();
+                    // Success?
+                    if (this->neurons.back().argmax() == key) {
+                        ++numMatches;
+                    }
+                    ++count;
+                    if (count >= num) {
+                        break;
+                    }
+                }
+                return numMatches;
+            }
 
             //! Determine the error gradients by the backpropagation method. NB: Call
             //! computeCost() first
-            void backprop() {
+            void backprop()
+            {
                 // Notation follows http://neuralnetworksanddeeplearning.com/chap2.html
                 // The output layer is special, as the error in the output layer is given by
                 //
@@ -127,13 +155,15 @@ namespace morph {
             }
 
             //! Set up an input along with desired output
-            void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput) {
+            void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput)
+            {
                 *(this->neurons.begin()) = theInput;
                 this->desiredOutput = theOutput;
             }
 
             //! Compute the cost for one input and one desired output
-            T computeCost() {
+            T computeCost()
+            {
                 // Here is where we compute delta_out:
                 this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
                 // And the cost:
@@ -147,30 +177,18 @@ namespace morph {
 
             //! A variable number of neuron layers, each of variable size.
             std::list<morph::vVector<T>> neurons;
-
-            //! Context neuron layers - those that are fed back to. This size of this list is
-            //! neurons.size()-2 - that is there is one context layer for each hidden layer in
-            //! the feedforward stack.
-            std::list<morph::vVector<T>> contextNeurons;
-
             //! Connections. There should be neurons.size()-1 connection layers:
-            std::list<FeedForwardConn<T>> connections;
-
-            //! The connections from context layers to hidden layers. Should be one for each
-            //! entry in contextlayers
-            std::list<FeedForwardConn<T>> contextConnections;
-
+            std::list<morph::nn::FeedForwardConn<T>> connections;
             //! The error (dC/dz) of the output layer
             morph::vVector<T> delta_out;
-
             //! The desired output of the network
             morph::vVector<T> desiredOutput;
         };
 
         template <typename T>
-        std::ostream& operator<< (std::ostream& os, const morph::nn::ElmanNet<T>& el)
+        std::ostream& operator<< (std::ostream& os, const morph::nn::FeedForwardNet<T>& ff)
         {
-            os << el.str();
+            os << ff.str();
             return os;
         }
     } // namespace nn
