@@ -1,12 +1,13 @@
 #
-# This file controls the compilation and linking of libmorphologica,
-# along with a library of the older visualisation code, called
-# libmorphdisplay0
+# This file controls the compilation and linking of the older
+# visualisation code, called libmorphdisplay0, and the installation of
+# the header files.
 #
 # It also controls the compilation of the executable testboundary,
 # which is a utility program which reads an svg file, then creates a
 # HexGrid and shows the boundary. It's useful to demonstrate that the
-# morphologica code can read an Adobe Illustrator or Inkscape file.
+# morphologica ReadCurves code can read an Adobe Illustrator or
+# Inkscape file.
 #
 
 # Old display code (and world and sockserv):
@@ -39,8 +40,10 @@ install(TARGETS morphdisplay0 EXPORT morphologica LIBRARY DESTINATION ${CMAKE_IN
 # Header installation
 install(
   FILES display.h Quaternion.h sockserve.h tools.h world.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h MathConst.h MathAlgo.h MathImpl.h number_type.h Hex.h HexGrid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h RD_Plot.h NM_Simplex.h Config.h Vector.h vVector.h TransformMatrix.h ColourMap.h ColourMap_Lists.h Scale.h Random.h RecurrentNetworkTools.h RecurrentNetwork.h Winder.h expression_sfinae.h
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
+Mnist.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
+# There are also headeres in sub directories
+add_subdirectory(nn) # 'nn' for neural network code
 
 if (${glfw3_FOUND})
   install( FILES VisualBase.h Visual.h VisualModel.h VisualDataModel.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
