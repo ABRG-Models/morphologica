@@ -136,9 +136,6 @@ add_subdirectory(include)
 enable_testing()
 add_subdirectory(tests)
 
-# pkgconfig file installation.
-add_subdirectory(pc)
-
 # Example code (you can also see tests/ for examples)
 #add_subdirectory(examples)
 
