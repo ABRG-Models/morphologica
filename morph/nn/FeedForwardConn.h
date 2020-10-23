@@ -183,14 +183,37 @@ namespace morph {
             }
 
             /*!
+             * Before calling backprop, work out which of the inputs in the 'next'
+             * connection layer is relevant to the output of this connection layer.
+             */
+            void backprop (const FeedForwardConn& conn_nxt)
+            {
+                // For each input in conn_nxt, compare with our output. That will give
+                // us the index to use.
+                size_t idx = 0;
+                size_t idx_max = conn_nxt.ins.size();
+                for (size_t i = 0; i < idx_max; ++i) {
+                    if (conn_nxt.ins[i] == this->out) {
+                        idx = i;
+                        break;
+                    }
+                }
+                this->backprop (conn_nxt.deltas[idx]);
+            }
+
+            /*!
              * Compute this->delta using the values computed in FeedForwardConn::feedforward
              * (which must have been executed beforehand).
              */
             void backprop (const morph::vVector<T>& delta_l_nxt) // delta_l_nxt has size N.
             {
+                // Check sum of sizes in delta_l_nxt
                 if (delta_l_nxt.size() != this->out->size()) {
-                    throw std::runtime_error ("backprop: Mismatched size");
+                    std::stringstream ee;
+                    ee << "backprop: Mismatched size. delta_l_nxt size: " << delta_l_nxt.size() << ", out size: " << this->out->size();
+                    throw std::runtime_error (ee.str());
                 }
+
                 // we have to do weights * delta_l_nxt to give a morph::vVector<T>
                 // result. This is the equivalent of the matrix multiplication:
                 std::vector<morph::vVector<T>> w_times_deltas(this->ins.size());

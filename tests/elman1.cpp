@@ -10,5 +10,10 @@ int main()
     el1.feedforward();
     std::cout << "After feedforward():\n";
     std::cout << el1.str();
+    std::cout << "Backprop..." << std::endl;
+    morph::vVector<float> thein = {1};
+    morph::vVector<float> theout = {1};
+    el1.setInput (thein, theout);
+    el1.backprop();
     return 0;
 }

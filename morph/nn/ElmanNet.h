@@ -158,8 +158,8 @@ namespace morph {
                 // After the output layer, loop through the rest of the layers:
                 for (;citer != this->connections.begin();) {
                     auto citer_closertooutput = citer--;
-                    // Now citer is closer to input
-                    citer->backprop (citer_closertooutput->delta);
+                    // Now citer is closer to input.
+                    citer->backprop (*citer_closertooutput);
                 }
             }
 
