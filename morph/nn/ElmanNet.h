@@ -15,7 +15,7 @@
 #include <sstream>
 #include <iostream>
 #include <morph/vVector.h>
-#include <morph/nn/FeedForward.h>
+#include <morph/nn/FeedForwardConn.h>
 
 namespace morph {
     namespace nn {

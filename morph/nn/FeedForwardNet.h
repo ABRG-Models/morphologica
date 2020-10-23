@@ -9,7 +9,7 @@
  */
 #pragma once
 
-#include <morph/nn/FeedForward.h>
+#include <morph/nn/FeedForwardConn.h>
 #include <morph/vVector.h>
 #include <iostream>
 #include <list>
