@@ -100,16 +100,20 @@ namespace morph {
             std::string str() const
             {
                 std::stringstream ss;
+                ss << "Connection:\n";
+                size_t ci = 0;
                 for (auto w : this->ws) {
-                    ss << "Weights: w" << w << "w (" << w.size() << ")\n";
+                    ss << " Input " << ci++ << ": Weights: w" << w << "w (" << w.size() << ")\n";
                 }
+                ci = 0;
                 for (auto nabla_w : this->nabla_ws) {
-                    ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+                    ss << " Input " << ci++ << ": nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
                 }
-                ss << " Biases: b" << b << "b (" << b.size() << ")\n";
-                ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
+                ss << " Output Biases: b" << b << "b (" << b.size() << ")\n";
+                ss << " Output nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
+                ci = 0;
                 for (auto delta : this->deltas) {
-                    ss << "delta  :  " << delta << "\n";
+                    ss << " Input " << ci++ << ": delta  :  " << delta << "\n";
                 }
                 return ss.str();
             }
@@ -134,7 +138,8 @@ namespace morph {
                 // For each input population:
                 for (size_t i = 0; i < this->ins.size(); ++i) {
                     // A morph::vVector for a 'part of w'
-                    size_t m = this->ins[i]->size();// Size m[i]
+                    morph::vVector<T>* _in = this->ins[i];
+                    size_t m = _in->size();// Size m[i]
                     morph::vVector<T> wpart(m);
                     // Get weights, outputs and biases iterators
                     auto witer = this->ws[i].begin();
