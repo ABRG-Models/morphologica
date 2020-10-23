@@ -100,14 +100,17 @@ namespace morph {
             std::string str() const
             {
                 std::stringstream ss;
-                ss << "FIXME\n";
-#if 0
-                ss << "Weights: w" << w << "w (" << w.size() << ")\n";
-                ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+                for (auto w : this->ws) {
+                    ss << "Weights: w" << w << "w (" << w.size() << ")\n";
+                }
+                for (auto nabla_w : this->nabla_ws) {
+                    ss << "nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
+                }
                 ss << " Biases: b" << b << "b (" << b.size() << ")\n";
                 ss << "nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
-                ss << "delta  :  " << delta << "\n";
-#endif
+                for (auto delta : this->deltas) {
+                    ss << "delta  :  " << delta << "\n";
+                }
                 return ss.str();
             }
 
@@ -165,7 +168,8 @@ namespace morph {
             morph::vVector<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
 
             //! The content of *FeedForwardConn::in is sigmoid(z^l). \return has size M = m1 + m2 +...
-            std::vector<morph::vVector<T>> sigmoid_prime_z_l() {
+            std::vector<morph::vVector<T>> sigmoid_prime_z_l()
+            {
                 std::vector<morph::vVector<T>> rtn (this->ins.size());
                 for (size_t i = 0; i < this->ins.size(); ++i) {
                     rtn[i] = (*ins[i]) * (-(*ins[i])+T{1});
