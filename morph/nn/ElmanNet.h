@@ -54,16 +54,16 @@ namespace morph {
                         auto lm1 = l;
                         --lm1;
 
-                        std::cout << "New connection " << nn << std::endl;
+                        //std::cout << "New connection " << nn << std::endl;
                         // Combine two inputs if this is not a connection to the output layer
                         std::vector<morph::vVector<T>*> _inputs;
                         _inputs.push_back (&*lm1); // The neuron 'layer minus one'
-                        std::cout << " with input " << *lm1 << std::endl;
+                        //std::cout << " with input " << *lm1 << std::endl;
                         if (nn < (n_layers-1)) {
                             auto cl = this->contextNeurons.end();
                             --cl;
                             _inputs.push_back (&*cl); // The context layer
-                            std::cout << " AND input " << *cl << std::endl;
+                            //std::cout << " AND input " << *cl << std::endl;
                         } // just the one input (for the final layer)
 
                         morph::nn::FeedForwardConn<T> c(_inputs, &*l);
@@ -105,7 +105,6 @@ namespace morph {
                 while (cni != contextNeurons.end()) {
                     if (ni == neurons.end()) { throw std::runtime_error ("Not enough neuron layers"); }
                     // This is 'one to one copy with weight 1'
-                    std::cout << "Copy context...\n";
                     std::copy (ni->begin(), ni->end(), cni->begin());
                     ++cni; ++ni;
                 }
@@ -113,7 +112,6 @@ namespace morph {
                 // Step 2, feed forward as normal
                 auto c = this->connections.begin();
                 for (size_t i = 0; i < this->connections.size(); ++i) {
-                    std::cout << "Connection feedforward...\n";
                     c->feedforward();
                     c++;
                 }
@@ -194,7 +192,7 @@ namespace morph {
             std::list<morph::vVector<T>> contextNeurons;
 
             //! Connections. There should be neurons.size()-1 connection layers:
-            std::list<FeedForwardConn<T>> connections;
+            std::list<morph::nn::FeedForwardConn<T>> connections;
 
             //! The error (dC/dz) of the output layer
             morph::vVector<T> delta_out;
