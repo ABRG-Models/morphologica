@@ -365,7 +365,7 @@ namespace morph {
          *
          * \return a vVector whose elements have been raised to the power p
          */
-        vVector<S> void pow (const S& p) const
+        vVector<S> pow (const S& p) const
         {
             // To get power in-place:
             //for (auto& i : *this) { i = std::pow (i, p); }
@@ -385,12 +385,12 @@ namespace morph {
         vVector<S> sqrt() const
         {
             vVector<S> rtn(this->size());
-            auto sqrt_element = (S coord) { return std::sqrt(coord); };
+            auto sqrt_element = [](S coord) { return std::sqrt(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace (const S& p) { for (auto& i : *this) { i = std::sqrt (i); } }
+        void sqrt_inplace() { for (auto& i : *this) { i = std::sqrt (i); } }
 
         /*!
          * Compute the element-wise square of the vector
@@ -400,12 +400,12 @@ namespace morph {
         vVector<S> sq() const
         {
             vVector<S> rtn(this->size());
-            auto sq_element = (S coord) { return std::pow(coord, 2); };
+            auto sq_element = [](S coord) { return std::pow(coord, 2); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
         }
         //! Replace each element with its own square
-        void sq_inplace (const S& p) { for (auto& i : *this) { i = (i*i); } }
+        void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
 
         /*!
          * Unary negate operator
