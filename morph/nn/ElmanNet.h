@@ -168,14 +168,15 @@ namespace morph {
                 this->desiredOutput = theOutput;
             }
 
-            //! Compute the cost for one input and one desired output
+            //! Compute the cost (and delta_out) for the current input and desired output
             T computeCost()
             {
                 // Here is where we compute delta_out:
                 this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
                 // And the cost:
+                std::cout << "cost is " << desiredOutput << " - " << this->neurons.back() << std::endl;
                 T l = (desiredOutput-this->neurons.back()).length();
-                this->cost = T{0.5} * l * l;
+                this->cost = /*T{0.5} * */ l * l;
                 return this->cost;
             }
 
