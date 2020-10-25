@@ -171,6 +171,20 @@ namespace morph {
             std::fill (this->begin(), this->end(), val);
         }
 
+        //! Stream the coordinates of the vector into \a ss as a comma separated list.
+        void str_comma_separated (std::stringstream& ss) const
+        {
+            bool first = true;
+            for (auto i : *this) {
+                if (first) {
+                    ss << i;
+                    first = false;
+                } else {
+                    ss << "," << i;
+                }
+            }
+        }
+
         /*!
          * Create a string representation of the vector
          *
@@ -181,16 +195,29 @@ namespace morph {
         {
             std::stringstream ss;
             ss << "(";
-            bool first = true;
-            for (auto i : *this) {
-                if (first) {
-                    ss << i;
-                    first = false;
-                } else {
-                    ss << "," << i;
-                }
-            }
+            this->str_comma_separated (ss);
             ss << ")";
+            return ss.str();
+        }
+
+        //! Output the vector in a form suitable to paste into MATLAB or Octave
+        std::string str_mat() const
+        {
+            std::stringstream ss;
+            ss << "[";
+            this->str_comma_separated (ss);
+            ss << "]";
+            return ss.str();
+        }
+
+        //! Output the vector in a form suitable to paste into Python, as a numpy
+        //! vector, assuming you imported numpy as np
+        std::string str_numpy() const
+        {
+            std::stringstream ss;
+            ss << "np.array((";
+            this->str_comma_separated (ss);
+            ss << "))";
             return ss.str();
         }
 
@@ -332,6 +359,53 @@ namespace morph {
             size_t idx = (themax - this->begin());
             return idx;
         }
+
+        /*!
+         * Compute the element-wise pth power of the vector
+         *
+         * \return a vVector whose elements have been raised to the power p
+         */
+        vVector<S> void pow (const S& p) const
+        {
+            // To get power in-place:
+            //for (auto& i : *this) { i = std::pow (i, p); }
+            vVector<S> rtn(this->size());
+            auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
+            std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
+            return rtn;
+        }
+        //! Raise each element to the power p
+        void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+
+        /*!
+         * Compute the element-wise square root of the vector
+         *
+         * \return a vVector whose elements have been square-rooted
+         */
+        vVector<S> sqrt() const
+        {
+            vVector<S> rtn(this->size());
+            auto sqrt_element = (S coord) { return std::sqrt(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
+            return rtn;
+        }
+        //! Replace each element with its own square root
+        void sqrt_inplace (const S& p) { for (auto& i : *this) { i = std::sqrt (i); } }
+
+        /*!
+         * Compute the element-wise square of the vector
+         *
+         * \return a vVector whose elements have been squared
+         */
+        vVector<S> sq() const
+        {
+            vVector<S> rtn(this->size());
+            auto sq_element = (S coord) { return std::pow(coord, 2); };
+            std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
+            return rtn;
+        }
+        //! Replace each element with its own square
+        void sq_inplace (const S& p) { for (auto& i : *this) { i = (i*i); } }
 
         /*!
          * Unary negate operator
