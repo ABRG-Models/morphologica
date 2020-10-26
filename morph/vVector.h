@@ -341,6 +341,28 @@ namespace morph {
         }
 
         /*!
+         * Return the value of the shortest component of the vector.
+         */
+        S shortest() const
+        {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
+            auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
+            S rtn = *theshortest;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the shortest component of the vector.
+         */
+        size_t argshortest() const
+        {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
+            auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
+            size_t idx = (theshortest - this->begin());
+            return idx;
+        }
+
+        /*!
          * Return the value of the maximum (most positive) component of the vector.
          */
         S max() const
@@ -357,6 +379,26 @@ namespace morph {
         {
             auto themax = std::max_element (this->begin(), this->end());
             size_t idx = (themax - this->begin());
+            return idx;
+        }
+
+        /*!
+         * Return the value of the minimum (smallest or most negative) component of the vector.
+         */
+        S min() const
+        {
+            auto themin = std::min_element (this->begin(), this->end());
+            S rtn = *themin;
+            return rtn;
+        }
+
+        /*!
+         * Return the index of the minimum (smallest or most negative) component of the vector.
+         */
+        size_t argmin() const
+        {
+            auto themin = std::min_element (this->begin(), this->end());
+            size_t idx = (themin - this->begin());
             return idx;
         }
 

@@ -176,6 +176,10 @@ int main() {
          << ", max: " << maxlongest.max() << " (at index "<< maxlongest.argmax()
          << "), longest component: " << maxlongest.longest() << " (at index "
          << maxlongest.arglongest() << ")\n";
+    cout << "For vector " << maxlongest
+         << ", min: " << maxlongest.min() << " (at index "<< maxlongest.argmin()
+         << "), shortest component: " << maxlongest.shortest() << " (at index "
+         << maxlongest.argshortest() << ")\n";
 
     return rtn;
 }
