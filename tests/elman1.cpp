@@ -16,7 +16,12 @@ void generateInput (size_t xs_trips, morph::vVector<float>& xs, morph::vVector<f
         // Can get 64 bits of random at a time:
         unsigned long long int left = rng.get();
         unsigned long long int right = rng.get();
-        unsigned long long int xor_ = left ^ right;
+
+        // Change this line to experiment with other logical ops
+        unsigned long long int xor_ = left ^ right;   // XOR
+        //unsigned long long int xor_ = left | right; // OR
+        //unsigned long long int xor_ = left & right; // AND
+
         // Get the relevant bits from the random number generator and insert into xs
         for (size_t ii = 0; i<xs_trips && ii<64; ii++,i++) {
             unsigned long long int l = left >> ii & 0x1;
@@ -39,7 +44,7 @@ int main()
     //
     // Create an Elman style feed-forward network with context layers
     //
-    std::vector<unsigned int> layer_spec = {1,2,1};
+    std::vector<unsigned int> layer_spec = {1,2,2,1};
     morph::nn::ElmanNet<float> el1(layer_spec);
 
     //
@@ -62,7 +67,7 @@ int main()
     // Train the network
     //
     // A learning rate
-    float eta = 0.1f;
+    float eta = 0.05f;
     // How many times to run through the data stream?
     size_t epochs = 600;
     // Containers to pass as input and desired output. Values from xs and ps are copied into these, shorter vectors.
@@ -121,8 +126,10 @@ int main()
         //std::cout << ep << "," << xs.size() << "," << cost  << "," << input[0] << "," << des_output[0] << std::endl;
     }
 
+    //std::cout << "Final network:\n" << el1;
+
     //
-    // Evaluate the network
+    // Evaluate the network, averaging over 1200 elements, as in Elman, 1990.
     //
     morph::vVector<float> costs(12);
     for (size_t i = 0; i < 1200; ++i) {
@@ -130,18 +137,17 @@ int main()
         input[0] = xs[i];
         des_output[0] = ps[i];
         el1.setInput (input, des_output);
-        // Compute the network fowards
+        // Compute the network fowards:
         el1.feedforward();
         float cost = el1.computeCost(); // Gets the squared error
-        //std::cout << "cost[i%12(" << i%12 << ")] += " << cost << std::endl;
         costs[i%12] += cost; // sums the squared error
     }
 
-    std::cout << "Dividing cost by " << (1200/12) << std::endl;
     costs /= (1200/12); // gets the mean of the squared error
     // square root of costs?
     costs.sqrt_inplace();
     std::cout << "costs: " << costs.str_mat() << std::endl;
+    std::cout << "min: " << costs.min() << ", max: " << costs.max() << std::endl;
 
     return 0;
 }
