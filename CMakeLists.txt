@@ -1,4 +1,5 @@
 # AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
+# FindFontConfig requires version 3.14
 cmake_minimum_required(VERSION 3.1)
 project(morphologica)
 set(VERSION 0.1)
@@ -117,6 +118,11 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
+
+# New, text rendering dependencies
+find_package(Freetype REQUIRED)
+include_directories(${FREETYPE_INCLUDE_DIRS})
+#find_package(FontConfig REQUIRED) # cmake 3.14 required, I think.
 
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")

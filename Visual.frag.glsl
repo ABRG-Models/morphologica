@@ -7,7 +7,16 @@ in VERTEX
     float alpha;
 } vertex;
 
+in vec2 TexCoords;
+
+uniform sampler2D text; // That's the bitmap
+uniform vec3 textColour;
+
 out vec4 finalcolor;
-void main() {
-    finalcolor = vec4(vertex.color, vertex.alpha);
+void main()
+{
+    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
+    finalcolor = vec4(textColour, vertex.alpha) * sampled;
+    // or:
+//    finalcolor = vec4(vertex.color, vertex.alpha); // vertex.color gives the background
 }

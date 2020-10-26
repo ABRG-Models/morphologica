@@ -177,38 +177,42 @@ add_test(testhdfdata3d testhdfdata3d)
 if(${glfw3_FOUND})
   # Test morph::Visual class
   add_executable(testVisual testVisual.cpp)
-  target_link_libraries(testVisual ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisual ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
   #add_test(testVisual testVisual)
 
+  # Test morph::Visual class for text writing
+  add_executable(testVisText testVisText.cpp)
+  target_link_libraries(testVisText ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
+
   add_executable(testbighexgrid testbighexgrid.cpp)
-  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testHexConvolve testHexConvolve.cpp)
-  target_link_libraries(testHexConvolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testHexConvolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testVisQuads testVisQuads.cpp)
-  target_link_libraries(testVisQuads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisQuads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testVisPointRows testVisPointRows.cpp)
-  target_link_libraries(testVisPointRows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisPointRows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testVisScatter testVisScatter.cpp)
-  target_link_libraries(testVisScatter ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisScatter ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testVisQuiver testVisQuiver.cpp)
-  target_link_libraries(testVisQuiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisQuiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
-  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
   add_test(test_ellipseboundary test_ellipseboundary)
 
   # Test circular HexGrid code
   add_executable(test_circleboundary test_circleboundary.cpp)
-  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw) # Plus ${X11_LIBRARIES}?
+  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
   add_test(test_circleboundary test_circleboundary)
 
 endif()

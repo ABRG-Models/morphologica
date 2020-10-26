@@ -15,7 +15,7 @@
 #else
 # include "GL3/gl3.h"
 #endif
-#include "morph/tools.h"
+//#include "morph/tools.h"
 #include "morph/TransformMatrix.h"
 #include "morph/Vector.h"
 #include "morph/MathConst.h"
@@ -25,8 +25,8 @@
 #include <algorithm>
 #include <iterator>
 
-typedef GLuint VBOint;
-#define VBO_ENUM_TYPE GL_UNSIGNED_INT
+// Common definitions
+#include <morph/VisualCommon.h>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
@@ -37,9 +37,6 @@ namespace morph {
 
     //! Forward declaration of a Visual class
     class Visual;
-
-    //! The locations for the position, normal and colour vertex attributes in the GLSL program
-    enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2 };
 
     /*!
      * OpenGL model base class
