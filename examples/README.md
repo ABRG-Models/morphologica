@@ -100,8 +100,11 @@ make
 cd ..
 ```
 
-Then to run the example:
+For instructions on running the example, see the README.md file in
+recurrentnet.
 
-```bash
-# Fixme - the dummy variable on line 40 of recurrentnet.cpp needs to be sorted out
-```
+
+## Elman network
+
+Elman 1990, Finding Structure in Time. An implementation of this
+recurrent network. See README in the elmannet directory.
