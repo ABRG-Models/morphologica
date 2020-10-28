@@ -333,6 +333,15 @@ namespace morph {
                 this->coordArrows->render();
             }
 
+            // set mvp in tshaderprog too
+            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
+            if (loct != -1) {
+                glUniformMatrix4fv (loct, 1, GL_FALSE, vp_coords.mat.data());
+            } else {
+                std::cout << "NOT Setting vp_coords in texture shader\n";
+            }
+
+#if 0 // for now
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
                 // For each different VisualModel, I can CHANGE the uniform. Right? Right.
@@ -347,7 +356,7 @@ namespace morph {
                 (*vmi)->render();
                 ++vmi;
             }
-
+#endif
             // Text rendering. This probably will be a resizable array of textobjs
             this->textModel->render();
 
@@ -520,7 +529,7 @@ namespace morph {
             this->tshaderprog = this->LoadShaders (tshaders);
 
             // shaderprog is bound here, and never unbound
-            glUseProgram (this->shaderprog);
+            //glUseProgram (this->tshaderprog);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -529,7 +538,7 @@ namespace morph {
             // rendering too.
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable (GL_CULL_FACE);
+            glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
 
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->coordArrowsOffset,
@@ -544,9 +553,10 @@ namespace morph {
             }
 
             // Keep the face as a morph::Visual owned resource, shared by VisTextModels
-            if (FT_New_Face (this->ft, "fonts/arial.ttf", 0, &this->face)) {
+            if (FT_New_Face (this->ft, "fonts/ttf-bitstream-vera/Vera.ttf", 0, &this->face)) {
                 std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
             }
+            // FIXME: Don't forget to play with this. Increase from 48 for better text?
             FT_Set_Pixel_Sizes (this->face, 0, 48);
 
             // Set up just ASCII chars for now, following the example prog
@@ -590,9 +600,12 @@ namespace morph {
 #endif
                 this->Characters.insert (std::pair<char, Character>(c, character));
             }
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            // At this point could FT_Done_Face() etc, I think.
 
             // AFTER setting up characters, can now set up text in the textMmodel
-            this->textModel = new VisTextModel (this->shaderprog, this->textOffset);
+            this->textModel = new VisTextModel (this->shaderprog, this->tshaderprog, this->textOffset);
             this->textModel->setupText ("morph::Visual", this->Characters, 0.01f);
 
             //

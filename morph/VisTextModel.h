@@ -38,10 +38,11 @@ namespace morph {
     class VisTextModel
     {
     public:
-        VisTextModel (GLuint sp, const morph::Vector<float> _offset)
+        VisTextModel (GLuint sp, GLuint tsp, const morph::Vector<float> _offset)
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
 
@@ -82,11 +83,11 @@ namespace morph {
 
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
-                std::array<float,12> tbox = { xpos,   ypos,   this->offset[2],
-                                              xpos,   ypos+h, this->offset[2],
-                                              xpos+w, ypos+h, this->offset[2],
-                                              xpos+w, ypos,   this->offset[2] };
-#if 0
+                std::array<float,12> tbox = { xpos,   ypos+h,   this->offset[2],
+                                              xpos,   ypos,     this->offset[2],
+                                              xpos+w, ypos,     this->offset[2],
+                                              xpos+w, ypos+h,   this->offset[2] };
+#if 1
                 std::cout << "Text box from (" << xpos << "," << ypos << "," << this->offset[2]
                           << ") to (" << xpos+w << "," << ypos+h << "," << this->offset[2] << ")\n";
 #endif
@@ -99,11 +100,11 @@ namespace morph {
             }
 
             // Ensure we've cleared out vertex info
-            this->vertexPositions.clear();
-            this->vertexNormals.clear();
-            this->vertexColors.clear();
+            //this->vertexPositions.clear();
+            //this->vertexNormals.clear();
+            //this->vertexColors.clear();
 
-            this->initializeVertices();
+            //this->initializeVertices();
 
             this->postVertexInit();
         }
@@ -162,6 +163,25 @@ namespace morph {
         void postVertexInit()
         {
             std::cout << "postVertexInit...\n";
+
+            glGenVertexArrays (1, &this->vao);
+
+            // Create the vertex buffer objects
+            this->vbos = new GLuint[2];
+            glGenBuffers (2, this->vbos); // OpenGL 4.4- safe
+
+            //glGenBuffers (1, &this->vbo);
+            glBindVertexArray (this->vao);
+            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
+            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
+            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+            glEnableVertexAttribArray (0);
+            glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
+            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
+            glBindVertexArray (0);
+#if 0
             // Create vertex array object
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
             glBindVertexArray (this->vao);
@@ -192,12 +212,76 @@ namespace morph {
 
             // Possible glVertexAttribPointer and glEnableVertexAttribArray?
             glUseProgram (this->shaderprog);
+#endif
         }
 
         //! Render the VisTextModel
         void render()
         {
             if (this->hide == true) { return; }
+
+            glUseProgram (this->tshaderprog);
+            glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"), this->clr_text[0], this->clr_text[1], this->clr_text[2]);
+
+#if 0
+            // Set my projection. At the moment, I let the morph::Visual set the projection
+            TransformMatrix<float> sceneview;
+            sceneview.translate (this->parent->scenetrans);
+            sceneview.rotate (this->parent->rotation);
+            TransformMatrix<float> viewproj = this->parent->projection * sceneview;
+            GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
+            if (loc != -1) { glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());  }
+#endif
+
+            glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
+            glBindVertexArray (this->vao);
+
+            // Create the vertices data
+            unsigned int nquads = this->quads.size();
+            for (unsigned int qi = 0; qi < nquads; ++qi) {
+
+                std::array<float, 12> quad = this->quads[qi];
+                float vertices[6][4] = {
+                    { quad[0],  quad[1],   quad[2], 0.0f }, // tri 1
+                    { quad[3],  quad[4],   quad[5], 0.0f },
+                    { quad[6],  quad[7],   quad[8], 0.0f },
+
+                    { quad[0],  quad[1],   quad[2],  0.0f }, // tri 2. Note: I need to fill/create the texture tris.
+                    { quad[6],  quad[7],   quad[8],  0.0f },
+                    { quad[9],  quad[10],  quad[11], 0.0f }
+                };
+
+                std::cout << "vertices: " << quad[0] << "," << quad[1] << "," << quad[2] << " to "
+                          << quad[9] << "," << quad[10] << "," << quad[11] << std::endl;
+
+                float textures[6][4] = { // ignore xy
+                    { 0.0f, 0.0f,   0.0f, 0.0f }, // tri 1
+                    { 0.0f, 0.0f,   0.0f, 1.0f },
+                    { 0.0f, 0.0f,   1.0f, 1.0f },
+
+                    { 0.0f, 0.0f,   0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
+                    { 0.0f, 0.0f,   1.0f, 1.0f },
+                    { 0.0f, 0.0f,   1.0f, 0.0f }
+                };
+                // render glyph texture over quad
+                glBindTexture (GL_TEXTURE_2D, quad_ids[qi]);
+                // update content of text_vbo memory
+                glBindBuffer (GL_ARRAY_BUFFER, vbos[0]);
+                glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+                glBindBuffer (GL_ARRAY_BUFFER, vbos[1]);
+                glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(textures), textures);
+                glBindBuffer (GL_ARRAY_BUFFER, 0);
+                // render quad
+                glDrawArrays (GL_TRIANGLES, 0, 6);
+            }
+
+            glBindVertexArray(0);
+            glBindTexture (GL_TEXTURE_2D, 0);
+
+            // Back to original shader
+            glUseProgram (this->shaderprog);
+
+#if 0
             glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
@@ -208,86 +292,11 @@ namespace morph {
 
             GLint loc_tc = glGetUniformLocation (this->shaderprog, (const GLchar*)"textColour");
             if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
-#if 0
             // Simple models draw all the triangles
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-#endif
-#if 1
-            // BUT, I need to bind each texture in order. 6 indices at a time. Urgh.
-            for (unsigned int i = 0; i < this->quads.size(); ++i) { // For each quad
-                // render glyph texture over quad. Textures have been set up in morph::Visual.
-                glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]); // i
-                // update content of text_vbo memory BUT already did that....
-                //glBindBuffer (GL_ARRAY_BUFFER, text_vbo);
-                // updates a subset of a buffer object's data store
-                ///glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-                // unbind
-                ///glBindBuffer (GL_ARRAY_BUFFER, 0);
-                // render quad
-                //glDrawArrays (GL_TRIANGLES, 6*i, 6);
-                glDrawElementsBaseVertex (GL_TRIANGLES, 6, VBO_ENUM_TYPE, 0, (6*i));
-            }
-#endif
-            // Somehow get those textures on...
             glBindVertexArray(0);
-        }
-
-#if 0
-        //! Temporary copy of the render text function from https://learnopengl.com/In-Practice/Text-Rendering
-        void RenderText (const std::string& text, float x, float y, float scale, std::array<float, 3> color)
-        {
-            glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"), color[0], color[1], color[2]);
-
-            // Set my projection.
-            TransformMatrix<float> sceneview;
-            sceneview.translate (this->scenetrans);
-            sceneview.rotate (this->rotation);
-            TransformMatrix<float> viewproj = this->projection * sceneview;
-
-            GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"vp_matrix");
-            if (loc != -1) { glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());  }
-
-            glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
-            glBindVertexArray (this->text_vao);
-
-            // iterate through all characters
-            std::string::const_iterator c;
-            for (c = text.begin(); c != text.end(); c++) {
-                morph::Character ch = this->Characters[*c];
-
-                float xpos = x + ch.Bearing.x() * scale;
-                float ypos = y - (ch.Size.y() - ch.Bearing.y()) * scale;
-
-                float w = ch.Size.x() * scale;
-                float h = ch.Size.y() * scale;
-                // update text_vbo for each character
-                float vertices[6][4] = { // x,y ignored
-                    { xpos,     ypos + h,   0.0f, 0.0f }, // tri 1
-                    { xpos,     ypos,       0.0f, 1.0f },
-                    { xpos + w, ypos,       1.0f, 1.0f },
-
-                    { xpos,     ypos + h,   0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { xpos + w, ypos,       1.0f, 1.0f },
-                    { xpos + w, ypos + h,   1.0f, 0.0f }
-                };
-                // render glyph texture over quad
-                glBindTexture (GL_TEXTURE_2D, ch.TextureID);
-                // update content of text_vbo memory
-                glBindBuffer (GL_ARRAY_BUFFER, text_vbo);
-                glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-                glBindBuffer (GL_ARRAY_BUFFER, 0);
-                // render quad
-                glDrawArrays (GL_TRIANGLES, 0, 6);
-                // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-                x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
-            }
-            glBindVertexArray(0);
-            glBindTexture (GL_TEXTURE_2D, 0);
-
-            // Back to original shader
-            glUseProgram (this->shaderprog);
-        }
 #endif
+        }
 
         //! The text-model-specific view matrix.
         TransformMatrix<float> viewmatrix;
@@ -307,9 +316,12 @@ namespace morph {
         //! The parent Visual object - provides access to the shader prog
         const Visual* parent;
         //! A copy of the reference to the text shader program
+        GLuint tshaderprog;
         GLuint shaderprog;
         //! The OpenGL Vertex Array Object
         GLuint vao;
+        //! Single vbo to use as in example
+        GLuint vbo;
         //! Vertex Buffer Objects stored in an array
         GLuint* vbos;
         //! CPU-side data for indices
