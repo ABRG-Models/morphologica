@@ -313,11 +313,10 @@ add_executable(testRandString testRandString.cpp)
 add_test(testRandString testRandString)
 
 # Neural nets
-add_executable(elman1 elman1.cpp)
-add_test(elman1 elman1)
+
+# Test morph::nn::ElmanNet
+add_executable(test_elman test_elman.cpp)
+add_test(test_elman test_elman)
+
 add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
-
-# Remove (leave this in examples/neuralnet)
-add_executable(ff_mnist ff_mnist.cpp)
-target_link_libraries(ff_mnist ${OpenCV_LIBS})
