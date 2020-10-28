@@ -104,18 +104,9 @@ namespace morph {
                 ++ni; // skip first neuron layer
                 while (cni != contextNeurons.end()) {
                     if (ni == neurons.end()) { throw std::runtime_error ("Not enough neuron layers"); }
-#if 1
-                    // This is 'one to one copy with weight 1', but no sigmoid
+                    // At t+1, the context units contain values which are exactly the
+                    // hidden unit values at time t. Thus, we simply copy here
                     std::copy (ni->begin(), ni->end(), cni->begin());
-#else
-                    // For some reason, this doesn't seem reliable...
-                    // This is one to one with weight 1 and a sigmoid transfer function
-                    std::copy (ni->begin(), ni->end(), cni->begin()) ;
-                    //std::cout << "BEFORE cni: " << *cni << std::endl;
-                    auto sigmoid_function = [](T x){ return (T{1} / (T{1} + std::exp(-x))); };
-                    std::transform (cni->begin(), cni->end(), cni->begin(), sigmoid_function);
-                    //std::cout << "AFTER cni: " << *cni << std::endl;
-#endif
                     ++cni; ++ni;
                 }
 
