@@ -190,7 +190,7 @@ int main()
 #if 0
         // if you compare with the random stream, costs should be similar to randcosts
         des_output[0] = rs[i];
-        // The actual XOR of each preceding two elements. This this as desired output,
+        // The actual XOR of each preceding two elements. With this as desired output,
         // you should see costs at the minimum value achieved by the prediction stream.
         des_output[0] = xl[i];
 #endif
