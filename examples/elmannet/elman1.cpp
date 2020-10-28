@@ -165,14 +165,14 @@ int main()
     morph::RandUniform<unsigned char> brng(0,1);
     // Random string 1
     morph::vVector<float> rs1;
-    rs1.resize(1200);
+    rs1.resize(eval_elements);
     for (auto& r : rs1) {
         unsigned char rn = brng.get();
         r = rn > 0 ? 1.0f : 0.0f;
     }
     // Random string 2
     morph::vVector<float> rs2;
-    rs2.resize(1200);
+    rs2.resize(eval_elements);
     for (auto& r : rs2) {
         unsigned char rn = brng.get();
         r = rn > 0 ? 1.0f : 0.0f;
@@ -198,7 +198,7 @@ int main()
         // Compute the network fowards:
         el1.feedforward();
         // sums the error from the network
-        costs[i%12] += el1.computeCost();
+        costs[i%graph_cycles] += el1.computeCost();
 
         // Compute an alternative cost, based on two streams of random numbers for comparison
         float e = (float)rs1[i] - (float)rs2[i];
