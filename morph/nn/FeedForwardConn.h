@@ -100,7 +100,11 @@ namespace morph {
             std::string str() const
             {
                 std::stringstream ss;
-                ss << "Connection:\n";
+                ss << "Connection: From " << ins.size() << " input layers of sizes ";
+                for (auto _in : ins) {
+                    ss << _in->size() << ", ";
+                }
+                ss << "to an output layer, size " << out->size() << "\n";
                 size_t ci = 0;
                 for (auto w : this->ws) {
                     ss << " Input " << ci++ << ": Weights: w" << w << "w (" << w.size() << ")\n";

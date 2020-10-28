@@ -89,9 +89,9 @@ namespace morph {
                         ss << "Layer " << i << " context:  "  << *cn++ << "\n";
                     }
                 }
-                ss << "Target output: " << this->desiredOutput << "\n";
-                ss << "Delta out: " << this->delta_out << "\n";
-                ss << "Cost:      " << this->cost << "\n";
+                ss << "Network target out: " << this->desiredOutput << "\n";
+                ss << "Network delta_out:  " << this->delta_out << "\n";
+                ss << "Network cost:       " << this->cost << "\n";
                 return ss.str();
             }
 
