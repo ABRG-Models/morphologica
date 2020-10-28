@@ -18,8 +18,6 @@
 #endif
 
 #include "morph/VisualModel.h"
-#include <morph/VisTextModel.h>
-#include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
 // For GLuint and GLenum (though redundant, as already included in VisualModela
@@ -55,10 +53,6 @@
 
 // imwrite() from OpenCV is used in saveImage()
 #include <opencv2/imgcodecs.hpp>
-
-// FreeType for text rendering
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 //! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
@@ -146,10 +140,6 @@ namespace morph {
         //! Deconstructor deallocates CoordArrows and destroys GLFW windows
         ~Visual()
         {
-            // Deconstructor?
-            FT_Done_Face (this->face);
-            FT_Done_FreeType (this->ft);
-
             delete this->coordArrows;
             for (unsigned int i = 0; i < this->vm.size(); ++i) {
                 delete this->vm[i];
@@ -228,7 +218,7 @@ namespace morph {
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
-        void keepOpen()
+        void keepOpen (void)
         {
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
@@ -237,7 +227,7 @@ namespace morph {
         }
 
         //! Render the scene
-        void render()
+        void render (void)
         {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
@@ -348,9 +338,6 @@ namespace morph {
                 ++vmi;
             }
 
-            // Text rendering. This probably will be a resizable array of textobjs
-            this->textModel->render();
-
             glfwSwapBuffers (this->window);
 
 #ifdef PROFILE_RENDER
@@ -362,11 +349,9 @@ namespace morph {
 
         //! The OpenGL shader program
         GLuint shaderprog;
-        //! The text shader program. May not be required
-        GLuint tshaderprog;
 
         //! Set perspective based on window width and height
-        void setPerspective()
+        void setPerspective (void)
         {
             // Calculate aspect ratio
             float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
@@ -408,9 +393,9 @@ namespace morph {
          */
 
         //! Set a white background colour for the Visual scene
-        void backgroundWhite() { this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f }; }
+        void backgroundWhite (void) { this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f }; }
         //! Set a black background colour for the Visual scene
-        void backgroundBlack() { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
+        void backgroundBlack (void) { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
 
         //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
         void setZDefault (float f)
@@ -510,23 +495,13 @@ namespace morph {
 
             this->shaderprog = this->LoadShaders (shaders);
 
-            // May need an additional shader?
-            ShaderInfo tshaders[] = {
-                {GL_VERTEX_SHADER, "VisText.vert.glsl" },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" },
-                {GL_NONE, NULL }
-            };
-            // Care - this will load default shaders in some cases
-            this->tshaderprog = this->LoadShaders (tshaders);
-
             // shaderprog is bound here, and never unbound
             glUseProgram (this->shaderprog);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
 
-            // Make it possible to specify alpha. This is correct for text texture
-            // rendering too.
+            // Make it possible to specify alpha
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE);
@@ -535,77 +510,7 @@ namespace morph {
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
-            //
-            // Experimental text code
-            //
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-            if (FT_Init_FreeType (&this->ft)) {
-                std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            }
-
-            // Keep the face as a morph::Visual owned resource, shared by VisTextModels
-            if (FT_New_Face (this->ft, "fonts/arial.ttf", 0, &this->face)) {
-                std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-            }
-            FT_Set_Pixel_Sizes (this->face, 0, 48);
-
-            // Set up just ASCII chars for now, following the example prog
-            for (unsigned char c = 0; c < 128; c++) {
-                // load character glyph
-                if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-                    std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-                    continue;
-                }
-                // generate texture
-                unsigned int texture;
-                glGenTextures (1, &texture);
-                glBindTexture (GL_TEXTURE_2D, texture);
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GL_RED,
-                    this->face->glyph->bitmap.width,
-                    this->face->glyph->bitmap.rows,
-                    0,
-                    GL_RED,
-                    GL_UNSIGNED_BYTE,
-                    this->face->glyph->bitmap.buffer
-                    );
-                // set texture options
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                // now store character for later use
-                Character character = {
-                    texture,
-                    {static_cast<int>(this->face->glyph->bitmap.width), static_cast<int>(this->face->glyph->bitmap.rows)},
-                    {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top},
-                    static_cast<unsigned int>(this->face->glyph->advance.x)
-                };
-#if 0
-                std::cout << "Inserting character in this->Characters with info: ID:" << character.TextureID
-                          << ", Size:" << character.Size << ", Bearing:" << character.Bearing
-                          << ", Advance:" << character.Advance << std::endl;
-#endif
-                this->Characters.insert (std::pair<char, Character>(c, character));
-            }
-
-            // AFTER setting up characters, can now set up text in the textMmodel
-            this->textModel = new VisTextModel (this->shaderprog, this->textOffset);
-            this->textModel->setupText ("morph::Visual", this->Characters, 0.01f);
-
-            //
-            // Experimental text code end
-            //
         }
-
-        //! FreeType library object
-        FT_Library ft;
-        //! A Visual-default face
-        FT_Face face;
-        //! A map of char to Character info structs
-        std::map<char, Character> Characters;
 
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
@@ -798,8 +703,6 @@ namespace morph {
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
 
-        VisTextModel* textModel;
-        Vector<float> textOffset = {0.0f, 0.0f, 0.12f};
         /*
          * Variables to manage projection and rotation of the object
          */
