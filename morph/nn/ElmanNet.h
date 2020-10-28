@@ -104,8 +104,18 @@ namespace morph {
                 ++ni; // skip first neuron layer
                 while (cni != contextNeurons.end()) {
                     if (ni == neurons.end()) { throw std::runtime_error ("Not enough neuron layers"); }
-                    // This is 'one to one copy with weight 1'
+#if 1
+                    // This is 'one to one copy with weight 1', but no sigmoid
                     std::copy (ni->begin(), ni->end(), cni->begin());
+#else
+                    // For some reason, this doesn't seem reliable...
+                    // This is one to one with weight 1 and a sigmoid transfer function
+                    std::copy (ni->begin(), ni->end(), cni->begin()) ;
+                    //std::cout << "BEFORE cni: " << *cni << std::endl;
+                    auto sigmoid_function = [](T x){ return (T{1} / (T{1} + std::exp(-x))); };
+                    std::transform (cni->begin(), cni->end(), cni->begin(), sigmoid_function);
+                    //std::cout << "AFTER cni: " << *cni << std::endl;
+#endif
                     ++cni; ++ni;
                 }
 
@@ -165,6 +175,10 @@ namespace morph {
             void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput)
             {
                 *(this->neurons.begin()) = theInput;
+                // Set each context layer to 0.5, initially
+                for (auto& cl : this->contextNeurons) {
+                    cl.set (T{0.5});
+                }
                 this->desiredOutput = theOutput;
             }
 
@@ -174,11 +188,19 @@ namespace morph {
                 // Here is where we compute delta_out:
                 this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
                 // And the cost:
-                //std::cout << "cost is " << desiredOutput << " - " << this->neurons.back() << std::endl;
-                T l = (desiredOutput-this->neurons.back()).length();
-                this->cost = T{0.5} * l * l;
+                morph::vVector<T> prediction = this->neurons.back();
+                // Want the prediction error, which is either correct or incorrect.
+                for (auto& p : prediction) {
+                    p = p > T{0.5} ? T{1} : T{0};
+                }
+                T e = (desiredOutput-prediction).length();
+                // Elman seems to use '0.5 * binary error squared' for the cost:
+                this->cost = morph::nn::ElmanNet<T>::costKernel (e);
                 return this->cost;
             }
+
+            //! A static cost kernel to allow external code to compute an error using the same method as ElmantNet::computeCost.
+            static T costKernel (T& binary_error) { return T{0.5} * binary_error * binary_error; }
 
             //! What's the cost function of the current output? Computed in computeCost()
             T cost = T{0};

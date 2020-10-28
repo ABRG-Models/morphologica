@@ -5,7 +5,7 @@
  * layers of neurons in the network.
  *
  * \author Seb James
- * \date May 2020
+ * \date May 2020, October 2020
  */
 #pragma once
 
@@ -43,7 +43,7 @@ namespace morph {
                 this->M = 0;
                 for (auto _in : this->ins) { this->M += _in->size(); }
 
-                this->commonInit(_out);
+                this->commonInit (_out);
             }
 
             //! Init common to all constructors
@@ -51,23 +51,23 @@ namespace morph {
             {
                 this->out = _out;
                 this->N = this->out->size();
-                //this->delta.resize (M, T{0});
+
                 this->deltas.resize (this->ins.size());
                 for (unsigned int i = 0; i < this->deltas.size(); ++i) {
                     this->deltas[i].resize (this->ins[i]->size(), T{0});
                 }
-                //this->w.resize (M*N, T{0});
+
                 this->ws.resize (this->ins.size());
                 for (unsigned int i = 0; i < this->ws.size(); ++i) {
                     this->ws[i].resize(this->ins[i]->size() * this->N, T{0});
                 }
-                //this->nabla_w.resize (M*N, T{0});
+
                 this->nabla_ws.resize (this->ins.size());
                 for (unsigned int i = 0; i < this->nabla_ws.size(); ++i) {
                     this->nabla_ws[i].resize(this->ins[i]->size() * this->N, T{0});
                     this->nabla_ws[i].zero();
                 }
-                //this->nabla_w.zero();
+
                 this->b.resize (N, T{0});
                 this->nabla_b.resize (N, T{0});
                 this->nabla_b.zero();
@@ -125,17 +125,14 @@ namespace morph {
                 this->b.randomizeN (T{0.0}, T{1.0});
             }
 
-            // Will need to split out the sigmoid here into a separate function. Can then do
-            // feedforward from a number of input layers, with a final sigmoid. Hmm. No. Because
-            // who then owns the bias? Need to include all the inputs as I originally thought.
-            //
-            //! Feed-forward compute. out[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i]
+            //! Feed-forward compute. z[i] = in[0,..,M-1] . w[i,..,i+M-1] + b[i] (but
+            //! have to loop over each input population)
             void feedforward()
             {
-                // First, for each output, set the activation, z to 0
-                for (size_t j = 0; j < this->N; ++j) { this->z[j] = 0; }
+                // First, set the activations, z to 0
+                this->z.zero();
 
-                // For each input population:
+                // Loop over input populations:
                 for (size_t i = 0; i < this->ins.size(); ++i) {
                     // A morph::vVector for a 'part of w'
                     morph::vVector<T>* _in = this->ins[i];
@@ -154,18 +151,18 @@ namespace morph {
                     }
                 }
 
-                // Finally, for each output, apply the transfer function
+                // For each activation, z, apply the transfer function to generate the output, out
                 this->applyTransfer();
             }
 
-            //! For each output, add bias and apply transfer
+            //! For each activation, z, add the bias, then apply the sigmoid transfer function
             void applyTransfer()
             {
                 auto oiter = this->out->begin();
                 auto biter = this->b.begin();
                 for (size_t j = 0; j < this->N; ++j) {
                     this->z[j] += *biter++;
-                    *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z)
+                    *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z+bias)
                 }
             }
 
@@ -210,7 +207,8 @@ namespace morph {
                 // Check sum of sizes in delta_l_nxt
                 if (delta_l_nxt.size() != this->out->size()) {
                     std::stringstream ee;
-                    ee << "backprop: Mismatched size. delta_l_nxt size: " << delta_l_nxt.size() << ", out size: " << this->out->size();
+                    ee << "backprop: Mismatched size. delta_l_nxt size: "
+                       << delta_l_nxt.size() << ", out size: " << this->out->size();
                     throw std::runtime_error (ee.str());
                 }
 
@@ -229,7 +227,8 @@ namespace morph {
                     }
                 }
 
-                std::vector<morph::vVector<T>> spzl = this->sigmoid_prime_z_l(); // spzl has size M; deriv of input
+                 // spzl has size M; deriv of input
+                std::vector<morph::vVector<T>> spzl = this->sigmoid_prime_z_l();
 
                 if (spzl.size() < this->deltas.size()) {
                     throw std::runtime_error ("Sizes error (spzl and deltas)");
