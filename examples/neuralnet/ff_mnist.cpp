@@ -5,18 +5,22 @@
  * \date May 2020
  */
 
-#include "Mnist.h"
+#include <morph/Mnist.h>
 #include <morph/Random.h>
+#include <morph/nn/FeedForwardNet.h>
+#include <morph/vVector.h>
 #include <fstream>
-#include "FeedForward.h"
+#include <vector>
+#include <map>
+
 
 int main()
 {
     // Read the MNIST data
-    Mnist m;
+    morph::Mnist m;
 
     // Instantiate the network
-    FeedForwardNet<float> ff1({784,30,10});
+    morph::nn::FeedForwardNet<float> ff1({784,30,10});
 
     // Create a random number generator
     morph::RandUniform<unsigned char> rng((unsigned char)0, (unsigned char)9);
@@ -32,7 +36,7 @@ int main()
     // in ff1. Here, we declare an initialize mean_gradients
     std::vector<std::pair<morph::vVector<float>, morph::vVector<float>>> mean_gradients;
     for (auto& c : ff1.connections) {
-        mean_gradients.push_back (std::make_pair(c.nabla_w, c.nabla_b));
+        mean_gradients.push_back (std::make_pair(c.nabla_ws[0], c.nabla_b));
     }
 
     // Open a file to output costs into (for making a graph)
@@ -86,7 +90,7 @@ int main()
                 // Now collect up the nabla_w and nabla_bs for the learning step (already summed up cost)
                 i = 0;
                 for (auto& c : ff1.connections) {
-                    mean_gradients[i].first += c.nabla_w;
+                    mean_gradients[i].first += c.nabla_ws[0];
                     mean_gradients[i].second += c.nabla_b;
                     ++i;
                 }
@@ -103,7 +107,7 @@ int main()
             // perform the gradient update. v -> v' = v - eta * gradC
             i = 0;
             for (auto& c : ff1.connections) {
-                c.w -= (mean_gradients[i].first * eta);
+                c.ws[0] -= (mean_gradients[i].first * eta);
                 c.b -= (mean_gradients[i].second * eta);
                 ++i;
             }
