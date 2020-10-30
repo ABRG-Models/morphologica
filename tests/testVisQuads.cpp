@@ -2,13 +2,14 @@
  * Visualize a test surface
  */
 #include "morph/Visual.h"
-using morph::Visual;
-#include "morph/QuadsVisual.h"
-using morph::QuadsVisual;
+#define MESH 1
+#ifdef MESH
+# include "morph/QuadsMeshVisual.h"
+#else
+# include "morph/QuadsVisual.h"
+#endif
 #include "morph/Scale.h"
-using morph::Scale;
 #include "morph/Vector.h"
-using morph::Vector;
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -20,7 +21,7 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization");
+    morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows = true;
 
@@ -34,8 +35,8 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
-        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        Scale<float> scale;
+        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
         vector<array<float, 12>> surfBoxes;
@@ -67,7 +68,11 @@ int main (int argc, char** argv)
 
         vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
-        unsigned int visId = v.addVisualModel (new QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
+#ifdef MESH
+        unsigned int visId = v.addVisualModel (new morph::QuadsMeshVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
+#else
+        unsigned int visId = v.addVisualModel (new morph::QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
+#endif
 
         cout << "Added Visual with visId " << visId << endl;
 

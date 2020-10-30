@@ -5,7 +5,6 @@
 using morph::Visual;
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
-#define MESH 1
 #ifdef MESH
 #include "morph/PointRowsMeshVisual.h"
 using morph::PointRowsMeshVisual;

@@ -230,6 +230,7 @@ namespace morph {
                 r2_e--;
                 // Now r1, r1_e, r2 and r2_e all point to the right places
             }
+            std::cout << "PointRowsMeshVisual has " << ib << " vertex indices\n";
         }
 
     private:
@@ -240,11 +241,11 @@ namespace morph {
         //! sphere radius
         float sradius = 0.052f;
         //! sphere rings
-        int srings = 4;
+        int srings = 10;
         //! sphere segments
-        int sseg = 6;
+        int sseg = 12;
         //! tube segments
-        int tseg = 3;
+        int tseg = 12;
     };
 
 } // namespace morph
