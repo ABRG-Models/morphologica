@@ -60,7 +60,7 @@ namespace morph {
             this->vertexColors.clear();
 
             // The indices index
-            GLushort idx = 0;
+            VBOint idx = 0;
             // Draw a tube. That's it!
             this->computeTube (idx, this->offset+this->start_coord, this->offset+this->end_coord,
                                this->start_col, this->end_col, this->radius);

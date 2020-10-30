@@ -95,7 +95,7 @@ namespace morph {
             } // else no scaling required - spheres will be one colour
 
             // The indices index
-            GLushort idx = 0;
+            VBOint idx = 0;
 
             for (unsigned int i = 0; i < ncoords; ++i) {
                 // Scale colour (or use single colour)

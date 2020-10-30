@@ -73,7 +73,7 @@ namespace morph {
             std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, 0.0f, 1.0f);
 
             // The indices index
-            GLushort idx = 0;
+            VBOint idx = 0;
 
             Vector<Flt> half = {0.5,0.5,0.5};
             Vector<Flt> start, end, coords_i, vectorData_i, halfquiv;

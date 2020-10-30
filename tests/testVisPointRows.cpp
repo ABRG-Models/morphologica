@@ -5,8 +5,14 @@
 using morph::Visual;
 #include "morph/ColourMap.h"
 using morph::ColourMapType;
+#define MESH 1
+#ifdef MESH
+#include "morph/PointRowsMeshVisual.h"
+using morph::PointRowsMeshVisual;
+#else
 #include "morph/PointRowsVisual.h"
 using morph::PointRowsVisual;
+#endif
 #include "morph/Scale.h"
 using morph::Scale;
 #include "morph/Vector.h"
@@ -56,7 +62,11 @@ int main (int argc, char** argv)
         points.push_back ({ 2, 2.9, 0.3 }); data.push_back(points.back()[2]);
         points.push_back ({ 2, 4,   0.1 }); data.push_back(points.back()[2]);
 
+#ifdef MESH
+        unsigned int visId = v.addVisualModel (new PointRowsMeshVisual<float> (v.shaderprog, &points, offset, &data, scale, ColourMapType::Twilight));
+#else
         unsigned int visId = v.addVisualModel (new PointRowsVisual<float> (v.shaderprog, &points, offset, &data, scale, ColourMapType::Twilight));
+#endif
         cout << "Added Visual with visId " << visId << endl;
 
         v.render();

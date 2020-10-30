@@ -272,7 +272,7 @@ namespace morph {
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (GLushort& idx, Vector<float> start, Vector<float> end,
+        void computeTube (VBOint& idx, Vector<float> start, Vector<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
@@ -342,10 +342,10 @@ namespace morph {
             int nverts = (segments * 2) + 2;
 
             // After creating vertices, push all the indices.
-            GLushort capMiddle = idx;
-            GLushort capStartIdx = idx + 1;
-            GLushort endMiddle = idx + (GLushort)nverts - 1;
-            GLushort endStartIdx = capStartIdx + segments;
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            VBOint endMiddle = idx + (VBOint)nverts - 1;
+            VBOint endStartIdx = capStartIdx + segments;
 
             //std::cout << "start cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
@@ -429,7 +429,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (GLushort& idx, Vector<float> so, std::array<float, 3> sc, float r = 1.0f,
+        void computeSphere (VBOint& idx, Vector<float> so, std::array<float, 3> sc, float r = 1.0f,
                             int rings = 10, int segments = 12)
         {
             // First cap, draw as a triangle fan, but record indices so that
@@ -447,9 +447,9 @@ namespace morph {
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
 
-            GLushort capMiddle = idx++;
-            GLushort ringStartIdx = idx;
-            GLushort lastRingStartIdx = idx;
+            VBOint capMiddle = idx++;
+            VBOint ringStartIdx = idx;
+            VBOint lastRingStartIdx = idx;
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -574,7 +574,7 @@ namespace morph {
          *
          * \param segments Number of segments used to render the tube
          */
-        void computeCone (GLushort& idx,
+        void computeCone (VBOint& idx,
                           Vector<float> centre,
                           Vector<float> tip,
                           float ringoffset,
@@ -635,10 +635,10 @@ namespace morph {
             int nverts = segments + 2;
 
             // After creating vertices, push all the indices.
-            GLushort capMiddle = idx;
-            GLushort capStartIdx = idx + 1;
-            GLushort endMiddle = idx + (GLushort)nverts - 1;
-            GLushort endStartIdx = capStartIdx /*+ segments*/;
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            VBOint endMiddle = idx + (VBOint)nverts - 1;
+            VBOint endStartIdx = capStartIdx /*+ segments*/;
 
             //std::cout << "bottom cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {

@@ -71,7 +71,7 @@ namespace morph {
             this->vertexColors.clear();
 
             // The indices index
-            GLushort idx = 0;
+            VBOint idx = 0;
 
             // Draw four spheres to make up the coord frame
             Vector<float, 3> reloffset = this->offset;
