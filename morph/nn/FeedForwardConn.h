@@ -31,8 +31,6 @@ namespace morph {
             {
                 this->ins.resize(1);
                 this->ins[0] = _in;
-                this->M = _in->size();
-
                 this->commonInit (_out);
             }
 
@@ -40,9 +38,6 @@ namespace morph {
             FeedForwardConn (std::vector<morph::vVector<T>*> _ins, morph::vVector<T>* _out)
             {
                 this->ins = _ins;
-                this->M = 0;
-                for (auto _in : this->ins) { this->M += _in->size(); }
-
                 this->commonInit (_out);
             }
 
@@ -75,11 +70,11 @@ namespace morph {
                 this->z.zero();
             }
 
-            //! Input layer has size M.
+            //! Input layer has total size M = m1 + m2 +... etc where m1, m2 are the lengths of the elements of ins
             std::vector<morph::vVector<T>*> ins;
-            size_t M = 0;
             //! Pointer to output layer. Size N.
             morph::vVector<T>* out;
+            //! The size (i.e. number of neurons) in out.
             size_t N = 0;
             //! The errors in the input layer of neurons. Size M = m1 + m2 +...
             std::vector<morph::vVector<T>> deltas;
