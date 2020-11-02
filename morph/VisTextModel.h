@@ -129,10 +129,10 @@ namespace morph {
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
 
                 // Add the info for drawing the textures on the quads
-                this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexTextures);
-                this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
+                this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexTextures);
+                this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
 
                 // All same colours
                 this->vertex_push (this->clr_backing, this->vertexColors);
@@ -233,7 +233,7 @@ namespace morph {
 
             for (size_t i = 0; i < quads.size(); ++i) {
                 // Bind the right texture for the quad. Just choose first one for now
-                std::cout << i << ") Drawing elements for character id " << this->quad_ids[i] << std::endl;
+                //std::cout << i << ") Drawing elements for character id " << this->quad_ids[i] << std::endl;
                 glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
                 // This is 'draw a subset of the elements from the vertex array
                 // object'. You say how many indices to draw and which base *vertex* you
