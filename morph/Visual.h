@@ -569,7 +569,7 @@ namespace morph {
                 std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
             }
             // FIXME: Don't forget to play with this. Increase from 48 for better text?
-            FT_Set_Pixel_Sizes (this->face, 0, 240);
+            FT_Set_Pixel_Sizes (this->face, 0, 48);
 
             // Set up just ASCII chars for now, following the example prog
             for (unsigned char c = 0; c < 128; c++) {
@@ -620,7 +620,7 @@ namespace morph {
             morph::GLutil::checkError (__FILE__, __LINE__);
             this->textModel = new VisTextModel (this->tshaderprog, this->textOffset);
             morph::GLutil::checkError (__FILE__, __LINE__);
-            this->textModel->setupText ("BAB", this->Characters, 0.01f);
+            this->textModel->setupText ("morph::Visual", this->Characters, 0.01f);
             morph::GLutil::checkError (__FILE__, __LINE__);
 
             //

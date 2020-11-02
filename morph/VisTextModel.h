@@ -41,25 +41,14 @@ namespace morph {
         // Construct with given text shader program id, \a tsp and a spatial \a _offset.
         VisTextModel (GLuint tsp, const morph::Vector<float> _offset)
         {
-            // Set up...
             this->tshaderprog = tsp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
-
-            // In derived constructor: Do the computations to initialize the vertices
-            // that will represent the model
-            // this->initializeVertices();
-
-            // Then common code for postVertexInit:
-            // this->postVertexInit();
-
-            // Here's how to unbind the VAO. Is that necessary? Seems not
-            // glBindVertexArray(0);
         }
 
         virtual ~VisTextModel()
         {
-            glDeleteBuffers (4, vbos);
+            glDeleteBuffers (numVBO, vbos);
             delete (this->vbos);
         }
 
@@ -115,10 +104,10 @@ namespace morph {
             this->postVertexInit();
         }
 
-        //! The colour of the backing quad
-        std::array<float, 3> clr_backing = {0.2f, 0.2f, 1.0f};
+        //! The colour of the backing quad's vertices. Doesn't have any effect.
+        std::array<float, 3> clr_backing = {1.0f, 1.0f, 1.0f};
         //! The colour of the text
-        std::array<float, 3> clr_text = {0.0f, 1.0f, 0.0f};
+        std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
 
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices (void) {
@@ -160,14 +149,16 @@ namespace morph {
                 // Two triangles per quad
                 // qi * 4 + 1, 2 3 or 4
                 unsigned int ib = qi*4;
+                std::cout << "indices.size() at start: " << indices.size() << std::endl;
                 this->indices.push_back (ib++); // 0
                 this->indices.push_back (ib++); // 1
-                this->indices.push_back (ib); // 2
+                this->indices.push_back (ib);   // 2
 
                 this->indices.push_back (ib++); // 2
                 this->indices.push_back (ib);   // 3
                 ib -= 3;
                 this->indices.push_back (ib);   // 0
+                std::cout << "indices.size() after pushing back 2 triangles: " << indices.size() << std::endl;
             }
         }
 
@@ -233,100 +224,27 @@ namespace morph {
 
             glActiveTexture (GL_TEXTURE0);
 
-            // Bind the right texture for the quad. Just choose first one for now
-            glBindTexture(GL_TEXTURE_2D, this->quad_ids[0]);
-
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
 
             // Pass this->float to GLSL so the model can have an alpha value.
             GLint loc_a = glGetUniformLocation (this->tshaderprog, (const GLchar*)"alpha");
             if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-            glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            glBindVertexArray(0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-        }
 
-        //! Render the VisTextModel
-        void render0()
-        {
-            if (this->hide == true) { return; }
-
-            glUseProgram (this->tshaderprog);
-
-            glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"), this->clr_text[0], this->clr_text[1], this->clr_text[2]);
-#if 0
-            glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
-#endif
-            glBindVertexArray (this->vao);
-
-            // Create the vertices data
-            unsigned int nquads = this->quads.size();
-            for (unsigned int qi = 0; qi < nquads; ++qi) {
-
-                std::array<float, 12> quad = this->quads[qi];
-                float vertices[6][4] = {
-                    { quad[0],  quad[1],   quad[2], 0.0f }, // tri 1
-                    { quad[3],  quad[4],   quad[5], 0.0f },
-                    { quad[6],  quad[7],   quad[8], 0.0f },
-
-                    { quad[0],  quad[1],   quad[2], 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { quad[6],  quad[7],   quad[8], 0.0f },
-                    { quad[9],  quad[10],  quad[11], 0.0f }
-                };
-#if 0
-                std::cout << "VisTextModel::render(): quad made of tri:\n("
-                          << quad[0] << "," << quad[1] << "," << quad[2] << ") to ("
-                          << quad[3] << "," << quad[4] << "," << quad[5] << ") to ("
-                          << quad[6] << "," << quad[7] << "," << quad[8] << ") AND  tri:\n("
-
-                          << quad[0] << "," << quad[1] << "," << quad[2] << ") to ("
-                          << quad[6] << "," << quad[7] << "," << quad[8] << ") to ("
-                          << quad[9] << "," << quad[10] << "," << quad[11] << ")\n";
-#endif
-                float textures[6][4] = { // ignore xy
-                    { -0.6f, 0.1f,   0.0f, 0.0f }, // tri 1
-                    { -0.5f, 0.2f,   0.0f, 1.0f },
-                    { -0.4f, 0.3f,   1.0f, 1.0f },
-
-                    { -0.3f, 0.4f,   0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { -0.2f, 0.5f,   1.0f, 1.0f },
-                    { -0.1f, 0.6f,   1.0f, 0.0f }
-                };
-#ifdef TWOD
-                float textures[6][2] = { // ignore xy
-                    { 0.0f, 0.0f }, // tri 1
-                    { 1.0f, 0.0f },
-                    { 1.0f, 1.0f },
-
-                    { 0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { 1.0f, 1.0f },
-                    { 0.0f, 1.0f }
-                };
-#endif
-                // render glyph texture over quad
-#if 0
-                glBindTexture (GL_TEXTURE_2D, quad_ids[qi]);
-#endif
-                // update content of text_vbo memory
-                glBindBuffer (GL_ARRAY_BUFFER, vbos[0]);
-                glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-                //glBindBuffer (GL_ARRAY_BUFFER, vbos[1]);
-                //glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(textures), textures);
-
-                glBindBuffer (GL_ARRAY_BUFFER, 0);
-
-                // render quad. glDrawArrays is a non-indexed drawing command.
-                glDrawArrays (GL_TRIANGLES, 0, 6);
-
-                morph::GLutil::checkError (__FILE__, __LINE__);
+            for (size_t i = 0; i < quads.size(); ++i) {
+                // Bind the right texture for the quad. Just choose first one for now
+                std::cout << i << ") Drawing elements for character id " << this->quad_ids[i] << std::endl;
+                glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
+                // This is 'draw a subset of the elements from the vertex array
+                // object'. You say how many indices to draw and which base *vertex* you
+                // start from. In my scheme, I have 4 vertices for each two triangles
+                // that are constructed. Thus, I draw 6 indices, but increment the base
+                // vertex by 4 for each letter.
+                glDrawElementsBaseVertex (GL_TRIANGLES, 6, VBO_ENUM_TYPE, 0, 4*i);
             }
 
             glBindVertexArray(0);
-#if 0
-            glBindTexture (GL_TEXTURE_2D, 0);
-#endif
+            morph::GLutil::checkError (__FILE__, __LINE__);
         }
 
         //! The text-model-specific view matrix.
