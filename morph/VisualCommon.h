@@ -2,6 +2,13 @@
 
 #include <morph/Vector.h>
 
+// For GLuint and GLenum
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include "GL3/gl3.h"
+#endif
+
 typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
@@ -21,5 +28,29 @@ namespace morph {
         morph::Vector<int,2>  Bearing;
         //! Offset to advance to next glyph
         unsigned int Advance;
+    };
+
+    //! A class containing a static function to check the GL errors.
+    struct GLutil
+    {
+        static GLenum checkError (const char *file, int line)
+        {
+            GLenum errorCode;
+            while ((errorCode = glGetError()) != GL_NO_ERROR) {
+                std::string error;
+                switch (errorCode) {
+                case GL_INVALID_ENUM:       { error = "GL error: GL_INVALID_ENUM"; break; }
+                case GL_INVALID_VALUE:      { error = "GL error: GL_INVALID_VALUE"; break; }
+                case GL_INVALID_OPERATION:  { error = "GL error: GL_INVALID_OPERATION"; break; }
+                case 1283:                  { error = "GL error: GL_STACK_OVERFLOW"; break; }  // Not part of GL3?
+                case 1284:                  { error = "GL error: GL_STACK_UNDERFLOW"; break; } // Not part of GL3?
+                case GL_OUT_OF_MEMORY:      { error = "GL error: GL_OUT_OF_MEMORY"; break; }
+                case GL_INVALID_FRAMEBUFFER_OPERATION: { error = "GL error: GL_INVALID_FRAMEBUFFER_OPERATION"; break; }
+                default: { error = "GL checkError: Unknown GL error code"; break; }
+                }
+                std::cout << error << " | " << file << ":" << line << std::endl;
+            }
+            return errorCode;
+        }
     };
 } // namespace

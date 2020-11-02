@@ -22,7 +22,7 @@
 #include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
-// For GLuint and GLenum (though redundant, as already included in VisualModela
+// For GLuint and GLenum (though redundant, as already included in VisualModel
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
@@ -249,6 +249,7 @@ namespace morph {
 #else
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
+            glUseProgram (this->shaderprog);
 
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
@@ -333,14 +334,6 @@ namespace morph {
                 this->coordArrows->render();
             }
 
-            // set mvp in tshaderprog too
-            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
-            if (loct != -1) {
-                glUniformMatrix4fv (loct, 1, GL_FALSE, vp_coords.mat.data());
-            } else {
-                std::cout << "NOT Setting vp_coords in texture shader\n";
-            }
-
 #if 0 // for now
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
@@ -357,6 +350,18 @@ namespace morph {
                 ++vmi;
             }
 #endif
+            // Now switch to text shader
+            glUseProgram (this->tshaderprog);
+
+            // set mvp in tshaderprog too
+            vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
+            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
+            if (loct != -1) {
+                glUniformMatrix4fv (loct, 1, GL_FALSE, vp_coords.mat.data());
+            } else {
+                std::cout << "NOT Setting vp_coords in texture shader\n";
+            }
+
             // Text rendering. This probably will be a resizable array of textobjs
             this->textModel->render();
 
@@ -369,9 +374,9 @@ namespace morph {
 #endif
         }
 
-        //! The OpenGL shader program
+        //! The OpenGL shader program for graphical objects
         GLuint shaderprog;
-        //! The text shader program. May not be required
+        //! The text shader program, which uses textures to draw text on quads.
         GLuint tshaderprog;
 
         //! Set perspective based on window width and height
@@ -462,6 +467,8 @@ namespace morph {
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
             // Set up error callback
             glfwSetErrorCallback (morph::Visual::errorCallback);
 
@@ -540,10 +547,14 @@ namespace morph {
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
 
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
             //
             // Experimental text code
             //
@@ -551,6 +562,7 @@ namespace morph {
             if (FT_Init_FreeType (&this->ft)) {
                 std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
             }
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             // Keep the face as a morph::Visual owned resource, shared by VisTextModels
             if (FT_New_Face (this->ft, "fonts/ttf-bitstream-vera/Vera.ttf", 0, &this->face)) {
@@ -605,8 +617,11 @@ namespace morph {
             // At this point could FT_Done_Face() etc, I think.
 
             // AFTER setting up characters, can now set up text in the textMmodel
-            this->textModel = new VisTextModel (this->shaderprog, this->tshaderprog, this->textOffset);
-            this->textModel->setupText ("morph::Visual", this->Characters, 0.01f);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+            this->textModel = new VisTextModel (this->tshaderprog, this->textOffset);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+            this->textModel->setupText ("A", this->Characters, 0.01f);
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             //
             // Experimental text code end
@@ -808,7 +823,7 @@ namespace morph {
 
         //! Position and length of coordinate arrows. Configurable at morph::Visual construction.
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
-        Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
+        Vector<float> coordArrowsLength = {0.12f, 0.33f, 0.35f};
         float coordArrowsThickness = 1.0f;
 
         VisTextModel* textModel;

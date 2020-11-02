@@ -38,10 +38,10 @@ namespace morph {
     class VisTextModel
     {
     public:
-        VisTextModel (GLuint sp, GLuint tsp, const morph::Vector<float> _offset)
+        // Construct with given text shader program id, \a tsp and a spatial \a _offset.
+        VisTextModel (GLuint tsp, const morph::Vector<float> _offset)
         {
             // Set up...
-            this->shaderprog = sp;
             this->tshaderprog = tsp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
@@ -83,15 +83,20 @@ namespace morph {
 
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
-                std::array<float,12> tbox = { xpos,   ypos+h,   this->offset[2],
-                                              xpos,   ypos,     this->offset[2],
-                                              xpos+w, ypos,     this->offset[2],
-                                              xpos+w, ypos+h,   this->offset[2] };
+                std::array<float,12> tbox = { xpos,   ypos,     this->offset[2],
+                                              xpos,   ypos+h,   this->offset[2],
+                                              xpos+w, ypos+h,   this->offset[2],
+                                              xpos+w, ypos,     this->offset[2] };
 #if 1
-                std::cout << "Text box from (" << xpos << "," << ypos << "," << this->offset[2]
-                          << ") to (" << xpos+w << "," << ypos+h << "," << this->offset[2] << ")\n";
+                std::cout << "Text box added as quad from\n("
+                          << tbox[0] << "," << tbox[1] << "," << tbox[2]
+                          << ") to (" << tbox[3] << "," << tbox[4] << "," << tbox[5]
+                          << ") to (" << tbox[6] << "," << tbox[7] << "," << tbox[8]
+                          << ") to (" << tbox[9] << "," << tbox[10] << "," << tbox[11]
+                          << "). w="<<w<<", h="<<h<<"\n";
 #endif
                 this->quads.push_back (tbox);
+                std::cout << "Texture ID for that character is: " << ch.TextureID << std::endl;
                 this->quad_ids.push_back (ch.TextureID);
 
                 // The value in ch.Advance has to be divided by 64 to bring it into the
@@ -110,9 +115,9 @@ namespace morph {
         }
 
         //! The colour of the backing quad
-        std::array<float, 3> clr_backing = {0.2f, 0.2f, 0.2f};
+        std::array<float, 3> clr_backing = {0.2f, 0.2f, 1.0f};
         //! The colour of the text
-        std::array<float, 3> clr_text = {1.0f, 0.0f, 0.5f};
+        std::array<float, 3> clr_text = {0.0f, 1.0f, 0.0f};
 
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices (void) {
@@ -122,17 +127,28 @@ namespace morph {
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = this->quads[qi];
+#if 1
+                std::cout << "Quad box from (" << quad[0] << "," << quad[1] << "," << quad[2]
+                          << ") to (" << quad[3] << "," << quad[4] << "," << quad[5]
+                          << ") to (" << quad[6] << "," << quad[7] << "," << quad[8]
+                          << ") to (" << quad[9] << "," << quad[10] << "," << quad[11] << ")" << std::endl;
+#endif
                 this->vertex_push (quad[0], quad[1],  quad[2],  this->vertexPositions); //1
                 this->vertex_push (quad[3], quad[4],  quad[5],  this->vertexPositions); //2
                 this->vertex_push (quad[6], quad[7],  quad[8],  this->vertexPositions); //3
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
-
                 // Add the info for drawing the textures on the quads
+#ifdef _VERT_IS_DOWN_
+                this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexTextures);
+                this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
+                this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexTextures);
+                this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
+#else
                 this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexTextures);
-
+#endif
                 // All same colours
                 this->vertex_push (this->clr_backing, this->vertexColors);
                 this->vertex_push (this->clr_backing, this->vertexColors);
@@ -165,22 +181,47 @@ namespace morph {
             std::cout << "postVertexInit...\n";
 
             glGenVertexArrays (1, &this->vao);
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
             this->vbos = new GLuint[2];
             glGenBuffers (2, this->vbos); // OpenGL 4.4- safe
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             //glGenBuffers (1, &this->vbo);
             glBindVertexArray (this->vao);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+            // Because I am working in 3D, I want two vertex buffer objects, one for 3D
+            // position, the other for the texture, 2D info.
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
+            morph::GLutil::checkError (__FILE__, __LINE__);
             glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+            morph::GLutil::checkError (__FILE__, __LINE__);
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
             glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray (0);
             glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+#if 0
+            glEnableVertexAttribArray (0);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+            glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
+            // ?
+            glEnableVertexAttribArray (1);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+            glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+#endif
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
+            morph::GLutil::checkError (__FILE__, __LINE__);
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
             glBindVertexArray (0);
+
+            // returns here
+
 #if 0
             // Create vertex array object
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
@@ -209,9 +250,6 @@ namespace morph {
             glBindBuffer (0, this->vbos[colVBO]);
             glBindBuffer (0, this->vbos[textureVBO]);
             glBindBuffer (0, this->vbos[idxVBO]);
-
-            // Possible glVertexAttribPointer and glEnableVertexAttribArray?
-            glUseProgram (this->shaderprog);
 #endif
         }
 
@@ -221,19 +259,11 @@ namespace morph {
             if (this->hide == true) { return; }
 
             glUseProgram (this->tshaderprog);
+
             glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"), this->clr_text[0], this->clr_text[1], this->clr_text[2]);
-
 #if 0
-            // Set my projection. At the moment, I let the morph::Visual set the projection
-            TransformMatrix<float> sceneview;
-            sceneview.translate (this->parent->scenetrans);
-            sceneview.rotate (this->parent->rotation);
-            TransformMatrix<float> viewproj = this->parent->projection * sceneview;
-            GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-            if (loc != -1) { glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());  }
-#endif
-
             glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
+#endif
             glBindVertexArray (this->vao);
 
             // Create the vertices data
@@ -246,40 +276,74 @@ namespace morph {
                     { quad[3],  quad[4],   quad[5], 0.0f },
                     { quad[6],  quad[7],   quad[8], 0.0f },
 
-                    { quad[0],  quad[1],   quad[2],  0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { quad[6],  quad[7],   quad[8],  0.0f },
+                    { quad[0],  quad[1],   quad[2], 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
+                    { quad[6],  quad[7],   quad[8], 0.0f },
                     { quad[9],  quad[10],  quad[11], 0.0f }
                 };
+#if 0
+                std::cout << "VisTextModel::render(): quad made of tri:\n("
+                          << quad[0] << "," << quad[1] << "," << quad[2] << ") to ("
+                          << quad[3] << "," << quad[4] << "," << quad[5] << ") to ("
+                          << quad[6] << "," << quad[7] << "," << quad[8] << ") AND  tri:\n("
 
-                std::cout << "vertices: " << quad[0] << "," << quad[1] << "," << quad[2] << " to "
-                          << quad[9] << "," << quad[10] << "," << quad[11] << std::endl;
-
+                          << quad[0] << "," << quad[1] << "," << quad[2] << ") to ("
+                          << quad[6] << "," << quad[7] << "," << quad[8] << ") to ("
+                          << quad[9] << "," << quad[10] << "," << quad[11] << ")\n";
+#endif
                 float textures[6][4] = { // ignore xy
-                    { 0.0f, 0.0f,   0.0f, 0.0f }, // tri 1
-                    { 0.0f, 0.0f,   0.0f, 1.0f },
-                    { 0.0f, 0.0f,   1.0f, 1.0f },
+                    { -0.6f, 0.1f,   0.0f, 0.0f }, // tri 1
+                    { -0.5f, 0.2f,   0.0f, 1.0f },
+                    { -0.4f, 0.3f,   1.0f, 1.0f },
 
-                    { 0.0f, 0.0f,   0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
-                    { 0.0f, 0.0f,   1.0f, 1.0f },
-                    { 0.0f, 0.0f,   1.0f, 0.0f }
+                    { -0.3f, 0.4f,   0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
+                    { -0.2f, 0.5f,   1.0f, 1.0f },
+                    { -0.1f, 0.6f,   1.0f, 0.0f }
                 };
+#ifdef TWOD
+                float textures[6][2] = { // ignore xy
+                    { 0.0f, 0.0f }, // tri 1
+                    { 1.0f, 0.0f },
+                    { 1.0f, 1.0f },
+
+                    { 0.0f, 0.0f }, // tri 2. Note: I need to fill/create the texture tris.
+                    { 1.0f, 1.0f },
+                    { 0.0f, 1.0f }
+                };
+#endif
                 // render glyph texture over quad
+#if 0
                 glBindTexture (GL_TEXTURE_2D, quad_ids[qi]);
+#endif
                 // update content of text_vbo memory
                 glBindBuffer (GL_ARRAY_BUFFER, vbos[0]);
+#if 1
                 glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+#else
+                glBufferData (GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+#endif
+                morph::GLutil::checkError (__FILE__, __LINE__);
+
                 glBindBuffer (GL_ARRAY_BUFFER, vbos[1]);
+#if 1
                 glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(textures), textures);
+#else
+                glBufferData (GL_ARRAY_BUFFER, sizeof(textures), textures, GL_DYNAMIC_DRAW);
+#endif
+                morph::GLutil::checkError (__FILE__, __LINE__);
+
                 glBindBuffer (GL_ARRAY_BUFFER, 0);
+
                 // render quad
                 glDrawArrays (GL_TRIANGLES, 0, 6);
             }
 
             glBindVertexArray(0);
+#if 0
             glBindTexture (GL_TEXTURE_2D, 0);
+#endif
 
-            // Back to original shader
-            glUseProgram (this->shaderprog);
+            // Back to original shader (no, allow VisualModel to do that)
+            //glUseProgram (this->shaderprog);
 
 #if 0
             glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
