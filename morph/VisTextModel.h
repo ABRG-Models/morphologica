@@ -105,11 +105,12 @@ namespace morph {
             }
 
             // Ensure we've cleared out vertex info
-            //this->vertexPositions.clear();
-            //this->vertexNormals.clear();
-            //this->vertexColors.clear();
+            this->vertexPositions.clear();
+            this->vertexNormals.clear();
+            this->vertexColors.clear();
+            this->vertexTextures.clear();
 
-            //this->initializeVertices();
+            this->initializeVertices();
 
             this->postVertexInit();
         }
@@ -137,18 +138,13 @@ namespace morph {
                 this->vertex_push (quad[3], quad[4],  quad[5],  this->vertexPositions); //2
                 this->vertex_push (quad[6], quad[7],  quad[8],  this->vertexPositions); //3
                 this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
+
                 // Add the info for drawing the textures on the quads
-#ifdef _VERT_IS_DOWN_
-                this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexTextures);
-                this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
-                this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexTextures);
-                this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
-#else
                 this->vertex_push (0.0f, 0.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (0.0f, 1.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (1.0f, 1.0f, 0.0f, this->vertexTextures);
                 this->vertex_push (1.0f, 0.0f, 0.0f, this->vertexTextures);
-#endif
+
                 // All same colours
                 this->vertex_push (this->clr_backing, this->vertexColors);
                 this->vertex_push (this->clr_backing, this->vertexColors);
@@ -176,16 +172,16 @@ namespace morph {
         }
 
         //! Common code to call after the vertices have been set up.
-        void postVertexInit()
+        void postVertexInit2()
         {
-            std::cout << "postVertexInit...\n";
+            std::cout << "postVertexInit2...\n";
 
             glGenVertexArrays (1, &this->vao);
             morph::GLutil::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
-            this->vbos = new GLuint[2];
-            glGenBuffers (2, this->vbos); // OpenGL 4.4- safe
+            this->vbos = new GLuint[1];
+            glGenBuffers (1, this->vbos); // OpenGL 4.4- safe
             morph::GLutil::checkError (__FILE__, __LINE__);
 
             //glGenBuffers (1, &this->vbo);
@@ -194,67 +190,97 @@ namespace morph {
             // Because I am working in 3D, I want two vertex buffer objects, one for 3D
             // position, the other for the texture, 2D info.
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
-            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray (0);
-            glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-#if 0
-            glEnableVertexAttribArray (0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
 
-            // ?
-            glEnableVertexAttribArray (1);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-#endif
+            // Allocate space in the buffer
+            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+            //glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
+
+            //glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+            glEnableVertexAttribArray (0);
+
+            glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
             glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            //glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
 
             glBindVertexArray (0);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+        }
 
-            // returns here
-
-#if 0
+        void postVertexInit()
+        {
+            std::cout << "postVertexInit...\n";
             // Create vertex array object
+#ifdef __MACS_HAD_OPENGL_450__
+            glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
+#else
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
+#endif
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
             glBindVertexArray (this->vao);
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
-
+#ifdef __MACS_HAD_OPENGL_450__
+            glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+#else
             glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
+#endif
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
             // Set up the indices buffer - bind and buffer the data in this->indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+
+            //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
+            morph::GLutil::checkError (__FILE__, __LINE__);
 
-            // Binds data from the "C++ world" to the OpenGL shader world
+            // Binds data from the "C++ world" to the OpenGL shader world for
+            // "position", "normalin" and "color"
+            // (bind, buffer and set vertex array object attribute)
             this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
             this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
             this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
             this->setupVBO (this->vbos[textureVBO], this->vertexTextures, textureLoc);
 
-            // release (unbind) the vertex buffers
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            // Possibly release (unbind) the vertex buffers, but have to unbind vertex
+            // array object first.
             glBindVertexArray(0);
-            glBindBuffer (0, this->vbos[posnVBO]);
-            glBindBuffer (0, this->vbos[normVBO]);
-            glBindBuffer (0, this->vbos[colVBO]);
-            glBindBuffer (0, this->vbos[textureVBO]);
-            glBindBuffer (0, this->vbos[idxVBO]);
+            morph::GLutil::checkError (__FILE__, __LINE__);
 #endif
         }
 
         //! Render the VisTextModel
         void render()
+        {
+            if (this->hide == true) { return; }
+
+            // Ensure the correct program is in play for this VisualModel
+            glUseProgram (this->tshaderprog);
+
+            glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"),
+                         this->clr_text[0], this->clr_text[1], this->clr_text[2]);
+
+            // It is only necessary to bind the vertex array object before rendering
+            glBindVertexArray (this->vao);
+
+            // Pass this->float to GLSL so the model can have an alpha value.
+            GLint loc_a = glGetUniformLocation (this->tshaderprog, (const GLchar*)"alpha");
+            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
+            glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+            glBindVertexArray(0);
+            morph::GLutil::checkError (__FILE__, __LINE__);
+        }
+
+        //! Render the VisTextModel
+        void render0()
         {
             if (this->hide == true) { return; }
 
@@ -316,49 +342,22 @@ namespace morph {
 #endif
                 // update content of text_vbo memory
                 glBindBuffer (GL_ARRAY_BUFFER, vbos[0]);
-#if 1
                 glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-#else
-                glBufferData (GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-#endif
-                morph::GLutil::checkError (__FILE__, __LINE__);
 
-                glBindBuffer (GL_ARRAY_BUFFER, vbos[1]);
-#if 1
-                glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(textures), textures);
-#else
-                glBufferData (GL_ARRAY_BUFFER, sizeof(textures), textures, GL_DYNAMIC_DRAW);
-#endif
-                morph::GLutil::checkError (__FILE__, __LINE__);
+                //glBindBuffer (GL_ARRAY_BUFFER, vbos[1]);
+                //glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof(textures), textures);
 
                 glBindBuffer (GL_ARRAY_BUFFER, 0);
 
-                // render quad
+                // render quad. glDrawArrays is a non-indexed drawing command.
                 glDrawArrays (GL_TRIANGLES, 0, 6);
+
+                morph::GLutil::checkError (__FILE__, __LINE__);
             }
 
             glBindVertexArray(0);
 #if 0
             glBindTexture (GL_TEXTURE_2D, 0);
-#endif
-
-            // Back to original shader (no, allow VisualModel to do that)
-            //glUseProgram (this->shaderprog);
-
-#if 0
-            glActiveTexture (GL_TEXTURE0); // sets active texture before binding vertex array
-            // It is only necessary to bind the vertex array object before rendering
-            glBindVertexArray (this->vao);
-
-            // Pass this->float to GLSL so the model can have an alpha value.
-            GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
-            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-
-            GLint loc_tc = glGetUniformLocation (this->shaderprog, (const GLchar*)"textColour");
-            if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
-            // Simple models draw all the triangles
-            glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            glBindVertexArray(0);
 #endif
         }
 
@@ -381,7 +380,6 @@ namespace morph {
         const Visual* parent;
         //! A copy of the reference to the text shader program
         GLuint tshaderprog;
-        GLuint shaderprog;
         //! The OpenGL Vertex Array Object
         GLuint vao;
         //! Single vbo to use as in example

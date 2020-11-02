@@ -4,12 +4,15 @@
 uniform mat4 mvp_matrix;
 uniform mat4 vp_matrix;
 
-layout(location = 0) in vec4 position; // Attrib location 0
-layout(location = 1) in vec4 texture;  // texture
+layout(location = 0) in vec4 position; // Attrib location 0 is vertex position
+layout(location = 1) in vec4 vnormal;  // Attrib location 1 is vertex normal
+layout(location = 2) in vec4 vcolor;   // Attrib location 2 is vertex colour
+layout(location = 3) in vec4 texture;  // Attrib location 3 is texture map location
+
 out vec2 TexCoords;
 
 void main()
 {
     gl_Position = mvp_matrix * position;
-    TexCoords = texture.wz;
+    TexCoords = texture.xy;
 }
