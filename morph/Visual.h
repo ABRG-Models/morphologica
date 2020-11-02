@@ -334,7 +334,6 @@ namespace morph {
                 this->coordArrows->render();
             }
 
-#if 0 // for now
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
                 // For each different VisualModel, I can CHANGE the uniform. Right? Right.
@@ -349,7 +348,7 @@ namespace morph {
                 (*vmi)->render();
                 ++vmi;
             }
-#endif
+
             // Now switch to text shader
             glUseProgram (this->tshaderprog);
 

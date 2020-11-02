@@ -76,16 +76,16 @@ namespace morph {
                                               xpos,   ypos+h,   this->offset[2],
                                               xpos+w, ypos+h,   this->offset[2],
                                               xpos+w, ypos,     this->offset[2] };
-#if 1
+#ifdef __DEBUG__
                 std::cout << "Text box added as quad from\n("
                           << tbox[0] << "," << tbox[1] << "," << tbox[2]
                           << ") to (" << tbox[3] << "," << tbox[4] << "," << tbox[5]
                           << ") to (" << tbox[6] << "," << tbox[7] << "," << tbox[8]
                           << ") to (" << tbox[9] << "," << tbox[10] << "," << tbox[11]
                           << "). w="<<w<<", h="<<h<<"\n";
+                std::cout << "Texture ID for that character is: " << ch.TextureID << std::endl;
 #endif
                 this->quads.push_back (tbox);
-                std::cout << "Texture ID for that character is: " << ch.TextureID << std::endl;
                 this->quad_ids.push_back (ch.TextureID);
 
                 // The value in ch.Advance has to be divided by 64 to bring it into the
@@ -117,7 +117,7 @@ namespace morph {
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = this->quads[qi];
-#if 1
+#ifdef __DEBUG__
                 std::cout << "Quad box from (" << quad[0] << "," << quad[1] << "," << quad[2]
                           << ") to (" << quad[3] << "," << quad[4] << "," << quad[5]
                           << ") to (" << quad[6] << "," << quad[7] << "," << quad[8]
@@ -149,7 +149,6 @@ namespace morph {
                 // Two triangles per quad
                 // qi * 4 + 1, 2 3 or 4
                 unsigned int ib = qi*4;
-                std::cout << "indices.size() at start: " << indices.size() << std::endl;
                 this->indices.push_back (ib++); // 0
                 this->indices.push_back (ib++); // 1
                 this->indices.push_back (ib);   // 2
@@ -158,14 +157,12 @@ namespace morph {
                 this->indices.push_back (ib);   // 3
                 ib -= 3;
                 this->indices.push_back (ib);   // 0
-                std::cout << "indices.size() after pushing back 2 triangles: " << indices.size() << std::endl;
             }
         }
 
         //! Common code to call after the vertices have been set up.
         void postVertexInit()
         {
-            std::cout << "postVertexInit...\n";
             // Create vertex array object
 #ifdef __MACS_HAD_OPENGL_450__
             glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
@@ -232,8 +229,7 @@ namespace morph {
             if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
             for (size_t i = 0; i < quads.size(); ++i) {
-                // Bind the right texture for the quad. Just choose first one for now
-                //std::cout << i << ") Drawing elements for character id " << this->quad_ids[i] << std::endl;
+                // Bind the right texture for the quad.
                 glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
                 // This is 'draw a subset of the elements from the vertex array
                 // object'. You say how many indices to draw and which base *vertex* you
