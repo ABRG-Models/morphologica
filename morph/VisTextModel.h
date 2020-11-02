@@ -172,43 +172,6 @@ namespace morph {
         }
 
         //! Common code to call after the vertices have been set up.
-        void postVertexInit2()
-        {
-            std::cout << "postVertexInit2...\n";
-
-            glGenVertexArrays (1, &this->vao);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-
-            // Create the vertex buffer objects
-            this->vbos = new GLuint[1];
-            glGenBuffers (1, this->vbos); // OpenGL 4.4- safe
-            morph::GLutil::checkError (__FILE__, __LINE__);
-
-            //glGenBuffers (1, &this->vbo);
-            glBindVertexArray (this->vao);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-            // Because I am working in 3D, I want two vertex buffer objects, one for 3D
-            // position, the other for the texture, 2D info.
-            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
-
-            // Allocate space in the buffer
-            glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-
-            //glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
-
-            //glBufferData (GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-
-            glEnableVertexAttribArray (0);
-
-            glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-
-            glBindBuffer (GL_ARRAY_BUFFER, this->vbos[0]);
-            //glBindBuffer (GL_ARRAY_BUFFER, this->vbos[1]);
-
-            glBindVertexArray (0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
-        }
-
         void postVertexInit()
         {
             std::cout << "postVertexInit...\n";
@@ -267,6 +230,11 @@ namespace morph {
 
             glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"),
                          this->clr_text[0], this->clr_text[1], this->clr_text[2]);
+
+            glActiveTexture (GL_TEXTURE0);
+
+            // Bind the right texture for the quad. Just choose first one for now
+            glBindTexture(GL_TEXTURE_2D, this->quad_ids[0]);
 
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
