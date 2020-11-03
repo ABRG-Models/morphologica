@@ -120,9 +120,9 @@ namespace morph {
 #endif
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             glBindVertexArray(0);
             glBindBuffer (0, this->vbos[posnVBO]);

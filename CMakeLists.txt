@@ -67,6 +67,14 @@ if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 endif()
 
+# The code in VisualFace which builds the Vera family truetype fonts
+# into the program binary needs to have a define of MORPH_FONTS_DIR,
+# so set it up here:
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/fonts\\\"\"")
+# Note that in client code you may have to do something similar. For
+# example, if you're compiling with morphologica in a subdirectory, you may need:
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
+
 # The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
 # work, but was required for OpenCV, so it's useful to be able to
 # install a from-source build of Armadillo in /usr/local and link to

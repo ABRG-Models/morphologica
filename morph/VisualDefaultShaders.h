@@ -91,9 +91,10 @@ OpenGL 4.5
 #define OpenGL_VersionString "#version 410\n"
 #endif
 
-// The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has some
-// code comments.
-const char* defaultVtxShader = OpenGL_VersionString
+namespace morph {
+    // The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has
+    // some code comments.
+    const char* defaultVtxShader = OpenGL_VersionString
     "uniform mat4 mvp_matrix;\n"
     "uniform float alpha;\n"
     "layout(location = 0) in vec4 position;\n"
@@ -113,8 +114,8 @@ const char* defaultVtxShader = OpenGL_VersionString
     "    vertex.normal = mvp_matrix * normalin;\n"
     "}";
 
-// Default fragment shader. To study this GLSL, see Visual.frag.glsl.
-const char* defaultFragShader = OpenGL_VersionString
+    // Default fragment shader. To study this GLSL, see Visual.frag.glsl.
+    const char* defaultFragShader = OpenGL_VersionString
     "in VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
@@ -125,3 +126,30 @@ const char* defaultFragShader = OpenGL_VersionString
     "void main() {\n"
     "    finalcolor = vec4(vertex.color, vertex.alpha);\n"
     "}";
+
+    // Default text vertex shader. See VisText.vert.glsl
+    const char* defaultTextVtxShader = OpenGL_VersionString
+    "uniform mat4 mvp_matrix;\n"
+    "uniform mat4 vp_matrix;\n"
+    "layout(location = 0) in vec4 position;\n"
+    "layout(location = 1) in vec4 vnormal;\n"
+    "layout(location = 2) in vec4 vcolor;\n"
+    "layout(location = 3) in vec4 texture;\n"
+    "out vec2 TexCoords;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = mvp_matrix * position;\n"
+    "    TexCoords = texture.xy;\n"
+    "}";
+
+    // Default text fragment shader. See VisText.frag.glsl
+    const char* defaultTextFragShader = OpenGL_VersionString
+    "in vec2 TexCoords;\n"
+    "out vec4 color;\n"
+    "uniform sampler2D text;\n"
+    "uniform vec3 textColor;\n"
+    "void main()\n"
+    "{\n"
+    "    color = vec4(textColor, texture(text, TexCoords).r);\n"
+    "}\n";
+} // namespace morph

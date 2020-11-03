@@ -18,9 +18,13 @@
 #endif
 
 #include "morph/VisualModel.h"
+#if 0
+#include <morph/VisualTextModel.h>
+#endif
+#include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
-// For GLuint and GLenum (though redundant, as already included in VisualModela
+// For GLuint and GLenum (though redundant, as already included in VisualModel
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
@@ -58,8 +62,6 @@
 #define Z_DEFAULT -5
 
 #ifdef PROFILE_RENDER
-// Rendering takes 16 ms (that's 60 Hz). With no vsync it's <200 us and typically
-// 130 us on corebeast (i9 and GTX1080).
 #include <chrono>
 using namespace std::chrono;
 using std::chrono::steady_clock;
@@ -70,10 +72,10 @@ namespace morph {
     /*!
      * Data structure for shader info.
      *
-     * LoadShaders() takes an array of ShaderFile structures, each of
-     * which contains the type of the shader, and a pointer a C-style
-     * character string (i.e., a NULL-terminated array of characters)
-     * containing the entire shader source.
+     * LoadShaders() takes an array of ShaderFile structures, each of which contains the
+     * type of the shader, and a pointer a C-style character string (i.e., a
+     * NULL-terminated array of characters) containing the filename of a GLSL file to
+     * use, and another pointer to the compiled-in version of the shader.
      *
      * The array of structures is terminated by a final Shader with
      * the "type" field set to GL_NONE.
@@ -85,6 +87,7 @@ namespace morph {
     {
         GLenum type;
         const char* filename;
+        const char* compiledIn;
         GLuint shader;
     } ShaderInfo;
 
@@ -239,6 +242,7 @@ namespace morph {
 #else
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
+            glUseProgram (this->shaderprog);
 
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
@@ -337,7 +341,20 @@ namespace morph {
                 (*vmi)->render();
                 ++vmi;
             }
-
+#if 0
+            // Render the title text
+            glUseProgram (this->tshaderprog);
+            vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
+            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
+            if (loct != -1) {
+                glUniformMatrix4fv (loct, 1, GL_FALSE, vp_coords.mat.data());
+            } else {
+                std::cout << "NOT Setting vp_coords in texture shader\n";
+            }
+            this->textModel->render();
+            this->textModel2->render();
+            this->textModel3->render();
+#endif
             glfwSwapBuffers (this->window);
 
 #ifdef PROFILE_RENDER
@@ -347,8 +364,10 @@ namespace morph {
 #endif
         }
 
-        //! The OpenGL shader program
+        //! The OpenGL shader program for graphical objects
         GLuint shaderprog;
+        //! The text shader program, which uses textures to draw text on quads.
+        GLuint tshaderprog;
 
         //! Set perspective based on window width and height
         void setPerspective (void)
@@ -488,15 +507,24 @@ namespace morph {
 
             // Load up the shaders
             ShaderInfo shaders[] = {
-                {GL_VERTEX_SHADER, "Visual.vert.glsl" },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
-                {GL_NONE, NULL }
+                {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader },
+                {GL_NONE, NULL, NULL },
             };
 
             this->shaderprog = this->LoadShaders (shaders);
 
+            // May need an additional shader?
+            ShaderInfo tshaders[] = {
+                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader  },
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader},
+                {GL_NONE, NULL, NULL }
+            };
+            // Care - this will load default shaders in some cases
+            this->tshaderprog = this->LoadShaders (tshaders);
+
             // shaderprog is bound here, and never unbound
-            glUseProgram (this->shaderprog);
+            //glUseProgram (this->tshaderprog);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -504,12 +532,30 @@ namespace morph {
             // Make it possible to specify alpha
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable (GL_CULL_FACE);
+            glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
+
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+
+#if 0
+            this->textModel = new VisualTextModel (this->tshaderprog,
+                                                   morph::VisualFont::Vera,
+                                                   0.5f, 200, {0.0f, -0.0f, 0.0f},
+                                                   "morph::Visual");
+            this->textModel2 = new VisualTextModel (this->tshaderprog,
+                                                    morph::VisualFont::VeraBold,
+                                                    1.0f, 250, {0.0f, -1.0f, -1.0f},
+                                                    "Oh yeah.");
+            this->textModel3 = new VisualTextModel (this->tshaderprog,
+                                                    morph::VisualFont::VeraSerif,
+                                                    0.3f, 200, {0.0f, -1.5f, 0.0f},
+                                                    "Oh yeah 2.");
+#endif
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -554,7 +600,7 @@ namespace morph {
             return const_cast<const GLchar*>(source);
         }
 
-        //! Shader loading code
+        //! Shader loading code.
         GLuint LoadShaders (ShaderInfo* shader_info)
         {
             if (shader_info == NULL) { return 0; }
@@ -586,12 +632,12 @@ namespace morph {
                         if constexpr (debug_shaders == true) {
                             std::cout << "Using compiled-in vertex shader\n";
                         }
-                        source = morph::Visual::ReadDefaultShader (defaultVtxShader);
+                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
                     } else if (entry->type == GL_FRAGMENT_SHADER) {
                         if constexpr (debug_shaders == true) {
                             std::cout << "Using compiled-in fragment shader\n";
                         }
-                        source = morph::Visual::ReadDefaultShader (defaultFragShader);
+                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
                     } else {
                         std::cerr << "Visual::LoadShaders: Unknown shader entry->type...\n";
                         source = NULL;
@@ -702,6 +748,12 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
+#if 0
+        //! A temporary textModel for a title text.
+        VisualTextModel* textModel;
+        VisualTextModel* textModel2;
+        VisualTextModel* textModel3;
+#endif
 
         /*
          * Variables to manage projection and rotation of the object
