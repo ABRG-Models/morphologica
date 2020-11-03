@@ -28,15 +28,10 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// Here, add code to incorporate Vera.ttf and friends *into the binary*. This will work
-// ok when compiling in morphologica, but maybe not when compiling in client code
-// somewhere else. So in this case, I may need to compile up a linkable library from
-// morph which contains these fonts? Or have codes specify the path to morphologica?
-//
-// Note __asm__ works for gcc. Don't know about MacOS...
-//#ifndef MORPH_FONTS_DIR
-//# define MORPH_FONTS_DIR "../fonts"
-//#endif
+/*
+ * The following inline assembly incorporates Vera.ttf and friends *into the binary*. We
+ * have different code for Linux and Mac. Both tested only on Intel CPUs.
+ */
 
 #ifdef __GLN__
 
@@ -49,7 +44,7 @@ asm("\n.pushsection veramoit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR 
 asm("\n.pushsection veramobd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
 asm("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
 asm("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
-asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");a
+asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 
 #elif defined __OSX__
 
@@ -69,6 +64,7 @@ asm("\t.global ___start_verasebd_ttf\n\t.global ___stop_verasebd_ttf\n___start_v
 # error "Inline assembly code for including truetype fonts in the binary only work on Linux/MacOS (and then, probably only on Intel compatible compilers. Sorry about that!"
 #endif
 
+// These external pointers are set up by the inline assembly above
 extern const char __start_verabd_ttf[];
 extern const char __stop_verabd_ttf[];
 extern const char __start_verabi_ttf[];
