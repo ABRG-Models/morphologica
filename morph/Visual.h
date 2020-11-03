@@ -17,10 +17,8 @@
 # include <GL/glew.h>
 #endif
 
-#include <morph/VisualResources.h>
-
 #include "morph/VisualModel.h"
-#include <morph/VisTextModel.h>
+#include <morph/VisualTextModel.h>
 #include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
@@ -449,10 +447,6 @@ namespace morph {
         //! ScatterVisual, etc) which are going to be rendered in the scene.
         std::vector<VisualModel*> vm;
 
-        //! Pointer to the program resource - the freetype library and in future maybe
-        //! GLFW stuff, to allow >1 morph::Visual (and therefore window) per program.
-        //morph::VisualResources* resources;
-
     private:
         //! Private initialization, used by constructors. \a title sets the window title.
         void init (const std::string& title)
@@ -545,12 +539,10 @@ namespace morph {
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            // Get a VisualResource to be used for fonts. May not be required here
-            //this->resources = morph::VisualResources::i();
-
-            this->textModel = new VisTextModel (this->tshaderprog, morph::VisualFont::Vera, 0.005f, this->textOffset, "morph::Visual");
-            //this->textModel->setupText ("morph::Visual", this->Characters, 0.001f);
-            // And maybe this->textModel->addText ("Blah", 0.005f, anotherOffset);
+            this->textModel = new VisualTextModel (this->tshaderprog,
+                                                   morph::VisualFont::Vera,
+                                                   0.5f, 200, {0.0f, -0.0f, 0.0f},
+                                                   "morph::Visual");
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -744,8 +736,9 @@ namespace morph {
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
 
-        VisTextModel* textModel;
-        Vector<float> textOffset = {0.0f, -0.1f, 0.0f};
+        //! A temporary textModel for a title text.
+        VisualTextModel* textModel;
+
         /*
          * Variables to manage projection and rotation of the object
          */

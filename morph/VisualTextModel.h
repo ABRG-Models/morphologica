@@ -18,14 +18,13 @@
 #include <morph/TransformMatrix.h>
 #include <morph/Vector.h>
 #include <morph/MathConst.h>
+#include <morph/VisualCommon.h>
+#include <morph/VisualFace.h>
+#include <morph/VisualResources.h>
 #include <vector>
 #include <array>
 #include <map>
 #include <limits>
-
-// Common definitions
-#include <morph/VisualCommon.h>
-#include <morph/VisualFace.h>
 
 namespace morph {
 
@@ -37,7 +36,7 @@ namespace morph {
      * that this could comprise part of a morph::Visual or a morph::VisualModel. It has
      * its own render call.
      */
-    class VisTextModel
+    class VisualTextModel
     {
     public:
         /*!
@@ -45,21 +44,29 @@ namespace morph {
          * scaling factor \a fscale and a spatial \a _offset. The text to be
          * displayed is \a txt.
          */
-        VisTextModel (GLuint tsp, morph::VisualFont visualfont, float fscale, const morph::Vector<float> _offset, const std::string& txt)
+        VisualTextModel (GLuint tsp, morph::VisualFont visualfont, float _m_width, int _fontpixels, const morph::Vector<float> _offset, const std::string& txt)
         {
             this->tshaderprog = tsp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
+            this->m_width = _m_width;
+            this->fontpixels = _fontpixels;
+            this->fontscale = _m_width/(float)this->fontpixels;
+
+            std::cout << "m_width = " << m_width << ", fontscale = " << fontscale << ", fontpixels = " << fontpixels << std::endl;
 
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
-            // probably be determined from fscale.
-            this->face = new morph::gl::VisualFace (visualfont, 192);
-
-            this->setupText (txt, this->face->glchars, fscale);
+            // probably be determined from this->fontscale.
+            this->face = new morph::gl::VisualFace (visualfont, this->fontpixels);
+#if 0
+            // To become:
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
+#endif
+            this->setupText (txt, this->face->glchars);
         }
 
-        virtual ~VisTextModel()
+        virtual ~VisualTextModel()
         {
             if (this->face != (morph::gl::VisualFace*)0) {
                 delete (this->face);
@@ -68,11 +75,7 @@ namespace morph {
             delete (this->vbos);
         }
 
-        void addText (const std::string& txt, float fscale, const morph::Vector<float> _offset)
-        {
-        }
-
-        //! Render the VisTextModel
+        //! Render the VisualTextModel
         void render()
         {
             if (this->hide == true) { return; }
@@ -112,9 +115,8 @@ namespace morph {
 
     protected:
         //! With the given text and font size information, create the quads for the text.
-        void setupText (const std::string& txt, std::map<char, morph::gl::CharInfo>& _the_characters, float fscale = 1.0f)
+        void setupText (const std::string& txt, std::map<char, morph::gl::CharInfo>& _the_characters)
         {
-            this->fontscale = fscale;
             // With glyph information from txt, set up this->quads.
             this->quads.clear();
             this->quad_ids.clear();
@@ -276,12 +278,16 @@ namespace morph {
         std::vector<std::array<float,12>> quads;
         //! The texture ID for each quad - so that we draw the right texture image over each quad.
         std::vector<unsigned int> quad_ids;
-        //! A scaling factor for the text
+        //! the desired width of an 'm'.
+        float m_width = 1.0f;
+        //! A scaling factor based on the desired width of an 'm'
         float fontscale = 1.0f;
+        //! How many pixels in the font? Depends on m_width. Should also depend on 'the
+        //! proportion of the screen that an 'm' will subtend' or 'the width in screen
+        //! pixels that an 'm' takes up.
+        int fontpixels = 100;
         //! Position within vertex buffer object (if I use an array of VBO)
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, textureVBO, numVBO };
-        //! The parent Visual object - provides access to the shader prog
-        const Visual* parent;
         //! A copy of the reference to the text shader program
         GLuint tshaderprog;
         //! The OpenGL Vertex Array Object

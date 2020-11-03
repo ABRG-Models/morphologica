@@ -50,7 +50,19 @@ namespace morph {
         class VisualFace
         {
         public:
-            //! Construct with fontpath: "fonts/ttf-bitstream-vera/Vera.ttf" and size, e.g. 192
+            /*!
+             * Construct with a morph::VisualFont \a _font, which specifies a supported
+             * font (one which we can legally include in the source code without,
+             * e.g. Bitstream Vera) and \a fontpixels, which is the texture size,
+             * e.g. 192. This is the width, in pixels, of the texture that would be
+             * applied to the letter 'm'. A larger value is required for fonts that will
+             * take up a large part of the screen, but will be detrimental to the
+             * appearance of a font which is rendered 'small on the screen'.
+             *
+             * VisualResources could hold a map of VisualFace instances, to avoid many
+             * copies of font textures for separate VisualTextModel instances which have
+             * the same pixel size specified for them.
+             */
             VisualFace (const morph::VisualFont _font, unsigned int fontpixels)
             {
                 std::string fontpath = "";
@@ -110,7 +122,7 @@ namespace morph {
                         static_cast<unsigned int>(this->face->glyph->advance.x)          // advance
                     };
 #if 1
-                    std::cout << "Inserting character in this->Glchars with info: ID:" << glchar.textureID
+                    std::cout << "Inserting character into this->glchars with info: ID:" << glchar.textureID
                               << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
                               << ", Advance:" << glchar.advance << std::endl;
 #endif
