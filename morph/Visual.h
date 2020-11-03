@@ -350,6 +350,8 @@ namespace morph {
                 std::cout << "NOT Setting vp_coords in texture shader\n";
             }
             this->textModel->render();
+            this->textModel2->render();
+            this->textModel3->render();
 
             glfwSwapBuffers (this->window);
 
@@ -543,6 +545,14 @@ namespace morph {
                                                    morph::VisualFont::Vera,
                                                    0.5f, 200, {0.0f, -0.0f, 0.0f},
                                                    "morph::Visual");
+            this->textModel2 = new VisualTextModel (this->tshaderprog,
+                                                    morph::VisualFont::Vera,
+                                                    1.0f, 250, {0.0f, -1.0f, -1.0f},
+                                                    "Oh yeah.");
+            this->textModel3 = new VisualTextModel (this->tshaderprog,
+                                                    morph::VisualFont::Vera,
+                                                    0.3f, 200, {0.0f, -1.5f, 0.0f},
+                                                    "Oh yeah 2.");
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -738,6 +748,8 @@ namespace morph {
 
         //! A temporary textModel for a title text.
         VisualTextModel* textModel;
+        VisualTextModel* textModel2;
+        VisualTextModel* textModel3;
 
         /*
          * Variables to manage projection and rotation of the object

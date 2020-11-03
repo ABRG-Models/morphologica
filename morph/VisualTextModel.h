@@ -58,19 +58,12 @@ namespace morph {
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
-            this->face = new morph::gl::VisualFace (visualfont, this->fontpixels);
-#if 0
-            // To become:
             this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
-#endif
             this->setupText (txt, this->face->glchars);
         }
 
         virtual ~VisualTextModel()
         {
-            if (this->face != (morph::gl::VisualFace*)0) {
-                delete (this->face);
-            }
             glDeleteBuffers (numVBO, vbos);
             delete (this->vbos);
         }

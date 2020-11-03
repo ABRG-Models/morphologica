@@ -15,7 +15,6 @@
 #include <utility>
 
 #include <morph/VisualCommon.h>
-#include <morph/VisualResources.h>
 
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
@@ -63,7 +62,7 @@ namespace morph {
              * copies of font textures for separate VisualTextModel instances which have
              * the same pixel size specified for them.
              */
-            VisualFace (const morph::VisualFont _font, unsigned int fontpixels)
+            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 std::string fontpath = "";
                 switch (_font) {
@@ -81,7 +80,7 @@ namespace morph {
                 }
 
                 // Keep the face as a morph::Visual owned resource, shared by VisTextModels?
-                if (FT_New_Face (VisualResources::i()->freetype, fontpath.c_str(), 0, &this->face)) {
+                if (FT_New_Face (ft_freetype, fontpath.c_str(), 0, &this->face)) {
                     std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
                 }
 

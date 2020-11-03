@@ -10,14 +10,13 @@ uniform float alpha;
 layout(location = 0) in vec4 position; // Attrib location 0
 layout(location = 1) in vec4 normalin; // Attrib location 1
 layout(location = 2) in vec3 color;    // Attrib location 2
-//layout(location = 3) in vec4 tex;      // Attrib location 3
+
 out VERTEX
 {
     vec4 normal;
     vec3 color;
     float alpha;
 } vertex;
-//out vec2 TexCoords;
 
 void main (void)
 {
@@ -28,6 +27,4 @@ void main (void)
     // this line and the cube program doesn't bother to pass in the
     // normals. Maybe required only for lighting?
     vertex.normal = mvp_matrix * normalin;
-    //TexCoords = tex.xy;
-
 }

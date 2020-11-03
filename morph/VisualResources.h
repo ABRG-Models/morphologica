@@ -11,7 +11,10 @@
 #pragma once
 
 #include <iostream>
+#include <utility>
+#include <stdexcept>
 #include <morph/VisualCommon.h>
+#include <morph/VisualFace.h>
 // FreeType for text rendering
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -25,13 +28,19 @@ namespace morph {
         VisualResources() {}
         ~VisualResources()
         {
+            // Clean up the faces
+            for (auto f : this->faces) {
+                delete &f;
+            }
+            // We're done with freetype
             FT_Done_FreeType (this->freetype);
+            // Delete self
             delete VisualResources::pInstance;
         }
 
         void init()
         {
-            // Use of gl calls here may make it imperative to set up GL/GLFW here in VisualResources.
+            // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
             morph::gl::Util::checkError (__FILE__, __LINE__);
             if (FT_Init_FreeType (&this->freetype)) {
@@ -41,6 +50,11 @@ namespace morph {
 
         //! A pointer returned to the single instance of this class
         static VisualResources* pInstance;
+
+        //! The collection of VisualFaces generated for this instance of the
+        //! application. Create one VisualFace for each unique combination of VisualFont
+        //! and fontpixels (the texture resolution)
+        std::map<std::pair<morph::VisualFont, unsigned int>, morph::gl::VisualFace*> faces;
 
     public:
         //! FreeType library object, public for access by client code
@@ -54,6 +68,20 @@ namespace morph {
                 VisualResources::i()->init();
             }
             return VisualResources::pInstance;
+        }
+
+        //! Return a pointer to a VisualFace for the given \a font at the given texture resolution, \a fontpixels.
+        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels)
+        {
+            morph::gl::VisualFace* rtn = (morph::gl::VisualFace*)0;
+            std::pair<morph::VisualFont, unsigned int> key = std::make_pair(font, fontpixels);
+            try {
+                rtn = this->faces.at (key);
+            } catch (const std::out_of_range& e) {
+                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetype);
+                rtn = this->faces.at (key);
+            }
+            return rtn;
         }
     };
 
