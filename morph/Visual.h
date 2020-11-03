@@ -18,7 +18,9 @@
 #endif
 
 #include "morph/VisualModel.h"
+#if 0
 #include <morph/VisualTextModel.h>
+#endif
 #include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
@@ -340,6 +342,7 @@ namespace morph {
                 ++vmi;
             }
 
+#if 0
             // Render the title text
             glUseProgram (this->tshaderprog);
             vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
@@ -352,7 +355,7 @@ namespace morph {
             this->textModel->render();
             this->textModel2->render();
             this->textModel3->render();
-
+#endif
             glfwSwapBuffers (this->window);
 
 #ifdef PROFILE_RENDER
@@ -541,6 +544,7 @@ namespace morph {
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
+#if 0
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
                                                    0.5f, 200, {0.0f, -0.0f, 0.0f},
@@ -553,6 +557,7 @@ namespace morph {
                                                     morph::VisualFont::VeraSerif,
                                                     0.3f, 200, {0.0f, -1.5f, 0.0f},
                                                     "Oh yeah 2.");
+#endif
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -745,12 +750,12 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
-
+#if 0
         //! A temporary textModel for a title text.
         VisualTextModel* textModel;
         VisualTextModel* textModel2;
         VisualTextModel* textModel3;
-
+#endif
         /*
          * Variables to manage projection and rotation of the object
          */
