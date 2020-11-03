@@ -35,7 +35,8 @@ namespace morph {
     {
         static GLenum checkError (const char *file, int line)
         {
-            GLenum errorCode;
+            GLenum errorCode = 0;
+#ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
             while ((errorCode = glGetError()) != GL_NO_ERROR) {
                 std::string error;
                 switch (errorCode) {
@@ -50,6 +51,7 @@ namespace morph {
                 }
                 std::cout << error << " | " << file << ":" << line << std::endl;
             }
+#endif
             return errorCode;
         }
     };

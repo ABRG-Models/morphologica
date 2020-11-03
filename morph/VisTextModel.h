@@ -21,6 +21,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <limits>
 
 // Common definitions
 #include <morph/VisualCommon.h>
@@ -61,6 +62,7 @@ namespace morph {
             this->quad_ids.clear();
             // Our string of letters starts at this location
             float letter_pos = this->offset[0];
+            float text_epsilon = 0.0f;
             for (std::string::const_iterator c = txt.begin(); c != txt.end(); c++) {
                 // Add a quad to this->quads
                 Character ch = _the_characters[*c];
@@ -72,10 +74,11 @@ namespace morph {
 
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
-                std::array<float,12> tbox = { xpos,   ypos,     this->offset[2],
-                                              xpos,   ypos+h,   this->offset[2],
-                                              xpos+w, ypos+h,   this->offset[2],
-                                              xpos+w, ypos,     this->offset[2] };
+                std::array<float,12> tbox = { xpos,   ypos,     this->offset[2]+text_epsilon,
+                                              xpos,   ypos+h,   this->offset[2]+text_epsilon,
+                                              xpos+w, ypos+h,   this->offset[2]+text_epsilon,
+                                              xpos+w, ypos,     this->offset[2]+text_epsilon };
+                text_epsilon -= 10.0f*std::numeric_limits<float>::epsilon();
 #ifdef __DEBUG__
                 std::cout << "Text box added as quad from\n("
                           << tbox[0] << "," << tbox[1] << "," << tbox[2]
@@ -105,7 +108,7 @@ namespace morph {
         }
 
         //! The colour of the backing quad's vertices. Doesn't have any effect.
-        std::array<float, 3> clr_backing = {1.0f, 1.0f, 1.0f};
+        std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
         //! The colour of the text
         std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
 

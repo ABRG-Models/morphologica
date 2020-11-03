@@ -180,9 +180,10 @@ if(${glfw3_FOUND})
   target_link_libraries(testVisual ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
   #add_test(testVisual testVisual)
 
+  # Haven't added this yet:
   # Test morph::Visual class for text writing
-  add_executable(testVisText testVisText.cpp)
-  target_link_libraries(testVisText ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
+  #add_executable(testVisText testVisText.cpp)
+  #target_link_libraries(testVisText ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})
 
   add_executable(testbighexgrid testbighexgrid.cpp)
   target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw ${FREETYPE_LIBRARIES})

@@ -567,14 +567,14 @@ namespace morph {
             if (FT_New_Face (this->ft, "fonts/ttf-bitstream-vera/Vera.ttf", 0, &this->face)) {
                 std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
             }
-            // FIXME: Don't forget to play with this. Increase from 48 for better text?
-            FT_Set_Pixel_Sizes (this->face, 0, 48);
+            // You have to play with this and *at the same time*, tweak the fontscale argument to VisTextModel::setupText
+            FT_Set_Pixel_Sizes (this->face, 0, 192);
 
             // Set up just ASCII chars for now, following the example prog
             for (unsigned char c = 0; c < 128; c++) {
                 // load character glyph
                 if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-                    std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+                    std::cout << "ERROR::FREETYTPE: Failed to load Glyph " << c << std::endl;
                     continue;
                 }
                 // generate texture
@@ -596,15 +596,15 @@ namespace morph {
                 glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
                 // now store character for later use
                 Character character = {
                     texture,
-                    {static_cast<int>(this->face->glyph->bitmap.width), static_cast<int>(this->face->glyph->bitmap.rows)},
-                    {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top},
-                    static_cast<unsigned int>(this->face->glyph->advance.x)
+                    {static_cast<int>(this->face->glyph->bitmap.width), static_cast<int>(this->face->glyph->bitmap.rows)}, // Size
+                    {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top}, // Bearing
+                    static_cast<unsigned int>(this->face->glyph->advance.x)          // Advance
                 };
-#if 0
+#if 1
                 std::cout << "Inserting character in this->Characters with info: ID:" << character.TextureID
                           << ", Size:" << character.Size << ", Bearing:" << character.Bearing
                           << ", Advance:" << character.Advance << std::endl;
@@ -619,7 +619,7 @@ namespace morph {
             morph::GLutil::checkError (__FILE__, __LINE__);
             this->textModel = new VisTextModel (this->tshaderprog, this->textOffset);
             morph::GLutil::checkError (__FILE__, __LINE__);
-            this->textModel->setupText ("morph::Visual", this->Characters, 0.01f);
+            this->textModel->setupText ("morph::Visual", this->Characters, 0.001f);
             morph::GLutil::checkError (__FILE__, __LINE__);
 
             //
@@ -822,11 +822,11 @@ namespace morph {
 
         //! Position and length of coordinate arrows. Configurable at morph::Visual construction.
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
-        Vector<float> coordArrowsLength = {0.12f, 0.33f, 0.35f};
+        Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
 
         VisTextModel* textModel;
-        Vector<float> textOffset = {0.0f, 0.0f, 0.12f};
+        Vector<float> textOffset = {0.0f, -0.1f, 0.0f};
         /*
          * Variables to manage projection and rotation of the object
          */
