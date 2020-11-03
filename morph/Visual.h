@@ -546,11 +546,11 @@ namespace morph {
                                                    0.5f, 200, {0.0f, -0.0f, 0.0f},
                                                    "morph::Visual");
             this->textModel2 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::Vera,
+                                                    morph::VisualFont::VeraBold,
                                                     1.0f, 250, {0.0f, -1.0f, -1.0f},
                                                     "Oh yeah.");
             this->textModel3 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::Vera,
+                                                    morph::VisualFont::VeraSerif,
                                                     0.3f, 200, {0.0f, -1.5f, 0.0f},
                                                     "Oh yeah 2.");
         }

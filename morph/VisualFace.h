@@ -13,7 +13,9 @@
 #include <map>
 #include <iostream>
 #include <utility>
+#include <fstream>
 
+#include <morph/tools.h>
 #include <morph/VisualCommon.h>
 
 #ifdef __OSX__
@@ -26,7 +28,45 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// Here, add code to incorporate Vera.ttf and friends into the binary
+// Here, add code to incorporate Vera.ttf and friends *into the binary*. This will work
+// ok when compiling in morphologica, but maybe not when compiling in client code
+// somewhere else. So in this case, I may need to compile up a linkable library from
+// morph which contains these fonts? Or have codes specify the path to morphologica?
+//
+// Note __asm__ works for gcc. Don't know about MacOS...
+//#ifndef MORPH_FONTS_DIR
+//# define MORPH_FONTS_DIR "../fonts"
+//#endif
+__asm__("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
+extern const char __start_verabd_ttf[];
+extern const char __stop_verabd_ttf[];
+__asm__("\n.pushsection verabi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
+extern const char __start_verabi_ttf[];
+extern const char __stop_verabi_ttf[];
+__asm__("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
+extern const char __start_verait_ttf[];
+extern const char __stop_verait_ttf[];
+__asm__("\n.pushsection veramobd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
+extern const char __start_veramobd_ttf[];
+extern const char __stop_veramobd_ttf[];
+__asm__("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
+extern const char __start_veramobi_ttf[];
+extern const char __stop_veramobi_ttf[];
+__asm__("\n.pushsection veramoit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
+extern const char __start_veramoit_ttf[];
+extern const char __stop_veramoit_ttf[];
+__asm__("\n.pushsection veramono_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
+extern const char __start_veramono_ttf[];
+extern const char __stop_veramono_ttf[];
+__asm__("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
+extern const char __start_verasebd_ttf[];
+extern const char __stop_verasebd_ttf[];
+__asm__("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
+extern const char __start_verase_ttf[];
+extern const char __stop_verase_ttf[];
+__asm__("\n.pushsection vera_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
+extern const char __start_vera_ttf[];
+extern const char __stop_vera_ttf[];
 
 namespace morph {
 
@@ -65,11 +105,66 @@ namespace morph {
             VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 std::string fontpath = "";
+
                 switch (_font) {
                 case VisualFont::Vera:
                 {
-                    // Use the vera compiled in font, save it to /tmp/Vera.ttf, and then use that path
-                    fontpath = "fonts/ttf-bitstream-vera/Vera.ttf";
+                    fontpath = "/tmp/Vera.ttf";
+                    this->makeTempFontFile (fontpath, __start_vera_ttf, __stop_vera_ttf);
+                    break;
+                }
+                case VisualFont::VeraItalic:
+                {
+                    fontpath = "/tmp/VeraIt.ttf";
+                    this->makeTempFontFile (fontpath, __start_verait_ttf, __stop_verait_ttf);
+                    break;
+                }
+                case VisualFont::VeraBold:
+                {
+                    fontpath = "/tmp/VeraBd.ttf";
+                    this->makeTempFontFile (fontpath, __start_verabd_ttf, __stop_verabd_ttf);
+                    break;
+                }
+                case VisualFont::VeraBoldItalic:
+                {
+                    fontpath = "/tmp/VeraBI.ttf";
+                    this->makeTempFontFile (fontpath, __start_verabi_ttf, __stop_verabi_ttf);
+                    break;
+                }
+                case VisualFont::VeraMono:
+                {
+                    fontpath = "/tmp/VeraMono.ttf";
+                    this->makeTempFontFile (fontpath, __start_veramono_ttf, __stop_veramono_ttf);
+                    break;
+                }
+                case VisualFont::VeraMonoBold:
+                {
+                    fontpath = "/tmp/VeraMoBd.ttf";
+                    this->makeTempFontFile (fontpath, __start_veramobd_ttf, __stop_veramobd_ttf);
+                    break;
+                }
+                case VisualFont::VeraMonoItalic:
+                {
+                    fontpath = "/tmp/VeraMoIt.ttf";
+                    this->makeTempFontFile (fontpath, __start_veramoit_ttf, __stop_veramoit_ttf);
+                    break;
+                }
+                case VisualFont::VeraMonoBoldItalic:
+                {
+                    fontpath = "/tmp/VeraMoBI.ttf";
+                    this->makeTempFontFile (fontpath, __start_veramobi_ttf, __stop_veramobi_ttf);
+                    break;
+                }
+                case VisualFont::VeraSerif:
+                {
+                    fontpath = "/tmp/VeraSe.ttf";
+                    this->makeTempFontFile (fontpath, __start_verase_ttf, __stop_verase_ttf);
+                    break;
+                }
+                case VisualFont::VeraSerifBold:
+                {
+                    fontpath = "/tmp/VeraSeBd.ttf";
+                    this->makeTempFontFile (fontpath, __start_verasebd_ttf, __stop_verasebd_ttf);
                     break;
                 }
                 default:
@@ -139,6 +234,27 @@ namespace morph {
 
             //! The OpenGL character info stuff
             std::map<char, morph::gl::CharInfo> glchars;
+
+        private:
+
+            //! Create a temporary font file at fontpath, using the embedded data
+            //! starting from filestart and extending to filenend
+            void makeTempFontFile (const std::string& fontpath, const char* file_start, const char* file_stop)
+            {
+                const char* p;
+                if (!morph::Tools::fileExists (fontpath)) {
+                    std::ofstream fout;
+                    fout.open (fontpath.c_str(), std::ios::out | std::ios::trunc);
+                    if (fout.is_open()) {
+                        for (p = file_start; p < file_stop; p++) { fout << *p; }
+                        fout.close();
+                    } else {
+                        std::cout << "WARNING: Failed to open " << fontpath << "!!\n";
+                    }
+                } else {
+                    std::cout << "INFO: " << fontpath << " already exists, no need to re-create it\n";
+                }
+            }
         };
     } // namespace gl
 } // namespace morph
