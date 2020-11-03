@@ -84,7 +84,7 @@ namespace morph {
         virtual ~VisualModel()
         {
             glDeleteBuffers (4, vbos);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             delete (this->vbos);
         }
 
@@ -97,10 +97,10 @@ namespace morph {
 #else
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
 #endif
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             glBindVertexArray (this->vao);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
@@ -109,16 +109,16 @@ namespace morph {
 #else
             glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
 #endif
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the indices buffer - bind and buffer the data in this->indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
@@ -131,18 +131,18 @@ namespace morph {
             // Possibly release (unbind) the vertex buffers, but have to unbind vertex
             // array object first.
             glBindVertexArray(0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
 # if 0
             // These calls generate GL_INVALID_ENUM errors
             glBindBuffer (0, this->vbos[posnVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glBindBuffer (0, this->vbos[normVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glBindBuffer (0, this->vbos[colVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glBindBuffer (0, this->vbos[idxVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 # endif
             // Instead, maybe:
             // glDeleteBuffers (4, this->vbos); But that's not *unbinding* as such, and I do that in the deconstructor
@@ -159,19 +159,19 @@ namespace morph {
 
             // Ensure the correct program is in play for this VisualModel
             glUseProgram (this->shaderprog);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Pass this->float to GLSL so the model can have an alpha value.
             GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
             if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glBindVertexArray(0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
         //! The model-specific view matrix.
@@ -279,13 +279,13 @@ namespace morph {
         {
             int sz = dat.size() * sizeof(float);
             glBindBuffer (GL_ARRAY_BUFFER, buf);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glBufferData (GL_ARRAY_BUFFER, sz, dat.data(), GL_STATIC_DRAW);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glVertexAttribPointer (bufferAttribPosition, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             glEnableVertexAttribArray (bufferAttribPosition);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
         /*!

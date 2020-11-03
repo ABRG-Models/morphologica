@@ -31,28 +31,62 @@ namespace morph {
     };
 
     //! A class containing a static function to check the GL errors.
-    struct GLutil
-    {
-        static GLenum checkError (const char *file, int line)
+    namespace gl {
+        struct Util
         {
-            GLenum errorCode = 0;
+            static GLenum checkError (const char *file, int line)
+            {
+                GLenum errorCode = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
-            while ((errorCode = glGetError()) != GL_NO_ERROR) {
-                std::string error;
-                switch (errorCode) {
-                case GL_INVALID_ENUM:       { error = "GL error: GL_INVALID_ENUM"; break; }
-                case GL_INVALID_VALUE:      { error = "GL error: GL_INVALID_VALUE"; break; }
-                case GL_INVALID_OPERATION:  { error = "GL error: GL_INVALID_OPERATION"; break; }
-                case 1283:                  { error = "GL error: GL_STACK_OVERFLOW"; break; }  // Not part of GL3?
-                case 1284:                  { error = "GL error: GL_STACK_UNDERFLOW"; break; } // Not part of GL3?
-                case GL_OUT_OF_MEMORY:      { error = "GL error: GL_OUT_OF_MEMORY"; break; }
-                case GL_INVALID_FRAMEBUFFER_OPERATION: { error = "GL error: GL_INVALID_FRAMEBUFFER_OPERATION"; break; }
-                default: { error = "GL checkError: Unknown GL error code"; break; }
+                while ((errorCode = glGetError()) != GL_NO_ERROR) {
+                    std::string error;
+                    switch (errorCode) {
+                    case GL_INVALID_ENUM:
+                    {
+                        error = "GL error: GL_INVALID_ENUM";
+                        break;
+                    }
+                    case GL_INVALID_VALUE:
+                    {
+                        error = "GL error: GL_INVALID_VALUE";
+                        break;
+                    }
+                    case GL_INVALID_OPERATION:
+                    {
+                        error = "GL error: GL_INVALID_OPERATION";
+                        break;
+                    }
+                    case 1283: // Not part of GL3?
+                    {
+                        error = "GL error: GL_STACK_OVERFLOW";
+                        break;
+                    }
+                    case 1284: // Not part of GL3?
+                    {
+                        error = "GL error: GL_STACK_UNDERFLOW";
+                        break;
+                    }
+                    case GL_OUT_OF_MEMORY:
+                    {
+                        error = "GL error: GL_OUT_OF_MEMORY";
+                        break;
+                    }
+                    case GL_INVALID_FRAMEBUFFER_OPERATION:
+                    {
+                        error = "GL error: GL_INVALID_FRAMEBUFFER_OPERATION";
+                        break;
+                    }
+                    default:
+                    {
+                        error = "GL checkError: Unknown GL error code";
+                        break;
+                    }
+                    }
+                    std::cout << error << " | " << file << ":" << line << std::endl;
                 }
-                std::cout << error << " | " << file << ":" << line << std::endl;
-            }
 #endif
-            return errorCode;
-        }
-    };
+                return errorCode;
+            }
+        };
+    } // namespace gl
 } // namespace

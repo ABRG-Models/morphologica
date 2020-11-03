@@ -466,7 +466,7 @@ namespace morph {
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up error callback
             glfwSetErrorCallback (morph::Visual::errorCallback);
@@ -546,13 +546,13 @@ namespace morph {
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
 
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //
             // Experimental text code
@@ -561,7 +561,7 @@ namespace morph {
             if (FT_Init_FreeType (&this->ft)) {
                 std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
             }
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Keep the face as a morph::Visual owned resource, shared by VisTextModels
             if (FT_New_Face (this->ft, "fonts/ttf-bitstream-vera/Vera.ttf", 0, &this->face)) {
@@ -616,11 +616,11 @@ namespace morph {
             // At this point could FT_Done_Face() etc, I think.
 
             // AFTER setting up characters, can now set up text in the textMmodel
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             this->textModel = new VisTextModel (this->tshaderprog, this->textOffset);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
             this->textModel->setupText ("morph::Visual", this->Characters, 0.001f);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //
             // Experimental text code end

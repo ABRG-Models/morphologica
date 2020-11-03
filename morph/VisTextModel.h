@@ -172,10 +172,10 @@ namespace morph {
 #else
             glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
 #endif
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             glBindVertexArray (this->vao);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
             this->vbos = new GLuint[numVBO];
@@ -184,16 +184,16 @@ namespace morph {
 #else
             glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
 #endif
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the indices buffer - bind and buffer the data in this->indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
             int sz = this->indices.size() * sizeof(VBOint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
@@ -207,7 +207,7 @@ namespace morph {
             // Possibly release (unbind) the vertex buffers, but have to unbind vertex
             // array object first.
             glBindVertexArray(0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 #endif
         }
 
@@ -243,7 +243,7 @@ namespace morph {
             }
 
             glBindVertexArray(0);
-            morph::GLutil::checkError (__FILE__, __LINE__);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
         //! The text-model-specific view matrix.
