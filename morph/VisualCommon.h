@@ -13,25 +13,26 @@ typedef GLuint VBOint;
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
 namespace morph {
-    //! The locations for the position, normal and colour vertex attributes in the
-    //! morph::Visual GLSL programs
-    enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2, textureLoc = 3 };
-
-    //! A struct to hold information about font glyph properties
-    struct Character
-    {
-        //! ID handle of the glyph texture
-        unsigned int TextureID;
-        //! Size of glyph
-        morph::Vector<int,2>  Size;
-        //! Offset from baseline to left/top of glyph
-        morph::Vector<int,2>  Bearing;
-        //! Offset to advance to next glyph
-        unsigned int Advance;
-    };
-
-    //! A class containing a static function to check the GL errors.
     namespace gl {
+
+        //! The locations for the position, normal and colour vertex attributes in the
+        //! morph::Visual GLSL programs
+        enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2, textureLoc = 3 };
+
+        //! A struct to hold information about font glyph properties
+        struct CharInfo
+        {
+            //! ID handle of the glyph texture
+            unsigned int textureID;
+            //! Size of glyph
+            morph::Vector<int,2>  size;
+            //! Offset from baseline to left/top of glyph
+            morph::Vector<int,2>  bearing;
+            //! Offset to advance to next glyph
+            unsigned int advance;
+        };
+
+        //! A class containing a static function to check the GL errors.
         struct Util
         {
             static GLenum checkError (const char *file, int line)

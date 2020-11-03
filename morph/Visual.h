@@ -17,6 +17,8 @@
 # include <GL/glew.h>
 #endif
 
+#include <morph/VisualResources.h>
+
 #include "morph/VisualModel.h"
 #include <morph/VisTextModel.h>
 #include <morph/VisualCommon.h>
@@ -56,16 +58,10 @@
 // imwrite() from OpenCV is used in saveImage()
 #include <opencv2/imgcodecs.hpp>
 
-// FreeType for text rendering
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 //! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
 
 #ifdef PROFILE_RENDER
-// Rendering takes 16 ms (that's 60 Hz). With no vsync it's <200 us and typically
-// 130 us on corebeast (i9 and GTX1080).
 #include <chrono>
 using namespace std::chrono;
 using std::chrono::steady_clock;
@@ -76,10 +72,10 @@ namespace morph {
     /*!
      * Data structure for shader info.
      *
-     * LoadShaders() takes an array of ShaderFile structures, each of
-     * which contains the type of the shader, and a pointer a C-style
-     * character string (i.e., a NULL-terminated array of characters)
-     * containing the entire shader source.
+     * LoadShaders() takes an array of ShaderFile structures, each of which contains the
+     * type of the shader, and a pointer a C-style character string (i.e., a
+     * NULL-terminated array of characters) containing the filename of a GLSL file to
+     * use, and another pointer to the compiled-in version of the shader.
      *
      * The array of structures is terminated by a final Shader with
      * the "type" field set to GL_NONE.
@@ -91,6 +87,7 @@ namespace morph {
     {
         GLenum type;
         const char* filename;
+        const char* compiledIn;
         GLuint shader;
     } ShaderInfo;
 
@@ -146,10 +143,6 @@ namespace morph {
         //! Deconstructor deallocates CoordArrows and destroys GLFW windows
         ~Visual()
         {
-            // Deconstructor?
-            FT_Done_Face (this->face);
-            FT_Done_FreeType (this->ft);
-
             delete this->coordArrows;
             for (unsigned int i = 0; i < this->vm.size(); ++i) {
                 delete this->vm[i];
@@ -349,10 +342,8 @@ namespace morph {
                 ++vmi;
             }
 
-            // Now switch to text shader
+            // Render the title text
             glUseProgram (this->tshaderprog);
-
-            // set mvp in tshaderprog too
             vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
             GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
             if (loct != -1) {
@@ -360,8 +351,6 @@ namespace morph {
             } else {
                 std::cout << "NOT Setting vp_coords in texture shader\n";
             }
-
-            // Text rendering. This probably will be a resizable array of textobjs
             this->textModel->render();
 
             glfwSwapBuffers (this->window);
@@ -460,13 +449,15 @@ namespace morph {
         //! ScatterVisual, etc) which are going to be rendered in the scene.
         std::vector<VisualModel*> vm;
 
+        //! Pointer to the program resource - the freetype library and in future maybe
+        //! GLFW stuff, to allow >1 morph::Visual (and therefore window) per program.
+        //morph::VisualResources* resources;
+
     private:
         //! Private initialization, used by constructors. \a title sets the window title.
         void init (const std::string& title)
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
-
-            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up error callback
             glfwSetErrorCallback (morph::Visual::errorCallback);
@@ -518,18 +509,18 @@ namespace morph {
 
             // Load up the shaders
             ShaderInfo shaders[] = {
-                {GL_VERTEX_SHADER, "Visual.vert.glsl" },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl" },
-                {GL_NONE, NULL }
+                {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader },
+                {GL_NONE, NULL, NULL },
             };
 
             this->shaderprog = this->LoadShaders (shaders);
 
             // May need an additional shader?
             ShaderInfo tshaders[] = {
-                {GL_VERTEX_SHADER, "VisText.vert.glsl" },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" },
-                {GL_NONE, NULL }
+                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader  },
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader},
+                {GL_NONE, NULL, NULL }
             };
             // Care - this will load default shaders in some cases
             this->tshaderprog = this->LoadShaders (tshaders);
@@ -554,85 +545,13 @@ namespace morph {
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            //
-            // Experimental text code
-            //
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-            if (FT_Init_FreeType (&this->ft)) {
-                std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            }
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+            // Get a VisualResource to be used for fonts. May not be required here
+            //this->resources = morph::VisualResources::i();
 
-            // Keep the face as a morph::Visual owned resource, shared by VisTextModels
-            if (FT_New_Face (this->ft, "fonts/ttf-bitstream-vera/Vera.ttf", 0, &this->face)) {
-                std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-            }
-            // You have to play with this and *at the same time*, tweak the fontscale argument to VisTextModel::setupText
-            FT_Set_Pixel_Sizes (this->face, 0, 192);
-
-            // Set up just ASCII chars for now, following the example prog
-            for (unsigned char c = 0; c < 128; c++) {
-                // load character glyph
-                if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-                    std::cout << "ERROR::FREETYTPE: Failed to load Glyph " << c << std::endl;
-                    continue;
-                }
-                // generate texture
-                unsigned int texture;
-                glGenTextures (1, &texture);
-                glBindTexture (GL_TEXTURE_2D, texture);
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GL_RED,
-                    this->face->glyph->bitmap.width,
-                    this->face->glyph->bitmap.rows,
-                    0,
-                    GL_RED,
-                    GL_UNSIGNED_BYTE,
-                    this->face->glyph->bitmap.buffer
-                    );
-                // set texture options
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
-                // now store character for later use
-                Character character = {
-                    texture,
-                    {static_cast<int>(this->face->glyph->bitmap.width), static_cast<int>(this->face->glyph->bitmap.rows)}, // Size
-                    {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top}, // Bearing
-                    static_cast<unsigned int>(this->face->glyph->advance.x)          // Advance
-                };
-#if 1
-                std::cout << "Inserting character in this->Characters with info: ID:" << character.TextureID
-                          << ", Size:" << character.Size << ", Bearing:" << character.Bearing
-                          << ", Advance:" << character.Advance << std::endl;
-#endif
-                this->Characters.insert (std::pair<char, Character>(c, character));
-            }
-            glBindTexture(GL_TEXTURE_2D, 0);
-
-            // At this point could FT_Done_Face() etc, I think.
-
-            // AFTER setting up characters, can now set up text in the textMmodel
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            this->textModel = new VisTextModel (this->tshaderprog, this->textOffset);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            this->textModel->setupText ("morph::Visual", this->Characters, 0.001f);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-
-            //
-            // Experimental text code end
-            //
+            this->textModel = new VisTextModel (this->tshaderprog, morph::VisualFont::Vera, 0.005f, this->textOffset, "morph::Visual");
+            //this->textModel->setupText ("morph::Visual", this->Characters, 0.001f);
+            // And maybe this->textModel->addText ("Blah", 0.005f, anotherOffset);
         }
-
-        //! FreeType library object
-        FT_Library ft;
-        //! A Visual-default face
-        FT_Face face;
-        //! A map of char to Character info structs
-        std::map<char, Character> Characters;
 
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
@@ -676,7 +595,7 @@ namespace morph {
             return const_cast<const GLchar*>(source);
         }
 
-        //! Shader loading code
+        //! Shader loading code.
         GLuint LoadShaders (ShaderInfo* shader_info)
         {
             if (shader_info == NULL) { return 0; }
@@ -708,12 +627,12 @@ namespace morph {
                         if constexpr (debug_shaders == true) {
                             std::cout << "Using compiled-in vertex shader\n";
                         }
-                        source = morph::Visual::ReadDefaultShader (defaultVtxShader);
+                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
                     } else if (entry->type == GL_FRAGMENT_SHADER) {
                         if constexpr (debug_shaders == true) {
                             std::cout << "Using compiled-in fragment shader\n";
                         }
-                        source = morph::Visual::ReadDefaultShader (defaultFragShader);
+                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
                     } else {
                         std::cerr << "Visual::LoadShaders: Unknown shader entry->type...\n";
                         source = NULL;

@@ -83,7 +83,7 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModel()
         {
-            glDeleteBuffers (4, vbos);
+            glDeleteBuffers (numVBO, vbos);
             morph::gl::Util::checkError (__FILE__, __LINE__);
             delete (this->vbos);
         }
@@ -123,9 +123,9 @@ namespace morph {
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
             // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             // Possibly release (unbind) the vertex buffers, but have to unbind vertex
