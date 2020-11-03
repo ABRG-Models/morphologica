@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <utility>
 #include <stdexcept>
@@ -38,7 +39,28 @@ namespace morph {
             delete VisualResources::pInstance;
         }
 
-        void init()
+        void glfw_init()
+        {
+            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
+
+            // Set up error callback
+            glfwSetErrorCallback (morph::VisualResources::errorCallback);
+
+            // See https://www.glfw.org/docs/latest/monitor_guide.html
+            GLFWmonitor* primary = glfwGetPrimaryMonitor();
+            float xscale, yscale;
+            glfwGetMonitorContentScale(primary, &xscale, &yscale);
+            std::cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << std::endl;
+
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+#ifdef __OSX__
+            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+        }
+
+        void freetype_init()
         {
             // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
@@ -48,6 +70,12 @@ namespace morph {
             }
         }
 
+        void init()
+        {
+            this->glfw_init();
+            this->freetype_init();
+        }
+
         //! A pointer returned to the single instance of this class
         static VisualResources* pInstance;
 
@@ -55,6 +83,12 @@ namespace morph {
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
         std::map<std::pair<morph::VisualFont, unsigned int>, morph::gl::VisualFace*> faces;
+
+        //! An error callback function for the GLFW windowing library
+        static void errorCallback (int error, const char* description)
+        {
+            std::cerr << "Error: " << description << " (code "  << error << ")\n";
+        }
 
     public:
         //! FreeType library object, public for access by client code

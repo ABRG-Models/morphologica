@@ -31,6 +31,8 @@
 # include "GL3/gl3.h"
 #endif
 
+#include <morph/VisualResources.h>
+
 #include "morph/HexGrid.h"
 #include "morph/HexGridVisual.h"
 #include "morph/QuadsVisual.h"
@@ -149,12 +151,6 @@ namespace morph {
             }
             glfwDestroyWindow (this->window);
             glfwTerminate();
-        }
-
-        //! An error callback function for the GLFW windowing library
-        static void errorCallback (int error, const char* description)
-        {
-            std::cerr << "Error: " << description << " (code "  << error << ")\n";
         }
 
         //! Take a screenshot of the window
@@ -455,23 +451,9 @@ namespace morph {
         //! Private initialization, used by constructors. \a title sets the window title.
         void init (const std::string& title)
         {
-            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
+            // VisualResources provides font management and GLFW management.
+            this->resources = morph::VisualResources::i();
 
-            // Set up error callback
-            glfwSetErrorCallback (morph::Visual::errorCallback);
-
-            // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor();
-            float xscale, yscale;
-            glfwGetMonitorContentScale(primary, &xscale, &yscale);
-            std::cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << std::endl;
-
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
-#ifdef __OSX__
-            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
@@ -732,6 +714,8 @@ namespace morph {
 
         //! The window (and OpenGL context) for this Visual
         GLFWwindow* window;
+
+        morph::VisualResources* resources = (morph::VisualResources*)0;
 
         //! Current window width
         int window_w;
