@@ -37,34 +37,56 @@
 //#ifndef MORPH_FONTS_DIR
 //# define MORPH_FONTS_DIR "../fonts"
 //#endif
-__asm__("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
+
+#ifdef __GLN__
+
+asm("\n.pushsection vera_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
+asm("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
+asm("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
+asm("\n.pushsection verabi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
+asm("\n.pushsection veramono_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
+asm("\n.pushsection veramoit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
+asm("\n.pushsection veramobd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
+asm("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
+asm("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
+asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");a
+
+#elif defined __OSX__
+
+// On Mac, we need a different incantation to use .incbin
+asm("\t.global ___start_vera_ttf\n\t.global ___stop_vera_ttf\n___start_vera_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n___stop_vera_ttf:\n");
+asm("\t.global ___start_verait_ttf\n\t.global ___stop_verait_ttf\n___start_verait_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n___stop_verait_ttf:\n");
+asm("\t.global ___start_verabd_ttf\n\t.global ___stop_verabd_ttf\n___start_verabd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n___stop_verabd_ttf:\n");
+asm("\t.global ___start_verabi_ttf\n\t.global ___stop_verabi_ttf\n___start_verabi_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n___stop_verabi_ttf:\n");
+asm("\t.global ___start_veramono_ttf\n\t.global ___stop_veramono_ttf\n___start_veramono_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n___stop_veramono_ttf:\n");
+asm("\t.global ___start_veramoit_ttf\n\t.global ___stop_veramoit_ttf\n___start_veramoit_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n___stop_veramoit_ttf:\n");
+asm("\t.global ___start_veramobd_ttf\n\t.global ___stop_veramobd_ttf\n___start_veramobd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n___stop_veramobd_ttf:\n");
+asm("\t.global ___start_veramobi_ttf\n\t.global ___stop_veramobi_ttf\n___start_veramobi_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n___stop_veramobi_ttf:\n");
+asm("\t.global ___start_verase_ttf\n\t.global ___stop_verase_ttf\n___start_verase_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n___stop_verase_ttf:\n");
+asm("\t.global ___start_verasebd_ttf\n\t.global ___stop_verasebd_ttf\n___start_verasebd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n___stop_verasebd_ttf:\n");
+
+#else
+# error "Inline assembly code for including truetype fonts in the binary only work on Linux/MacOS (and then, probably only on Intel compatible compilers. Sorry about that!"
+#endif
+
 extern const char __start_verabd_ttf[];
 extern const char __stop_verabd_ttf[];
-__asm__("\n.pushsection verabi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
 extern const char __start_verabi_ttf[];
 extern const char __stop_verabi_ttf[];
-__asm__("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
 extern const char __start_verait_ttf[];
 extern const char __stop_verait_ttf[];
-__asm__("\n.pushsection veramobd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
 extern const char __start_veramobd_ttf[];
 extern const char __stop_veramobd_ttf[];
-__asm__("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
 extern const char __start_veramobi_ttf[];
 extern const char __stop_veramobi_ttf[];
-__asm__("\n.pushsection veramoit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
 extern const char __start_veramoit_ttf[];
 extern const char __stop_veramoit_ttf[];
-__asm__("\n.pushsection veramono_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
 extern const char __start_veramono_ttf[];
 extern const char __stop_veramono_ttf[];
-__asm__("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 extern const char __start_verasebd_ttf[];
 extern const char __stop_verasebd_ttf[];
-__asm__("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
 extern const char __start_verase_ttf[];
 extern const char __stop_verase_ttf[];
-__asm__("\n.pushsection vera_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
 extern const char __start_vera_ttf[];
 extern const char __stop_vera_ttf[];
 
