@@ -10,6 +10,7 @@
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
 #include <morph/Vector.h>
+#include <morph/ColourMap.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -29,6 +30,39 @@ namespace morph {
      * This differs from PointRowsVisual in that it draw the mesh of with spheres at the
      * vertices and lines between the vertices. It therefore creates a lot more vertices
      * than PointRowsVisual.
+     *
+     * \param sp The shader program
+     *
+     * \param _pointrows The vector of coordinates of the points to visualise
+     *
+     * \param _offset The offset within the morph::Visual scene at which the model will
+     * be drawn (used when rendering, not when creating the model's vertices)
+     *
+     * \param _data The data, which can be used to colour the spheres or rods
+     *
+     * \param cscale colour scale for scaling data into colour
+     *
+     * \param _cmt The mesh's colour map type
+     *
+     * \param _hue The mesh's colour hue, used if _cmt is ColourMapType::Fixed or ::Monochrome
+     *
+     * \param _sat The mesh's colour saturation, used if _cmt is ColourMapType::Fixed
+     *
+     * \param _val The mesh's colour value, used if _cmt is ColourMapType::Fixed
+     *
+     * \param _radius The radius of the rods making up the mesh.
+     *
+     * \param _cmt_sph The sphere's colour map type
+     *
+     * \param _hue_sph The sphere's colour hue, used if _cmt_sph is ColourMapType::Fixed or ::Monochrome
+     *
+     * \param _sat_sph The sphere's colour saturation, used if _cmt_sph is ColourMapType::Fixed
+     *
+     * \param _val_sph The sphere's colour value, used if _cmt_sph is ColourMapType::Fixed
+     *
+     * \param _radius_sph The radius of the spheres making up the points. 3 times
+     * _radius is good to see the spheres. Make this 0 to omit the spheres.
+     *
      */
     template <typename Flt>
     class PointRowsMeshVisual : public VisualDataModel<Flt>
@@ -39,24 +73,37 @@ namespace morph {
                             const Vector<float, 3> _offset,
                             const std::vector<Flt>* _data,
                             const Scale<Flt>& cscale,
-                            ColourMapType _cmt,
-                            const float _hue = 0.0f,
-                            const float _radius = 0.05f) {
+                            ColourMapType _cmt, // mesh
+                            const float _hue,
+                            const float _sat,
+                            const float _val,
+                            const float _radius,
+                            ColourMapType _cmt_sph, // spheres
+                            const float _hue_sph,
+                            const float _sat_sph,
+                            const float _val_sph,
+                            const float _radius_sph) {
             // Set up...
             this->shaderprog = sp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
 
             this->radius = _radius;
-            this->sradius = _radius * 2.5f;
+            this->sradius = _radius_sph;
 
             this->colourScale = cscale;
 
             this->dataCoords = _pointrows;
             this->scalarData = _data;
 
-            this->cm.setHue (_hue);
+            // Perhaps I should have just passed in 2 colour maps!
             this->cm.setType (_cmt);
+            if (_cmt == ColourMapType::Monochrome) { this->cm.setHue (_hue); }
+            if (_cmt == ColourMapType::Fixed) { this->cm.setHSV (_hue, _sat, _val); }
+
+            this->cm_sph.setType (_cmt_sph);
+            if (_cmt_sph == ColourMapType::Monochrome) { this->cm_sph.setHue (_hue_sph); }
+            if (_cmt_sph == ColourMapType::Fixed) { this->cm_sph.setHSV (_hue_sph, _sat_sph, _val_sph); }
 
             this->initializeVertices();
             this->postVertexInit();
@@ -114,8 +161,8 @@ namespace morph {
             // Now r1, r1_e, r2 and r2_e all point to the right places
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
 
-                this->computeSphere (ib, (*this->dataCoords)[r1], this->cm.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                this->computeSphere (ib, (*this->dataCoords)[r2], this->cm.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
                 this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r2],
                                    this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r2]), this->radius, this->tseg);
                 // Now while through the row pushing the rest of the vertices.
@@ -190,15 +237,15 @@ namespace morph {
 
                     if (must_be_r1n) {
                         // r1 is the next
-                        this->computeSphere (ib, (*this->dataCoords)[r1], this->cm.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                        this->computeSphere (ib, (*this->dataCoords)[r1n], this->cm.convert(dcopy[r1n]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere (ib, (*this->dataCoords)[r1n], this->cm_sph.convert(dcopy[r1n]), this->sradius, this->srings, this->sseg);
                         this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r1n],
                                            this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r1n]), this->radius, this->tseg);
                         r1 = r1n;
                     } else {
                         // r2 is next
-                        this->computeSphere (ib, (*this->dataCoords)[r2], this->cm.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
-                        this->computeSphere (ib, (*this->dataCoords)[r2n], this->cm.convert(dcopy[r2n]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                        this->computeSphere (ib, (*this->dataCoords)[r2n], this->cm_sph.convert(dcopy[r2n]), this->sradius, this->srings, this->sseg);
                         this->computeTube (ib, (*this->dataCoords)[r2], (*this->dataCoords)[r2n],
                                            this->cm.convert(dcopy[r2]), this->cm.convert(dcopy[r2n]), this->radius, this->tseg);
                         r2 = r2n;
@@ -207,8 +254,8 @@ namespace morph {
                     if (completed_end_tri == true) { break; }
 
                     // Next tri:
-                    this->computeSphere (ib, (*this->dataCoords)[r1], this->cm.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
-                    this->computeSphere (ib, (*this->dataCoords)[r2], this->cm.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
+                    this->computeSphere (ib, (*this->dataCoords)[r1], this->cm_sph.convert(dcopy[r1]), this->sradius, this->srings, this->sseg);
+                    this->computeSphere (ib, (*this->dataCoords)[r2], this->cm_sph.convert(dcopy[r2]), this->sradius, this->srings, this->sseg);
                     this->computeTube (ib, (*this->dataCoords)[r1], (*this->dataCoords)[r2],
                                        this->cm.convert(dcopy[r1]), this->cm.convert(dcopy[r2]), this->radius, this->tseg);
                 }
@@ -246,6 +293,8 @@ namespace morph {
         int sseg = 12;
         //! tube segments
         int tseg = 12;
+        //! A colour map for the spheres
+        morph::ColourMap<float> cm_sph;
     };
 
 } // namespace morph
