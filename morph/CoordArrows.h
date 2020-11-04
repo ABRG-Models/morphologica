@@ -8,9 +8,9 @@
  */
 #pragma once
 
-#include "morph/Vector.h"
-#include "morph/VisualModel.h"
-#include "morph/MathConst.h"
+#include <morph/Vector.h>
+#include <morph/VisualModel.h>
+#include <morph/MathConst.h>
 #include <array>
 
 namespace morph {

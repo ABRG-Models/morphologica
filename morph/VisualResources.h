@@ -10,7 +10,9 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
+# include <GLFW/glfw3.h>
+#endif
 #include <iostream>
 #include <utility>
 #include <stdexcept>
@@ -39,6 +41,7 @@ namespace morph {
             delete VisualResources::pInstance;
         }
 
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
         void glfw_init()
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
@@ -59,6 +62,7 @@ namespace morph {
             glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
         }
+#endif
 
         void freetype_init()
         {
@@ -72,7 +76,9 @@ namespace morph {
 
         void init()
         {
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
             this->glfw_init();
+#endif
             this->freetype_init();
         }
 
@@ -84,11 +90,13 @@ namespace morph {
         //! and fontpixels (the texture resolution)
         std::map<std::pair<morph::VisualFont, unsigned int>, morph::gl::VisualFace*> faces;
 
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
         {
             std::cerr << "Error: " << description << " (code "  << error << ")\n";
         }
+#endif
 
     public:
         //! FreeType library object, public for access by client code

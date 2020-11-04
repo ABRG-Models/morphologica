@@ -199,7 +199,7 @@ namespace morph {
 
                 // Two triangles per quad
                 // qi * 4 + 1, 2 3 or 4
-                unsigned int ib = qi*4;
+                VBOint ib = (VBOint)qi*4;
                 this->indices.push_back (ib++); // 0
                 this->indices.push_back (ib++); // 1
                 this->indices.push_back (ib);   // 2

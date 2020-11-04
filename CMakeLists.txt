@@ -117,7 +117,6 @@ find_package(LAPACK REQUIRED)
 #set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package(Freetype REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${OPENGL_INCLUDE_DIR})
@@ -126,7 +125,11 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
+
+# New, text rendering dependencies
+find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
+
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 

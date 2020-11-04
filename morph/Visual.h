@@ -17,7 +17,7 @@
 # include <GL/glew.h>
 #endif
 
-#include "morph/VisualModel.h"
+#include <morph/VisualModel.h>
 #define SHOW_TEXT_TEST 1
 #ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
@@ -29,34 +29,36 @@
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
-# include "GL3/gl3.h"
+# include <GL3/gl3.h>
 #endif
 
-#include <morph/VisualResources.h>
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
+# include <morph/VisualResources.h>
+#endif
 
-#include "morph/HexGrid.h"
-#include "morph/HexGridVisual.h"
-#include "morph/QuadsVisual.h"
-#include "morph/PointRowsVisual.h"
-#include "morph/ScatterVisual.h"
-#include "morph/QuiverVisual.h"
-#include "morph/CoordArrows.h"
+#include <morph/HexGrid.h>
+#include <morph/HexGridVisual.h>
+#include <morph/QuadsVisual.h>
+#include <morph/PointRowsVisual.h>
+#include <morph/ScatterVisual.h>
+#include <morph/QuiverVisual.h>
+#include <morph/CoordArrows.h>
 #ifdef TRIANGLE_VIS_TESTING
-# include "morph/TriangleVisual.h"
+# include <morph/TriangleVisual.h>
 #endif
-#include "morph/Quaternion.h"
-#include "morph/TransformMatrix.h"
-#include "morph/Vector.h"
+#include <morph/Quaternion.h>
+#include <morph/TransformMatrix.h>
+#include <morph/Vector.h>
 // A base class with static event handling dispatchers
-#include "morph/VisualBase.h"
-#include "morph/ColourMap.h"
+#include <morph/VisualBase.h>
+#include <morph/ColourMap.h>
 
 #include <string>
 #include <array>
 #include <vector>
 
-#include "morph/VisualDefaultShaders.h"
-#include "morph/VisualModel.h"
+#include <morph/VisualDefaultShaders.h>
+#include <morph/VisualModel.h>
 
 // imwrite() from OpenCV is used in saveImage()
 #include <opencv2/imgcodecs.hpp>
@@ -218,7 +220,7 @@ namespace morph {
          * Keep on rendering until readToFinish is set true. Used to keep a window
          * open, and responsive, while displaying the result of a simulation.
          */
-        void keepOpen (void)
+        void keepOpen()
         {
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
@@ -227,7 +229,7 @@ namespace morph {
         }
 
         //! Render the scene
-        void render (void)
+        void render()
         {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
@@ -338,6 +340,7 @@ namespace morph {
                 (*vmi)->render();
                 ++vmi;
             }
+
 #ifdef SHOW_TEXT_TEST
             // Render the title text
             glUseProgram (this->tshaderprog);
@@ -367,7 +370,7 @@ namespace morph {
         GLuint tshaderprog;
 
         //! Set perspective based on window width and height
-        void setPerspective (void)
+        void setPerspective()
         {
             // Calculate aspect ratio
             float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
@@ -409,9 +412,9 @@ namespace morph {
          */
 
         //! Set a white background colour for the Visual scene
-        void backgroundWhite (void) { this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f }; }
+        void backgroundWhite() { this->bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f }; }
         //! Set a black background colour for the Visual scene
-        void backgroundBlack (void) { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
+        void backgroundBlack() { this->bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f }; }
 
         //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
         void setZDefault (float f)
@@ -452,8 +455,29 @@ namespace morph {
         //! Private initialization, used by constructors. \a title sets the window title.
         void init (const std::string& title)
         {
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
+#else
+            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
+
+            // Set up error callback
+            glfwSetErrorCallback (morph::Visual::errorCallback);
+
+            // See https://www.glfw.org/docs/latest/monitor_guide.html
+            GLFWmonitor* primary = glfwGetPrimaryMonitor();
+            float xscale, yscale;
+            glfwGetMonitorContentScale(primary, &xscale, &yscale);
+            std::cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << std::endl;
+
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+#ifdef __OSX__
+            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+
+#endif
 
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -512,7 +536,8 @@ namespace morph {
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
 
-            // Make it possible to specify alpha
+            // Make it possible to specify alpha. This is correct for text texture
+            // rendering too.
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
@@ -541,6 +566,13 @@ namespace morph {
 #endif
         }
 
+#ifndef INIT_GLFW_IN_VISUALRESOURCES
+        //! An error callback function for the GLFW windowing library
+        static void errorCallback (int error, const char* description)
+        {
+            std::cerr << "Error: " << description << " (code "  << error << ")\n";
+        }
+#endif
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
 
@@ -716,7 +748,9 @@ namespace morph {
         //! The window (and OpenGL context) for this Visual
         GLFWwindow* window;
 
+#ifdef INIT_GLFW_IN_VISUALRESOURCES
         morph::VisualResources* resources = (morph::VisualResources*)0;
+#endif
 
         //! Current window width
         int window_w;
@@ -739,7 +773,6 @@ namespace morph {
         VisualTextModel* textModel2;
         VisualTextModel* textModel3;
 #endif
-
         /*
          * Variables to manage projection and rotation of the object
          */

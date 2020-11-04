@@ -8,7 +8,7 @@ in VERTEX
 } vertex;
 
 out vec4 finalcolor;
-
-void main() {
+void main()
+{
     finalcolor = vec4(vertex.color, vertex.alpha);
 }

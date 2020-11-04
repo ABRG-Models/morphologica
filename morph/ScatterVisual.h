@@ -9,12 +9,12 @@
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
-# include "GL3/gl3.h"
+# include <GL3/gl3.h>
 #endif
-#include "morph/tools.h"
-#include "morph/VisualDataModel.h"
-#include "morph/Scale.h"
-#include "morph/Vector.h"
+#include <morph/tools.h>
+#include <morph/VisualDataModel.h>
+#include <morph/Scale.h>
+#include <morph/Vector.h>
 #include <iostream>
 #include <vector>
 #include <array>

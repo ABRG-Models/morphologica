@@ -3,14 +3,14 @@
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
-# include "GL3/gl3.h"
+# include <GL3/gl3.h>
 #endif
-#include "morph/tools.h"
-#include "morph/VisualDataModel.h"
-#include "morph/ColourMap.h"
-#include "morph/HexGrid.h"
-#include "morph/MathAlgo.h"
-#include "morph/Vector.h"
+#include <morph/tools.h>
+#include <morph/VisualDataModel.h>
+#include <morph/ColourMap.h>
+#include <morph/HexGrid.h>
+#include <morph/MathAlgo.h>
+#include <morph/Vector.h>
 #include <iostream>
 #include <vector>
 #include <array>
