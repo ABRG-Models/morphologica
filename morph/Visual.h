@@ -18,7 +18,8 @@
 #endif
 
 #include "morph/VisualModel.h"
-#if 0
+#define SHOW_TEXT_TEST 1
+#ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
 #endif
 #include <morph/VisualCommon.h>
@@ -342,7 +343,7 @@ namespace morph {
                 ++vmi;
             }
 
-#if 0
+#ifdef SHOW_TEXT_TEST
             // Render the title text
             glUseProgram (this->tshaderprog);
             vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
@@ -544,7 +545,7 @@ namespace morph {
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-#if 0
+#ifdef SHOW_TEXT_TEST
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
                                                    0.5f, 200, {0.0f, -0.0f, 0.0f},
@@ -750,7 +751,7 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
-#if 0
+#ifdef SHOW_TEXT_TEST
         //! A temporary textModel for a title text.
         VisualTextModel* textModel;
         VisualTextModel* textModel2;
