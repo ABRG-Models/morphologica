@@ -206,6 +206,22 @@ namespace morph {
             }
         }
 
+        //! Set the saturation. For many colour maps, this will make little difference,
+        //! but for fixed, it allows you to have white, with hue=anything, sat=0, val=1
+        void setSat (const float& _s) {
+            if (this->type != ColourMapType::Fixed) {
+                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of saturation");
+            }
+            this->sat = _s;
+        }
+
+        void setVal (const float& _v) {
+            if (this->type != ColourMapType::Fixed) {
+                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of value");
+            }
+            this->val = _v;
+        }
+
         void setHSV (const float& h, const float& s, const float& v) {
             if (this->type != ColourMapType::Fixed) {
                 throw std::runtime_error ("Only ColourMapType::Fixed allows setting of saturation/value");
