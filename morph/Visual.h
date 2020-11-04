@@ -18,7 +18,7 @@
 #endif
 
 #include <morph/VisualModel.h>
-#define SHOW_TEXT_TEST 1
+//#define SHOW_TEXT_TEST 1
 #ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
 #endif
