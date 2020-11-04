@@ -36,6 +36,7 @@
 # include <morph/VisualResources.h>
 #endif
 
+#include <morph/Config.h>
 #include <morph/HexGrid.h>
 #include <morph/HexGridVisual.h>
 #include <morph/QuadsVisual.h>
@@ -530,19 +531,28 @@ namespace morph {
             // Care - this will load default shaders in some cases
             this->tshaderprog = this->LoadShaders (tshaders);
 
-            // shaderprog is bound here, and never unbound
-            //glUseProgram (this->tshaderprog);
-
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
 
-            // Make it possible to specify alpha. This is correct for text texture
-            // rendering too.
+            // Make it possible to specify alpha. This is correct for text texture rendering too.
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
+
+            // If possible, read in scenetrans and rotation state from a special config file
+            morph::Config vconf ("/tmp/Visual.json");
+            if (vconf.ready == true) {
+                std::cout << "Reading Visual.json for initial scene rotations.\n";
+                this->scenetrans[0] = vconf.getFloat ("scenetrans_x", this->scenetrans[0]);
+                this->scenetrans[1] = vconf.getFloat ("scenetrans_y", this->scenetrans[1]);
+                this->scenetrans[2] = vconf.getFloat ("scenetrans_z", this->scenetrans[2]);
+                this->rotation.w = vconf.getFloat ("scenerotn_w", this->rotation.w);
+                this->rotation.x = vconf.getFloat ("scenerotn_x", this->rotation.x);
+                this->rotation.y = vconf.getFloat ("scenerotn_y", this->rotation.y);
+                this->rotation.z = vconf.getFloat ("scenerotn_z", this->rotation.z);
+            } // else no problem
 
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->coordArrowsOffset,
@@ -848,7 +858,7 @@ namespace morph {
                 std::cout << "a: Reset default view\n";
                 std::cout << "o: Reduce field of view\n";
                 std::cout << "p: Increase field of view\n";
-                std::cout << "z: Show the current scenetrans (x,y,z)\n";
+                std::cout << "z: Show the current scenetrans/rotation and save to /tmp/Visual.json\n";
                 std::cout << "u: Reduce zNear cutoff plane\n";
                 std::cout << "i: Increase zNear cutoff plane\n";
                 std::cout << "0-9: Select model index (with shift: toggle hide)\n";
@@ -867,7 +877,23 @@ namespace morph {
             }
 
             if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-                std::cout << "Scenetrans is: " << this->scenetrans << std::endl;
+                std::cout << "Scenetrans is: " << this->scenetrans << ", scene rotation is " << this->rotation << std::endl;
+                std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
+                std::ofstream fout;
+                fout.open ("/tmp/Visual.json", std::ios::out|std::ios::trunc);
+                if (fout.is_open()) {
+                    fout << "{\"scenetrans_x\":" << this->scenetrans.x()
+                         << ", \"scenetrans_y\":" << this->scenetrans.y()
+                         << ", \"scenetrans_z\":" << this->scenetrans.z()
+                         << ",\n \"scenerotn_w\":" << this->rotation.w
+                         << ", \"scenerotn_x\":" <<  this->rotation.x
+                         << ", \"scenerotn_y\":" <<  this->rotation.y
+                         << ", \"scenerotn_z\":" <<  this->rotation.z << "}\n";
+                    fout.close();
+                    std::cout << "Success.\n";
+                } else {
+                    std::cout << "Failed.\n";
+                }
             }
 
             // Set selected model
