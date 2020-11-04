@@ -13,9 +13,9 @@
 #include <array>
 #include <utility>
 #include <cmath>
-#include "morph/BezCoord.h"
-#include "morph/HdfData.h"
-#include "morph/MathConst.h"
+#include <morph/BezCoord.h>
+#include <morph/HdfData.h>
+#include <morph/MathConst.h>
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>

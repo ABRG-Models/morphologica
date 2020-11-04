@@ -27,7 +27,7 @@ extern "C" {
 #include <sys/poll.h>
 #include <signal.h>
 }
-#include "morph/MorphDbg.h"
+#include <morph/MorphDbg.h>
 
 #define PROCESS_MAIN_APP 0
 #define PROCESS_FAILURE -1

@@ -19,13 +19,13 @@
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
 #include <armadillo>
-#include "morph/MathConst.h"
-#include "morph/MathAlgo.h"
-#include "morph/NM_Simplex.h"
+#include <morph/MathConst.h>
+#include <morph/MathAlgo.h>
+#include <morph/NM_Simplex.h>
 #include <random>
 
-#include "morph/BezCoord.h"
-#include "morph/MorphDbg.h"
+#include <morph/BezCoord.h>
+#include <morph/MorphDbg.h>
 
 namespace morph
 {

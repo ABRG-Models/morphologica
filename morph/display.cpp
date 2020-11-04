@@ -1,7 +1,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/matx.hpp>
 #include <opencv2/imgcodecs.hpp>
-#include "morph/display.h"
+#include <morph/display.h>
 #ifdef __ICC__
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif

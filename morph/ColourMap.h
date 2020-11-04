@@ -1,6 +1,6 @@
 #pragma once
 
-#include "morph/ColourMap_Lists.h"
+#include <morph/ColourMap_Lists.h>
 
 #include <stdexcept>
 #include <cmath>

@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 #include <iostream>
-#include "morph/MathAlgo.h"
+#include <morph/MathAlgo.h>
 
 namespace morph {
 

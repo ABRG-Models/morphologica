@@ -8,8 +8,8 @@
  */
 #pragma once
 
-#include "morph/Quaternion.h"
-#include "morph/Vector.h"
+#include <morph/Quaternion.h>
+#include <morph/Vector.h>
 #include <cmath>
 #include <array>
 #include <iostream>

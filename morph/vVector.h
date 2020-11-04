@@ -17,7 +17,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include "morph/Random.h"
+#include <morph/Random.h>
 
 namespace morph {
 

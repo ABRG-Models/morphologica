@@ -14,19 +14,19 @@
 #include <sstream>
 #include <iostream>
 
-#include "morph/HdfData.h"
-#include "morph/Visual.h"
-#include "morph/QuadsVisual.h"
-#include "morph/HexGridVisual.h"
-#include "morph/ColourMap.h"
-#include "morph/tools.h"
-#include "morph/Config.h"
-#include "morph/Scale.h"
-#include "morph/Vector.h"
-#include "morph/RecurrentNetworkTools.h"
-#include "morph/RecurrentNetwork.h"
-#include "morph/ReadCurves.h"
-#include "morph/RD_Base.h"
+#include <morph/HdfData.h>
+#include <morph/Visual.h>
+#include <morph/QuadsVisual.h>
+#include <morph/HexGridVisual.h>
+#include <morph/ColourMap.h>
+#include <morph/tools.h>
+#include <morph/Config.h>
+#include <morph/Scale.h>
+#include <morph/Vector.h>
+#include <morph/RecurrentNetworkTools.h>
+#include <morph/RecurrentNetwork.h>
+#include <morph/ReadCurves.h>
+#include <morph/RD_Base.h>
 
 namespace morph {
     namespace recurrentnet {

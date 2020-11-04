@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <json/json.h>
-#include "morph/Process.h"
+#include <morph/Process.h>
 
 #include <math.h>
 #ifdef __ICC__

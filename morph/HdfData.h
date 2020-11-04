@@ -14,8 +14,8 @@
 #include <bitset>
 #include <sstream>
 #include <stdexcept>
-#include "morph/Vector.h"
-#include "morph/tools.h"
+#include <morph/Vector.h>
+#include <morph/tools.h>
 
 namespace morph {
 
