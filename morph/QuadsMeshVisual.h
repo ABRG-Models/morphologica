@@ -28,6 +28,7 @@ namespace morph {
                         const Scale<Flt>& _scale,
                         ColourMapType _cmt,
                         const float _hue = 0.0f,
+                        const float _sat = 1.0f,
                         const float _radius = 0.05f)
         {
             // Set up...
@@ -58,6 +59,7 @@ namespace morph {
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
+            if (_cmt == ColourMapType::Fixed) { this->cm.setSat (_sat); }
 
             this->initializeVertices();
             this->postVertexInit();
