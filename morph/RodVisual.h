@@ -63,7 +63,7 @@ namespace morph {
             VBOint idx = 0;
             // Draw a tube. That's it!
             this->computeTube (idx, this->offset+this->start_coord, this->offset+this->end_coord,
-                               this->start_col, this->end_col, this->radius);
+                               this->start_col, this->end_col, this->radius, 12);
         }
 
         //! The position of the start of the rod, given with respect to the parent's offset
