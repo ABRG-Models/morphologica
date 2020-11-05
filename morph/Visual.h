@@ -490,8 +490,8 @@ namespace morph {
 
         void lightingEffects (bool effects_on = true)
         {
-            ambient_intensity = effects_on ? 0.5f : 1.0f;
-            diffuse_intensity = effects_on ? 0.5f : 0.0f;
+            ambient_intensity = effects_on ? 0.4f : 1.0f;
+            diffuse_intensity = effects_on ? 0.6f : 0.0f;
         }
 
     protected:
