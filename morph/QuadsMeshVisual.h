@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <set>
 #include <stdexcept>
 
 namespace morph {
@@ -104,6 +105,7 @@ namespace morph {
             // Index buffer index
             VBOint ib = 0;
 
+            std::set<Vector<float, 6>> lastQuadLines;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
                 // Extract coordinates from this->quads
                 Vector<float> q0 = {(*this->quads)[qi][0], (*this->quads)[qi][1], (*this->quads)[qi][2]};
@@ -112,10 +114,51 @@ namespace morph {
                 Vector<float> q3 = {(*this->quads)[qi][9], (*this->quads)[qi][10], (*this->quads)[qi][11]};
                 // Draw a frame from the 4 coordinates
                 std::array<float, 3> clr = this->cm.convert(dcopy[qi]);
-                this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
-                this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
-                this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
-                this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
+
+                // Check that previous quad didn't include any of these pairs of points
+                Vector<float, 6> line0 = { q1[0], q1[1], q1[2], q0[0], q0[1], q0[2] };
+                Vector<float, 6> rline0 = { q0[0], q0[1], q0[2], q1[0], q1[1], q1[2] };
+
+                Vector<float, 6> line1 = { q2[0], q2[1], q2[2], q1[0], q1[1], q1[2] };
+                Vector<float, 6> rline1 = { q1[0], q1[1], q1[2], q2[0], q2[1], q2[2] };
+
+                Vector<float, 6> line2 = { q3[0], q3[1], q3[2], q2[0], q2[1], q2[2] };
+                Vector<float, 6> rline2 = { q2[0], q2[1], q2[2], q3[0], q3[1], q3[2] };
+
+                Vector<float, 6> line3 = { q0[0], q0[1], q0[2], q3[0], q3[1], q3[2] };
+                Vector<float, 6> rline3 = { q3[0], q3[1], q3[2], q0[0], q0[1], q0[2] };
+
+                if (!lastQuadLines.empty()) {
+                    // Test each line for the current quad. If it has already been drawn
+                    // by the last quad, omit drawing it again.
+                    if (lastQuadLines.count(line0) == 0 && lastQuadLines.count(rline0) == 0) {
+                        this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
+                    }
+                    if (lastQuadLines.count(line1) == 0 && lastQuadLines.count(rline1) == 0) {
+                        this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
+                    }
+                    if (lastQuadLines.count(line2) == 0 && lastQuadLines.count(rline2) == 0) {
+                        this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
+                    }
+                    if (lastQuadLines.count(line3) == 0 && lastQuadLines.count(rline3) == 0) {
+                        this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
+                    }
+                    lastQuadLines.clear();
+                } else { // No last quad, so draw all the lines in the current quad
+                    this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
+                    this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
+                    this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
+                    this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
+                }
+                // Record the lastQuadLines (and their inverses) for the next loop
+                lastQuadLines.insert (line0);
+                lastQuadLines.insert (line1);
+                lastQuadLines.insert (line2);
+                lastQuadLines.insert (line3);
+                lastQuadLines.insert (rline0);
+                lastQuadLines.insert (rline1);
+                lastQuadLines.insert (rline2);
+                lastQuadLines.insert (rline3);
             }
             std::cout << "QuadsMeshVisual has " << ib << " vertex indices\n";
         }
