@@ -302,9 +302,9 @@ namespace morph {
             this->coordArrows->viewmatrix.translate (v0);
             this->coordArrows->viewmatrix.rotate (this->rotation);
 
-            TransformMatrix<float> vp_coords = this->projection * this->coordArrows->viewmatrix;
+            TransformMatrix<float> mvp_coords = this->projection * this->coordArrows->viewmatrix;
 #else
-            TransformMatrix<float> vp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
+            TransformMatrix<float> mvp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
 #endif
 
             // Set the view matrix...
@@ -317,11 +317,42 @@ namespace morph {
 
             GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
 
+            // Lighting shader variables
+            //
+            // Ambient light colour
+            GLint loc_lightcol = glGetUniformLocation (this->shaderprog, (const GLchar*)"light_colour");
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            if (loc_lightcol != -1) {
+                glUniform3fv (loc_lightcol, 1, this->light_colour.data());
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+            // Ambient light intensity
+            GLint loc_ai = glGetUniformLocation (this->shaderprog, (const GLchar*)"ambient_intensity");
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            if (loc_ai != -1) {
+                glUniform1f (loc_ai, this->ambient_intensity);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+            // Diffuse light position
+            GLint loc_dp = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_position");
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            if (loc_dp != -1) {
+                glUniform3fv (loc_dp, 1, this->diffuse_position.data());
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+            // Diffuse light intensity
+            GLint loc_di = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_intensity");
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            if (loc_di != -1) {
+                glUniform1f (loc_di, this->diffuse_intensity);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+
             // Render the coordinate arrows if required
             // Update the coordinate's model-view-projection matrix as a uniform in the GLSL...
             GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
             if (loc != -1) {
-                glUniformMatrix4fv (loc, 1, GL_FALSE, vp_coords.mat.data());
+                glUniformMatrix4fv (loc, 1, GL_FALSE, mvp_coords.mat.data());
             }
             if (this->showCoordArrows == true) {
                 this->coordArrows->render();
@@ -345,12 +376,13 @@ namespace morph {
 #ifdef SHOW_TEXT_TEST
             // Render the title text
             glUseProgram (this->tshaderprog);
-            vp_coords = this->projection * sceneview * this->textModel->viewmatrix;
+            // Fixme: Pass m_ v_ p_ matrices to tshaderprog, too
+            mvp_coords = this->projection * sceneview * this->textModel->viewmatrix;
             GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
             if (loct != -1) {
-                glUniformMatrix4fv (loct, 1, GL_FALSE, vp_coords.mat.data());
+                glUniformMatrix4fv (loct, 1, GL_FALSE, mvp_coords.mat.data());
             } else {
-                std::cout << "NOT Setting vp_coords in texture shader\n";
+                std::cout << "NOT Setting mvp_coords in texture shader\n";
             }
             this->textModel->render();
             this->textModel2->render();
@@ -369,6 +401,15 @@ namespace morph {
         GLuint shaderprog;
         //! The text shader program, which uses textures to draw text on quads.
         GLuint tshaderprog;
+
+        //! The colour of ambient and diffuse light sources
+        Vector<float> light_colour = {1,1,1};
+        //! Strength of the ambient light
+        float ambient_intensity = 1.0f;
+        //! Position of a diffuse light source
+        Vector<float> diffuse_position = {5,5,15};
+        //! Strength of the diffuse light source
+        float diffuse_intensity = 0.0f;
 
         //! Set perspective based on window width and height
         void setPerspective()
@@ -424,7 +465,6 @@ namespace morph {
                 std::cout << "WARNING setZDefault(): Normally, the default z value is negative.\n";
             }
             this->zDefault = f;
-            this->scenetrans[2] = f;
         }
 
         //! Set the scene's x and y values at the same time.
@@ -445,6 +485,7 @@ namespace morph {
                 std::cout << "WARNING setSceneTransZ(): Normally, the default z value is negative.\n";
             }
             this->setZDefault (_z);
+            this->scenetrans[2] = _z;
         }
 
     protected:

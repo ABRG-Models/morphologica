@@ -96,6 +96,10 @@ namespace morph {
     // some code comments.
     const char* defaultVtxShader = OpenGL_VersionString
     "uniform mat4 mvp_matrix;\n"
+    "uniform mat4 vp_matrix;\n"
+    "uniform mat4 m_matrix;\n"
+    "uniform mat4 v_matrix;\n"
+    "uniform mat4 p_matrix;\n"
     "uniform float alpha;\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec4 normalin;\n"
@@ -103,29 +107,40 @@ namespace morph {
     "out VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
-    "    vec3 color;\n"
-    "    float alpha;\n"
+    "    vec4 color;\n"
+    "    vec3 fragpos;\n"
     "} vertex;\n"
     "void main (void)\n"
     "{\n"
-    "    gl_Position = (mvp_matrix * position);\n"
-    "    vertex.color = color;\n"
-    "    vertex.alpha = alpha;\n"
-    "    vertex.normal = mvp_matrix * normalin;\n"
-    "}";
+    "    gl_Position = (p_matrix * v_matrix * m_matrix * position);\n"
+    "    vertex.color = vec4(color, alpha);\n"
+    "    vertex.fragpos = vec3(m_matrix * position);\n"
+    "    vertex.normal = normalin;\n"
+    "}\n";
 
     // Default fragment shader. To study this GLSL, see Visual.frag.glsl.
     const char* defaultFragShader = OpenGL_VersionString
     "in VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
-    "    vec3 color;\n"
-    "    float alpha;\n"
+    "    vec4 color;\n"
+    "    vec3 fragpos;\n"
     "} vertex;\n"
+    "uniform vec3 light_colour;\n"
+    "uniform float ambient_intensity;\n"
+    "uniform vec3 diffuse_position;\n"
+    "uniform float diffuse_intensity;\n"
     "out vec4 finalcolor;\n"
-    "void main() {\n"
-    "    finalcolor = vec4(vertex.color, vertex.alpha);\n"
-    "}";
+    "void main()\n"
+    "{\n"
+    "    vec3 norm = normalize(vec3(vertex.normal));\n"
+    "    vec3 light_dirn = normalize(diffuse_position - vertex.fragpos);\n"
+    "    float effective_diffuse = max(dot(norm, light_dirn), 0.0);\n"
+    "    vec3 diffuse = diffuse_intensity * effective_diffuse * light_colour;\n"
+    "    vec3 ambient = ambient_intensity * light_colour;\n"
+    "    vec3 result = (ambient+diffuse) * vec3(vertex.color);\n"
+    "    finalcolor = vec4(result, vertex.color.w);\n"
+    "}\n";
 
     // Default text vertex shader. See VisText.vert.glsl
     const char* defaultTextVtxShader = OpenGL_VersionString
