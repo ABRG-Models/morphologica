@@ -23,6 +23,8 @@ int main (int argc, char** argv)
     v.showCoordArrows = true;
     // For a white background:
     v.backgroundWhite();
+    // Switch on a mix of diffuse/ambient lighting
+    v.lightingEffects(true);
 
     bool holdVis = false;
     if (argc > 1) {

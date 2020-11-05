@@ -488,6 +488,12 @@ namespace morph {
             this->scenetrans[2] = _z;
         }
 
+        void lightingEffects (bool effects_on = true)
+        {
+            ambient_intensity = effects_on ? 0.5f : 1.0f;
+            diffuse_intensity = effects_on ? 0.5f : 0.0f;
+        }
+
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
