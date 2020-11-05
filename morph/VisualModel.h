@@ -491,18 +491,11 @@ namespace morph {
                              std::array<float, 3> colStart, std::array<float, 3> colEnd,
                              float r = 1.0f, int segments = 12)
         {
-            // First cap, draw as a triangle fan, but record indices so that
-            // we only need a single call to glDrawElements.
-
             // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
             Vector<float> vstart = start;
-            //vstart.set_from (start);
             Vector<float> vend = end;
-            //vend.set_from (end);
-            //std::cout << "Compute tube from " << vstart << "to " << vend << std::endl;
             Vector<float> v = vend - vstart;
             v.renormalize();
-            //std::cout << "Normal vector v is " << v << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
             // (v) can be found: Choose random vector vr. A vector inplane = vr ^
@@ -512,44 +505,31 @@ namespace morph {
             rand_vec.randomize();
             Vector<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
-            //std::cout << "in-plane vector is " << inplane << std::endl;
-
-            // Now use parameterization of circle inplane = p1-x1 and
-            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
-            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector<float> v_x_inplane = v.cross(inplane);
-            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
-            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
-            //std::cout << "Central point of vstart cap is " << vstart << std::endl;
-            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (-v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                //std::cout << "t is " << t << std::endl;
                 Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
-                //std::cout << "point on vstart cap is " << (vstart+c) << std::endl;
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (colStart, this->vertexColors);
             }
 
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
-                //std::cout << "t is " << t << std::endl;
                 Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
-                //std::cout << "point on vend cap is " << (vend+c) << std::endl;
                 this->vertex_push (v, this->vertexNormals); // +v
                 this->vertex_push (colEnd, this->vertexColors);
             }
 
             // Bottom cap. Push centre vertex as the last vertex.
             this->vertex_push (vend, this->vertexPositions);
-            //std::cout << "vend cap is " << vend << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colEnd, this->vertexColors);
 
@@ -562,73 +542,49 @@ namespace morph {
             VBOint endMiddle = idx + (VBOint)nverts - 1;
             VBOint endStartIdx = capStartIdx + segments;
 
-            //std::cout << "start cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
-                //std::cout << "add " << capMiddle << " to indices\n";
                 this->indices.push_back (capStartIdx + j);
-                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
                 this->indices.push_back (capStartIdx + 1 + j);
-                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
             }
             // Last one
             this->indices.push_back (capMiddle);
-            //std::cout << "add " << capMiddle << " to indices\n";
             this->indices.push_back (capStartIdx + segments - 1);
-            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
             this->indices.push_back (capStartIdx);
-            //std::cout << "add " << (capStartIdx) << " to indices\n";
 
-            //std::cout << "sides" << std::endl;
             for (int j = 0; j < segments; j++) {
                 // Two triangles per side; 1:
                 this->indices.push_back (capStartIdx + j);
-                //std::cout << "1. add " << (capStartIdx + j) << " to indices\n";
                 if (j == (segments-1)) {
                     this->indices.push_back (capStartIdx);
-                    //std::cout << "1. add " << (capStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (capStartIdx + 1 + j);
-                    //std::cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
                 }
                 this->indices.push_back (endStartIdx + j);
-                //std::cout << "1. add " << (endStartIdx + j) << " to indices\n";
                 // 2:
                 this->indices.push_back (endStartIdx + j);
-                //std::cout << "2. add " << (endStartIdx + j) << " to indices\n";
                 if (j == (segments-1)) {
                     this->indices.push_back (endStartIdx);
-                    //std::cout << "2. add " << (endStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (endStartIdx + 1 + j);
-                    //std::cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
                 }
                 if (j == (segments-1)) {
                     this->indices.push_back (capStartIdx);
-                    //std::cout << "2. add " << (capStartIdx) << " to indices\n";
                 } else {
                     this->indices.push_back (capStartIdx + j + 1);
-                    //std::cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
                 }
             }
 
             // bottom cap
-            //std::cout << "vend cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
-                //std::cout << "add " << (endMiddle) << " to indices\n";
                 this->indices.push_back (endStartIdx + j);
-                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
                 this->indices.push_back (endStartIdx + 1 + j);
-                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
             }
             // Last one
             this->indices.push_back (endMiddle);
-            //std::cout << "add " << (endMiddle) << " to indices\n";
             this->indices.push_back (endStartIdx + segments - 1);
-            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
             this->indices.push_back (endStartIdx);
-            //std::cout << "add " << (endStartIdx) << " to indices\n";
 
             // Update idx
             idx += nverts;
@@ -768,7 +724,6 @@ namespace morph {
                 }
             }
             // end of sphere calculation
-            //std::cout << "Number of vertexPositions coords: " << (this->vertexPositions.size()/3) << std::endl;
         }
 
         /*!
@@ -796,58 +751,67 @@ namespace morph {
                           std::array<float, 3> col,
                           float r = 1.0f, int segments = 12)
         {
-            // The cone is drawn as two "caps" a 'bottom cap' (or perhaps the 'back'
-            // cap) and an 'outer cap'
+            // Cone is drawn as a base ring around a centre-of-the-base vertex, an
+            // intermediate ring which is on the base ring, but has different normals, a
+            // 'ring' around the tip (with suitable normals) and a 'tip' vertex
 
-            // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector<float> vcentre = centre;
+            Vector<float> vbase = centre;
             Vector<float> vtip = tip;
-            //std::cout << "Compute cone from " << vcentre << "to " << vtip << std::endl;
-            Vector<float> v = vtip - vcentre;
+            Vector<float> v = vtip - vbase;
             v.renormalize();
-            //std::cout << "Normal vector v is " << v << std::endl;
 
-            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
-            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
-            // v. The unit in-plane vector is inplane.normalise. Can now use that
-            // vector in the plan to define a point on the circle.
+            // circle in a plane defined by a point and a normal
             Vector<float> rand_vec;
             rand_vec.randomize();
             Vector<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
-            //std::cout << "in-plane vector is " << inplane << std::endl;
-
-            // Now use parameterization of circle inplane = p1-x1 and
-            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
-            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector<float> v_x_inplane = v.cross(inplane);
-            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
-            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
 
             // Push the central point of the start cap - this is at location vstart
-            this->vertex_push (vcentre, this->vertexPositions);
-            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (vbase, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
+            // Base ring with normals in direction -v
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                //std::cout << "t is " << t << std::endl;
                 Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
-                this->vertex_push (vcentre+c, this->vertexPositions);
-                //std::cout << "point on vstart cap is " << (vstart+c) << std::endl;
+                this->vertex_push (vbase+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals); // -v
                 this->vertex_push (col, this->vertexColors);
             }
 
-            // Push tip vertex as the last vertex.
+            // Intermediate ring of vertices around/aligned with the base ring with normals in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                c = c + (c * ringoffset);
+                this->vertex_push (vbase+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals); // -v
+                this->vertex_push (col, this->vertexColors);
+            }
+
+            // Intermediate ring of vertices around the tip with normals direction c
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                c = c + (c * ringoffset);
+                this->vertex_push (vtip, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals); // -v
+                this->vertex_push (col, this->vertexColors);
+            }
+
+            // Push tip vertex as the last vertex, normal is in direction v
             this->vertex_push (vtip, this->vertexPositions);
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            // Number of vertices = segments + 2.
-            int nverts = segments + 2;
+            // Number of vertices = segments*3 + 2.
+            int nverts = segments*3 + 2;
 
             // After creating vertices, push all the indices.
             VBOint capMiddle = idx;
@@ -855,41 +819,55 @@ namespace morph {
             VBOint endMiddle = idx + (VBOint)nverts - 1;
             VBOint endStartIdx = capStartIdx /*+ segments*/;
 
-            //std::cout << "bottom cap" << std::endl;
+            // Base of the cone
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
-                //std::cout << "add " << capMiddle << " to indices\n";
                 this->indices.push_back (capStartIdx + j);
-                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
                 this->indices.push_back (capStartIdx + 1 + j);
-                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
             }
-            // Last one
+            // Last tri of base
             this->indices.push_back (capMiddle);
-            //std::cout << "add " << capMiddle << " to indices\n";
             this->indices.push_back (capStartIdx + segments - 1);
-            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
             this->indices.push_back (capStartIdx);
-            //std::cout << "add " << (capStartIdx) << " to indices\n";
 
+            // Middle sections
+            for (int lsection = 0; lsection < 2; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                for (int j = 0; j < segments; j++) {
+                    // Triangle 1:
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    // Triangle 2:
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
+                }
+            }
 
-            // 'outer' cap
-            //std::cout << "vend cap" << std::endl;
+            // tip
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (endMiddle);
-                //std::cout << "add " << (endMiddle) << " to indices\n";
                 this->indices.push_back (endStartIdx + j);
-                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
                 this->indices.push_back (endStartIdx + 1 + j);
-                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
             }
-            // Last one
+            // Last triangle of tip
             this->indices.push_back (endMiddle);
-            //std::cout << "add " << (endMiddle) << " to indices\n";
             this->indices.push_back (endStartIdx + segments - 1);
-            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
             this->indices.push_back (endStartIdx);
-            //std::cout << "add " << (endStartIdx) << " to indices\n";
 
             // Update idx
             idx += nverts;
