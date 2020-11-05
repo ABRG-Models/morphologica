@@ -2,7 +2,7 @@
  * Visualize a test surface
  */
 #include "morph/Visual.h"
-#define MESH 1
+//#define MESH 1
 #ifdef MESH
 # include "morph/QuadsMeshVisual.h"
 #else
@@ -24,7 +24,7 @@ int main (int argc, char** argv)
     morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows = true;
-    v.lightingEffects();
+    v.lightingEffects (true);
 
     bool holdVis = false;
     if (argc > 1) {
@@ -72,7 +72,7 @@ int main (int argc, char** argv)
 #ifdef MESH
         unsigned int visId = v.addVisualModel (new morph::QuadsMeshVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
 #else
-        unsigned int visId = v.addVisualModel (new morph::QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
+        unsigned int visId = v.addVisualModel (new morph::QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome));
 #endif
 
         cout << "Added Visual with visId " << visId << endl;

@@ -97,13 +97,26 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->colourScale.transform ((*this->scalarData), dcopy);
 
+            morph::Vector v0, v1, v2, v3;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = (*this->quads)[qi];
-                this->vertex_push (quad[0], quad[1], quad[2], this->vertexPositions);   //1
-                this->vertex_push (quad[3], quad[4], quad[5], this->vertexPositions);   //2
-                this->vertex_push (quad[6], quad[7], quad[8], this->vertexPositions);   //3
-                this->vertex_push (quad[9], quad[10], quad[11], this->vertexPositions); //4
+                // Convert the array of 12 floats into 4 Vectors
+                v0 = {quad[0], quad[1], quad[2]};
+                v1 = {quad[3], quad[4], quad[5]};
+                v2 = {quad[6], quad[7], quad[8]};
+                v3 = {quad[9], quad[10], quad[11]};
+
+                this->vertex_push (v0, this->vertexPositions);
+                this->vertex_push (v1, this->vertexPositions);
+                this->vertex_push (v2, this->vertexPositions);
+                this->vertex_push (v3, this->vertexPositions);
+
+                // Compute normal
+                morph::Vector<float> plane1 = v1 - v0;
+                morph::Vector<float> plane2 = v2 - v0;
+                morph::Vector<float> vnorm = plane2.cross (plane1);
+                vnorm.renormalize();
 
                 // All same colours
                 std::array<float, 3> clr = this->cm.convert(dcopy[qi]);
@@ -112,23 +125,60 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
 
-                // All same normals
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
 
-                // Two triangles per quad
+                if (this->computeBackQuads == true) {
+                    // Compute a 'depth' in the direction of the normal
+                    morph::Vector<float> depth = vnorm;
+                    depth *= plane1.length();
+                    depth *= 0.01f;
+
+                    // Back quad vertices
+                    this->vertex_push (v0-depth, this->vertexPositions);
+                    this->vertex_push (v1-depth, this->vertexPositions);
+                    this->vertex_push (v2-depth, this->vertexPositions);
+                    this->vertex_push (v3-depth, this->vertexPositions);
+
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+
+                    this->vertex_push (-vnorm, this->vertexNormals);
+                    this->vertex_push (-vnorm, this->vertexNormals);
+                    this->vertex_push (-vnorm, this->vertexNormals);
+                    this->vertex_push (-vnorm, this->vertexNormals);
+                }
+
+                // Two triangles per quad, two quads per quad (front and back)
                 // qi * 4 + 1, 2 3 or 4
-                unsigned int ib = qi*4;
+                unsigned int ib = qi;
+                ib *= (this->computeBackQuads == true ? 8 : 4);
+
                 this->indices.push_back (ib++); // 0
                 this->indices.push_back (ib++); // 1
-                this->indices.push_back (ib); // 2
+                this->indices.push_back (ib);   // 2
 
                 this->indices.push_back (ib++); // 2
                 this->indices.push_back (ib);   // 3
                 ib -= 3;
                 this->indices.push_back (ib);   // 0
+
+                if (this->computeBackQuads == true) {
+                    ib += 4;
+                    // Back face
+                    this->indices.push_back (ib++); // 0
+                    this->indices.push_back (ib++); // 1
+                    this->indices.push_back (ib);   // 2
+
+                    this->indices.push_back (ib++); // 2
+                    this->indices.push_back (ib);   // 3
+                    ib -= 3;
+                    this->indices.push_back (ib);   // 0
+                }
             }
         }
 
@@ -138,6 +188,10 @@ namespace morph {
         //! the coordinates of the locations of the data are the centroids of each
         //! quad.
         const std::vector<std::array<Flt,12>>* quads;
+
+        //! Should additional quads for the 'back' be created, with an opposite normal?
+        //! Probably not. Probably I now need to read up about face culling.
+        bool computeBackQuads = false;
     };
 
 } // namespace morph
