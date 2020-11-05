@@ -38,14 +38,21 @@ int main (int argc, char** argv)
     try {
         morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        //morph::Vector<float, 3> start = { -0.1, -0.1, -0.3 };
-        //morph::Vector<float, 3> end = { 0.3, 0.3, 0.3 };
-        morph::Vector<float, 3> start = { 0.0, 0.0, 0.0 };
-        morph::Vector<float, 3> end = { 0.5, 0.0, 0.0 };
+        morph::Vector<float, 3> start = { -0.1, -0.1, -0.3 };
+        morph::Vector<float, 3> end = { 0.3, 0.3, 0.3 };
 
         morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
         unsigned int visId = v.addVisualModel (new morph::RodVisual (v.shaderprog, offset, start, end, 0.05f, colour1));
+
+        std::cout << "Added RodVisual with visId " << visId << std::endl;
+
+        morph::Vector<float, 3> start2 = { -0.1, 0.2, 0.6 };
+        morph::Vector<float, 3> end2 = { 0.2, 0.4, 0.6 };
+
+        morph::Vector<float, 3> colour2 = { 0.0, 0.9, 0.4 };
+
+        visId = v.addVisualModel (new morph::RodVisual (v.shaderprog, offset, start2, end2, 0.05f, colour2));
 
         std::cout << "Added RodVisual with visId " << visId << std::endl;
 
