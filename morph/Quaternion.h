@@ -13,7 +13,7 @@
 namespace morph {
 
     // Forward declare class and stream operator
-    template <typename Flt> struct Quaternion;
+    template <typename Flt> class Quaternion;
     template <typename Flt> std::ostream& operator<< (std::ostream&, const Quaternion<Flt>&);
 
     /*!
