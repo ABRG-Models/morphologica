@@ -108,6 +108,7 @@ namespace morph {
             //std::cout << "r1: " << r1 << ", r1_e: " << r1_e << std::endl;
             //std::cout << "r2: " << r2 << ", r2_e: " << r2_e << std::endl;
             //std::cout << "prlen is " << prlen << std::endl;
+            morph::Vector v0, v1, v2;
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
                 //std::cout << "====================================" << std::endl;
                 //std::cout << "  ROW" << std::endl;
@@ -116,19 +117,34 @@ namespace morph {
                 //std::cout << "====================================" << std::endl;
 
                 // Push the first two vertices in the row:
-                //std::cout << "Pushing start vertex (" << (*this->dataCoords)[r1][0] << "," << (*this->dataCoords)[r1][1] << "," << (*this->dataCoords)[r1][2] << ") with value " << dcopy[r1] << std::endl;
+                // Start vertex 1
+                v1 = (*this->dataCoords)[r1];
                 this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                 this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                //this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                this->indices.push_back (ib);
+                ib++;
+                // Start vertex 2
+                v2 = (*this->dataCoords)[r2];
+                this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
+                this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
+                //this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                 this->indices.push_back (ib);
                 ib++;
 
-                //std::cout << "Pushing start vertex (" << (*this->dataCoords)[r2][0] << "," << (*this->dataCoords)[r2][1] << "," << (*this->dataCoords)[r2][2] << ") with value " << dcopy[r2] << std::endl;
-                this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
-                this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->indices.push_back (ib);
-                ib++;
+                // Let v0 be:
+                morph::Vector<float> vnorm = {0.0f, 0.0f, 1.0f};
+                if (r1+1 < r1_e) {
+                    v0 = (*this->dataCoords)[r1+1];
+                    // Compute normal
+                    morph::Vector<float> plane1 = v1 - v0;
+                    morph::Vector<float> plane2 = v2 - v0;
+                    vnorm = plane2.cross (plane1);
+                    vnorm.renormalize();
+                }
+                // Push normal twice for the two start vertices:
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
 
                 // Now while through the row pushing the rest of the vertices.
                 //std::cout << "While through the rest, with r2 < r2_e=" << r2_e << std::endl;
@@ -210,25 +226,30 @@ namespace morph {
                     }
 
                     if (must_be_r1n) {
-                        // r1 is the next
+                        // r1 vertex is the next
                         r1 = r1n;
-                        //std::cout << "Pushing r1 vertex (" << (*this->dataCoords)[r1][0] << "," << (*this->dataCoords)[r1][1] << "," << (*this->dataCoords)[r1][2] << ") with value " << dcopy[r1] << std::endl;
+                        v0 = (*this->dataCoords)[r1];
                         this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                         this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
-                        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                         this->indices.push_back (ib);
                         ib++;
 
                     } else {
-                        // r2 is next
+                        // r2 vertex is next
                         r2 = r2n;
-                        //std::cout << "Pushing r2 vertex (" << (*this->dataCoords)[r2][0] << "," << (*this->dataCoords)[r2][1] << "," << (*this->dataCoords)[r2][2] << ") with value " << dcopy[r2] << std::endl;
+                        v0 = (*this->dataCoords)[r2];
                         this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
                         this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
-                        this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                         this->indices.push_back (ib);
                         ib++;
                     }
+
+                    // Compute normal and push one
+                    morph::Vector<float> plane1 = v1 - v0;
+                    morph::Vector<float> plane2 = v2 - v0;
+                    morph::Vector<float> vnorm = plane2.cross (plane1);
+                    vnorm.renormalize();
+                    this->vertex_push (vnorm, this->vertexNormals);
 
                     if (completed_end_tri == true) {
                         //std::cout << "Completed the end triangle";
@@ -236,18 +257,17 @@ namespace morph {
                     }
 
                     // Next tri:
-                    //std::cout << "Next tri." << std::endl;
-                    //std::cout << "Pushing vertex (" << (*this->dataCoords)[r1][0] << "," << (*this->dataCoords)[r1][1] << "," << (*this->dataCoords)[r1][2] << ") with value " << dcopy[r1] << std::endl;
+                    v1 = (*this->dataCoords)[r1];
                     this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                     this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
-                    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
                     this->indices.push_back (ib);
                     ib++;
 
-                    //std::cout << "Pushing vertex (" << (*this->dataCoords)[r2][0] << "," << (*this->dataCoords)[r2][1] << "," << (*this->dataCoords)[r2][2] << ") with value " << dcopy[r2] << std::endl;
+                    v2 = (*this->dataCoords)[r2];
                     this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
                     this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
-                    this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
                     this->indices.push_back (ib);
                     ib++;
                 }
