@@ -27,6 +27,7 @@ int main (int argc, char** argv)
     v.showCoordArrows = true;
     // Blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
+    v.lightingEffects();
 
     bool holdVis = false;
     if (argc > 1) {

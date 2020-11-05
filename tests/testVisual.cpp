@@ -40,6 +40,7 @@ int main()
     v.setSceneTransXY (0.0f, 0.0f);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
+    v.lightingEffects();
 
     try {
         string pwd = Tools::getPwd();

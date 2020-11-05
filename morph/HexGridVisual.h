@@ -289,6 +289,7 @@ namespace morph {
             Flt datum = static_cast<Flt>(0.0);
             Flt third = static_cast<Flt>(0.33333333333333);
             Flt half = static_cast<Flt>(0.5);
+            morph::Vector<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 
                 // Use the linear scaled copy of the data, dcopy.
@@ -307,6 +308,9 @@ namespace morph {
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
 
+                // Use the centre position as the first location for finding the normal vector
+                vtx_0 = {this->hg->d_x[hi], this->hg->d_y[hi], datumC};
+
                 // NE vertex
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
                     // Compute mean of this->data[hi] and NE and E hexes
@@ -321,6 +325,7 @@ namespace morph {
                     datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                vtx_1 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum};
 
                 // SE vertex
                 if (HAS_NE(hi) && HAS_NSE(hi)) {
@@ -335,6 +340,7 @@ namespace morph {
                     datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                vtx_2 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum};
 
                 // S
                 if (HAS_NSE(hi) && HAS_NSW(hi)) {
@@ -392,14 +398,22 @@ namespace morph {
                 }
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
 
-                // All normals point up
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                // From vtx_0,1,2 compute normal. This sets the correct normal, but note
+                // that there is only one 'layer' of vertices; the back of the
+                // HexGridVisual will be coloured the same as the front. To get lighting
+                // effects to look really good, the back of the surface could need the
+                // opposite normal.
+                morph::Vector<float> plane1 = vtx_1 - vtx_0;
+                morph::Vector<float> plane2 = vtx_2 - vtx_0;
+                morph::Vector<float> vnorm = plane2.cross (plane1);
+                vnorm.renormalize();
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
 
                 // Seven vertices with the same colour
                 this->vertex_push (clr, this->vertexColors);
