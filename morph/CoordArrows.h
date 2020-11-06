@@ -11,6 +11,7 @@
 #include <morph/Vector.h>
 #include <morph/VisualModel.h>
 #include <morph/MathConst.h>
+#include <morph/VisualTextModel.h>
 #include <array>
 
 namespace morph {
@@ -26,22 +27,48 @@ namespace morph {
             this->offset = {0.0, 0.0, 0.0};
         }
 
-        CoordArrows(GLuint sp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness = 1.0f)
+        CoordArrows(GLuint sp, GLuint tsp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness = 1.0f)
         {
-            this->init (sp, _offset, _lengths, _thickness);
+            this->init (sp, tsp, _offset, _lengths, _thickness);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (GLuint sp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness)
+        void init (GLuint sp, GLuint tsp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness)
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->offset = _offset;
             this->viewmatrix.translate (this->offset);
+            // scenematrix has identity at moment. Gets updated during morph::Visual::render()
 
+            float xoffs = 0.005f;
             this->lengths = _lengths;
             this->thickness = _thickness;
+            morph::Vector<float> toffset = this->offset;
+            toffset[0] += this->lengths[0] + xoffs;
+            std::cout << "X text offset: " << toffset << std::endl;
+            this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                        morph::VisualFont::VeraBoldItalic,
+                                                        0.01f, 48, toffset,
+                                                        "X"));
+            toffset = this->offset;
+            toffset[1] += this->lengths[1];
+            toffset[0] += xoffs;
+            std::cout << "Y text offset: " << toffset << std::endl;
+            this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                        morph::VisualFont::VeraBoldItalic,
+                                                        0.01f, 148, toffset,
+                                                        "Y"));
+            toffset = this->offset;
+            toffset[2] += this->lengths[2];
+            toffset[0] += xoffs;
+            std::cout << "Y text offset: " << toffset << std::endl;
+            this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                        morph::VisualFont::VeraBoldItalic,
+                                                        0.01f, 48, toffset,
+                                                        "Z"));
 
             // Initialize the vertices that will represent the object
             this->initializeVertices();

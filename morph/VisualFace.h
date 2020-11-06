@@ -233,7 +233,7 @@ namespace morph {
                         {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top}, // bearing
                         static_cast<unsigned int>(this->face->glyph->advance.x)          // advance
                     };
-#if 1
+#ifdef __DEBUG__
                     std::cout << "Inserting character into this->glchars with info: ID:" << glchar.textureID
                               << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
                               << ", Advance:" << glchar.advance << std::endl;

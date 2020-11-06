@@ -19,6 +19,7 @@
 #include <morph/Vector.h>
 #include <morph/MathConst.h>
 #include <morph/VisualCommon.h>
+#include <morph/VisualTextModel.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -80,6 +81,7 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModel()
         {
+            for (auto& tm : this->texts) { delete (tm); }
             glDeleteBuffers (numVBO, vbos);
             morph::gl::Util::checkError (__FILE__, __LINE__);
             delete (this->vbos);
@@ -154,25 +156,82 @@ namespace morph {
         {
             if (this->hide == true) { return; }
 
+            GLint prev_shader;
+            glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
+
             // Ensure the correct program is in play for this VisualModel
             glUseProgram (this->shaderprog);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // It is only necessary to bind the vertex array object before rendering
+            // (not the vertex buffer objects)
             glBindVertexArray (this->vao);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Pass this->float to GLSL so the model can have an alpha value.
             GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
             if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
+
+            GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
+            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
+
+            GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
+            if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
+
+            // Draw the triangles
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+
+            // Unbind the VAO
             glBindVertexArray(0);
+
+            // Now render any VisualTextModels
+            // Here, could set anything that should be true for ALL texts in this model
+            // glUseProgram (this->tshaderprog);
+            // etc
+
+            for (auto t : this->texts) { t->render(); }
+
+            glUseProgram (prev_shader);
+
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
+    protected:
         //! The model-specific view matrix.
         TransformMatrix<float> viewmatrix;
+        //! The model-specific scene view matrix.
+        TransformMatrix<float> scenematrix;
+
+    public:
+        void setViewMatrix (const TransformMatrix<float>& mv)
+        {
+            this->viewmatrix = mv;
+        }
+
+        //! When setting the scene matrix, also have to set the text's scene matrices.
+        void setSceneMatrix (const TransformMatrix<float>& sv)
+        {
+            this->scenematrix = sv;
+            // For each text model, also set scene matrix
+            for (auto& t : this->texts) { t->setSceneMatrix (sv); }
+        }
+
+        //! Set a translation into the scene and into any child texts
+        void setSceneTranslation (const Vector<float>& v0)
+        {
+            this->scenematrix.setToIdentity();
+            this->scenematrix.translate (v0);
+
+            for (auto& t : this->texts) { t->setSceneTranslation (v0); }
+        }
+
+        //! Set a rotation (only) into the view
+        void setViewRotation (const Quaternion<float>& r)
+        {
+            this->viewmatrix.setToIdentity();
+            this->viewmatrix.rotate (r);
+
+            // Is a view rotation for coord arrows same as scene rotation for texts?
+            for (auto& t : this->texts) { t->addSceneRotation (r); }
+        }
 
         //! Setter for offset, also updates viewmatrix.
         void setOffset (const Vector<float>& _offset)
@@ -218,6 +277,9 @@ namespace morph {
          */
         Vector<float> offset;
 
+        //! A vector of pointers to text models that should be rendered.
+        std::vector<morph::VisualTextModel*> texts;
+
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
@@ -227,6 +289,9 @@ namespace morph {
 
         //! A copy of the reference to the shader program
         GLuint shaderprog;
+
+        //! A copy of the reference to the text-specific shader program
+        GLuint tshaderprog;
 
         /*
          * Compute positions and colours of vertices for the hexes and store in these:

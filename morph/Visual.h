@@ -278,9 +278,10 @@ namespace morph {
             // First, the coordinates thing. Ensure coordarrows centre sphere will be visible
             // on BG:
             this->coordArrows->setColourForBackground (this->bgcolour);
-#if 0 // Find out the location of the bottom left of the screen and make the coord
-      // arrows stay put there.
-            Vector<float, 2> p0_coord = {0.4f, 0.4f};
+
+            // Find out the location of the bottom left of the screen and make the coord
+            // arrows stay put there.
+            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
 
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
@@ -289,101 +290,87 @@ namespace morph {
             Vector<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
-            std::cout << "Putting coords at coord-z: " << coord_z << std::endl;
-
             // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
 
             // Inverse project
-            Vector<float, 4> v0 = this->invproj * p0;
-
-            // Apply to view matrix...
-            this->coordArrows->viewmatrix.setToIdentity();
-            this->coordArrows->viewmatrix.translate (v0);
-            this->coordArrows->viewmatrix.rotate (this->rotation);
-
-            TransformMatrix<float> mvp_coords = this->projection * this->coordArrows->viewmatrix;
-#else
-            TransformMatrix<float> mvp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
-#endif
-
-            // Set the view matrix...
-            GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
-            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, sceneview.mat.data()); }
-
-            // and the projection matrix
-            GLint loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
-            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
-
-            GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
+            Vector v0;
+            v0.set_from (this->invproj * p0);
+            this->coordArrows->setSceneTranslation (v0);
+            // Apply rotation to the coordArrows model
+            this->coordArrows->setViewRotation (this->rotation);
 
             // Lighting shader variables
             //
             // Ambient light colour
             GLint loc_lightcol = glGetUniformLocation (this->shaderprog, (const GLchar*)"light_colour");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_lightcol != -1) {
                 glUniform3fv (loc_lightcol, 1, this->light_colour.data());
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Ambient light intensity
             GLint loc_ai = glGetUniformLocation (this->shaderprog, (const GLchar*)"ambient_intensity");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_ai != -1) {
                 glUniform1f (loc_ai, this->ambient_intensity);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Diffuse light position
             GLint loc_dp = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_position");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_dp != -1) {
                 glUniform3fv (loc_dp, 1, this->diffuse_position.data());
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Diffuse light intensity
             GLint loc_di = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_intensity");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            // Render the coordinate arrows if required
-            // Update the coordinate's model-view-projection matrix as a uniform in the GLSL...
-            GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-            if (loc != -1) {
-                glUniformMatrix4fv (loc, 1, GL_FALSE, mvp_coords.mat.data());
+            // Switch to text shader program and set the projection matrix here only
+            glUseProgram (this->tshaderprog);
+            // Set the sceneview and projection matrices in the text shader (sceneview
+            // will be passed down from parent model)
+            GLint loc_p = glGetUniformLocation (this->tshaderprog, (const GLchar*)"p_matrix");
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
+            // Put identity transform in a matrix (this will default to the identity)
+            TransformMatrix<float> identity;
+
+#if 0
+            // Test a rotation (This does something, but not what I was expecting, which was a text model rotation)
+            Vector<float> trotationAxis = {1.0f, 0.0f, 0.0f};
+            Quaternion<float> trotation;
+            trotation.initFromAxisAngle (trotationAxis, 0.05f);
+            m_matrix.rotate (this->rotation);
+#endif
+#if 0
+            // This will be done in the VisualTextModel
+            GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
+            if (loc_m != -1) {
+                glUniformMatrix4fv (loc_m, 1, GL_FALSE, identity.mat.data());
+            } else {
+                std::cout << "NOT Setting m_matrix in texture shader\n";
             }
-            if (this->showCoordArrows == true) {
-                this->coordArrows->render();
-            }
+#endif
+            // Switch back to the regular shader prog and render the VisualModels.
+            glUseProgram (this->shaderprog);
+
+            // Set the projection matrix just once
+            loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
+            if (this->showCoordArrows == true) { this->coordArrows->render(); }
 
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
-                // For each different VisualModel, I can CHANGE the uniform. Right? Right.
-                TransformMatrix<float> viewproj = this->projection * sceneview * (*vmi)->viewmatrix;
-                GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-                if (loc != -1) {
-                    glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
-                }
-                if (loc_m != -1) {
-                    glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*vmi)->viewmatrix.mat.data());
-                }
+                (*vmi)->setSceneMatrix (sceneview);
                 (*vmi)->render();
                 ++vmi;
             }
 
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+
 #ifdef SHOW_TEXT_TEST
             // Render the title text
             glUseProgram (this->tshaderprog);
-            // Fixme: Pass m_ v_ p_ matrices to tshaderprog, too
-            mvp_coords = this->projection * sceneview * this->textModel->viewmatrix;
-            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
-            if (loct != -1) {
-                glUniformMatrix4fv (loct, 1, GL_FALSE, mvp_coords.mat.data());
-            } else {
-                std::cout << "NOT Setting mvp_coords in texture shader\n";
-            }
             this->textModel->render();
             this->textModel2->render();
             this->textModel3->render();
@@ -602,6 +589,7 @@ namespace morph {
             } // else no problem
 
             this->coordArrows = new CoordArrows(this->shaderprog,
+                                                this->tshaderprog,
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
