@@ -18,7 +18,7 @@
 #endif
 
 #include <morph/VisualModel.h>
-//#define SHOW_TEXT_TEST 1
+#define SHOW_TEXT_TEST 1
 #ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
 #endif
@@ -257,12 +257,9 @@ namespace morph {
             // Set the perspective from the width/height
             this->setPerspective();
 
-            // rotmat is the translation/rotation for the entire scene.
-            //
             // Calculate model view transformation - transforming from "model space" to "worldspace".
             TransformMatrix<float> sceneview;
-            // This line translates from model space to world space. In future may need one
-            // model->world for each HexGridVisual.
+            // This line translates from model space to world space.
             sceneview.translate (this->scenetrans); // send backwards into distance
             // And this rotation completes the transition from model to world
             sceneview.rotate (this->rotation);
@@ -272,33 +269,6 @@ namespace morph {
 
             // Set the background colour:
             glClearBufferfv (GL_COLOR, 0, bgcolour.data());
-
-            // Render it.
-
-            // First, the coordinates thing. Ensure coordarrows centre sphere will be visible
-            // on BG:
-            this->coordArrows->setColourForBackground (this->bgcolour);
-
-            // Find out the location of the bottom left of the screen and make the coord
-            // arrows stay put there.
-            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
-
-            // Add the depth at which the object lies.  Use forward projection to determine
-            // the correct z coordinate for the inverse projection. This assumes only one
-            // object.
-            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
-            Vector<float, 4> pp = this->projection * point;
-            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-
-            // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
-
-            // Inverse project
-            Vector v0;
-            v0.set_from (this->invproj * p0);
-            this->coordArrows->setSceneTranslation (v0);
-            // Apply rotation to the coordArrows model
-            this->coordArrows->setViewRotation (this->rotation);
 
             // Lighting shader variables
             //
@@ -324,32 +294,11 @@ namespace morph {
             }
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            // Switch to text shader program and set the projection matrix here only
+            // Switch to text shader program and set the projection matrix
             glUseProgram (this->tshaderprog);
-            // Set the sceneview and projection matrices in the text shader (sceneview
-            // will be passed down from parent model)
             GLint loc_p = glGetUniformLocation (this->tshaderprog, (const GLchar*)"p_matrix");
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
-            // Put identity transform in a matrix (this will default to the identity)
-            TransformMatrix<float> identity;
-
-#if 0
-            // Test a rotation (This does something, but not what I was expecting, which was a text model rotation)
-            Vector<float> trotationAxis = {1.0f, 0.0f, 0.0f};
-            Quaternion<float> trotation;
-            trotation.initFromAxisAngle (trotationAxis, 0.05f);
-            m_matrix.rotate (this->rotation);
-#endif
-#if 0
-            // This will be done in the VisualTextModel
-            GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
-            if (loc_m != -1) {
-                glUniformMatrix4fv (loc_m, 1, GL_FALSE, identity.mat.data());
-            } else {
-                std::cout << "NOT Setting m_matrix in texture shader\n";
-            }
-#endif
             // Switch back to the regular shader prog and render the VisualModels.
             glUseProgram (this->shaderprog);
 
@@ -357,7 +306,10 @@ namespace morph {
             loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
-            if (this->showCoordArrows == true) { this->coordArrows->render(); }
+            if (this->showCoordArrows == true) {
+                this->positionCoordArrows();
+                this->coordArrows->render();
+            }
 
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
@@ -371,9 +323,28 @@ namespace morph {
 #ifdef SHOW_TEXT_TEST
             // Render the title text
             glUseProgram (this->tshaderprog);
+            // We have to set the scenematrix and viewmatrix in the textModel
+            // appropriately. Do something like for CoordArrows, but without the rotation?
+            //this->textModel->setSceneMatrix(sceneview); OR:::
+
+            // Title at top?
+            Vector<float, 2> p0_coord = {-0.8f, 0.8f};
+
+            // Add the depth at which the object lies.  Use forward projection to determine
+            // the correct z coordinate for the inverse projection. This assumes only one
+            // object.
+            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+            Vector<float, 4> pp = this->projection * point;
+            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+            // Construct the point for the location of the coord arrows
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            // Inverse project
+            Vector v0;
+            v0.set_from (this->invproj * p0);
+            this->textModel->setSceneTranslation (v0);
+
             this->textModel->render();
-            this->textModel2->render();
-            this->textModel3->render();
 #endif
             glfwSwapBuffers (this->window);
 
@@ -397,6 +368,33 @@ namespace morph {
         Vector<float> diffuse_position = {5,5,15};
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
+
+        //! Compute position and rotation of coordinate arrows in the bottom left of the screen
+        void positionCoordArrows()
+        {
+            // Ensure coordarrows centre sphere will be visible on BG:
+            this->coordArrows->setColourForBackground (this->bgcolour);
+
+            // Find out the location of the bottom left of the screen and make the coord
+            // arrows stay put there.
+            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
+
+            // Add the depth at which the object lies.  Use forward projection to determine
+            // the correct z coordinate for the inverse projection. This assumes only one
+            // object.
+            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+            Vector<float, 4> pp = this->projection * point;
+            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+            // Construct the point for the location of the coord arrows
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            // Inverse project
+            Vector v0;
+            v0.set_from (this->invproj * p0);
+            this->coordArrows->setSceneTranslation (v0);
+            // Apply rotation to the coordArrows model
+            this->coordArrows->setViewRotation (this->rotation);
+        }
 
         //! Set perspective based on window width and height
         void setPerspective()
@@ -598,8 +596,10 @@ namespace morph {
 #ifdef SHOW_TEXT_TEST
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
-                                                   0.5f, 200, {0.0f, -0.0f, 0.0f},
+                                                   0.035f, 64, {0.0f, -0.0f, 0.0f},
                                                    "morph::Visual");
+#endif
+#if 0
             this->textModel2 = new VisualTextModel (this->tshaderprog,
                                                     morph::VisualFont::VeraBold,
                                                     1.0f, 250, {0.0f, -1.0f, -1.0f},
@@ -815,6 +815,8 @@ namespace morph {
 #ifdef SHOW_TEXT_TEST
         //! A temporary textModel for a title text.
         VisualTextModel* textModel;
+#endif
+#if 0
         VisualTextModel* textModel2;
         VisualTextModel* textModel3;
 #endif
