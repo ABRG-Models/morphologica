@@ -144,8 +144,9 @@ namespace morph {
 
     // Default text vertex shader. See VisText.vert.glsl
     const char* defaultTextVtxShader = OpenGL_VersionString
-    "uniform mat4 mvp_matrix;\n"
-    "uniform mat4 vp_matrix;\n"
+    "uniform mat4 m_matrix;\n"
+    "uniform mat4 v_matrix;\n"
+    "uniform mat4 p_matrix;\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec4 vnormal;\n"
     "layout(location = 2) in vec4 vcolor;\n"
@@ -153,7 +154,7 @@ namespace morph {
     "out vec2 TexCoords;\n"
     "void main()\n"
     "{\n"
-    "    gl_Position = mvp_matrix * position;\n"
+    "    gl_Position = p_matrix * v_matrix * m_matrix * position;\n"
     "    TexCoords = texture.xy;\n"
     "}";
 
