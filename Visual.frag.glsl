@@ -16,11 +16,16 @@ uniform float ambient_intensity; // Ambient intensity
 uniform vec3 diffuse_position;   // Positioned light
 uniform float diffuse_intensity; // Diffuse light intensity
 
+//uniform mat4 lv_matrix; // 'light' scene view matrix
+//uniform mat4 p_matrix; // projection matrix
+
 out vec4 finalcolor;
 
 void main()
 {
     vec3 norm = normalize(vec3(vertex.normal));
+    //vec3 dpos_trans = vec3(p_matrix * lv_matrix * vec4(diffuse_position, 1));
+    //vec3 light_dirn = normalize(dpos_trans - vertex.fragpos);
     vec3 light_dirn = normalize(diffuse_position - vertex.fragpos);
     float effective_diffuse = max(dot(norm, light_dirn), 0.0);
     vec3 diffuse = diffuse_intensity * effective_diffuse * light_colour;

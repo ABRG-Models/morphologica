@@ -16,9 +16,10 @@ int main (int argc, char** argv)
 
     // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
     // scaling factor (0.5) for the coordinate arrows
-    morph::Visual v(1024, 768, "Visualization", {0,0,0}, {1,1,1}, 0.5f);
+    morph::Visual v(1024, 768, "Visualization", {0,0,0}, {.05,.05,.05}, 2.0f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
+    v.showTitle = true;
     // For a white background:
     v.backgroundWhite();
     v.lightingEffects();

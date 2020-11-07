@@ -18,10 +18,7 @@
 #endif
 
 #include <morph/VisualModel.h>
-//#define SHOW_TEXT_TEST 1
-#ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
-#endif
 #include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
@@ -257,12 +254,9 @@ namespace morph {
             // Set the perspective from the width/height
             this->setPerspective();
 
-            // rotmat is the translation/rotation for the entire scene.
-            //
             // Calculate model view transformation - transforming from "model space" to "worldspace".
             TransformMatrix<float> sceneview;
-            // This line translates from model space to world space. In future may need one
-            // model->world for each HexGridVisual.
+            // This line translates from model space to world space.
             sceneview.translate (this->scenetrans); // send backwards into distance
             // And this rotation completes the transition from model to world
             sceneview.rotate (this->rotation);
@@ -273,121 +267,81 @@ namespace morph {
             // Set the background colour:
             glClearBufferfv (GL_COLOR, 0, bgcolour.data());
 
-            // Render it.
-
-            // First, the coordinates thing. Ensure coordarrows centre sphere will be visible
-            // on BG:
-            this->coordArrows->setColourForBackground (this->bgcolour);
-#if 0 // Find out the location of the bottom left of the screen and make the coord
-      // arrows stay put there.
-            Vector<float, 2> p0_coord = {0.4f, 0.4f};
-
-            // Add the depth at which the object lies.  Use forward projection to determine
-            // the correct z coordinate for the inverse projection. This assumes only one
-            // object.
-            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
-            Vector<float, 4> pp = this->projection * point;
-            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-
-            std::cout << "Putting coords at coord-z: " << coord_z << std::endl;
-
-            // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { p0_coord.x, p0_coord.y, coord_z, 1.0 };
-
-            // Inverse project
-            Vector<float, 4> v0 = this->invproj * p0;
-
-            // Apply to view matrix...
-            this->coordArrows->viewmatrix.setToIdentity();
-            this->coordArrows->viewmatrix.translate (v0);
-            this->coordArrows->viewmatrix.rotate (this->rotation);
-
-            TransformMatrix<float> mvp_coords = this->projection * this->coordArrows->viewmatrix;
-#else
-            TransformMatrix<float> mvp_coords = this->projection * sceneview * this->coordArrows->viewmatrix;
-#endif
-
-            // Set the view matrix...
-            GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
-            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, sceneview.mat.data()); }
-
-            // and the projection matrix
-            GLint loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
-            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
-
-            GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
-
             // Lighting shader variables
             //
             // Ambient light colour
             GLint loc_lightcol = glGetUniformLocation (this->shaderprog, (const GLchar*)"light_colour");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_lightcol != -1) {
                 glUniform3fv (loc_lightcol, 1, this->light_colour.data());
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Ambient light intensity
             GLint loc_ai = glGetUniformLocation (this->shaderprog, (const GLchar*)"ambient_intensity");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_ai != -1) {
                 glUniform1f (loc_ai, this->ambient_intensity);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Diffuse light position
             GLint loc_dp = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_position");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_dp != -1) {
                 glUniform3fv (loc_dp, 1, this->diffuse_position.data());
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
             // Diffuse light intensity
             GLint loc_di = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_intensity");
-            morph::gl::Util::checkError (__FILE__, __LINE__);
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
-            // Render the coordinate arrows if required
-            // Update the coordinate's model-view-projection matrix as a uniform in the GLSL...
-            GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-            if (loc != -1) {
-                glUniformMatrix4fv (loc, 1, GL_FALSE, mvp_coords.mat.data());
-            }
+#if 0
+            // A quick-n-dirty attempt to keep the light position fixed in camera space.
+            Vector<float, 2> l_p0_coord = {-0.8f, 0.8f};
+            Vector<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
+            Vector<float, 4> l_pp = this->projection * l_point;
+            float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+            Vector<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
+            Vector l_v0;
+            l_v0.set_from (this->invproj * l_p0);
+            TransformMatrix<float> lv_matrix;
+            lv_matrix.translate (l_v0);
+            lv_matrix.rotate (this->rotation);
+            GLint loc_lv = glGetUniformLocation (this->shaderprog, (const GLchar*)"lv_matrix");
+            if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
+            std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
+            std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
+            // Switch to text shader program and set the projection matrix
+            glUseProgram (this->tshaderprog);
+            GLint loc_p = glGetUniformLocation (this->tshaderprog, (const GLchar*)"p_matrix");
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
+            // Switch back to the regular shader prog and render the VisualModels.
+            glUseProgram (this->shaderprog);
+
+            // Set the projection matrix just once
+            loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
+            if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
+
             if (this->showCoordArrows == true) {
+                this->positionCoordArrows();
                 this->coordArrows->render();
             }
 
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
-                // For each different VisualModel, I can CHANGE the uniform. Right? Right.
-                TransformMatrix<float> viewproj = this->projection * sceneview * (*vmi)->viewmatrix;
-                GLint loc = glGetUniformLocation (this->shaderprog, (const GLchar*)"mvp_matrix");
-                if (loc != -1) {
-                    glUniformMatrix4fv (loc, 1, GL_FALSE, viewproj.mat.data());
-                }
-                if (loc_m != -1) {
-                    glUniformMatrix4fv (loc_m, 1, GL_FALSE, (*vmi)->viewmatrix.mat.data());
-                }
+                (*vmi)->setSceneMatrix (sceneview);
                 (*vmi)->render();
                 ++vmi;
             }
 
-#ifdef SHOW_TEXT_TEST
-            // Render the title text
-            glUseProgram (this->tshaderprog);
-            // Fixme: Pass m_ v_ p_ matrices to tshaderprog, too
-            mvp_coords = this->projection * sceneview * this->textModel->viewmatrix;
-            GLint loct = glGetUniformLocation (this->tshaderprog, (const GLchar*)"mvp_matrix");
-            if (loct != -1) {
-                glUniformMatrix4fv (loct, 1, GL_FALSE, mvp_coords.mat.data());
-            } else {
-                std::cout << "NOT Setting mvp_coords in texture shader\n";
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+
+            if (this->showTitle == true) {
+                // Render the title text
+                glUseProgram (this->tshaderprog);
+                Vector v0 = this->textPosition ({-0.8f, 0.8f});
+                this->textModel->setSceneTranslation (v0);
+                this->textModel->render();
             }
-            this->textModel->render();
-            this->textModel2->render();
-            this->textModel3->render();
-#endif
+
             glfwSwapBuffers (this->window);
 
 #ifdef PROFILE_RENDER
@@ -395,6 +349,24 @@ namespace morph {
             steady_clock::duration time_span = renderend - renderstart;
             std::cout << "Render took " << duration_cast<microseconds>(time_span).count() << " us\n";
 #endif
+        }
+
+        //! Compute a translation vector for text position, using Visual::text_z.
+        Vector<float, 3> textPosition (Vector<float, 2> p0_coord)
+        {
+            // For the depth at which a text object lies, use this->text_z.  Use forward
+            // projection to determine the correct z coordinate for the inverse
+            // projection.
+            Vector<float, 4> point =  { 0.0, 0.0, this->text_z, 1.0 };
+            Vector<float, 4> pp = this->projection * point;
+            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+            // Construct the point for the location of the text
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            // Inverse project the point
+            Vector<float, 3> v0;
+            v0.set_from (this->invproj * p0);
+            //tm->setSceneTranslation (v0);
+            return v0;
         }
 
         //! The OpenGL shader program for graphical objects
@@ -410,6 +382,33 @@ namespace morph {
         Vector<float> diffuse_position = {5,5,15};
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
+
+        //! Compute position and rotation of coordinate arrows in the bottom left of the screen
+        void positionCoordArrows()
+        {
+            // Ensure coordarrows centre sphere will be visible on BG:
+            this->coordArrows->setColourForBackground (this->bgcolour);
+
+            // Find out the location of the bottom left of the screen and make the coord
+            // arrows stay put there.
+            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
+
+            // Add the depth at which the object lies.  Use forward projection to determine
+            // the correct z coordinate for the inverse projection. This assumes only one
+            // object.
+            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+            Vector<float, 4> pp = this->projection * point;
+            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+
+            // Construct the point for the location of the coord arrows
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            // Inverse project
+            Vector v0;
+            v0.set_from (this->invproj * p0);
+            this->coordArrows->setSceneTranslation (v0);
+            // Apply rotation to the coordArrows model
+            this->coordArrows->setViewRotation (this->rotation);
+        }
 
         //! Set perspective based on window width and height
         void setPerspective()
@@ -438,6 +437,9 @@ namespace morph {
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
+
+        //! Set to true to show the title text within the scene
+        bool showTitle = true;
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
@@ -602,25 +604,17 @@ namespace morph {
             } // else no problem
 
             this->coordArrows = new CoordArrows(this->shaderprog,
+                                                this->tshaderprog,
                                                 this->coordArrowsOffset,
                                                 this->coordArrowsLength,
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-#ifdef SHOW_TEXT_TEST
+            // Set up the title, which may or may not be rendered
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
-                                                   0.5f, 200, {0.0f, -0.0f, 0.0f},
-                                                   "morph::Visual");
-            this->textModel2 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::VeraBold,
-                                                    1.0f, 250, {0.0f, -1.0f, -1.0f},
-                                                    "Oh yeah.");
-            this->textModel3 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::VeraSerif,
-                                                    0.3f, 200, {0.0f, -1.5f, 0.0f},
-                                                    "Oh yeah 2.");
-#endif
+                                                   0.035f, 64, {0.0f, 0.0f, 0.0f},
+                                                   title);
         }
 
 #ifndef INIT_GLFW_IN_VISUALRESOURCES
@@ -824,12 +818,10 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
-#ifdef SHOW_TEXT_TEST
-        //! A temporary textModel for a title text.
-        VisualTextModel* textModel;
-        VisualTextModel* textModel2;
-        VisualTextModel* textModel3;
-#endif
+
+        //! A VisualTextModel for a title text.
+        VisualTextModel* textModel = (VisualTextModel*)0;
+
         /*
          * Variables to manage projection and rotation of the object
          */
@@ -842,6 +834,9 @@ namespace morph {
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
         const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+
+        //! The world depth at which text objects should be rendered
+        float text_z = -1.0f;
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;

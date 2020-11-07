@@ -45,15 +45,19 @@ int main (int argc, char** argv)
 
         vector<Vector<float, 3>> points;
         points.push_back ({0,0,0});
-        points.push_back ({1,1,0});
-        points.push_back ({2,2.2,0});
-        points.push_back ({3,2.8,0});
-        points.push_back ({4,3.9,0});
+        points.push_back ({.1,.1,0});
+        points.push_back ({.2,.22,0});
+        points.push_back ({.3,.28,0});
+        points.push_back ({.4,.39,0});
+        points.push_back ({.6,.55,0});
+        points.push_back ({.65,.7,0});
+        points.push_back ({.76,.8,0});
+        points.push_back ({.9,.9,0});
 
 #if 0
         vector<float> data;
 #else
-        vector<float> data = {0.1, 0.2, 0.5, 0.6, 0.95};
+        vector<float> data = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
 #endif
 
         unsigned int visId = v.addVisualModel (new ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, ColourMapType::Plasma));

@@ -48,7 +48,7 @@ namespace morph {
         {
             this->tshaderprog = tsp;
             this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            //this->viewmatrix.translate (this->offset);
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
@@ -73,20 +73,26 @@ namespace morph {
         {
             if (this->hide == true) { return; }
 
+            GLint prev_shader;
+            glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
+
             // Ensure the correct program is in play for this VisualModel
             glUseProgram (this->tshaderprog);
 
-            glUniform3f (glGetUniformLocation(this->tshaderprog, "textColor"),
-                         this->clr_text[0], this->clr_text[1], this->clr_text[2]);
+            // Set uniforms
+            GLint loc_tc = glGetUniformLocation(this->tshaderprog, "textColor");
+            if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
+            GLint loc_a = glGetUniformLocation (this->tshaderprog, (const GLchar*)"alpha");
+            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
+            GLint loc_v = glGetUniformLocation (this->tshaderprog, (const GLchar*)"v_matrix");
+            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
+            GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
+            if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
 
             glActiveTexture (GL_TEXTURE0);
 
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
-
-            // Pass this->float to GLSL so the model can have an alpha value.
-            GLint loc_a = glGetUniformLocation (this->tshaderprog, (const GLchar*)"alpha");
-            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
             for (size_t i = 0; i < quads.size(); ++i) {
                 // Bind the right texture for the quad.
@@ -100,13 +106,67 @@ namespace morph {
             }
 
             glBindVertexArray(0);
+            glUseProgram (prev_shader);
+
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
-        //! The text-model-specific view matrix.
-        TransformMatrix<float> viewmatrix;
+        void setViewMatrix (const TransformMatrix<float>& mv)
+        {
+            this->viewmatrix = mv;
+        }
+
+        void setSceneMatrix (const TransformMatrix<float>& sv)
+        {
+            this->scenematrix = sv;
+        }
+
+        void setSceneTranslation (const Vector<float>& v0)
+        {
+            this->scenematrix.setToIdentity();
+            this->scenematrix.translate (v0);
+        }
+
+        //! Set a translation (only) into the scene view matrix
+        void addSceneTranslation (const Vector<float>& v0) { this->scenematrix.translate (v0); }
+
+        //! Set a rotation (only) into the scene view matrix
+        void setSceneRotation (const Quaternion<float>& r)
+        {
+            this->scenematrix.setToIdentity();
+            this->scenematrix.rotate (r);
+        }
+
+        //! Add a rotation to the scene view matrix
+        void addSceneRotation (const Quaternion<float>& r) { this->scenematrix.rotate (r); }
+
+        //! Set a translation to the model view matrix
+        void setViewTranslation (const Vector<float>& v0)
+        {
+            this->viewmatrix.setToIdentity();
+            this->viewmatrix.translate (v0);
+        }
+
+        //! Add a translation to the model view matrix
+        void addViewTranslation (const Vector<float>& v0) { this->viewmatrix.translate (v0); }
+
+        //! Set a rotation (only) into the model view matrix
+        void setViewRotation (const Quaternion<float>& r)
+        {
+            this->viewmatrix.setToIdentity();
+            this->viewmatrix.rotate (r);
+        }
+
+        //! Apply a further rotation to the model view matrix
+        void addViewRotation (const Quaternion<float>& r) { this->viewmatrix.rotate (r); }
 
     protected:
+        //! The text-model-specific view matrix and a scene matrix
+        TransformMatrix<float> viewmatrix;
+        //! We protect the scene matrix as updating it with the parent model's scene
+        //! matrix likely involves also adding an additional translation.
+        TransformMatrix<float> scenematrix;
+
         //! With the given text and font size information, create the quads for the text.
         void setupText (const std::string& txt, std::map<char, morph::gl::CharInfo>& _the_characters)
         {

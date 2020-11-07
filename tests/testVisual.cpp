@@ -26,7 +26,7 @@ int main()
 {
     int rtn = -1;
 
-    Visual v(800,600,"Test window");
+    Visual v(800,600,"Test window", {0,0,0}, {.05,.05,.05}, 2.0f);
     // Set up the near and far cutoff distances for rendering objects
     v.zNear = 0.001;
     v.zFar = 50;
@@ -40,6 +40,8 @@ int main()
     v.setSceneTransXY (0.0f, 0.0f);
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
+    v.showCoordArrows = true;
+    v.backgroundWhite();
     v.lightingEffects();
 
     try {
