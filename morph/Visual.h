@@ -18,10 +18,7 @@
 #endif
 
 #include <morph/VisualModel.h>
-#define SHOW_TEXT_TEST 1
-#ifdef SHOW_TEXT_TEST
 #include <morph/VisualTextModel.h>
-#endif
 #include <morph/VisualCommon.h>
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
@@ -292,8 +289,25 @@ namespace morph {
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
-            morph::gl::Util::checkError (__FILE__, __LINE__);
 
+#if 0
+            // A quick-n-dirty attempt to keep the light position fixed in camera space.
+            Vector<float, 2> l_p0_coord = {-0.8f, 0.8f};
+            Vector<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
+            Vector<float, 4> l_pp = this->projection * l_point;
+            float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+            Vector<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
+            Vector l_v0;
+            l_v0.set_from (this->invproj * l_p0);
+            TransformMatrix<float> lv_matrix;
+            lv_matrix.translate (l_v0);
+            lv_matrix.rotate (this->rotation);
+            GLint loc_lv = glGetUniformLocation (this->shaderprog, (const GLchar*)"lv_matrix");
+            if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
+            std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
+            std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
             // Switch to text shader program and set the projection matrix
             glUseProgram (this->tshaderprog);
             GLint loc_p = glGetUniformLocation (this->tshaderprog, (const GLchar*)"p_matrix");
@@ -320,32 +334,14 @@ namespace morph {
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-#ifdef SHOW_TEXT_TEST
-            // Render the title text
-            glUseProgram (this->tshaderprog);
-            // We have to set the scenematrix and viewmatrix in the textModel
-            // appropriately. Do something like for CoordArrows, but without the rotation?
-            //this->textModel->setSceneMatrix(sceneview); OR:::
+            if (this->showTitle == true) {
+                // Render the title text
+                glUseProgram (this->tshaderprog);
+                Vector v0 = this->textPosition ({-0.8f, 0.8f});
+                this->textModel->setSceneTranslation (v0);
+                this->textModel->render();
+            }
 
-            // Title at top?
-            Vector<float, 2> p0_coord = {-0.8f, 0.8f};
-
-            // Add the depth at which the object lies.  Use forward projection to determine
-            // the correct z coordinate for the inverse projection. This assumes only one
-            // object.
-            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
-            Vector<float, 4> pp = this->projection * point;
-            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-
-            // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
-            // Inverse project
-            Vector v0;
-            v0.set_from (this->invproj * p0);
-            this->textModel->setSceneTranslation (v0);
-
-            this->textModel->render();
-#endif
             glfwSwapBuffers (this->window);
 
 #ifdef PROFILE_RENDER
@@ -353,6 +349,24 @@ namespace morph {
             steady_clock::duration time_span = renderend - renderstart;
             std::cout << "Render took " << duration_cast<microseconds>(time_span).count() << " us\n";
 #endif
+        }
+
+        //! Compute a translation vector for text position, using Visual::text_z.
+        Vector<float, 3> textPosition (Vector<float, 2> p0_coord)
+        {
+            // For the depth at which a text object lies, use this->text_z.  Use forward
+            // projection to determine the correct z coordinate for the inverse
+            // projection.
+            Vector<float, 4> point =  { 0.0, 0.0, this->text_z, 1.0 };
+            Vector<float, 4> pp = this->projection * point;
+            float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
+            // Construct the point for the location of the text
+            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            // Inverse project the point
+            Vector<float, 3> v0;
+            v0.set_from (this->invproj * p0);
+            //tm->setSceneTranslation (v0);
+            return v0;
         }
 
         //! The OpenGL shader program for graphical objects
@@ -423,6 +437,9 @@ namespace morph {
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
+
+        //! Set to true to show the title text within the scene
+        bool showTitle = true;
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
@@ -593,22 +610,11 @@ namespace morph {
                                                 this->coordArrowsThickness);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-#ifdef SHOW_TEXT_TEST
+            // Set up the title, which may or may not be rendered
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
-                                                   0.035f, 64, {0.0f, -0.0f, 0.0f},
-                                                   "morph::Visual");
-#endif
-#if 0
-            this->textModel2 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::VeraBold,
-                                                    1.0f, 250, {0.0f, -1.0f, -1.0f},
-                                                    "Oh yeah.");
-            this->textModel3 = new VisualTextModel (this->tshaderprog,
-                                                    morph::VisualFont::VeraSerif,
-                                                    0.3f, 200, {0.0f, -1.5f, 0.0f},
-                                                    "Oh yeah 2.");
-#endif
+                                                   0.035f, 64, {0.0f, 0.0f, 0.0f},
+                                                   title);
         }
 
 #ifndef INIT_GLFW_IN_VISUALRESOURCES
@@ -812,14 +818,10 @@ namespace morph {
         Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
         Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
         float coordArrowsThickness = 1.0f;
-#ifdef SHOW_TEXT_TEST
-        //! A temporary textModel for a title text.
-        VisualTextModel* textModel;
-#endif
-#if 0
-        VisualTextModel* textModel2;
-        VisualTextModel* textModel3;
-#endif
+
+        //! A VisualTextModel for a title text.
+        VisualTextModel* textModel = (VisualTextModel*)0;
+
         /*
          * Variables to manage projection and rotation of the object
          */
@@ -832,6 +834,9 @@ namespace morph {
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
         const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+
+        //! The world depth at which text objects should be rendered
+        float text_z = -1.0f;
 
         //! When true, cursor movements induce rotation of scene
         bool rotateMode = false;
