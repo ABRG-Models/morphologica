@@ -41,17 +41,26 @@ namespace morph {
     public:
         /*!
          * Construct with given text shader program id, \a tsp, font \a _font, font
-         * scaling factor \a fscale and a spatial \a _offset. The text to be
-         * displayed is \a txt.
+         * scaling factor \a fscale and a spatial \a _mv_offset (model view offset). The
+         * text to be displayed is \a txt.
          */
-        VisualTextModel (GLuint tsp, morph::VisualFont visualfont, float _m_width, int _fontpixels, const morph::Vector<float> _offset, const std::string& txt)
+        VisualTextModel (GLuint tsp,
+                         morph::VisualFont visualfont, float _m_width, int _fontpixels,
+                         const morph::Vector<float> _mv_offset, const std::string& _txt,
+                         std::array<float, 3> _clr = {0,0,0})
         {
             this->tshaderprog = tsp;
-            this->offset = _offset;
-            //this->viewmatrix.translate (this->offset);
+            this->mv_offset = _mv_offset;
+            // Question: At what point to apply translations to this VisualTextModel?
+            // Should be acceptable here, because the parent model (or Visual) can
+            // ensure that the mv_offset is correct.
+            //this->mv_rotation = ?;
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
+            this->clr_text = _clr;
 
             std::cout << "m_width = " << m_width << ", fontscale = " << fontscale << ", fontpixels = " << fontpixels << std::endl;
 
@@ -59,7 +68,7 @@ namespace morph {
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
             this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
-            this->setupText (txt, this->face->glchars);
+            this->setupText (_txt, this->face->glchars);
         }
 
         virtual ~VisualTextModel()
@@ -89,6 +98,9 @@ namespace morph {
             GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
 
+            std::cout << "VisualTextModel::render: ("<<txt<<") scenematrix:\n" << scenematrix << std::endl;
+            std::cout << "VisualTextModel::render: ("<<txt<<") model viewmatrix:\n" << viewmatrix << std::endl;
+
             glActiveTexture (GL_TEXTURE0);
 
             // It is only necessary to bind the vertex array object before rendering
@@ -111,86 +123,103 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
-        void setViewMatrix (const TransformMatrix<float>& mv)
-        {
-            this->viewmatrix = mv;
-        }
+        //! Setter for VisualTextModel::viewmatrix, the model view
+        void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
 
-        void setSceneMatrix (const TransformMatrix<float>& sv)
-        {
-            this->scenematrix = sv;
-        }
+        //! Setter for VisualTextModel::scenematrix, the scene view
+        void setSceneMatrix (const TransformMatrix<float>& sv) { this->scenematrix = sv; }
 
+        //! Set the translation specified by \a v0 into the scene translation
         void setSceneTranslation (const Vector<float>& v0)
         {
+            std::cout << "VisualTextModel::setSceneTranslation for "<<v0<<"\n";
+            this->sv_offset = v0;
             this->scenematrix.setToIdentity();
-            this->scenematrix.translate (v0);
+            this->scenematrix.translate (this->sv_offset);
+            std::cout << "Rotating by " << this->sv_rotation << std::endl;
+            this->scenematrix.rotate (this->sv_rotation);
         }
 
         //! Set a translation (only) into the scene view matrix
-        void addSceneTranslation (const Vector<float>& v0) { this->scenematrix.translate (v0); }
+        void addSceneTranslation (const Vector<float>& v0)
+        {
+            this->sv_offset += v0;
+            this->scenematrix.translate (v0);
+        }
 
         //! Set a rotation (only) into the scene view matrix
         void setSceneRotation (const Quaternion<float>& r)
         {
+            this->sv_rotation = r;
             this->scenematrix.setToIdentity();
-            this->scenematrix.rotate (r);
+            this->scenematrix.rotate (this->sv_rotation);
         }
 
         //! Add a rotation to the scene view matrix
-        void addSceneRotation (const Quaternion<float>& r) { this->scenematrix.rotate (r); }
+        void addSceneRotation (const Quaternion<float>& r)
+        {
+            this->sv_rotation.premultiply (r);
+            this->scenematrix.rotate (r);
+        }
 
         //! Set a translation to the model view matrix
         void setViewTranslation (const Vector<float>& v0)
         {
+            this->mv_offset = v0;
             this->viewmatrix.setToIdentity();
-            this->viewmatrix.translate (v0);
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
         }
 
         //! Add a translation to the model view matrix
-        void addViewTranslation (const Vector<float>& v0) { this->viewmatrix.translate (v0); }
+        void addViewTranslation (const Vector<float>& v0)
+        {
+            this->mv_offset += v0;
+            this->viewmatrix.translate (v0);
+        }
 
         //! Set a rotation (only) into the model view matrix
         void setViewRotation (const Quaternion<float>& r)
         {
+            this->mv_rotation = r;
             this->viewmatrix.setToIdentity();
-            this->viewmatrix.rotate (r);
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
         }
 
         //! Apply a further rotation to the model view matrix
-        void addViewRotation (const Quaternion<float>& r) { this->viewmatrix.rotate (r); }
+        void addViewRotation (const Quaternion<float>& r)
+        {
+            this->mv_rotation.premultiply (r);
+            this->viewmatrix.rotate (r);
+        }
 
     protected:
-        //! The text-model-specific view matrix and a scene matrix
-        TransformMatrix<float> viewmatrix;
-        //! We protect the scene matrix as updating it with the parent model's scene
-        //! matrix likely involves also adding an additional translation.
-        TransformMatrix<float> scenematrix;
-
         //! With the given text and font size information, create the quads for the text.
-        void setupText (const std::string& txt, std::map<char, morph::gl::CharInfo>& _the_characters)
+        void setupText (const std::string& _txt, std::map<char, morph::gl::CharInfo>& _the_characters)
         {
+            this->txt = _txt;
             // With glyph information from txt, set up this->quads.
             this->quads.clear();
             this->quad_ids.clear();
             // Our string of letters starts at this location
-            float letter_pos = this->offset[0];
+            float letter_pos = this->mv_offset[0];
             float text_epsilon = 0.0f;
-            for (std::string::const_iterator c = txt.begin(); c != txt.end(); c++) {
+            for (std::string::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
                 // Add a quad to this->quads
                 morph::gl::CharInfo ci = _the_characters[*c];
 
                 float xpos = letter_pos + ci.bearing.x() * this->fontscale;
-                float ypos = this->offset[1] - (ci.size.y() - ci.bearing.y()) * this->fontscale;
+                float ypos = this->mv_offset[1] - (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 float w = ci.size.x() * this->fontscale;
                 float h = ci.size.y() * this->fontscale;
 
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
-                std::array<float,12> tbox = { xpos,   ypos,     this->offset[2]+text_epsilon,
-                                              xpos,   ypos+h,   this->offset[2]+text_epsilon,
-                                              xpos+w, ypos+h,   this->offset[2]+text_epsilon,
-                                              xpos+w, ypos,     this->offset[2]+text_epsilon };
+                std::array<float,12> tbox = { xpos,   ypos,     this->mv_offset[2]+text_epsilon,
+                                              xpos,   ypos+h,   this->mv_offset[2]+text_epsilon,
+                                              xpos+w, ypos+h,   this->mv_offset[2]+text_epsilon,
+                                              xpos+w, ypos,     this->mv_offset[2]+text_epsilon };
                 text_epsilon -= 10.0f*std::numeric_limits<float>::epsilon();
 #ifdef __DEBUG__
                 std::cout << "Text box added as quad from\n("
@@ -325,12 +354,6 @@ namespace morph {
         std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
         //! The colour of the text
         std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
-        //! Offset within the parent model or scene.
-        Vector<float> offset;
-        //! The Quads that form the 'medium' for the text textures. 12 float = 4 corners
-        std::vector<std::array<float,12>> quads;
-        //! The texture ID for each quad - so that we draw the right texture image over each quad.
-        std::vector<unsigned int> quad_ids;
         //! the desired width of an 'm'.
         float m_width = 1.0f;
         //! A scaling factor based on the desired width of an 'm'
@@ -339,6 +362,39 @@ namespace morph {
         //! proportion of the screen that an 'm' will subtend' or 'the width in screen
         //! pixels that an 'm' takes up.
         int fontpixels = 100;
+
+        //! model-view offset within the scene. Any model-view offset of the parent
+        //! object should be incorporated into this offset. That is, if this
+        //! VisualTextModel is the letter 'x' within a CoordArrows VisualModel, then the
+        //! model-view offset here should be the CoordArrows model-view offset PLUS the
+        //! length of the CoordArrow x axis length.
+        Vector<float> mv_offset;
+        //! The model-view rotation of this text object. mv_offset and mv_rotation are
+        //! together used to compute viewmatrix. Keep a copy so that it is easy to reset
+        //! the viewmatrix and recompute it with either a new offset or a new rotation.
+        Quaternion<float> mv_rotation;
+
+        //! A rotation of the parent model
+        Quaternion<float> parent_rotation;
+
+        //! Scene view offset
+        Vector<float> sv_offset;
+        //! Scene view rotation
+        Quaternion<float> sv_rotation;
+        //! The text-model-specific view matrix and a scene matrix
+        TransformMatrix<float> viewmatrix;
+        //! Before, I wrote: We protect the scene matrix as updating it with the parent
+        //! model's scene matrix likely involves also adding an additional
+        //! translation. Now, I'm still slightly confused as to whether I *need* to have a
+        //! copy of the scenematrix *here*.
+        TransformMatrix<float> scenematrix;
+
+        //! The text string stored for debugging
+        std::string txt;
+        //! The Quads that form the 'medium' for the text textures. 12 float = 4 corners
+        std::vector<std::array<float,12>> quads;
+        //! The texture ID for each quad - so that we draw the right texture image over each quad.
+        std::vector<unsigned int> quad_ids;
         //! Position within vertex buffer object (if I use an array of VBO)
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, textureVBO, numVBO };
         //! A copy of the reference to the text shader program

@@ -58,14 +58,14 @@ namespace morph {
     class VisualModel
     {
     public:
-        VisualModel () { this->offset = {0.0, 0.0, 0.0}; }
+        VisualModel () { this->mv_offset = {0.0, 0.0, 0.0}; }
 
-        VisualModel (GLuint sp, const Vector<float> _offset)
+        VisualModel (GLuint sp, const Vector<float> _mv_offset)
         {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             // In derived constructor: Do the computations to initialize the vertices
             // that will represent the model
@@ -176,6 +176,9 @@ namespace morph {
             GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
 
+            std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
+            std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
+
             // Draw the triangles
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
 
@@ -194,17 +197,10 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
-    protected:
-        //! The model-specific view matrix.
-        TransformMatrix<float> viewmatrix;
-        //! The model-specific scene view matrix.
-        TransformMatrix<float> scenematrix;
-
     public:
-        void setViewMatrix (const TransformMatrix<float>& mv)
-        {
-            this->viewmatrix = mv;
-        }
+
+        //! Setter for the viewmatrix
+        void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
 
         //! When setting the scene matrix, also have to set the text's scene matrices.
         void setSceneMatrix (const TransformMatrix<float>& sv)
@@ -214,40 +210,100 @@ namespace morph {
             for (auto& t : this->texts) { t->setSceneMatrix (sv); }
         }
 
+        // This applied in Visual::render
         //! Set a translation into the scene and into any child texts
         void setSceneTranslation (const Vector<float>& v0)
         {
+            std::cout << "VisualModel::setSceneTranslation\n";
             this->scenematrix.setToIdentity();
-            this->scenematrix.translate (v0);
+            this->sv_offset = v0;
+            this->scenematrix.translate (this->sv_offset);
+            this->scenematrix.rotate (this->sv_rotation);
 
-            for (auto& t : this->texts) { t->setSceneTranslation (v0); }
+            for (auto& t : this->texts) {
+                std::cout << "setSceneTranslation in a child text to " << v0 << std::endl;
+                t->setSceneTranslation (v0);
+            }
         }
 
+        //! Set a translation (only) into the scene view matrix
+        void addSceneTranslation (const Vector<float>& v0)
+        {
+            this->sv_offset += v0;
+            this->scenematrix.translate (v0);
+        }
+
+        //! Set a rotation (only) into the scene view matrix
+        void setSceneRotation (const Quaternion<float>& r)
+        {
+            this->scenematrix.setToIdentity();
+            this->sv_rotation = r;
+            this->scenematrix.translate (this->sv_offset);
+            this->scenematrix.rotate (this->sv_rotation);
+        }
+
+        //! Add a rotation to the scene view matrix
+        void addSceneRotation (const Quaternion<float>& r)
+        {
+            this->sv_rotation.premultiply (r); // combines rotations
+            this->scenematrix.rotate (r);
+        }
+
+        //! Set a translation to the model view matrix
+        void setViewTranslation (const Vector<float>& v0)
+        {
+            this->viewmatrix.setToIdentity();
+            this->mv_offset = v0;
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
+        }
+
+        //! Add a translation to the model view matrix
+        void addViewTranslation (const Vector<float>& v0)
+        {
+            this->mv_offset += v0;
+            this->viewmatrix.translate (v0);
+        }
+
+        // This applied in Visual::render
         //! Set a rotation (only) into the view
         void setViewRotation (const Quaternion<float>& r)
         {
             this->viewmatrix.setToIdentity();
+            this->mv_rotation = r;
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
+
+            // Is a view rotation for coord arrows same as scene rotation for texts? I think it is.
+            for (auto& t : this->texts) { t->setViewRotation (r); }
+        }
+
+        //! Apply a further rotation to the model view matrix
+        void addViewRotation (const Quaternion<float>& r)
+        {
+            this->mv_rotation.premultiply (r);
             this->viewmatrix.rotate (r);
-
-            // Is a view rotation for coord arrows same as scene rotation for texts?
-            for (auto& t : this->texts) { t->addSceneRotation (r); }
+            std::cout << "VisualModel::addViewRotation: FIXME? or t->addSceneRotation(r)?\n";
+            for (auto& t : this->texts) { t->addViewRotation (r); }
         }
 
-        //! Setter for offset, also updates viewmatrix.
-        void setOffset (const Vector<float>& _offset)
+#if 0 // Use setViewTranslation instead
+        //! Setter for mv_offset, also updates viewmatrix. The offset is an offset within the model view.
+        void setOffset (const Vector<float>& _mv_offset)
         {
-            this->offset = _offset;
-            this->viewmatrix.setToIdentity();
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.rotate (this->mv_rotation);
+            this->setViewTranslation (this->mv_offset);
         }
-
-        //! Shift the offset, also updates viewmatrix.
-        void shiftOffset (const Vector<float>& _offset)
+#endif
+#if 0 // Use addViewTranslation instead
+        //! Shift the mv_offset, also updates viewmatrix.
+        void shiftOffset (const Vector<float>& _mv_offset)
         {
-            this->offset += _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset += _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
         }
-
+#endif
         void setAlpha (const float _a) { this->alpha = _a; }
         float getAlpha() const { return this->alpha; }
 
@@ -269,13 +325,26 @@ namespace morph {
 
     protected:
 
+        //! The model-specific view matrix.
+        TransformMatrix<float> viewmatrix;
+        //! The model-specific scene view matrix.
+        TransformMatrix<float> scenematrix;
+
         /*!
-         * The spatial offset of this VisualModel within the morph::Visual
-         * scene. Note that this is not incorporated into the computation of the
-         * vertices, but is instead applied when the object is rendered as part of
-         * the model->world transformation.
+         * The spatial offset of this VisualModel within the morph::Visual 'model
+         * view'. Note that this is not incorporated into the computation of the
+         * vertices, but is instead applied when the object is rendered as part of the
+         * model->world transformation - it's applied as a translation in
+         * VisualModel::viewmatrix.
          */
-        Vector<float> offset;
+        Vector<float> mv_offset;
+        //! Model view rotation
+        Quaternion<float> mv_rotation;
+
+        //! Scene view offset
+        Vector<float> sv_offset;
+        //! Scene view rotation
+        Quaternion<float> sv_rotation;
 
         //! A vector of pointers to text models that should be rendered.
         std::vector<morph::VisualTextModel*> texts;

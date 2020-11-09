@@ -391,7 +391,8 @@ namespace morph {
 
             // Find out the location of the bottom left of the screen and make the coord
             // arrows stay put there.
-            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
+//            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
+            Vector<float, 2> p0_coord = {-0.5f, -0.0f};
 
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
@@ -404,7 +405,9 @@ namespace morph {
             Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
             // Inverse project
             Vector v0;
-            v0.set_from (this->invproj * p0);
+            v0.set_from ((this->invproj * p0));
+            // Translate the scene for the CoordArrows such that they sit in a single position on the screen
+            std::cout << "setSceneTranslation for coordArrows to " << v0 << std::endl;
             this->coordArrows->setSceneTranslation (v0);
             // Apply rotation to the coordArrows model
             this->coordArrows->setViewRotation (this->rotation);
@@ -571,13 +574,12 @@ namespace morph {
 
             this->shaderprog = this->LoadShaders (shaders);
 
-            // May need an additional shader?
+            // An additional shader is used for text
             ShaderInfo tshaders[] = {
-                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader  },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader},
+                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader },
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader },
                 {GL_NONE, NULL, NULL }
             };
-            // Care - this will load default shaders in some cases
             this->tshaderprog = this->LoadShaders (tshaders);
 
             // Now client code can set up HexGridVisuals.

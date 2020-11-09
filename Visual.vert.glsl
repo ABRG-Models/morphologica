@@ -2,9 +2,9 @@
 #version 410
 
 // ProjMatrix * RotnMatrix operation can be carried out on CPU with a single matrix
-uniform mat4 mvp_matrix;
+//uniform mat4 mvp_matrix;
 // Or, and this is important for lighting effects and possibly text, too, matrices can be passed separately
-uniform mat4 vp_matrix; // sceneview-projection matrix
+//uniform mat4 vp_matrix; // sceneview-projection matrix
 uniform mat4 m_matrix; // model matrix
 uniform mat4 v_matrix; // scene view matrix
 uniform mat4 p_matrix; // projection matrix

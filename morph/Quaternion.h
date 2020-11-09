@@ -48,7 +48,7 @@ namespace morph {
         alignas(Flt) Flt z;
 
         //! An "output to stdout" function
-        void output (void) const { std::cout << this->str() << std::endl; }
+        //void output (void) const { std::cout << this->str() << std::endl; }
 
         //! String output
         std::string str() const

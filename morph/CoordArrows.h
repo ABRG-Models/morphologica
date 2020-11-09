@@ -24,47 +24,47 @@ namespace morph {
         CoordArrows (void)
         {
             this->lengths = {1.0, 1.0, 1.0};
-            this->offset = {0.0, 0.0, 0.0};
+            this->mv_offset = {0.0, 0.0, 0.0};
         }
 
-        CoordArrows(GLuint sp, GLuint tsp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness = 1.0f)
+        CoordArrows(GLuint sp, GLuint tsp, const Vector<float, 3> _mv_offset, const Vector<float, 3> _lengths, const float _thickness = 1.0f)
         {
-            this->init (sp, tsp, _offset, _lengths, _thickness);
+            this->init (sp, tsp, _mv_offset, _lengths, _thickness);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (GLuint sp, GLuint tsp, const Vector<float, 3> _offset, const Vector<float, 3> _lengths, const float _thickness)
+        void init (GLuint sp, GLuint tsp, const Vector<float, 3> _mv_offset, const Vector<float, 3> _lengths, const float _thickness)
         {
             // Set up...
             this->shaderprog = sp;
             this->tshaderprog = tsp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
             // scenematrix has identity at moment. Gets updated during morph::Visual::render()
 
             float xoffs = 0.005f;
             this->lengths = _lengths;
             this->thickness = _thickness;
-            morph::Vector<float> toffset = this->offset;
-            toffset[0] += this->lengths[0] + xoffs;
+            morph::Vector<float> toffset = this->mv_offset;
+            toffset[0] += this->lengths[0];// + xoffs;
             std::cout << "X text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
                                                         0.01f, 48, toffset,
                                                         "X"));
-            toffset = this->offset;
+            toffset = this->mv_offset;
             toffset[1] += this->lengths[1];
-            toffset[0] += xoffs;
+            //toffset[0] += xoffs;
             std::cout << "Y text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
-                                                        0.01f, 148, toffset,
+                                                        0.01f, 48, toffset,
                                                         "Y"));
-            toffset = this->offset;
+            toffset = this->mv_offset;
             toffset[2] += this->lengths[2];
-            toffset[0] += xoffs;
-            std::cout << "Y text offset: " << toffset << std::endl;
+            //toffset[0] += xoffs;
+            std::cout << "Z text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
                                                         0.01f, 48, toffset,
@@ -101,25 +101,28 @@ namespace morph {
             VBOint idx = 0;
 
             // Draw four spheres to make up the coord frame
-            Vector<float, 3> reloffset = this->offset;
-            this->computeSphere (idx, this->offset, centresphere_col, this->thickness*this->lengths[0]/20.0);
+            Vector<float, 3> reloffset = this->mv_offset;
+            this->computeSphere (idx, this->mv_offset, centresphere_col, this->thickness*this->lengths[0]/20.0);
 
             // x
             reloffset[0] += this->lengths[0];
+            std::cout << "x axis length: " << this->lengths[0] << std::endl;
             this->computeSphere (idx, reloffset, x_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeTube (idx, this->mv_offset, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // y
             reloffset[0] -= this->lengths[0];
             reloffset[1] += this->lengths[1];
+            std::cout << "y axis length: " << this->lengths[1] << std::endl;
             this->computeSphere (idx, reloffset, y_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeTube (idx, this->mv_offset, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // z
             reloffset[1] -= this->lengths[1];
             reloffset[2] += this->lengths[2];
+            std::cout << "z axis length: " << this->lengths[2] << std::endl;
             this->computeSphere (idx, reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, this->offset, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeTube (idx, this->mv_offset, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
         }
 
         //! The lengths of the x, y and z arrows.

@@ -18,6 +18,10 @@
 
 namespace morph {
 
+    // Forward declare class and stream operator
+    template <typename Flt> class TransformMatrix;
+    template <typename Flt> std::ostream& operator<< (std::ostream&, const TransformMatrix<Flt>&);
+
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
      * applications. It's used a lot in morph::Visual. The matrix data is stored in
@@ -67,6 +71,7 @@ namespace morph {
             return ss.str();
         }
 
+#if 0
         //! Output to stdout
         void output() const
         {
@@ -96,7 +101,7 @@ namespace morph {
                 std::cout << std::endl;
             }
         }
-
+#endif
         //! Self-explanatory
         void setToIdentity()
         {
@@ -1027,6 +1032,15 @@ namespace morph {
         void orthographic (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {}
 #endif
 
+        //! Overload the stream output operator
+        friend std::ostream& operator<< <Flt> (std::ostream& os, const TransformMatrix<Flt>& tm);
     };
+
+    template <typename Flt>
+    std::ostream& operator<< (std::ostream& os, const TransformMatrix<Flt>& tm)
+    {
+        os << tm.str();
+        return os;
+    }
 
 } // namespace morph

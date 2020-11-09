@@ -198,6 +198,9 @@ if(${glfw3_FOUND})
   add_executable(testVisQuiver testVisQuiver.cpp)
   target_link_libraries(testVisQuiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+  add_executable(testVisCoordArrows testVisCoordArrows.cpp)
+  target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
   add_executable(testVisRod testVisRod.cpp)
   target_link_libraries(testVisRod ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
