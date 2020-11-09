@@ -26,7 +26,7 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization");
+    Visual v(1024, 768, "Visualization", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.lightingEffects (true);

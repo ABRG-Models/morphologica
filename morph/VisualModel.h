@@ -175,10 +175,10 @@ namespace morph {
 
             GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-
+#ifdef __DEBUG__
             std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
             std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
-
+#endif
             // Draw the triangles
             glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
 
@@ -210,20 +210,14 @@ namespace morph {
             for (auto& t : this->texts) { t->setSceneMatrix (sv); }
         }
 
-/////////// This applied in Visual::render
         //! Set a translation into the scene and into any child texts
         void setSceneTranslation (const Vector<float>& v0)
         {
-            std::cout << "VisualModel::setSceneTranslation\n";
             this->scenematrix.setToIdentity();
             this->sv_offset = v0;
             this->scenematrix.translate (this->sv_offset);
             this->scenematrix.rotate (this->sv_rotation);
-
-            for (auto& t : this->texts) {
-                std::cout << "setSceneTranslation in a child text to " << v0 << std::endl;
-                t->setSceneTranslation (v0);
-            }
+            for (auto& t : this->texts) { t->setSceneTranslation (v0); }
         }
 
         //! Set a translation (only) into the scene view matrix
@@ -265,7 +259,6 @@ namespace morph {
             this->viewmatrix.translate (v0);
         }
 
-/////////// This applied in Visual::render
         //! Set a rotation (only) into the view
         void setViewRotation (const Quaternion<float>& r)
         {
@@ -277,8 +270,12 @@ namespace morph {
             // When rotating a model that contains texts, we need to rotate the scene
             // for the texts and also inverse-rotate the view of the texts.
             for (auto& t : this->texts) {
-                // Rotate the scene
-                t->setSceneRotation (r);
+                // Rotate the scene. Note this won't work if the CisualModel has a
+                // mv_offset that is away from the origin.
+                t->setSceneRotation (r); // Need this to rotate about mv_offset. BUT the
+                                         // translation is already there in the text,
+                                         // but in the MODEL view.
+
                 // Rotate the view of the text an opposite amount, to keep it facing forwards
                 t->setViewRotation (r.invert());
             }

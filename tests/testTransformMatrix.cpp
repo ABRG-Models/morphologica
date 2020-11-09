@@ -1,14 +1,9 @@
 #include "morph/TransformMatrix.h"
-using morph::TransformMatrix;
 #include <iostream>
-using std::cout;
-using std::endl;
 #include <array>
-using std::array;
 #include <morph/Vector.h>
-using morph::Vector;
 
-void setMatrixSequence (TransformMatrix<float>& tm)
+void setMatrixSequence (morph::TransformMatrix<float>& tm)
 {
     tm.mat[0] = 0;
     tm.mat[1] = 1;
@@ -33,11 +28,10 @@ int main()
     int rtn = 0;
 
     // Test assignment
-    TransformMatrix<float> tm1;
+    morph::TransformMatrix<float> tm1;
     setMatrixSequence (tm1);
-    TransformMatrix<float> tm2 = tm1;
-    cout << "After assignment:\n";
-    tm2.output();
+    morph::TransformMatrix<float> tm2 = tm1;
+    std::cout << "After assignment:\n" << tm2 << std::endl;
     for (unsigned int i = 0; i<16; ++i) {
         if (tm2.mat[i] != (float)i) {
             ++rtn;
@@ -45,13 +39,11 @@ int main()
     }
 
     // Test multiplication
-    TransformMatrix<float> mult1;
+    morph::TransformMatrix<float> mult1;
     setMatrixSequence (mult1);
-    cout << "mult1\n";
-    mult1.output();
+    std::cout << "mult1\n" << mult1 << std::endl;
 
-
-    TransformMatrix<float> mult2;
+    morph::TransformMatrix<float> mult2;
     mult2.mat[0] = 15;
     mult2.mat[1] = 14;
     mult2.mat[2] = 13;
@@ -68,12 +60,10 @@ int main()
     mult2.mat[13] = 2;
     mult2.mat[14] = 1;
     mult2.mat[15] = 0;
-    cout << "mult2\n";
-    mult2.output();
+    std::cout << "mult2\n" << mult2 << std::endl;
 
-    TransformMatrix<float> mult3 = mult1 * mult2;
-    cout << "mult1 * mult2 =\n";
-    mult3.output();
+    morph::TransformMatrix<float> mult3 = mult1 * mult2;
+    std::cout << "mult1 * mult2 =\n" << mult3 << std::endl;
 
     if (mult3.mat[0] != 304
         || mult3.mat[1] != 358
@@ -95,8 +85,7 @@ int main()
         ++rtn;
     }
     mult1 *= mult2;
-    cout << "mult1 *= mult2 gives\n";
-    mult1.output();
+    std::cout << "mult1 *= mult2 gives\n" << mult1 << std::endl;
     if (mult1.mat[0] != 304
         || mult1.mat[1] != 358
         || mult1.mat[2] != 412
@@ -118,24 +107,24 @@ int main()
     }
 
     // Test 3x3 determinant
-    TransformMatrix<float> td;
-    array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
+    morph::TransformMatrix<float> td;
+    std::array<float, 9> threethree = { 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 3.5f, 3.0f, 2.0f, 120.0f };
     float det_td = td.determinant (threethree);
-    cout << "Determinant = " << det_td << " (expect 111)" << endl;
+    std::cout << "Determinant = " << det_td << " (expect 111)" << std::endl;
     if (det_td != 111.0f) {
         ++rtn;
     }
 
     // Test 4x4 determinant
-    array<float, 16> fourfour = { 2.0f, 7.0f, 5.0f, 6.0f, 8.0f, 1.0f, 3.0f, 6.0f, 2.0f, 8.0f, -1.0f, 7.0f, 7.0f, 0.0f, 1.0f, 7.0f };
+    std::array<float, 16> fourfour = { 2.0f, 7.0f, 5.0f, 6.0f, 8.0f, 1.0f, 3.0f, 6.0f, 2.0f, 8.0f, -1.0f, 7.0f, 7.0f, 0.0f, 1.0f, 7.0f };
     float det_td2 = td.determinant (fourfour);
-    cout << "Determinant = " << det_td2 << " (expect 816)" << endl;
+    std::cout << "Determinant = " << det_td2 << " (expect 816)" << std::endl;
     if (det_td2 != 816.0f) {
         ++rtn;
     }
 
     // Test matrix inversion
-    TransformMatrix<float> mult4;
+    morph::TransformMatrix<float> mult4;
     mult4.mat[0] = 15;
     mult4.mat[1] = 17;
     mult4.mat[2] = 0;
@@ -153,35 +142,33 @@ int main()
     mult4.mat[14] = 1;
     mult4.mat[15] = 0;
 
-    TransformMatrix<float> mult4inv = mult4.invert();
-    cout << "mult4\n";
-    mult4.output();
-    cout << "mult4.invert():\n";
-    mult4inv.output();
+    morph::TransformMatrix<float> mult4inv = mult4.invert();
+    std::cout << "mult4\n" << mult4 << std::endl;
+    std::cout << "mult4.invert():\n" << mult4inv << std::endl;
 
-    array<float, 4> v1 = {1,2,3,4};
-    array<float, 4> v2;
-    array<float, 4> v3;
+    std::array<float, 4> v1 = {1,2,3,4};
+    std::array<float, 4> v2;
+    std::array<float, 4> v3;
     v2 = mult4 * v1;
     v3 = mult4inv * v2;
 
-    cout << "v1 = (" << v1[0]
-         << "," << v1[1]
-         << "," << v1[2]
-         << "," << v1[3] << ")" << endl;
-    cout << "v2 = mult4 * v1 = (" << v2[0]
-         << "," << v2[1]
-         << "," << v2[2]
-         << "," << v2[3] << ")" << endl;
-    cout << "v3 = mult4inv * v2 = (" << v3[0]
-         << "," << v3[1]
-         << "," << v3[2]
-         << "," << v3[3] << ") (should be equal to v1)" << endl;
+    std::cout << "v1 = (" << v1[0]
+              << "," << v1[1]
+              << "," << v1[2]
+              << "," << v1[3] << ")" << std::endl;
+    std::cout << "v2 = mult4 * v1 = (" << v2[0]
+              << "," << v2[1]
+              << "," << v2[2]
+              << "," << v2[3] << ")" << std::endl;
+    std::cout << "v3 = mult4inv * v2 = (" << v3[0]
+              << "," << v3[1]
+              << "," << v3[2]
+              << "," << v3[3] << ") (should be equal to v1)" << std::endl;
 
-    cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
-         << abs(v1[1]-v3[1]) << ", "
-         << abs(v1[2]-v3[2]) << ", "
-         << abs(v1[3]-v3[3]) << endl;
+    std::cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
+              << abs(v1[1]-v3[1]) << ", "
+              << abs(v1[2]-v3[2]) << ", "
+              << abs(v1[3]-v3[3]) << std::endl;
 
     float esum = abs(v1[0]-v3[0])
         + abs(v1[1]-v3[1])
@@ -189,14 +176,14 @@ int main()
         + abs(v1[3]-v3[3]);
 
     if (esum > 1e-5) {
-        cout << "Inverse failed to re-create the vector" << endl;
+        std::cout << "Inverse failed to re-create the vector" << std::endl;
         ++rtn;
     }
 
     // test matrix times Vector<T,4> multiplication  std::array = mat * morph::Vector
-    Vector<float, 4> v4 = {1,0,0,0};
+    morph::Vector<float, 4> v4 = {1,0,0,0};
     std::array<float, 4> r = mult4 * v4;
-    cout << " mult4 * " << v4 << ": (" << r[0] << "," << r[1] << "," << r[2] << "," << r[3] << ")\n";
+    std::cout << " mult4 * " << v4 << ": (" << r[0] << "," << r[1] << "," << r[2] << "," << r[3] << ")\n";
     if ((r[0]==15 && r[1]==17 && r[2]==0 && r[3]==0) == false) {
         ++rtn;
     }

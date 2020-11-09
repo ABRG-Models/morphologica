@@ -11,7 +11,7 @@ namespace morph {
     class RodVisual : public VisualModel
     {
     public:
-        RodVisual (void) { this->offset = {0.0, 0.0, 0.0}; }
+        RodVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, start and end coordinates, radius and a single colour.
         RodVisual(GLuint sp, const Vector<float, 3> _offset,
@@ -37,8 +37,8 @@ namespace morph {
         {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             this->start_coord = _start_coord;
             this->end_coord = _end_coord;
@@ -62,7 +62,7 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
             // Draw a tube. That's it!
-            this->computeTube (idx, this->offset+this->start_coord, this->offset+this->end_coord,
+            this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
                                this->start_col, this->end_col, this->radius, 12);
         }
 

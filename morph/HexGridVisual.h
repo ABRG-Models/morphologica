@@ -68,8 +68,8 @@ namespace morph {
                       const std::vector<Flt>* _data) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             // Defaults here. After init, you can reset (at computational cost) to get desired params
             this->zScale.setParams (1, 0);
@@ -90,8 +90,8 @@ namespace morph {
                       const std::vector<Flt>* _data) {
             // Set up...
             this->shaderprog = sp;
-            this->offset.set_from (_offset);
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset.set_from (_offset);
+            this->viewmatrix.translate (this->mv_offset);
 
             // Defaults here. After init, you can reset (at computational cost) to get desired params
             this->zScale.setParams (1, 0);
@@ -113,8 +113,8 @@ namespace morph {
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             // Defaults here. After init, you can reset (at computational cost) to get desired params
             this->zScale.setParams (1, 0);
@@ -140,8 +140,8 @@ namespace morph {
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
-            this->offset.set_from (_offset);
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset.set_from (_offset);
+            this->viewmatrix.translate (this->mv_offset);
 
             // Defaults here. After init, you can reset (at computational cost) to get desired params
             this->zScale.setParams (1, 0);
@@ -169,8 +169,8 @@ namespace morph {
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             this->zScale = zscale;
             this->colourScale = cscale;
@@ -202,8 +202,8 @@ namespace morph {
             //
             // So do it long-hand:
             this->shaderprog = sp;
-            this->offset.set_from (_offset);
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset.set_from (_offset);
+            this->viewmatrix.translate (this->mv_offset);
 
             this->zScale = zscale;
             this->colourScale = cscale;

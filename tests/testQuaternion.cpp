@@ -6,15 +6,15 @@ using morph::Vector;
 int main()
 {
     Quaternion<float> q;
-    q.output();
+    std::cout << q << std::endl;
     q.renormalize();
-    q.output();
+    std::cout << q << std::endl;
 
     Quaternion<float> rotationQuaternion;
     float angularSpeed = 0.2;
     Vector<float> rotationAxis = {1.0f, 0.0f, 0.0f};
     rotationQuaternion.initFromAxisAngle (rotationAxis, angularSpeed);
-    rotationQuaternion.output();
+    std::cout << rotationQuaternion << std::endl;
 
     return 0;
 }

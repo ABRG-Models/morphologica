@@ -62,8 +62,6 @@ namespace morph {
             this->fontscale = _m_width/(float)this->fontpixels;
             this->clr_text = _clr;
 
-            std::cout << "m_width = " << m_width << ", fontscale = " << fontscale << ", fontpixels = " << fontpixels << std::endl;
-
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
@@ -97,10 +95,10 @@ namespace morph {
             if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
             GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-
+#ifdef __DEBUG__
             std::cout << "VisualTextModel::render: ("<<txt<<") scenematrix:\n" << scenematrix << std::endl;
             std::cout << "VisualTextModel::render: ("<<txt<<") model viewmatrix:\n" << viewmatrix << std::endl;
-
+#endif
             glActiveTexture (GL_TEXTURE0);
 
             // It is only necessary to bind the vertex array object before rendering
@@ -123,6 +121,15 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
+        //! Set clr_text to a value suitable to be visible on the background colour bgcolour
+        void setVisibleOn (const std::array<float, 4>& bgcolour)
+        {
+            float factor = 0.85f;
+            this->clr_text = {1.0f-bgcolour[0] * factor,
+                              1.0f-bgcolour[1] * factor,
+                              1.0f-bgcolour[2] * factor};
+        }
+
         //! Setter for VisualTextModel::viewmatrix, the model view
         void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
 
@@ -132,11 +139,9 @@ namespace morph {
         //! Set the translation specified by \a v0 into the scene translation
         void setSceneTranslation (const Vector<float>& v0)
         {
-            std::cout << "VisualTextModel::setSceneTranslation for "<<v0<<"\n";
             this->sv_offset = v0;
             this->scenematrix.setToIdentity();
             this->scenematrix.translate (this->sv_offset);
-            std::cout << "Rotating by " << this->sv_rotation << std::endl;
             this->scenematrix.rotate (this->sv_rotation);
         }
 
@@ -152,7 +157,9 @@ namespace morph {
         {
             this->sv_rotation = r;
             this->scenematrix.setToIdentity();
+            //std::cout << "Translate by sv_offset: "  << sv_offset << std::endl;
             this->scenematrix.translate (this->sv_offset);
+            //std::cout << "Rotate by sv_rotn: "  << sv_rotation << std::endl;
             this->scenematrix.rotate (this->sv_rotation);
         }
 
@@ -184,7 +191,10 @@ namespace morph {
         {
             this->mv_rotation = r;
             this->viewmatrix.setToIdentity();
+            // Confirms that mv_offset contains the additional model offset
+            //std::cout << "VTM::setViewRotation: setting mv_offset " << mv_offset << std::endl;
             this->viewmatrix.translate (this->mv_offset);
+            //std::cout << "VTM::setViewRotation: rotating mv_rotation " << mv_rotation << std::endl;
             this->viewmatrix.rotate (this->mv_rotation);
         }
 
@@ -349,12 +359,14 @@ namespace morph {
 #endif
         }
 
+    public:
+        //! The colour of the text
+        std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
+    protected:
         //! A face for this text
         morph::gl::VisualFace* face = (morph::gl::VisualFace*)0;
         //! The colour of the backing quad's vertices. Doesn't have any effect.
         std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
-        //! The colour of the text
-        std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
         //! the desired width of an 'm'.
         float m_width = 1.0f;
         //! A scaling factor based on the desired width of an 'm'

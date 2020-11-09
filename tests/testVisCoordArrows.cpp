@@ -1,6 +1,7 @@
 /*
  * Visualize just the CoordArrows - i.e. an empty morph::Visual
  */
+
 #include "morph/Visual.h"
 #include "morph/ColourMap.h"
 #include "morph/Vector.h"
@@ -15,7 +16,7 @@ int main (int argc, char** argv)
 
     // Demonstrates use of offset (left at 0,0,0), lengths (3,2,1) and the 'thickness'
     // scaling factor (0.5) for the coordinate arrows
-    morph::Visual v(1024, 768, "Title", {0,0,0}, {.1,.1,.1}, 3.0f);
+    morph::Visual v(1024, 768, "Title", {0.0,0.0}, {.2,.2,.2}, 3.0f, 0.02f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.showTitle = true;
@@ -26,9 +27,7 @@ int main (int argc, char** argv)
     bool holdVis = false;
     if (argc > 1) {
         std::string a1(argv[1]);
-        if (a1.size() > 0) {
-            holdVis = true;
-        }
+        holdVis = a1.empty() ? false : true;
     }
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program\n";
 

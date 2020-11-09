@@ -130,15 +130,17 @@ namespace morph {
 
         /*!
          * Construct with specified coordinate arrows offset (caOffset) lengths
-         * (caLength) and thickness scaling factor (caThickness)
+         * (caLength), thickness scaling factor (caThickness) and coordinate arrow 'm'
+         * size, caEm.
          */
         Visual (int width, int height, const std::string& title,
-                const Vector<float> caOffset, const Vector<float> caLength, const float caThickness)
+                const Vector<float, 2> caOffset, const Vector<float> caLength, const float caThickness, const float caEm)
             : window_w(width)
             , window_h(height)
             , coordArrowsOffset(caOffset)
             , coordArrowsLength(caLength)
             , coordArrowsThickness(caThickness)
+            , coordArrowsEm(caEm)
         {
             this->init (title);
         }
@@ -292,7 +294,7 @@ namespace morph {
 
 #if 0
             // A quick-n-dirty attempt to keep the light position fixed in camera space.
-            Vector<float, 2> l_p0_coord = {-0.8f, 0.8f};
+            Vector<float, 2> l_p0_coord = this->coordArrowsOffset;
             Vector<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
             Vector<float, 4> l_pp = this->projection * l_point;
             float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
@@ -321,7 +323,14 @@ namespace morph {
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if (this->showCoordArrows == true) {
-                this->positionCoordArrows();
+                // Ensure coordarrows centre sphere will be visible on BG:
+                this->coordArrows->setColourForBackground (this->bgcolour);
+
+                if (this->coordArrowsInScene == true) {
+                    this->coordArrows->setSceneMatrix (sceneview);
+                } else {
+                    this->positionCoordArrows();
+                }
                 this->coordArrows->render();
             }
 
@@ -339,6 +348,7 @@ namespace morph {
                 glUseProgram (this->tshaderprog);
                 Vector v0 = this->textPosition ({-0.8f, 0.8f});
                 this->textModel->setSceneTranslation (v0);
+                this->textModel->setVisibleOn (this->bgcolour);
                 this->textModel->render();
             }
 
@@ -386,13 +396,8 @@ namespace morph {
         //! Compute position and rotation of coordinate arrows in the bottom left of the screen
         void positionCoordArrows()
         {
-            // Ensure coordarrows centre sphere will be visible on BG:
-            this->coordArrows->setColourForBackground (this->bgcolour);
-
             // Find out the location of the bottom left of the screen and make the coord
             // arrows stay put there.
-//            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
-            Vector<float, 2> p0_coord = {-0.0f, -0.0f};
 
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
@@ -402,15 +407,13 @@ namespace morph {
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
             // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            Vector<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
             // Inverse project
             Vector v0;
             v0.set_from ((this->invproj * p0));
             // Translate the scene for the CoordArrows such that they sit in a single position on the screen
-            std::cout << "setSceneTranslation for coordArrows to " << v0 << std::endl;
             this->coordArrows->setSceneTranslation (v0);
             // Apply rotation to the coordArrows model
-            std::cout << "Apply view rotation to coordArrows: " << this->rotation << std::endl;
             this->coordArrows->setViewRotation (this->rotation);
         }
 
@@ -441,6 +444,9 @@ namespace morph {
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
+
+        //! If true, then place the coordinate arrows at the origin of the scene, rather than offset.
+        bool coordArrowsInScene = false;
 
         //! Set to true to show the title text within the scene
         bool showTitle = true;
@@ -606,11 +612,12 @@ namespace morph {
                 this->rotation.z = vconf.getFloat ("scenerotn_z", this->rotation.z);
             } // else no problem
 
+            // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = new CoordArrows(this->shaderprog,
                                                 this->tshaderprog,
-                                                this->coordArrowsOffset,
                                                 this->coordArrowsLength,
-                                                this->coordArrowsThickness);
+                                                this->coordArrowsThickness,
+                                                this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
@@ -817,10 +824,14 @@ namespace morph {
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
-        //! Position and length of coordinate arrows. Configurable at morph::Visual construction.
-        Vector<float> coordArrowsOffset = {0.0f, 0.0f, 0.0f};
-        Vector<float> coordArrowsLength = {1.0f, 1.0f, 1.0f};
+        //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
+        Vector<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
+        //! Length of coordinate arrows. Configurable at morph::Visual construction.
+        Vector<float> coordArrowsLength = {0.1f, 0.1f, 0.1f};
+        //! A factor used to slim (<1) or thicken (>1) the thickness of the axes of the CoordArrows.
         float coordArrowsThickness = 1.0f;
+        //! Text size for x,y,z.
+        float coordArrowsEm = 0.01f;
 
         //! A VisualTextModel for a title text.
         VisualTextModel* textModel = (VisualTextModel*)0;

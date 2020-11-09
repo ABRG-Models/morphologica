@@ -36,8 +36,8 @@ namespace morph {
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -59,8 +59,8 @@ namespace morph {
                       const float _hue = 0.0f) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
             this->dataCoords = _coords;
             this->scalarData = _data;

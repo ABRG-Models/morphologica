@@ -22,9 +22,10 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization");
+    Visual v(1024, 768, "Visualization", {0,0}, {1,1,1}, 1.0f, 0.05f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
+    v.coordArrowsInScene = true;
     // Blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();
