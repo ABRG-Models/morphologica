@@ -152,6 +152,7 @@ namespace morph {
         {
             this->sv_rotation = r;
             this->scenematrix.setToIdentity();
+            this->scenematrix.translate (this->sv_offset);
             this->scenematrix.rotate (this->sv_rotation);
         }
 
@@ -203,23 +204,23 @@ namespace morph {
             this->quads.clear();
             this->quad_ids.clear();
             // Our string of letters starts at this location
-            float letter_pos = this->mv_offset[0];
+            float letter_pos = 0.0f; /*this->mv_offset[0]; THERE*/
             float text_epsilon = 0.0f;
             for (std::string::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
                 // Add a quad to this->quads
                 morph::gl::CharInfo ci = _the_characters[*c];
 
                 float xpos = letter_pos + ci.bearing.x() * this->fontscale;
-                float ypos = this->mv_offset[1] - (ci.size.y() - ci.bearing.y()) * this->fontscale;
+                float ypos = /*this->mv_offset[1]*/ - (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 float w = ci.size.x() * this->fontscale;
                 float h = ci.size.y() * this->fontscale;
 
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
-                std::array<float,12> tbox = { xpos,   ypos,     this->mv_offset[2]+text_epsilon,
-                                              xpos,   ypos+h,   this->mv_offset[2]+text_epsilon,
-                                              xpos+w, ypos+h,   this->mv_offset[2]+text_epsilon,
-                                              xpos+w, ypos,     this->mv_offset[2]+text_epsilon };
+                std::array<float,12> tbox = { xpos,   ypos,     /*this->mv_offset[2]+*/text_epsilon,
+                                              xpos,   ypos+h,   text_epsilon,
+                                              xpos+w, ypos+h,   text_epsilon,
+                                              xpos+w, ypos,     text_epsilon };
                 text_epsilon -= 10.0f*std::numeric_limits<float>::epsilon();
 #ifdef __DEBUG__
                 std::cout << "Text box added as quad from\n("

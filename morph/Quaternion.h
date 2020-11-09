@@ -125,6 +125,14 @@ namespace morph {
             return q;
         }
 
+        //! Invert the rotation represented by this Quaternion and return the result
+        Quaternion<Flt> invert() const
+        {
+            Quaternion<Flt> qi = *this;
+            qi.w = -this->w;
+            return qi;
+        }
+
         //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
         void postmultiply (const Quaternion<Flt>& q2)
         {

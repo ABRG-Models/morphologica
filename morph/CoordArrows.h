@@ -43,31 +43,31 @@ namespace morph {
             this->viewmatrix.translate (this->mv_offset);
             // scenematrix has identity at moment. Gets updated during morph::Visual::render()
 
-            float xoffs = 0.005f;
+            float em = 0.02f;
             this->lengths = _lengths;
             this->thickness = _thickness;
             morph::Vector<float> toffset = this->mv_offset;
-            toffset[0] += this->lengths[0];// + xoffs;
+            toffset[0] += this->lengths[0] + em;
             std::cout << "X text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
-                                                        0.01f, 48, toffset,
+                                                        em, 48, toffset,
                                                         "X"));
             toffset = this->mv_offset;
             toffset[1] += this->lengths[1];
-            //toffset[0] += xoffs;
+            toffset[0] += em;
             std::cout << "Y text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
-                                                        0.01f, 48, toffset,
+                                                        em, 48, toffset,
                                                         "Y"));
             toffset = this->mv_offset;
             toffset[2] += this->lengths[2];
-            //toffset[0] += xoffs;
+            toffset[0] += em;
             std::cout << "Z text offset: " << toffset << std::endl;
             this->texts.push_back (new VisualTextModel (this->tshaderprog,
                                                         morph::VisualFont::VeraBoldItalic,
-                                                        0.01f, 48, toffset,
+                                                        em, 48, toffset,
                                                         "Z"));
 
             // Initialize the vertices that will represent the object

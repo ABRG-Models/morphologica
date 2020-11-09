@@ -392,7 +392,7 @@ namespace morph {
             // Find out the location of the bottom left of the screen and make the coord
             // arrows stay put there.
 //            Vector<float, 2> p0_coord = {-0.8f, -0.8f};
-            Vector<float, 2> p0_coord = {-0.5f, -0.0f};
+            Vector<float, 2> p0_coord = {-0.0f, -0.0f};
 
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
@@ -410,6 +410,7 @@ namespace morph {
             std::cout << "setSceneTranslation for coordArrows to " << v0 << std::endl;
             this->coordArrows->setSceneTranslation (v0);
             // Apply rotation to the coordArrows model
+            std::cout << "Apply view rotation to coordArrows: " << this->rotation << std::endl;
             this->coordArrows->setViewRotation (this->rotation);
         }
 

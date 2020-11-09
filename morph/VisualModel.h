@@ -210,7 +210,7 @@ namespace morph {
             for (auto& t : this->texts) { t->setSceneMatrix (sv); }
         }
 
-        // This applied in Visual::render
+/////////// This applied in Visual::render
         //! Set a translation into the scene and into any child texts
         void setSceneTranslation (const Vector<float>& v0)
         {
@@ -265,7 +265,7 @@ namespace morph {
             this->viewmatrix.translate (v0);
         }
 
-        // This applied in Visual::render
+/////////// This applied in Visual::render
         //! Set a rotation (only) into the view
         void setViewRotation (const Quaternion<float>& r)
         {
@@ -274,8 +274,14 @@ namespace morph {
             this->viewmatrix.translate (this->mv_offset);
             this->viewmatrix.rotate (this->mv_rotation);
 
-            // Is a view rotation for coord arrows same as scene rotation for texts? I think it is.
-            for (auto& t : this->texts) { t->setViewRotation (r); }
+            // When rotating a model that contains texts, we need to rotate the scene
+            // for the texts and also inverse-rotate the view of the texts.
+            for (auto& t : this->texts) {
+                // Rotate the scene
+                t->setSceneRotation (r);
+                // Rotate the view of the text an opposite amount, to keep it facing forwards
+                t->setViewRotation (r.invert());
+            }
         }
 
         //! Apply a further rotation to the model view matrix
