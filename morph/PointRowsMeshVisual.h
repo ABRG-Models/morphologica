@@ -85,8 +85,8 @@ namespace morph {
                             const float _radius_sph) {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
 
             this->radius = _radius;
             this->sradius = _radius_sph;

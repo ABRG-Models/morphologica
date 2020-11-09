@@ -34,8 +34,8 @@ namespace morph {
         {
             // Set up...
             this->shaderprog = sp;
-            this->offset = _offset;
-            this->viewmatrix.translate (this->offset);
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
             this->radius = _radius;
 
