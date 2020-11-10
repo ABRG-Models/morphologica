@@ -46,6 +46,9 @@ int main (int argc, char** argv)
         gv->ordscale.do_autoscale = true;
         gv->setData (ord, data);
         gv->cm.setType (morph::ColourMapType::Plasma);
+        gv->showMarkers = true;
+        gv->showLines = false;
+        gv->markerColour = {0,.8,1};
         gv->setup();
         // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));

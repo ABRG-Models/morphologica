@@ -849,6 +849,145 @@ namespace morph {
         }
 
         /*!
+         * Code for creating a disc-like marker for graphs. This function could create
+         * triangles (up and down) as well as squares, diamonds, circles.
+         *
+         * \param idx The index into the 'vertex indices array'
+         * \param so The marker's model offset.
+         * \param sc The marker colour.
+         * \param r Radius of the marker
+         * \param segments Number of 'segments' to the shape
+         * \param rotation A rotational offset, so that triangles can be rightway up or upside down
+         * \param thickness Draw the marker as a 'puck'
+         */
+        void computeMarker (VBOint& idx, Vector<float> so, std::array<float, 3> sc, float r = 0.1f,
+                            int segments = 3, float rotation = 0.0f, float thickness = 0.01f)
+        {
+            const int rings = 3;
+
+            // First cap, draw as a triangle fan, but record indices so that
+            // we only need a single call to glDrawElements.
+            float rings0 = M_PI * -0.5;
+
+            // Top face is at z0
+            float z0 = so[2];
+            std::cout << "z0=" << z0 << std::endl;
+
+            // Bottom face is at position z1
+            float z1 = so[2]-thickness;
+
+            // Push the central point
+            this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
+            std::cout << "central point at " << so[0]<<","<<so[1]<<","<<so[2]+z0<< std::endl;
+            this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+            this->vertex_push (sc, this->vertexColors);
+
+            VBOint capMiddle = idx++;
+            VBOint ringStartIdx = idx;
+            VBOint lastRingStartIdx = idx;
+
+            bool firstseg = true;
+            for (int j = 0; j < segments; j++) {
+                float segment = 2 * M_PI * (float) (j) / segments;
+                float x = cos(segment);
+                float y = sin(segment);
+                //std::cout << "j="<<j<<", x/y:" <<x<<","<<y<<std::endl;
+
+                float x1 = x*r;
+                float y1 = y*r;
+
+                this->vertex_push (so[0]+x1, so[1]+y1, so[2]+z0, this->vertexPositions);
+                // Up normals
+                this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+                this->vertex_push (sc, this->vertexColors);
+
+                if (!firstseg) {
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (idx-1);
+                    this->indices.push_back (idx++);
+                } else {
+                    idx++;
+                    firstseg = false;
+                }
+            }
+            // Push indices for last triangle
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (idx-1);
+            this->indices.push_back (capMiddle+1);
+
+            // zz is an array of z positions for the three 'rings' of vertices, one that
+            // will at z0, be like the above face, with normals pointing out, one that will be at
+            // z1, with normals pointing out and one at z1 with normals pointing down.
+            std::array<float, 3> zz = {z0, z1, z1};
+            std::array<int, 3> nn = {1,1,-1};
+            // Now do another ring with alternative normals
+            for (int k=0; k<3; k++) {
+                for (int j = 0; j < segments; j++) {
+
+                    // "current" segment
+                    float segment = 2 * M_PI * (float)j / segments;
+                    float x = cos(segment);
+                    float y = sin(segment);
+
+                    // One vertex per segment
+                    float x0 = x*r;
+                    float y0 = y*r;
+
+                    // NB: Only add ONE vertex per segment. Already have the first ring
+                    this->vertex_push (so[0]+x0, so[1]+y0, so[2]+zz[k], this->vertexPositions);;
+                    if (nn[k] == 1) {
+                        // norm out
+                        this->vertex_push (x0, y0, 0.0f, this->vertexNormals);
+                    } else {
+                        // norm down
+                        this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
+                    }
+                    this->vertex_push (sc, this->vertexColors);
+
+                    if (j == segments - 1) {
+                        // Last vertex is back to the start
+                        this->indices.push_back (ringStartIdx++);
+                        this->indices.push_back (idx);
+                        this->indices.push_back (lastRingStartIdx);
+                        this->indices.push_back (lastRingStartIdx);
+                        this->indices.push_back (idx++);
+                        this->indices.push_back (lastRingStartIdx+segments);
+                    } else {
+                        this->indices.push_back (ringStartIdx++);
+                        this->indices.push_back (idx);
+                        this->indices.push_back (ringStartIdx);
+                        this->indices.push_back (ringStartIdx);
+                        this->indices.push_back (idx++);
+                        this->indices.push_back (idx);
+                    }
+                }
+                lastRingStartIdx += segments;
+            }
+
+            // bottom face
+            this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z1, this->vertexPositions);
+            this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
+            this->vertex_push (sc, this->vertexColors);
+            capMiddle = idx++;
+            firstseg = true;
+            // No more vertices to push, just do the indices for the bottom cap
+            ringStartIdx = lastRingStartIdx;
+            for (int j = 0; j < segments; j++) {
+                if (j != segments - 1) {
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (ringStartIdx++);
+                    this->indices.push_back (ringStartIdx);
+                } else {
+                    // Last segment
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (ringStartIdx);
+                    this->indices.push_back (lastRingStartIdx);
+                }
+            }
+            // end of 'marker' calculation
+        }
+
+        /*!
          * Create a cone.
          *
          * \param idx The index into the 'vertex array'

@@ -128,22 +128,14 @@ namespace morph {
 
             if (this->showMarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
-                    // Marker colour comes from colour map
-                    std::array<float, 3> clr = this->cm.convert (dcopy[i]);
                     // FIXME: Replace with 'computeDisc'
-                    this->computeSphere (idx, (*this->dataCoords)[i], this->markerColour, this->markersize*Flt{0.5});
+                    this->computeMarker (idx, (*this->dataCoords)[i], this->markerColour, this->markersize*Flt{0.5}, 5);
                 }
             }
             if (this->showLines == true) {
                 std::cout << "Writeme: draw lines\n";
                 for (size_t i = 1; i < ncoords; ++i) {
                     // Draw tube from location -1 to location 0
-                    //VBOint& idx, Vector<float> start, Vector<float> end,
-                    //      std::array<float, 3> colStart, std::array<float, 3> colEnd,
-                    //      float r = 1.0f, int segments = 12
-                    // Marker colour comes from colour map
-                    //std::array<float, 3> clr1 = this->cm.convert (dcopy[i-1]);
-                    //std::array<float, 3> clr2 = this->cm.convert (dcopy[i]);
                     this->computeTube (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
                                        lineColour, lineColour, this->linewidth, 4);
                 }
