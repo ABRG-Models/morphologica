@@ -239,7 +239,7 @@ namespace morph {
         //! Add a rotation to the scene view matrix
         void addSceneRotation (const Quaternion<float>& r)
         {
-            this->sv_rotation.premultiply (r); // combines rotations
+            this->sv_rotation.premultiply (r);
             this->scenematrix.rotate (r);
         }
 
@@ -290,23 +290,6 @@ namespace morph {
             for (auto& t : this->texts) { t->addViewRotation (r); }
         }
 
-#if 0 // Use setViewTranslation instead
-        //! Setter for mv_offset, also updates viewmatrix. The offset is an offset within the model view.
-        void setOffset (const Vector<float>& _mv_offset)
-        {
-            this->mv_offset = _mv_offset;
-            this->viewmatrix.rotate (this->mv_rotation);
-            this->setViewTranslation (this->mv_offset);
-        }
-#endif
-#if 0 // Use addViewTranslation instead
-        //! Shift the mv_offset, also updates viewmatrix.
-        void shiftOffset (const Vector<float>& _mv_offset)
-        {
-            this->mv_offset += _mv_offset;
-            this->viewmatrix.translate (this->mv_offset);
-        }
-#endif
         void setAlpha (const float _a) { this->alpha = _a; }
         float getAlpha() const { return this->alpha; }
 
@@ -355,10 +338,10 @@ namespace morph {
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
-
+#if 0
         //! The parent Visual object - provides access to the shader prog
         const Visual* parent;
-
+#endif
         //! A copy of the reference to the shader program
         GLuint shaderprog;
 
@@ -387,6 +370,8 @@ namespace morph {
         float alpha = 1.0f;
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
+        //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
+        bool twodimensional = false;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
