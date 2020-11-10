@@ -144,7 +144,11 @@ set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 ```
 
-### Option 2: With morpholoigca 'in-tree'
+### Option 2: With morphologica 'in-tree'
+
+Seb prefers this option: 'clone and go'. Just git clone morphologica
+into your source tree (or somewhere else) and then make sure your
+compiler can find the includes, fonts and links.
 
 #### 1) Includes
 ```cmake
@@ -163,7 +167,8 @@ set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INC
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
-# Where did you install morphologica?
+# Where did you install morphologica? Here, I assume you git cloned it
+into the root of your own project source tree.
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
 
 include_directories(BEFORE ${MORPH_INCLUDE_PATH})

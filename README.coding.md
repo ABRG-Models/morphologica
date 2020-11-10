@@ -2,6 +2,13 @@
 
 These are some instructions to help a new morphologica user out.
 
+## Build process
+
+See the end of the top-level readme for instructions on tailoring your
+build process to work with morphologica - cmake examples are given to
+show how to set up the includes, compiler flags and links that you'll
+need to use the morphologica code.
+
 ## morph::Config
 
 Reads and writes parameter configuration data in JSON format. JSON is
