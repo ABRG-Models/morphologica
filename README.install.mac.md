@@ -1,20 +1,21 @@
 # Build and Install morphologica on Apple Mac
 
-The cmake-driven morphologica build & install process installs static
-and shared object libraries on your system, along with the required
-header files.
+The cmake-driven morphologica build & install process installs the
+header files and font files that are required to build against
+morphologica. Some libraries may also be installed.
 
-It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to
-compile, and programs linked with libmorphologica will also need to
-link to those dependencies. You will also need the cmake program and a
-C++ compiler which can compile c++-17 code.
+The build process also compiles a set of test programs, which require
+OpenCV, Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
+Programs that include morphologica headers will also need to link to
+some or all of those dependencies. Finally, you'll need the cmake
+program and a C++ compiler which can compile c++-17 code.
 
 ## Installation dependencies for Mac
 
-You will need XQuartz, XCode and Mac Ports. Install XQuartz from
-http://xquartz.org/ and XCode from the App Store. If you just
-installed XCode, then you'll need to agree to its licence terms. To do
-this, run
+For some legacy code, you will need XQuartz, XCode and Mac
+Ports. Install XQuartz from http://xquartz.org/ and XCode from the App
+Store. If you just installed XCode, then you'll need to agree to its
+licence terms. To do this, run
 
 ```
 sudo xcodebuild -license
@@ -161,7 +162,7 @@ sudo make install
 #### glfw3
 
 The modern OpenGL code in morphologica requires the GL-window managing
-library GLFW3 and only compiles if GLFW3 is present. Compile it like
+library GLFW3. Compile it like
 this:
 
 ```

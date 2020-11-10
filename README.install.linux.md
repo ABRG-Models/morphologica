@@ -1,13 +1,14 @@
 # Build and Install morphologica on GNU/Linux
 
-The cmake-driven morphologica build & install process installs static
-and shared object libraries on your system, along with the required
-header files.
+The cmake-driven morphologica build & install process installs the
+header files and font files that are required to build against
+morphologica. Some libraries may also be installed.
 
-It requires OpenCV, Armadillo, OpenGL, HDF5, LAPACK and X headers to
-compile, and programs linked with libmorphologica will also need to
-link to those dependencies. You will also need the cmake program and a
-C++ compiler which can compile c++-17 code.
+The build process also compiles a set of test programs, which require
+OpenCV, Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
+Programs that include morphologica headers will also need to link to
+some or all of those dependencies. Finally, you'll need the cmake
+program and a C++ compiler which can compile c++-17 code.
 
 ## Installation dependencies for GNU/Linux
 
@@ -125,11 +126,10 @@ libmorphologica by means of the src/CMakeLists.txt file. I'm using the
 HEAD of the master branch of the jsoncpp repository, which installs a
 library with version about 1.8.4.
 
-### glfw3 library (Optional)
+### glfw3 library
 
-There is some OpenGL 2 style OpenGL code in display.h/cpp and also
-some more modern OpenGL code in Visual/HexGridVisual. This modern code
-requires the library GLFW3 and only compiles if GLFW3 is present.
+The modern OpenGL code in Visual/HexGridVisual requires the library
+GLFW3.
 
 It's possible to apt install glfw on recent versions of Ubuntu. Doing so
 will install libglfw.a. These build instructions install libglfw3.a (into
@@ -165,7 +165,7 @@ You'll then need to add the switch -DUSE_GLEW=ON when calling cmake.
 
 ## Build morphologica
 
-To build morphologica, it's the usual CMake process:
+To build morphologica tests, it's the usual CMake process:
 
 ```sh
 cd ~/src
@@ -178,19 +178,13 @@ cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_DOC=0 -DCOMPILE_WITH_OPENMP=0
 make -j$(nproc)
 sudo make install
-sudo ldconfig # Probably Linux specific! Mac alternative?
+# ldconfig is only necessary for the legacy library libmorphdisplay0.so
+sudo ldconfig
 ```
 
-Note the call to ldconfig at the end there, which makes sure that
-libmorphologica is available to your system's dynamic linker. On
-Linux, that means running ldconfig (assuming that the
-CMAKE_INSTALL_PREFIX of /usr/local is already in your dynamic
-linker's search path) as in the example above. If you installed
-elsewhere, then you probably know how to set LD_LIBRARY_PATH
-correctly (or see **Building/installing as a per-user library**, below).
-
-If you need to build with a specific compiler, such as g++-7 or clang,
-then you just change the cmake call in the recipe above. It becomes:
+If you need to build the test programs with a specific compiler, such
+as g++-7 or clang, then you just change the cmake call in the recipe
+above. It becomes:
 
 ```sh
 CC=gcc-7 CXX=g++-7 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -207,61 +201,10 @@ If necessary, you can pass
 -DMORPH_ARMADILLO_LIBPATH=/usr/local/lib and the linker will add this
 before -larmadillo during linking
 
-### Building/installing as a per-user library
-
-#### Build morphologica:
-
-(Make sure you are on a version of morphologica later than the master
-branch of 2:15 PM, Jan 27 2020, as I added an important line to
-pc/CMakeLists.txt).
-
-```bash
-cd ~/src/morphologica/build
-cmake .. -DCMAKE_INSTALL_PREFIX=${HOME}/usr
-make -j$(nproc)
-make install # no sudo! You don't need it to install in your home
-```
-
-#### Update the environment
-
-Edit ${HOME}/.bashrc and add:
-
-```bash
-# This line because libmorphologica.so is installed in ${HOME}/usr/lib/
-export LD_LIBRARY_PATH=${HOME}/usr/lib:${LD_LIBRARY_PATH}
-# This line allows your system's pkg-config program to find your locally
-# installed libmorphologica. This allows a program built on morphologica (like
-# BarrelEmerge) to find libmorphologica with pkg-config.
-export PKG_CONFIG_PATH=${HOME}/usr/lib/pkgconfig:${PKG_CONFIG_PATH}
-# This means that any binaries installed in ${HOME}/usr/bin can be executed
-# by typing their name into your command line
-export PATH=${HOME}/usr/bin:${PATH}
-```
-
-Either log out/log in, restart your terminal or type:
-
-```bash
-source ${HOME}/.bashrc
-```
-
-To get the updated variables into your environment.
-
 #### Build the client code
 
-In the base CMakeLists.txt of, for example,
-[BarrelEmerge](https://github.com/ABRG-Models/BarrelEmerge), pkgconfig is
-used to find morphologica. This is all that's required to build
-against your local libmorphologica. If things aren't working, check
-there isn't an alternative morphologica installation (or the pkgconfig
-file from an old one). Practically, that means checking there isn't
-```
-/usr/local/lib/pkgconfig/libmorphologica.pc
-```
-or
-```
-/usr/lib/pkgconfig/libmorphologica.pc
-```
-on your system.
+See the top level README for a quick description of how to include
+morphologica in your client code.
 
 ## Tests
 

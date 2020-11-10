@@ -85,18 +85,114 @@ For full, compilable examples of the code, see the examples/ subdirectory.
 
 See README.coding.md for a quick-start guide to the main classes.
 
-## Installation
+## Building code against morphologica
 
-Morphologica can be used in your code tree without installation. Just
-include the path to morphologica when compiling, so that 
-```c++
-#include <morph/Header.h>
+To build, you need to tell your build process 1) where the
+morphologica headers are 2) where some fonts that morphologica
+compiles in can be found (if you're using morph::Visual) and 3) which
+libraries to link to.
+
+You can either build with morphologica headers (and fonts) installed
+in your chosen location (/usr/local by default) *or* you can just
+clone a copy of morphologica source into your own source tree.
+
+### Option 1: With morphologica installed
+
+If you would like to work with morphologica headers installed in
+/usr/local, then this is what you add to your client code's
+CMakeLists.txt (assuming you're using cmake to build your own code).
+
+#### 1) Includes
+
+```cmake
+# Find the libraries which will be needed
+find_package(jsoncpp REQUIRED)
+find_package(HDF5 REQUIRED)
+find_package(Armadillo REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+# Define collections of includes for the dependencies
+set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
+include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
+
+# Where did you install morphologica?
+set(MORPH_INCLUDE_PATH /usr/local)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
 ```
-will work. morphologica has a
-library of legacy code and some test programs which are built with cmake
-and require OpenCV, OpenGL, armadillo, GLFW and HDF5 libraries as 
-dependencies. The process to build and install morphologica is given in 
-README.install.linux.md for GNU/Linux and README.install.mac.md for Apple Mac.
+
+#### 2) Ability for your compiler to copy in the fonts
+
+Set a definition to say where there are some truetype fonts that will
+be compiled into your binaries.
+
+```cmake
+# Tell the program where the morph fonts are. Again, assuming you installed morphologica in /usr/local:
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
+```
+
+#### 3) Links
+
+```cmake
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
+target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+```
+
+### Option 2: With morpholoigca 'in-tree'
+
+#### 1) Includes
+```cmake
+# Find the libraries which will be needed
+find_package(jsoncpp REQUIRED)
+find_package(HDF5 REQUIRED)
+find_package(Armadillo REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+# Define collections of includes for the dependencies
+set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
+include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
+
+# Where did you install morphologica?
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
+
+```
+
+#### 2) Ability for your compiler to copy in the fonts
+
+Set a definition to say where there are some truetype fonts that will
+be compiled into your binaries.
+
+```cmake
+# Tell the program where the morph fonts are, to compile them into the binary
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
+```
+
+#### 3) Dependency library linking
+
+```cmake
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
+target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+```
+
+morphologica has a library of legacy code and some test programs which
+are built with cmake. The process to build and install morphologica's
+test programs is given in README.install.linux.md for GNU/Linux and
+README.install.mac.md for Apple Mac.
 
 ## Credits
 
