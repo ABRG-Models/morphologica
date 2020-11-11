@@ -414,7 +414,7 @@ namespace morph {
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param colStart The tube staring colour
+         * \param colStart The tube starting colour
          * \param colEnd The tube's ending colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
@@ -590,7 +590,148 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        }
+        } // end computeTube
+
+        /*!
+         * Compute a tube. This version has provided unit vectors for
+         * orientation of the tube end faces (useful for graph markers).
+         *
+         * Create a tube from \a start to \a end, with radius \a r and a colour which
+         * transitions from the colour \a colStart to \a colEnd.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param ux a vector in the x axis direction for the end face
+         * \param uy a vector in the y axis direction
+         * \param colStart The tube starting colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         * \param rotation A rotation in the ux/uy plane to orient the vertices of the
+         * tube. Useful if this is to be a short tube used as a graph marker.
+         */
+        void computeTube (VBOint& idx, Vector<float> start, Vector<float> end,
+                          Vector<float> ux, Vector<float> uy,
+                          std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                          float r = 1.0f, int segments = 12, float rotation = 0.0f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // v is a face normal
+            Vector<float> v = ux.cross(uy);
+            v.renormalize();
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (colStart, this->vertexColors);
+
+            // Start cap vertices (a triangle fan)
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near start cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap. Push centre vertex as the last vertex.
+            this->vertex_push (vend, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (colEnd, this->vertexColors);
+
+            // Number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
+
+            // After creating vertices, push all the indices.
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            VBOint endMiddle = idx + (VBOint)nverts - 1;
+            VBOint endStartIdx = capStartIdx + (3*segments);
+
+            // Start cap indices
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // Middle sections
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                for (int j = 0; j < segments; j++) {
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
+                }
+            }
+
+            // bottom cap
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                this->indices.push_back (endStartIdx + j);
+                this->indices.push_back (endStartIdx + 1 + j);
+            }
+            this->indices.push_back (endMiddle);
+            this->indices.push_back (endStartIdx + segments - 1);
+            this->indices.push_back (endStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeTube2
 
         /*!
          * Create a tube from \a start to \a end, with radius \a r and a colour which
@@ -710,7 +851,7 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        }
+        } // End of computeTubeMin calculation
 
         /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
@@ -845,8 +986,7 @@ namespace morph {
                     this->indices.push_back (lastRingStartIdx);
                 }
             }
-            // end of sphere calculation
-        }
+        } // end of sphere calculation
 
         /*!
          * Code for creating a disc-like marker for graphs. This function could create
@@ -859,6 +999,10 @@ namespace morph {
          * \param segments Number of 'segments' to the shape
          * \param rotation A rotational offset, so that triangles can be rightway up or upside down
          * \param thickness Draw the marker as a 'puck'
+         *
+         * Fixme: Rather than use thickness parameter, instead have a start and end,
+         * much like computeTube. In fact, probably want to modify computeTube into
+         * computeMarker2!
          */
         void computeMarker (VBOint& idx, Vector<float> so, std::array<float, 3> sc, float r = 0.1f,
                             int segments = 3, float rotation = 0.0f, float thickness = 0.01f)
@@ -969,8 +1113,7 @@ namespace morph {
                     this->indices.push_back (lastRingStartIdx);
                 }
             }
-            // end of 'marker' calculation
-        }
+        } // end of 'marker' calculation
 
         /*!
          * Create a cone.
@@ -1117,7 +1260,8 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        }
+        } // end of cone calculation
+
         /*!
          * Create a line from \a start to \a end, with width \a w and a colour which
          * transitions from the colour \a colStart to \a colEnd. The thickness of the
@@ -1302,7 +1446,7 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        }
+        } // end of line calculation
 
     };
 

@@ -126,17 +126,29 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
 
-            float rotation = morph::TWO_PI_F/8.0f;
+            float rotation = morph::PI_F/4.0f;
             float thickness = 0.005f;
+            Vector<float> ux = {1,0,0};
+            Vector<float> uy = {0,1,0};
             if (this->showMarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
+#if 1
+                    morph::Vector<float> pstart = (*this->dataCoords)[i];
+                    morph::Vector<float> pend = pstart;
+                    pstart[2] += thickness*Flt{0.5};
+                    pend[2] -= thickness*Flt{0.5};
+                    this->computeTube (idx, pstart, pend,
+                                       ux, uy,
+                                       this->markerColour, this->markerColour,
+                                       this->markersize*Flt{0.5}, 4, rotation);
+#else
                     this->computeMarker (idx, (*this->dataCoords)[i],
                                          this->markerColour, this->markersize*Flt{0.5},
                                          40, rotation, thickness);
+#endif
                 }
             }
             if (this->showLines == true) {
-                std::cout << "Writeme: draw lines\n";
                 for (size_t i = 1; i < ncoords; ++i) {
                     // Draw tube from location -1 to location 0
                     this->computeTube (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],

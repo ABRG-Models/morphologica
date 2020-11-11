@@ -33,13 +33,11 @@ int main (int argc, char** argv)
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        std::vector<float> ord =  {0,   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-        std::vector<float> data = {0,   .1*.1, .2*.2, .3*.3, 0.4*.4, 0.5*.5, 0.6*.6, 0.7*.7, 0.8*.8};
+        std::vector<float> ord =  {0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        std::vector<float> data = {0, .1*.1, .2*.2, .3*.3, .4*.4, .5*.5, .6*.6, .7*.7, .8*.8};
 
         // Create GraphVisual:
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, offset);
-        // Get a VisualDataModel<>* alias:
-        //morph::VisualDataModel<float>* vdm = (morph::VisualDataModel<float>*)gv;
         // Set up the data:
         gv->colourScale.do_autoscale = true;
         gv->zScale.do_autoscale = true;

@@ -62,8 +62,15 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
             // Draw a tube. That's it!
+#if 1
             this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
                                this->start_col, this->end_col, this->radius, 12);
+#else
+            // Can alternatively use the 'oriented' tube
+            this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
+                               {0,1,0}, {0,0,1},
+                               this->start_col, this->end_col, this->radius, 6, morph::PI_F/6.0f);
+#endif
         }
 
         //! The position of the start of the rod, given with respect to the parent's offset
