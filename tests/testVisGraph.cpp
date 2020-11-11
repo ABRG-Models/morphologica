@@ -6,6 +6,7 @@
 #include <morph/GraphVisual.h>
 #include <morph/Scale.h>
 #include <morph/Vector.h>
+#include <morph/vVector.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -29,8 +30,8 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        std::vector<float> ord =  {0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        std::vector<float> data = {0, .1*.1, .2*.2, .3*.3, .4*.4, .5*.5, .6*.6, .7*.7, .8*.8};
+        morph::vVector<float> ord =  {0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> data = ord.pow(2);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
 #if 0 // Optionally change the size of the graph and range of the axes

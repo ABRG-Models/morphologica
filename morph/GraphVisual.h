@@ -306,9 +306,16 @@ namespace morph {
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
-            while (numticks > 10) {
-                trytick = trytick * 2;
-                numticks = floor(range/trytick);
+            if (numticks > 10) {
+                while (numticks > 10) {
+                    trytick = trytick * 2;
+                    numticks = floor(range/trytick);
+                }
+            } else {
+                while (numticks < 3) {
+                    trytick = trytick * 0.5;
+                    numticks = floor(range/trytick);
+                }
             }
             std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
 
