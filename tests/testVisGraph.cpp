@@ -42,14 +42,20 @@ int main (int argc, char** argv)
         gv->colourScale.do_autoscale = true;
         gv->zScale.do_autoscale = true;
         gv->ordscale.do_autoscale = true;
-        gv->setData (ord, data);
-        gv->cm.setType (morph::ColourMapType::Plasma);
-        gv->showMarkers = true;
-        gv->showLines = true;
+        gv->setdata (ord, data);
+
+#if 1 // Optionally modify the features of the graph
+        gv->showlines = true;
         gv->linewidth = 0.02;
+        gv->linecolour = {0,.8,1};
+
+        gv->showmarkers = true;
         gv->markersize = 0.04;
-        gv->markerColour = {0,.8,1};
+        gv->markercolour = {0.5,.0,0.3};
+#endif
+
         gv->setup();
+
         // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 

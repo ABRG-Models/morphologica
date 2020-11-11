@@ -59,7 +59,7 @@ namespace morph {
 
             this->colourScale = _data_scale;
 
-            this->setData (_ordinals, _data);
+            this->setdata (_ordinals, _data);
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
@@ -68,7 +68,7 @@ namespace morph {
         }
 
         //! Fixme: Will quickly want to plot multiple datasets for an ordinal
-        void setData (std::vector<Flt>& _ordinals, std::vector<Flt>& _data)
+        void setdata (std::vector<Flt>& _ordinals, std::vector<Flt>& _data)
         {
             if (_ordinals.size() != _data.size()) {
                 throw std::runtime_error ("size mismatch");
@@ -131,25 +131,24 @@ namespace morph {
             morph::Vector<float> ux = {1,0,0};
             morph::Vector<float> uy = {0,1,0};
             morph::Vector<float> uz = {0,0,1};
-            if (this->showMarkers == true) {
+            if (this->showmarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
 
                     morph::Vector<float> pstart = (*this->dataCoords)[i];
                     morph::Vector<float> pend = pstart;
                     pstart[2] += thickness*Flt{0.5};
                     pend[2] -= thickness*Flt{0.5};
-                    this->computeTube (idx, pstart, pend,
-                                       ux, uy,
-                                       this->markerColour, this->markerColour,
+                    this->computeTube (idx, pstart, pend, ux, uy,
+                                       this->markercolour, this->markercolour,
                                        this->markersize*Flt{0.5}, 4, rotation);
                 }
             }
-            if (this->showLines == true) {
+            if (this->showlines == true) {
                 for (size_t i = 1; i < ncoords; ++i) {
                     // Draw tube from location -1 to location 0
-                    this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                       uz,
-                                       lineColour, lineColour, this->linewidth, thickness*Flt{0.7});
+                    this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                                       this->linecolour, this->linecolour,
+                                       this->linewidth, thickness*Flt{0.7}, this->markersize);
                 }
             }
 
@@ -169,22 +168,25 @@ namespace morph {
             this->reinit();
         }
 
-        //! Data for the ordinals
-        std::vector<Flt>* ordinalData;
+        // A note on naming: I'm avoiding capitals in the parts of the GraphVisual API that are public.
 
         //! A scaling for the ordinals. I'll use zscale to scale the data values
         morph::Scale<Flt> ordscale;
 
-        std::array<Flt, 3> markerColour = {0,0,0};
-        std::array<Flt, 3> lineColour = {1,0,0};
+        std::array<Flt, 3> markercolour = {0,0,0};
+        std::array<Flt, 3> linecolour = {0,0,0};
 
         //! Graph features
-        bool showMarkers = true;
-        bool showLines = true;
+        bool showmarkers = true;
+        bool showlines = true;
         //! Change this to get larger or smaller spheres.
         Flt markersize = 0.05;
         Flt linewidth = 0.01;
         // Add linestyles too.
+
+    protected:
+        //! Data for the ordinals
+        std::vector<Flt>* ordinalData;
     };
 
 } // namespace morph

@@ -584,11 +584,12 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        } // end computeTube
+        } // end computeTube with randomly initialized end vertices
 
         /*!
-         * Compute a tube. This version has provided unit vectors for
-         * orientation of the tube end faces (useful for graph markers).
+         * Compute a tube. This version requires unit vectors for orientation of the
+         * tube end faces/vertices (useful for graph markers). The other version uses a
+         * randomly chosen vector to do this.
          *
          * Create a tube from \a start to \a end, with radius \a r and a colour which
          * transitions from the colour \a colStart to \a colEnd.
@@ -615,7 +616,7 @@ namespace morph {
             Vector<float> vend = end;
 
             // v is a face normal
-            Vector<float> v = ux.cross(uy);
+            Vector<float> v = uy.cross(ux);
             v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -725,127 +726,7 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        } // end computeTube2
-
-        /*!
-         * Create a tube from \a start to \a end, with radius \a r and a colour which
-         * transitions from the colour \a colStart to \a colEnd.
-         *
-         * This version of computeTube computes an absolute minimal object, which is
-         * acceptable if lighting with ambient light, but which does not have sufficient
-         * vertices for the normals to look right when the tube is lighted with a
-         * diffuse, positioned light source.
-         *
-         * \param idx The index into the 'vertex array'
-         * \param start The start of the tube
-         * \param end The end of the tube
-         * \param colStart The tube staring colour
-         * \param colEnd The tube's ending colour
-         * \param r Radius of the tube
-         * \param segments Number of segments used to render the tube
-         */
-        void computeTubeMin (VBOint& idx, Vector<float> start, Vector<float> end,
-                             std::array<float, 3> colStart, std::array<float, 3> colEnd,
-                             float r = 1.0f, int segments = 12)
-        {
-            // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
-            v.renormalize();
-
-            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
-            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
-            // v. The unit in-plane vector is inplane.normalise. Can now use that
-            // vector in the plan to define a point on the circle.
-            Vector<float> rand_vec;
-            rand_vec.randomize();
-            Vector<float> inplane = rand_vec.cross(v);
-            inplane.renormalize();
-            Vector<float> v_x_inplane = v.cross(inplane);
-
-            // Push the central point of the start cap - this is at location vstart
-            this->vertex_push (vstart, this->vertexPositions);
-            this->vertex_push (-v, this->vertexNormals);
-            this->vertex_push (colStart, this->vertexColors);
-
-            for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vstart+c, this->vertexPositions);
-                this->vertex_push (-v, this->vertexNormals); // -v
-                this->vertex_push (colStart, this->vertexColors);
-            }
-
-            for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
-                this->vertex_push (vend+c, this->vertexPositions);
-                this->vertex_push (v, this->vertexNormals); // +v
-                this->vertex_push (colEnd, this->vertexColors);
-            }
-
-            // Bottom cap. Push centre vertex as the last vertex.
-            this->vertex_push (vend, this->vertexPositions);
-            this->vertex_push (v, this->vertexNormals);
-            this->vertex_push (colEnd, this->vertexColors);
-
-            // Note: number of vertices = segments * 2 + 2.
-            int nverts = (segments * 2) + 2;
-
-            // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx + segments;
-
-            for (int j = 0; j < segments-1; j++) {
-                this->indices.push_back (capMiddle);
-                this->indices.push_back (capStartIdx + j);
-                this->indices.push_back (capStartIdx + 1 + j);
-            }
-            // Last one
-            this->indices.push_back (capMiddle);
-            this->indices.push_back (capStartIdx + segments - 1);
-            this->indices.push_back (capStartIdx);
-
-            for (int j = 0; j < segments; j++) {
-                // Two triangles per side; 1:
-                this->indices.push_back (capStartIdx + j);
-                if (j == (segments-1)) {
-                    this->indices.push_back (capStartIdx);
-                } else {
-                    this->indices.push_back (capStartIdx + 1 + j);
-                }
-                this->indices.push_back (endStartIdx + j);
-                // 2:
-                this->indices.push_back (endStartIdx + j);
-                if (j == (segments-1)) {
-                    this->indices.push_back (endStartIdx);
-                } else {
-                    this->indices.push_back (endStartIdx + 1 + j);
-                }
-                if (j == (segments-1)) {
-                    this->indices.push_back (capStartIdx);
-                } else {
-                    this->indices.push_back (capStartIdx + j + 1);
-                }
-            }
-
-            // bottom cap
-            for (int j = 0; j < segments-1; j++) {
-                this->indices.push_back (endMiddle);
-                this->indices.push_back (endStartIdx + j);
-                this->indices.push_back (endStartIdx + 1 + j);
-            }
-            // Last one
-            this->indices.push_back (endMiddle);
-            this->indices.push_back (endStartIdx + segments - 1);
-            this->indices.push_back (endStartIdx);
-
-            // Update idx
-            idx += nverts;
-        } // End of computeTubeMin calculation
+        } // end computeTube with ux/uy vectors for faces
 
         /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
@@ -1142,11 +1023,12 @@ namespace morph {
          * \param colEnd The tube's ending colour
          * \param w width of line in ux direction
          * \param thickness The thickness/depth of the line in uy direction
+         * \param shorten An amount by which to shorten the length of the line at each end.
          */
         void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
                           Vector<float> uz,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
-                          float w = 0.1f, float thickness = 0.01f)
+                          float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
             std::cout << "line width: " << w << ", thickness: " << thickness << std::endl;
             // There are always 8 segments for this line object, 2 at each of 4 corners
@@ -1157,6 +1039,12 @@ namespace morph {
             Vector<float> vend = end;
             Vector<float> v = vend - vstart;
             v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+            }
 
             // vv is normal to v and uz
             Vector<float> vv = v.cross(uz);
