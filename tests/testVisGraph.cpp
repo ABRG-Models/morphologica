@@ -38,21 +38,33 @@ int main (int argc, char** argv)
 
         // Create GraphVisual:
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, offset);
-        // Set up the data:
+        // Set up the data
         gv->colourScale.do_autoscale = true;
         gv->zScale.do_autoscale = true;
         gv->ordscale.do_autoscale = true;
+
+        // Change scalewidth/height BEFORE setting data
+        gv->scalewidth = 1.3;
+
+        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
         gv->setdata (ord, data);
 
 #if 1 // Optionally modify the features of the graph
-        gv->showlines = true;
         gv->linewidth = 0.01;
-        gv->linecolour = {0,.8,1};
+        gv->linecolour = {0.0, 0.0, 0.0};
 
-        gv->showmarkers = true;
-        gv->markerstyle = morph::markerstyle::triangle;
-        gv->markersize = 0.04;
-        gv->markercolour = {0.5,.0,0.3};
+        gv->markerstyle = morph::markerstyle::circle;
+        gv->markersize = 0.02;
+        gv->markercolour = {0.0, 0.0, 1.0};
+        gv->markergap = 0.02;
+
+        gv->setaxes(-0.1,1.1,-0.1,1.1);
+#endif
+
+#if 1
+        gv->axescolour = {0.5, 0.5, 0.5};
+        gv->axeswidth = 0.005f;
+        gv->axesfull = true;
 #endif
 
         gv->setup();

@@ -105,13 +105,20 @@ namespace morph {
             // Scale the incoming data?
             std::vector<Flt> sd (dsize, Flt{0});
             std::vector<Flt> od (dsize, Flt{0});
+
+            this->zScale.range_min = 0;
+            this->zScale.range_max = this->scaleheight;
             this->zScale.transform (*this->scalarData, sd);
+
+            // Transforms so that the output is 0 to 1. Can I mod this?
+            this->ordscale.range_min = 0;
+            this->ordscale.range_max = this->scalewidth;
             this->ordscale.transform (*this->ordinalData, od);
 
             // Now sd and od can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]); // crashes here, but usually after build, on mac
+                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]); // crashes here on mac
                 (*this->dataCoords)[i][1] = static_cast<Flt>(sd[i]);
                 (*this->dataCoords)[i][2] = Flt{0};
             }
@@ -131,9 +138,6 @@ namespace morph {
         {
             size_t ncoords = this->dataCoords->size();
 
-            // Find the minimum distance between points to get a radius? Or just allow
-            // client code to set it?
-
             std::vector<Flt> dcopy;
             dcopy = *(this->scalarData);
             this->colourScale.do_autoscale = true;
@@ -142,6 +146,10 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
 
+            this->drawAxes (idx);
+
+            // Draw data
+            // for (auto i : data) {...
             if (this->showmarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
                     this->marker (idx, (*this->dataCoords)[i], this->markerstyle);
@@ -149,13 +157,35 @@ namespace morph {
             }
             if (this->showlines == true) {
                 for (size_t i = 1; i < ncoords; ++i) {
-                    // Draw tube from location -1 to location 0
+                    // Draw tube from location -1 to location 0.
                     this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
                                        this->linecolour, this->linecolour,
                                        this->linewidth, this->thickness*Flt{0.7}, this->markergap);
                 }
             }
+        }
 
+        //! Draw the axes for the graph
+        void drawAxes (VBOint& idx)
+        {
+            if (this->autoaxes == true) {
+                // Compute max/min of scaled data.
+            }
+            // y axis
+            this->computeLine (idx, {0, 0, -this->thickness}, {0, this->scaleheight, -this->thickness}, uz,
+                               this->axescolour, this->axeswidth, this->thickness);
+            // x axis
+            this->computeLine (idx, {0, 0, -this->thickness}, {this->scalewidth, 0, -this->thickness}, uz,
+                               this->axescolour, this->axeswidth, this->thickness);
+
+            if (this->axesfull == true) {
+                // right axis
+                this->computeLine (idx, {this->scalewidth, 0, -this->thickness}, {this->scalewidth, this->scaleheight, -this->thickness}, uz,
+                                   this->axescolour, this->axeswidth, this->thickness);
+                // top axis
+                this->computeLine (idx, {0, this->scaleheight, -this->thickness}, {this->scalewidth, this->scaleheight, -this->thickness}, uz,
+                                   this->axescolour, this->axeswidth, this->thickness);
+            }
         }
 
         //! Generate vertices for a marker of the given style at location p
@@ -234,64 +264,56 @@ namespace morph {
                                this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
         }
 
-        //! Change marker size.
-        void changeMarkersize (float ms)
-        {
-            this->markersize = ms;
-            this->reinit();
-        }
-
-        //! Change line width
-        void changeLinewidth (float lw)
-        {
-            this->linewidth = lw;
-            this->reinit();
-        }
-
         // A note on naming: I'm avoiding capitals in the parts of the GraphVisual API that are public.
 
-        //! A scaling for the ordinals. I'll use zscale to scale the data values
+        //! A scaling for the ordinals. I'll use zCcale to scale the data values
         morph::Scale<Flt> ordscale;
 
-        std::array<Flt, 3> markercolour = {0,0,0};
-        std::array<Flt, 3> linecolour = {0,0,0};
-
-        //! Graph features
+        // marker features
         bool showmarkers = true;
-        bool showlines = true;
-        //! Change this to get larger or smaller spheres.
-        Flt markersize = 0.05;
-        Flt linewidth = 0.01;
-        morph::markerstyle markerstyle = markerstyle::triangle;
+        std::array<float, 3> markercolour = {0,0,0};
+        float markersize = 0.05f;
+        morph::markerstyle markerstyle = markerstyle::square;
         float markergap = 0.0f;
+
+        // line features
+        bool showlines = true;
+        std::array<float, 3> linecolour = {0,0,0};
+        float linewidth = 0.01f;
+
+        // axis features
+        std::array<float, 3> axescolour = {0,0,0};
+        float axeswidth = 0.01f;
+        //! full axes: left, bottom, top and right. Not full: left, bottom only.
+        bool axesfull = false;
+        //! Show gridlines where the tick lines are?
+        bool showgrid = false;
 
         //! How thick are the markers, axes etc? Sort of 'paper thickness'
         float thickness = 0.005f;
+        //! Use scalewdith to scale the width of the graph
+        float scalewidth = 1.0f;
+        float scaleheight = 1.0f;
+    protected:
+        bool autoaxes = true;
 
         //! The axes for orientation of the graph visual, which is 2D within the 3D environment.
         morph::Vector<float> ux = {1,0,0};
         morph::Vector<float> uy = {0,1,0};
         morph::Vector<float> uz = {0,0,1};
 
-    protected:
-        bool autoaxes = true;
-        Flt xmin = 0.0f;
-        Flt xmax = 1.0f;
-        Flt ymin = 0.0f;
-        Flt ymax = 1.0f;
-
     public:
         // Axis ranges. The length of each axis could be determined from the data and
         // ordinates for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/ordinates might need
         // to extend.
-        void setAxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        void setaxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
             this->autoaxes = false;
-            xmin = _xmin;
-            xmax = _xmax;
-            ymin = _ymin;
-            ymax = _ymax;
+            // To make the axes larger, we change the scaling that we'll apply to the
+            // data (the axes are always scalewidth * scaleheight in size)
+            this->zScale.compute_autoscale (_ymin, _ymax);
+            this->ordscale.compute_autoscale (_xmin, _xmax);
         }
 
     protected:

@@ -1010,6 +1010,15 @@ namespace morph {
             idx += nverts;
         } // end of cone calculation
 
+        //! Compute a line with a single colour
+        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                          Vector<float> uz,
+                          std::array<float, 3> col,
+                          float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
+        {
+            this->computeLine (idx, start, end, uz, col, col, w, thickness, shorten);
+        }
+
         /*!
          * Create a line from \a start to \a end, with width \a w and a colour which
          * transitions from the colour \a colStart to \a colEnd. The thickness of the
