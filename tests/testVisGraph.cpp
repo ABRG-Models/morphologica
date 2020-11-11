@@ -29,41 +29,34 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::Scale<float> scale;
-        scale.setParams (1.0, 0.0);
-
         std::vector<float> ord =  {0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
         std::vector<float> data = {0, .1*.1, .2*.2, .3*.3, .4*.4, .5*.5, .6*.6, .7*.7, .8*.8};
+        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, {0,0,0});
 
-        // Create GraphVisual:
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, offset);
-        // Set up the data
-        gv->colourScale.do_autoscale = true;
-        gv->zScale.do_autoscale = true;
-        gv->ordscale.do_autoscale = true;
+#if 0 // Optionally change the size of the graph and range of the axes
+        gv->setgraphsize (1.5, 1);
+#endif
 
-        // Change scalewidth/height BEFORE setting data
-        gv->scalewidth = 1.3;
+#if 0 // Optionally change the range of the axes
+        gv->setaxes (-1,1,-1,1);
+#endif
 
         // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
         gv->setdata (ord, data);
 
-#if 1 // Optionally modify the features of the graph
-        gv->linewidth = 0.01;
+#if 0 // Optionally modify the features of the graph
+        gv->linewidth = 0.001;
         gv->linecolour = {0.0, 0.0, 0.0};
 
         gv->markerstyle = morph::markerstyle::circle;
-        gv->markersize = 0.02;
+        gv->markersize = 0.002;
         gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markergap = 0.02;
-
-        gv->setaxes(-0.1,1.1,-0.1,1.1);
+        gv->markergap = 0.002;
 #endif
 
-#if 1
+#if 0 // Optionally set the axes up
         gv->axescolour = {0.5, 0.5, 0.5};
-        gv->axeswidth = 0.005f;
+        gv->axeswidth = 0.001f;
         gv->axesfull = true;
 #endif
 

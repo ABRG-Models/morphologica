@@ -56,6 +56,10 @@ namespace morph {
             this->shaderprog = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
+
+            this->colourScale.do_autoscale = true;
+            this->zScale.do_autoscale = true;
+            this->ordscale.do_autoscale = true;
         }
 
         //! Long constructor demonstrating what needs to be set before setup() is called.
@@ -72,6 +76,10 @@ namespace morph {
             this->shaderprog = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
+
+            this->colourScale.do_autoscale = true;
+            this->zScale.do_autoscale = true;
+            this->ordscale.do_autoscale = true;
 
             this->colourScale = _data_scale;
 
@@ -103,22 +111,19 @@ namespace morph {
             this->ordinalData = &_ordinals;
 
             // Scale the incoming data?
+            if (this->zScale.autoscaled == false) {
+                this->setgraphsize (this->scalewidth, this->scaleheight);
+            }
             std::vector<Flt> sd (dsize, Flt{0});
             std::vector<Flt> od (dsize, Flt{0});
 
-            this->zScale.range_min = 0;
-            this->zScale.range_max = this->scaleheight;
             this->zScale.transform (*this->scalarData, sd);
-
-            // Transforms so that the output is 0 to 1. Can I mod this?
-            this->ordscale.range_min = 0;
-            this->ordscale.range_max = this->scalewidth;
             this->ordscale.transform (*this->ordinalData, od);
 
             // Now sd and od can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]); // crashes here on mac
+                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]);
                 (*this->dataCoords)[i][1] = static_cast<Flt>(sd[i]);
                 (*this->dataCoords)[i][2] = Flt{0};
             }
@@ -168,9 +173,6 @@ namespace morph {
         //! Draw the axes for the graph
         void drawAxes (VBOint& idx)
         {
-            if (this->autoaxes == true) {
-                // Compute max/min of scaled data.
-            }
             // y axis
             this->computeLine (idx, {0, 0, -this->thickness},
                                {0, this->scaleheight, -this->thickness}, uz,
@@ -246,6 +248,7 @@ namespace morph {
             }
         }
 
+    protected:
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
         {
@@ -268,17 +271,16 @@ namespace morph {
                                this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
         }
 
-        // A note on naming: I'm avoiding capitals in the parts of the GraphVisual API that are public.
-
+    public:
         //! A scaling for the ordinals. I'll use zCcale to scale the data values
         morph::Scale<Flt> ordscale;
 
         // marker features
         bool showmarkers = true;
-        std::array<float, 3> markercolour = {0,0,0};
-        float markersize = 0.05f;
+        std::array<float, 3> markercolour = {0,0,1};
+        float markersize = 0.03f;
         morph::markerstyle markerstyle = markerstyle::square;
-        float markergap = 0.0f;
+        float markergap = 0.03f;
 
         // line features
         bool showlines = true;
@@ -289,38 +291,59 @@ namespace morph {
         std::array<float, 3> axescolour = {0,0,0};
         float axeswidth = 0.01f;
         //! full axes: left, bottom, top and right. Not full: left, bottom only.
-        bool axesfull = false;
+        bool axesfull = true;
         //! Show gridlines where the tick lines are?
         bool showgrid = false;
 
-        //! How thick are the markers, axes etc? Sort of 'paper thickness'
-        float thickness = 0.005f;
-        //! Use scalewdith to scale the width of the graph
-        float scalewidth = 1.0f;
-        float scaleheight = 1.0f;
-    protected:
-        bool autoaxes = true;
+        //! Set the graph size, in model units.
+        void setgraphsize (float width, float height)
+        {
+            std::cout << __FUNCTION__ << " called\n";
+            if (this->zScale.autoscaled == true) {
+                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
+                                          "Hint: call GraphVisual::setgraphsize() BEFORE GraphVisual::setdata() or ::setaxes()");
+            }
+            this->scalewidth = width;
+            this->scaleheight = height;
 
-        //! The axes for orientation of the graph visual, which is 2D within the 3D environment.
-        morph::Vector<float> ux = {1,0,0};
-        morph::Vector<float> uy = {0,1,0};
-        morph::Vector<float> uz = {0,0,1};
+            float _extra = 0.05 * this->scaleheight;
+            this->zScale.range_min = _extra;
+            this->zScale.range_max = this->scaleheight-_extra;
 
-    public:
+            _extra = 0.05 * this->scalewidth;
+            this->ordscale.range_min = _extra;
+            this->ordscale.range_max = this->scalewidth-_extra;
+
+            this->thickness *= this->scalewidth;
+        }
+
         // Axis ranges. The length of each axis could be determined from the data and
         // ordinates for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/ordinates might need
         // to extend.
         void setaxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
-            this->autoaxes = false;
+            // First make sure that the range_min/max are correctly set
+            this->setgraphsize (this->scalewidth, this->scaleheight);
             // To make the axes larger, we change the scaling that we'll apply to the
-            // data (the axes are always scalewidth * scaleheight in size)
+            // data (the axes are always scalewidth * scaleheight in size).
             this->zScale.compute_autoscale (_ymin, _ymax);
             this->ordscale.compute_autoscale (_xmin, _xmax);
         }
 
     protected:
+        //! How thick are the markers, axes etc? Sort of 'paper thickness'
+        float thickness = 0.005f;
+        //! scalewidth scales the amount of in-model distance that the graph will be wide
+        float scalewidth = 1.0f;
+        //! scalewidth height scales the amount of in-model distance that the graph will be high
+        float scaleheight = 1.0f;
+
+        //! The axes for orientation of the graph visual, which is 2D within the 3D environment.
+        morph::Vector<float> ux = {1,0,0};
+        morph::Vector<float> uy = {0,1,0};
+        morph::Vector<float> uz = {0,0,1};
+
         //! Data for the ordinals
         std::vector<Flt>* ordinalData;
     };
