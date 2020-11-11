@@ -1030,7 +1030,6 @@ namespace morph {
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
-            std::cout << "line width: " << w << ", thickness: " << thickness << std::endl;
             // There are always 8 segments for this line object, 2 at each of 4 corners
             const int segments = 8;
 
@@ -1063,11 +1062,11 @@ namespace morph {
             angles[0] = std::acos (w_ / r);
             angles[1] = angles[0];
             angles[2] = morph::PI_F - angles[0];
-            angles[3] = angles[1];
+            angles[3] = angles[2];
             angles[4] = morph::PI_F + angles[0];
-            angles[5] = angles[2];
+            angles[5] = angles[4];
             angles[6] = morph::TWO_PI_F - angles[0];
-            angles[7] = angles[3];
+            angles[7] = angles[6];
             // The normals for the vertices around the line
             std::array<Vector<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
 
