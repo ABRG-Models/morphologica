@@ -21,6 +21,22 @@
 
 namespace morph {
 
+    //! What shape for the graph markers?
+    enum class markerstyle
+    {
+        triangle,
+        uptriangle,
+        downtriangle,
+        square,
+        diamond,
+        pentagon,
+        hexagon,
+        heptagon,
+        octagon,
+        circle,
+        numstyles
+    };
+
     /*
      * So you want to graph some data? You have an ordinal and data. Although these
      * could provide coordinates for graphing the data, it's possible that they may be
@@ -126,21 +142,9 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
 
-            float rotation = morph::PI_F/4.0f;
-            float thickness = 0.005f;
-            morph::Vector<float> ux = {1,0,0};
-            morph::Vector<float> uy = {0,1,0};
-            morph::Vector<float> uz = {0,0,1};
             if (this->showmarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
-
-                    morph::Vector<float> pstart = (*this->dataCoords)[i];
-                    morph::Vector<float> pend = pstart;
-                    pstart[2] += thickness*Flt{0.5};
-                    pend[2] -= thickness*Flt{0.5};
-                    this->computeTube (idx, pstart, pend, ux, uy,
-                                       this->markercolour, this->markercolour,
-                                       this->markersize*Flt{0.5}, 4, rotation);
+                    this->marker (idx, (*this->dataCoords)[i], this->markerstyle);
                 }
             }
             if (this->showlines == true) {
@@ -148,10 +152,86 @@ namespace morph {
                     // Draw tube from location -1 to location 0
                     this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
                                        this->linecolour, this->linecolour,
-                                       this->linewidth, thickness*Flt{0.7}, this->markersize);
+                                       this->linewidth, this->thickness*Flt{0.7}, this->markergap);
                 }
             }
 
+        }
+
+        //! Generate vertices for a marker of the given style at location p
+        void marker (VBOint& idx, morph::Vector<float>& p, morph::markerstyle mstyle)
+        {
+            switch (mstyle) {
+            case morph::markerstyle::triangle:
+            case morph::markerstyle::uptriangle:
+            {
+                this->polygonMarker (idx, p, 3);
+                break;
+            }
+            case morph::markerstyle::downtriangle:
+            {
+                this->polygonFlattop (idx, p, 3);
+                break;
+            }
+            case morph::markerstyle::square:
+            {
+                this->polygonFlattop (idx, p, 4);
+                break;
+            }
+            case morph::markerstyle::diamond:
+            {
+                this->polygonMarker (idx, p, 4);
+                break;
+            }
+            case morph::markerstyle::pentagon:
+            {
+                this->polygonMarker (idx, p, 5);
+                break;
+            }
+            case morph::markerstyle::hexagon:
+            {
+                this->polygonMarker (idx, p, 6);
+                break;
+            }
+            case morph::markerstyle::heptagon:
+            {
+                this->polygonMarker (idx, p, 7);
+                break;
+            }
+            case morph::markerstyle::octagon:
+            {
+                this->polygonMarker (idx, p, 8);
+                break;
+            }
+            case morph::markerstyle::circle:
+            default:
+            {
+                this->polygonMarker (idx, p, 20);
+                break;
+            }
+            }
+        }
+
+        // Create an n sided polygon with first vertex 'pointing up'
+        void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
+        {
+            morph::Vector<float> pend = p;
+            p[2] += this->thickness*Flt{0.5};
+            pend[2] -= this->thickness*Flt{0.5};
+            this->computeTube (idx, p, pend, ux, uy,
+                               this->markercolour, this->markercolour,
+                               this->markersize*Flt{0.5}, n);
+        }
+
+        // Create an n sided polygon with a flat edge 'pointing up'
+        void polygonFlattop (VBOint& idx, morph::Vector<float> p, int n)
+        {
+            morph::Vector<float> pend = p;
+            p[2] += this->thickness*Flt{0.5};
+            pend[2] -= this->thickness*Flt{0.5};
+            this->computeTube (idx, p, pend, ux, uy,
+                               this->markercolour, this->markercolour,
+                               this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
         }
 
         //! Change marker size.
@@ -182,7 +262,37 @@ namespace morph {
         //! Change this to get larger or smaller spheres.
         Flt markersize = 0.05;
         Flt linewidth = 0.01;
-        // Add linestyles too.
+        morph::markerstyle markerstyle = markerstyle::triangle;
+        float markergap = 0.0f;
+
+        //! How thick are the markers, axes etc? Sort of 'paper thickness'
+        float thickness = 0.005f;
+
+        //! The axes for orientation of the graph visual, which is 2D within the 3D environment.
+        morph::Vector<float> ux = {1,0,0};
+        morph::Vector<float> uy = {0,1,0};
+        morph::Vector<float> uz = {0,0,1};
+
+    protected:
+        bool autoaxes = true;
+        Flt xmin = 0.0f;
+        Flt xmax = 1.0f;
+        Flt ymin = 0.0f;
+        Flt ymax = 1.0f;
+
+    public:
+        // Axis ranges. The length of each axis could be determined from the data and
+        // ordinates for a static graph, but for a dynamically updating graph, it's
+        // going to be necessary to give a hint at how far the data/ordinates might need
+        // to extend.
+        void setAxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        {
+            this->autoaxes = false;
+            xmin = _xmin;
+            xmax = _xmax;
+            ymin = _ymin;
+            ymax = _ymax;
+        }
 
     protected:
         //! Data for the ordinals

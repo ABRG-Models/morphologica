@@ -46,10 +46,11 @@ int main (int argc, char** argv)
 
 #if 1 // Optionally modify the features of the graph
         gv->showlines = true;
-        gv->linewidth = 0.02;
+        gv->linewidth = 0.01;
         gv->linecolour = {0,.8,1};
 
         gv->showmarkers = true;
+        gv->markerstyle = morph::markerstyle::triangle;
         gv->markersize = 0.04;
         gv->markercolour = {0.5,.0,0.3};
 #endif
