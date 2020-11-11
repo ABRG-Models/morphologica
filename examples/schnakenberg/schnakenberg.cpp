@@ -37,12 +37,12 @@
  * that I can compile a version of the binary without plotting, for parameter searches
  * in which I am only going to be saving out HDF5 data.
  */
-# include "morph/Visual.h"
-# include "morph/HexGridVisual.h"
-# include "morph/ColourMap.h"
-# include "morph/VisualDataModel.h"
-# include "morph/Scale.h"
-# include "morph/Vector.h"
+# include <morph/Visual.h>
+# include <morph/HexGridVisual.h>
+# include <morph/ColourMap.h>
+# include <morph/VisualDataModel.h>
+# include <morph/Scale.h>
+# include <morph/Vector.h>
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const std::string& logpath, const std::string& name,
@@ -58,12 +58,12 @@ void savePngs (const std::string& logpath, const std::string& name,
 /*!
  * Included for directory manipulation code
  */
-#include "morph/tools.h"
+#include <morph/tools.h>
 
 /*!
  * A jsoncpp-wrapping class for configuration.
  */
-#include "morph/Config.h"
+#include <morph/Config.h>
 
 /*
  * using directives just before main()
