@@ -172,18 +172,22 @@ namespace morph {
                 // Compute max/min of scaled data.
             }
             // y axis
-            this->computeLine (idx, {0, 0, -this->thickness}, {0, this->scaleheight, -this->thickness}, uz,
+            this->computeLine (idx, {0, 0, -this->thickness},
+                               {0, this->scaleheight, -this->thickness}, uz,
                                this->axescolour, this->axeswidth, this->thickness);
             // x axis
-            this->computeLine (idx, {0, 0, -this->thickness}, {this->scalewidth, 0, -this->thickness}, uz,
+            this->computeLine (idx, {0, 0, -this->thickness},
+                               {this->scalewidth, 0, -this->thickness}, uz,
                                this->axescolour, this->axeswidth, this->thickness);
 
             if (this->axesfull == true) {
                 // right axis
-                this->computeLine (idx, {this->scalewidth, 0, -this->thickness}, {this->scalewidth, this->scaleheight, -this->thickness}, uz,
+                this->computeLine (idx, {this->scalewidth, 0, -this->thickness},
+                                   {this->scalewidth, this->scaleheight, -this->thickness}, uz,
                                    this->axescolour, this->axeswidth, this->thickness);
                 // top axis
-                this->computeLine (idx, {0, this->scaleheight, -this->thickness}, {this->scalewidth, this->scaleheight, -this->thickness}, uz,
+                this->computeLine (idx, {0, this->scaleheight, -this->thickness},
+                                   {this->scalewidth, this->scaleheight, -this->thickness}, uz,
                                    this->axescolour, this->axeswidth, this->thickness);
             }
         }
