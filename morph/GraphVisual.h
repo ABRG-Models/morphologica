@@ -95,7 +95,7 @@ namespace morph {
             // Now sd and od can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]);
+                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]); // crashes here, but usually after build, on mac
                 (*this->dataCoords)[i][1] = static_cast<Flt>(sd[i]);
                 (*this->dataCoords)[i][2] = Flt{0};
             }
@@ -128,11 +128,12 @@ namespace morph {
 
             float rotation = morph::PI_F/4.0f;
             float thickness = 0.005f;
-            Vector<float> ux = {1,0,0};
-            Vector<float> uy = {0,1,0};
+            morph::Vector<float> ux = {1,0,0};
+            morph::Vector<float> uy = {0,1,0};
+            morph::Vector<float> uz = {0,0,1};
             if (this->showMarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
-#if 1
+
                     morph::Vector<float> pstart = (*this->dataCoords)[i];
                     morph::Vector<float> pend = pstart;
                     pstart[2] += thickness*Flt{0.5};
@@ -141,18 +142,14 @@ namespace morph {
                                        ux, uy,
                                        this->markerColour, this->markerColour,
                                        this->markersize*Flt{0.5}, 4, rotation);
-#else
-                    this->computeMarker (idx, (*this->dataCoords)[i],
-                                         this->markerColour, this->markersize*Flt{0.5},
-                                         40, rotation, thickness);
-#endif
                 }
             }
             if (this->showLines == true) {
                 for (size_t i = 1; i < ncoords; ++i) {
                     // Draw tube from location -1 to location 0
-                    this->computeTube (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                       lineColour, lineColour, this->linewidth, 4);
+                    this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                       uz,
+                                       lineColour, lineColour, this->linewidth, thickness*Flt{0.7});
                 }
             }
 

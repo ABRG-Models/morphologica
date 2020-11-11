@@ -46,6 +46,8 @@ int main (int argc, char** argv)
         gv->cm.setType (morph::ColourMapType::Plasma);
         gv->showMarkers = true;
         gv->showLines = true;
+        gv->linewidth = 0.02;
+        gv->markersize = 0.04;
         gv->markerColour = {0,.8,1};
         gv->setup();
         // Add the GraphVisual (as a VisualModel*)
