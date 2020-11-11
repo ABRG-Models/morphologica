@@ -212,8 +212,9 @@ namespace morph {
         void drawAxes (VBOint& idx)
         {
             // y axis
-            this->computeLine (idx, {0, 0, -this->thickness},
-                               {0, this->scaleheight, -this->thickness}, uz,
+            this->computeLine (idx,
+                               {0, -this->axeswidth*0.5f                  -this->thickness},
+                               {0, this->scaleheight + this->axeswidth*0.5f, -this->thickness}, uz,
                                this->axescolour, this->axeswidth, this->thickness);
             // x axis
             this->computeLine (idx, {0, 0, -this->thickness},
@@ -267,8 +268,9 @@ namespace morph {
 
             if (this->axesfull == true) {
                 // right axis
-                this->computeLine (idx, {this->scalewidth, 0, -this->thickness},
-                                   {this->scalewidth, this->scaleheight, -this->thickness}, uz,
+                this->computeLine (idx,
+                                   {this->scalewidth, -this->axeswidth*0.5f, -this->thickness},
+                                   {this->scalewidth, this->scaleheight+(this->axeswidth*0.5f), -this->thickness}, uz,
                                    this->axescolour, this->axeswidth, this->thickness);
                 // top axis
                 this->computeLine (idx, {0, this->scaleheight, -this->thickness},
@@ -432,8 +434,11 @@ namespace morph {
 
         // axis features
         std::array<float, 3> axescolour = {0,0,0};
+        //! Refactor this attribute name axislinewidth? axiswidth?
         float axeswidth = 0.01f;
-        float ticklength = 0.01f;
+        //! How long should the ticks be?
+        float ticklength = 0.02f;
+        //! Ticks in or ticks out? Or something else?
         morph::tickstyle tickstyle = tickstyle::ticksin;
         //! full axes: left, bottom, top and right. Not full: left, bottom only.
         bool axesfull = true;
@@ -453,8 +458,9 @@ namespace morph {
         morph::VisualFont font = morph::VisualFont::Vera;
         //! Width of an m in the chosen font
         float fontmsize = 0.05;
-        //! Gap to tick labels
+        //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
+        //! Horizontal gap to y axis tick labels
         float yticklabelshift = 0.1;
 
         //! Set the graph size, in model units.
