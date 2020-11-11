@@ -18,6 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <cmath>
 
 namespace morph {
 
@@ -34,6 +35,13 @@ namespace morph {
         heptagon,
         octagon,
         circle,
+        numstyles
+    };
+
+    enum class tickstyle
+    {
+        ticksin,
+        ticksout,
         numstyles
     };
 
@@ -182,6 +190,51 @@ namespace morph {
                                {this->scalewidth, 0, -this->thickness}, uz,
                                this->axescolour, this->axeswidth, this->thickness);
 
+            if (this->manualticks == true) {
+
+            } else {
+                // Compute locations for ticks...
+                Flt _xmin = this->ordscale.inverse_one(this->ordscale.range_min);
+                Flt _xmax = this->ordscale.inverse_one(this->ordscale.range_max);
+                Flt _ymin = this->zScale.inverse_one(this->zScale.range_min);
+                Flt _ymax = this->zScale.inverse_one(this->zScale.range_max);
+
+                std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
+                std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
+
+                float realmin = this->ordscale.inverse_one(0);
+                float realmax = this->ordscale.inverse_one(this->scalewidth);
+                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
+                realmin = this->zScale.inverse_one(0);
+                realmax = this->zScale.inverse_one(this->scaleheight);
+                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
+
+                this->xtick_posns.resize (this->xticks.size());
+                this->ordscale.transform (xticks, xtick_posns);
+
+                this->ytick_posns.resize (this->yticks.size());
+                this->zScale.transform (yticks, ytick_posns);
+
+                float tl = -this->ticklength;
+                if (this->tickstyle == tickstyle::ticksin) {
+                    tl = this->ticklength;
+                }
+
+                for (auto xt : xtick_posns) {
+                    // Want to place lines in screen units. So transform the data units
+                    this->computeLine (idx,
+                                       {(float)xt, 0.0f, -this->thickness},
+                                       {(float)xt, tl,   -this->thickness}, uz,
+                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
+                }
+                for (auto yt : ytick_posns) {
+                    this->computeLine (idx,
+                                       {0.0f, (float)yt, -this->thickness},
+                                       {tl,   (float)yt, -this->thickness}, uz,
+                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
+                }
+            }
+
             if (this->axesfull == true) {
                 // right axis
                 this->computeLine (idx, {this->scalewidth, 0, -this->thickness},
@@ -191,7 +244,60 @@ namespace morph {
                 this->computeLine (idx, {0, this->scaleheight, -this->thickness},
                                    {this->scalewidth, this->scaleheight, -this->thickness}, uz,
                                    this->axescolour, this->axeswidth, this->thickness);
+
+                // Tick positions
+                float tl = this->ticklength;
+                if (this->tickstyle == tickstyle::ticksin) {
+                    tl = -this->ticklength;
+                }
+
+                for (auto xt : xtick_posns) {
+                    // Want to place lines in screen units. So transform the data units
+                    this->computeLine (idx,
+                                       {(float)xt, this->scalewidth, -this->thickness},
+                                       {(float)xt, this->scalewidth + tl,   -this->thickness}, uz,
+                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
+                }
+                for (auto yt : ytick_posns) {
+                    this->computeLine (idx,
+                                       {this->scaleheight, (float)yt, -this->thickness},
+                                       {this->scaleheight + tl,   (float)yt, -this->thickness}, uz,
+                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
+                }
             }
+        }
+
+        std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
+        {
+            std::deque<Flt> ticks;
+
+            std::cout << "maketicks called for range: " << rmin << " to " << rmax << "\n";
+            Flt range = rmax - rmin;
+            // How big should the range be? log the range, find the floor, raise it to get candidate
+            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
+            Flt numticks = floor(range/trytick);
+            while (numticks > 10) {
+                trytick = trytick * 2;
+                numticks = floor(range/trytick);
+            }
+            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
+
+            // Realmax and realmin come from the full range of ordscale/zScale
+
+            Flt atick = trytick;
+            while (atick <= realmax) {
+                std::cout << "Push back tick at " << atick << std::endl;
+                ticks.push_back (atick);
+                atick += trytick;
+            }
+            atick = trytick - trytick;
+            while (atick >= realmin) {
+                std::cout << "Push back tick at " << atick << std::endl;
+                ticks.push_back (atick);
+                atick -= trytick;
+            }
+
+            return ticks;
         }
 
         //! Generate vertices for a marker of the given style at location p
@@ -290,10 +396,22 @@ namespace morph {
         // axis features
         std::array<float, 3> axescolour = {0,0,0};
         float axeswidth = 0.01f;
+        float ticklength = 0.01f;
+        morph::tickstyle tickstyle = tickstyle::ticksin;
         //! full axes: left, bottom, top and right. Not full: left, bottom only.
         bool axesfull = true;
         //! Show gridlines where the tick lines are?
         bool showgrid = false;
+        //! Should ticks be manually set?
+        bool manualticks = false;
+        //! The xtick values that should be displayed
+        std::deque<Flt> xticks;
+        //! The positions, along the x axis (in model space) for the xticks
+        std::deque<Flt> xtick_posns;
+        //! The ytick values that should be displayed
+        std::deque<Flt> yticks;
+        //! The positions, along the y axis (in model space) for the yticks
+        std::deque<Flt> ytick_posns;
 
         //! Set the graph size, in model units.
         void setgraphsize (float width, float height)
@@ -306,11 +424,11 @@ namespace morph {
             this->scalewidth = width;
             this->scaleheight = height;
 
-            float _extra = 0.05 * this->scaleheight;
+            float _extra = this->dataaxisdist * this->scaleheight;
             this->zScale.range_min = _extra;
             this->zScale.range_max = this->scaleheight-_extra;
 
-            _extra = 0.05 * this->scalewidth;
+            _extra = this->dataaxisdist * this->scalewidth;
             this->ordscale.range_min = _extra;
             this->ordscale.range_max = this->scalewidth-_extra;
 
@@ -333,12 +451,14 @@ namespace morph {
 
     protected:
         //! How thick are the markers, axes etc? Sort of 'paper thickness'
-        float thickness = 0.005f;
+        float thickness = 0.0001f;
         //! scalewidth scales the amount of in-model distance that the graph will be wide
         float scalewidth = 1.0f;
         //! scalewidth height scales the amount of in-model distance that the graph will be high
         float scaleheight = 1.0f;
-
+        //! What proportion of the graph width/height should be allowed as a space
+        //! between the min/max and the axes? Can be 0.0f;
+        float dataaxisdist = 0.04f;
         //! The axes for orientation of the graph visual, which is 2D within the 3D environment.
         morph::Vector<float> ux = {1,0,0};
         morph::Vector<float> uy = {0,1,0};
