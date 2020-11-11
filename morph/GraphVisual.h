@@ -126,10 +126,13 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
 
+            float rotation = morph::TWO_PI_F/8.0f;
+            float thickness = 0.005f;
             if (this->showMarkers == true) {
                 for (size_t i = 0; i < ncoords; ++i) {
-                    // FIXME: Replace with 'computeDisc'
-                    this->computeMarker (idx, (*this->dataCoords)[i], this->markerColour, this->markersize*Flt{0.5}, 5);
+                    this->computeMarker (idx, (*this->dataCoords)[i],
+                                         this->markerColour, this->markersize*Flt{0.5},
+                                         40, rotation, thickness);
                 }
             }
             if (this->showLines == true) {

@@ -34,7 +34,7 @@ int main (int argc, char** argv)
         scale.setParams (1.0, 0.0);
 
         std::vector<float> ord =  {0,   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-        std::vector<float> data = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+        std::vector<float> data = {0,   .1*.1, .2*.2, .3*.3, 0.4*.4, 0.5*.5, 0.6*.6, 0.7*.7, 0.8*.8};
 
         // Create GraphVisual:
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, offset);
@@ -47,7 +47,7 @@ int main (int argc, char** argv)
         gv->setData (ord, data);
         gv->cm.setType (morph::ColourMapType::Plasma);
         gv->showMarkers = true;
-        gv->showLines = false;
+        gv->showLines = true;
         gv->markerColour = {0,.8,1};
         gv->setup();
         // Add the GraphVisual (as a VisualModel*)

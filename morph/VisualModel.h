@@ -863,22 +863,14 @@ namespace morph {
         void computeMarker (VBOint& idx, Vector<float> so, std::array<float, 3> sc, float r = 0.1f,
                             int segments = 3, float rotation = 0.0f, float thickness = 0.01f)
         {
-            const int rings = 3;
-
-            // First cap, draw as a triangle fan, but record indices so that
-            // we only need a single call to glDrawElements.
-            float rings0 = M_PI * -0.5;
-
-            // Top face is at z0
+            // Top face is in the x-y plane at z position z0
             float z0 = so[2];
-            std::cout << "z0=" << z0 << std::endl;
 
             // Bottom face is at position z1
             float z1 = so[2]-thickness;
 
             // Push the central point
             this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
-            std::cout << "central point at " << so[0]<<","<<so[1]<<","<<so[2]+z0<< std::endl;
             this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
 
@@ -886,17 +878,14 @@ namespace morph {
             VBOint ringStartIdx = idx;
             VBOint lastRingStartIdx = idx;
 
+            // First cap, draw as a triangle fan
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * M_PI * (float) (j) / segments;
-                float x = cos(segment);
-                float y = sin(segment);
-                //std::cout << "j="<<j<<", x/y:" <<x<<","<<y<<std::endl;
+                float segment = rotation + 2 * M_PI * (float) (j) / segments;
+                float x = cos(segment) * r;
+                float y = sin(segment) * r;
 
-                float x1 = x*r;
-                float y1 = y*r;
-
-                this->vertex_push (so[0]+x1, so[1]+y1, so[2]+z0, this->vertexPositions);
+                this->vertex_push (so[0]+x, so[1]+y, so[2]+z0, this->vertexPositions);
                 // Up normals
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
                 this->vertex_push (sc, this->vertexColors);
@@ -925,19 +914,15 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
-                    float segment = 2 * M_PI * (float)j / segments;
-                    float x = cos(segment);
-                    float y = sin(segment);
-
-                    // One vertex per segment
-                    float x0 = x*r;
-                    float y0 = y*r;
+                    float segment = rotation + 2 * M_PI * (float)j / segments;
+                    float x = cos(segment) * r;
+                    float y = sin(segment) * r;
 
                     // NB: Only add ONE vertex per segment. Already have the first ring
-                    this->vertex_push (so[0]+x0, so[1]+y0, so[2]+zz[k], this->vertexPositions);;
+                    this->vertex_push (so[0]+x, so[1]+y, so[2]+zz[k], this->vertexPositions);;
                     if (nn[k] == 1) {
                         // norm out
-                        this->vertex_push (x0, y0, 0.0f, this->vertexNormals);
+                        this->vertex_push (x, y, 0.0f, this->vertexNormals);
                     } else {
                         // norm down
                         this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
@@ -965,7 +950,7 @@ namespace morph {
             }
 
             // bottom face
-            this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z1, this->vertexPositions);
+            this->vertex_push (so[0], so[1], so[2]+z1, this->vertexPositions);
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
             capMiddle = idx++;
@@ -1133,6 +1118,192 @@ namespace morph {
             // Update idx
             idx += nverts;
         }
+        /*!
+         * Create a line from \a start to \a end, with width \a w and a colour which
+         * transitions from the colour \a colStart to \a colEnd. The thickness of the
+         * line in the z direction is \a thickness
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param colStart The tube staring colour
+         * \param colEnd The tube's ending colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         */
+        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                          std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                          float w = 0.1f, float thickness = 0.01f)
+        {
+            int segments = 4;
+            float r = w/2.0f;
+            // I'm actually going to have to re-write this from scratch otherwise it'll
+            // be too confusing
+
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+
+            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
+            // v. The unit in-plane vector is inplane.normalise. Can now use that
+            // vector in the plan to define a point on the circle.
+            Vector<float> rand_vec;
+            rand_vec.randomize();
+            Vector<float> inplane = rand_vec.cross(v);
+            inplane.renormalize();
+
+            // Now use parameterization of circle inplane = p1-x1 and
+            // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
+            // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
+            Vector<float> v_x_inplane = v.cross(inplane);
+            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
+            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
+            //std::cout << "Start cap...\n";
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            //std::cout << "Central point of vstart cap is " << vstart << std::endl;
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (colStart, this->vertexColors);
+
+            // Start cap vertices.
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near start cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                float t = (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap. Push centre vertex as the last vertex.
+            this->vertex_push (vend, this->vertexPositions);
+            //std::cout << "vend cap is " << vend << std::endl;
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (colEnd, this->vertexColors);
+
+            // Note: number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
+
+            // After creating vertices, push all the indices.
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            VBOint endMiddle = idx + (VBOint)nverts - 1;
+            VBOint endStartIdx = capStartIdx + (3*segments);
+
+            //std::cout << "start cap" << std::endl;
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                //std::cout << "add " << capMiddle << " to indices\n";
+                this->indices.push_back (capStartIdx + j);
+                //std::cout << "add " << (capStartIdx+j) << " to indices\n";
+                this->indices.push_back (capStartIdx + 1 + j);
+                //std::cout << "add " << (capStartIdx+1+j) << " to indices\n";
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            //std::cout << "add " << capMiddle << " to indices\n";
+            this->indices.push_back (capStartIdx + segments - 1);
+            //std::cout << "add " << (capStartIdx + segments - 1) << " to indices\n";
+            this->indices.push_back (capStartIdx);
+            //std::cout << "add " << (capStartIdx) << " to indices\n";
+
+            // MIDDLE SECTIONS
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                //std::cout << "For lsection " << lsection << " capStartIdx=" << capStartIdx
+                //          << ", and endStartIdx=" << endStartIdx << std::endl;
+                // This does sides between start and end. I want to do this three times.
+                for (int j = 0; j < segments; j++) {
+                    //std::cout << "Triangle 1\n";
+                    this->indices.push_back (capStartIdx + j);
+                    //std::cout << "1. add " << (capStartIdx + j) << " to indices\n";
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                        //std::cout << "1. add " << (capStartIdx) << " to indices\n";
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                        //std::cout << "1. add " << (capStartIdx + j + 1) << " to indices\n";
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    //std::cout << "1. add " << (endStartIdx + j) << " to indices\n";
+                    // 2:
+                    //std::cout << "Triangle 2\n";
+                    this->indices.push_back (endStartIdx + j);
+                    //std::cout << "2. add " << (endStartIdx + j) << " to indices\n";
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                        //std::cout << "2. add " << (endStartIdx) << " to indices\n";
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                        //std::cout << "2. add " << (endStartIdx + 1 + j) << " to indices\n";
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                        //std::cout << "2. add " << (capStartIdx) << " to indices\n";
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                        //std::cout << "2. add " << (capStartIdx + j + 1) << " to indices\n";
+                    }
+                }
+            }
+            //std::cout << "endStartIdx after loop = " << endStartIdx << std::endl;
+
+            // bottom cap
+            //std::cout << "vend cap" << std::endl;
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                //std::cout << "add " << (endMiddle) << " to indices\n";
+                this->indices.push_back (endStartIdx + j);
+                //std::cout << "add " << (endStartIdx + j) << " to indices\n";
+                this->indices.push_back (endStartIdx + 1 + j);
+                //std::cout << "add " << (endStartIdx + 1 + j) << " to indices\n---\n";
+            }
+            // Last one
+            this->indices.push_back (endMiddle);
+            //std::cout << "add " << (endMiddle) << " to indices\n";
+            this->indices.push_back (endStartIdx + segments - 1);
+            //std::cout << "add " << (endStartIdx - 1 + segments) << " to indices\n";
+            this->indices.push_back (endStartIdx);
+            //std::cout << "add " << (endStartIdx) << " to indices\n";
+
+            // Update idx
+            idx += nverts;
+        }
+
     };
 
 } // namespace morph
