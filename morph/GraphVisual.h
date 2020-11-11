@@ -15,10 +15,12 @@
 #include <morph/VisualDataModel.h>
 #include <morph/Scale.h>
 #include <morph/Vector.h>
+#include <morph/VisualTextModel.h>
 #include <iostream>
 #include <vector>
 #include <array>
 #include <cmath>
+#include <sstream>
 
 namespace morph {
 
@@ -59,9 +61,10 @@ namespace morph {
     {
     public:
         //! Constructor which sets just the shader program and the model view offset
-        GraphVisual(GLuint sp, const Vector<float> _offset)
+        GraphVisual(GLuint sp, GLuint tsp, const Vector<float> _offset)
         {
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -71,7 +74,7 @@ namespace morph {
         }
 
         //! Long constructor demonstrating what needs to be set before setup() is called.
-        GraphVisual(GLuint sp,
+        GraphVisual(GLuint sp, GLuint tsp,
                     const Vector<float> _offset,
                     std::vector<Flt>& _ordinals,
                     std::vector<Flt>& _data,
@@ -82,6 +85,7 @@ namespace morph {
                     const float _sat = 1.0f)
         {
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -175,6 +179,32 @@ namespace morph {
                                        this->linecolour, this->linecolour,
                                        this->linewidth, this->thickness*Flt{0.7}, this->markergap);
                 }
+            }
+
+            this->addText();
+        }
+
+        void addText()
+        {
+            for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+
+                morph::Vector<float> lblpos = {this->xtick_posns[i]-0.015f, -this->ticklabelgap, 0};
+                std::stringstream ss;
+                ss << this->xticks[i];
+                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                                                                   this->font,
+                                                                   this->fontmsize, 100, lblpos,
+                                                                   ss.str()));
+            }
+            for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
+
+                morph::Vector<float> lblpos = {-this->yticklabelshift, this->ytick_posns[i]-0.015f, 0};
+                std::stringstream ss;
+                ss << this->yticks[i];
+                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                                                                   this->font,
+                                                                   this->fontmsize, 100, lblpos,
+                                                                   ss.str()));
             }
         }
 
@@ -412,6 +442,13 @@ namespace morph {
         std::deque<Flt> yticks;
         //! The positions, along the y axis (in model space) for the yticks
         std::deque<Flt> ytick_posns;
+        // Default font
+        morph::VisualFont font = morph::VisualFont::Vera;
+        //! Width of an m in the chosen font
+        float fontmsize = 0.05;
+        //! Gap to tick labels
+        float ticklabelgap = 0.05;
+        float yticklabelshift = 0.1;
 
         //! Set the graph size, in model units.
         void setgraphsize (float width, float height)

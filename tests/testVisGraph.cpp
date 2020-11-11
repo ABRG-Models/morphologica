@@ -31,32 +31,32 @@ int main (int argc, char** argv)
     try {
         std::vector<float> ord =  {0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
         std::vector<float> data = {0, .1*.1, .2*.2, .3*.3, .4*.4, .5*.5, .6*.6, .7*.7, .8*.8};
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, {0,0,0});
+        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
 #if 0 // Optionally change the size of the graph and range of the axes
-        gv->setgraphsize (1.5, 1);
+        gv->setgraphsize (1.2, 1);
 #endif
 
-#if 0 // Optionally change the range of the axes
-        gv->setaxes (-1,1,-1,1);
+#if 1 // Optionally change the range of the axes
+        gv->setaxes (0,1.4,0,1.4);
 #endif
 
         // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
         gv->setdata (ord, data);
 
-#if 0 // Optionally modify the features of the graph
-        gv->linewidth = 0.001;
-        gv->linecolour = {0.0, 0.0, 0.0};
+#if 1 // Optionally modify the features of the graph
+        gv->linewidth = 0.005;
+        gv->linecolour = {1.0, 0.0, 0.0};
 
-        gv->markerstyle = morph::markerstyle::circle;
-        gv->markersize = 0.002;
+        gv->markerstyle = morph::markerstyle::triangle;
+        gv->markersize = 0.02;
         gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markergap = 0.002;
+        gv->markergap = 0.02;
 #endif
 
-#if 0 // Optionally set the axes up
+#if 1 // Optionally set the axes up
         gv->axescolour = {0.5, 0.5, 0.5};
-        gv->axeswidth = 0.001f;
+        gv->axeswidth = 0.01f;
         gv->axesfull = true;
 #endif
 
