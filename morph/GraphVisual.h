@@ -320,6 +320,24 @@ namespace morph {
         float xtick_height = 0.0f;
         float ytick_width = 0.0f;
 
+        //! Graph-specific number formatting for tick labels. Someone might want to override this
+        virtual std::string graphNumberFormat (Flt num)
+        {
+            std::stringstream ss;
+            ss << num;
+            std::string s = ss.str();
+
+            if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
+                // It's a 0.something number. Get rid of any 0 preceding a '.'
+                std::string::size_type p = s.find ('.');
+                if (p != std::string::npos && p>0) {
+                    if (s[--p] == '0') { s.erase(p, 1); }
+                }
+            }
+
+            return s;
+        }
+
         //! Add the tick labels: 0, 1, 2 etc
         void drawTickLabels()
         {
@@ -340,15 +358,16 @@ namespace morph {
                 // Omit the 0 for 'cross' axes (or maybe shift its position)
                 if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                std::stringstream ss;
-                ss << this->xticks[i];
+                // Expunge any '0' from 0.123 so that it's .123 and so on.
+                std::string s = this->graphNumberFormat (this->xticks[i]);
+
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
-                lbl->setupText (ss.str(), lblpos+this->mv_offset);
+                lbl->setupText (s, lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
             }
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
@@ -356,13 +375,12 @@ namespace morph {
                 // Omit the 0 for 'cross' axes (or maybe shift its position)
                 if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
 
-                std::stringstream ss;
-                ss << this->yticks[i];
+                std::string s = this->graphNumberFormat (this->yticks[i]);
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
-                lbl->setupText (ss.str(), lblpos+this->mv_offset);
+                lbl->setupText (s, lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
             }
         }
