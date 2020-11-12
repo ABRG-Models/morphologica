@@ -32,9 +32,9 @@ int main (int argc, char** argv)
     try {
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-        morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        morph::vVector<float> data = ord.pow(3);
-        gv->setdata (ord, data);
+        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> data = absc.pow(3);
+        gv->setdata (absc, data);
 
         gv->setup();
 

@@ -30,8 +30,8 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        morph::vVector<float> data = ord.pow(3);
+        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> data = absc.pow(3);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
 #if 1 // Optionally change the size of the graph and range of the axes
@@ -43,7 +43,7 @@ int main (int argc, char** argv)
 #endif
 
         // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
-        gv->setdata (ord, data);
+        gv->setdata (absc, data);
 
 #if 1 // Optionally modify the features of the graph
         gv->linewidth = 0.005;

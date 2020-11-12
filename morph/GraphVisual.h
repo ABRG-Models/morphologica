@@ -60,7 +60,7 @@ namespace morph {
     };
 
     /*
-     * So you want to graph some data? You have an ordinal and data. Although these
+     * So you want to graph some data? You have an abscissa and data. Although these
      * could provide coordinates for graphing the data, it's possible that they may be
      * wide ranging. Much better to scale the data to be in the range [0,1].
      *
@@ -88,7 +88,7 @@ namespace morph {
         //! Long constructor demonstrating what needs to be set before setup() is called.
         GraphVisual(GLuint sp, GLuint tsp,
                     const Vector<float> _offset,
-                    std::vector<Flt>& _ordinals,
+                    std::vector<Flt>& _abscissae,
                     std::vector<Flt>& _data,
                     const Scale<Flt>& _ord_scale,
                     const Scale<Flt>& _data_scale,
@@ -107,7 +107,7 @@ namespace morph {
 
             this->colourScale = _data_scale;
 
-            this->setdata (_ordinals, _data);
+            this->setdata (_abscissae, _data);
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
@@ -115,10 +115,10 @@ namespace morph {
             this->setup();
         }
 
-        //! Fixme: Will quickly want to plot multiple datasets for an ordinal
-        void setdata (std::vector<Flt>& _ordinals, std::vector<Flt>& _data)
+        //! Fixme: Will quickly want to plot multiple datasets on one graph
+        void setdata (std::vector<Flt>& _abscissae, std::vector<Flt>& _data)
         {
-            if (_ordinals.size() != _data.size()) {
+            if (_abscissae.size() != _data.size()) {
                 throw std::runtime_error ("size mismatch");
             }
 
@@ -130,9 +130,9 @@ namespace morph {
                 this->dataCoords->resize (dsize);
             }
 
-            // Copy the addresses of the raw incoming data and save in scalarData and ordinalData
+            // Copy the addresses of the raw incoming data and save in scalarData and abscissaData
             this->scalarData = &_data;
-            this->ordinalData = &_ordinals;
+            this->abscissaData = &_abscissae;
 
             // Scale the incoming data?
             if (this->zScale.autoscaled == false) {
@@ -142,7 +142,7 @@ namespace morph {
             std::vector<Flt> od (dsize, Flt{0});
 
             this->zScale.transform (*this->scalarData, sd);
-            this->abscissa_scale.transform (*this->ordinalData, od);
+            this->abscissa_scale.transform (*this->abscissaData, od);
 
             // Now sd and od can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -642,8 +642,8 @@ namespace morph {
         morph::Vector<float> uy = {0,1,0};
         morph::Vector<float> uz = {0,0,1};
 
-        //! Data for the ordinals
-        std::vector<Flt>* ordinalData;
+        //! Data for the abscissae
+        std::vector<Flt>* abscissaData;
     };
 
 } // namespace morph

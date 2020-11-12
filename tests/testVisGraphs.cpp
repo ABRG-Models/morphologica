@@ -30,13 +30,13 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        morph::vVector<float> data = ord.pow(3);
+        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> data = absc.pow(3);
 
         float step = 1.4f;
 
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
-        gv->setdata (ord, data);
+        gv->setdata (absc, data);
         gv->linecolour = {1.0, 0.0, 0.0};
         gv->markerstyle = morph::markerstyle::triangle;
         gv->markercolour = {0.0, 0.0, 1.0};
@@ -46,8 +46,8 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
-        morph::vVector<float> data2 = ord.pow(2);
-        gv->setdata (ord, data2);
+        morph::vVector<float> data2 = absc.pow(2);
+        gv->setdata (absc, data2);
         gv->linecolour = {0.0, 0.0, 1.0};
         gv->markerstyle = morph::markerstyle::hexagon;
         gv->markercolour = {0.0, 0.0, 0.0};
@@ -56,8 +56,8 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-step,0});
-        morph::vVector<float> data3 = ord.pow(4);
-        gv->setdata (ord, data3);
+        morph::vVector<float> data3 = absc.pow(4);
+        gv->setdata (absc, data3);
         gv->linecolour = {0.0, 1.0, 0.0};
         gv->markerstyle = morph::markerstyle::circle;
         gv->markercolour = {0.0, 1.0, 0.0};
@@ -69,8 +69,8 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-step,0});
-        morph::vVector<float> data4 = ord.pow(5);
-        gv->setdata (ord, data4);
+        morph::vVector<float> data4 = absc.pow(5);
+        gv->setdata (absc, data4);
         gv->linecolour = {0.0, 0.0, 1.0};
         gv->markerstyle = morph::markerstyle::none;
         gv->markergap = 0.0f;
