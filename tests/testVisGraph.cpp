@@ -35,7 +35,7 @@ int main (int argc, char** argv)
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
 #if 1 // Optionally change the size of the graph and range of the axes
-        gv->setsize (1, 1);
+        gv->setsize (1.33, 1);
 #endif
 
 #if 0 // Optionally change the range of the axes

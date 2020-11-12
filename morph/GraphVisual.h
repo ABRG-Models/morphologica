@@ -162,6 +162,46 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Set the graph size, in model units.
+        void setsize (float width, float height)
+        {
+            std::cout << __FUNCTION__ << " called\n";
+            if (this->zScale.autoscaled == true) {
+                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
+                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
+            }
+            this->scalewidth = width;
+            this->scaleheight = height;
+
+            float _extra = this->dataaxisdist * this->scaleheight;
+            this->zScale.range_min = _extra;
+            this->zScale.range_max = this->scaleheight-_extra;
+
+            _extra = this->dataaxisdist * this->scalewidth;
+            this->ordscale.range_min = _extra;
+            this->ordscale.range_max = this->scalewidth-_extra;
+
+            this->thickness *= this->scalewidth;
+        }
+
+        // Axis ranges. The length of each axis could be determined from the data and
+        // ordinates for a static graph, but for a dynamically updating graph, it's
+        // going to be necessary to give a hint at how far the data/ordinates might need
+        // to extend.
+        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        {
+            // First make sure that the range_min/max are correctly set
+            this->setsize (this->scalewidth, this->scaleheight);
+            // To make the axes larger, we change the scaling that we'll apply to the
+            // data (the axes are always scalewidth * scaleheight in size).
+            this->zScale.compute_autoscale (_ymin, _ymax);
+            this->ordscale.compute_autoscale (_xmin, _xmax);
+        }
+
+        //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
+        void setthickness (float th) { this->thickness = th; }
+
+    protected:
         //! Compute stuff for a graph
         void initializeVertices()
         {
@@ -193,10 +233,10 @@ namespace morph {
                 }
             }
 
-            this->addText();
+            this->addAxisLabels();
         }
 
-        void addText()
+        void addAxisLabels()
         {
             float x_for_yticks = 0.0f;
             float y_for_xticks = 0.0f;
@@ -218,7 +258,7 @@ namespace morph {
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
-                lbl->setupText (ss.str(), lblpos);
+                lbl->setupText (ss.str(), lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
             }
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
@@ -231,7 +271,7 @@ namespace morph {
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
-                lbl->setupText (ss.str(), lblpos);
+                lbl->setupText (ss.str(), lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
             }
         }
@@ -353,76 +393,6 @@ namespace morph {
             }
         }
 
-        // Given the data, compute the ticks (or use the ones that client code gave us)
-        void computeTickPositions()
-        {
-            if (this->manualticks == true) {
-                std::cout << "Writeme: Implement a manual tick-setting scheme\n";
-            } else {
-                // Compute locations for ticks...
-                Flt _xmin = this->ordscale.inverse_one (this->ordscale.range_min);
-                Flt _xmax = this->ordscale.inverse_one (this->ordscale.range_max);
-                Flt _ymin = this->zScale.inverse_one (this->zScale.range_min);
-                Flt _ymax = this->zScale.inverse_one (this->zScale.range_max);
-
-                std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
-                std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
-
-                float realmin = this->ordscale.inverse_one (0);
-                float realmax = this->ordscale.inverse_one (this->scalewidth);
-                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
-                realmin = this->zScale.inverse_one (0);
-                realmax = this->zScale.inverse_one (this->scaleheight);
-                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
-
-                this->xtick_posns.resize (this->xticks.size());
-                this->ordscale.transform (xticks, xtick_posns);
-
-                this->ytick_posns.resize (this->yticks.size());
-                this->zScale.transform (yticks, ytick_posns);
-            }
-        }
-
-        std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
-        {
-            std::deque<Flt> ticks;
-
-            std::cout << "maketicks called for range: " << rmin << " to " << rmax << "\n";
-            Flt range = rmax - rmin;
-            // How big should the range be? log the range, find the floor, raise it to get candidate
-            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
-            Flt numticks = floor(range/trytick);
-            if (numticks > 10) {
-                while (numticks > 10) {
-                    trytick = trytick * 2;
-                    numticks = floor(range/trytick);
-                }
-            } else {
-                while (numticks < 3) {
-                    trytick = trytick * 0.5;
-                    numticks = floor(range/trytick);
-                }
-            }
-            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
-
-            // Realmax and realmin come from the full range of ordscale/zScale
-
-            Flt atick = trytick;
-            while (atick <= realmax) {
-                std::cout << "Push back tick at " << atick << std::endl;
-                ticks.push_back (atick);
-                atick += trytick;
-            }
-            atick = trytick - trytick;
-            while (atick >= realmin) {
-                std::cout << "Push back tick at " << atick << std::endl;
-                ticks.push_back (atick);
-                atick -= trytick;
-            }
-
-            return ticks;
-        }
-
         //! Generate vertices for a marker of the given style at location p
         void marker (VBOint& idx, morph::Vector<float>& p, morph::markerstyle mstyle)
         {
@@ -477,45 +447,6 @@ namespace morph {
             }
         }
 
-        //! Set the graph size, in model units.
-        void setsize (float width, float height)
-        {
-            std::cout << __FUNCTION__ << " called\n";
-            if (this->zScale.autoscaled == true) {
-                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
-                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
-            }
-            this->scalewidth = width;
-            this->scaleheight = height;
-
-            float _extra = this->dataaxisdist * this->scaleheight;
-            this->zScale.range_min = _extra;
-            this->zScale.range_max = this->scaleheight-_extra;
-
-            _extra = this->dataaxisdist * this->scalewidth;
-            this->ordscale.range_min = _extra;
-            this->ordscale.range_max = this->scalewidth-_extra;
-
-            this->thickness *= this->scalewidth;
-        }
-
-        // Axis ranges. The length of each axis could be determined from the data and
-        // ordinates for a static graph, but for a dynamically updating graph, it's
-        // going to be necessary to give a hint at how far the data/ordinates might need
-        // to extend.
-        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
-        {
-            // First make sure that the range_min/max are correctly set
-            this->setsize (this->scalewidth, this->scaleheight);
-            // To make the axes larger, we change the scaling that we'll apply to the
-            // data (the axes are always scalewidth * scaleheight in size).
-            this->zScale.compute_autoscale (_ymin, _ymax);
-            this->ordscale.compute_autoscale (_xmin, _xmax);
-        }
-
-        void setthickness (float th) { this->thickness = th; }
-
-    protected:
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
         {
@@ -536,6 +467,82 @@ namespace morph {
             this->computeTube (idx, p, pend, ux, uy,
                                this->markercolour, this->markercolour,
                                this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+        }
+
+        // Given the data, compute the ticks (or use the ones that client code gave us)
+        void computeTickPositions()
+        {
+            if (this->manualticks == true) {
+                std::cout << "Writeme: Implement a manual tick-setting scheme\n";
+            } else {
+                // Compute locations for ticks...
+                Flt _xmin = this->ordscale.inverse_one (this->ordscale.range_min);
+                Flt _xmax = this->ordscale.inverse_one (this->ordscale.range_max);
+                Flt _ymin = this->zScale.inverse_one (this->zScale.range_min);
+                Flt _ymax = this->zScale.inverse_one (this->zScale.range_max);
+
+                std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
+                std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
+
+                float realmin = this->ordscale.inverse_one (0);
+                float realmax = this->ordscale.inverse_one (this->scalewidth);
+                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
+                realmin = this->zScale.inverse_one (0);
+                realmax = this->zScale.inverse_one (this->scaleheight);
+                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
+
+                this->xtick_posns.resize (this->xticks.size());
+                this->ordscale.transform (xticks, xtick_posns);
+
+                this->ytick_posns.resize (this->yticks.size());
+                this->zScale.transform (yticks, ytick_posns);
+            }
+        }
+
+        /*!
+         * Auto-computes the tick marker locations (in data space) for the data range
+         * rmin to rmax. realmin nd realmax gives the data range actually displayed on
+         * the graph - it's the data range, plus any padding introduced by
+         * GraphVisual::dataaxisdist
+         */
+        std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
+        {
+            std::deque<Flt> ticks;
+
+            std::cout << "maketicks called for range: " << rmin << " to " << rmax << "\n";
+            Flt range = rmax - rmin;
+            // How big should the range be? log the range, find the floor, raise it to get candidate
+            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
+            Flt numticks = floor(range/trytick);
+            if (numticks > 10) {
+                while (numticks > 10) {
+                    trytick = trytick * 2;
+                    numticks = floor(range/trytick);
+                }
+            } else {
+                while (numticks < 3) {
+                    trytick = trytick * 0.5;
+                    numticks = floor(range/trytick);
+                }
+            }
+            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
+
+            // Realmax and realmin come from the full range of ordscale/zScale
+
+            Flt atick = trytick;
+            while (atick <= realmax) {
+                std::cout << "Push back tick at " << atick << std::endl;
+                ticks.push_back (atick);
+                atick += trytick;
+            }
+            atick = trytick - trytick;
+            while (atick >= realmin) {
+                std::cout << "Push back tick at " << atick << std::endl;
+                ticks.push_back (atick);
+                atick -= trytick;
+            }
+
+            return ticks;
         }
 
     public:
@@ -584,14 +591,17 @@ namespace morph {
         morph::VisualFont font = morph::VisualFont::Vera;
         //! The font size is the width of an m in the chosen font, in model units
         float fontsize = 0.05;
+        // might need tickfontsize and axisfontsize
         //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
-        //! Horizontal gap to y axis tick labels
-        float yticklabelshift = 0.1;
+        //! The x axis label
+        std::string xlabel = "x";
+        //! The y axis label
+        std::string ylabel = "y";
 
     protected:
         //! How thick are the markers, axes etc? Sort of 'paper thickness'
-        float thickness = 0.0001f;
+        float thickness = 0.001f;
         //! scalewidth scales the amount of in-model distance that the graph will be wide
         float scalewidth = 1.0f;
         //! scalewidth height scales the amount of in-model distance that the graph will be high

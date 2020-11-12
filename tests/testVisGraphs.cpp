@@ -60,6 +60,7 @@ int main (int argc, char** argv)
         gv->markercolour = {0.0, 1.0, 0.0};
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::boxfullticks;
+        gv->tickstyle = morph::tickstyle::ticksin;
         gv->setup();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
