@@ -139,15 +139,15 @@ namespace morph {
                 this->setsize (this->scalewidth, this->scaleheight);
             }
             std::vector<Flt> sd (dsize, Flt{0});
-            std::vector<Flt> od (dsize, Flt{0});
+            std::vector<Flt> ad (dsize, Flt{0});
 
             this->zScale.transform (*this->scalarData, sd);
-            this->abscissa_scale.transform (*this->abscissaData, od);
+            this->abscissa_scale.transform (*this->abscissaData, ad);
 
-            // Now sd and od can be used to construct dataCoords x/y. They are used to
+            // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[i][0] = static_cast<Flt>(od[i]);
+                (*this->dataCoords)[i][0] = static_cast<Flt>(ad[i]);
                 (*this->dataCoords)[i][1] = static_cast<Flt>(sd[i]);
                 (*this->dataCoords)[i][2] = Flt{0};
             }
@@ -506,10 +506,10 @@ namespace morph {
                 Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
                 Flt _ymin = this->zScale.inverse_one (this->zScale.range_min);
                 Flt _ymax = this->zScale.inverse_one (this->zScale.range_max);
-
+#ifdef __DEBUG__
                 std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
                 std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
-
+#endif
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->scalewidth);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
@@ -535,7 +535,6 @@ namespace morph {
         {
             std::deque<Flt> ticks;
 
-            std::cout << "maketicks called for range: " << rmin << " to " << rmax << "\n";
             Flt range = rmax - rmin;
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
@@ -551,19 +550,17 @@ namespace morph {
                     numticks = floor(range/trytick);
                 }
             }
-            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
-
+#ifdef __DEBUG__
+            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
+#endif
             // Realmax and realmin come from the full range of abscissa_scale/zScale
-
             Flt atick = trytick;
             while (atick <= realmax) {
-                std::cout << "Push back tick at " << atick << std::endl;
                 ticks.push_back (atick);
                 atick += trytick;
             }
             atick = trytick - trytick;
             while (atick >= realmin) {
-                std::cout << "Push back tick at " << atick << std::endl;
                 ticks.push_back (atick);
                 atick -= trytick;
             }

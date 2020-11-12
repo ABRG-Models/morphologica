@@ -104,7 +104,6 @@ namespace morph {
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
-            // Set up a face to get characters and ensure we can compute text geometry
             this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
         }
 
