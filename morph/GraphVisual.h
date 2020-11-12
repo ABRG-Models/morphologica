@@ -212,8 +212,8 @@ namespace morph {
             VBOint idx = 0;
             this->drawAxes (idx);
             this->drawData (idx);
-            this->addTickLabels();
-            this->addAxisLabels();
+            this->drawTickLabels(); // from which we can store the tick label widths
+            this->drawAxisLabels();
         }
 
         void drawData (VBOint& idx)
@@ -235,16 +235,41 @@ namespace morph {
                                        this->linecolour, this->linecolour,
                                        this->linewidth, this->thickness*Flt{0.7}, this->markergap);
 #else
-                    this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
-                                           this->linecolour,
-                                           this->linewidth, this->markergap);
+                    if (this->markergap > 0.0f) {
+                        this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                                               this->linecolour,
+                                               this->linewidth, this->markergap);
+                    } else {
+                        // No gaps, so draw a perfect set of joined up lines
+                        if (i == 1) {
+                            // First line
+                            this->computeFlatLineN (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                    (*this->dataCoords)[i+1],
+                                                    uz,
+                                                    this->linecolour,
+                                                    this->linewidth);
+                        } else if (i == (ncoords-1)) {
+                            // last line
+                            this->computeFlatLineP (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                    (*this->dataCoords)[i-2],
+                                                    uz,
+                                                    this->linecolour,
+                                                    this->linewidth);
+                        } else {
+                            this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                   (*this->dataCoords)[i-2], (*this->dataCoords)[i+1],
+                                                   uz,
+                                                   this->linecolour,
+                                                   this->linewidth);
+                        }
+                    }
 #endif
                 }
             }
         }
 
         //! Add the axis labels
-        void addAxisLabels()
+        void drawAxisLabels()
         {
             // x axis label (easy)
             morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
@@ -252,9 +277,11 @@ namespace morph {
             morph::Vector<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
                 float _y0_mdl = this->zScale.transform_one (0);
-                lblpos = { 0.9f * this->scalewidth, _y0_mdl-(this->axislabelgap+geom.height()), 0 };
+                lblpos = { 0.9f * this->scalewidth,
+                           _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 };
             } else {
-                lblpos = {0.5f * this->scalewidth - geom.half_width(), -(this->axislabelgap+geom.height()), 0};
+                lblpos = {0.5f * this->scalewidth - geom.half_width(),
+                          -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset);
             this->texts.push_back (lbl);
@@ -273,9 +300,10 @@ namespace morph {
 
             if (this->axisstyle == axisstyle::cross) {
                 float _x0_mdl = this->abscissa_scale.transform_one (0);
-                lblpos = {_x0_mdl-this->axislabelgap-leftshift, 0.9f * this->scaleheight, 0};
+                lblpos = {_x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                          0.9f * this->scaleheight, 0};
             } else {
-                lblpos = { -(this->axislabelgap+leftshift),
+                lblpos = { -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
                            0.5f*this->scaleheight - downshift, 0 };
             }
 
@@ -289,9 +317,16 @@ namespace morph {
             this->texts.push_back (lbl);
         }
 
+        float xtick_height = 0.0f;
+        float ytick_width = 0.0f;
+
         //! Add the tick labels: 0, 1, 2 etc
-        void addTickLabels()
+        void drawTickLabels()
         {
+            // Reset these members
+            this->xtick_height = 0.0f;
+            this->ytick_width = 0.0f;
+
             float x_for_yticks = 0.0f;
             float y_for_xticks = 0.0f;
             if (this->axisstyle == axisstyle::cross) {
@@ -311,6 +346,7 @@ namespace morph {
                 // VisualTextModel, so need a static method like this:
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (ss.str(), lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
@@ -324,6 +360,7 @@ namespace morph {
                 ss << this->yticks[i];
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (ss.str(), lblpos+this->mv_offset);
                 this->texts.push_back (lbl);
@@ -663,8 +700,8 @@ namespace morph {
         // might need tickfontsize and axisfontsize
         //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
-        //! Gap to axis label
-        float axislabelgap = 0.15;
+        //! Gap from tick labels to axis label
+        float axislabelgap = 0.05;
         //! The x axis label
         std::string xlabel = "x";
         //! The y axis label

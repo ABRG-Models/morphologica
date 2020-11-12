@@ -1338,6 +1338,197 @@ namespace morph {
             idx += nverts;
         } // end computeFlatLine
 
+        //! Like computeFlatLine, but this line has no thickness and you can provide the
+        //! next data points so that this line and the next line can line up perfectly!
+        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                              Vector<float> prev, Vector<float> next,
+                              Vector<float> uz,
+                              std::array<float, 3> col,
+                              float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vp = vstart - prev;
+            vp.renormalize();
+            Vector<float> vn = next - vend;
+            vn.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvp = vp.cross(uz);
+            vvp.renormalize();
+            Vector<float> vvn = vn.cross(uz);
+            vvn.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = ( (vv+vvn)*0.5f * w*0.5f );
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly
+
+        //! Make a joined up line with previous.
+        void computeFlatLineP (VBOint& idx, Vector<float> start, Vector<float> end,
+                               Vector<float> prev,
+                               Vector<float> uz,
+                               std::array<float, 3> col,
+                               float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vp = vstart - prev;
+            vp.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvp = vp.cross(uz);
+            vvp.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = (vv*w*0.5f);
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly with prev
+
+        //! Flat line, joining up with next
+        void computeFlatLineN (VBOint& idx, Vector<float> start, Vector<float> end,
+                               Vector<float> next,
+                               Vector<float> uz,
+                               std::array<float, 3> col,
+                               float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vn = next - vend;
+            vn.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvn = vn.cross(uz);
+            vvn.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = (vv*w*0.5f);
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = ( (vv+vvn)*0.5f * w*0.5f );
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly with next line
+
     };
 
 } // namespace morph
