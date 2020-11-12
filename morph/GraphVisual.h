@@ -213,7 +213,7 @@ namespace morph {
         {
             // y axis
             this->computeLine (idx,
-                               {0, -this->axeswidth*0.5f                     -this->thickness},
+                               {0, -(this->axeswidth*0.5f),                  -this->thickness},
                                {0, this->scaleheight + this->axeswidth*0.5f, -this->thickness},
                                uz, this->axescolour, this->axeswidth, this->thickness);
             // x axis
@@ -431,6 +431,8 @@ namespace morph {
             this->ordscale.compute_autoscale (_xmin, _xmax);
         }
 
+        void setthickness (float th) { this->thickness = th; }
+
     protected:
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
@@ -500,7 +502,6 @@ namespace morph {
         float ticklabelgap = 0.05;
         //! Horizontal gap to y axis tick labels
         float yticklabelshift = 0.1;
-
 
     protected:
         //! How thick are the markers, axes etc? Sort of 'paper thickness'

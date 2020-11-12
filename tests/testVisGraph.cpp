@@ -34,8 +34,8 @@ int main (int argc, char** argv)
         morph::vVector<float> data = ord.pow(2);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-#if 0 // Optionally change the size of the graph and range of the axes
-        gv->setgraphsize (1.2, 1);
+#if 1 // Optionally change the size of the graph and range of the axes
+        gv->setgraphsize (1, 1);
 #endif
 
 #if 1 // Optionally change the range of the axes
@@ -60,7 +60,6 @@ int main (int argc, char** argv)
         gv->axeswidth = 0.01f;
         gv->axesfull = true;
 #endif
-
         gv->setup();
 
         // Add the GraphVisual (as a VisualModel*)
