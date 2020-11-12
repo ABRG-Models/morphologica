@@ -16,6 +16,7 @@
 #include <morph/Scale.h>
 #include <morph/Vector.h>
 #include <morph/VisualTextModel.h>
+#include <morph/Quaternion.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -153,10 +154,8 @@ namespace morph {
             }
         }
 
-        //! A setup program for the client code. Client code can set up a GraphVisual
-        //! object, set the data, Scales and colour map, and then call
-        //! GraphVisual::setup()
-        void setup()
+        //! Gets the graph ready for display after client setup of public attributes is done.
+        void finalize()
         {
             this->initializeVertices();
             this->postVertexInit();
@@ -241,24 +240,46 @@ namespace morph {
         void addAxisLabels()
         {
             // x axis label (easy)
-            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
+            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
             morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
             morph::Vector<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
-                std::cout << "cross axis labels\n";
                 float _y0_mdl = this->zScale.transform_one (0);
-                lblpos = {0.5f*(this->abscissa_scale.range_max - this->abscissa_scale.inverse_one(0))-geom.half_width(),
-                          _y0_mdl-(this->axislabelgap+geom.height()),
-                          0};
+                lblpos = { 0.9f * this->scalewidth, _y0_mdl-(this->axislabelgap+geom.height()), 0 };
             } else {
-                lblpos = {0.5f*(this->abscissa_scale.range_max-this->abscissa_scale.range_min)-geom.half_width(),
-                          -(this->axislabelgap+geom.height()),
-                          0};
+                lblpos = {0.5f * this->scalewidth - geom.half_width(), -(this->axislabelgap+geom.height()), 0};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset);
             this->texts.push_back (lbl);
 
             // y axis label (have to rotate)
+            lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            geom = lbl->getTextGeometry (this->ylabel);
+
+            // Rotate label if it's long
+            float leftshift = geom.width();
+            float downshift = geom.height();
+            if (geom.width() > 2*this->fontsize) { // rotate so shift by text height
+                leftshift = geom.height();
+                downshift = geom.half_width();
+            }
+
+            if (this->axisstyle == axisstyle::cross) {
+                float _x0_mdl = this->abscissa_scale.transform_one (0);
+                lblpos = {_x0_mdl-this->axislabelgap-leftshift, 0.9f * this->scaleheight, 0};
+            } else {
+                lblpos = { -(this->axislabelgap+leftshift),
+                           0.5f*this->scaleheight - downshift, 0 };
+            }
+
+            if (geom.width() > 2*this->fontsize) {
+                morph::Quaternion<float> leftrot;
+                leftrot.initFromAxisAngle (this->uz, -90.0f);
+                lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset);
+            } else {
+                lbl->setupText (this->ylabel, lblpos+this->mv_offset);
+            }
+            this->texts.push_back (lbl);
         }
 
         //! Add the tick labels: 0, 1, 2 etc
@@ -281,7 +302,7 @@ namespace morph {
                 ss << this->xticks[i];
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (ss.str(), lblpos+this->mv_offset);
@@ -294,7 +315,7 @@ namespace morph {
 
                 std::stringstream ss;
                 ss << this->yticks[i];
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (ss.str(), lblpos+this->mv_offset);
@@ -403,14 +424,14 @@ namespace morph {
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
                         this->computeLine (idx,
-                                           {(float)xt, this->scalewidth, -this->thickness},
-                                           {(float)xt, this->scalewidth + tl,   -this->thickness}, uz,
+                                           {(float)xt, this->scaleheight, -this->thickness},
+                                           {(float)xt, this->scaleheight + tl,   -this->thickness}, uz,
                                            this->axiscolour, this->axislinewidth*0.5f, this->thickness);
                     }
                     for (auto yt : this->ytick_posns) {
                         this->computeLine (idx,
-                                           {this->scaleheight, (float)yt, -this->thickness},
-                                           {this->scaleheight + tl,   (float)yt, -this->thickness}, uz,
+                                           {this->scalewidth, (float)yt, -this->thickness},
+                                           {this->scalewidth + tl,   (float)yt, -this->thickness}, uz,
                                            this->axiscolour, this->axislinewidth*0.5f, this->thickness);
                     }
                 }
@@ -612,6 +633,10 @@ namespace morph {
         std::deque<Flt> ytick_posns;
         // Default font
         morph::VisualFont font = morph::VisualFont::Vera;
+        //! Font resolution - determines how textures for glyphs are generated. If your
+        //! labels will be small, this should be smaller. If labels are large, then it
+        //! should be increased.
+        int fontres = 24;
         //! The font size is the width of an m in the chosen font, in model units
         float fontsize = 0.05;
         // might need tickfontsize and axisfontsize

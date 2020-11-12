@@ -8,33 +8,32 @@
 
 int main (int argc, char** argv)
 {
+    // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
     v.zNear = 0.001;
     v.backgroundWhite();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        holdVis = a1.empty() ? false : true;
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
-
+    // Create a new GraphVisual with offset within the scene of 0,0,0
     morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-    morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-    morph::vVector<float> data = absc.pow(3);
-    gv->setdata (absc, data);
+    // Create some data (y = x^3):
+    morph::vVector<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+    morph::vVector<float> y = x.pow(3);
 
-    gv->setup();
+    // Set the data into the graph
+    gv->setdata (x, y);
 
+    // Complete the setup
+    gv->finalize();
+
+    // Add the GraphVisual to the Visual scene
     v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
+    // Render the scene on the screen
     v.render();
-    if (holdVis == true) {
-        while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
-            v.render();
-        }
+    while (v.readyToFinish == false) {
+        glfwWaitEventsTimeout (0.018);
+        v.render();
     }
 
     return 0;

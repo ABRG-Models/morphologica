@@ -30,19 +30,21 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        morph::vVector<float> data = absc.pow(3);
+        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
 
         float step = 1.4f;
+        float row2 = 1.2f;
 
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
+        morph::vVector<float> data = absc.pow(3);
         gv->setdata (absc, data);
         gv->linecolour = {1.0, 0.0, 0.0};
         gv->markerstyle = morph::markerstyle::triangle;
         gv->markercolour = {0.0, 0.0, 1.0};
         gv->axisstyle = morph::axisstyle::L;
         gv->xlabel = "The x axis";
-        gv->setup();
+        gv->setthickness (0.001f);
+        gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
@@ -52,11 +54,15 @@ int main (int argc, char** argv)
         gv->markerstyle = morph::markerstyle::hexagon;
         gv->markercolour = {0.0, 0.0, 0.0};
         gv->axisstyle = morph::axisstyle::box;
-        gv->setup();
+        gv->ylabel = "mm";
+        gv->xlabel = "Abscissa (notice that mm is not rotated)";
+        gv->setthickness (0.005f);
+        gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-step,0});
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-row2,0});
         morph::vVector<float> data3 = absc.pow(4);
+        gv->setsize (1,0.8);
         gv->setdata (absc, data3);
         gv->linecolour = {0.0, 1.0, 0.0};
         gv->markerstyle = morph::markerstyle::circle;
@@ -64,18 +70,22 @@ int main (int argc, char** argv)
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::boxfullticks;
         gv->tickstyle = morph::tickstyle::ticksin;
-        gv->xlabel = "The x axis of the bottom left graph";
-        gv->setup();
+        gv->ylabel = "mmi";
+        gv->xlabel = "mmi is just long enough to be rotated";
+        gv->setthickness (0.01f);
+        gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-step,0});
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-row2,0});
         morph::vVector<float> data4 = absc.pow(5);
+        gv->setsize (1,0.8);
         gv->setdata (absc, data4);
         gv->linecolour = {0.0, 0.0, 1.0};
         gv->markerstyle = morph::markerstyle::none;
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::cross;
-        gv->setup();
+        gv->setthickness (0.05f);
+        gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         v.render();

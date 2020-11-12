@@ -88,7 +88,7 @@ namespace morph {
             return rtn;
         }
 
-        //! Initialize the Quaternion from the given axis and angle.
+        //! Initialize the Quaternion from the given axis and angle *in degrees*
         void initFromAxisAngle (const Vector<Flt>& axis, const Flt& angle)
         {
             Flt a = piOver360 * angle; // angle/2 converted to rads

@@ -30,7 +30,7 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
         morph::vVector<float> data = absc.pow(3);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
@@ -60,7 +60,7 @@ int main (int argc, char** argv)
         gv->axisstyle = morph::axisstyle::box;
         gv->setthickness (0.001f);
 #endif
-        gv->setup();
+        gv->finalize();
 
         // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));

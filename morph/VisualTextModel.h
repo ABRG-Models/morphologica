@@ -73,13 +73,20 @@ namespace morph {
                          std::array<float, 3> _clr = {0,0,0})
         {
             this->tshaderprog = tsp;
+
+            // This is set with the model view offset of the parent model PLUS the
+            // relative location of this VisualTextModel within the parent VisualModel
+            // (or Visual).
             this->mv_offset = _mv_offset;
+
+            // The rotation stored inside this text model should be applied BEFORE any of the other operations.
+            this->viewmatrix.rotate (this->mv_rotation);
+
             // Question: At what point to apply translations to this VisualTextModel?
             // Should be acceptable here, because the parent model (or Visual) can
             // ensure that the mv_offset is correct.
             //this->mv_rotation = ?;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
@@ -263,14 +270,21 @@ namespace morph {
                         const morph::Vector<float> _mv_offset, std::array<float, 3> _clr = {0,0,0})
         {
             this->mv_offset = _mv_offset;
-            // Question: At what point to apply translations to this VisualTextModel?
-            // Should be acceptable here, because the parent model (or Visual) can
-            // ensure that the mv_offset is correct.
-            //this->mv_rotation = ?;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
             this->clr_text = _clr;
+            this->setupText (_txt);
+        }
 
+        //! Set up a new text at a given position, with the given colour and a pre-rotation
+        void setupText (const std::string& _txt,
+                        const morph::Quaternion<float>& _rotation, const morph::Vector<float> _mv_offset,
+                        std::array<float, 3> _clr = {0,0,0})
+        {
+            this->mv_rotation = _rotation;
+            this->viewmatrix.rotate (this->mv_rotation);
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
+            this->clr_text = _clr;
             this->setupText (_txt);
         }
 
