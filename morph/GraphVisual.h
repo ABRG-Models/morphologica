@@ -215,7 +215,7 @@ namespace morph {
                 ss << this->xticks[i];
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (ss.str(), lblpos);
@@ -228,7 +228,7 @@ namespace morph {
 
                 std::stringstream ss;
                 ss << this->yticks[i];
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (ss.str(), lblpos);
@@ -544,8 +544,11 @@ namespace morph {
 
         // marker features
         std::array<float, 3> markercolour = {0,0,1};
+        //! marker size in model units
         float markersize = 0.03f;
+        //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
         morph::markerstyle markerstyle = markerstyle::square;
+        //! A gap between the data point and the line between data points
         float markergap = 0.03f;
 
         //! Show lines between data points? This may become a morph::linestyle thing.
@@ -579,8 +582,8 @@ namespace morph {
         std::deque<Flt> ytick_posns;
         // Default font
         morph::VisualFont font = morph::VisualFont::Vera;
-        //! Width of an m in the chosen font
-        float fontmsize = 0.05;
+        //! The font size is the width of an m in the chosen font, in model units
+        float fontsize = 0.05;
         //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
         //! Horizontal gap to y axis tick labels
