@@ -39,6 +39,7 @@ int main (int argc, char** argv)
         morph::vVector<float> data = absc.pow(3);
         gv->setdata (absc, data);
         gv->linecolour = {1.0, 0.0, 0.0};
+        gv->linewidth = 0.015f;
         gv->markerstyle = morph::markerstyle::triangle;
         gv->markercolour = {0.0, 0.0, 1.0};
         gv->axisstyle = morph::axisstyle::L;
@@ -66,7 +67,8 @@ int main (int argc, char** argv)
         gv->setdata (absc, data3);
         gv->linecolour = {0.0, 1.0, 0.0};
         gv->markerstyle = morph::markerstyle::circle;
-        gv->markercolour = {0.0, 0.5, 0.7};
+        gv->markercolour = {0.0, 0.0, 1.0};
+        gv->markersize = 0.02f;
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::boxfullticks;
         gv->tickstyle = morph::tickstyle::ticksin;
@@ -77,6 +79,10 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-row2,0});
+        absc.resize(1000, 0.0f);
+        for (int i = 0; i < 1000; ++i) {
+            absc[i] = static_cast<float>(i-500) * 0.01f;
+        }
         morph::vVector<float> data4 = absc.pow(5);
         gv->setsize (1,0.8);
         gv->setdata (absc, data4);

@@ -317,9 +317,6 @@ namespace morph {
             this->texts.push_back (lbl);
         }
 
-        float xtick_height = 0.0f;
-        float ytick_width = 0.0f;
-
         //! Graph-specific number formatting for tick labels. Someone might want to override this
         virtual std::string graphNumberFormat (Flt num)
         {
@@ -742,6 +739,11 @@ namespace morph {
         morph::Vector<float> ux = {1,0,0};
         morph::Vector<float> uy = {0,1,0};
         morph::Vector<float> uz = {0,0,1};
+
+        //! Temporary storage for the max height of the xtick labels
+        float xtick_height = 0.0f;
+        //! Temporary storage for the max width of the ytick labels
+        float ytick_width = 0.0f;
 
         //! Data for the abscissae
         std::vector<Flt>* abscissaData;
