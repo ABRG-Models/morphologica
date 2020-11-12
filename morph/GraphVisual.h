@@ -187,24 +187,24 @@ namespace morph {
         void addText()
         {
             for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-
-                morph::Vector<float> lblpos = {this->xtick_posns[i]-0.015f, -this->ticklabelgap, 0};
                 std::stringstream ss;
                 ss << this->xticks[i];
-                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
-                                                                   this->font,
-                                                                   this->fontmsize, 100, lblpos,
-                                                                   ss.str()));
+                // Issue: I need the width of the text ss.str() before I can create the
+                // VisualTextModel, so need a static method like this:
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
+                morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), -(this->ticklabelgap+geom.height()), 0};
+                lbl->setupText (ss.str(), lblpos);
+                this->texts.push_back (lbl);
             }
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
-
-                morph::Vector<float> lblpos = {-this->yticklabelshift, this->ytick_posns[i]-0.015f, 0};
                 std::stringstream ss;
                 ss << this->yticks[i];
-                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
-                                                                   this->font,
-                                                                   this->fontmsize, 100, lblpos,
-                                                                   ss.str()));
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
+                morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
+                morph::Vector<float> lblpos = {-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
+                lbl->setupText (ss.str(), lblpos);
+                this->texts.push_back (lbl);
             }
         }
 
@@ -213,31 +213,32 @@ namespace morph {
         {
             // y axis
             this->computeLine (idx,
-                               {0, -this->axeswidth*0.5f                  -this->thickness},
-                               {0, this->scaleheight + this->axeswidth*0.5f, -this->thickness}, uz,
-                               this->axescolour, this->axeswidth, this->thickness);
+                               {0, -this->axeswidth*0.5f                     -this->thickness},
+                               {0, this->scaleheight + this->axeswidth*0.5f, -this->thickness},
+                               uz, this->axescolour, this->axeswidth, this->thickness);
             // x axis
-            this->computeLine (idx, {0, 0, -this->thickness},
-                               {this->scalewidth, 0, -this->thickness}, uz,
-                               this->axescolour, this->axeswidth, this->thickness);
+            this->computeLine (idx,
+                               {0,                0, -this->thickness},
+                               {this->scalewidth, 0, -this->thickness},
+                               uz, this->axescolour, this->axeswidth, this->thickness);
 
             if (this->manualticks == true) {
-
+                std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
                 // Compute locations for ticks...
-                Flt _xmin = this->ordscale.inverse_one(this->ordscale.range_min);
-                Flt _xmax = this->ordscale.inverse_one(this->ordscale.range_max);
-                Flt _ymin = this->zScale.inverse_one(this->zScale.range_min);
-                Flt _ymax = this->zScale.inverse_one(this->zScale.range_max);
+                Flt _xmin = this->ordscale.inverse_one (this->ordscale.range_min);
+                Flt _xmax = this->ordscale.inverse_one (this->ordscale.range_max);
+                Flt _ymin = this->zScale.inverse_one (this->zScale.range_min);
+                Flt _ymax = this->zScale.inverse_one (this->zScale.range_max);
 
                 std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
                 std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
 
-                float realmin = this->ordscale.inverse_one(0);
-                float realmax = this->ordscale.inverse_one(this->scalewidth);
+                float realmin = this->ordscale.inverse_one (0);
+                float realmax = this->ordscale.inverse_one (this->scalewidth);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
-                realmin = this->zScale.inverse_one(0);
-                realmax = this->zScale.inverse_one(this->scaleheight);
+                realmin = this->zScale.inverse_one (0);
+                realmax = this->zScale.inverse_one (this->scaleheight);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
 
                 this->xtick_posns.resize (this->xticks.size());
@@ -269,13 +270,14 @@ namespace morph {
             if (this->axesfull == true) {
                 // right axis
                 this->computeLine (idx,
-                                   {this->scalewidth, -this->axeswidth*0.5f, -this->thickness},
-                                   {this->scalewidth, this->scaleheight+(this->axeswidth*0.5f), -this->thickness}, uz,
-                                   this->axescolour, this->axeswidth, this->thickness);
+                                   {this->scalewidth, -this->axeswidth*0.5f,                    -this->thickness},
+                                   {this->scalewidth, this->scaleheight+(this->axeswidth*0.5f), -this->thickness},
+                                   uz, this->axescolour, this->axeswidth, this->thickness);
                 // top axis
-                this->computeLine (idx, {0, this->scaleheight, -this->thickness},
-                                   {this->scalewidth, this->scaleheight, -this->thickness}, uz,
-                                   this->axescolour, this->axeswidth, this->thickness);
+                this->computeLine (idx,
+                                   {0,                this->scaleheight, -this->thickness},
+                                   {this->scalewidth, this->scaleheight, -this->thickness},
+                                   uz, this->axescolour, this->axeswidth, this->thickness);
 
                 // Tick positions
                 float tl = this->ticklength;
@@ -393,6 +395,42 @@ namespace morph {
             }
         }
 
+        //! Set the graph size, in model units.
+        void setgraphsize (float width, float height)
+        {
+            std::cout << __FUNCTION__ << " called\n";
+            if (this->zScale.autoscaled == true) {
+                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
+                                          "Hint: call GraphVisual::setgraphsize() BEFORE GraphVisual::setdata() or ::setaxes()");
+            }
+            this->scalewidth = width;
+            this->scaleheight = height;
+
+            float _extra = this->dataaxisdist * this->scaleheight;
+            this->zScale.range_min = _extra;
+            this->zScale.range_max = this->scaleheight-_extra;
+
+            _extra = this->dataaxisdist * this->scalewidth;
+            this->ordscale.range_min = _extra;
+            this->ordscale.range_max = this->scalewidth-_extra;
+
+            this->thickness *= this->scalewidth;
+        }
+
+        // Axis ranges. The length of each axis could be determined from the data and
+        // ordinates for a static graph, but for a dynamically updating graph, it's
+        // going to be necessary to give a hint at how far the data/ordinates might need
+        // to extend.
+        void setaxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        {
+            // First make sure that the range_min/max are correctly set
+            this->setgraphsize (this->scalewidth, this->scaleheight);
+            // To make the axes larger, we change the scaling that we'll apply to the
+            // data (the axes are always scalewidth * scaleheight in size).
+            this->zScale.compute_autoscale (_ymin, _ymax);
+            this->ordscale.compute_autoscale (_xmin, _xmax);
+        }
+
     protected:
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
@@ -463,41 +501,6 @@ namespace morph {
         //! Horizontal gap to y axis tick labels
         float yticklabelshift = 0.1;
 
-        //! Set the graph size, in model units.
-        void setgraphsize (float width, float height)
-        {
-            std::cout << __FUNCTION__ << " called\n";
-            if (this->zScale.autoscaled == true) {
-                throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
-                                          "Hint: call GraphVisual::setgraphsize() BEFORE GraphVisual::setdata() or ::setaxes()");
-            }
-            this->scalewidth = width;
-            this->scaleheight = height;
-
-            float _extra = this->dataaxisdist * this->scaleheight;
-            this->zScale.range_min = _extra;
-            this->zScale.range_max = this->scaleheight-_extra;
-
-            _extra = this->dataaxisdist * this->scalewidth;
-            this->ordscale.range_min = _extra;
-            this->ordscale.range_max = this->scalewidth-_extra;
-
-            this->thickness *= this->scalewidth;
-        }
-
-        // Axis ranges. The length of each axis could be determined from the data and
-        // ordinates for a static graph, but for a dynamically updating graph, it's
-        // going to be necessary to give a hint at how far the data/ordinates might need
-        // to extend.
-        void setaxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
-        {
-            // First make sure that the range_min/max are correctly set
-            this->setgraphsize (this->scalewidth, this->scaleheight);
-            // To make the axes larger, we change the scaling that we'll apply to the
-            // data (the axes are always scalewidth * scaleheight in size).
-            this->zScale.compute_autoscale (_ymin, _ymax);
-            this->ordscale.compute_autoscale (_xmin, _xmax);
-        }
 
     protected:
         //! How thick are the markers, axes etc? Sort of 'paper thickness'
