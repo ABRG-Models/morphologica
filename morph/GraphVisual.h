@@ -91,7 +91,7 @@ namespace morph {
                     const Vector<float> _offset,
                     std::vector<Flt>& _abscissae,
                     std::vector<Flt>& _data,
-                    const Scale<Flt>& _ord_scale,
+                    const Scale<Flt>& _absc_scale,
                     const Scale<Flt>& _data_scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f,
