@@ -66,13 +66,13 @@ int main (int argc, char** argv)
         gv->setdata (absc, data3);
         gv->linecolour = {0.0, 1.0, 0.0};
         gv->markerstyle = morph::markerstyle::circle;
-        gv->markercolour = {0.0, 1.0, 0.0};
+        gv->markercolour = {0.0, 0.5, 0.7};
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::boxfullticks;
         gv->tickstyle = morph::tickstyle::ticksin;
         gv->ylabel = "mmi";
         gv->xlabel = "mmi is just long enough to be rotated";
-        gv->setthickness (0.01f);
+        gv->setthickness (0.001f);
         gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
         gv->markerstyle = morph::markerstyle::none;
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::cross;
-        gv->setthickness (0.05f);
+        gv->setthickness (0.002f);
         gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 

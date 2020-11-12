@@ -204,17 +204,21 @@ namespace morph {
         //! Compute stuff for a graph
         void initializeVertices()
         {
-            size_t ncoords = this->dataCoords->size();
-
             std::vector<Flt> dcopy;
             dcopy = *(this->scalarData);
             this->colourScale.do_autoscale = true;
             this->colourScale.transform (*this->scalarData, dcopy);
-
             // The indices index
             VBOint idx = 0;
-
             this->drawAxes (idx);
+            this->drawData (idx);
+            this->addTickLabels();
+            this->addAxisLabels();
+        }
+
+        void drawData (VBOint& idx)
+        {
+            size_t ncoords = this->dataCoords->size();
 
             // Draw data
             // for (auto i : data) {...
@@ -226,14 +230,17 @@ namespace morph {
             if (this->showlines == true) {
                 for (size_t i = 1; i < ncoords; ++i) {
                     // Draw tube from location -1 to location 0.
+#ifdef TRUE_THREE_D_LINES
                     this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
                                        this->linecolour, this->linecolour,
                                        this->linewidth, this->thickness*Flt{0.7}, this->markergap);
+#else
+                    this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                                           this->linecolour,
+                                           this->linewidth, this->markergap);
+#endif
                 }
             }
-
-            this->addTickLabels();
-            this->addAxisLabels();
         }
 
         //! Add the axis labels
@@ -328,28 +335,28 @@ namespace morph {
             // Vert zero is not at model(0,0), have to get model coords of data(0,0)
             float _x0_mdl = this->abscissa_scale.transform_one (0);
             float _y0_mdl = this->zScale.transform_one (0);
-            this->computeLine (idx,
-                               {_x0_mdl, -(this->axislinewidth*0.5f),                  -this->thickness},
-                               {_x0_mdl, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
-                               uz, this->axiscolour, this->axislinewidth*0.7f, this->thickness);
+            this->computeFlatLine (idx,
+                                   {_x0_mdl, -(this->axislinewidth*0.5f),                  -this->thickness},
+                                   {_x0_mdl, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth*0.7f);
             // Horz zero
-            this->computeLine (idx,
-                               {0,                _y0_mdl, -this->thickness},
-                               {this->scalewidth, _y0_mdl, -this->thickness},
-                               uz, this->axiscolour, this->axislinewidth*0.7f, this->thickness);
+            this->computeFlatLine (idx,
+                                   {0,                _y0_mdl, -this->thickness},
+                                   {this->scalewidth, _y0_mdl, -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth*0.7f);
 
             for (auto xt : this->xtick_posns) {
                 // Want to place lines in screen units. So transform the data units
-                this->computeLine (idx,
-                                   {(float)xt, _y0_mdl, -this->thickness},
-                                   {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, uz,
-                                   this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                this->computeFlatLine (idx,
+                                       {(float)xt, _y0_mdl, -this->thickness},
+                                       {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
             }
             for (auto yt : this->ytick_posns) {
-                this->computeLine (idx,
-                                   {_x0_mdl,      (float)yt, -this->thickness},
-                                   {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, uz,
-                                   this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                this->computeFlatLine (idx,
+                                       {_x0_mdl,      (float)yt, -this->thickness},
+                                       {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
             }
         }
 
@@ -369,15 +376,15 @@ namespace morph {
                 || this->axisstyle == axisstyle::L) {
 
                 // y axis
-                this->computeLine (idx,
-                                   {0, -(this->axislinewidth*0.5f),                  -this->thickness},
-                                   {0, this->scaleheight + this->axislinewidth*0.5f, -this->thickness},
-                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                this->computeFlatLine (idx,
+                                       {0, -(this->axislinewidth*0.5f),                  -this->thickness},
+                                       {0, this->scaleheight + this->axislinewidth*0.5f, -this->thickness},
+                                       uz, this->axiscolour, this->axislinewidth);
                 // x axis
-                this->computeLine (idx,
-                                   {0,                0, -this->thickness},
-                                   {this->scalewidth, 0, -this->thickness},
-                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                this->computeFlatLine (idx,
+                                       {0,                0, -this->thickness},
+                                       {this->scalewidth, 0, -this->thickness},
+                                       uz, this->axiscolour, this->axislinewidth);
 
                 // Draw left and bottom ticks
                 float tl = -this->ticklength;
@@ -385,16 +392,16 @@ namespace morph {
 
                 for (auto xt : this->xtick_posns) {
                     // Want to place lines in screen units. So transform the data units
-                    this->computeLine (idx,
-                                       {(float)xt, 0.0f, -this->thickness},
-                                       {(float)xt, tl,   -this->thickness}, uz,
-                                       this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                    this->computeFlatLine (idx,
+                                           {(float)xt, 0.0f, -this->thickness},
+                                           {(float)xt, tl,   -this->thickness}, uz,
+                                           this->axiscolour, this->axislinewidth*0.5f);
                 }
                 for (auto yt : this->ytick_posns) {
-                    this->computeLine (idx,
-                                       {0.0f, (float)yt, -this->thickness},
-                                       {tl,   (float)yt, -this->thickness}, uz,
-                                       this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                    this->computeFlatLine (idx,
+                                           {0.0f, (float)yt, -this->thickness},
+                                           {tl,   (float)yt, -this->thickness}, uz,
+                                           this->axiscolour, this->axislinewidth*0.5f);
                 }
 
             }
@@ -403,15 +410,15 @@ namespace morph {
                 || this->axisstyle == axisstyle::boxfullticks
                 || this->axisstyle == axisstyle::boxcross) {
                 // right axis
-                this->computeLine (idx,
-                                   {this->scalewidth, -this->axislinewidth*0.5f,                    -this->thickness},
-                                   {this->scalewidth, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
-                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                this->computeFlatLine (idx,
+                                       {this->scalewidth, -this->axislinewidth*0.5f,                    -this->thickness},
+                                       {this->scalewidth, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                                       uz, this->axiscolour, this->axislinewidth);
                 // top axis
-                this->computeLine (idx,
-                                   {0,                this->scaleheight, -this->thickness},
-                                   {this->scalewidth, this->scaleheight, -this->thickness},
-                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                this->computeFlatLine (idx,
+                                       {0,                this->scaleheight, -this->thickness},
+                                       {this->scalewidth, this->scaleheight, -this->thickness},
+                                       uz, this->axiscolour, this->axislinewidth);
 
                 // Draw top and right ticks if necessary
                 if (this->axisstyle == axisstyle::boxfullticks) {
@@ -423,16 +430,16 @@ namespace morph {
 
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
-                        this->computeLine (idx,
-                                           {(float)xt, this->scaleheight, -this->thickness},
-                                           {(float)xt, this->scaleheight + tl,   -this->thickness}, uz,
-                                           this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                        this->computeFlatLine (idx,
+                                               {(float)xt, this->scaleheight, -this->thickness},
+                                               {(float)xt, this->scaleheight + tl,   -this->thickness}, uz,
+                                               this->axiscolour, this->axislinewidth*0.5f);
                     }
                     for (auto yt : this->ytick_posns) {
-                        this->computeLine (idx,
-                                           {this->scalewidth, (float)yt, -this->thickness},
-                                           {this->scalewidth + tl,   (float)yt, -this->thickness}, uz,
-                                           this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                        this->computeFlatLine (idx,
+                                               {this->scalewidth, (float)yt, -this->thickness},
+                                               {this->scalewidth + tl,   (float)yt, -this->thickness}, uz,
+                                               this->axiscolour, this->axislinewidth*0.5f);
                     }
                 }
 
@@ -497,23 +504,37 @@ namespace morph {
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
         {
+#ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
             this->computeTube (idx, p, pend, ux, uy,
                                this->markercolour, this->markercolour,
                                this->markersize*Flt{0.5}, n);
+#else
+            p[2] += this->thickness;
+            this->computeFlatPoly (idx, p, ux, uy,
+                                   this->markercolour,
+                                   this->markersize*Flt{0.5}, n);
+#endif
         }
 
         // Create an n sided polygon with a flat edge 'pointing up'
         void polygonFlattop (VBOint& idx, morph::Vector<float> p, int n)
         {
+#ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
             this->computeTube (idx, p, pend, ux, uy,
                                this->markercolour, this->markercolour,
                                this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+#else
+            p[2] += this->thickness;
+            this->computeFlatPoly (idx, p, ux, uy,
+                                   this->markercolour,
+                                   this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+#endif
         }
 
         // Given the data, compute the ticks (or use the ones that client code gave us)
@@ -650,8 +671,11 @@ namespace morph {
         std::string ylabel = "y";
 
     protected:
-        //! How thick are the markers, axes etc? Sort of 'paper thickness'
-        float thickness = 0.001f;
+        //! This is used to set a spacing between elements in the graph (markers and
+        //! lines) so that some objects (like a marker) is viewed 'on top' of another
+        //! (such as a line). If it's too small, and the graph is far away in the scene,
+        //! then precision errors can cause colour mixing.
+        float thickness = 0.002f;
         //! scalewidth scales the amount of in-model distance that the graph will be wide
         float scalewidth = 1.0f;
         //! scalewidth height scales the amount of in-model distance that the graph will be high

@@ -729,6 +729,72 @@ namespace morph {
         } // end computeTube with ux/uy vectors for faces
 
         /*!
+         * Compute a tube. This version requires unit vectors for orientation of the
+         * tube end faces/vertices (useful for graph markers). The other version uses a
+         * randomly chosen vector to do this.
+         *
+         * Create a tube from \a start to \a end, with radius \a r and a colour which
+         * transitions from the colour \a colStart to \a colEnd.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param vstart The centre of the polygon
+         * \param ux a vector in the x axis direction for the end face
+         * \param uy a vector in the y axis direction
+         * \param col The polygon colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         * \param rotation A rotation in the ux/uy plane to orient the vertices of the
+         * tube. Useful if this is to be a short tube used as a graph marker.
+         */
+        void computeFlatPoly (VBOint& idx, Vector<float> vstart,
+                              Vector<float> ux, Vector<float> uy,
+                              std::array<float, 3> col,
+                              float r = 1.0f, int segments = 12, float rotation = 0.0f)
+        {
+            // v is a face normal
+            Vector<float> v = uy.cross(ux);
+            v.renormalize();
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            // Polygon vertices (a triangle fan)
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+            }
+
+            // Number of vertices
+            int nverts = segments + 1;
+
+            // After creating vertices, push all the indices.
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            //VBOint endMiddle = idx + (VBOint)nverts - 1;
+            //VBOint endStartIdx = capStartIdx + (3*segments);
+
+            // Start cap indices
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlatPloy with ux/uy vectors for faces
+
+        /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
          *
          * \param idx The index into the 'vertex indices array'
@@ -1175,6 +1241,102 @@ namespace morph {
             // Update idx
             idx += nverts;
         } // end computeLine
+
+        // Like computeLine, but this line has no thickness and you can add end-caps (semi-circles)
+        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                              Vector<float> uz,
+                              std::array<float, 3> col,
+                              float w = 0.1f, float shorten = 0.0f, bool endcaps = false)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+            }
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = (vv*w*0.5f);
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+#if 0
+            if (endcaps) {
+                // Push the central point of the start cap - this is at location vstart
+                this->vertex_push (vstart, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                // Start cap vertices (a triangle fan)
+                for (int j = 0; j < segments; j++) {
+                    float t = j * morph::PI_F/(float)segments;
+                    this->vertex_push (vstart+c, this->vertexPositions);
+                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                }
+            }
+#endif
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+#if 0
+            if (endcaps) {
+                // Bottom cap vertices
+                for (int j = 0; j < segments; j++) {
+                    Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                    this->vertex_push (vend+c, this->vertexPositions);
+                    this->vertex_push (v, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                }
+                // Bottom cap. Push centre vertex as the last vertex.
+                this->vertex_push (vend, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+            }
+#endif
+
+            // Number of vertices = segments * 4 + 2.
+            int nverts = 4;
+            if (endcaps) {  nverts += 0; } // fixme
+
+            // After creating vertices, push all the indices.
+            //VBOint capMiddle = 4;
+            VBOint _idx = idx;
+
+            this->indices.push_back (_idx);
+            this->indices.push_back (_idx+1);
+            this->indices.push_back (_idx+2);
+
+            this->indices.push_back (_idx);
+            this->indices.push_back (_idx+2);
+            this->indices.push_back (_idx+3);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlatLine
 
     };
 
