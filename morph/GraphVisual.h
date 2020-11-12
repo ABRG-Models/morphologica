@@ -27,6 +27,7 @@ namespace morph {
     //! What shape for the graph markers?
     enum class markerstyle
     {
+        none,
         triangle,
         uptriangle,
         downtriangle,
@@ -47,6 +48,17 @@ namespace morph {
         numstyles
     };
 
+    //! Different axis styles
+    enum class axisstyle
+    {
+        L,          // just left and bottom axis bars
+        box,        // left, right, top and bottom bars, ticks only on left and bottom bars
+        boxfullticks, // left, right, top and bottom bars, with ticks all round
+        cross,      // a cross of bars at the zero axes
+        boxcross,   // A box AND the zero axes
+        numstyles
+    };
+
     /*
      * So you want to graph some data? You have an ordinal and data. Although these
      * could provide coordinates for graphing the data, it's possible that they may be
@@ -57,7 +69,7 @@ namespace morph {
      * FatLineGraphVisual, etc.
      */
     template <typename Flt>
-    class GraphVisual : public VisualDataModel<Flt>
+    class GraphVisual : public VisualDataModel<Flt> // Might need 'VisualGraphDataModel'
     {
     public:
         //! Constructor which sets just the shader program and the model view offset
@@ -124,7 +136,7 @@ namespace morph {
 
             // Scale the incoming data?
             if (this->zScale.autoscaled == false) {
-                this->setgraphsize (this->scalewidth, this->scaleheight);
+                this->setsize (this->scalewidth, this->scaleheight);
             }
             std::vector<Flt> sd (dsize, Flt{0});
             std::vector<Flt> od (dsize, Flt{0});
@@ -167,7 +179,7 @@ namespace morph {
 
             // Draw data
             // for (auto i : data) {...
-            if (this->showmarkers == true) {
+            if (this->markerstyle != markerstyle::none) {
                 for (size_t i = 0; i < ncoords; ++i) {
                     this->marker (idx, (*this->dataCoords)[i], this->markerstyle);
                 }
@@ -186,42 +198,164 @@ namespace morph {
 
         void addText()
         {
+            float x_for_yticks = 0.0f;
+            float y_for_xticks = 0.0f;
+            if (this->axisstyle == axisstyle::cross) {
+                // Then labels go next to the zero axes
+                x_for_yticks = this->ordscale.transform_one (0);
+                y_for_xticks = this->zScale.transform_one (0);
+            }
+
             for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+
+                // Omit the 0 for 'cross' axes (or maybe shift its position)
+                if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
+
                 std::stringstream ss;
                 ss << this->xticks[i];
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
-                morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), -(this->ticklabelgap+geom.height()), 0};
+                morph::Vector<float> lblpos = {this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (ss.str(), lblpos);
                 this->texts.push_back (lbl);
             }
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
+
+                // Omit the 0 for 'cross' axes (or maybe shift its position)
+                if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
+
                 std::stringstream ss;
                 ss << this->yticks[i];
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontmsize, 100);
                 morph::TextGeometry geom = lbl->getTextGeometry (ss.str());
-                morph::Vector<float> lblpos = {-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
+                morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (ss.str(), lblpos);
                 this->texts.push_back (lbl);
+            }
+        }
+
+        void drawCrossAxes (VBOint& idx)
+        {
+            // Vert zero is not at model(0,0), have to get model coords of data(0,0)
+            float _x0_mdl = this->ordscale.transform_one (0);
+            float _y0_mdl = this->zScale.transform_one (0);
+            this->computeLine (idx,
+                               {_x0_mdl, -(this->axislinewidth*0.5f),                  -this->thickness},
+                               {_x0_mdl, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                               uz, this->axiscolour, this->axislinewidth*0.7f, this->thickness);
+            // Horz zero
+            this->computeLine (idx,
+                               {0,                _y0_mdl, -this->thickness},
+                               {this->scalewidth, _y0_mdl, -this->thickness},
+                               uz, this->axiscolour, this->axislinewidth*0.7f, this->thickness);
+
+            for (auto xt : this->xtick_posns) {
+                // Want to place lines in screen units. So transform the data units
+                this->computeLine (idx,
+                                   {(float)xt, _y0_mdl, -this->thickness},
+                                   {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, uz,
+                                   this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+            }
+            for (auto yt : this->ytick_posns) {
+                this->computeLine (idx,
+                                   {_x0_mdl,      (float)yt, -this->thickness},
+                                   {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, uz,
+                                   this->axiscolour, this->axislinewidth*0.5f, this->thickness);
             }
         }
 
         //! Draw the axes for the graph
         void drawAxes (VBOint& idx)
         {
-            // y axis
-            this->computeLine (idx,
-                               {0, -(this->axeswidth*0.5f),                  -this->thickness},
-                               {0, this->scaleheight + this->axeswidth*0.5f, -this->thickness},
-                               uz, this->axescolour, this->axeswidth, this->thickness);
-            // x axis
-            this->computeLine (idx,
-                               {0,                0, -this->thickness},
-                               {this->scalewidth, 0, -this->thickness},
-                               uz, this->axescolour, this->axeswidth, this->thickness);
+            // First, ensure that this->xtick_posns/xticks and this->ytick_posns/yticks are populated
+            this->computeTickPositions();
 
+            if (this->axisstyle == axisstyle::cross) {
+                return this->drawCrossAxes (idx);
+            }
+
+            if (this->axisstyle == axisstyle::box
+                || this->axisstyle == axisstyle::boxfullticks
+                || this->axisstyle == axisstyle::boxcross
+                || this->axisstyle == axisstyle::L) {
+
+                // y axis
+                this->computeLine (idx,
+                                   {0, -(this->axislinewidth*0.5f),                  -this->thickness},
+                                   {0, this->scaleheight + this->axislinewidth*0.5f, -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                // x axis
+                this->computeLine (idx,
+                                   {0,                0, -this->thickness},
+                                   {this->scalewidth, 0, -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+
+                // Draw left and bottom ticks
+                float tl = -this->ticklength;
+                if (this->tickstyle == tickstyle::ticksin) { tl = this->ticklength; }
+
+                for (auto xt : this->xtick_posns) {
+                    // Want to place lines in screen units. So transform the data units
+                    this->computeLine (idx,
+                                       {(float)xt, 0.0f, -this->thickness},
+                                       {(float)xt, tl,   -this->thickness}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                }
+                for (auto yt : this->ytick_posns) {
+                    this->computeLine (idx,
+                                       {0.0f, (float)yt, -this->thickness},
+                                       {tl,   (float)yt, -this->thickness}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                }
+
+            }
+
+            if (this->axisstyle == axisstyle::box
+                || this->axisstyle == axisstyle::boxfullticks
+                || this->axisstyle == axisstyle::boxcross) {
+                // right axis
+                this->computeLine (idx,
+                                   {this->scalewidth, -this->axislinewidth*0.5f,                    -this->thickness},
+                                   {this->scalewidth, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+                // top axis
+                this->computeLine (idx,
+                                   {0,                this->scaleheight, -this->thickness},
+                                   {this->scalewidth, this->scaleheight, -this->thickness},
+                                   uz, this->axiscolour, this->axislinewidth, this->thickness);
+
+                // Draw top and right ticks if necessary
+                if (this->axisstyle == axisstyle::boxfullticks) {
+                    // Tick positions
+                    float tl = this->ticklength;
+                    if (this->tickstyle == tickstyle::ticksin) {
+                        tl = -this->ticklength;
+                    }
+
+                    for (auto xt : this->xtick_posns) {
+                        // Want to place lines in screen units. So transform the data units
+                        this->computeLine (idx,
+                                           {(float)xt, this->scalewidth, -this->thickness},
+                                           {(float)xt, this->scalewidth + tl,   -this->thickness}, uz,
+                                           this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                    }
+                    for (auto yt : this->ytick_posns) {
+                        this->computeLine (idx,
+                                           {this->scaleheight, (float)yt, -this->thickness},
+                                           {this->scaleheight + tl,   (float)yt, -this->thickness}, uz,
+                                           this->axiscolour, this->axislinewidth*0.5f, this->thickness);
+                    }
+                }
+
+                if (this->axisstyle == axisstyle::boxcross) { this->drawCrossAxes (idx); }
+            }
+        }
+
+        // Given the data, compute the ticks (or use the ones that client code gave us)
+        void computeTickPositions()
+        {
             if (this->manualticks == true) {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
@@ -246,58 +380,6 @@ namespace morph {
 
                 this->ytick_posns.resize (this->yticks.size());
                 this->zScale.transform (yticks, ytick_posns);
-
-                float tl = -this->ticklength;
-                if (this->tickstyle == tickstyle::ticksin) {
-                    tl = this->ticklength;
-                }
-
-                for (auto xt : xtick_posns) {
-                    // Want to place lines in screen units. So transform the data units
-                    this->computeLine (idx,
-                                       {(float)xt, 0.0f, -this->thickness},
-                                       {(float)xt, tl,   -this->thickness}, uz,
-                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
-                }
-                for (auto yt : ytick_posns) {
-                    this->computeLine (idx,
-                                       {0.0f, (float)yt, -this->thickness},
-                                       {tl,   (float)yt, -this->thickness}, uz,
-                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
-                }
-            }
-
-            if (this->axesfull == true) {
-                // right axis
-                this->computeLine (idx,
-                                   {this->scalewidth, -this->axeswidth*0.5f,                    -this->thickness},
-                                   {this->scalewidth, this->scaleheight+(this->axeswidth*0.5f), -this->thickness},
-                                   uz, this->axescolour, this->axeswidth, this->thickness);
-                // top axis
-                this->computeLine (idx,
-                                   {0,                this->scaleheight, -this->thickness},
-                                   {this->scalewidth, this->scaleheight, -this->thickness},
-                                   uz, this->axescolour, this->axeswidth, this->thickness);
-
-                // Tick positions
-                float tl = this->ticklength;
-                if (this->tickstyle == tickstyle::ticksin) {
-                    tl = -this->ticklength;
-                }
-
-                for (auto xt : xtick_posns) {
-                    // Want to place lines in screen units. So transform the data units
-                    this->computeLine (idx,
-                                       {(float)xt, this->scalewidth, -this->thickness},
-                                       {(float)xt, this->scalewidth + tl,   -this->thickness}, uz,
-                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
-                }
-                for (auto yt : ytick_posns) {
-                    this->computeLine (idx,
-                                       {this->scaleheight, (float)yt, -this->thickness},
-                                       {this->scaleheight + tl,   (float)yt, -this->thickness}, uz,
-                                       this->axescolour, this->axeswidth*0.5f, this->thickness);
-                }
             }
         }
 
@@ -396,12 +478,12 @@ namespace morph {
         }
 
         //! Set the graph size, in model units.
-        void setgraphsize (float width, float height)
+        void setsize (float width, float height)
         {
             std::cout << __FUNCTION__ << " called\n";
             if (this->zScale.autoscaled == true) {
                 throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
-                                          "Hint: call GraphVisual::setgraphsize() BEFORE GraphVisual::setdata() or ::setaxes()");
+                                          "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
             }
             this->scalewidth = width;
             this->scaleheight = height;
@@ -421,10 +503,10 @@ namespace morph {
         // ordinates for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/ordinates might need
         // to extend.
-        void setaxes (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
+        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
             // First make sure that the range_min/max are correctly set
-            this->setgraphsize (this->scalewidth, this->scaleheight);
+            this->setsize (this->scalewidth, this->scaleheight);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always scalewidth * scaleheight in size).
             this->zScale.compute_autoscale (_ymin, _ymax);
@@ -457,31 +539,32 @@ namespace morph {
         }
 
     public:
-        //! A scaling for the ordinals. I'll use zCcale to scale the data values
+        //! A scaling for the ordinals. I'll use zScale to scale the data values
         morph::Scale<Flt> ordscale;
 
         // marker features
-        bool showmarkers = true;
         std::array<float, 3> markercolour = {0,0,1};
         float markersize = 0.03f;
         morph::markerstyle markerstyle = markerstyle::square;
         float markergap = 0.03f;
 
-        // line features
+        //! Show lines between data points? This may become a morph::linestyle thing.
         bool showlines = true;
+        //! The colour of the lines between data points
         std::array<float, 3> linecolour = {0,0,0};
-        float linewidth = 0.01f;
+        //! Width of lines between data points
+        float linewidth = 0.007f;
 
         // axis features
-        std::array<float, 3> axescolour = {0,0,0};
-        //! Refactor this attribute name axislinewidth? axiswidth?
-        float axeswidth = 0.01f;
+        std::array<float, 3> axiscolour = {0,0,0};
+        //! The line width of the main axis bars
+        float axislinewidth = 0.006f;
         //! How long should the ticks be?
         float ticklength = 0.02f;
         //! Ticks in or ticks out? Or something else?
-        morph::tickstyle tickstyle = tickstyle::ticksin;
-        //! full axes: left, bottom, top and right. Not full: left, bottom only.
-        bool axesfull = true;
+        morph::tickstyle tickstyle = tickstyle::ticksout;
+        //! What sort of axes to draw: box, cross or leftbottom
+        morph::axisstyle axisstyle = axisstyle::box;
         //! Show gridlines where the tick lines are?
         bool showgrid = false;
         //! Should ticks be manually set?

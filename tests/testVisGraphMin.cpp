@@ -1,5 +1,5 @@
 /*
- * Visualize a graph
+ * Visualize a graph. Minimal example showing how a default graph appears
  */
 #include <morph/Visual.h>
 #include <morph/ColourMap.h>
@@ -30,39 +30,14 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
-        morph::vVector<float> data = ord.pow(3);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-#if 1 // Optionally change the size of the graph and range of the axes
-        gv->setsize (1, 1);
-#endif
-
-#if 0 // Optionally change the range of the axes
-        gv->setlimits (0,1.4,0,1.4);
-#endif
-
-        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
+        morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
+        morph::vVector<float> data = ord.pow(3);
         gv->setdata (ord, data);
 
-#if 1 // Optionally modify the features of the graph
-        gv->linewidth = 0.005;
-        gv->linecolour = {1.0, 0.0, 0.0};
-        gv->markerstyle = morph::markerstyle::triangle;
-        gv->markersize = 0.02;
-        gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markergap = 0.02;
-#endif
-
-#if 1 // Optionally set the axes up
-        gv->axiscolour = {0.5, 0.5, 0.5};
-        gv->axislinewidth = 0.01f;
-        gv->axisstyle = morph::axisstyle::box;
-        gv->setthickness (0.001f);
-#endif
         gv->setup();
 
-        // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         v.render();

@@ -32,37 +32,45 @@ int main (int argc, char** argv)
     try {
         morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
         morph::vVector<float> data = ord.pow(3);
+
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
-
-#if 1 // Optionally change the size of the graph and range of the axes
-        gv->setsize (1, 1);
-#endif
-
-#if 0 // Optionally change the range of the axes
-        gv->setlimits (0,1.4,0,1.4);
-#endif
-
-        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
         gv->setdata (ord, data);
-
-#if 1 // Optionally modify the features of the graph
-        gv->linewidth = 0.005;
         gv->linecolour = {1.0, 0.0, 0.0};
         gv->markerstyle = morph::markerstyle::triangle;
-        gv->markersize = 0.02;
         gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markergap = 0.02;
-#endif
-
-#if 1 // Optionally set the axes up
-        gv->axiscolour = {0.5, 0.5, 0.5};
-        gv->axislinewidth = 0.01f;
-        gv->axisstyle = morph::axisstyle::box;
-        gv->setthickness (0.001f);
-#endif
+        gv->axisstyle = morph::axisstyle::L;
         gv->setup();
+        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        // Add the GraphVisual (as a VisualModel*)
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {1.2,0,0});
+        morph::vVector<float> data2 = ord.pow(2);
+        gv->setdata (ord, data2);
+        gv->linecolour = {0.0, 0.0, 1.0};
+        gv->markerstyle = morph::markerstyle::hexagon;
+        gv->markercolour = {0.0, 0.0, 0.0};
+        gv->axisstyle = morph::axisstyle::box;
+        gv->setup();
+        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-1.2,0});
+        morph::vVector<float> data3 = ord.pow(4);
+        gv->setdata (ord, data3);
+        gv->linecolour = {0.0, 1.0, 0.0};
+        gv->markerstyle = morph::markerstyle::circle;
+        gv->markercolour = {0.0, 1.0, 0.0};
+        gv->markergap = 0.0f;
+        gv->axisstyle = morph::axisstyle::boxfullticks;
+        gv->setup();
+        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {1.2,-1.2,0});
+        morph::vVector<float> data4 = ord.pow(5);
+        gv->setdata (ord, data4);
+        gv->linecolour = {0.0, 0.0, 1.0};
+        gv->markerstyle = morph::markerstyle::none;
+        gv->markergap = 0.0f;
+        gv->axisstyle = morph::axisstyle::cross;
+        gv->setup();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         v.render();
