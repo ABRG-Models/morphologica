@@ -33,16 +33,19 @@ int main (int argc, char** argv)
         morph::vVector<float> ord =  {-.5, -.4, -.3, -.2, -.1, 0, .1,    .2,    .3,    .4,    .5,    .6,    .7,    .8};
         morph::vVector<float> data = ord.pow(3);
 
+        float step = 1.4f;
+
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
         gv->setdata (ord, data);
         gv->linecolour = {1.0, 0.0, 0.0};
         gv->markerstyle = morph::markerstyle::triangle;
         gv->markercolour = {0.0, 0.0, 1.0};
         gv->axisstyle = morph::axisstyle::L;
+        gv->xlabel = "The x axis";
         gv->setup();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {1.2,0,0});
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
         morph::vVector<float> data2 = ord.pow(2);
         gv->setdata (ord, data2);
         gv->linecolour = {0.0, 0.0, 1.0};
@@ -52,7 +55,7 @@ int main (int argc, char** argv)
         gv->setup();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-1.2,0});
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-step,0});
         morph::vVector<float> data3 = ord.pow(4);
         gv->setdata (ord, data3);
         gv->linecolour = {0.0, 1.0, 0.0};
@@ -61,10 +64,11 @@ int main (int argc, char** argv)
         gv->markergap = 0.0f;
         gv->axisstyle = morph::axisstyle::boxfullticks;
         gv->tickstyle = morph::tickstyle::ticksin;
+        gv->xlabel = "The x axis of the bottom left graph";
         gv->setup();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {1.2,-1.2,0});
+        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-step,0});
         morph::vVector<float> data4 = ord.pow(5);
         gv->setdata (ord, data4);
         gv->linecolour = {0.0, 0.0, 1.0};

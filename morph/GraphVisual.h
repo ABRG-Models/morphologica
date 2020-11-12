@@ -82,7 +82,7 @@ namespace morph {
 
             this->colourScale.do_autoscale = true;
             this->zScale.do_autoscale = true;
-            this->ordscale.do_autoscale = true;
+            this->abscissa_scale.do_autoscale = true;
         }
 
         //! Long constructor demonstrating what needs to be set before setup() is called.
@@ -103,7 +103,7 @@ namespace morph {
 
             this->colourScale.do_autoscale = true;
             this->zScale.do_autoscale = true;
-            this->ordscale.do_autoscale = true;
+            this->abscissa_scale.do_autoscale = true;
 
             this->colourScale = _data_scale;
 
@@ -142,7 +142,7 @@ namespace morph {
             std::vector<Flt> od (dsize, Flt{0});
 
             this->zScale.transform (*this->scalarData, sd);
-            this->ordscale.transform (*this->ordinalData, od);
+            this->abscissa_scale.transform (*this->ordinalData, od);
 
             // Now sd and od can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -178,15 +178,15 @@ namespace morph {
             this->zScale.range_max = this->scaleheight-_extra;
 
             _extra = this->dataaxisdist * this->scalewidth;
-            this->ordscale.range_min = _extra;
-            this->ordscale.range_max = this->scalewidth-_extra;
+            this->abscissa_scale.range_min = _extra;
+            this->abscissa_scale.range_max = this->scalewidth-_extra;
 
             this->thickness *= this->scalewidth;
         }
 
         // Axis ranges. The length of each axis could be determined from the data and
-        // ordinates for a static graph, but for a dynamically updating graph, it's
-        // going to be necessary to give a hint at how far the data/ordinates might need
+        // abscissas for a static graph, but for a dynamically updating graph, it's
+        // going to be necessary to give a hint at how far the data/abscissas might need
         // to extend.
         void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
@@ -195,7 +195,7 @@ namespace morph {
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always scalewidth * scaleheight in size).
             this->zScale.compute_autoscale (_ymin, _ymax);
-            this->ordscale.compute_autoscale (_xmin, _xmax);
+            this->abscissa_scale.compute_autoscale (_xmin, _xmax);
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
@@ -233,16 +233,42 @@ namespace morph {
                 }
             }
 
+            this->addTickLabels();
             this->addAxisLabels();
         }
 
+        //! Add the axis labels
         void addAxisLabels()
+        {
+            // x axis label (easy)
+            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, 100);
+            morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
+            morph::Vector<float> lblpos;
+            if (this->axisstyle == axisstyle::cross) {
+                std::cout << "cross axis labels\n";
+                float _y0_mdl = this->zScale.transform_one (0);
+                lblpos = {0.5f*(this->abscissa_scale.range_max - this->abscissa_scale.inverse_one(0))-geom.half_width(),
+                          _y0_mdl-(this->axislabelgap+geom.height()),
+                          0};
+            } else {
+                lblpos = {0.5f*(this->abscissa_scale.range_max-this->abscissa_scale.range_min)-geom.half_width(),
+                          -(this->axislabelgap+geom.height()),
+                          0};
+            }
+            lbl->setupText (this->xlabel, lblpos+this->mv_offset);
+            this->texts.push_back (lbl);
+
+            // y axis label (have to rotate)
+        }
+
+        //! Add the tick labels: 0, 1, 2 etc
+        void addTickLabels()
         {
             float x_for_yticks = 0.0f;
             float y_for_xticks = 0.0f;
             if (this->axisstyle == axisstyle::cross) {
                 // Then labels go next to the zero axes
-                x_for_yticks = this->ordscale.transform_one (0);
+                x_for_yticks = this->abscissa_scale.transform_one (0);
                 y_for_xticks = this->zScale.transform_one (0);
             }
 
@@ -279,7 +305,7 @@ namespace morph {
         void drawCrossAxes (VBOint& idx)
         {
             // Vert zero is not at model(0,0), have to get model coords of data(0,0)
-            float _x0_mdl = this->ordscale.transform_one (0);
+            float _x0_mdl = this->abscissa_scale.transform_one (0);
             float _y0_mdl = this->zScale.transform_one (0);
             this->computeLine (idx,
                                {_x0_mdl, -(this->axislinewidth*0.5f),                  -this->thickness},
@@ -476,23 +502,23 @@ namespace morph {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
                 // Compute locations for ticks...
-                Flt _xmin = this->ordscale.inverse_one (this->ordscale.range_min);
-                Flt _xmax = this->ordscale.inverse_one (this->ordscale.range_max);
+                Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.range_min);
+                Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
                 Flt _ymin = this->zScale.inverse_one (this->zScale.range_min);
                 Flt _ymax = this->zScale.inverse_one (this->zScale.range_max);
 
                 std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
                 std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
 
-                float realmin = this->ordscale.inverse_one (0);
-                float realmax = this->ordscale.inverse_one (this->scalewidth);
+                float realmin = this->abscissa_scale.inverse_one (0);
+                float realmax = this->abscissa_scale.inverse_one (this->scalewidth);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
                 realmin = this->zScale.inverse_one (0);
                 realmax = this->zScale.inverse_one (this->scaleheight);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
 
                 this->xtick_posns.resize (this->xticks.size());
-                this->ordscale.transform (xticks, xtick_posns);
+                this->abscissa_scale.transform (xticks, xtick_posns);
 
                 this->ytick_posns.resize (this->yticks.size());
                 this->zScale.transform (yticks, ytick_posns);
@@ -527,7 +553,7 @@ namespace morph {
             }
             std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks." << std::endl;
 
-            // Realmax and realmin come from the full range of ordscale/zScale
+            // Realmax and realmin come from the full range of abscissa_scale/zScale
 
             Flt atick = trytick;
             while (atick <= realmax) {
@@ -546,8 +572,8 @@ namespace morph {
         }
 
     public:
-        //! A scaling for the ordinals. I'll use zScale to scale the data values
-        morph::Scale<Flt> ordscale;
+        //! A scaling for the abscissa. I'll use zScale to scale the data values
+        morph::Scale<Flt> abscissa_scale;
 
         // marker features
         std::array<float, 3> markercolour = {0,0,1};
@@ -594,6 +620,8 @@ namespace morph {
         // might need tickfontsize and axisfontsize
         //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
+        //! Gap to axis label
+        float axislabelgap = 0.15;
         //! The x axis label
         std::string xlabel = "x";
         //! The y axis label
