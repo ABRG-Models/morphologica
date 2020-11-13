@@ -18,7 +18,7 @@
 namespace morph {
     namespace  bn {
 
-        // In GeneNet, a Genome is an array<T, N_Genes> where the logic above determines what T should be
+        // In GeneNet, a Genome is an array<T, N, K>. The type T has to be wide enough given N and K.
         template <typename T, size_t N, size_t K> struct Genome;
         template <typename T, size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<T, N, K>&);
 
@@ -41,13 +41,18 @@ namespace morph {
                 }
                 return _lo_mask_start;
             }
+            static constexpr unsigned char lo_mask_start = Genome::lo_mask_init();
+
             //! Compile-time function used to initialize hi_mask_start
             static constexpr unsigned char hi_mask_init()
             {
                 unsigned char _hi_mask_start = 0xff & (0xff << N);
                 return _hi_mask_start;
             }
-            //! Compile-time function used to initialize genosect_mask
+            static constexpr unsigned char hi_mask_start = Genome::hi_mask_init();
+
+            //! Compile-time function used to initialize genosect_mask, the mask used to
+            //! get the significant bits of genome section.
             static constexpr T genosect_mask_init()
             {
                 T _genosect_mask = 0x0;
@@ -56,11 +61,31 @@ namespace morph {
                 }
                 return _genosect_mask;
             }
-
-            static constexpr unsigned char lo_mask_start = Genome::lo_mask_init();
-            static constexpr unsigned char hi_mask_start = Genome::hi_mask_init();
-            //! The mask used to get the significant bits of genome section.
             static constexpr T genosect_mask = Genome::genosect_mask_init();
+
+            //! Check that the type T is large enough, given N and K.
+            static constexpr bool checkTok()
+            {
+                bool ok = true;
+                size_t Twidth = sizeof(T);
+                if constexpr (N==7) {
+                    //typedef unsigned long long int genosect_t;
+                    if (Twidth < 8) { ok = false; }
+                } else if constexpr (N==6) {
+                    if constexpr (N==K) {
+                        //typedef unsigned long long int genosect_t;
+                        if (Twidth < 8) { ok = false; }
+                    } else {
+                        //typedef unsigned int genosect_t;
+                        if (Twidth < 4) { ok = false; }
+                    }
+                } else {
+                    //typedef unsigned int genosect_t;
+                    if (Twidth < 4) { ok = false; }
+                }
+                return ok;
+            }
+            static constexpr bool Tok = Genome::checkTok();
 
             //! Pending a proper copy constructor, copy g2 to this genome
             void copyin (const Genome& g2)
@@ -342,6 +367,9 @@ namespace morph {
             morph::RandUniform<T> rng;
             void randomize()
             {
+                if constexpr (Genome::Tok == false) {
+                    throw std::runtime_error ("Uh oh, template T is not ok for N and K.\n");
+                }
                 for (unsigned int i = 0; i < N; ++i) {
                     (*this)[i] = this->rng.get() & genosect_mask;
                 }
