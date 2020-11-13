@@ -87,11 +87,12 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
-To build, you need to tell your build process: **0**) What compiler
-flags to add to the compiler command line. **1**) Where the
-morphologica headers are to be found. **2**) Where the fonts that
+To build, you need to tell your build process: **1**) Where the
+morphologica headers are to be found. **2**) What compiler
+flags to add to the compiler command line, including a directive to
+say where the fonts that
 morphologica will compile into your binaries (if you're using
-morph::Visual) are located. **3**) which libraries to link to
+morph::Visual) are located. **3**) which libraries to link to.
 
 You can either build with morphologica headers (and fonts) installed
 in your chosen location (/usr/local by default) *or* you can just
