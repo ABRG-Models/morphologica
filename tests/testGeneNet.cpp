@@ -12,5 +12,6 @@ int main()
     g2.evolve();
     std::cout << "Genome 2 evolved: " << g2 << std::endl;
     std::cout << "Hamming distance between them: " << g.hamming(g2) << std::endl;
+    std::cout << g2.table();
     return 0;
 }

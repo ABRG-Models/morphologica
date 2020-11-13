@@ -77,65 +77,68 @@ namespace morph {
             std::string genome_id() const { return this->str(); }
 
             //! A debugging aid to display the genome in a little table.
-            void show_genome() const
+            std::string table() const
             {
-                std::cout << "Genome:" << std::endl;
+                std::stringstream ss;
+                ss << "Genome:" << std::endl;
                 bool first = true;
                 for (unsigned int i = 0; i<N; ++i) {
                     if (first) {
                         first = false;
-                        std::cout << (char)('a'+i);
+                        ss << (char)('a'+i);
                     } else {
-                        std::cout << "     " << (char)('a'+i);
+                        ss << "     " << (char)('a'+i);
                     }
                 }
-                std::cout << std::endl << std::hex;
+                ss << std::endl << std::hex;
                 first = true;
                 for (unsigned int i = 0; i<N; ++i) {
                     if (first) {
                         first = false;
-                        std::cout << "0x" << (*this)[i];
+                        ss << "0x" << (*this)[i];
                     } else {
-                        std::cout << " 0x" << (*this)[i];
+                        ss << " 0x" << (*this)[i];
                     }
                 }
-                std::cout << std::dec << std::endl;
-                std::cout << "Genome table:" << std::endl;
-                std::cout << "input  output" << std::endl;
+                ss << std::dec << std::endl;
+                ss << "Genome table:" << std::endl;
+                ss << "input  output" << std::endl;
                 for (unsigned int i = K; i > 0; --i) {
-                    std::cout << (i-1);
+                    ss << (i-1);
                 }
-                std::cout << "   ";
+                ss << "   ";
                 for (unsigned int i = 0; i < N; ++i) {
-                    std::cout << i << " ";
+                    ss << i << " ";
                 }
-                std::cout << "<-- for input, bit posn; for output, array index";
+                ss << "<-- for input, bit posn; for output, array index";
 
                 if constexpr (N==5) {
                     if constexpr (K==N) {
 
-                        std::cout << std::endl << "----------------" << std::endl;
-                        std::cout << "12345   abcde <-- 1,2,3,4,5 is i ii iii iv v in Fig 1." << std::endl;
+                        ss << std::endl << "----------------" << std::endl;
+                        ss << "12345   abcde <-- 1,2,3,4,5 is i ii iii iv v in Fig 1." << std::endl;
                     } else {
-                        std::cout << std::endl << "-----------------" << std::endl;
-                        std::cout << "1234   abcde <-- 1,2,3,4 is i ii iii iv in Fig 1." << std::endl;
+                        ss << std::endl << "-----------------" << std::endl;
+                        ss << "1234   abcde <-- 1,2,3,4 is i ii iii iv in Fig 1." << std::endl;
                     }
                 } else {
-                    for (unsigned int i = 0; i<K; ++i) { std::cout << i; }
-                    std::cout << "  ";
-                    for (unsigned int i = 0; i<N; ++i) { std::cout << " " << (char)('a'+i); }
-                    std::cout << std::endl;
+                    for (unsigned int i = 0; i<K; ++i) { ss << i; }
+                    ss << "  ";
+                    for (unsigned int i = 0; i<N; ++i) { ss << " " << (char)('a'+i); }
+                    ss << std::endl;
                 }
-                std::cout << "----------------" << std::endl;
+                ss << "----------------" << std::endl;
 
                 for (unsigned int j = 0; j < (1 << K); ++j) {
-                    std::cout << std::bitset<K>(j) << "   ";
+                    ss << std::bitset<K>(j) << "   ";
                     for (unsigned int i = 0; i < N; ++i) {
                         T mask = T{1} << j;
-                        std::cout << (((*this)[i]&mask) >> j);
+                        ss << (((*this)[i]&mask) >> j);
                     }
-                    std::cout << std::endl;
+                    ss << std::endl;
                 }
+
+                return ss.str();
             }
 
             //! Set the genome to zero.
