@@ -12,13 +12,13 @@
 #include <bitset>
 #include <iostream>
 #include <sstream>
-#include <immintrin.h> // Using intrinsics for computing Hamming distances
+#include <immintrin.h>
 #include <morph/Random.h>
 
 namespace morph {
     namespace  bn {
 
-        // In GeneNet, a Genome is an array<T, N, K>. The type T has to be wide enough given N and K.
+        // A Genome is (derived from) an array<T, N>. The type T has to be wide enough given N and K.
         template <typename T, size_t N, size_t K> struct Genome;
         template <typename T, size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<T, N, K>&);
 
@@ -26,33 +26,13 @@ namespace morph {
          * The Genome class is derived from an std::array.
          */
         template <typename T=unsigned int, size_t N=5, size_t K=5>
-        struct Genome : public std::array<T, N> // if derived from array, can't have constructor
+        struct Genome : public std::array<T, N>
         {
             //! Probability of any bit in the genome flipping in one evolve step
             float flip_probability = 0.1f;
 
-            //! Compile-time function used to initialize lo_mask_start
-            static constexpr unsigned char lo_mask_init()
-            {
-                // Set up globals. Set K bits to the high position for the lo_mask
-                unsigned char _lo_mask_start = 0x0;
-                for (unsigned int i = 0; i < K; ++i) {
-                    _lo_mask_start |= 0x1 << i;
-                }
-                return _lo_mask_start;
-            }
-            static constexpr unsigned char lo_mask_start = Genome::lo_mask_init();
-
-            //! Compile-time function used to initialize hi_mask_start
-            static constexpr unsigned char hi_mask_init()
-            {
-                unsigned char _hi_mask_start = 0xff & (0xff << N);
-                return _hi_mask_start;
-            }
-            static constexpr unsigned char hi_mask_start = Genome::hi_mask_init();
-
             //! Compile-time function used to initialize genosect_mask, the mask used to
-            //! get the significant bits of genome section.
+            //! get the significant bits of a genome section.
             static constexpr T genosect_mask_init()
             {
                 T _genosect_mask = 0x0;
@@ -63,27 +43,10 @@ namespace morph {
             }
             static constexpr T genosect_mask = Genome::genosect_mask_init();
 
-            //! Check that the type T is large enough, given N and K.
+            //! Check that the type T is large enough, given N and K (well, just K).
             static constexpr bool checkTok()
             {
-                bool ok = true;
-                size_t Twidth = sizeof(T);
-                if constexpr (N==7) {
-                    //typedef unsigned long long int genosect_t;
-                    if (Twidth < 8) { ok = false; }
-                } else if constexpr (N==6) {
-                    if constexpr (N==K) {
-                        //typedef unsigned long long int genosect_t;
-                        if (Twidth < 8) { ok = false; }
-                    } else {
-                        //typedef unsigned int genosect_t;
-                        if (Twidth < 4) { ok = false; }
-                    }
-                } else {
-                    //typedef unsigned int genosect_t;
-                    if (Twidth < 4) { ok = false; }
-                }
-                return ok;
+                return ((sizeof(T) * 8) < (T{1}<<K)) ? false : true;
             }
             static constexpr bool Tok = Genome::checkTok();
 
@@ -368,7 +331,9 @@ namespace morph {
             void randomize()
             {
                 if constexpr (Genome::Tok == false) {
-                    throw std::runtime_error ("Uh oh, template T is not ok for N and K.\n");
+                    std::stringstream ss;
+                    ss << "Uh oh, template T (sizeof: "<<(sizeof(T)*8)<<") is < 2^K (2^"<<K<<") ";
+                    throw std::runtime_error (ss.str());
                 }
                 for (unsigned int i = 0; i < N; ++i) {
                     (*this)[i] = this->rng.get() & genosect_mask;
