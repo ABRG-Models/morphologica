@@ -8,6 +8,7 @@
 #pragma once
 
 #include <array>
+#include <list>
 #include <bitset>
 #include <iostream>
 #include <sstream>
@@ -30,10 +31,13 @@ namespace morph {
         template <typename T=unsigned int, size_t N=5, size_t K=5>
         struct Genome : public std::array<T, N> // if derived from array, can't have constructor
         {
+            //! Probability of any bit in the genome flipping in one evolve step
+            float flip_probability = 0.1f;
+
             //! Compile-time function used to initialize lo_mask_start
             static constexpr unsigned char lo_mask_init()
             {
-                // Set up globals. Set N_Ins bits to the high position for the lo_mask
+                // Set up globals. Set K bits to the high position for the lo_mask
                 unsigned char _lo_mask_start = 0x0;
                 for (unsigned int i = 0; i < K; ++i) {
                     _lo_mask_start |= 0x1 << i;
@@ -55,24 +59,17 @@ namespace morph {
                 }
                 return _genosect_mask;
             }
-#if 0
-            //! Compile-time function used to initialize state_mask. Does this belong in GeneNet?
-            static constexpr state_t state_mask_init()
-            {
-                state_t _state_mask = 0x0;
-                for (unsigned int i = 0; i < N; ++i) {
-                    _state_mask |= (0x1 << i);
-                }
-                return _state_mask;
-            }
-#endif
 
             static constexpr unsigned char lo_mask_start = Genome::lo_mask_init();
             static constexpr unsigned char hi_mask_start = Genome::hi_mask_init();
             //! The mask used to get the significant bits of genome section.
             static constexpr T genosect_mask = Genome::genosect_mask_init();
-            //! The mask used to get the significant bits of a state.
-            //static constexpr state_t state_mask = Genome::state_mask_init();
+
+            //! Pending a proper copy constructor, copy g2 to this genome
+            void copyin (const Genome& g2)
+            {
+                std::copy (g2.begin(), g2.end(), this->begin());
+            }
 
             //! String output
             std::string str() const
@@ -93,6 +90,147 @@ namespace morph {
             }
             //! Alias for str
             std::string genome_id() const { return this->str(); }
+
+            //! A debugging aid to display the genome in a little table.
+            void show_genome()
+            {
+                std::cout << "Genome:" << std::endl;
+                bool first = true;
+                for (unsigned int i = 0; i<N; ++i) {
+                    if (first) {
+                        first = false;
+                        std::cout << (char)('a'+i);
+                    } else {
+                        std::cout << "     " << (char)('a'+i);
+                    }
+                }
+                std::cout << std::endl << std::hex;
+                first = true;
+                for (unsigned int i = 0; i<N; ++i) {
+                    if (first) {
+                        first = false;
+                        std::cout << "0x" << (*this)[i];
+                    } else {
+                        std::cout << " 0x" << (*this)[i];
+                    }
+                }
+                std::cout << std::dec << std::endl;
+                std::cout << "Genome table:" << std::endl;
+                std::cout << "input  output" << std::endl;
+                for (unsigned int i = K; i > 0; --i) {
+                    std::cout << (i-1);
+                }
+                std::cout << "   ";
+                for (unsigned int i = 0; i < N; ++i) {
+                    std::cout << i << " ";
+                }
+                std::cout << "<-- for input, bit posn; for output, array index";
+
+                if constexpr (N==5) {
+                    if constexpr (K==N) {
+
+                        std::cout << std::endl << "----------------" << std::endl;
+                        std::cout << "12345   abcde <-- 1,2,3,4,5 is i ii iii iv v in Fig 1." << std::endl;
+                    } else {
+                        std::cout << std::endl << "-----------------" << std::endl;
+                        std::cout << "1234   abcde <-- 1,2,3,4 is i ii iii iv in Fig 1." << std::endl;
+                    }
+                } else {
+                    for (unsigned int i = 0; i<K; ++i) { std::cout << i; }
+                    std::cout << "  ";
+                    for (unsigned int i = 0; i<N; ++i) { std::cout << " " << (char)('a'+i); }
+                    std::cout << std::endl;
+                }
+                std::cout << "----------------" << std::endl;
+
+                for (unsigned int j = 0; j < (1 << K); ++j) {
+                    std::cout << std::bitset<K>(j) << "   ";
+                    for (unsigned int i = 0; i < N; ++i) {
+                        T mask = T{1} << j;
+                        std::cout << (((*this)[i]&mask) >> j);
+                    }
+                    std::cout << std::endl;
+                }
+            }
+
+            //! Set the genome to zero.
+            void zero() { for (unsigned int i = 0; i < N; ++i) { (*this)[i] = 0; } }
+
+            //! Evolve, but rather than flipping each bit with a certain
+            //! probability, instead flip bits_to_flip bits, selected randomly.
+            void evolve (unsigned int bits_to_flip)
+            {
+                unsigned int genosect_w = (T{1} << K);
+                unsigned int lgenome = N * genosect_w;
+
+                // Init a list containing all the indices, lgenome long. As bits
+                // are flipped, we'll remove from this list, ensuring that the
+                // random selection of the remaining bits remains fair.
+                std::list<unsigned int> idices;
+                for (unsigned int b = 0; b < lgenome; ++b) { idices.push_back (b); }
+
+                for (unsigned int b = 0; b < bits_to_flip; ++b) {
+                    // FIXME: Probably want an rng which has the correct limits here, not a drng.
+                    unsigned int r = static_cast<unsigned int>(std::floor(this->frng.get() * (float)lgenome));
+                    // Catch the edge case (where randDouble() returned exactly 1.0)
+                    if (r == lgenome) { --r; }
+
+                    // The bit to flip is *i, after these two lines:
+                    std::list<unsigned int>::iterator i = idices.begin();
+                    for (unsigned int rr = 0; rr < r; ++rr, ++i) {}
+
+                    unsigned int j = *i;
+                    // Find out which genome sect j is in.
+                    unsigned int gi = j / genosect_w;
+                    //DBG ("Genome section gi= " << gi << " which is an offset of " << (gi*genosect_w));
+                    T gsect = (*this)[gi];
+
+                    j -= (gi*genosect_w);
+
+                    gsect ^= (T{1} << j);
+                    (*this)[gi] = gsect;
+
+                    --lgenome;
+                }
+            }
+
+            //! Evolve this genome
+            void evolve()
+            {
+                for (unsigned int i = 0; i < N; ++i) {
+                    T gsect = (*this)[i];
+                    for (unsigned int j = 0; j < (1<<K); ++j) {
+                        if (this->frng.get() < this->flip_probability) {
+                            // Flip bit j
+                            gsect ^= (T{1} << j);
+                        }
+                    }
+                    (*this)[i] = gsect;
+                }
+            }
+
+            //! A version of evolve which adds to a count of the number of flips made in
+            //! each genosect. For debugging.
+            void evolve (std::array<unsigned long long int, N>& flipcount)
+            {
+                for (unsigned int i = 0; i < N; ++i) {
+                    T gsect = (*this)[i];
+                    for (unsigned int j = 0; j < (1<<K); ++j) {
+                        if (this->frng.get() < this->flip_probability) {
+                            // Flip bit j
+                            ++flipcount[i];
+                            gsect ^= (T{1} << j);
+                        }
+                    }
+                    (*this)[i] = gsect;
+                }
+            }
+
+            //! Flip one bit in this genome at index sectidx within section sect
+            void bitflip_genome (unsigned int sect, unsigned int sectidx)
+            {
+                (*this)[sect] ^= (T{1} << sectidx);
+            }
 
             //! Compute Hamming distance between this genome and another (g2).
             unsigned int hamming (const morph::bn::Genome<T,N,K>& g2)
@@ -211,6 +349,9 @@ namespace morph {
                     (*this)[i] = this->rng.get() & genosect_mask;
                 }
             }
+
+            //! Also need a floating point rng
+            morph::RandUniform<float> frng;
 
             //! Overload the stream output operator
             friend std::ostream& operator<< <T, N, K> (std::ostream& os, const Genome<T, N, K>& v);
