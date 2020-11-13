@@ -152,19 +152,14 @@ endif()
 # Additional GL compiler flags.
 set(OpenGL_GL_PREFERENCE "GLVND")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
-```
 
-One important flag confers an ability for your compiler to copy in the
-fonts that morph::Visual needs. Set a definition to say where there
-are some truetype fonts that will be compiled into your binaries. If
-you are working with 'installed' morphologica:
-
-
-```cmake
 # Tell the program where the morph fonts are. Again, assuming you installed morphologica in /usr/local:
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
 ```
-or for in-tree morphologica:
+
+The last flag (**MORPH_FONTS_DIR**) helps your compiler to copy in the
+fonts that morph::Visual needs.  If you are working with 'in-tree'
+morphologica change this to:
 
 ```cmake
 # Tell the program where the morph fonts are, to compile them into the binary
