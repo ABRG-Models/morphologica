@@ -322,3 +322,10 @@ add_test(test_elman test_elman)
 
 add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
+
+# Boolean gene nets
+add_executable(testGeneNet testGeneNet.cpp)
+if (APPLE)
+  target_compile_options(testGeneNet PUBLIC "-mavx")
+endif()
+add_test(testGeneNet testGeneNet )
