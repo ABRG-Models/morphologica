@@ -83,11 +83,6 @@ namespace morph {
  */
 #define state_t_top_bit 0x80
 
-        //! I'd like a Genome class.
-        struct Genome
-        {
-            // In GeneNet, a Genome is an array<genosect_t, N_Genes>
-        };
 
         //! A Boolean gene network class
         struct GeneNet
@@ -95,6 +90,27 @@ namespace morph {
             //! Probability of flipping each bit of the genome during evolution.
             float pOn;
 
+#if 0
+            //! Compile-time function used to initialize lo_mask_start
+            static constexpr unsigned char lo_mask_init()
+            {
+                // Set up globals. Set K bits to the high position for the lo_mask
+                unsigned char _lo_mask_start = 0x0;
+                for (unsigned int i = 0; i < K; ++i) {
+                    _lo_mask_start |= 0x1 << i;
+                }
+                return _lo_mask_start;
+            }
+            static constexpr unsigned char lo_mask_start = Genome::lo_mask_init();
+
+            //! Compile-time function used to initialize hi_mask_start
+            static constexpr unsigned char hi_mask_init()
+            {
+                unsigned char _hi_mask_start = 0xff & (0xff << N);
+                return _hi_mask_start;
+            }
+            static constexpr unsigned char hi_mask_start = Genome::hi_mask_init();
+#endif
             /*
              * Starting values of the masks used when computing inputs from a
              * state. When computing input for a gene at position i, the hi_mask is used
@@ -138,40 +154,6 @@ namespace morph {
                     this->state_mask |= (0x1 << i);
                 }
             }
-
-#if N_Genes == 6
-            std::array<genosect_t, N_Genes> selected_genome()
-            {
-                array<genosect_t, N_Genes> genome = {{ 0x2a0b00c8d7cee66fULL, 0x1f27d5082715cd95ULL, 0x9e12d18b6b5add34ULL, 0x7ec6c4222c0dc635ULL, 0x3b72c42b80cf5d5cULL, 0x7221967e8c593e2dULL }};
-                return genome;
-            }
-#elif N_Genes == 5
-# if defined N_Ins_EQUALS_N_Genes
-            /*!
-             * A selected genome for k=n
-             *
-             * This is the genome given in Fig 1 of the paper for N_Genes=5 and
-             * also the one we'll use in the paper as the bold evolution and for
-             * which we show the state transitions.
-             */
-            std::array<genosect_t, N_Genes>
-            selected_genome()
-            {
-                std::array<genosect_t, N_Genes> genome = {{ 0x8875517a, 0x5c1e87e1, 0x8eef99d4, 0x1a3c467f, 0xdf7235c6 }};
-                return genome;
-            }
-# else
-            /*!
-             * A genome for k=n-1
-             */
-            std::array<genosect_t, N_Genes>
-            selected_genome()
-            {
-                std::array<genosect_t, N_Genes> genome = {{ 0xa3bc, 0x927f, 0x7b84, 0xf57d, 0xecdc }};
-                return genome;
-            }
-# endif
-#endif
 
             void compute_next_common (const state_t& state, std::array<state_t, N_Genes>& inputs)
             {
@@ -219,22 +201,7 @@ namespace morph {
             void compute_next (const std::array<genosect_t, N_Genes>& genome, state_t& state)
             {
                 std::array<state_t, N_Genes> inputs;
-
-#ifndef N_Ins_EQUALS_N_Genes
-                state_t lo_mask = lo_mask_start;
-                state_t hi_mask = hi_mask_start;
-#endif
-
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-
-#ifdef N_Ins_EQUALS_N_Genes
-                    inputs[i] = ((state << i) & state_mask) | (state >> (N_Genes-i));
-#else
-                    inputs[i] = (state & lo_mask) | ((state & hi_mask) >> N_minus_k);
-                    hi_mask = (hi_mask >> 1) | 0x80;
-                    lo_mask >>= 1;
-#endif
-                }
+                compute_next_common (state, inputs);
 
                 // Now reset state and compute new values:
                 state = 0x0;
@@ -386,223 +353,22 @@ namespace morph {
                 return g;
             }
 
-            /*!
-             * Output the genome in a string containing hex representations of the
-             * N_Genes genosects.
-             */
-            std::string genome_id (const std::array<genosect_t, N_Genes>& genome)
-            {
-                stringstream ss;
-                ss << hex;
-                bool first = true;
-                for (unsigned int i = 0; i<N_Genes; ++i) {
-                    if (first) {
-                        first = false;
-                        ss << (genome[i] & genosect_mask);
-                    } else {
-                        ss << "-" << (genome[i] & genosect_mask);
-                    }
-                }
-                ss << dec;
-                return ss.str();
-            }
+            //! The state has N bits in it. Working with N <= 8, so:
+            typedef unsigned char state_t;
 
-            //! A debugging aid to display the genome in a little table.
-            void
-            show_genome (const std::array<genosect_t, N_Genes>& genome)
+#if 0
+            //! Compile-time function used to initialize state_mask. Does this belong in GeneNet?
+            static constexpr state_t state_mask_init()
             {
-                std::cout << "Genome:" << std::endl;
-                bool first = true;
-                for (unsigned int i = 0; i<N_Genes; ++i) {
-                    if (first) {
-                        first = false;
-                        std::cout << (char)('a'+i);
-                    } else {
-                        std::cout << "     " << (char)('a'+i);
-                    }
+                state_t _state_mask = 0x0;
+                for (unsigned int i = 0; i < N; ++i) {
+                    _state_mask |= (0x1 << i);
                 }
-                std::cout << std::endl << std::hex;
-                first = true;
-                for (unsigned int i = 0; i<N_Genes; ++i) {
-                    if (first) {
-                        first = false;
-                        std::cout << "0x" << genome[i];
-                    } else {
-                        std::cout << " 0x" << genome[i];
-                    }
-                }
-                std::cout << std::dec << std::endl;
-                std::cout << "Genome table:" << std::endl;
-                std::cout << "input  output" << std::endl;
-                for (unsigned int i = N_Ins; i > 0; --i) {
-                    std::cout << (i-1);
-                }
-                std::cout << "   ";
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    std::cout << i << " ";
-                }
-                std::cout << "<-- for input, bit posn; for output, array index";
-#if N_Genes == 5
-# if defined N_Ins_EQUALS_N_Genes
-                std::cout << std::endl << "----------------" << std::endl;
-                std::cout << "12345   abcde <-- 1,2,3,4,5 is i ii iii iv v in Fig 1." << std::endl;
-# else
-                std::cout << std::endl << "-----------------" << std::endl;
-                std::cout << "1234   abcde <-- 1,2,3,4 is i ii iii iv in Fig 1." << std::endl;
-# endif
-#else
-                for (unsigned int i = 0; i<N_Ins; ++i) { std::cout << i; }
-                std::cout << "  ";
-                for (unsigned int i = 0; i<N_Genes; ++i) { std::cout << " " << (char)('a'+i); }
-                std::cout << std::endl;
+                return _state_mask;
+            }
+            //! The mask used to get the significant bits of a state.
+            static constexpr state_t state_mask = Genome::state_mask_init();
 #endif
-                std::cout << "----------------" << std::endl;
-
-                for (unsigned int j = 0; j < (1 << N_Ins); ++j) {
-                    std::cout << bitset<N_Ins>(j) << "   ";
-                    for (unsigned int i = 0; i < N_Genes; ++i) {
-                        genosect_t mask = GENOSECT_ONE << j;
-                        std::cout << ((genome[i]&mask) >> j);
-                    }
-                    std::cout << std::endl;
-                }
-            }
-
-            //! Set the genome g to zero.
-            void zero_genome (std::array<genosect_t, N_Genes>& g)
-            {
-#pragma omp simd
-                for (unsigned int i = 0; i < N_Genes; ++i) { g[i] = 0; }
-            }
-
-
-            //! Copy the contents of @from to @to
-            void copy_genome (const std::array<genosect_t, N_Genes>& from, std::array<genosect_t, N_Genes>& to)
-            {
-#pragma omp simd
-                for (unsigned int i = 0; i < N_Genes; ++i) { to[i] = from[i]; }
-            }
-
-            /*!
-             * This one will, rather than flipping each bit with a certain
-             * probability, instead flip bits_to_flip bits, selected randomly.
-             */
-            void evolve_genome (std::array<genosect_t, N_Genes>& genome, unsigned int bits_to_flip)
-            {
-#ifdef DEBUG
-                unsigned int numflipped = 0;
-#endif
-
-                unsigned int genosect_w = (GENOSECT_ONE << N_Ins);
-                unsigned int lgenome = N_Genes * genosect_w;
-
-                // Init a list containing all the indices, lgenome long. As bits
-                // are flipped, we'll remove from this list, ensuring that the
-                // random selection of the remaining bits remains fair.
-                list<unsigned int> idices;
-                for (unsigned int b = 0; b < lgenome; ++b) {
-                    idices.push_back (b);
-                }
-                for (unsigned int b = 0; b < bits_to_flip; ++b) {
-                    unsigned int r = static_cast<unsigned int>(floor(randDouble() * (double)lgenome));
-                    // Catch the edge case (where randDouble() returned exactly 1.0)
-                    if (r == lgenome) { --r; }
-
-                    // The bit to flip is *i, after these two lines:
-                    list<unsigned int>::iterator i = idices.begin();
-                    for (unsigned int rr = 0; rr < r; ++rr, ++i) {}
-
-                    unsigned int j = *i;
-                    // Find out which genome sect j is in.
-                    unsigned int gi = j / genosect_w;
-                    DBG ("Genome section gi= " << gi << " which is an offset of " << (gi*genosect_w));
-                    genosect_t gsect = genome[gi];
-
-                    j -= (gi*genosect_w);
-#ifdef DEBUG
-                    ++numflipped;
-                    DBG ("Flipping bit " << j+(gi*genosect_w));
-#endif
-                    gsect ^= (GENOSECT_ONE << j);
-                    genome[gi] = gsect;
-
-                    --lgenome;
-                }
-                DBG ("Num flipped: " << numflipped);
-            }
-
-            /*!
-             * The evolution function.
-             */
-            void evolve_genome (array<genosect_t, N_Genes>& genome)
-            {
-#ifdef DEBUG
-                unsigned int numflipped = 0;
-#endif
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    genosect_t gsect = genome[i];
-                    for (unsigned int j = 0; j < (1<<N_Ins); ++j) {
-                        if (randDouble() < this->pOn) {
-                            // Flip bit j
-#ifdef DEBUG
-                            ++numflipped;
-#endif
-                            gsect ^= (GENOSECT_ONE << j);
-                        }
-                    }
-                    genome[i] = gsect;
-                }
-                DBG ("Num flipped: " << numflipped);
-            }
-
-            //! Flip one bit in the passed in genome at index flipidx
-            void bitflip_genome (std::array<genosect_t, N_Genes>& genome,
-                                 unsigned int theGenosect, unsigned int extra)
-            {
-                genome[theGenosect] ^= (GENOSECT_ONE << extra);
-            }
-
-            /*!
-             * A version of evolve_genome which adds to a count of the number of flips
-             * made in each genosect. Was used for code verification.
-             */
-            void
-            evolve_genome (std::array<genosect_t, N_Genes>& genome,
-                           std::array<unsigned long long int, N_Genes>& flipcount)
-            {
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    genosect_t gsect = genome[i];
-                    for (unsigned int j = 0; j < (1<<N_Ins); ++j) {
-                        if (randFloat() < pOn) {
-                            // Flip bit j
-                            ++flipcount[i];
-                            gsect ^= (GENOSECT_ONE << j);
-                        }
-                    }
-                    genome[i] = gsect;
-                }
-            }
-
-            //! Populate the passed in genome with random bits.
-            void random_genome (std::array<genosect_t, N_Genes>& genome)
-            {
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    // Replace with use of a RandUniform<>:
-                    genome[i] = ((genosect_t) SHR3((&rd))) & genosect_mask;
-                }
-            }
-
-            //! Generate a random genome and return it.
-            std::array<genosect_t, N_Genes> random_genome()
-            {
-                array<genosect_t, N_Genes> genome;
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    // Replace with RandUniform<>
-                    genome[i] = ((genosect_t) SHR3((&rd))) & genosect_mask;
-                }
-
-                return genome;
-            }
 
             /*!
              * Computes the Hamming distance between state and target. This is
@@ -617,18 +383,6 @@ namespace morph {
                 return static_cast<state_t>(hamming);
             }
 
-            //! Compute Hamming distance between two genomes.
-            unsigned int
-            compute_hamming (const std::array<genosect_t, N_Genes>& g1,
-                             const std::array<genosect_t, N_Genes>& g2)
-            {
-                unsigned int hamming = 0;
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    genosect_t bits = g1[i] ^ g2[i]; // XOR
-                    hamming += _mm_popcnt_u32 ((unsigned int)bits);
-                }
-                return hamming;
-            }
 
             /*!
              * This function obtained from
@@ -779,107 +533,6 @@ namespace morph {
                 return rtn;
             }
 
-            /*!
-             * Is the function defined by the genosect_t @gs a canalysing function?
-             *
-             * If not, return (unsigned int)0, otherwise return the number of bits for
-             * which the function is canalysing - this may be called canalysing "depth".
-             */
-            unsigned int isCanalyzing (const genosect_t& gs)
-            {
-                std::bitset<N_Ins> acanal_set;
-                std::bitset<N_Ins> acanal_unset;
-                std::array<int, N_Ins> setbitivalue;
-                std::array<int, N_Ins> unsetbitivalue;
-                unsigned int canal = 0;
-
-                for (unsigned int i = 0; i < N_Ins; ++i) {
-                    acanal_set[i] = false;
-                    acanal_unset[i] = false;
-                    setbitivalue[i] = -1;
-                    unsetbitivalue[i] = -1;
-                }
-
-                // Test each bit. If bit's state always leads to same result in gs, then
-                // canalysing is true for that bit.
-                for (unsigned int i = 0; i < N_Ins; ++i) {
-
-                    // Test bit i. First assume it IS canalysing for this bit
-                    acanal_set.set(i);
-                    acanal_unset.set(i);
-
-                    // Iterate over the rows in the truth table
-                    for (unsigned int j = 0; j < (0x1 << N_Ins); ++j) {
-
-                        // if (bit i in row j is on)
-                        if ((j & (1UL<<i)) == (1UL<<i)) {
-                            if (setbitivalue[i] == -1) {
-                                // -1 means we haven't yet recorded an output from gs, so record it:
-                                setbitivalue[i] = (int)(1UL&(gs>>j));
-                            } else {
-                                if (setbitivalue[i] != (int)(1UL&(gs>>j))) {
-                                    // Cannot be canalysing for bit i set to 1.
-                                    acanal_set.reset(i);
-                                }
-                            }
-                        } else {
-                            // (bit i in row j is off)
-                            if (unsetbitivalue[i] == -1) {
-                                // Haven't yet recorded an output from gs, so record it:
-                                unsetbitivalue[i] = (int)(1UL&(gs>>j));
-                            } else {
-                                if (unsetbitivalue[i] != (int)(1UL&(gs>>j))) {
-                                    // Cannot be canalysing for bit i set to 0
-                                    acanal_unset.reset(i) = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Count up
-                for (unsigned int i = 0; i < N_Ins; ++i) {
-                    if (acanal_set.test(i) == true) {
-                        canal++;
-                        DBG2 ("Bit " << i << "=1 produces a consistent output value");
-                    }
-                    if (acanal_unset.test(i) == true) {
-                        canal++;
-                        DBG2 ("Bit " << i << "=0 produces a consistent output value");
-                    }
-                }
-
-                return canal;
-            }
-
-            /*!
-             * Test each section of the genosect and determine how many of the truth
-             * tables are canalysing functions. Return the number of truth tables that
-             * are canalysing.
-             */
-            unsigned int canalyzingness (const std::array<genosect_t, N_Genes>& g1)
-            {
-                unsigned int canal = 0;
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    DBG2 ("=== isCanalysing? genome section " << i << " ===");
-                    unsigned int _canal = isCanalyzing (g1[i]);
-                    DBG2 ("Section " << i << " has canalysing value: " << _canal);
-                    canal += _canal;
-                }
-                return canal;
-            }
-
-            //! Compute the bias; the proportion of set bits in the genome.
-            double bias (const std::array<genosect_t, N_Genes>& g1)
-            {
-                unsigned int bits = 0;
-                for (unsigned int i = 0; i < N_Genes; ++i) {
-                    for (unsigned int j = 0; j < (0x1 << N_Genes); ++j) {
-                        bits += ((g1[i] >> j) & 0x1) ? 1 : 0;
-                    }
-                }
-                return (double)bits/(double)(N_Genes*(1<<N_Genes));
-            }
         };
 
     } // namespace bn
