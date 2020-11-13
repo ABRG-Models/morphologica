@@ -137,7 +137,7 @@ namespace morph {
 
             // Scale the incoming data?
             if (this->zScale.autoscaled == false) {
-                this->setsize (this->scalewidth, this->scaleheight);
+                this->setsize (this->width, this->height);
             }
             std::vector<Flt> sd (dsize, Flt{0});
             std::vector<Flt> ad (dsize, Flt{0});
@@ -162,25 +162,25 @@ namespace morph {
         }
 
         //! Set the graph size, in model units.
-        void setsize (float width, float height)
+        void setsize (float _width, float _height)
         {
             std::cout << __FUNCTION__ << " called\n";
             if (this->zScale.autoscaled == true) {
                 throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
                                           "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
             }
-            this->scalewidth = width;
-            this->scaleheight = height;
+            this->width = _width;
+            this->height = _height;
 
-            float _extra = this->dataaxisdist * this->scaleheight;
+            float _extra = this->dataaxisdist * this->height;
             this->zScale.range_min = _extra;
-            this->zScale.range_max = this->scaleheight-_extra;
+            this->zScale.range_max = this->height - _extra;
 
-            _extra = this->dataaxisdist * this->scalewidth;
+            _extra = this->dataaxisdist * this->width;
             this->abscissa_scale.range_min = _extra;
-            this->abscissa_scale.range_max = this->scalewidth-_extra;
+            this->abscissa_scale.range_max = this->width - _extra;
 
-            this->thickness *= this->scalewidth;
+            this->thickness *= this->width;
         }
 
         // Axis ranges. The length of each axis could be determined from the data and
@@ -190,9 +190,9 @@ namespace morph {
         void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
             // First make sure that the range_min/max are correctly set
-            this->setsize (this->scalewidth, this->scaleheight);
+            this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
-            // data (the axes are always scalewidth * scaleheight in size).
+            // data (the axes are always width * height in size).
             this->zScale.compute_autoscale (_ymin, _ymax);
             this->abscissa_scale.compute_autoscale (_xmin, _xmax);
         }
@@ -277,10 +277,10 @@ namespace morph {
             morph::Vector<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
                 float _y0_mdl = this->zScale.transform_one (0);
-                lblpos = { 0.9f * this->scalewidth,
+                lblpos = { 0.9f * this->width,
                            _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 };
             } else {
-                lblpos = {0.5f * this->scalewidth - geom.half_width(),
+                lblpos = {0.5f * this->width - geom.half_width(),
                           -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset);
@@ -300,11 +300,11 @@ namespace morph {
 
             if (this->axisstyle == axisstyle::cross) {
                 float _x0_mdl = this->abscissa_scale.transform_one (0);
-                lblpos = {_x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
-                          0.9f * this->scaleheight, 0};
+                lblpos = { _x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                           0.9f * this->height, 0 };
             } else {
                 lblpos = { -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
-                           0.5f*this->scaleheight - downshift, 0 };
+                           0.5f*this->height - downshift, 0 };
             }
 
             if (geom.width() > 2*this->fontsize) {
@@ -388,25 +388,25 @@ namespace morph {
             float _x0_mdl = this->abscissa_scale.transform_one (0);
             float _y0_mdl = this->zScale.transform_one (0);
             this->computeFlatLine (idx,
-                                   {_x0_mdl, -(this->axislinewidth*0.5f),                  -this->thickness},
-                                   {_x0_mdl, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                                   {_x0_mdl, -(this->axislinewidth*0.5f),             -this->thickness},
+                                   {_x0_mdl, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                    uz, this->axiscolour, this->axislinewidth*0.7f);
             // Horz zero
             this->computeFlatLine (idx,
-                                   {0,                _y0_mdl, -this->thickness},
-                                   {this->scalewidth, _y0_mdl, -this->thickness},
+                                   {0,           _y0_mdl, -this->thickness},
+                                   {this->width, _y0_mdl, -this->thickness},
                                    uz, this->axiscolour, this->axislinewidth*0.7f);
 
             for (auto xt : this->xtick_posns) {
                 // Want to place lines in screen units. So transform the data units
                 this->computeFlatLine (idx,
-                                       {(float)xt, _y0_mdl, -this->thickness},
+                                       {(float)xt, _y0_mdl,                      -this->thickness},
                                        {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
             for (auto yt : this->ytick_posns) {
                 this->computeFlatLine (idx,
-                                       {_x0_mdl,      (float)yt, -this->thickness},
+                                       {_x0_mdl,                    (float)yt, -this->thickness},
                                        {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
@@ -429,13 +429,13 @@ namespace morph {
 
                 // y axis
                 this->computeFlatLine (idx,
-                                       {0, -(this->axislinewidth*0.5f),                  -this->thickness},
-                                       {0, this->scaleheight + this->axislinewidth*0.5f, -this->thickness},
+                                       {0, -(this->axislinewidth*0.5f),             -this->thickness},
+                                       {0, this->height + this->axislinewidth*0.5f, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
                 // x axis
                 this->computeFlatLine (idx,
-                                       {0,                0, -this->thickness},
-                                       {this->scalewidth, 0, -this->thickness},
+                                       {0,           0, -this->thickness},
+                                       {this->width, 0, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
 
                 // Draw left and bottom ticks
@@ -463,13 +463,13 @@ namespace morph {
                 || this->axisstyle == axisstyle::boxcross) {
                 // right axis
                 this->computeFlatLine (idx,
-                                       {this->scalewidth, -this->axislinewidth*0.5f,                    -this->thickness},
-                                       {this->scalewidth, this->scaleheight+(this->axislinewidth*0.5f), -this->thickness},
+                                       {this->width, -this->axislinewidth*0.5f,               -this->thickness},
+                                       {this->width, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
                 // top axis
                 this->computeFlatLine (idx,
-                                       {0,                this->scaleheight, -this->thickness},
-                                       {this->scalewidth, this->scaleheight, -this->thickness},
+                                       {0,           this->height, -this->thickness},
+                                       {this->width, this->height, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
 
                 // Draw top and right ticks if necessary
@@ -483,14 +483,14 @@ namespace morph {
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
                         this->computeFlatLine (idx,
-                                               {(float)xt, this->scaleheight, -this->thickness},
-                                               {(float)xt, this->scaleheight + tl,   -this->thickness}, uz,
+                                               {(float)xt, this->height,      -this->thickness},
+                                               {(float)xt, this->height + tl, -this->thickness}, uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                     for (auto yt : this->ytick_posns) {
                         this->computeFlatLine (idx,
-                                               {this->scalewidth, (float)yt, -this->thickness},
-                                               {this->scalewidth + tl,   (float)yt, -this->thickness}, uz,
+                                               {this->width,      (float)yt, -this->thickness},
+                                               {this->width + tl, (float)yt, -this->thickness}, uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                 }
@@ -605,10 +605,10 @@ namespace morph {
                 std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
 #endif
                 float realmin = this->abscissa_scale.inverse_one (0);
-                float realmax = this->abscissa_scale.inverse_one (this->scalewidth);
+                float realmax = this->abscissa_scale.inverse_one (this->width);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
                 realmin = this->zScale.inverse_one (0);
-                realmax = this->zScale.inverse_one (this->scaleheight);
+                realmax = this->zScale.inverse_one (this->height);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
 
                 this->xtick_posns.resize (this->xticks.size());
@@ -728,10 +728,10 @@ namespace morph {
         //! (such as a line). If it's too small, and the graph is far away in the scene,
         //! then precision errors can cause colour mixing.
         float thickness = 0.002f;
-        //! scalewidth scales the amount of in-model distance that the graph will be wide
-        float scalewidth = 1.0f;
-        //! scalewidth height scales the amount of in-model distance that the graph will be high
-        float scaleheight = 1.0f;
+        //! width is how wide the graph axes will be, in 3D model coordinates
+        float width = 1.0f;
+        //! height is how high the graph axes will be, in 3D model coordinates
+        float height = 1.0f;
         //! What proportion of the graph width/height should be allowed as a space
         //! between the min/max and the axes? Can be 0.0f;
         float dataaxisdist = 0.04f;
