@@ -92,7 +92,7 @@ namespace morph {
             std::string genome_id() const { return this->str(); }
 
             //! A debugging aid to display the genome in a little table.
-            void show_genome()
+            void show_genome() const
             {
                 std::cout << "Genome:" << std::endl;
                 bool first = true;
@@ -227,13 +227,13 @@ namespace morph {
             }
 
             //! Flip one bit in this genome at index sectidx within section sect
-            void bitflip_genome (unsigned int sect, unsigned int sectidx)
+            void bitflip (unsigned int sect, unsigned int sectidx)
             {
                 (*this)[sect] ^= (T{1} << sectidx);
             }
 
             //! Compute Hamming distance between this genome and another (g2).
-            unsigned int hamming (const morph::bn::Genome<T,N,K>& g2)
+            unsigned int hamming (const morph::bn::Genome<T,N,K>& g2) const
             {
                 unsigned int hamming = 0;
                 for (unsigned int i = 0; i < N; ++i) {
@@ -248,7 +248,7 @@ namespace morph {
              * If not, return (unsigned int)0, otherwise return the number of bits for
              * which the function is canalysing - this may be called canalysing "depth".
              */
-            unsigned int isCanalyzing (const T& gs)
+            unsigned int isCanalyzing (const T& gs) const
             {
                 std::bitset<K> acanal_set;
                 std::bitset<K> acanal_unset;
@@ -320,7 +320,7 @@ namespace morph {
              * tables are canalysing functions. Return the number of truth tables that
              * are canalysing.
              */
-            unsigned int canalyzingness()
+            unsigned int canalyzingness() const
             {
                 unsigned int canal = 0;
                 for (unsigned int i = 0; i < N; ++i) {
@@ -330,7 +330,7 @@ namespace morph {
             }
 
             //! Compute the bias; the proportion of set bits in the genome.
-            double bias()
+            float bias() const
             {
                 unsigned int bits = 0;
                 for (unsigned int i = 0; i < N; ++i) {
@@ -338,7 +338,7 @@ namespace morph {
                         bits += (((*this)[i] >> j) & 0x1) ? 1 : 0;
                     }
                 }
-                return (double)bits/(double)(N*(1<<N));
+                return (float)bits/(float)(N*(1<<N));
             }
 
             //! This Genome has its own random number generator
