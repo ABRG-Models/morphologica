@@ -18,9 +18,6 @@
 namespace morph {
     namespace  bn {
 
-        //! The state has N bits in it. Working with N <= 8, so:
-        typedef unsigned char state_t;
-
         // In GeneNet, a Genome is an array<T, N_Genes> where the logic above determines what T should be
         template <typename T, size_t N, size_t K> struct Genome;
         template <typename T, size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<T, N, K>&);
