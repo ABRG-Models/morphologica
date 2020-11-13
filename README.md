@@ -87,22 +87,25 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
-To build, you need to tell your build process: **1**) Where the
+To build, you need to tell your build process: **0**) What compiler
+flags to add to the compiler command line. **1**) Where the
 morphologica headers are to be found. **2**) Where the fonts that
 morphologica will compile into your binaries (if you're using
-morph::Visual) are located. **3**) which libraries to link to.
+morph::Visual) are located. **3**) which libraries to link to
 
 You can either build with morphologica headers (and fonts) installed
 in your chosen location (/usr/local by default) *or* you can just
-clone a copy of morphologica source into your own source tree.
+clone a copy of morphologica source into your own source tree. There
+are small differences to the paths used for **2)** and **3)**, below.
 
-### Option 1: With morphologica installed
+Seb prefers this second option: 'clone and go'. Just git clone
+morphologica into your source tree (or somewhere else) and then make
+sure your compiler can find the includes, fonts and libraries.
 
-If you would like to work with morphologica headers installed in
-/usr/local, then this is what you add to your client code's
-CMakeLists.txt (assuming you're using cmake to build your own code).
+If you're using cmake, then this is what you add to your client code's
+CMakeLists.txt:
 
-#### 1) Includes
+### 1) Include directories for headers
 
 ```cmake
 # Find the libraries which will be needed
@@ -120,79 +123,93 @@ set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INC
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
-# Where did you install morphologica?
-set(MORPH_INCLUDE_PATH /usr/local)
+# MORPH_INCLUDE_PATH is set to the location at which the header directory 'morph' is found. For 'Installed morpholoigca':
+set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
 ```
+If you are working with in-tree morphologica, then set MORPH_INCLUDE_PATH like this:
+```cmake
+# Here, I assume you git cloned morphologica into the root of your own project source tree.
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+```
 
-#### 2) Ability for your compiler to copy in the fonts
+### 2) Compiler flags
 
-Set a definition to say where there are some truetype fonts that will
-be compiled into your binaries.
+This piece of boiler-plate cmake will get you started with a sensible
+set of compiler flags for morphologica:
+
+```cmake
+# From CMAKE_SYSTEM work out which of __OSX__, __GLN__, __NIX__ or __WIN__ are required
+message(STATUS "Operating system: " ${CMAKE_SYSTEM})
+if(CMAKE_SYSTEM MATCHES Linux.*)
+  set(EXTRA_HOST_DEFINITION "-D__GLN__")
+elseif(CMAKE_SYSTEM MATCHES BSD.*)
+  set(EXTRA_HOST_DEFINITION "-D__NIX__")
+elseif(APPLE)
+  set(EXTRA_HOST_DEFINITION "-D__OSX__")
+else()
+  message(ERROR "Operating system not supported: " ${CMAKE_SYSTEM})
+endif()
+
+# morphologica uses c++-17 language features
+set(CMAKE_CXX_STANDARD 17)
+
+# Add the host definition to CXXFLAGS along with other switches,
+# depending on OS/Compiler and your needs/preferences
+if (APPLE)
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -O3")
+else() # assume g++ (or a gcc/g++ mimic like Clang)
+  set(CMAKE_CXX_FLAGS "${EXTRA_HOST_DEFINITION} -Wall -Wfatal-errors -g -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
+endif()
+
+# Tell clang to be quiet about brace initialisers:
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
+endif()
+
+# Add OpenMP flags here, if necessary
+find_package(OpenMP)
+if(OpenMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
+# Additional GL compiler flags.
+set(OpenGL_GL_PREFERENCE "GLVND")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+```
+
+One important flag confers an ability for your compiler to copy in the
+fonts that morph::Visual needs. Set a definition to say where there
+are some truetype fonts that will be compiled into your binaries. If
+you are working with 'installed' morphologica:
+
 
 ```cmake
 # Tell the program where the morph fonts are. Again, assuming you installed morphologica in /usr/local:
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
 ```
-
-#### 3) Links
-
-```cmake
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
-set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
-target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
-```
-
-### Option 2: With morphologica 'in-tree'
-
-Seb prefers this option: 'clone and go'. Just git clone morphologica
-into your source tree (or somewhere else) and then make sure your
-compiler can find the includes, fonts and links.
-
-#### 1) Includes
-```cmake
-# Find the libraries which will be needed
-find_package(jsoncpp REQUIRED)
-find_package(HDF5 REQUIRED)
-find_package(Armadillo REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(LAPACK REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(glfw3 3.3 REQUIRED)
-find_package(Freetype REQUIRED)
-
-# Define collections of includes for the dependencies
-set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
-set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
-include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
-
-# Where did you install morphologica? Here, I assume you git cloned it
-into the root of your own project source tree.
-set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
-
-include_directories(BEFORE ${MORPH_INCLUDE_PATH})
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
-
-```
-
-#### 2) Ability for your compiler to copy in the fonts
-
-Set a definition to say where there are some truetype fonts that will
-be compiled into your binaries.
+or for in-tree morphologica:
 
 ```cmake
 # Tell the program where the morph fonts are, to compile them into the binary
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 ```
 
-#### 3) Dependency library linking
+### 3) Links to dynamically linked libraries
+
+Morphologica makes use of a number of libraries. Depending on which
+classes you use from morphologica, you'll need to link to some or all
+of these:
 
 ```cmake
 set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
 set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 ```
+
+### Legacy code and tests
 
 morphologica has a library of legacy code and some test programs which
 are built with cmake. The process to build and install morphologica's
