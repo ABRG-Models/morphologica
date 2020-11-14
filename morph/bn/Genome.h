@@ -23,14 +23,25 @@ namespace morph {
         template <typename T, size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<T, N, K>&);
 
         /*!
-         * The Genome class is derived from an std::array.
+         * The Genome class
+         *
+         * In our bn namespace, a Genome for a Boolean gene network of N 'genes' has N
+         * 'genosects' stored in an array (which is why this class derives from
+         * std::array). The number of effective inputs to the network, K, also has to be
+         * provided. This 'n-k' terminology matches that used by Stuart Kaufmann in his
+         * discussion of Boolean nets.
+         *
+         * \tparam T The width of each 'genosect'. This should be an unsigned integral
+         * type; unsigned char, unsigned int or unsigned long long int.
+         *
+         * \tparam N The number of genes in the Boolean gene network
+         *
+         * \tparam K The number of genes which are used to determine the next state of
+         * the Boolean gene net. May not be greater than N.
          */
         template <typename T=unsigned int, size_t N=5, size_t K=5>
         struct Genome : public std::array<T, N>
         {
-            //! Probability for each bit in the genome flipping during one evolve step
-            float p = 0.1f;
-
             //! Compile-time function used to initialize genosect_mask, the mask used to
             //! get the significant bits of a genome section.
             static constexpr T genosect_mask_init()
@@ -67,8 +78,6 @@ namespace morph {
                 ss << std::dec;
                 return ss.str();
             }
-            //! Alias for str
-            std::string genome_id() const { return this->str(); }
 
             //! A debugging aid to display the genome in a little table.
             std::string table() const
@@ -152,7 +161,7 @@ namespace morph {
                 for (unsigned int b = 0; b < lgenome; ++b) { idices.push_back (b); }
 
                 for (unsigned int b = 0; b < bits_to_flip; ++b) {
-                    // FIXME: Probably want an rng which has the correct limits here, not a drng.
+                    // FIXME: Probably want an rng which has the correct limits here, not a frng.
                     unsigned int r = static_cast<unsigned int>(std::floor(this->frng.get() * (float)lgenome));
                     // Catch the edge case (where randDouble() returned exactly 1.0)
                     if (r == lgenome) { --r; }
@@ -176,13 +185,13 @@ namespace morph {
                 }
             }
 
-            //! Evolve this genome
-            void evolve()
+            //! Evolve this genome with bit flip probability p
+            void evolve (const float& p)
             {
                 for (unsigned int i = 0; i < N; ++i) {
                     T gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < this->p) {
+                        if (this->frng.get() < p) {
                             // Flip bit j
                             gsect ^= (T{1} << j);
                         }
@@ -193,12 +202,12 @@ namespace morph {
 
             //! A version of evolve which adds to a count of the number of flips made in
             //! each genosect. For debugging.
-            void evolve (std::array<unsigned long long int, N>& flipcount)
+            void evolve (const float& p, std::array<unsigned long long int, N>& flipcount)
             {
                 for (unsigned int i = 0; i < N; ++i) {
                     T gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < this->p) {
+                        if (this->frng.get() < p) {
                             // Flip bit j
                             ++flipcount[i];
                             gsect ^= (T{1} << j);
