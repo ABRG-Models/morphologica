@@ -1,4 +1,5 @@
 #include <morph/bn/Genome.h>
+#include <morph/bn/GeneNet.h>
 
 int main()
 {
