@@ -101,6 +101,12 @@ namespace morph {
         }
         T min (void) { return this->dist.min(); }
         T max (void) { return this->dist.max(); }
+        //! Change the max/min of the distribution to be in range [a,b)
+        void setparams (T a, T b)
+        {
+            typename std::uniform_real_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
     };
 
     //! Integer specialization: Generate uniform random numbers in a integer format
@@ -169,6 +175,12 @@ namespace morph {
         T min (void) { return this->dist.min(); }
         //! max wrapper
         T max (void) { return this->dist.max(); }
+        //! Change the max/min of the distribution to range [a,b]
+        void setparams (T a, T b)
+        {
+            typename std::uniform_int_distribution<T>::param_type prms (a, b);
+            this->dist.param (prms);
+        }
     };
 
     //! Generate numbers drawn from a random normal distribution.
