@@ -28,8 +28,8 @@ namespace morph {
         template <typename T=unsigned int, size_t N=5, size_t K=5>
         struct Genome : public std::array<T, N>
         {
-            //! Probability of any bit in the genome flipping in one evolve step
-            float flip_probability = 0.1f;
+            //! Probability for each bit in the genome flipping during one evolve step
+            float p = 0.1f;
 
             //! Compile-time function used to initialize genosect_mask, the mask used to
             //! get the significant bits of a genome section.
@@ -49,12 +49,6 @@ namespace morph {
                 return ((sizeof(T) * 8) < (T{1}<<K)) ? false : true;
             }
             static constexpr bool Tok = Genome::checkTok();
-
-            //! Pending a proper copy constructor, copy g2 to this genome
-            void copyin (const Genome& g2)
-            {
-                std::copy (g2.begin(), g2.end(), this->begin());
-            }
 
             //! String output
             std::string str() const
@@ -188,7 +182,7 @@ namespace morph {
                 for (unsigned int i = 0; i < N; ++i) {
                     T gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < this->flip_probability) {
+                        if (this->frng.get() < this->p) {
                             // Flip bit j
                             gsect ^= (T{1} << j);
                         }
@@ -204,7 +198,7 @@ namespace morph {
                 for (unsigned int i = 0; i < N; ++i) {
                     T gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < this->flip_probability) {
+                        if (this->frng.get() < this->p) {
                             // Flip bit j
                             ++flipcount[i];
                             gsect ^= (T{1} << j);
