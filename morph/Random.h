@@ -42,9 +42,7 @@ namespace morph {
     template <typename T = double, bool = std::is_integral<std::decay_t<T>>::value>
     class RandUniform {};
 
-    /*!
-     * Floating-point number specialization of RandUnifom.
-     */
+    //! Floating-point number specialization of RandUnifom.
     template <typename T>
     class RandUniform<T, false>
     {
@@ -79,6 +77,18 @@ namespace morph {
             typename std::uniform_real_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
+        //! Copy constructor copies the parameters of the distribution
+        RandUniform (const RandUniform<T>& rng) { this->param (rng.param()); }
+        //! Copy assignment operator needs to be explicitly defined
+        RandUniform& operator= (const RandUniform<T>& rng)
+        {
+            if (&rng == this) { return *this; }
+            this->param (rng.param());
+            return *this;
+        }
+        //! Reveal the distribution param methods
+        typename std::uniform_real_distribution<T>::param_type param() const { return dist.param(); }
+        void param (const typename std::uniform_real_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
         T get (void) { return this->dist (this->generator); }
         //! Get n random numbers from the generator
@@ -93,9 +103,7 @@ namespace morph {
         T max (void) { return this->dist.max(); }
     };
 
-    /*!
-     * Integer specialization: Generate uniform random numbers in a integer format
-     */
+    //! Integer specialization: Generate uniform random numbers in a integer format
     template<typename T>
     class RandUniform<T, true>
     {
@@ -134,6 +142,19 @@ namespace morph {
             typename std::uniform_int_distribution<T>::param_type prms (a, b);
             this->dist.param (prms);
         }
+        //! Copy constructor copies the distribution parameters
+        RandUniform (const RandUniform<T>& rng) { this->param (rng.param()); }
+        //! Copy assignment operator needs to be explicitly defined
+        RandUniform& operator= (const RandUniform<T>& rng)
+        {
+            if (&rng == this) { return *this; }
+            this->param (rng.param());
+            return *this;
+        }
+        //! Reveal the distribution's param getter
+        typename std::uniform_int_distribution<T>::param_type param() const { return dist.param(); }
+        //! Reveal the distribution's param setter
+        void param (const typename std::uniform_int_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
         T get (void) { return this->dist (this->generator); }
         //! Get n random numbers from the generator
@@ -150,9 +171,7 @@ namespace morph {
         T max (void) { return this->dist.max(); }
     };
 
-    /*!
-     * Generate numbers drawn from a random normal distribution.
-     */
+    //! Generate numbers drawn from a random normal distribution.
     template <typename T = double>
     class RandNormal
     {
@@ -187,6 +206,19 @@ namespace morph {
             typename std::normal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
+        //! Copy constructor copies the distribution parameters
+        RandNormal (const RandNormal<T>& rng) { this->param (rng.param()); }
+        //! Copy assignment operator needs to be explicitly defined
+        RandNormal& operator= (const RandNormal<T>& rng)
+        {
+            if (&rng == this) { return *this; }
+            this->param (rng.param());
+            return *this;
+        }
+        //! Reveal the distribution's param getter
+        typename std::normal_distribution<T>::param_type param() const { return dist.param(); }
+        //! Reveal the distribution's param setter
+        void param (const typename std::normal_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
         T get (void) { return this->dist (this->generator); }
         //! Get n random numbers from the generator
@@ -201,9 +233,7 @@ namespace morph {
         T max (void) { return this->dist.max(); }
     };
 
-    /*!
-     * Generate numbers drawn from a random log-normal distribution.
-     */
+    //! Generate numbers drawn from a random log-normal distribution.
     template <typename T = double>
     class RandLogNormal
     {
@@ -241,6 +271,19 @@ namespace morph {
             typename std::lognormal_distribution<T>::param_type prms (mean, sigma);
             this->dist.param (prms);
         }
+        //! Copy constructor copies the distribution parameters
+        RandLogNormal (const RandLogNormal<T>& rng) { this->param (rng.param()); }
+        //! Copy assignment operator needs to be explicitly defined
+        RandLogNormal& operator= (const RandLogNormal<T>& rng)
+        {
+            if (&rng == this) { return *this; }
+            this->param (rng.param());
+            return *this;
+        }
+        //! Reveal the distribution's param getter
+        typename std::lognormal_distribution<T>::param_type param() const { return dist.param(); }
+        //! Reveal the distribution's param setter
+        void param (const typename std::lognormal_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
         T get (void) { return this->dist (this->generator); }
         //! Get n random numbers from the generator
@@ -294,6 +337,19 @@ namespace morph {
             typename std::poisson_distribution<T>::param_type prms (mean);
             this->dist.param (prms);
         }
+        //! Copy constructor copies the distribution parameters
+        RandPoisson (const RandPoisson<T>& rng) { this->param (rng.param()); }
+        //! Copy assignment operator needs to be explicitly defined
+        RandPoisson& operator= (const RandPoisson<T>& rng)
+        {
+            if (&rng == this) { return *this; }
+            this->param (rng.param());
+            return *this;
+        }
+        //! Reveal the distribution's param getter
+        typename std::poisson_distribution<T>::param_type param() const { return dist.param(); }
+        //! Reveal the distribution's param setter
+        void param (const typename std::poisson_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
         T get (void) { return this->dist (this->generator); }
         //! Get n random numbers from the generator
