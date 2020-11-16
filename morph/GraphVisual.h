@@ -17,6 +17,8 @@
 #include <morph/Vector.h>
 #include <morph/VisualTextModel.h>
 #include <morph/Quaternion.h>
+#include <morph/ColourMap.h>
+#include <morph/colour.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -34,10 +36,14 @@ namespace morph {
         downtriangle,
         square,
         diamond,
-        pentagon,
+        pentagon, // A polygon has a flat top edge, the 'uppolygon' has a vertex pointing up
+        uppentagon,
         hexagon,
+        uphexagon,
         heptagon,
+        upheptagon,
         octagon,
+        upoctagon,
         circle,
         numstyles
     };
@@ -60,11 +66,35 @@ namespace morph {
         numstyles
     };
 
+    //! When generating default graphs, should we generate marker-only graphs, line-only
+    //! graphs or marker+line graphs?
+    enum class stylepolicy
+    {
+        markers,        // coloured markers, with differing shapes
+        lines,          // coloured lines
+        both,           // coloured markers, black lines
+        allcolour,      // coloured markers and lines
+        numstyles
+    };
+
     //! The attributes for graphing a single dataset
     struct DatasetStyle
     {
+        DatasetStyle(){}
+        DatasetStyle(stylepolicy p)
+        {
+            this->policy = p;
+            if (p == stylepolicy::markers) {
+                this->showlines = false;
+            } else if (p == stylepolicy::lines) {
+                this->markerstyle = markerstyle::none;
+                this->markergap = 0.0f;
+            }
+        }
+        //! Policy of style
+        stylepolicy policy = stylepolicy::both;
         //! The colour of the marker
-        std::array<float, 3> markercolour = {0,0,1};
+        std::array<float, 3> markercolour = {morph::colour::royalblue};
         //! marker size in model units
         float markersize = 0.03f;
         //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
@@ -75,7 +105,7 @@ namespace morph {
         //! Show lines between data points? This may become a morph::linestyle thing.
         bool showlines = true;
         //! The colour of the lines between data points
-        std::array<float, 3> linecolour = {0,0,0};
+        std::array<float, 3> linecolour = {morph::colour::black};
         //! Width of lines between data points
         float linewidth = 0.007f;
         //! Label for the dataset's legend
@@ -123,74 +153,52 @@ namespace morph {
             throw std::runtime_error ("updatedata needs to be implemented!");
         }
 
-        //! Set a dataset into the graph using default styles.
+        //! Set marker and colours in ds, according to ds.policy
+        void setstyle (morph::DatasetStyle& ds, std::array<float, 3> col, morph::markerstyle ms)
+        {
+            if (ds.policy != stylepolicy::lines) {
+                // not lines only
+                ds.markerstyle = ms;
+                ds.markercolour = col;
+            } else {
+                // stylepolicy::lines
+                ds.linecolour = col;
+            }
+            if (ds.policy == stylepolicy::allcolour) {
+                ds.linecolour = col;
+            }
+        }
+
+        //! Set a dataset into the graph using default styles. Probably want a few 'style policies': Markers+lines, Markers, Lines.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
         {
-            // Construct default DatasetStyle, incrementing colours and markers in a set, nice way, then call
-            DatasetStyle ds;
-            morph::ColourMap<float> cm;
+            // Construct a default DatasetStyle, incrementing colours and markers so the look really nice
+            DatasetStyle ds(this->policy);
             switch (this->n_datasets) {
-                // Add cases for n_datasets==1, 2 etc.
             case 0:
             {
-                // This is the first line style and takes on default values for ds
+                this->setstyle (ds, morph::colour::royalblue, morph::markerstyle::square);
                 break;
             }
             case 1:
             {
-                ds.linecolour =  {1.0, 0.0, 0.0};
-                ds.markerstyle = morph::markerstyle::triangle;
-                ds.markercolour = cm.convert(0.1);
+                this->setstyle (ds, morph::colour::crimson, morph::markerstyle::triangle);
                 break;
             }
             case 2:
             {
-                ds.linecolour =  {0.0, 0.0, 1.0};
-                ds.markerstyle = morph::markerstyle::downtriangle;
-                ds.markercolour = {0.0, 0.0, 0.0};
+                this->setstyle (ds, morph::colour::goldenrod2, morph::markerstyle::circle);
                 break;
             }
             case 3:
             {
-                ds.linecolour =  {0.0, 0.0, 0.0};
-                ds.markerstyle = morph::markerstyle::pentagon;
-                ds.markercolour = {0.0, 0.0, 0.0};
-                break;
-            }
-            case 4:
-            {
-                ds.linecolour =  {0.0, 1.0, 0.0};
-                ds.markerstyle = morph::markerstyle::hexagon;
-                ds.markercolour = {0.0, 0.0, 0.0};
-                break;
-            }
-            case 5:
-            {
-                break;
-            }
-            case 6:
-            {
-                break;
-            }
-            case 7:
-            {
-                break;
-            }
-            case 8:
-            {
-                break;
-            }
-            case 9:
-            {
-                break;
-            }
-            case 10:
-            {
+                this->setstyle (ds, morph::colour::green2, morph::markerstyle::diamond);
                 break;
             }
             default:
             {
                 // Everything else gets this:
+                this->setstyle (ds, morph::colour::black, morph::markerstyle::hexagon);
                 break;
             }
             }
@@ -615,20 +623,40 @@ namespace morph {
             }
             case morph::markerstyle::pentagon:
             {
+                this->polygonFlattop (idx, p, 5, style);
+                break;
+            }
+            case morph::markerstyle::uppentagon:
+            {
                 this->polygonMarker (idx, p, 5, style);
                 break;
             }
             case morph::markerstyle::hexagon:
+            {
+                this->polygonFlattop (idx, p, 6, style);
+                break;
+            }
+            case morph::markerstyle::uphexagon:
             {
                 this->polygonMarker (idx, p, 6, style);
                 break;
             }
             case morph::markerstyle::heptagon:
             {
+                this->polygonFlattop (idx, p, 7, style);
+                break;
+            }
+            case morph::markerstyle::upheptagon:
+            {
                 this->polygonMarker (idx, p, 7, style);
                 break;
             }
             case morph::markerstyle::octagon:
+            {
+                this->polygonFlattop (idx, p, 8, style);
+                break;
+            }
+            case morph::markerstyle::upoctagon:
             {
                 this->polygonMarker (idx, p, 8, style);
                 break;
@@ -756,6 +784,8 @@ namespace morph {
         morph::Scale<Flt> abscissa_scale;
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
+        //! A default policy for showing datasets - lines, markers or both
+        morph::stylepolicy policy = stylepolicy::both;
         //! axis features, starting with the colour for the axis box/lines
         std::array<float, 3> axiscolour = {0,0,0};
         //! The line width of the main axis bars

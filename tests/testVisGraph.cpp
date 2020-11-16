@@ -16,7 +16,7 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    morph::Visual v(1024, 768, "Graph", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
+    morph::Visual v(1024, 768, "Graph", {-0.8,-0.8}, {.1,.1,.1}, 2.0f, 0.01f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.backgroundWhite();
@@ -56,11 +56,12 @@ int main (int argc, char** argv)
         ds.setcolour ({0.0, 1.0, 0.0});
         gv->setdata (absc, absc.pow(4), ds);
 #else
+        gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
         gv->setdata (absc, absc);
-        gv->setdata (absc, absc.pow(2) );
-        gv->setdata (absc, absc.pow(3));
-        gv->setdata (absc, absc.pow(4));
-        gv->setdata (absc, absc.pow(5));
+        gv->setdata (absc, absc.pow(2)+0.05f);
+        gv->setdata (absc, absc.pow(3)+0.1f);
+        gv->setdata (absc, absc.pow(4)+0.15f);
+        gv->setdata (absc, absc.pow(5)+0.2f);
 #endif
 
 

@@ -36,3 +36,4 @@ build*
 
 # Emacs auto-save files
 *~
+*.DS_Store
