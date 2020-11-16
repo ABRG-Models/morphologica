@@ -84,6 +84,8 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->zScale.do_autoscale = true;
             this->abscissa_scale.do_autoscale = true;
+
+            this->twodimensional = true;
         }
 
         //! Long constructor demonstrating what needs to be set before setup() is called.
@@ -112,6 +114,8 @@ namespace morph {
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
+
+            this->twodimensional = true;
 
             this->setup();
         }

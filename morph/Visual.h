@@ -29,6 +29,7 @@
 # include <GL3/gl3.h>
 #endif
 
+//#define INIT_GLFW_IN_VISUALRESOURCES 1
 #ifdef INIT_GLFW_IN_VISUALRESOURCES
 # include <morph/VisualResources.h>
 #endif
@@ -334,9 +335,17 @@ namespace morph {
                 this->coordArrows->render();
             }
 
+            TransformMatrix<float> scenetransonly;
+            scenetransonly.translate (this->scenetrans);
+
             typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
-                (*vmi)->setSceneMatrix (sceneview);
+                if ((*vmi)->twodimensional == true) {
+                    // It's a two-d thing. Now what?
+                    (*vmi)->setSceneMatrix (scenetransonly);
+                } else {
+                    (*vmi)->setSceneMatrix (sceneview);
+                }
                 (*vmi)->render();
                 ++vmi;
             }

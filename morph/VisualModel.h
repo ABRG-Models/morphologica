@@ -186,10 +186,6 @@ namespace morph {
             glBindVertexArray(0);
 
             // Now render any VisualTextModels
-            // Here, could set anything that should be true for ALL texts in this model
-            // glUseProgram (this->tshaderprog);
-            // etc
-
             for (auto t : this->texts) { t->render(); }
 
             glUseProgram (prev_shader);
@@ -290,24 +286,27 @@ namespace morph {
             for (auto& t : this->texts) { t->addViewRotation (r); }
         }
 
+        // The alpha attribute accessors
         void setAlpha (const float _a) { this->alpha = _a; }
         float getAlpha() const { return this->alpha; }
-
-        void setHide (const bool _h = true) { this->hide = _h; }
-        void toggleHide() { this->hide = this->hide ? false : true; }
-        float hidden() const { return this->hide; }
-
         void incAlpha()
         {
             this->alpha += 0.1f;
             this->alpha = this->alpha > 1.0f ? 1.0f : this->alpha;
         }
-
         void decAlpha()
         {
             this->alpha -= 0.1f;
             this->alpha = this->alpha < 0.0f ? 0.0f : this->alpha;
         }
+
+        // The hide attribute accessors
+        void setHide (const bool _h = true) { this->hide = _h; }
+        void toggleHide() { this->hide = this->hide ? false : true; }
+        float hidden() const { return this->hide; }
+
+        //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
+        bool twodimensional = false;
 
     protected:
 
@@ -370,8 +369,6 @@ namespace morph {
         float alpha = 1.0f;
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
-        //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
-        bool twodimensional = false;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
