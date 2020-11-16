@@ -536,7 +536,8 @@ namespace morph {
             glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-
+            // Tell glfw that we'd like to do anti-aliasing.
+            glfwWindowHint (GLFW_SAMPLES, 4);
 #endif
 
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
@@ -596,6 +597,8 @@ namespace morph {
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
+            // Possibly redundant call (because it's enabled by default in most drivers) to enable multisampling (for anti-aliasing)
+            glEnable (GL_MULTISAMPLE);
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
