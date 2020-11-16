@@ -99,7 +99,7 @@ namespace morph {
             }
             static constexpr unsigned char hi_mask_start = GeneNet::hi_mask_init();
 
-            //! Compile-time function used to initialize state_mask. Does this belong in GeneNet?
+            //! Compile-time function used to initialize state_mask.
             static constexpr state_t state_mask_init()
             {
                 state_t _state_mask = 0x0;
@@ -111,14 +111,25 @@ namespace morph {
             //! The mask used to get the significant bits of a state.
             static constexpr state_t state_mask = GeneNet::state_mask_init();
 
+            //! Constructor sets up rng
+            GeneNet() { rng.setparams (0, N-1); }
+
+            //! Random number generated with N outcomes
+            morph::RandUniform<unsigned int> rng;
+
+            // FIXME: I don't like this
+            static constexpr size_t extraoffset = (K==N?1:0);
+
             //! Common code for develop and develop_async
             void setup_inputs (std::array<state_t, N>& inputs)
             {
                 if constexpr (N == K) {
+                    // Only one possible wiring diagram; the Grand Ensemble, for which inputs==state for each of the N genes
                     for (unsigned int i = 0; i < N; ++i) {
                         inputs[i] = ((this->state << i) & state_mask) | (this->state >> (N-i));
                     }
                 } else {
+                    // If K < N, then we have more than 1
                     state_t lo_mask = lo_mask_start;
                     state_t hi_mask = hi_mask_start;
                     for (unsigned int i = 0; i < N; ++i) {
@@ -129,14 +140,6 @@ namespace morph {
                 }
             }
 
-            //! Constructor sets up rng
-            GeneNet() { rng.setparams (0, N-1); }
-
-            //! Random number generated with N outcomes
-            morph::RandUniform<unsigned int> rng;
-
-            static constexpr size_t extraoffset = (K==N?1:0);
-
             //! Choose one gene out of N to update at random.
             void develop_async (const Genome<N, K>& genome)
             {
@@ -145,11 +148,10 @@ namespace morph {
                 //state = 0x0; // Don't reset state.
 
                 // For one gene only
-                //unsigned int i = floor(this->frng.get()*N);
                 unsigned int i = this->rng.get();
                 std::cout << "Setting state for gene " << i << std::endl;
-                typename Genosect<K>::type gs = genome[i];
-                typename Genosect<K>::type inpit = (0x1 << inputs[i]);
+                genosect_t gs = genome[i];
+                genosect_t inpit = (genosect_t{1} << inputs[i]);
                 state_t num = ((gs & inpit) ? 0x1 : 0x0);
                 if (num) {
                     this->state |= (0x1 << (K-(i+this->extraoffset)));
@@ -162,6 +164,7 @@ namespace morph {
             void develop (const Genome<N, K>& genome)
             {
                 std::array<state_t, N> inputs;
+                // FIXME: setup_inputs needs some algorithm for setting up inputs for K=N, K=N-1, K=N-2, etc
                 this->setup_inputs (state, inputs);
 
                 // Now reset state and compute new values:
@@ -169,8 +172,8 @@ namespace morph {
 
                 // State a anterior is genome[inps[0]] etc
                 for (unsigned int i = 0; i < N; ++i) {
-                    typename Genosect<K>::type gs = genome[i];
-                    typename Genosect<K>::type inpit = (0x1 << inputs[i]);
+                    genosect_t gs = genome[i];
+                    genosect_t inpit = (genosect_t{1} << inputs[i]);
                     state_t num = ((gs & inpit) ? 0x1 : 0x0);
                     if (num) {
                         this->state |= (0x1 << (K-(i+this->extraoffset)));
