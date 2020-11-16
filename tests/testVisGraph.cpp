@@ -42,7 +42,7 @@ int main (int argc, char** argv)
         gv->setlimits (0,1.4,0,1.4);
 #endif
 
-#if 1 // Optionally modify the features of the graph
+#if 0 // Optionally modify the features of the graph
         morph::DatasetStyle ds;
         ds.linewidth = 0.005;
         ds.linecolour = {1.0, 0.0, 0.0};
@@ -56,7 +56,11 @@ int main (int argc, char** argv)
         ds.setcolour ({0.0, 1.0, 0.0});
         gv->setdata (absc, absc.pow(4), ds);
 #else
-        gv->setdata (absc, data);
+        gv->setdata (absc, absc);
+        gv->setdata (absc, absc.pow(2) );
+        gv->setdata (absc, absc.pow(3));
+        gv->setdata (absc, absc.pow(4));
+        gv->setdata (absc, absc.pow(5));
 #endif
 
 

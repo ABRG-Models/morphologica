@@ -63,7 +63,7 @@ namespace morph {
     //! The attributes for graphing a single dataset
     struct DatasetStyle
     {
-        // marker features
+        //! The colour of the marker
         std::array<float, 3> markercolour = {0,0,1};
         //! marker size in model units
         float markersize = 0.03f;
@@ -78,7 +78,7 @@ namespace morph {
         std::array<float, 3> linecolour = {0,0,0};
         //! Width of lines between data points
         float linewidth = 0.007f;
-        // Label for the dataset's legend
+        //! Label for the dataset's legend
         std::string datalabel = "";
 
         //! A setter to set both colours to the same value
@@ -128,11 +128,69 @@ namespace morph {
         {
             // Construct default DatasetStyle, incrementing colours and markers in a set, nice way, then call
             DatasetStyle ds;
+            morph::ColourMap<float> cm;
             switch (this->n_datasets) {
                 // Add cases for n_datasets==1, 2 etc.
+            case 0:
+            {
+                // This is the first line style and takes on default values for ds
+                break;
+            }
+            case 1:
+            {
+                ds.linecolour =  {1.0, 0.0, 0.0};
+                ds.markerstyle = morph::markerstyle::triangle;
+                ds.markercolour = cm.convert(0.1);
+                break;
+            }
+            case 2:
+            {
+                ds.linecolour =  {0.0, 0.0, 1.0};
+                ds.markerstyle = morph::markerstyle::downtriangle;
+                ds.markercolour = {0.0, 0.0, 0.0};
+                break;
+            }
+            case 3:
+            {
+                ds.linecolour =  {0.0, 0.0, 0.0};
+                ds.markerstyle = morph::markerstyle::pentagon;
+                ds.markercolour = {0.0, 0.0, 0.0};
+                break;
+            }
+            case 4:
+            {
+                ds.linecolour =  {0.0, 1.0, 0.0};
+                ds.markerstyle = morph::markerstyle::hexagon;
+                ds.markercolour = {0.0, 0.0, 0.0};
+                break;
+            }
+            case 5:
+            {
+                break;
+            }
+            case 6:
+            {
+                break;
+            }
+            case 7:
+            {
+                break;
+            }
+            case 8:
+            {
+                break;
+            }
+            case 9:
+            {
+                break;
+            }
+            case 10:
+            {
+                break;
+            }
             default:
             {
-                // Nothing else to do
+                // Everything else gets this:
                 break;
             }
             }
