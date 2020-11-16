@@ -6,11 +6,11 @@ int main()
     // Flip probability
     float p = 0.01f;
 
-    morph::bn::Genome<unsigned int, 5, 5> g;
+    morph::bn::Genome<6, 4> g;
     g.randomize();
     std::cout << "Genome 1: " << g << std::endl;
     // Get a copy:
-    morph::bn::Genome<unsigned int, 5, 5> g2 = g;
+    morph::bn::Genome<6, 4> g2 = g;
     std::cout << "Genome 2 after copy: " << g2 << std::endl;
 
     g2.evolve (p);

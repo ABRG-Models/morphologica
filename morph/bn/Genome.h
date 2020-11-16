@@ -18,9 +18,22 @@
 namespace morph {
     namespace  bn {
 
-        // A Genome is (derived from) an array<T, N>. The type T has to be wide enough given N and K.
-        template <typename T, size_t N, size_t K> struct Genome;
-        template <typename T, size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<T, N, K>&);
+        /*!
+         * Genosect is a template metafunction, with several specializations. It has one
+         * attribute, type, which client code should use as the correct type for the
+         * Genome's array. Each Genome section in the Genome's array has 2^K bits.
+         */
+        template <size_t K = 0> struct Genosect {}; // Default should fail to compile
+        template<> struct Genosect<1> { typedef unsigned char type; };
+        template<> struct Genosect<2> { typedef unsigned char type; };
+        template<> struct Genosect<3> { typedef unsigned char type; };
+        template<> struct Genosect<4> { typedef unsigned short type; };
+        template<> struct Genosect<5> { typedef unsigned int type; };
+        template<> struct Genosect<6> { typedef unsigned long long int type; };
+
+        // A Genome is (derived from) an array<Genosect<K>::type, N>.
+        template <size_t N, size_t K> struct Genome;
+        template <size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<N, K>&);
 
         /*!
          * The Genome class
@@ -39,27 +52,29 @@ namespace morph {
          * \tparam K The number of genes which are used to determine the next state of
          * the Boolean gene net. May not be greater than N.
          */
-        template <typename T=unsigned int, size_t N=5, size_t K=5>
-        struct Genome : public std::array<T, N>
+        template <size_t N=5, size_t K=5>
+        struct Genome : public std::array<typename Genosect<K>::type, N>
         {
+            using genosect_t = typename Genosect<K>::type;
+
             //! Compile-time function used to initialize genosect_mask, the mask used to
             //! get the significant bits of a genome section.
-            static constexpr T genosect_mask_init()
+            static constexpr genosect_t genosect_mask_init()
             {
-                T _genosect_mask = 0x0;
-                for (unsigned int i = 0; i < (1<<K); ++i) { // 1<<N is the same as 2^N
-                    _genosect_mask |= (0x1 << i);
+                genosect_t _genosect_mask = 0x0;
+                for (unsigned int i = 0; i < (1<<K); ++i) {
+                    _genosect_mask |= (genosect_t{1} << i);
                 }
                 return _genosect_mask;
             }
-            static constexpr T genosect_mask = Genome::genosect_mask_init();
+            static constexpr genosect_t genosect_mask = Genome::genosect_mask_init();
 
-            //! Check that the type T is large enough, given N and K (well, just K).
-            static constexpr bool checkTok()
+            //! Provide a check that K is not > N. The static_assert ensures that compile will fail if K>N
+            static constexpr bool checkTemplateParams()
             {
-                return ((sizeof(T) * 8) < (T{1}<<K)) ? false : true;
+                static_assert(K <= N);
+                return (K <= N ? true : false);
             }
-            static constexpr bool Tok = Genome::checkTok();
 
             //! String output
             std::string str() const
@@ -135,7 +150,7 @@ namespace morph {
                 for (unsigned int j = 0; j < (1 << K); ++j) {
                     ss << std::bitset<K>(j) << "   ";
                     for (unsigned int i = 0; i < N; ++i) {
-                        T mask = T{1} << j;
+                        genosect_t mask = genosect_t{1} << j;
                         ss << (((*this)[i]&mask) >> j);
                     }
                     ss << std::endl;
@@ -151,8 +166,8 @@ namespace morph {
             //! probability, instead flip bits_to_flip bits, selected randomly.
             void evolve (unsigned int bits_to_flip)
             {
-                unsigned int genosect_w = (T{1} << K);
-                unsigned int lgenome = N * genosect_w;
+                unsigned int genosect_w = (1 << K);
+                unsigned int lgenome = static_cast<unsigned int>(N) * genosect_w;
 
                 // Init a list containing all the indices, lgenome long. As bits
                 // are flipped, we'll remove from this list, ensuring that the
@@ -174,11 +189,11 @@ namespace morph {
                     // Find out which genome sect j is in.
                     unsigned int gi = j / genosect_w;
                     //DBG ("Genome section gi= " << gi << " which is an offset of " << (gi*genosect_w));
-                    T gsect = (*this)[gi];
+                    genosect_t gsect = (*this)[gi];
 
                     j -= (gi*genosect_w);
 
-                    gsect ^= (T{1} << j);
+                    gsect ^= (genosect_t{1} << j);
                     (*this)[gi] = gsect;
 
                     --lgenome;
@@ -189,11 +204,11 @@ namespace morph {
             void evolve (const float& p)
             {
                 for (unsigned int i = 0; i < N; ++i) {
-                    T gsect = (*this)[i];
+                    genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
                         if (this->frng.get() < p) {
                             // Flip bit j
-                            gsect ^= (T{1} << j);
+                            gsect ^= (genosect_t{1} << j);
                         }
                     }
                     (*this)[i] = gsect;
@@ -205,12 +220,12 @@ namespace morph {
             void evolve (const float& p, std::array<unsigned long long int, N>& flipcount)
             {
                 for (unsigned int i = 0; i < N; ++i) {
-                    T gsect = (*this)[i];
+                    genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
                         if (this->frng.get() < p) {
                             // Flip bit j
                             ++flipcount[i];
-                            gsect ^= (T{1} << j);
+                            gsect ^= (genosect_t{1} << j);
                         }
                     }
                     (*this)[i] = gsect;
@@ -220,26 +235,37 @@ namespace morph {
             //! Flip one bit in this genome at index sectidx within section sect
             void bitflip (unsigned int sect, unsigned int sectidx)
             {
-                (*this)[sect] ^= (T{1} << sectidx);
+                (*this)[sect] ^= (genosect_t{1} << sectidx);
             }
 
             //! Compute Hamming distance between this genome and another (g2).
-            unsigned int hamming (const morph::bn::Genome<T,N,K>& g2) const
+            unsigned int hamming (const morph::bn::Genome<N,K>& g2) const
             {
                 unsigned int hamming = 0;
                 for (unsigned int i = 0; i < N; ++i) {
-                    T bits = (*this)[i] ^ g2[i]; // XOR
-                    hamming += _mm_popcnt_u32 ((unsigned int)bits);
+                    genosect_t bits = (*this)[i] ^ g2[i]; // XOR
+                    // Compile time-selection of the correct population count intrinsic
+                    if constexpr (sizeof(genosect_t) == 1) {
+                        hamming += _mm_popcnt_u32 ((unsigned int)bits);
+                    } else if constexpr (sizeof(genosect_t) == 2) {
+                        hamming += _mm_popcnt_u32 ((unsigned int)bits);
+                    } else if constexpr (sizeof(genosect_t) == 4) {
+                        hamming += _mm_popcnt_u32 ((unsigned int)bits);
+                        // _mm_popcnt_u32 is __popcnt() on AMD, but the above should be binary compatible
+                    } else { // } else if constexpr (sizeof(genosect_t) == 8) {
+                        hamming += _mm_popcnt_u64 ((unsigned long long int)bits);
+                    }
                 }
                 return hamming;
             }
+
             /*!
-             * Is the function defined by the T @gs a canalysing function?
+             * Is the function defined by the genosect_t @gs a canalysing function?
              *
              * If not, return (unsigned int)0, otherwise return the number of bits for
              * which the function is canalysing - this may be called canalysing "depth".
              */
-            unsigned int isCanalyzing (const T& gs) const
+            unsigned int isCanalyzing (const genosect_t& gs) const
             {
                 std::bitset<K> acanal_set;
                 std::bitset<K> acanal_unset;
@@ -266,12 +292,12 @@ namespace morph {
                     for (unsigned int j = 0; j < (0x1 << K); ++j) {
 
                         // if (bit i in row j is on)
-                        if ((j & (T{1}<<i)) == (T{1}<<i)) {
+                        if ((j & (genosect_t{1}<<i)) == (genosect_t{1}<<i)) {
                             if (setbitivalue[i] == -1) {
                                 // -1 means we haven't yet recorded an output from gs, so record it:
-                                setbitivalue[i] = (int)(T{1}&(gs>>j));
+                                setbitivalue[i] = (int)(genosect_t{1}&(gs>>j));
                             } else {
-                                if (setbitivalue[i] != (int)(T{1}&(gs>>j))) {
+                                if (setbitivalue[i] != (int)(genosect_t{1}&(gs>>j))) {
                                     // Cannot be canalysing for bit i set to 1.
                                     acanal_set.reset(i);
                                 }
@@ -280,9 +306,9 @@ namespace morph {
                             // (bit i in row j is off)
                             if (unsetbitivalue[i] == -1) {
                                 // Haven't yet recorded an output from gs, so record it:
-                                unsetbitivalue[i] = (int)(T{1}&(gs>>j));
+                                unsetbitivalue[i] = (int)(genosect_t{1}&(gs>>j));
                             } else {
-                                if (unsetbitivalue[i] != (int)(T{1}&(gs>>j))) {
+                                if (unsetbitivalue[i] != (int)(genosect_t{1}&(gs>>j))) {
                                     // Cannot be canalysing for bit i set to 0
                                     acanal_unset.reset(i) = false;
                                 }
@@ -333,14 +359,9 @@ namespace morph {
             }
 
             //! This Genome has its own random number generator
-            morph::RandUniform<T> rng;
+            morph::RandUniform<genosect_t> rng;
             void randomize()
             {
-                if constexpr (Genome::Tok == false) {
-                    std::stringstream ss;
-                    ss << "Uh oh, template T (sizeof: "<<(sizeof(T)*8)<<") is < 2^K (2^"<<K<<") ";
-                    throw std::runtime_error (ss.str());
-                }
                 for (unsigned int i = 0; i < N; ++i) {
                     (*this)[i] = this->rng.get() & genosect_mask;
                 }
@@ -350,11 +371,11 @@ namespace morph {
             morph::RandUniform<float> frng;
 
             //! Overload the stream output operator
-            friend std::ostream& operator<< <T, N, K> (std::ostream& os, const Genome<T, N, K>& v);
+            friend std::ostream& operator<< <N, K> (std::ostream& os, const Genome<N, K>& v);
         };
 
-        template <typename T=unsigned int, size_t N=5, size_t K=5>
-        std::ostream& operator<< (std::ostream& os, const Genome<T, N, K>& g)
+        template <size_t N=5, size_t K=5>
+        std::ostream& operator<< (std::ostream& os, const Genome<N, K>& g)
         {
             os << g.str();
             return os;

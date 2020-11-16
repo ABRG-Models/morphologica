@@ -22,12 +22,48 @@
 namespace morph {
     namespace  bn {
 
+#if 0
+        /*!
+         * This came from basins.h. I think some features should go in GeneNet, or it
+         * should derive from GeneNet.
+         *
+         * A class to hold information about one network and its comparison
+         * with any other networks.
+         */
+        template <size_t N=5, size_t K=N>
+        struct NetInfo
+        {
+            NetInfo(AllBasins<N,K>& ab_, unsigned int gen, double fitn)
+            {
+                this->update (ab_, gen, fitn);
+            }
+            void update (AllBasins<N,K>& ab_, unsigned int gen, double fitn)
+            {
+                this->ab = ab_;
+                this->generation = gen;
+                this->fitness = fitn;
+            }
+            //! Contains the genome, and information about the attractors in the network.
+            AllBasins<N,K> ab;
+            //! The evolutionary generation at which this network evolved.
+            unsigned int generation;
+            //! The fitness of the network
+            double fitness = 0.0;
+            //! How much the fitness changed since the last genome
+            double deltaF = 0.0;
+            //! How many transitions (in ab) have changed since the last network.
+            unsigned int numChangedTransitions = 0;
+        };
+#endif
+
         //! A Boolean gene network class
-        template <typename T, size_t N=5, size_t K=5>
+        template <size_t N=5, size_t K=5>
         struct GeneNet
         {
+            using genosect_t = typename Genosect<K>::type;
+
             //! The state has N bits in it. Working with N <= 8, so:
-            typedef unsigned char state_t;
+            using state_t = unsigned char;
 
             //! Probability of flipping each bit of the genome during evolution.
             float p;
@@ -102,7 +138,7 @@ namespace morph {
             static constexpr size_t extraoffset = (K==N?1:0);
 
             //! Choose one gene out of N to update at random.
-            void develop_async (const Genome<T, N, K>& genome)
+            void develop_async (const Genome<N, K>& genome)
             {
                 std::array<state_t, N> inputs;
                 this->setup_inputs (inputs);
@@ -112,8 +148,8 @@ namespace morph {
                 //unsigned int i = floor(this->frng.get()*N);
                 unsigned int i = this->rng.get();
                 std::cout << "Setting state for gene " << i << std::endl;
-                T gs = genome[i];
-                T inpit = (0x1 << inputs[i]);
+                typename Genosect<K>::type gs = genome[i];
+                typename Genosect<K>::type inpit = (0x1 << inputs[i]);
                 state_t num = ((gs & inpit) ? 0x1 : 0x0);
                 if (num) {
                     this->state |= (0x1 << (K-(i+this->extraoffset)));
@@ -123,7 +159,7 @@ namespace morph {
             }
 
             //! Given a genome, develope this->state.
-            void develop (const Genome<T,N,K>& genome)
+            void develop (const Genome<N, K>& genome)
             {
                 std::array<state_t, N> inputs;
                 this->setup_inputs (state, inputs);
@@ -133,8 +169,8 @@ namespace morph {
 
                 // State a anterior is genome[inps[0]] etc
                 for (unsigned int i = 0; i < N; ++i) {
-                    T gs = genome[i];
-                    T inpit = (0x1 << inputs[i]);
+                    typename Genosect<K>::type gs = genome[i];
+                    typename Genosect<K>::type inpit = (0x1 << inputs[i]);
                     state_t num = ((gs & inpit) ? 0x1 : 0x0);
                     if (num) {
                         this->state |= (0x1 << (K-(i+this->extraoffset)));

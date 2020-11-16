@@ -346,33 +346,5 @@ namespace morph {
             std::set<unsigned int> transitions;
         };
 
-        /*!
-         * A class to hold information about one network and its comparison
-         * with any other networks. Do the members of this class get subsumed into GeneNet? I think so...
-         */
-        template <size_t N=5, size_t K=N>
-        struct NetInfo
-        {
-            NetInfo(AllBasins<N,K>& ab_, unsigned int gen, double fitn)
-            {
-                this->update (ab_, gen, fitn);
-            }
-            void update (AllBasins<N,K>& ab_, unsigned int gen, double fitn)
-            {
-                this->ab = ab_;
-                this->generation = gen;
-                this->fitness = fitn;
-            }
-            //! Contains the genome, and information about the attractors in the network.
-            AllBasins<N,K> ab;
-            //! The evolutionary generation at which this network evolved.
-            unsigned int generation;
-            //! The fitness of the network
-            double fitness = 0.0;
-            //! How much the fitness changed since the last genome
-            double deltaF = 0.0;
-            //! How many transitions (in ab) have changed since the last network.
-            unsigned int numChangedTransitions = 0;
-        };
     } // namespace bn
 } // namespace morph
