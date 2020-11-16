@@ -42,17 +42,23 @@ int main (int argc, char** argv)
         gv->setlimits (0,1.4,0,1.4);
 #endif
 
-        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
-        gv->setdata (absc, data);
-
 #if 1 // Optionally modify the features of the graph
-        gv->linewidth = 0.005;
-        gv->linecolour = {1.0, 0.0, 0.0};
-        gv->markerstyle = morph::markerstyle::triangle;
-        gv->markersize = 0.02;
-        gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markergap = 0.02;
+        morph::DatasetStyle ds;
+        ds.linewidth = 0.005;
+        ds.linecolour = {1.0, 0.0, 0.0};
+        ds.markerstyle = morph::markerstyle::triangle;
+        ds.markersize = 0.02;
+        ds.markercolour = {0.0, 0.0, 1.0};
+        ds.markergap = 0.02;
+        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
+        gv->setdata (absc, data, ds);
+        ds.markerstyle = morph::markerstyle::square;
+        ds.setcolour ({0.0, 1.0, 0.0});
+        gv->setdata (absc, absc.pow(4), ds);
+#else
+        gv->setdata (absc, data);
 #endif
+
 
 #if 1 // Optionally set the axes up
         gv->axiscolour = {0.5, 0.5, 0.5};

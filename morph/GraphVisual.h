@@ -60,6 +60,35 @@ namespace morph {
         numstyles
     };
 
+    //! The attributes for graphing a single dataset
+    struct DatasetStyle
+    {
+        // marker features
+        std::array<float, 3> markercolour = {0,0,1};
+        //! marker size in model units
+        float markersize = 0.03f;
+        //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
+        morph::markerstyle markerstyle = markerstyle::square;
+        //! A gap between the data point and the line between data points
+        float markergap = 0.03f;
+
+        //! Show lines between data points? This may become a morph::linestyle thing.
+        bool showlines = true;
+        //! The colour of the lines between data points
+        std::array<float, 3> linecolour = {0,0,0};
+        //! Width of lines between data points
+        float linewidth = 0.007f;
+        // Label for the dataset's legend
+        std::string datalabel = "";
+
+        //! A setter to set both colours to the same value
+        void setcolour (const std::array<float, 3>& c)
+        {
+            this->linecolour = c;
+            this->markercolour = c;
+        }
+    };
+
     /*
      * So you want to graph some data? You have an abscissa and data. Although these
      * could provide coordinates for graphing the data, it's possible that they may be
@@ -70,7 +99,7 @@ namespace morph {
      * FatLineGraphVisual, etc.
      */
     template <typename Flt>
-    class GraphVisual : public VisualDataModel<Flt> // Might need 'VisualGraphDataModel'
+    class GraphVisual : public VisualDataModel<Flt>
     {
     public:
         //! Constructor which sets just the shader program and the model view offset
@@ -80,82 +109,80 @@ namespace morph {
             this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
-
+            // In GraphVisual, colourscale is used to set colour for lines when we have multiple graphs.
             this->colourScale.do_autoscale = true;
             this->zScale.do_autoscale = true;
             this->abscissa_scale.do_autoscale = true;
-
+            // Graphs don't rotate by default. If you want yours to, set this false in your client code.
             this->twodimensional = true;
         }
 
-        //! Long constructor demonstrating what needs to be set before setup() is called.
-        GraphVisual(GLuint sp, GLuint tsp,
-                    const Vector<float> _offset,
-                    std::vector<Flt>& _abscissae,
-                    std::vector<Flt>& _data,
-                    const Scale<Flt>& _absc_scale,
-                    const Scale<Flt>& _data_scale,
-                    ColourMapType _cmt,
-                    const float _hue = 0.0f,
-                    const float _sat = 1.0f)
+        //! Update the data for the graph, recomputing the vertices when done.
+        void updatedata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const size_t data_idx)
         {
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-
-            this->colourScale.do_autoscale = true;
-            this->zScale.do_autoscale = true;
-            this->abscissa_scale.do_autoscale = true;
-
-            this->colourScale = _data_scale;
-
-            this->setdata (_abscissae, _data);
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->twodimensional = true;
-
-            this->setup();
+            throw std::runtime_error ("updatedata needs to be implemented!");
         }
 
-        //! Fixme: Will quickly want to plot multiple datasets on one graph
-        void setdata (std::vector<Flt>& _abscissae, std::vector<Flt>& _data)
+        //! Set a dataset into the graph using default styles.
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
         {
-            if (_abscissae.size() != _data.size()) {
-                throw std::runtime_error ("size mismatch");
+            // Construct default DatasetStyle, incrementing colours and markers in a set, nice way, then call
+            DatasetStyle ds;
+            switch (this->n_datasets) {
+                // Add cases for n_datasets==1, 2 etc.
+            default:
+            {
+                // Nothing else to do
+                break;
             }
+            }
+            this->setdata (_abscissae, _data, ds);
+        }
+
+        //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
+        //! style. The locations of the markers for each dataset are computed and stored
+        //! in this->dataCoords. this->dataCoords will, in a single vector of 3D coords,
+        //! hold all the datasets for the graph. GraphVisual is able to render separate
+        //! lines for each dataset because the index into dataCoords for the start of
+        //! each dataset is saved into this->datacoord_starts.
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const DatasetStyle& ds)
+        {
+            if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
 
             size_t dsize = _data.size();
+            size_t dstart = 0;
 
             if (this->dataCoords == (std::vector<morph::Vector<float>>*)0) {
+                dstart = 0;
                 this->dataCoords = new std::vector<morph::Vector<float>>(dsize, {0,0,0});
             } else {
-                this->dataCoords->resize (dsize);
+                // Add on extra capacity to dataCoords
+                dstart = this->dataCoords->size();
+                this->dataCoords->resize (dstart+dsize);
             }
 
-            // Copy the addresses of the raw incoming data and save in scalarData and abscissaData
-            this->scalarData = &_data;
-            this->abscissaData = &_abscissae;
+            // Add the data style info and the starting index for dataCoords
+            this->datastyles.push_back (ds);
+            this->datacoord_starts.push_back (dstart);
 
-            // Scale the incoming data?
-            if (this->zScale.autoscaled == false) {
-                this->setsize (this->width, this->height);
-            }
+            // Compute the zScale and asbcissa_scale for the first added dataset only
+            if (this->zScale.autoscaled == false) { this->setsize (this->width, this->height); }
+
+            // Transfor the data into temporary containers sd and ad
             std::vector<Flt> sd (dsize, Flt{0});
             std::vector<Flt> ad (dsize, Flt{0});
-
-            this->zScale.transform (*this->scalarData, sd);
-            this->abscissa_scale.transform (*this->abscissaData, ad);
+            this->zScale.transform (_data, sd);
+            this->abscissa_scale.transform (_abscissae, ad);
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[i][0] = static_cast<Flt>(ad[i]);
-                (*this->dataCoords)[i][1] = static_cast<Flt>(sd[i]);
-                (*this->dataCoords)[i][2] = Flt{0};
+                (*this->dataCoords)[dstart+i][0] = static_cast<Flt>(ad[i]);
+                (*this->dataCoords)[dstart+i][1] = static_cast<Flt>(sd[i]);
+                (*this->dataCoords)[dstart+i][2] = Flt{0};
             }
+
+            this->n_datasets++;
         }
 
         //! Gets the graph ready for display after client setup of public attributes is done.
@@ -208,10 +235,6 @@ namespace morph {
         //! Compute stuff for a graph
         void initializeVertices()
         {
-            std::vector<Flt> dcopy;
-            dcopy = *(this->scalarData);
-            this->colourScale.do_autoscale = true;
-            this->colourScale.transform (*this->scalarData, dcopy);
             // The indices index
             VBOint idx = 0;
             this->drawAxes (idx);
@@ -222,52 +245,56 @@ namespace morph {
 
         void drawData (VBOint& idx)
         {
-            size_t ncoords = this->dataCoords->size();
+            for (size_t dsi = 0; dsi < this->n_datasets; ++dsi) {
 
-            // Draw data
-            // for (auto i : data) {...
-            if (this->markerstyle != markerstyle::none) {
-                for (size_t i = 0; i < ncoords; ++i) {
-                    this->marker (idx, (*this->dataCoords)[i], this->markerstyle);
-                }
-            }
-            if (this->showlines == true) {
-                for (size_t i = 1; i < ncoords; ++i) {
-                    // Draw tube from location -1 to location 0.
-#ifdef TRUE_THREE_D_LINES
-                    this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
-                                       this->linecolour, this->linecolour,
-                                       this->linewidth, this->thickness*Flt{0.7}, this->markergap);
-#else
-                    if (this->markergap > 0.0f) {
-                        this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
-                                               this->linecolour,
-                                               this->linewidth, this->markergap);
-                    } else {
-                        // No gaps, so draw a perfect set of joined up lines
-                        if (i == 1) {
-                            // First line
-                            this->computeFlatLineN (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                    (*this->dataCoords)[i+1],
-                                                    uz,
-                                                    this->linecolour,
-                                                    this->linewidth);
-                        } else if (i == (ncoords-1)) {
-                            // last line
-                            this->computeFlatLineP (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                    (*this->dataCoords)[i-2],
-                                                    uz,
-                                                    this->linecolour,
-                                                    this->linewidth);
-                        } else {
-                            this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                   (*this->dataCoords)[i-2], (*this->dataCoords)[i+1],
-                                                   uz,
-                                                   this->linecolour,
-                                                   this->linewidth);
-                        }
+                size_t coords_start = this->datacoord_starts[dsi];
+                size_t coords_end = (dsi == this->n_datasets-1 ? this->dataCoords->size() : this->datacoord_starts[dsi+1]);
+
+                // Draw data
+                // for (auto i : data) {...
+                if (this->datastyles[dsi].markerstyle != markerstyle::none) {
+                    for (size_t i = coords_start; i < coords_end; ++i) {
+                        this->marker (idx, (*this->dataCoords)[i], this->datastyles[dsi]);
                     }
+                }
+                if (this->datastyles[dsi].showlines == true) {
+                    for (size_t i = 1+coords_start; i < coords_end; ++i) {
+                        // Draw tube from location -1 to location 0.
+#ifdef TRUE_THREE_D_LINES
+                        this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
+                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
+#else
+                        if (this->datastyles[dsi].markergap > 0.0f) {
+                            this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                                                   this->datastyles[dsi].linecolour,
+                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                        } else {
+                            // No gaps, so draw a perfect set of joined up lines
+                            if (i == 1+coords_start) {
+                                // First line
+                                this->computeFlatLineN (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                        (*this->dataCoords)[i+1],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else if (i == (coords_end-1)) {
+                                // last line
+                                this->computeFlatLineP (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                        (*this->dataCoords)[i-2],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else {
+                                this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
+                                                       (*this->dataCoords)[i-2], (*this->dataCoords)[i+1],
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
+                            }
+                        }
 #endif
+                    }
                 }
             }
         }
@@ -504,92 +531,92 @@ namespace morph {
         }
 
         //! Generate vertices for a marker of the given style at location p
-        void marker (VBOint& idx, morph::Vector<float>& p, morph::markerstyle mstyle)
+        void marker (VBOint& idx, morph::Vector<float>& p, const morph::DatasetStyle& style)
         {
-            switch (mstyle) {
+            switch (style.markerstyle) {
             case morph::markerstyle::triangle:
             case morph::markerstyle::uptriangle:
             {
-                this->polygonMarker (idx, p, 3);
+                this->polygonMarker (idx, p, 3, style);
                 break;
             }
             case morph::markerstyle::downtriangle:
             {
-                this->polygonFlattop (idx, p, 3);
+                this->polygonFlattop (idx, p, 3, style);
                 break;
             }
             case morph::markerstyle::square:
             {
-                this->polygonFlattop (idx, p, 4);
+                this->polygonFlattop (idx, p, 4, style);
                 break;
             }
             case morph::markerstyle::diamond:
             {
-                this->polygonMarker (idx, p, 4);
+                this->polygonMarker (idx, p, 4, style);
                 break;
             }
             case morph::markerstyle::pentagon:
             {
-                this->polygonMarker (idx, p, 5);
+                this->polygonMarker (idx, p, 5, style);
                 break;
             }
             case morph::markerstyle::hexagon:
             {
-                this->polygonMarker (idx, p, 6);
+                this->polygonMarker (idx, p, 6, style);
                 break;
             }
             case morph::markerstyle::heptagon:
             {
-                this->polygonMarker (idx, p, 7);
+                this->polygonMarker (idx, p, 7, style);
                 break;
             }
             case morph::markerstyle::octagon:
             {
-                this->polygonMarker (idx, p, 8);
+                this->polygonMarker (idx, p, 8, style);
                 break;
             }
             case morph::markerstyle::circle:
             default:
             {
-                this->polygonMarker (idx, p, 20);
+                this->polygonMarker (idx, p, 20, style);
                 break;
             }
             }
         }
 
         // Create an n sided polygon with first vertex 'pointing up'
-        void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n)
+        void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
 #ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
             this->computeTube (idx, p, pend, ux, uy,
-                               this->markercolour, this->markercolour,
-                               this->markersize*Flt{0.5}, n);
+                               style.markercolour, style.markercolour,
+                               style.markersize*Flt{0.5}, n);
 #else
             p[2] += this->thickness;
             this->computeFlatPoly (idx, p, ux, uy,
-                                   this->markercolour,
-                                   this->markersize*Flt{0.5}, n);
+                                   style.markercolour,
+                                   style.markersize*Flt{0.5}, n);
 #endif
         }
 
         // Create an n sided polygon with a flat edge 'pointing up'
-        void polygonFlattop (VBOint& idx, morph::Vector<float> p, int n)
+        void polygonFlattop (VBOint& idx, morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
 #ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
             this->computeTube (idx, p, pend, ux, uy,
-                               this->markercolour, this->markercolour,
-                               this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+                               style.markercolour, style.markercolour,
+                               style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
 #else
             p[2] += this->thickness;
             this->computeFlatPoly (idx, p, ux, uy,
-                                   this->markercolour,
-                                   this->markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+                                   style.markercolour,
+                                   style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
 #endif
         }
 
@@ -669,24 +696,9 @@ namespace morph {
     public:
         //! A scaling for the abscissa. I'll use zScale to scale the data values
         morph::Scale<Flt> abscissa_scale;
-
-        // marker features
-        std::array<float, 3> markercolour = {0,0,1};
-        //! marker size in model units
-        float markersize = 0.03f;
-        //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
-        morph::markerstyle markerstyle = markerstyle::square;
-        //! A gap between the data point and the line between data points
-        float markergap = 0.03f;
-
-        //! Show lines between data points? This may become a morph::linestyle thing.
-        bool showlines = true;
-        //! The colour of the lines between data points
-        std::array<float, 3> linecolour = {0,0,0};
-        //! Width of lines between data points
-        float linewidth = 0.007f;
-
-        // axis features
+        //! A vector of styles for the datasets to be displayed on this graph
+        std::vector<DatasetStyle> datastyles;
+        //! axis features, starting with the colour for the axis box/lines
         std::array<float, 3> axiscolour = {0,0,0};
         //! The line width of the main axis bars
         float axislinewidth = 0.006f;
@@ -727,6 +739,10 @@ namespace morph {
         std::string ylabel = "y";
 
     protected:
+        //! Each time setdata is used to set a dataset, increment this number
+        size_t n_datasets = 0;
+        //! Each element in this container is the starting index in this->dataCoords for the given dataset
+        std::vector<size_t> datacoord_starts;
         //! This is used to set a spacing between elements in the graph (markers and
         //! lines) so that some objects (like a marker) is viewed 'on top' of another
         //! (such as a line). If it's too small, and the graph is far away in the scene,
@@ -748,9 +764,6 @@ namespace morph {
         float xtick_height = 0.0f;
         //! Temporary storage for the max width of the ytick labels
         float ytick_width = 0.0f;
-
-        //! Data for the abscissae
-        std::vector<Flt>* abscissaData;
     };
 
 } // namespace morph

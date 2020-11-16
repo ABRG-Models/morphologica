@@ -35,13 +35,17 @@ int main (int argc, char** argv)
         float step = 1.4f;
         float row2 = 1.2f;
 
+        morph::DatasetStyle ds;
+
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
         morph::vVector<float> data = absc.pow(3);
-        gv->setdata (absc, data);
-        gv->linecolour = {1.0, 0.0, 0.0};
-        gv->linewidth = 0.015f;
-        gv->markerstyle = morph::markerstyle::triangle;
-        gv->markercolour = {0.0, 0.0, 1.0};
+
+        ds.linecolour =  {1.0, 0.0, 0.0};
+        ds.linewidth = 0.015f;
+        ds.markerstyle = morph::markerstyle::triangle;
+        ds.markercolour = {0.0, 0.0, 1.0};
+        gv->setdata (absc, data, ds);
+
         gv->axisstyle = morph::axisstyle::L;
         gv->xlabel = "The x axis";
         gv->setthickness (0.001f);
@@ -50,10 +54,10 @@ int main (int argc, char** argv)
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
         morph::vVector<float> data2 = absc.pow(2);
-        gv->setdata (absc, data2);
-        gv->linecolour = {0.0, 0.0, 1.0};
-        gv->markerstyle = morph::markerstyle::hexagon;
-        gv->markercolour = {0.0, 0.0, 0.0};
+        ds.linecolour = {0.0, 0.0, 1.0};
+        ds.markerstyle = morph::markerstyle::hexagon;
+        ds.markercolour = {0.0, 0.0, 0.0};
+        gv->setdata (absc, data2, ds);
         gv->axisstyle = morph::axisstyle::box;
         gv->ylabel = "mm";
         gv->xlabel = "Abscissa (notice that mm is not rotated)";
@@ -64,12 +68,12 @@ int main (int argc, char** argv)
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-row2,0});
         morph::vVector<float> data3 = absc.pow(4);
         gv->setsize (1,0.8);
-        gv->setdata (absc, data3);
-        gv->linecolour = {0.0, 1.0, 0.0};
-        gv->markerstyle = morph::markerstyle::circle;
-        gv->markercolour = {0.0, 0.0, 1.0};
-        gv->markersize = 0.02f;
-        gv->markergap = 0.0f;
+        ds.linecolour = {0.0, 1.0, 0.0};
+        ds.markerstyle = morph::markerstyle::circle;
+        ds.markercolour = {0.0, 0.0, 1.0};
+        ds.markersize = 0.02f;
+        ds.markergap = 0.0f;
+        gv->setdata (absc, data3, ds);
         gv->axisstyle = morph::axisstyle::boxfullticks;
         gv->tickstyle = morph::tickstyle::ticksin;
         gv->ylabel = "mmi";
@@ -85,13 +89,14 @@ int main (int argc, char** argv)
         }
         morph::vVector<float> data4 = absc.pow(5);
         gv->setsize (1,0.8);
-        gv->setdata (absc, data4);
-        gv->linecolour = {0.0, 0.0, 1.0};
-        gv->markerstyle = morph::markerstyle::none;
-        gv->markergap = 0.0f;
+        ds.linecolour = {0.0, 0.0, 1.0};
+        ds.markerstyle = morph::markerstyle::none;
+        ds.markergap = 0.0f;
+        gv->setdata (absc, data4, ds);
         gv->axisstyle = morph::axisstyle::cross;
         gv->setthickness (0.002f);
         gv->finalize();
+        gv->twodimensional = false;
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         v.render();
