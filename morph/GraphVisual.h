@@ -119,14 +119,8 @@ namespace morph {
         }
     };
 
-    /*
-     * So you want to graph some data? You have an abscissa and data. Although these
-     * could provide coordinates for graphing the data, it's possible that they may be
-     * wide ranging. Much better to scale the data to be in the range [0,1].
-     *
-     * I plan to derive from GraphVisual specialized types that mean user doesn't have
-     * to set all the parameters each time. E.g. LineGraphVisual, MarkerGraphVisual,
-     * FatLineGraphVisual, etc.
+    /*!
+     * A VisualModel for showing a 2D graph.
      */
     template <typename Flt>
     class GraphVisual : public VisualDataModel<Flt>
@@ -148,20 +142,51 @@ namespace morph {
         }
 
         //! Update the data for the graph, recomputing the vertices when done.
-        void updatedata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const size_t data_idx)
+        void update (const std::vector<Flt>& _abscissae,
+                     const std::vector<Flt>& _data, const size_t data_idx)
         {
-            throw std::runtime_error ("updatedata needs to be implemented!");
+            size_t dsize = _data.size();
+
+            if (_abscissae.size() != dsize) {
+                throw std::runtime_error ("updatedata: size mismatch");
+            }
+
+            if (data_idx >= this->graphDataCoords.size()) {
+                std::cout << "Can't add data at graphDataCoords index " << data_idx << std::endl;
+                return;
+            }
+
+            // Ensure the vector at data_idx has enough capacity for the updated data
+            this->graphDataCoords[data_idx]->resize (dsize);
+
+            // May need a re-autoscaling option somewhere in here.
+
+            // Transfor the data into temporary containers sd and ad
+            std::vector<Flt> sd (dsize, Flt{0});
+            std::vector<Flt> ad (dsize, Flt{0});
+            this->zScale.transform (_data, sd);
+            this->abscissa_scale.transform (_abscissae, ad);
+
+            // Now sd and ad can be used to construct dataCoords x/y. They are used to
+            // set the position of each datum into dataCoords
+            for (size_t i = 0; i < dsize; ++i) {
+                (*this->graphDataCoords[data_idx])[i][0] = static_cast<Flt>(ad[i]);
+                (*this->graphDataCoords[data_idx])[i][1] = static_cast<Flt>(sd[i]);
+                (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
+            }
+
+            this->reinit();
         }
 
-        //! Set marker and colours in ds, according to ds.policy
+        //! Set marker and colours in ds, according the 'style policy'
         void setstyle (morph::DatasetStyle& ds, std::array<float, 3> col, morph::markerstyle ms)
         {
             if (ds.policy != stylepolicy::lines) {
-                // not lines only
+                // Is not lines only, so must be markers, or markers+lines
                 ds.markerstyle = ms;
                 ds.markercolour = col;
             } else {
-                // stylepolicy::lines
+                // Must be stylepolicy::lines
                 ds.linecolour = col;
             }
             if (ds.policy == stylepolicy::allcolour) {
@@ -169,12 +194,12 @@ namespace morph {
             }
         }
 
-        //! Set a dataset into the graph using default styles. Probably want a few 'style policies': Markers+lines, Markers, Lines.
+        //! Set a dataset into the graph using default styles, incrementing colour and
+        //! marker shape as more datasets are included in the graph.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
         {
-            // Construct a default DatasetStyle, incrementing colours and markers so the look really nice
             DatasetStyle ds(this->policy);
-            switch (this->n_datasets) {
+            switch (this->graphDataCoords.size()) {
             case 0:
             {
                 this->setstyle (ds, morph::colour::royalblue, morph::markerstyle::square);
@@ -207,29 +232,19 @@ namespace morph {
 
         //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
         //! style. The locations of the markers for each dataset are computed and stored
-        //! in this->dataCoords. this->dataCoords will, in a single vector of 3D coords,
-        //! hold all the datasets for the graph. GraphVisual is able to render separate
-        //! lines for each dataset because the index into dataCoords for the start of
-        //! each dataset is saved into this->datacoord_starts.
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const DatasetStyle& ds)
+        //! in this->graohDataCoords, one vector for each dataset.
+        void setdata (const std::vector<Flt>& _abscissae,
+                      const std::vector<Flt>& _data, const DatasetStyle& ds)
         {
             if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
 
             size_t dsize = _data.size();
-            size_t dstart = 0;
+            size_t didx = this->graphDataCoords.size();
 
-            if (this->dataCoords == (std::vector<morph::Vector<float>>*)0) {
-                dstart = 0;
-                this->dataCoords = new std::vector<morph::Vector<float>>(dsize, {0,0,0});
-            } else {
-                // Add on extra capacity to dataCoords
-                dstart = this->dataCoords->size();
-                this->dataCoords->resize (dstart+dsize);
-            }
-
-            // Add the data style info and the starting index for dataCoords
+            // Allocate memory for the new data coords, add the data style info and the
+            // starting index for dataCoords
+            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, {0,0,0}));
             this->datastyles.push_back (ds);
-            this->datacoord_starts.push_back (dstart);
 
             // Compute the zScale and asbcissa_scale for the first added dataset only
             if (this->zScale.autoscaled == false) { this->setsize (this->width, this->height); }
@@ -243,12 +258,10 @@ namespace morph {
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             for (size_t i = 0; i < dsize; ++i) {
-                (*this->dataCoords)[dstart+i][0] = static_cast<Flt>(ad[i]);
-                (*this->dataCoords)[dstart+i][1] = static_cast<Flt>(sd[i]);
-                (*this->dataCoords)[dstart+i][2] = Flt{0};
+                (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
+                (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
+                (*this->graphDataCoords[didx])[i][2] = Flt{0};
             }
-
-            this->n_datasets++;
         }
 
         //! Gets the graph ready for display after client setup of public attributes is done.
@@ -311,49 +324,49 @@ namespace morph {
 
         void drawData (VBOint& idx)
         {
-            for (size_t dsi = 0; dsi < this->n_datasets; ++dsi) {
+            size_t coords_start = 0;
+            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
 
-                size_t coords_start = this->datacoord_starts[dsi];
-                size_t coords_end = (dsi == this->n_datasets-1 ? this->dataCoords->size() : this->datacoord_starts[dsi+1]);
+                size_t coords_end = this->graphDataCoords[dsi]->size();
 
                 // Draw data
                 // for (auto i : data) {...
                 if (this->datastyles[dsi].markerstyle != markerstyle::none) {
                     for (size_t i = coords_start; i < coords_end; ++i) {
-                        this->marker (idx, (*this->dataCoords)[i], this->datastyles[dsi]);
+                        this->marker (idx, (*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                     }
                 }
                 if (this->datastyles[dsi].showlines == true) {
                     for (size_t i = 1+coords_start; i < coords_end; ++i) {
                         // Draw tube from location -1 to location 0.
 #ifdef TRUE_THREE_D_LINES
-                        this->computeLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                        this->computeLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                            this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
                                            this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
 #else
                         if (this->datastyles[dsi].markergap > 0.0f) {
-                            this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i], uz,
+                            this->computeFlatLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                                    this->datastyles[dsi].linecolour,
                                                    this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
                         } else {
                             // No gaps, so draw a perfect set of joined up lines
                             if (i == 1+coords_start) {
                                 // First line
-                                this->computeFlatLineN (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                        (*this->dataCoords)[i+1],
+                                this->computeFlatLineN (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i+1],
                                                         uz,
                                                         this->datastyles[dsi].linecolour,
                                                         this->datastyles[dsi].linewidth);
                             } else if (i == (coords_end-1)) {
                                 // last line
-                                this->computeFlatLineP (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                        (*this->dataCoords)[i-2],
+                                this->computeFlatLineP (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i-2],
                                                         uz,
                                                         this->datastyles[dsi].linecolour,
                                                         this->datastyles[dsi].linewidth);
                             } else {
-                                this->computeFlatLine (idx, (*this->dataCoords)[i-1], (*this->dataCoords)[i],
-                                                       (*this->dataCoords)[i-2], (*this->dataCoords)[i+1],
+                                this->computeFlatLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
                                                        uz,
                                                        this->datastyles[dsi].linecolour,
                                                        this->datastyles[dsi].linewidth);
@@ -827,10 +840,6 @@ namespace morph {
         std::string ylabel = "y";
 
     protected:
-        //! Each time setdata is used to set a dataset, increment this number
-        size_t n_datasets = 0;
-        //! Each element in this container is the starting index in this->dataCoords for the given dataset
-        std::vector<size_t> datacoord_starts;
         //! This is used to set a spacing between elements in the graph (markers and
         //! lines) so that some objects (like a marker) is viewed 'on top' of another
         //! (such as a line). If it's too small, and the graph is far away in the scene,

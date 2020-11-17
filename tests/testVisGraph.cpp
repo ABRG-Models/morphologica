@@ -76,10 +76,18 @@ int main (int argc, char** argv)
         // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
+        float addn = 0.0f;
+        size_t rcount = 0;
         v.render();
         if (holdVis == true) {
             while (v.readyToFinish == false) {
                 glfwWaitEventsTimeout (0.018);
+                // Don't update this fast. That's crazy!
+                if ((rcount++)%20 == 0) {
+                    gv->update (absc, absc.pow(2)*addn, 1);
+                    addn += 0.2f;
+                }
+                // want gv->update (datasets); // to update all at once. THEN I'm done.
                 v.render();
             }
         }
