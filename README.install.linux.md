@@ -1,16 +1,19 @@
 # Build and Install morphologica on GNU/Linux
 
-You don't *need* to build and install morphologica, but you will need to install the dependencies. The cmake-driven morphologica build & install process installs the
-header files and font files that are required to build against
-morphologica. Some libraries may also be installed.
+You don't *need* to build and install morphologica to use the headers, but 
+you *will* need to install the dependencies. The cmake-driven morphologica 
+build & install process installs the header files and font files that are 
+required to build against morphologica. Some libraries may also be installed.
 
 The build process also compiles a set of test programs, which require
-OpenCV, Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
+the dependencies to compile.
 Programs that include morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
 program and a C++ compiler which can compile c++-17 code.
 
-## Installation dependencies for GNU/Linux
+## *Required*: Install dependencies
+
+morphologica code depends on OpenCV, Armadillo, OpenGL, Freetype, glfw3, HDF5 and LAPACK.
 
 ### Package-managed dependencies for Ubuntu/Debian
 
@@ -35,9 +38,9 @@ sudo pacman -S vtk hdf5 lapack blas freeglut jsoncpp glfw-wayland
 
 Then, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
 
-## Build morphologica
+## *Optional*: Build morphologica
 
-To build morphologica tests, it's the usual CMake process:
+To build the morphologica tests, it's the usual CMake process:
 
 ```sh
 cd ~/src
@@ -73,7 +76,7 @@ To run the test suite, use the `ctest` command in the build directory.
 Note that certain test cases will fail if no display server is available (e.g. in Docker images). See also [issue #6](https://github.com/ABRG-Models/morphologica/issues/6).
 
 
-## Older systems
+## Hints for older systems
 
 On **Ubuntu 18.04**, I always installed HDF5, jsoncpp and glfw3 from source, rather than using packaged versions.
 
