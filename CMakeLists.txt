@@ -125,9 +125,8 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
-if(APPLE)
-include_directories(/usr/local/include)
-endif()
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+include_directories(${JSON_INC_PATH})
 
 # New, text rendering dependencies
 find_package(Freetype REQUIRED)
