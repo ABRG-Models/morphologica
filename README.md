@@ -87,7 +87,9 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
-To build, you need to tell your build process: **1**) What compiler
+First, ensure you have the necessary dependencies installed (OpenCV, Armadillo, OpenGL, Freetype, glfw3, HDF5 and LAPACK). Platform-specific instructions can be found in the files **README.install.linux.md** and **README.install.mac.md**.
+
+To build a program against morphologica, you need to tell your build process: **1**) What compiler
 flags to add to the compiler command line, including a directive to
 say where the fonts that
 morphologica will compile into your binaries (if you're using
@@ -98,9 +100,9 @@ You can either build with morphologica headers (and fonts) installed
 in your chosen location (/usr/local by default) *or* you can just
 clone a copy of morphologica source into your own source tree.
 
-Seb prefers this second option: 'clone and go'. Just git clone
+(Seb prefers this second option: 'clone and go'. Just git clone
 morphologica into your source tree (or somewhere else) and then make
-sure your compiler can find the includes, fonts and libraries.
+sure your compiler can find the includes, fonts and libraries.)
 
 Depending on the option you choose, small differences to the paths
 used for **1) Compiler flags** and **2) Include directories** will be
@@ -180,7 +182,8 @@ find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
 
 # Define collections of includes for the dependencies
-set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
