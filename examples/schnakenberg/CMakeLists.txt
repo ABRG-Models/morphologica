@@ -46,6 +46,9 @@ endif()
 set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
+# Tell the program where the morph fonts are. Assuming you installed morphologica in /usr/local:
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
+
 # Find the libraries which will be needed
 find_package(jsoncpp REQUIRED)
 find_package(HDF5 REQUIRED)
@@ -58,13 +61,14 @@ find_package(Freetype REQUIRED)
 find_package(morphologica REQUIRED)
 
 # Define collections of includes that have to be made for morphologica
-set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
-# This assumes that you installed morphologica in /usr/local:
-include_directories(/usr/local/include/morph)
-# Tell the program where the morph fonts are. Again, assuming you installed morphologica in /usr/local:
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
+# Assuming that you installed morphologica in /usr/local:
+set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
 
 #
 # All the library finding is now done. It's time to compile the program.

@@ -61,10 +61,11 @@ find_package(OpenCV REQUIRED)
 # Find morphologica to ensure that its headers are available.
 find_package(morphologica REQUIRED)
 
-if(APPLE)
-  # We assume that morphologica got installed in /usr/local. On Apple need this:
-  include_directories(/usr/local/include)
-endif()
+# Ensure OpenCV can be accessed
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+# We assume that morphologica got installed in /usr/local. Make sure we can access it:
+include_directories(/usr/local/include)
 
 # 3 executables
 add_executable(ff_small ff_small.cpp)

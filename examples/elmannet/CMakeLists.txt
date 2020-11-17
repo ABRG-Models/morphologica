@@ -55,18 +55,14 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# Find the libraries which will be needed.
-# Find morphologica to ensure that its headers are available.
+# Find the libraries which will be needed (just morphologica for this example)
 find_package(morphologica REQUIRED)
 
-if(APPLE)
-  # We assume that morphologica got installed in /usr/local. On Apple need this:
-  include_directories(/usr/local/include)
-endif()
+# We assume that morphologica got installed in /usr/local.
+include_directories(BEFORE /usr/local/include)
 
-# 3 executables
+# A single executable, and no links are required for this program.
 add_executable(elman1 elman1.cpp)
-# Currently no linking required for elman1.
 
 # For debugging of variables:
 option(DEBUG_VARIABLES OFF)
