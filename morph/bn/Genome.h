@@ -113,9 +113,9 @@ namespace morph {
                 for (unsigned int i = 0; i<N; ++i) {
                     if (first) {
                         first = false;
-                        ss << "0x" << (*this)[i];
+                        ss << "0x" << static_cast<unsigned long long int>((*this)[i]);
                     } else {
-                        ss << " 0x" << (*this)[i];
+                        ss << " 0x" << static_cast<unsigned long long int>((*this)[i]);
                     }
                 }
                 ss << std::dec << std::endl;
@@ -130,21 +130,29 @@ namespace morph {
                 }
                 ss << "<-- for input, bit posn; for output, array index";
 
-                if constexpr (N==5) {
-                    if constexpr (K==N) {
+                ss << std::endl << "----------------" << std::endl;
+                // 1234
+                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
+                for (unsigned int i = 0; i<N-K; ++i) { ss << " "; }
+                ss << "  ";
+                for (unsigned int i = 0; i<N; ++i) { ss << (char)('a'+i); }
+                ss << " <-- ";
+                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
+                ss << " is ";
+                for (unsigned int i = N-K+1; i<=N; ++i) {
+                    switch (i) {
+                    case 1: { ss << "i "; break; }
+                    case 2: { ss << "ii "; break; }
+                    case 3: { ss << "iii "; break; }
+                    case 4: { ss << "iv "; break; }
+                    case 5: { ss << "v "; break; }
+                    case 6: { ss << "vi "; break; }
+                    case 7:
+                    default: { ss << "vii "; break; }
 
-                        ss << std::endl << "----------------" << std::endl;
-                        ss << "12345   abcde <-- 1,2,3,4,5 is i ii iii iv v in Fig 1." << std::endl;
-                    } else {
-                        ss << std::endl << "-----------------" << std::endl;
-                        ss << "1234   abcde <-- 1,2,3,4 is i ii iii iv in Fig 1." << std::endl;
                     }
-                } else {
-                    for (unsigned int i = 0; i<K; ++i) { ss << i; }
-                    ss << "  ";
-                    for (unsigned int i = 0; i<N; ++i) { ss << " " << (char)('a'+i); }
-                    ss << std::endl;
                 }
+                ss << "in Fig 1." << std::endl;
                 ss << "----------------" << std::endl;
 
                 for (unsigned int j = 0; j < (1 << K); ++j) {

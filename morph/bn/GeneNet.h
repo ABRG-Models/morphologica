@@ -64,6 +64,7 @@ namespace morph {
 
             //! The state has N bits in it. Working with N <= 8, so:
             using state_t = unsigned char;
+            static constexpr state_t state_msb = 0x80;
 
             //! Probability of flipping each bit of the genome during evolution.
             float p;
@@ -79,7 +80,9 @@ namespace morph {
              * bits. Must be set up using masks_init().
              */
 
-            //! Compile-time function used to initialize lo_mask_start
+            //! Compile-time function used to initialize lo_mask_start. E.g. for N=5 and
+            //! K=4, this will have the value 00001111b. These are the bits to take as
+            //! input.
             static constexpr unsigned char lo_mask_init()
             {
                 // Set up globals. Set K bits to the high position for the lo_mask
@@ -91,7 +94,8 @@ namespace morph {
             }
             static constexpr unsigned char lo_mask_start = GeneNet::lo_mask_init();
 
-            //! Compile-time function used to initialize hi_mask_start
+            //! Compile-time function used to initialize hi_mask_start. E.g. for N=5 and
+            //! K=4, this will have the value 11100000b
             static constexpr unsigned char hi_mask_init()
             {
                 unsigned char _hi_mask_start = 0xff & (0xff << N);
@@ -99,7 +103,8 @@ namespace morph {
             }
             static constexpr unsigned char hi_mask_start = GeneNet::hi_mask_init();
 
-            //! Compile-time function used to initialize state_mask.
+            //! Compile-time function used to initialize state_mask. For N=5, this is
+            //! 00011111b
             static constexpr state_t state_mask_init()
             {
                 state_t _state_mask = 0x0;
@@ -117,25 +122,72 @@ namespace morph {
             //! Random number generated with N outcomes
             morph::RandUniform<unsigned int> rng;
 
-            // FIXME: I don't like this
-            static constexpr size_t extraoffset = (K==N?1:0);
+            //! If compiled with this set true, then rather than using a sequential
+            //! scheme to decide which inputs should be ignored by each of the N genes,
+            //! these should be chosen randomly.
+            static constexpr bool random_wiring = false;
 
-            //! Common code for develop and develop_async
+            //! Common code for develop and develop_async. The way in which the inputs
+            //! are set up will uniquely identify one GeneNet instance from another,
+            //! even for the same N, K. That can be true even if N==K, though in that
+            //! case however you wire the inputs, you get effectively the same network;
+            //! you'll just have different values in the Genome for your solutions.
             void setup_inputs (std::array<state_t, N>& inputs)
             {
-                if constexpr (N == K) {
-                    // Only one possible wiring diagram; the Grand Ensemble, for which inputs==state for each of the N genes
+                if constexpr (K == N) {
+                    // Effectively, there's only one possible wiring diagram; the Grand
+                    // Ensemble, for which inputs==state for each of the N genes. This
+                    // conforms to the wiring shown in Fig. 1 of "Limit cycle
+                    // dynamics..."
                     for (unsigned int i = 0; i < N; ++i) {
+                        // For each gene, this line effectively 'rotates the state
+                        // around' the correct number of places in the state; hence the
+                        // left-shifted part ORed with the right-shifted part.
                         inputs[i] = ((this->state << i) & state_mask) | (this->state >> (N-i));
                     }
-                } else {
-                    // If K < N, then we have more than 1
+                } else { // Have slightly more computations for K != N, right?
+                    // This _should_ cover the copying of inputs for any K < N.
                     state_t lo_mask = lo_mask_start;
                     state_t hi_mask = hi_mask_start;
+                    //std::cout << "Current state is " << this->state_str(this->state) << std::endl;
                     for (unsigned int i = 0; i < N; ++i) {
+                        // Thinkme: Hmm. Here, why does the right shift not cycle with i??
                         inputs[i] = (this->state & lo_mask) | ((this->state & hi_mask) >> (N-K));
-                        hi_mask = (hi_mask >> 1) | 0x80;
+                        //std::cout << " * For Gene " << i << " the input is: " << (this->state_str(inputs[i])) << std::endl;
+                        hi_mask = (hi_mask >> 1) | state_msb;
                         lo_mask >>= 1;
+                    }
+                }
+            }
+
+            //! Given a genome, develop this->state.
+            void develop (const Genome<N, K>& genome)
+            {
+                std::array<state_t, N> inputs;
+                this->setup_inputs (inputs);
+
+                // Now reset state and compute new values:
+                this->state = 0x0;
+
+                // State a anterior is genome[inps[0]] etc
+                for (unsigned int i = 0; i < N; ++i) {
+                    genosect_t gs = genome[i];
+                    // std::cout << "Setting state for gene " << i
+                    //           << ", with genome section " << i << " which is "
+                    //           << std::hex << gs << std::dec << " out of " << genome << std::endl;
+                    // This line is 'move (inputs[i]) rows down the gene i column of the input-output table and read the bit'
+                    // std::cout << "inputs["<<i<<"] is " << this->input_str(inputs[i]) << std::endl;
+                    // std::cout << "Moving " << (unsigned int)inputs[i] << " rows down the gene " << i << " col of the i/o table\n";
+                    genosect_t inpit = (genosect_t{1} << inputs[i]);
+                    state_t num = ((gs & inpit) ? 0x1 : 0x0);
+                    // unsigned int leftshift = N-i-1;
+                    // std::cout << "leftshift of bit/unbit is " << N << "-" << i << "-1=" << leftshift << std::endl;
+                    if (num) {
+                        // Then set the relevant bit in state
+                        this->state |= (0x1 << (N-i-1));
+                    } else {
+                        // Unset the relevant bit in state
+                        this->state &= ~(0x1 << (N-i-1));
                     }
                 }
             }
@@ -145,52 +197,45 @@ namespace morph {
             {
                 std::array<state_t, N> inputs;
                 this->setup_inputs (inputs);
-                //state = 0x0; // Don't reset state.
+                // NB: For async, don't reset state.
 
                 // For one gene only
                 unsigned int i = this->rng.get();
-                std::cout << "Setting state for gene " << i << std::endl;
                 genosect_t gs = genome[i];
                 genosect_t inpit = (genosect_t{1} << inputs[i]);
                 state_t num = ((gs & inpit) ? 0x1 : 0x0);
                 if (num) {
-                    this->state |= (0x1 << (K-(i+this->extraoffset)));
+                    this->state |= (0x1 << (N-i-1));
                 } else {
-                    this->state &= ~(0x1 << (K-(i+this->extraoffset)));
+                    this->state &= ~(0x1 << (N-i-1));
                 }
             }
 
-            //! Given a genome, develope this->state.
-            void develop (const Genome<N, K>& genome)
+            //! Generate string representation of an input, showing the input bits that are ignored with 'X'
+            static std::string input_str (const state_t& _input)
             {
-                std::array<state_t, N> inputs;
-                // FIXME: setup_inputs needs some algorithm for setting up inputs for K=N, K=N-1, K=N-2, etc
-                this->setup_inputs (state, inputs);
-
-                // Now reset state and compute new values:
-                this->state = 0x0;
-
-                // State a anterior is genome[inps[0]] etc
-                for (unsigned int i = 0; i < N; ++i) {
-                    genosect_t gs = genome[i];
-                    genosect_t inpit = (genosect_t{1} << inputs[i]);
-                    state_t num = ((gs & inpit) ? 0x1 : 0x0);
-                    if (num) {
-                        this->state |= (0x1 << (K-(i+this->extraoffset)));
+                std::stringstream ss;
+                // Count down from N, to output bits in order MSB to LSB.
+                for (unsigned int i = N; i > 0; --i) {
+                    if (i > K) {
+                        // Ignored input bit
+                        ss << "X ";
                     } else {
-                        this->state &= ~(0x1 << (K-(i+this->extraoffset)));
+                        unsigned int j = i-1;
+                        ss << ((_input & (0x1<<j)) >> j) << " ";
                     }
                 }
+                return ss.str();
             }
 
             //! Generate a string representation of the state. Something like "1 0 1 1 1"
-            std::string state_str (const state_t& state) const
+            static std::string state_str (const state_t& _state)
             {
                 std::stringstream ss;
                 // Count down from N, to output bits in order MSB to LSB.
                 for (unsigned int i = N; i > 0; --i) {
                     unsigned int j = i-1;
-                    ss << ((this->state & (0x1<<j)) >> j) << " ";
+                    ss << ((_state & (0x1<<j)) >> j) << " ";
                 }
                 return ss.str();
             }
