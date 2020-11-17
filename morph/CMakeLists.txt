@@ -54,6 +54,6 @@ install(FILES morphologica-config.cmake DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
 install(EXPORT morphologica DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/morphologica)
 
 # The testboundary utility program
-add_executable(testboundary testboundary.cpp)
-target_link_libraries(testboundary morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
-install(TARGETS testboundary DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+#add_executable(testboundary testboundary.cpp)
+#target_link_libraries(testboundary morphdisplay0 ${ARMADILLO_LIBRARY} $#{ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+#install(TARGETS testboundary DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

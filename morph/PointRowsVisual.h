@@ -108,7 +108,7 @@ namespace morph {
             //std::cout << "r1: " << r1 << ", r1_e: " << r1_e << std::endl;
             //std::cout << "r2: " << r2 << ", r2_e: " << r2_e << std::endl;
             //std::cout << "prlen is " << prlen << std::endl;
-            morph::Vector v0, v1, v2;
+            morph::Vector<float> v0, v1, v2;
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
                 //std::cout << "====================================" << std::endl;
                 //std::cout << "  ROW" << std::endl;

@@ -97,7 +97,7 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->colourScale.transform ((*this->scalarData), dcopy);
 
-            morph::Vector v0, v1, v2, v3;
+            morph::Vector<float> v0, v1, v2, v3;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = (*this->quads)[qi];

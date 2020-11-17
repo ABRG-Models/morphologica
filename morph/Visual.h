@@ -409,7 +409,7 @@ namespace morph {
             // Construct the point for the location of the coord arrows
             Vector<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
             // Inverse project
-            Vector v0;
+            Vector<float> v0;
             v0.set_from ((this->invproj * p0));
             // Translate the scene for the CoordArrows such that they sit in a single position on the screen
             this->coordArrows->setSceneTranslation (v0);

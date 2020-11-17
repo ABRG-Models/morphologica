@@ -125,6 +125,9 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
+if(APPLE)
+include_directories(/usr/local/include)
+endif()
 
 # New, text rendering dependencies
 find_package(Freetype REQUIRED)
