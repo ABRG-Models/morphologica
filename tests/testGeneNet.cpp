@@ -13,9 +13,22 @@ int main()
     const size_t n = 5;
     const size_t k = 5;
 
-    cout << "N=" << n << ", K=" << k << endl;
     morph::bn::Genome<n, k> g;
     g.randomize();
+    morph::bn::GeneNet<n, k> gn;
+    gn.p = p;
+    gn.state = 0x2;
+    // Develop according to g
+    for (size_t i = 0; i < 16; ++i) {
+        gn.develop(g);
+        cout << "Gene net state is now:  " << morph::bn::GeneNet<n,k>::state_str(gn.state) << endl;
+    }
+
+    cout << g.table() << endl;
+
+    return 0;
+
+
 #if 0
     cout << "Genome 1:            " << g << endl;
     // Get a copy:
@@ -29,16 +42,5 @@ int main()
     g.evolve (p);
     cout << "Genome 1 evolved:    " << g << endl;
 #endif
-    morph::bn::GeneNet<n, k> gn;
-    gn.p = p;
-    gn.state = 0x2;
-    cout << "Gene net initial state:\n"
-         << morph::bn::GeneNet<n,k>::state_table(gn.state) << endl;
-    // Develop according to g
-    for (size_t i = 0; i < 1; ++i) {
-        gn.develop(g);
-        cout << "Gene net state is now:  " << morph::bn::GeneNet<n,k>::state_str(gn.state) << endl;
-    }
-    cout << g.table() << endl;
-    return 0;
+
 }

@@ -72,17 +72,8 @@ namespace morph {
             //! The current state of this gene network
             state_t state;
 
-            /*
-             * Starting values of the masks used when computing inputs from a
-             * state. When computing input for a gene at position i, the hi_mask is used
-             * to obtain inputs for positions > i, the low mask for position < i. The hi
-             * bits are then shifted right once to make up an input containing N-1
-             * bits. Must be set up using masks_init().
-             */
-
-            //! Compile-time function used to initialize lo_mask_start. E.g. for N=5 and
-            //! K=4, this will have the value 00001111b. These are the bits to take as
-            //! input.
+            //! Initialize lo_mask_start. E.g. for N=5 and K=4, this will have the value
+            //! 00001111b. These are the bits to take as input.
             static constexpr unsigned char lo_mask_init()
             {
                 // Set up globals. Set K bits to the high position for the lo_mask
@@ -94,17 +85,7 @@ namespace morph {
             }
             static constexpr unsigned char lo_mask_start = GeneNet::lo_mask_init();
 
-            //! Compile-time function used to initialize hi_mask_start. E.g. for N=5 and
-            //! K=4, this will have the value 11100000b
-            static constexpr unsigned char hi_mask_init()
-            {
-                unsigned char _hi_mask_start = 0xff & (0xff << N);
-                return _hi_mask_start;
-            }
-            static constexpr unsigned char hi_mask_start = GeneNet::hi_mask_init();
-
-            //! Compile-time function used to initialize state_mask. For N=5, this is
-            //! 00011111b
+            //! Compile-time function used to initialize state_mask. For N=5, this is 00011111b
             static constexpr state_t state_mask_init()
             {
                 state_t _state_mask = 0x0;
@@ -122,18 +103,26 @@ namespace morph {
             //! Random number generated with N outcomes
             morph::RandUniform<unsigned int> rng;
 
-            //! If compiled with this set true, then rather than using a sequential
-            //! scheme to decide which inputs should be ignored by each of the N genes,
-            //! these should be chosen randomly.
+            //! If true, would randomly wire inputs in setup_inputs()
             static constexpr bool random_wiring = false;
 
-            //! Common code for develop and develop_async. The way in which the inputs
-            //! are set up will uniquely identify one GeneNet instance from another,
-            //! even for the same N, K. That can be true even if N==K, though in that
-            //! case however you wire the inputs, you get effectively the same network;
-            //! you'll just have different values in the Genome for your solutions.
+            //! Show debugging for the inputs?
+            static constexpr bool debug_inputs = false;
+
+            /*!
+             * The common code for develop and develop_async sets up the N inputs. The
+             * way in which the inputs are set up will uniquely identify one GeneNet
+             * instance from another, even for the same N, K. That can be true even if
+             * N==K, though in that case however you wire the inputs, you get
+             * effectively the same network; you'll just have different values in the
+             * Genome for your solutions.
+             */
             void setup_inputs (std::array<state_t, N>& inputs)
             {
+                // A randomized gene network wiring scheme has not yet been written:
+                static_assert (random_wiring == false);
+
+                // This is the systematic wiring scheme
                 if constexpr (K == N) {
                     // Effectively, there's only one possible wiring diagram; the Grand
                     // Ensemble, for which inputs==state for each of the N genes. This
@@ -144,23 +133,31 @@ namespace morph {
                         // around' the correct number of places in the state; hence the
                         // left-shifted part ORed with the right-shifted part.
                         inputs[i] = ((this->state << i) & state_mask) | (this->state >> (N-i));
-                        std::cout << " * For Gene " << i << " the input is: " << (this->input_str(inputs[i])) << std::endl;
+                        if constexpr (debug_inputs == true) {
+                            std::cout << " * For Gene " << i << "/" << (char)('a'+i)
+                                      << " the input is: " << (this->input_str(inputs[i])) << std::endl;
+                        }
                     }
                 } else { // Have slightly more computations for K != N, right?
                     // This _should_ cover the copying of inputs for any K < N.
-                    state_t lo_mask = lo_mask_start;
-                    state_t hi_mask = hi_mask_start;
-                    //std::cout << "Current state is " << this->state_str(this->state) << std::endl;
                     for (unsigned int i = 0; i < N; ++i) {
-                        // Thinkme: Hmm. Here, why does the right shift not cycle with i?? That's a mistake.
                         // For K=N-1; for gene a, ignore input from a, for gene b ignore input from b, etc
-                        inputs[i] = (this->state & lo_mask) | ((this->state & hi_mask) >> (N-K));
-                        std::cout << " * For Gene " << i << " the input is: " << (this->input_str(inputs[i])) << std::endl;
-                        hi_mask = (hi_mask >> 1) | state_msb;
-                        lo_mask >>= 1;
+                        // For K=N-2; for gene a, ignore input from a,b, for b, ignore b,c, etc
+                        inputs[i] = ((this->state << i) | (this->state >> (N-i))) & lo_mask_start;
+                        if constexpr (debug_inputs == true) {
+                            std::cout << " * For Gene " << i << "/" << (char)('a'+i)
+                                      << " the input is: " << (this->input_str(inputs[i])) << std::endl;
+                        }
+                    }
+                    if constexpr (debug_inputs == true) {
+                        std::cout << " * For Gene 0/a the input (in table form) is:\n"
+                                  << (this->input_table(inputs[0])) << std::endl;
                     }
                 }
             }
+
+            //! Show debugging for the develop method?
+            static constexpr bool debug_develop = false;
 
             //! Given a genome, develop this->state.
             void develop (const Genome<N, K>& genome)
@@ -174,16 +171,24 @@ namespace morph {
                 // State a anterior is genome[inps[0]] etc
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gs = genome[i];
-                    // std::cout << "Setting state for gene " << i
-                    //           << ", with genome section " << i << " which is "
-                    //           << std::hex << gs << std::dec << " out of " << genome << std::endl;
-                    // This line is 'move (inputs[i]) rows down the gene i column of the input-output table and read the bit'
-                    // std::cout << "inputs["<<i<<"] is " << this->input_str(inputs[i]) << std::endl;
-                    // std::cout << "Moving " << (unsigned int)inputs[i] << " rows down the gene " << i << " col of the i/o table\n";
+                    if constexpr (debug_develop == true) {
+                        std::cout << "Setting state for gene " << i
+                                  << ", with genome section " << i << " which is "
+                                  << std::hex << static_cast<unsigned long long int>(gs)
+                                  << std::dec << " out of " << genome << std::endl;
+
+                        std::cout << "inputs["<<i<<"] is " << this->input_str(inputs[i]) << std::endl;
+                        std::cout << "Moving " << (unsigned int)inputs[i]
+                                  << " rows down the gene " << i << " col of the i/o table\n";
+                    }
+                    // This line is 'move (inputs[i]) rows down the gene i column of the
+                    // input-output table and read the bit'
                     genosect_t inpit = (genosect_t{1} << inputs[i]);
                     state_t num = ((gs & inpit) ? 0x1 : 0x0);
-                    // unsigned int leftshift = N-i-1;
-                    // std::cout << "leftshift of bit/unbit is " << N << "-" << i << "-1=" << leftshift << std::endl;
+                    if constexpr (debug_develop == true) {
+                        std::cout << "leftshift of bit is " << N << "-" << i << "-1=" << (N-i-1)
+                                  << " and the bit " << (num?"is":"isn't") << " set" << std::endl;
+                    }
                     if (num) {
                         // Then set the relevant bit in state
                         this->state |= (0x1 << (N-i-1));
@@ -213,7 +218,8 @@ namespace morph {
                 }
             }
 
-            //! Generate string representation of an input, showing the input bits that are ignored with 'X'
+            //! Generate string representation of an input, showing the input bits that
+            //! are ignored with 'X'
             static std::string input_str (const state_t& _input)
             {
                 std::stringstream ss;
@@ -230,9 +236,26 @@ namespace morph {
                 return ss.str();
             }
 
-            //! Generate a string representation of the state. Something like "1 0 1 1
-            //! 1" in order MSB to LSB. Thus the value 0x2 in _state gives the string "0
-            //! 0 0 1 0", which means that Gene 'd' is expressing.
+            //! Generate a string representation of the input in a table to be
+            //! unambiguous about the input bit position names
+            static std::string input_table (const state_t& _input)
+            {
+                std::stringstream ss;
+                // Count up from 0 to N, to output a,b,c, etc
+                for (unsigned int i = 0; i < N; i++) {
+                    ss << (i+1) << " ";
+                }
+                ss << '\n';
+                // Then show the bits
+                ss << GeneNet<N,K>::input_str (_input);
+                return ss.str();
+            }
+
+            /*!
+             * Generate a string representation of the state. Something like "1 0 1 1 1"
+             * in order MSB to LSB. Thus the value 0x2 in _state gives the string "0 0 0
+             * 1 0", which means that Gene 'd' is expressing.
+             */
             static std::string state_str (const state_t& _state)
             {
                 std::stringstream ss;
@@ -260,10 +283,11 @@ namespace morph {
                 return ss.str();
             }
 
+            //! A setter for the state of this GeneNet.
             void set (const state_t& st) { this->state = st; }
 
-            //! Accept a list of 1 and 0 and set the state. Characters other than 1 and
-            //! 0 are ignored.
+            //! Accept a string of 1s and 0s and set the state. Characters other than 1 and
+            //! 0 are ignored. First 1/0 in the string is the MSB.
             void set (const std::string& statestr)
             {
                 // Collect only 1 and 0 chars, in order
