@@ -211,6 +211,19 @@ set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 ```
 
+### Example build files
+
+Each of the examples in **morphologica/examples** has a CMakeLists.txt, written as if each 
+example was a standalone project in its own right.
+
+The best example CMakeLists.txt file is the one in **examples/schnakenberg**,
+because it uses a broad range of morphologica's features.
+
+In **examples/schnakenberg**, the default cmake build file, **CMakeLists.txt** assumes you did a
+'morphologica install' into **/usr/local**, whereas
+**CMakeLists_intree.txt** will (if renamed to CMakeLists.txt) build the code assuming that you 
+placed a copy of the morphologica source  tree *inside* *examples/schnakenberg*.
+
 ### Legacy code and tests
 
 morphologica has a library of legacy code and some test programs which
