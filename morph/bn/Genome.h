@@ -105,7 +105,8 @@ namespace morph {
                         first = false;
                         ss << (char)('a'+i);
                     } else {
-                        ss << "     " << (char)('a'+i);
+                        for (unsigned int j = 0; j < sizeof(genosect_t); ++j) { ss << "  "; }
+                        ss << "  " << (char)('a'+i);
                     }
                 }
                 ss << std::endl << std::hex;
@@ -120,21 +121,22 @@ namespace morph {
                 }
                 ss << std::dec << std::endl;
                 ss << "Genome table:" << std::endl;
-                ss << "input  output" << std::endl;
+                ss << "input   output" << std::endl;
                 for (unsigned int i = K; i > 0; --i) {
                     ss << (i-1);
                 }
                 ss << "   ";
                 for (unsigned int i = 0; i < N; ++i) {
-                    ss << i << " ";
+                    ss << i;
                 }
-                ss << "<-- for input, bit posn; for output, array index";
+                ss << " <-- for input, bit posn; for output, array index";
 
                 ss << std::endl << "----------------" << std::endl;
-                // 1234
+                // 1234...
                 for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
                 for (unsigned int i = 0; i<N-K; ++i) { ss << " "; }
-                ss << "  ";
+                ss << "   ";
+                // abcd...
                 for (unsigned int i = 0; i<N; ++i) { ss << (char)('a'+i); }
                 ss << " <-- ";
                 for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }

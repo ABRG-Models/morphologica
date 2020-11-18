@@ -144,6 +144,7 @@ namespace morph {
                         // around' the correct number of places in the state; hence the
                         // left-shifted part ORed with the right-shifted part.
                         inputs[i] = ((this->state << i) & state_mask) | (this->state >> (N-i));
+                        std::cout << " * For Gene " << i << " the input is: " << (this->input_str(inputs[i])) << std::endl;
                     }
                 } else { // Have slightly more computations for K != N, right?
                     // This _should_ cover the copying of inputs for any K < N.
@@ -151,9 +152,10 @@ namespace morph {
                     state_t hi_mask = hi_mask_start;
                     //std::cout << "Current state is " << this->state_str(this->state) << std::endl;
                     for (unsigned int i = 0; i < N; ++i) {
-                        // Thinkme: Hmm. Here, why does the right shift not cycle with i??
+                        // Thinkme: Hmm. Here, why does the right shift not cycle with i?? That's a mistake.
+                        // For K=N-1; for gene a, ignore input from a, for gene b ignore input from b, etc
                         inputs[i] = (this->state & lo_mask) | ((this->state & hi_mask) >> (N-K));
-                        //std::cout << " * For Gene " << i << " the input is: " << (this->state_str(inputs[i])) << std::endl;
+                        std::cout << " * For Gene " << i << " the input is: " << (this->input_str(inputs[i])) << std::endl;
                         hi_mask = (hi_mask >> 1) | state_msb;
                         lo_mask >>= 1;
                     }
@@ -228,15 +230,33 @@ namespace morph {
                 return ss.str();
             }
 
-            //! Generate a string representation of the state. Something like "1 0 1 1 1"
+            //! Generate a string representation of the state. Something like "1 0 1 1
+            //! 1" in order MSB to LSB. Thus the value 0x2 in _state gives the string "0
+            //! 0 0 1 0", which means that Gene 'd' is expressing.
             static std::string state_str (const state_t& _state)
             {
                 std::stringstream ss;
-                // Count down from N, to output bits in order MSB to LSB.
+                // Count down from N, to output bits in order MSB to LSB. MSB is Gene a,
+                // next is b and (if N==5) LSB is e.
                 for (unsigned int i = N; i > 0; --i) {
                     unsigned int j = i-1;
                     ss << ((_state & (0x1<<j)) >> j) << " ";
                 }
+                return ss.str();
+            }
+
+            //! Generate a string representation of the state in a table to be
+            //! unambiguous about the gene names
+            static std::string state_table (const state_t& _state)
+            {
+                std::stringstream ss;
+                // Count up from 0 to N, to output a,b,c, etc
+                for (unsigned int i = 0; i < N; i++) {
+                    ss << (char)('a'+i) << " ";
+                }
+                ss << '\n';
+                // Then call state_str
+                ss << GeneNet<N,K>::state_str (_state);
                 return ss.str();
             }
 
