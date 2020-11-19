@@ -9,7 +9,7 @@ cmake/make process.
 The default CMakeLists.txt file compiles schakenberg based on the
 assumption that you did a make install of the morphologica headers and
 they are therefore to be found in /usr/local/include/morph. If you've
-done that, then you can build and run schnakeberg like this:
+done that, then you can build and run schnakenberg like this:
 
 ```bash
 echo "I assume you installed the morphologica headers..."
