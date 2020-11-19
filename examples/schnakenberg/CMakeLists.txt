@@ -67,8 +67,8 @@ set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DI
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 # Assuming that you installed morphologica in /usr/local:
 set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph) # Allows GL3/gl3.h to be found
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)       # Allows morph/Header.h to be found
 
 #
 # All the library finding is now done. It's time to compile the program.
