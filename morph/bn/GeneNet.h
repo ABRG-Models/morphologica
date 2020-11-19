@@ -56,21 +56,26 @@ namespace morph {
         };
 #endif
 
+        //! The state has N bits in it. Working with N <= 8, so:
+        typedef unsigned char state_t;
+
         //! A Boolean gene network class
         template <size_t N=5, size_t K=5>
         struct GeneNet
         {
             using genosect_t = typename Genosect<K>::type;
 
-            //! The state has N bits in it. Working with N <= 8, so:
-            using state_t = unsigned char;
-            static constexpr state_t state_msb = 0x80;
+            //! Our state's MSB is 1<<N
+            static constexpr state_t state_msb = (0x1<<N);
 
             //! Probability of flipping each bit of the genome during evolution.
-            float p;
+            //float p;
 
-            //! The current state of this gene network
-            state_t state;
+            //! The current state of this gene network. But but... what if I want a 2
+            //! context, or 3 context of 1000 context system? Probably want to collect
+            //! the states together, but keep this GeneNet class for the
+            //! develop/analysis methods.
+            //state_t state;
 
             //! Initialize lo_mask_start. E.g. for N=5 and K=4, this will have the value
             //! 00001111b. These are the bits to take as input.
@@ -117,7 +122,7 @@ namespace morph {
              * effectively the same network; you'll just have different values in the
              * Genome for your solutions.
              */
-            void setup_inputs (std::array<state_t, N>& inputs)
+            static void setup_inputs (state_t& state, std::array<state_t, N>& inputs)
             {
                 // A randomized gene network wiring scheme has not yet been written:
                 static_assert (random_wiring == false);
@@ -132,10 +137,10 @@ namespace morph {
                         // For each gene, this line effectively 'rotates the state
                         // around' the correct number of places in the state; hence the
                         // left-shifted part ORed with the right-shifted part.
-                        inputs[i] = ((this->state << i) & state_mask) | (this->state >> (N-i));
+                        inputs[i] = ((state << i) & state_mask) | (state >> (N-i));
                         if constexpr (debug_inputs == true) {
                             std::cout << " * For Gene " << i << "/" << (char)('a'+i)
-                                      << " the input is: " << (this->input_str(inputs[i])) << std::endl;
+                                      << " the input is: " << (GeneNet<N,K>::input_str(inputs[i])) << std::endl;
                         }
                     }
                 } else { // Have slightly more computations for K != N, right?
@@ -143,15 +148,15 @@ namespace morph {
                     for (unsigned int i = 0; i < N; ++i) {
                         // For K=N-1; for gene a, ignore input from a, for gene b ignore input from b, etc
                         // For K=N-2; for gene a, ignore input from a,b, for b, ignore b,c, etc
-                        inputs[i] = ((this->state << i) | (this->state >> (N-i))) & lo_mask_start;
+                        inputs[i] = ((state << i) | (state >> (N-i))) & lo_mask_start;
                         if constexpr (debug_inputs == true) {
                             std::cout << " * For Gene " << i << "/" << (char)('a'+i)
-                                      << " the input is: " << (this->input_str(inputs[i])) << std::endl;
+                                      << " the input is: " << (GeneNet<N,K>::input_str(inputs[i])) << std::endl;
                         }
                     }
                     if constexpr (debug_inputs == true) {
                         std::cout << " * For Gene 0/a the input (in table form) is:\n"
-                                  << (this->input_table(inputs[0])) << std::endl;
+                                  << (GeneNet<N,K>::input_table(inputs[0])) << std::endl;
                     }
                 }
             }
@@ -160,13 +165,13 @@ namespace morph {
             static constexpr bool debug_develop = false;
 
             //! Given a genome, develop this->state.
-            void develop (const Genome<N, K>& genome)
+            static void develop (state_t& state, const Genome<N, K>& genome)
             {
                 std::array<state_t, N> inputs;
-                this->setup_inputs (inputs);
+                GeneNet<N,K>::setup_inputs (state, inputs);
 
                 // Now reset state and compute new values:
-                this->state = 0x0;
+                state = 0x0;
 
                 // State a anterior is genome[inps[0]] etc
                 for (unsigned int i = 0; i < N; ++i) {
@@ -177,7 +182,7 @@ namespace morph {
                                   << std::hex << static_cast<unsigned long long int>(gs)
                                   << std::dec << " out of " << genome << std::endl;
 
-                        std::cout << "inputs["<<i<<"] is " << this->input_str(inputs[i]) << std::endl;
+                        std::cout << "inputs["<<i<<"] is " << GeneNet<N,K>::input_str(inputs[i]) << std::endl;
                         std::cout << "Moving " << (unsigned int)inputs[i]
                                   << " rows down the gene " << i << " col of the i/o table\n";
                     }
@@ -191,19 +196,19 @@ namespace morph {
                     }
                     if (num) {
                         // Then set the relevant bit in state
-                        this->state |= (0x1 << (N-i-1));
+                        state |= (0x1 << (N-i-1));
                     } else {
                         // Unset the relevant bit in state
-                        this->state &= ~(0x1 << (N-i-1));
+                        state &= ~(0x1 << (N-i-1));
                     }
                 }
             }
 
-            //! Choose one gene out of N to update at random.
-            void develop_async (const Genome<N, K>& genome)
+            //! Choose one gene out of N to update at random. Can't be static, uses RNG.
+            void develop_async (const Genome<N, K>& genome, state_t& state)
             {
                 std::array<state_t, N> inputs;
-                this->setup_inputs (inputs);
+                GeneNet<N,K>::setup_inputs (inputs);
                 // NB: For async, don't reset state.
 
                 // For one gene only
@@ -212,9 +217,9 @@ namespace morph {
                 genosect_t inpit = (genosect_t{1} << inputs[i]);
                 state_t num = ((gs & inpit) ? 0x1 : 0x0);
                 if (num) {
-                    this->state |= (0x1 << (N-i-1));
+                    state |= (0x1 << (N-i-1));
                 } else {
-                    this->state &= ~(0x1 << (N-i-1));
+                    state &= ~(0x1 << (N-i-1));
                 }
             }
 
@@ -284,11 +289,11 @@ namespace morph {
             }
 
             //! A setter for the state of this GeneNet.
-            void set (const state_t& st) { this->state = st; }
+            //void set (const state_t& st) { this->state = st; }
 
             //! Accept a string of 1s and 0s and set the state. Characters other than 1 and
             //! 0 are ignored. First 1/0 in the string is the MSB.
-            void set (const std::string& statestr)
+            static state_t set (const std::string& statestr)
             {
                 // Collect only 1 and 0 chars, in order
                 std::string sstr("");
@@ -306,20 +311,21 @@ namespace morph {
                 }
 
                 // Build up the return state
-                this->state = 0;
+                state_t state = 0;
                 for (unsigned int i = 0; i < N; ++i) {
                     unsigned int j = N-i-1;
                     if (sstr[i] == '1') {
-                        this->state |= (0x1UL << j);
+                        state |= (0x1UL << j);
                     }
                 }
+                return state;
             }
 
             //! Computes the Hamming distance between this->state and target.
-            state_t hamming (state_t target)
+            static state_t hamming (state_t state, state_t target)
             {
                 // For this very short type, a lookup is probably faster than this intrinsic:
-                state_t bits = this->state ^ target;
+                state_t bits = state ^ target;
                 unsigned int hamming = _mm_popcnt_u32 ((unsigned int)bits);
                 return static_cast<state_t>(hamming);
             }
