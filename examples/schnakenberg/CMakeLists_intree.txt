@@ -68,7 +68,7 @@ include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 # Assuming that you installed morphologica in-tree (i.e. 'next to' schnakenberg.cpp).
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})
 
 #
 # All the library finding is now done. It's time to compile the program.
