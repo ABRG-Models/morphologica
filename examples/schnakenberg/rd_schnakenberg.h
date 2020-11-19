@@ -7,8 +7,8 @@
 #include <vector>
 #include <array>
 #include <sstream>
-#include "morph/RD_Base.h"
-#include "morph/HdfData.h"
+#include <morph/RD_Base.h>
+#include <morph/HdfData.h>
 
 /*!
  * Two component Schnakenberg Reaction Diffusion system

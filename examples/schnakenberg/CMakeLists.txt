@@ -45,6 +45,9 @@ endif()
 #
 set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
+if(APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_SILENCE_DEPRECATION")
+endif()
 
 # Tell the program where the morph fonts are. Assuming you installed morphologica in /usr/local:
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
