@@ -189,14 +189,15 @@ include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
 # MORPH_INCLUDE_PATH is set to the location at which the header directory 'morph' is found. For 'Installed morpholoigca':
 set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
-
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph) # Allows GL3/gl3.h to be found
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)       # Allows morph/Header.h to be found
 ```
-If you are working with in-tree morphologica, then set MORPH_INCLUDE_PATH like this:
+If you are working with in-tree morphologica, then replace the last section with:
 ```cmake
-# Here, I assume you git cloned morphologica into the root of your own project source tree.
-set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+# Assuming that you installed morphologica in-tree (i.e. 'next to' schnakenberg.cpp).
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
 ```
 
 ### 3) Links to dynamically linked libraries
