@@ -299,7 +299,7 @@ namespace morph {
             Vector<float, 4> l_pp = this->projection * l_point;
             float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
             Vector<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
-            Vector l_v0;
+            Vector<float, 3> l_v0;
             l_v0.set_from (this->invproj * l_p0);
             TransformMatrix<float> lv_matrix;
             lv_matrix.translate (l_v0);
@@ -346,7 +346,7 @@ namespace morph {
             if (this->showTitle == true) {
                 // Render the title text
                 glUseProgram (this->tshaderprog);
-                Vector v0 = this->textPosition ({-0.8f, 0.8f});
+                Vector<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);
                 this->textModel->render();
@@ -409,7 +409,7 @@ namespace morph {
             // Construct the point for the location of the coord arrows
             Vector<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
             // Inverse project
-            Vector<float> v0;
+            Vector<float, 3> v0;
             v0.set_from ((this->invproj * p0));
             // Translate the scene for the CoordArrows such that they sit in a single position on the screen
             this->coordArrows->setSceneTranslation (v0);
