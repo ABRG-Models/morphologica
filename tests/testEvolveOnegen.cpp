@@ -23,7 +23,7 @@ int main()
     double f = gn.evaluate_fitness (g);
     std::cout << "Genome:\n" << g << std::endl;
     std::cout << "BEFORE The fitness of the selected genome is " << f << std::endl;
-    g.evolve (0.07f);
+    g.mutate (0.07f);
     f = gn.evaluate_fitness (g);
     std::cout << "AFTER The fitness of the selected genome is " << f << std::endl;
     std::cout << "and canalyzingness is " << g.canalyzingness() << std::endl;

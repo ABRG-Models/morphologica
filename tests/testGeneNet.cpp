@@ -33,17 +33,19 @@ int main()
     gnd.develop (g);
 
 
+    return 0;
+
 #if 0
     cout << "Genome 1:            " << g << endl;
     // Get a copy:
     morph::bn::Genome<n, k> g2 = g;
     cout << "Genome 2 after copy: " << g2 << endl;
 
-    g2.evolve (p);
+    g2.mutate (p);
     cout << "Genome 2 evolved:    " << g2 << endl;
     cout << "Hamming distance between them: " << g.hamming(g2) << endl;
 
-    g.evolve (p);
+    g.mutate (p);
     cout << "Genome 1 evolved:    " << g << endl;
 #endif
 

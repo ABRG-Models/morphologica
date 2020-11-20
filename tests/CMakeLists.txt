@@ -323,33 +323,36 @@ add_test(test_elman test_elman)
 add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
 
+#
 # Boolean gene nets
+#
+
 add_executable(testGeneNet testGeneNet.cpp)
 if (APPLE)
   target_compile_options(testGeneNet PUBLIC "-mavx")
 endif()
-add_test(testGeneNet testGeneNet )
+#add_test(testGeneNet testGeneNet )
 
 add_executable(testGeneNetKeqN testGeneNetKeqN.cpp)
 if (APPLE)
   target_compile_options(testGeneNetKeqN PUBLIC "-mavx")
 endif()
-add_test(testGeneNetKeqN testGeneNetKeqN)
+#add_test(testGeneNetKeqN testGeneNetKeqN)
 
 add_executable(testGeneNetKeqNm1 testGeneNetKeqNm1.cpp)
 if (APPLE)
   target_compile_options(testGeneNetKeqNm1 PUBLIC "-mavx")
 endif()
-add_test(testGeneNetKeqNm1 testGeneNetKeqNm1)
+#add_test(testGeneNetKeqNm1 testGeneNetKeqNm1)
 
 add_executable(testEvolveOnegen testEvolveOnegen.cpp)
 if (APPLE)
   target_compile_options(testEvolveOnegen PUBLIC "-mavx")
 endif()
-add_test(testEvolveOnegen testEvolveOnegen)
+#add_test(testEvolveOnegen testEvolveOnegen)
 
 add_executable(testEvolveFit testEvolveFit.cpp)
 if (APPLE)
   target_compile_options(testEvolveFit PUBLIC "-mavx")
 endif()
-add_test(testEvolveFit testEvolveFit)
+#add_test(testEvolveFit testEvolveFit)
