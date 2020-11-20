@@ -324,7 +324,9 @@ add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
 
 #
-# Boolean gene nets
+# Boolean gene nets. Fixme: These are not unit tests, but I've thrown
+# them in here for now. Perhaps need a 'bn' directory to build these
+# programs.
 #
 
 add_executable(testGeneNet testGeneNet.cpp)
@@ -356,3 +358,9 @@ if (APPLE)
   target_compile_options(testEvolveFit PUBLIC "-mavx")
 endif()
 #add_test(testEvolveFit testEvolveFit)
+
+add_executable(testEvolve testEvolve.cpp)
+if (APPLE)
+  target_compile_options(testEvolve PUBLIC "-mavx")
+endif()
+target_link_libraries(testEvolve jsoncpp_lib)
