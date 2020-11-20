@@ -68,6 +68,10 @@ namespace morph {
             //! Our state's MSB is 1<<N
             static constexpr state_t state_msb = (0x1<<N);
 
+            //! When working with states in a graph of nodes, it may be necessary to use
+            //! one bit to refer to the state as being unset; this is the bit to use.
+            static constexpr state_t state_t_unset = 0x80;
+
             //! Probability of flipping each bit of the genome during evolution.
             //float p;
 
