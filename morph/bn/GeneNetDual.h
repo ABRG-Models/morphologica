@@ -130,7 +130,6 @@ namespace morph {
                 return score;
             }
 
-
             /*!
              * For the passed-in genome, find its final state, starting from the
              * anterior state initial_ant and the posterior state initial_pos (stored in
@@ -177,6 +176,39 @@ namespace morph {
                     std::cout << genome << ", fitness: " << fitness << std::endl;
                 }
                 return fitness;
+            }
+
+            //! Evolve a new genome by repeatedly mutating with bitflip probability p
+            Genome<N,K> evolve_new_genome (float p)
+            {
+                // Holds the genome and a copy of it.
+                Genome<N,K> refg;
+                Genome<N,K> newg;
+
+                refg.randomize();
+                double a = this->evaluate_fitness (refg);
+
+                unsigned int gen = 0;
+                // Test fitness to determine whether we should evolve.
+                while (a < 1.0) {
+                    newg = refg;
+                    newg.mutate (p);
+                    ++gen;
+                    double b = this->evaluate_fitness (newg);
+                    if (a > b) {
+                        // New fitness <= old fitness
+                    } else {
+                        // Copy new fitness to ref
+                        a = b;
+                        // Copy new to reference
+                        refg = newg;
+                    }
+                }
+                if constexpr (debug == true) {
+                    std::cout << "It took " << gen << " generations to evolve this genome\n";
+                }
+
+                return refg;
             }
 
         };

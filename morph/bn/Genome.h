@@ -172,9 +172,9 @@ namespace morph {
             //! Set the genome to zero.
             void zero() { for (unsigned int i = 0; i < N; ++i) { (*this)[i] = 0; } }
 
-            //! Evolve, but rather than flipping each bit with a certain
+            //! Mutate, but rather than flipping each bit with a certain
             //! probability, instead flip bits_to_flip bits, selected randomly.
-            void evolve (unsigned int bits_to_flip)
+            void mutate (unsigned int bits_to_flip)
             {
                 unsigned int genosect_w = (1 << K);
                 unsigned int lgenome = static_cast<unsigned int>(N) * genosect_w;
@@ -210,8 +210,8 @@ namespace morph {
                 }
             }
 
-            //! Evolve this genome with bit flip probability p
-            void evolve (const float& p)
+            //! Mutate this genome with bit flip probability p
+            void mutate (const float& p)
             {
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
@@ -225,9 +225,9 @@ namespace morph {
                 }
             }
 
-            //! A version of evolve which adds to a count of the number of flips made in
+            //! A version of mutate which adds to a count of the number of flips made in
             //! each genosect. For debugging.
-            void evolve (const float& p, std::array<unsigned long long int, N>& flipcount)
+            void mutate (const float& p, std::array<unsigned long long int, N>& flipcount)
             {
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
