@@ -11,6 +11,8 @@
  */
 #pragma once
 
+#define INIT_GLFW_IN_VISUALRESOURCES 1
+
 #ifdef USE_GLEW
 // Including glew.h and linking with libglew helps older platforms,
 // such as Ubuntu 16.04. Not necessary on later platforms.
@@ -29,7 +31,6 @@
 # include <GL3/gl3.h>
 #endif
 
-//#define INIT_GLFW_IN_VISUALRESOURCES 1
 #ifdef INIT_GLFW_IN_VISUALRESOURCES
 # include <morph/VisualResources.h>
 #endif
@@ -537,7 +538,6 @@ namespace morph {
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
-            std::cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << std::endl;
 
             glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -553,6 +553,7 @@ namespace morph {
             if (!this->window) {
                 // Window or OpenGL context creation failed
                 std::cerr << "GLFW window creation failed!\n";
+                throw std::runtime_error("GLFW!");
             }
 
             // Fix the event handling for benefit of static functions.
@@ -566,6 +567,9 @@ namespace morph {
             glfwSetScrollCallback (this->window, VisualBase::scroll_callback_dispatch);
 
             glfwMakeContextCurrent (this->window);
+
+            // Now make sure that Freetype is set up
+            this->resources->freetype_init();
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;

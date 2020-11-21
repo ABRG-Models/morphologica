@@ -53,7 +53,6 @@ namespace morph {
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
-            std::cout << "Monitor xscale: " << xscale << ", monitor yscale: " << yscale << std::endl;
 
             glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -61,27 +60,19 @@ namespace morph {
             glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-        }
             // Tell glfw that we'd like to do anti-aliasing.
             glfwWindowHint (GLFW_SAMPLES, 4);
-#endif
-
-        void freetype_init()
-        {
-            // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            if (FT_Init_FreeType (&this->freetype)) {
-                std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            }
+            std::cout << "glfw_init() returning" << std::endl;
         }
+#endif
 
         void init()
         {
 #ifdef INIT_GLFW_IN_VISUALRESOURCES
             this->glfw_init();
-#endif
+#else
             this->freetype_init();
+#endif
         }
 
         //! A pointer returned to the single instance of this class
@@ -103,6 +94,20 @@ namespace morph {
     public:
         //! FreeType library object, public for access by client code
         FT_Library freetype;
+        bool freetype_initialized = false;
+
+        void freetype_init()
+        {
+            if (this->freetype_initialized == true) { return; }
+            // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            if (FT_Init_FreeType (&this->freetype)) {
+                std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+            } else {
+                this->freetype_initialized = true;
+            }
+        }
 
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
         static VisualResources* i()
