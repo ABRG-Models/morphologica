@@ -50,6 +50,11 @@
  * double sample = randDouble.get();
  * double sample2 = randDouble.get();
  * \endcode
+ *
+ * A final note: There are some faster RNG algorithms on the
+ * block. Xoroshiro/Xoshiro/Xorshift and SplitMix64. These don't appear to be in the c++
+ * standard as yet, but they're short and could probably be implemented easily here,
+ * another day.
  */
 
 namespace morph {
