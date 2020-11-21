@@ -13,23 +13,11 @@
 #include <iostream>
 #include <sstream>
 #include <immintrin.h>
-#include <morph/Random.h>
+#include <morph/bn/Random.h>
+#include <morph/bn/Genosect.h>
 
 namespace morph {
     namespace  bn {
-
-        /*!
-         * Genosect is a template metafunction, with several specializations. It has one
-         * attribute, type, which client code should use as the correct type for the
-         * Genome's array. Each Genome section in the Genome's array has 2^K bits.
-         */
-        template <size_t K = 0> struct Genosect {}; // Default should fail to compile
-        template<> struct Genosect<1> { typedef unsigned char type; };
-        template<> struct Genosect<2> { typedef unsigned char type; };
-        template<> struct Genosect<3> { typedef unsigned char type; };
-        template<> struct Genosect<4> { typedef unsigned short type; };
-        template<> struct Genosect<5> { typedef unsigned int type; };
-        template<> struct Genosect<6> { typedef unsigned long long int type; };
 
         // A Genome is (derived from) an array<Genosect<K>::type, N>.
         template <size_t N, size_t K> struct Genome;
@@ -187,7 +175,7 @@ namespace morph {
 
                 for (unsigned int b = 0; b < bits_to_flip; ++b) {
                     // FIXME: Probably want an rng which has the correct limits here, not a frng.
-                    unsigned int r = static_cast<unsigned int>(std::floor(this->frng.get() * (float)lgenome));
+                    unsigned int r = static_cast<unsigned int>(std::floor(Random<N,K>::i()->frng.get() * (float)lgenome));
                     // Catch the edge case (where randDouble() returned exactly 1.0)
                     if (r == lgenome) { --r; }
 
@@ -213,10 +201,14 @@ namespace morph {
             //! Mutate this genome with bit flip probability p
             void mutate (const float& p)
             {
+                // Number of frng calls is N * 2^K (160 for N=5,K=5). That's a lot of
+                // randomness for each bit.
+                Random<N,K>::i()->fill_rnums();
+                size_t riter = 0;
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < p) {
+                        if (Random<N,K>::i()->rnums[riter++] < p) {
                             // Flip bit j
                             gsect ^= (genosect_t{1} << j);
                         }
@@ -229,10 +221,12 @@ namespace morph {
             //! each genosect. For debugging.
             void mutate (const float& p, std::array<unsigned long long int, N>& flipcount)
             {
+                Random<N,K>::i()->fill_rnums();
+                size_t riter = 0;
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (this->frng.get() < p) {
+                        if (Random<N,K>::i()->rnums[riter++] < p) {
                             // Flip bit j
                             ++flipcount[i];
                             gsect ^= (genosect_t{1} << j);
@@ -368,17 +362,12 @@ namespace morph {
                 return (float)bits/(float)(N*(1<<N));
             }
 
-            //! This Genome has its own random number generator
-            morph::RandUniform<genosect_t> rng;
             void randomize()
             {
                 for (unsigned int i = 0; i < N; ++i) {
-                    (*this)[i] = this->rng.get() & genosect_mask;
+                    (*this)[i] = Random<N,K>::i()->genosect_rng.get() & genosect_mask;
                 }
             }
-
-            //! Also need a floating point rng
-            morph::RandUniform<float> frng;
 
             //! Overload the stream output operator
             friend std::ostream& operator<< <N, K> (std::ostream& os, const Genome<N, K>& v);

@@ -24,6 +24,9 @@ struct geninfo {
     double fit;                   // The fitness
 };
 
+//! Globally initialise Random instance pointer
+morph::bn::Random<5,5>* morph::bn::Random<5,5>::pInstance = 0;
+
 int main (int argc, char** argv)
 {
     // Get JSON parameter config path

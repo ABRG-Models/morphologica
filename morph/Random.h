@@ -99,6 +99,14 @@ namespace morph {
             }
             return rtn;
         }
+        //! Place n random numbers in the array rtn
+        template<size_t n=10>
+        void get (std::array<T, n>& rtn)
+        {
+            for (size_t i = 0; i < n; ++i) {
+                rtn[i] = this->dist (this->generator);
+            }
+        }
         T min (void) { return this->dist.min(); }
         T max (void) { return this->dist.max(); }
         //! Change the max/min of the distribution to be in range [a,b)
@@ -170,6 +178,14 @@ namespace morph {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
+        }
+        //! Place n random numbers in the array rtn
+        template<size_t n=10>
+        void get (std::array<T, n>& rtn)
+        {
+            for (size_t i = 0; i < n; ++i) {
+                rtn[i] = this->dist (this->generator);
+            }
         }
         //! min wrapper
         T min (void) { return this->dist.min(); }
