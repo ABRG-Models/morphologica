@@ -1,5 +1,5 @@
 #include <iostream>
-#include "morph/Random.h"
+#include <morph/Random.h>
 
 int main()
 {
