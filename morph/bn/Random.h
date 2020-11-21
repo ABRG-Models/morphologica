@@ -43,10 +43,10 @@ namespace morph {
             void fill_rnums() { this->frng.get<gw> (rnums); }
 
             //! A random number generator of width genosect_t.
-            morph::RandUniform<genosect_t> genosect_rng;
+            morph::RandUniform<genosect_t, std::mt19937> genosect_rng;
 
             //! A floating point random number generator
-            morph::RandUniform<float> frng;
+            morph::RandUniform<float, std::mt19937> frng;
         };
     }
 }

@@ -6,17 +6,35 @@
 #include <type_traits>
 #include <string>
 #include <ostream>
+#include <array>
 
 /*!
  * \file Random.h
  *
  * Random numbers in the morph namespace, wrapping C++ <random> stuff, with a particular
- * favouring for mt19937_64, the 64 bit Mersenne Twister algorithm. With these classes,
- * generate random numbers using our choice of algorithms from std::random. In future,
- * I'd like to include a siderand approach to collecting entropy.
+ * favouring for mt19937 and mt19937_64, the 32 and 64 bit Mersenne Twister
+ * algorithms. With these classes, generate random numbers using our choice of
+ * algorithms from std::random. In future, I'd like to include a siderand approach to
+ * collecting entropy.
  *
- * New note on choice of mt19937_64: It's slower than mt19937. Thus, when you want
- * really good random numbers, 64 bits may be necessary, but maybe 32 is enough.
+ * Note on choice of mt19937 vs mt19937_64 as the 'E' template parameter: the 64 bit
+ * version is slower, but is suitable if you want to generate random numbers where the
+ * repeat of the sequence occurs only after as long a time as possible.
+ *
+ * Possible values for E:
+ *
+ * std::mt19937, std::mt19937_64: 32 and 64 bit Mersenne Twister (MT). 32 bit MT seems
+ * to be the fastest engine! std::mt19937_64 takes twice the time.
+ *
+ * std::minstd_rand: linear congruential engine. 'new minimum standard' recommended by
+ * Park, Miller, and Stockmeyer in 1993. The linear congruential engine is moderately
+ * fast and has a very small storage requirement for state. I found it no faster than
+ * std::mt19937 in one test.
+ *
+ * std::ranlux24, std::ranlux48: subtract-with-carry engine (aka lagged
+ * Fibonacci). Seems very slow - ranlux48 is about 20 times slower than mt19937.
+ *
+ * std::knuth_b: A shuffle order engine. Quite slow.
  *
  * I've wrapped a selection of distributions, including normal, lognormal, poisson and
  * uniform. Copy the classes here to add additional ones that you might need from the
@@ -28,7 +46,7 @@
  *
  * \code
  * #include <morph/Random.h>
- * morph::RandUniform<double> randDouble;
+ * morph::RandUniform<double, std::mt19937_64> randDouble;
  * double sample = randDouble.get();
  * double sample2 = randDouble.get();
  * \endcode
@@ -41,20 +59,31 @@ namespace morph {
     // de-duplicated. max(), min() and get() methods all need the dist member
     // attribute, so each one has to be written out in each wrapper class. So it goes.
 
-    //! RandUniform to be specialised depending on whether T is integral or not
-    template <typename T = double, bool = std::is_integral<std::decay_t<T>>::value>
+    /*!
+     * RandUniform to be specialised depending on whether T is integral or not
+     *
+     * \tparam T The type of the random number to be generated
+     *
+     * \tparam E The pseudo-random number generator engine. See
+     *  https://en.cppreference.com/w/cpp/numeric/random for options. Here, I set the
+     *  Mersenne Twister algorithm as default, but beware: it comes in 32 and 64 bit
+     *  versions (std::mt19937 adn std::mt19937_64). Use of the excellent 64 bit engine
+     *  will slow down code which applies it to generate 32 bit numbers! So, consider
+     *  providing both T and E parameters when instantiating your RandUniform objects
+     *  (similar for RandNormal etc, too).
+     */
+    template <typename T = float, typename E = std::mt19937, bool = std::is_integral<std::decay_t<T>>::value>
     class RandUniform {};
 
     //! Floating-point number specialization of RandUnifom.
-    template <typename T>
-    class RandUniform<T, false>
+    template <typename T, typename E>
+    class RandUniform<T, E, false>
     {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine. NB: 32 bit one is faster.
-        std::mt19937 generator{rd()};      // Good spectral characteristics, faster than 64 bit generator
-        //std::mt19937_64 generator{rd()}; // slower, best spectral characteristics
+        E generator{rd()};
         //std::minstd_rand generator{rd()}; // No slower than mt19937, apparently
         //! Our distribution
         std::uniform_real_distribution<T> dist;
@@ -105,12 +134,10 @@ namespace morph {
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n=10>
+        template<size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) {
-                rtn[i] = this->dist (this->generator);
-            }
+            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         T min (void) { return this->dist.min(); }
         T max (void) { return this->dist.max(); }
@@ -123,14 +150,14 @@ namespace morph {
     };
 
     //! Integer specialization: Generate uniform random numbers in a integer format
-    template<typename T>
-    class RandUniform<T, true>
+    template<typename T, typename E>
+    class RandUniform<T, E, true>
     {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine
-        std::mt19937 generator{rd()};
+        E generator{rd()};
         //! Our distribution
         std::uniform_int_distribution<T> dist;
     public:
@@ -185,12 +212,10 @@ namespace morph {
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n=10>
+        template<size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) {
-                rtn[i] = this->dist (this->generator);
-            }
+            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
         T min (void) { return this->dist.min(); }
@@ -204,15 +229,21 @@ namespace morph {
         }
     };
 
-    //! Generate numbers drawn from a random normal distribution.
-    template <typename T = double>
+    /*!
+     * Generate numbers drawn from a random normal distribution.
+     *
+     * \tparam T The type of the random number to be generated
+     *
+     * \tparam E The pseudo-random number generator engine.
+     */
+    template <typename T = double, typename E = std::mt19937_64>
     class RandNormal
     {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
+        E generator{rd()};
         //! Our distribution
         std::normal_distribution<T> dist;
     public:
@@ -262,19 +293,31 @@ namespace morph {
             }
             return rtn;
         }
+        //! Place n random numbers in the array rtn
+        template<size_t n>
+        void get (std::array<T, n>& rtn)
+        {
+            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+        }
         T min (void) { return this->dist.min(); }
         T max (void) { return this->dist.max(); }
     };
 
-    //! Generate numbers drawn from a random log-normal distribution.
-    template <typename T = double>
+    /*!
+     * Generate numbers drawn from a random log-normal distribution.
+     *
+     * \tparam T The type of the random number to be generated
+     *
+     * \tparam E The pseudo-random number generator engine.
+     */
+    template <typename T = double, typename E = std::mt19937_64>
     class RandLogNormal
     {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
+        E generator{rd()};
         //! Our distribution
         std::lognormal_distribution<T> dist;
     public:
@@ -327,6 +370,12 @@ namespace morph {
             }
             return rtn;
         }
+        //! Place n random numbers in the array rtn
+        template<size_t n>
+        void get (std::array<T, n>& rtn)
+        {
+            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+        }
         T min (void) { return this->dist.min(); }
         T max (void) { return this->dist.max(); }
     };
@@ -335,15 +384,19 @@ namespace morph {
      * Generate Poisson random numbers in a integer format - valid Ts are short, int,
      * long, long long, unsigned short, unsigned int, unsigned long, or unsigned long
      * long.
+     *
+     * \tparam T The type of the random number to be generated
+     *
+     * \tparam E The pseudo-random number generator engine.
      */
-    template <typename T = int>
+    template <typename T = int, typename E = std::mt19937>
     class RandPoisson
     {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
+        E generator{rd()};
         //! Our distribution
         std::poisson_distribution<T> dist;
     public:
@@ -392,6 +445,12 @@ namespace morph {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
+        }
+        //! Place n random numbers in the array rtn
+        template<size_t n>
+        void get (std::array<T, n>& rtn)
+        {
+            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
         T min (void) { return this->dist.min(); }
