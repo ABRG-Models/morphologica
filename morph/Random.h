@@ -15,6 +15,9 @@
  * generate random numbers using our choice of algorithms from std::random. In future,
  * I'd like to include a siderand approach to collecting entropy.
  *
+ * New note on choice of mt19937_64: It's slower than mt19937. Thus, when you want
+ * really good random numbers, 64 bits may be necessary, but maybe 32 is enough.
+ *
  * I've wrapped a selection of distributions, including normal, lognormal, poisson and
  * uniform. Copy the classes here to add additional ones that you might need from the
  * full list: https://en.cppreference.com/w/cpp/numeric/random (such as weibull or
@@ -49,8 +52,10 @@ namespace morph {
     private:
         //! Random device to provide a seed for the generator
         std::random_device rd{};
-        //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
+        //! Pseudo random number generator engine. NB: 32 bit one is faster.
+        std::mt19937 generator{rd()};      // Good spectral characteristics, faster than 64 bit generator
+        //std::mt19937_64 generator{rd()}; // slower, best spectral characteristics
+        //std::minstd_rand generator{rd()}; // No slower than mt19937, apparently
         //! Our distribution
         std::uniform_real_distribution<T> dist;
     public:
@@ -125,7 +130,7 @@ namespace morph {
         //! Random device to provide a seed for the generator
         std::random_device rd{};
         //! Pseudo random number generator engine
-        std::mt19937_64 generator{rd()};
+        std::mt19937 generator{rd()};
         //! Our distribution
         std::uniform_int_distribution<T> dist;
     public:

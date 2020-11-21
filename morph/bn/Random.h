@@ -40,7 +40,7 @@ namespace morph {
                                          // array allocated.
 
             //! Populate rnums with gw new random numbers
-            void fill_rnums() { this->frng.get (rnums); }
+            void fill_rnums() { this->frng.get<gw> (rnums); }
 
             //! A random number generator of width genosect_t.
             morph::RandUniform<genosect_t> genosect_rng;

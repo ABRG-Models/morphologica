@@ -174,7 +174,6 @@ namespace morph {
                 for (unsigned int b = 0; b < lgenome; ++b) { idices.push_back (b); }
 
                 for (unsigned int b = 0; b < bits_to_flip; ++b) {
-                    // FIXME: Probably want an rng which has the correct limits here, not a frng.
                     unsigned int r = static_cast<unsigned int>(std::floor(Random<N,K>::i()->frng.get() * (float)lgenome));
                     // Catch the edge case (where randDouble() returned exactly 1.0)
                     if (r == lgenome) { --r; }
@@ -198,17 +197,21 @@ namespace morph {
                 }
             }
 
+            //! Genome width
+            static constexpr size_t width = N*(1<<K);
+
             //! Mutate this genome with bit flip probability p
             void mutate (const float& p)
             {
                 // Number of frng calls is N * 2^K (160 for N=5,K=5). That's a lot of
                 // randomness for each bit.
-                Random<N,K>::i()->fill_rnums();
-                size_t riter = 0;
+                Random<N,K>* prng = Random<N,K>::i();
+                prng->fill_rnums();
+                typename std::array<float, width>::iterator riter = prng->rnums.begin();
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
-                        if (Random<N,K>::i()->rnums[riter++] < p) {
+                        if (*riter++ < p) {
                             // Flip bit j
                             gsect ^= (genosect_t{1} << j);
                         }
