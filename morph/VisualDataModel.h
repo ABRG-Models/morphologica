@@ -18,95 +18,145 @@ namespace morph {
     {
     public:
         VisualDataModel()
-            : morph::VisualModel::VisualModel() {
-        }
+            : morph::VisualModel::VisualModel() {}
+
         VisualDataModel (GLuint sp, const Vector<float> _offset)
-            : morph::VisualModel::VisualModel (sp, _offset) {
-        }
-        ~VisualDataModel() {
+            : morph::VisualModel::VisualModel (sp, _offset) {}
+
+        //! Deconstructor will need to de-allocate memory for data.
+        ~VisualDataModel()
+        {
+#if 0 // How to deal with constness of the pointer to scalarData? Or does constness mean that client code should deallocate? Clear this up!
+            // const std::vector<T>* scalarData = (const std::vector<T>*)0;
+            std::vector<T>* sd = this->scalarData;
+            if (sd != (std::vector<T>*)0) {
+                sd->clear();
+                delete sd;
+            }
+#endif
+#if 0 // How to deal with constness of the pointer to scalarData?
+
+            // const std::vector<Vector<T>>* vectorData = (const std::vector<Vector<T>>*)0;
+            if (this->vectorData != (const std::vector<Vector<T>>*)0) {
+                this->vectorData->clear();
+                delete this->vectorData;
+            }
+#endif
+            // std::vector<Vector<float>>* dataCoords = (std::vector<Vector<float>>*)0;
+            if (this->dataCoords != (std::vector<Vector<float>>*)0) {
+                this->dataCoords->clear();
+                delete this->dataCoords;
+            }
+            // std::vector<std::vector<Vector<float>>*> graphDataCoords;
+            for (auto& gd : this->graphDataCoords) {
+                gd->clear();
+                delete gd;
+            }
         }
 
         //! Reset the autoscaled flags so that the next time data is transformed by
         //! the Scale objects they will autoscale again (assuming they have
         //! do_autoscale set true).
-        void clearAutoscale() {
+        void clearAutoscale()
+        {
             this->zScale.autoscaled = false;
             this->colourScale.autoscaled = false;
             this->vectorScale.autoscaled = false;
         }
 
-        void clearAutoscaleZ() {
-            this->zScale.autoscaled = false;
-        }
-        void clearAutoscaleColour() {
-            this->colourScale.autoscaled = false;
-        }
-        void clearAutoscaleVector() {
-            this->vectorScale.autoscaled = false;
-        }
+        void clearAutoscaleZ() { this->zScale.autoscaled = false; }
+        void clearAutoscaleColour() { this->colourScale.autoscaled = false; }
+        void clearAutoscaleVector() { this->vectorScale.autoscaled = false; }
 
-        void setZScale (const Scale<T>& zscale) {
+        void setZScale (const Scale<T>& zscale)
+        {
             this->zScale = zscale;
             this->reinit();
         }
-        void setCScale (const Scale<T>& cscale) {
+        void setCScale (const Scale<T>& cscale)
+        {
             this->colourScale = cscale;
             this->reinit();
         }
-        void setVectorScale (const Scale<Vector<T>>& vscale) {
+        void setVectorScale (const Scale<Vector<T>>& vscale)
+        {
             this->vectorScale = vscale;
             this->reinit();
         }
 
-        //! Methods to update the scalarData, vectorData, dataCoords and/or scaling and
-        //! re-compute the vertices.
-        //@{
-        void updateData (const std::vector<T>* _data) {
-            this->scalarData = _data;
-            this->reinit();
-        }
-        void updateData (const std::vector<T>* _data, const Scale<T>& zscale) {
-            this->scalarData = _data;
-            this->zScale = zscale;
-            this->reinit();
-        }
-        void updateData (const std::vector<T>* _data, const Scale<T>& zscale, const Scale<T>& cscale) {
-            this->scalarData = _data;
-            this->zScale = zscale;
-            this->colourScale = cscale;
-            this->reinit();
-        }
-        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
-                                 const Scale<T>& zscale) {
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-            this->zScale = zscale;
-            this->reinit();
-        }
-        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
-                                 const Scale<T>& zscale, const Scale<T>& cscale) {
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-            this->zScale = zscale;
-            this->colourScale = cscale;
-            this->reinit();
-        }
-        virtual void updateCoords (std::vector<Vector<float>>* _coords) {
-            this->dataCoords = _coords;
-            this->reinit();
-        }
-        void updateData (const std::vector<Vector<float>>* _vectors) {
-            this->vectorData = _vectors;
-            this->reinit();
-        }
-        void updateData (std::vector<Vector<float>>* _coords, const std::vector<Vector<T>>* _vectors) {
-            this->dataCoords = _coords;
-            this->vectorData = _vectors;
-            this->reinit();
-        }
-        //@}
+        // Methods to update the scalarData, vectorData, dataCoords and/or scaling and
+        // re-compute the vertices.
 
-        void reinit() {
+        //! Update the scalar data
+        void updateData (const std::vector<T>* _data)
+        {
+            this->scalarData = _data;
+            this->reinit();
+        }
+
+        //! Update the scalar data with an associated z-scaling
+        void updateData (const std::vector<T>* _data, const Scale<T>& zscale)
+        {
+            this->scalarData = _data;
+            this->zScale = zscale;
+            this->reinit();
+        }
+
+        //! Update the scalar data, along with both the z-scaling and the colour-scaling
+        void updateData (const std::vector<T>* _data, const Scale<T>& zscale, const Scale<T>& cscale)
+        {
+            this->scalarData = _data;
+            this->zScale = zscale;
+            this->colourScale = cscale;
+            this->reinit();
+        }
+
+        //! Update coordinate data and scalar data along with z-scaling for scalar data
+        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
+                                 const Scale<T>& zscale)
+        {
+            this->dataCoords = _coords;
+            this->scalarData = _data;
+            this->zScale = zscale;
+            this->reinit();
+        }
+
+        //! Update coordinate data and scalar data along with z- and colour-scaling for scalar data
+        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
+                                 const Scale<T>& zscale, const Scale<T>& cscale)
+        {
+            this->dataCoords = _coords;
+            this->scalarData = _data;
+            this->zScale = zscale;
+            this->colourScale = cscale;
+            this->reinit();
+        }
+
+        //! Update just the coordinate data
+        virtual void updateCoords (std::vector<Vector<float>>* _coords)
+        {
+            this->dataCoords = _coords;
+            this->reinit();
+        }
+
+        //! Update the vector data (for plotting quiver plots)
+        void updateData (const std::vector<Vector<float>>* _vectors)
+        {
+            this->vectorData = _vectors;
+            this->reinit();
+        }
+
+        //! Update both coordinate and vector data
+        void updateData (std::vector<Vector<float>>* _coords, const std::vector<Vector<T>>* _vectors)
+        {
+            this->dataCoords = _coords;
+            this->vectorData = _vectors;
+            this->reinit();
+        }
+
+        //! Re-create the model - called after updating data
+        void reinit()
+        {
             // Fixme: Better not to clear, then repeatedly pushback here:
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -137,7 +187,7 @@ namespace morph {
         ColourMap<T> cm;
 
         //! A Scaling function for the colour map. Perhaps a Scale class contains a
-        //! colour map? If not, then this scale might well be autoscaled.
+        //! colour map? If not, then this scale might well be autoscaled. Applied to scalarData.
         Scale<T> colourScale;
 
         //! A scale to scale (or autoscale) scalarData. This might be used to set z
@@ -150,15 +200,19 @@ namespace morph {
 
         //! The data to visualize. T may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
-        const std::vector<T>* scalarData;
+        const std::vector<T>* scalarData = (const std::vector<T>*)0;
 
         //! A container for vector data to visualize.
-        const std::vector<Vector<T>>* vectorData;
+        const std::vector<Vector<T>>* vectorData = (const std::vector<Vector<T>>*)0;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates.
-        std::vector<Vector<float>>* dataCoords;
+        std::vector<Vector<float>>* dataCoords = (std::vector<Vector<float>>*)0;
+
+        //! Graph data coordinates. Different from dataCoords, because it's a vector of
+        //! vectors of pointers to data, with one pointer for each graph in the model.
+        std::vector<std::vector<Vector<float>>*> graphDataCoords;
     };
 
 } // namespace morph

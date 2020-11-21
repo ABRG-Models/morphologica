@@ -32,6 +32,29 @@ namespace morph {
     class Visual;
 
     /*!
+     * A class containing information about a text string, as it would be displayed on
+     * the screen in some font, at a given size. The units should be the same as those
+     * used to create the quads on which the text will be laid out.
+     */
+    struct TextGeometry
+    {
+        //! The sum of the advances of each glyph in the string
+        float total_advance = 0.0f;
+        //! The maximum extension above the baseline for any glyph in the string
+        float max_bearingy = 0.0f;
+        //! The maximum ymin - the extension of the lowest part of any glyph, like gpqy, etc.
+        float max_drop = 0.0f;
+        //! Return half the width of the string
+        float half_width() { return this->total_advance * 0.5f; }
+        //! The width is the total_advance.
+        float width() { return this->total_advance; }
+        //! The effective height is the maximum bearingy
+        float height() { return this->max_bearingy; }
+        //! Half the max_bearingy
+        float half_height() { return this->max_bearingy * 0.5f; }
+    };
+
+    /*!
      * A separate data-containing model which is used to render text. It is intended
      * that this could comprise part of a morph::Visual or a morph::VisualModel. It has
      * its own render call.
@@ -50,13 +73,20 @@ namespace morph {
                          std::array<float, 3> _clr = {0,0,0})
         {
             this->tshaderprog = tsp;
+
+            // This is set with the model view offset of the parent model PLUS the
+            // relative location of this VisualTextModel within the parent VisualModel
+            // (or Visual).
             this->mv_offset = _mv_offset;
+
+            // The rotation stored inside this text model should be applied BEFORE any of the other operations.
+            this->viewmatrix.rotate (this->mv_rotation);
+
             // Question: At what point to apply translations to this VisualTextModel?
             // Should be acceptable here, because the parent model (or Visual) can
             // ensure that the mv_offset is correct.
             //this->mv_rotation = ?;
             this->viewmatrix.translate (this->mv_offset);
-            this->viewmatrix.rotate (this->mv_rotation);
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
@@ -66,7 +96,22 @@ namespace morph {
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
             this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
-            this->setupText (_txt, this->face->glchars);
+            this->setupText (_txt);
+        }
+
+        /*!
+         * Construct with given text shader program id, \a tsp, font \a _font, font
+         * scaling factor \a fscale. After this constructor, the method
+         * getTextGeometry() can be called, prior to calling this->setupText (_txt,
+         * position, clr);
+         */
+        VisualTextModel (GLuint tsp, morph::VisualFont visualfont, float _m_width, int _fontpixels)
+        {
+            this->tshaderprog = tsp;
+            this->m_width = _m_width;
+            this->fontpixels = _fontpixels;
+            this->fontscale = _m_width/(float)this->fontpixels;
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
         }
 
         virtual ~VisualTextModel()
@@ -205,9 +250,46 @@ namespace morph {
             this->viewmatrix.rotate (r);
         }
 
-    protected:
+        //! Compute the geometry for a sample text.
+        morph::TextGeometry getTextGeometry (const std::string& _txt)
+        {
+            morph::TextGeometry geom;
+            for (std::string::const_iterator c = _txt.begin(); c != _txt.end(); c++) {
+                morph::gl::CharInfo ci = this->face->glchars[*c];
+                float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
+                geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
+                float bearingy = ci.bearing.y() * this->fontscale;
+                geom.max_bearingy = (bearingy > geom.max_bearingy) ? bearingy : geom.max_bearingy;
+                geom.total_advance += ((ci.advance>>6)*this->fontscale);
+            }
+            return geom;
+        }
+
+        //! Set up a new text at a given position, with the given colour.
+        void setupText (const std::string& _txt,
+                        const morph::Vector<float> _mv_offset, std::array<float, 3> _clr = {0,0,0})
+        {
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
+            this->clr_text = _clr;
+            this->setupText (_txt);
+        }
+
+        //! Set up a new text at a given position, with the given colour and a pre-rotation
+        void setupText (const std::string& _txt,
+                        const morph::Quaternion<float>& _rotation, const morph::Vector<float> _mv_offset,
+                        std::array<float, 3> _clr = {0,0,0})
+        {
+            this->mv_rotation = _rotation;
+            this->viewmatrix.rotate (this->mv_rotation);
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
+            this->clr_text = _clr;
+            this->setupText (_txt);
+        }
+
         //! With the given text and font size information, create the quads for the text.
-        void setupText (const std::string& _txt, std::map<char, morph::gl::CharInfo>& _the_characters)
+        void setupText (const std::string& _txt)
         {
             this->txt = _txt;
             // With glyph information from txt, set up this->quads.
@@ -218,7 +300,7 @@ namespace morph {
             float text_epsilon = 0.0f;
             for (std::string::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
                 // Add a quad to this->quads
-                morph::gl::CharInfo ci = _the_characters[*c];
+                morph::gl::CharInfo ci = this->face->glchars[*c];
 
                 float xpos = letter_pos + ci.bearing.x() * this->fontscale;
                 float ypos = /*this->mv_offset[1]*/ - (ci.size.y() - ci.bearing.y()) * this->fontscale;
@@ -260,6 +342,7 @@ namespace morph {
             this->postVertexInit();
         }
 
+    protected:
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices (void) {
 

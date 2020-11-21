@@ -186,10 +186,6 @@ namespace morph {
             glBindVertexArray(0);
 
             // Now render any VisualTextModels
-            // Here, could set anything that should be true for ALL texts in this model
-            // glUseProgram (this->tshaderprog);
-            // etc
-
             for (auto t : this->texts) { t->render(); }
 
             glUseProgram (prev_shader);
@@ -239,7 +235,7 @@ namespace morph {
         //! Add a rotation to the scene view matrix
         void addSceneRotation (const Quaternion<float>& r)
         {
-            this->sv_rotation.premultiply (r); // combines rotations
+            this->sv_rotation.premultiply (r);
             this->scenematrix.rotate (r);
         }
 
@@ -290,41 +286,27 @@ namespace morph {
             for (auto& t : this->texts) { t->addViewRotation (r); }
         }
 
-#if 0 // Use setViewTranslation instead
-        //! Setter for mv_offset, also updates viewmatrix. The offset is an offset within the model view.
-        void setOffset (const Vector<float>& _mv_offset)
-        {
-            this->mv_offset = _mv_offset;
-            this->viewmatrix.rotate (this->mv_rotation);
-            this->setViewTranslation (this->mv_offset);
-        }
-#endif
-#if 0 // Use addViewTranslation instead
-        //! Shift the mv_offset, also updates viewmatrix.
-        void shiftOffset (const Vector<float>& _mv_offset)
-        {
-            this->mv_offset += _mv_offset;
-            this->viewmatrix.translate (this->mv_offset);
-        }
-#endif
+        // The alpha attribute accessors
         void setAlpha (const float _a) { this->alpha = _a; }
         float getAlpha() const { return this->alpha; }
-
-        void setHide (const bool _h = true) { this->hide = _h; }
-        void toggleHide() { this->hide = this->hide ? false : true; }
-        float hidden() const { return this->hide; }
-
         void incAlpha()
         {
             this->alpha += 0.1f;
             this->alpha = this->alpha > 1.0f ? 1.0f : this->alpha;
         }
-
         void decAlpha()
         {
             this->alpha -= 0.1f;
             this->alpha = this->alpha < 0.0f ? 0.0f : this->alpha;
         }
+
+        // The hide attribute accessors
+        void setHide (const bool _h = true) { this->hide = _h; }
+        void toggleHide() { this->hide = this->hide ? false : true; }
+        float hidden() const { return this->hide; }
+
+        //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
+        bool twodimensional = false;
 
     protected:
 
@@ -355,10 +337,10 @@ namespace morph {
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
-
+#if 0
         //! The parent Visual object - provides access to the shader prog
         const Visual* parent;
-
+#endif
         //! A copy of the reference to the shader program
         GLuint shaderprog;
 
@@ -429,7 +411,7 @@ namespace morph {
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param colStart The tube staring colour
+         * \param colStart The tube starting colour
          * \param colEnd The tube's ending colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
@@ -438,41 +420,36 @@ namespace morph {
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
-            // First cap, draw as a triangle fan, but record indices so that
-            // we only need a single call to glDrawElements.
-
-            // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
+            // The vector from start to end defines a vector and a plane. Find a
+            // 'circle' of points in that plane.
             Vector<float> vstart = start;
             Vector<float> vend = end;
-            //std::cout << "Compute tube from " << vstart << "to " << vend << std::endl;
             Vector<float> v = vend - vstart;
             v.renormalize();
-            //std::cout << "Normal vector v is " << v << std::endl;
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
-            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
-            // v. The unit in-plane vector is inplane.normalise. Can now use that
-            // vector in the plan to define a point on the circle.
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^ v. The
+            // unit in-plane vector is inplane.normalise. Can now use that vector in the
+            // plan to define a point on the circle. Note that this starting point on
+            // the circle is at a random position, which means that this version of
+            // computeTube is useful for tubes that have quite a few segments.
             Vector<float> rand_vec;
             rand_vec.randomize();
             Vector<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
-            //std::cout << "in-plane vector is " << inplane << std::endl;
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
             Vector<float> v_x_inplane = v.cross(inplane);
-            //std::cout << "v ^ inplane vector is " << v_x_inplane << std::endl;
-            // Point on circle: Vector<float> c = inplane * sin(t) + v_x_inplane * cos(t);
-            //std::cout << "Start cap...\n";
+
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
-            //std::cout << "Central point of vstart cap is " << vstart << std::endl;
             this->vertex_push (-v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
-            // Start cap vertices
+            // Start cap vertices. Draw as a triangle fan, but record indices so that we
+            // only need a single call to glDrawElements.
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = j * morph::TWO_PI_F/(float)segments;
@@ -513,7 +490,6 @@ namespace morph {
 
             // Bottom cap. Push centre vertex as the last vertex.
             this->vertex_push (vend, this->vertexPositions);
-            //std::cout << "vend cap is " << vend << std::endl;
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colEnd, this->vertexColors);
 
@@ -605,63 +581,82 @@ namespace morph {
 
             // Update idx
             idx += nverts;
-        }
+        } // end computeTube with randomly initialized end vertices
 
         /*!
+         * Compute a tube. This version requires unit vectors for orientation of the
+         * tube end faces/vertices (useful for graph markers). The other version uses a
+         * randomly chosen vector to do this.
+         *
          * Create a tube from \a start to \a end, with radius \a r and a colour which
          * transitions from the colour \a colStart to \a colEnd.
-         *
-         * This version of computeTube computes an absolute minimal object, which is
-         * acceptable if lighting with ambient light, but which does not have sufficient
-         * vertices for the normals to look right when the tube is lighted with a
-         * diffuse, positioned light source.
          *
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param colStart The tube staring colour
+         * \param ux a vector in the x axis direction for the end face
+         * \param uy a vector in the y axis direction
+         * \param colStart The tube starting colour
          * \param colEnd The tube's ending colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
+         * \param rotation A rotation in the ux/uy plane to orient the vertices of the
+         * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeTubeMin (VBOint& idx, Vector<float> start, Vector<float> end,
-                             std::array<float, 3> colStart, std::array<float, 3> colEnd,
-                             float r = 1.0f, int segments = 12)
+        void computeTube (VBOint& idx, Vector<float> start, Vector<float> end,
+                          Vector<float> ux, Vector<float> uy,
+                          std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                          float r = 1.0f, int segments = 12, float rotation = 0.0f)
         {
-            // The vector from start to end defines a vector and a plane. Find a 'circle' of points in that plane.
+            // The vector from start to end defines direction of the tube
             Vector<float> vstart = start;
             Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
-            v.renormalize();
 
-            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
-            // (v) can be found: Choose random vector vr. A vector inplane = vr ^
-            // v. The unit in-plane vector is inplane.normalise. Can now use that
-            // vector in the plan to define a point on the circle.
-            Vector<float> rand_vec;
-            rand_vec.randomize();
-            Vector<float> inplane = rand_vec.cross(v);
-            inplane.renormalize();
-            Vector<float> v_x_inplane = v.cross(inplane);
+            // v is a face normal
+            Vector<float> v = uy.cross(ux);
+            v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
             this->vertex_push (-v, this->vertexNormals);
             this->vertex_push (colStart, this->vertexColors);
 
+            // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                // t is the angle of the segment
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
-                this->vertex_push (-v, this->vertexNormals); // -v
+                this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
             }
 
+            // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
-                this->vertex_push (v, this->vertexNormals); // +v
+                c.renormalize();
+                this->vertex_push (c, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
             }
 
@@ -670,15 +665,16 @@ namespace morph {
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (colEnd, this->vertexColors);
 
-            // Note: number of vertices = segments * 2 + 2.
-            int nverts = (segments * 2) + 2;
+            // Number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
             VBOint capMiddle = idx;
             VBOint capStartIdx = idx + 1;
             VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx + segments;
+            VBOint endStartIdx = capStartIdx + (3*segments);
 
+            // Start cap indices
             for (int j = 0; j < segments-1; j++) {
                 this->indices.push_back (capMiddle);
                 this->indices.push_back (capStartIdx + j);
@@ -689,26 +685,29 @@ namespace morph {
             this->indices.push_back (capStartIdx + segments - 1);
             this->indices.push_back (capStartIdx);
 
-            for (int j = 0; j < segments; j++) {
-                // Two triangles per side; 1:
-                this->indices.push_back (capStartIdx + j);
-                if (j == (segments-1)) {
-                    this->indices.push_back (capStartIdx);
-                } else {
-                    this->indices.push_back (capStartIdx + 1 + j);
-                }
-                this->indices.push_back (endStartIdx + j);
-                // 2:
-                this->indices.push_back (endStartIdx + j);
-                if (j == (segments-1)) {
-                    this->indices.push_back (endStartIdx);
-                } else {
-                    this->indices.push_back (endStartIdx + 1 + j);
-                }
-                if (j == (segments-1)) {
-                    this->indices.push_back (capStartIdx);
-                } else {
-                    this->indices.push_back (capStartIdx + j + 1);
+            // Middle sections
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                for (int j = 0; j < segments; j++) {
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
                 }
             }
 
@@ -718,14 +717,79 @@ namespace morph {
                 this->indices.push_back (endStartIdx + j);
                 this->indices.push_back (endStartIdx + 1 + j);
             }
-            // Last one
             this->indices.push_back (endMiddle);
             this->indices.push_back (endStartIdx + segments - 1);
             this->indices.push_back (endStartIdx);
 
             // Update idx
             idx += nverts;
-        }
+        } // end computeTube with ux/uy vectors for faces
+
+        /*!
+         * Compute a tube. This version requires unit vectors for orientation of the
+         * tube end faces/vertices (useful for graph markers). The other version uses a
+         * randomly chosen vector to do this.
+         *
+         * Create a tube from \a start to \a end, with radius \a r and a colour which
+         * transitions from the colour \a colStart to \a colEnd.
+         *
+         * \param idx The index into the 'vertex array'
+         * \param vstart The centre of the polygon
+         * \param ux a vector in the x axis direction for the end face
+         * \param uy a vector in the y axis direction
+         * \param col The polygon colour
+         * \param r Radius of the tube
+         * \param segments Number of segments used to render the tube
+         * \param rotation A rotation in the ux/uy plane to orient the vertices of the
+         * tube. Useful if this is to be a short tube used as a graph marker.
+         */
+        void computeFlatPoly (VBOint& idx, Vector<float> vstart,
+                              Vector<float> ux, Vector<float> uy,
+                              std::array<float, 3> col,
+                              float r = 1.0f, int segments = 12, float rotation = 0.0f)
+        {
+            // v is a face normal
+            Vector<float> v = uy.cross(ux);
+            v.renormalize();
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            // Polygon vertices (a triangle fan)
+            for (int j = 0; j < segments; j++) {
+                // t is the angle of the segment
+                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+            }
+
+            // Number of vertices
+            int nverts = segments + 1;
+
+            // After creating vertices, push all the indices.
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            //VBOint endMiddle = idx + (VBOint)nverts - 1;
+            //VBOint endStartIdx = capStartIdx + (3*segments);
+
+            // Start cap indices
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlatPloy with ux/uy vectors for faces
 
         /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
@@ -860,8 +924,7 @@ namespace morph {
                     this->indices.push_back (lastRingStartIdx);
                 }
             }
-            // end of sphere calculation
-        }
+        } // end of sphere calculation
 
         /*!
          * Create a cone.
@@ -916,7 +979,7 @@ namespace morph {
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
-                this->vertex_push (-v, this->vertexNormals); // -v
+                this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
             }
 
@@ -927,7 +990,7 @@ namespace morph {
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
                 c.renormalize();
-                this->vertex_push (c, this->vertexNormals); // -v
+                this->vertex_push (c, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
             }
 
@@ -938,7 +1001,7 @@ namespace morph {
                 c = c + (c * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
                 c.renormalize();
-                this->vertex_push (c, this->vertexNormals); // -v
+                this->vertex_push (c, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
             }
 
@@ -1008,7 +1071,461 @@ namespace morph {
 
             // Update idx
             idx += nverts;
+        } // end of cone calculation
+
+        //! Compute a line with a single colour
+        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                          Vector<float> uz,
+                          std::array<float, 3> col,
+                          float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
+        {
+            this->computeLine (idx, start, end, uz, col, col, w, thickness, shorten);
         }
+
+        /*!
+         * Create a line from \a start to \a end, with width \a w and a colour which
+         * transitions from the colour \a colStart to \a colEnd. The thickness of the
+         * line in the z direction is \a thickness
+         *
+         * \param idx The index into the 'vertex array'
+         * \param start The start of the tube
+         * \param end The end of the tube
+         * \param uz Dirn of z (up) axis for end face of line. Should be normalized.
+         * \param colStart The tube staring colour
+         * \param colEnd The tube's ending colour
+         * \param w width of line in ux direction
+         * \param thickness The thickness/depth of the line in uy direction
+         * \param shorten An amount by which to shorten the length of the line at each end.
+         */
+        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                          Vector<float> uz,
+                          std::array<float, 3> colStart, std::array<float, 3> colEnd,
+                          float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
+        {
+            // There are always 8 segments for this line object, 2 at each of 4 corners
+            const int segments = 8;
+
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+            }
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+
+            // Push the central point of the start cap - this is at location vstart
+            this->vertex_push (vstart, this->vertexPositions);
+            this->vertex_push (-v, this->vertexNormals);
+            this->vertex_push (colStart, this->vertexColors);
+
+            // Compute the 'face angles' that will give the correct width and thickness for the line
+            std::array<float, 8> angles;
+            float w_ = w * 0.5f;
+            float d_ = thickness * 0.5f;
+            float r = std::sqrt (w_ * w_ + d_ * d_);
+            angles[0] = std::acos (w_ / r);
+            angles[1] = angles[0];
+            angles[2] = morph::PI_F - angles[0];
+            angles[3] = angles[2];
+            angles[4] = morph::PI_F + angles[0];
+            angles[5] = angles[4];
+            angles[6] = morph::TWO_PI_F - angles[0];
+            angles[7] = angles[6];
+            // The normals for the vertices around the line
+            std::array<Vector<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
+
+            // Start cap vertices (a triangle fan)
+            for (int j = 0; j < segments; j++) {
+                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (-v, this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near start cap. Normals point outwards. Need Additional vertices
+            for (int j = 0; j < segments; j++) {
+                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                this->vertex_push (vstart+c, this->vertexPositions);
+                this->vertex_push (norms[j], this->vertexNormals);
+                this->vertex_push (colStart, this->vertexColors);
+            }
+
+            // Intermediate, near end cap. Normals point in direction c
+            for (int j = 0; j < segments; j++) {
+                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (norms[j], this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap vertices
+            for (int j = 0; j < segments; j++) {
+                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                this->vertex_push (vend+c, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (colEnd, this->vertexColors);
+            }
+
+            // Bottom cap. Push centre vertex as the last vertex.
+            this->vertex_push (vend, this->vertexPositions);
+            this->vertex_push (v, this->vertexNormals);
+            this->vertex_push (colEnd, this->vertexColors);
+
+            // Number of vertices = segments * 4 + 2.
+            int nverts = (segments * 4) + 2;
+
+            // After creating vertices, push all the indices.
+            VBOint capMiddle = idx;
+            VBOint capStartIdx = idx + 1;
+            VBOint endMiddle = idx + (VBOint)nverts - 1;
+            VBOint endStartIdx = capStartIdx + (3*segments);
+
+            // Start cap indices
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (capMiddle);
+                this->indices.push_back (capStartIdx + j);
+                this->indices.push_back (capStartIdx + 1 + j);
+            }
+            // Last one
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (capStartIdx + segments - 1);
+            this->indices.push_back (capStartIdx);
+
+            // Middle sections
+            for (int lsection = 0; lsection < 3; ++lsection) {
+                capStartIdx = idx + 1 + lsection*segments;
+                endStartIdx = capStartIdx + segments;
+                for (int j = 0; j < segments; j++) {
+                    this->indices.push_back (capStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + 1 + j);
+                    }
+                    this->indices.push_back (endStartIdx + j);
+                    this->indices.push_back (endStartIdx + j);
+                    if (j == (segments-1)) {
+                        this->indices.push_back (endStartIdx);
+                    } else {
+                        this->indices.push_back (endStartIdx + 1 + j);
+                    }
+                    if (j == (segments-1)) {
+                        this->indices.push_back (capStartIdx);
+                    } else {
+                        this->indices.push_back (capStartIdx + j + 1);
+                    }
+                }
+            }
+
+            // bottom cap
+            for (int j = 0; j < segments-1; j++) {
+                this->indices.push_back (endMiddle);
+                this->indices.push_back (endStartIdx + j);
+                this->indices.push_back (endStartIdx + 1 + j);
+            }
+            this->indices.push_back (endMiddle);
+            this->indices.push_back (endStartIdx + segments - 1);
+            this->indices.push_back (endStartIdx);
+
+            // Update idx
+            idx += nverts;
+        } // end computeLine
+
+        // Like computeLine, but this line has no thickness and you can add end-caps (semi-circles)
+        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                              Vector<float> uz,
+                              std::array<float, 3> col,
+                              float w = 0.1f, float shorten = 0.0f, bool endcaps = false)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+            }
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = (vv*w*0.5f);
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+#if 0
+            if (endcaps) {
+                // Push the central point of the start cap - this is at location vstart
+                this->vertex_push (vstart, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                // Start cap vertices (a triangle fan)
+                for (int j = 0; j < segments; j++) {
+                    float t = j * morph::PI_F/(float)segments;
+                    this->vertex_push (vstart+c, this->vertexPositions);
+                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                }
+            }
+#endif
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+#if 0
+            if (endcaps) {
+                // Bottom cap vertices
+                for (int j = 0; j < segments; j++) {
+                    Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                    this->vertex_push (vend+c, this->vertexPositions);
+                    this->vertex_push (v, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                }
+                // Bottom cap. Push centre vertex as the last vertex.
+                this->vertex_push (vend, this->vertexPositions);
+                this->vertex_push (v, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+            }
+#endif
+
+            // Number of vertices = segments * 4 + 2.
+            int nverts = 4;
+            if (endcaps) {  nverts += 0; } // fixme
+
+            // After creating vertices, push all the indices.
+            //VBOint capMiddle = 4;
+            VBOint _idx = idx;
+
+            this->indices.push_back (_idx);
+            this->indices.push_back (_idx+1);
+            this->indices.push_back (_idx+2);
+
+            this->indices.push_back (_idx);
+            this->indices.push_back (_idx+2);
+            this->indices.push_back (_idx+3);
+
+            // Update idx
+            idx += nverts;
+        } // end computeFlatLine
+
+        //! Like computeFlatLine, but this line has no thickness and you can provide the
+        //! next data points so that this line and the next line can line up perfectly!
+        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                              Vector<float> prev, Vector<float> next,
+                              Vector<float> uz,
+                              std::array<float, 3> col,
+                              float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vp = vstart - prev;
+            vp.renormalize();
+            Vector<float> vn = next - vend;
+            vn.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvp = vp.cross(uz);
+            vvp.renormalize();
+            Vector<float> vvn = vn.cross(uz);
+            vvn.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = ( (vv+vvn)*0.5f * w*0.5f );
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly
+
+        //! Make a joined up line with previous.
+        void computeFlatLineP (VBOint& idx, Vector<float> start, Vector<float> end,
+                               Vector<float> prev,
+                               Vector<float> uz,
+                               std::array<float, 3> col,
+                               float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vp = vstart - prev;
+            vp.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvp = vp.cross(uz);
+            vvp.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = (vv*w*0.5f);
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly with prev
+
+        //! Flat line, joining up with next
+        void computeFlatLineN (VBOint& idx, Vector<float> start, Vector<float> end,
+                               Vector<float> next,
+                               Vector<float> uz,
+                               std::array<float, 3> col,
+                               float w = 0.1f)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            // line segment vectors
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+            Vector<float> vn = next - vend;
+            vn.renormalize();
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+            Vector<float> vvn = vn.cross(uz);
+            vvn.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = (vv*w*0.5f);
+
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+
+            ww = ( (vv+vvn)*0.5f * w*0.5f );
+
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+
+            // Update idx
+            idx += 4;
+        } // end computeFlatLine that joins perfectly with next line
+
     };
 
 } // namespace morph
