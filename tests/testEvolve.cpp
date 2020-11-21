@@ -1,12 +1,16 @@
 // Do with the new code what evolve.cpp does in AttractorScaffolding codebase
-#include <morph/bn/GeneNetDual.h>
-#include <morph/Config.h>
 #include <string>
 #include <limits>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
 #include <fstream>
+
+#include <morph/Config.h>
+
+#include <morph/bn/GeneNetDual.h>
+#include <morph/bn/Genome.h>
+#include <morph/bn/Random.h>
 
 // The number of generations to evolve for by default, unless otherwise specfied in JSON
 #define N_Generations   100000000
@@ -25,7 +29,7 @@ struct geninfo {
 };
 
 //! Globally initialise Random instance pointer
-morph::bn::Random<5,5>* morph::bn::Random<5,5>::pInstance = 0;
+template<> morph::bn::Random<5,5>* morph::bn::Random<5,5>::pInstance = 0;
 
 int main (int argc, char** argv)
 {

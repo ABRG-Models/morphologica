@@ -1,5 +1,6 @@
 #include <morph/bn/Genome.h>
 #include <morph/bn/GeneNet.h>
+#include <morph/bn/Random.h>
 
 using std::endl;
 using std::cout;
@@ -8,7 +9,7 @@ using std::cout;
 const size_t n = 5;
 const size_t k = 5;
 // Globally initialise Random instance pointer - necessary for all progs using Genome
-morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
+template<> morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
 
 int main()
 {

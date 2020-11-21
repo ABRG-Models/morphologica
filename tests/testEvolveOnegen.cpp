@@ -1,5 +1,7 @@
 // Do with the new code what evolve_onegen.cpp does in AttractorScaffolding codebase
 #include <morph/bn/GeneNetDual.h>
+#include <morph/bn/Genome.h>
+#include <morph/bn/Random.h>
 
 using std::endl;
 using std::cout;
@@ -7,7 +9,7 @@ using std::cout;
 static constexpr size_t n = 5;
 static constexpr size_t k = 5;
 // Globally initialise Random instance pointer - necessary for all progs using Genome
-morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
+template<> morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
 
 int main()
 {

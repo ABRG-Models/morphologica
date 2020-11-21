@@ -27,6 +27,7 @@ namespace morph {
             //! The instance public function. Uses the very short name 'i' to keep code tidy.
             static Random* i()
             {
+                // <N,K> template args seem to be optional here, at least on g++/icpc
                 if (Random::pInstance == 0) {
                     Random::pInstance = new morph::bn::Random;
                     //Random::i()->init(); // If required
