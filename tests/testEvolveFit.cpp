@@ -4,11 +4,13 @@
 using std::endl;
 using std::cout;
 
+static constexpr size_t n = 5;
+static constexpr size_t k = 5;
+// Globally initialise Random instance pointer - necessary for all progs using Genome
+morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
+
 int main()
 {
-    static constexpr size_t n = 5;
-    static constexpr size_t k = 5;
-
     morph::bn::GeneNetDual<n,k> gn;
     // Set intial states
     gn.state_ant = 0x0;

@@ -5,15 +5,15 @@
 using std::endl;
 using std::cout;
 
+// Note: compile time constants - i.e. not just const from early on in the program
+const size_t n = 5;
+const size_t k = 5;
+
+// Globally initialise Random instance pointer - necessary for all progs using Genome
+morph::bn::Random<n,k>* morph::bn::Random<n,k>::pInstance = 0;
+
 int main()
 {
-    // Flip probability
-    //float p = 0.01f;
-
-    // Note: compile time constants - i.e. not just const from early on in the program
-    const size_t n = 5;
-    const size_t k = 5;
-
     morph::bn::Genome<n, k> g;
     g.randomize();
     morph::bn::GeneNet<n, k> gn;
@@ -26,12 +26,10 @@ int main()
 
     cout << g.table() << endl;
 
-
     morph::bn::GeneNetDual<n,k> gnd;
     gnd.state_ant = 0x8;
     gnd.state_pos = 0x2;
     gnd.develop (g);
-
 
     return 0;
 
