@@ -236,6 +236,7 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
+            glfwMakeContextCurrent (this->window);
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
@@ -448,7 +449,7 @@ namespace morph {
          * clipping distance and the field of view of the camera.
          */
 
-        float zNear = 1.0;
+        float zNear = 0.001;
         float zFar = 15.0;
         float fov = 30.0;
 
@@ -459,7 +460,7 @@ namespace morph {
         bool coordArrowsInScene = false;
 
         //! Set to true to show the title text within the scene
-        bool showTitle = true;
+        bool showTitle = false;
 
         //! How big should the steps in scene translation be when scrolling?
         float scenetrans_stepsize = 0.1;
