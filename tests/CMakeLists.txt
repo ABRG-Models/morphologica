@@ -216,6 +216,9 @@ if(${glfw3_FOUND})
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
   target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+  add_executable(testVisTwoWindows testVisTwoWindows.cpp)
+  target_link_libraries(testVisTwoWindows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
   target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
