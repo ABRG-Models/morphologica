@@ -10,9 +10,7 @@
 
 #pragma once
 
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
-# include <GLFW/glfw3.h>
-#endif
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <utility>
 #include <stdexcept>
@@ -41,7 +39,6 @@ namespace morph {
             delete VisualResources::pInstance;
         }
 
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
         void glfw_init()
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
@@ -62,17 +59,12 @@ namespace morph {
 #endif
             // Tell glfw that we'd like to do anti-aliasing.
             glfwWindowHint (GLFW_SAMPLES, 4);
-            std::cout << "glfw_init() returning" << std::endl;
         }
-#endif
 
         void init()
         {
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
+            // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
-#else
-            this->freetype_init();
-#endif
         }
 
         //! A pointer returned to the single instance of this class
@@ -83,13 +75,11 @@ namespace morph {
         //! and fontpixels (the texture resolution)
         std::map<std::pair<morph::VisualFont, unsigned int>, morph::gl::VisualFace*> faces;
 
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
         {
             std::cerr << "Error: " << description << " (code "  << error << ")\n";
         }
-#endif
 
     public:
         //! FreeType library object, public for access by client code

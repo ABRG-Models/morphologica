@@ -11,8 +11,6 @@
  */
 #pragma once
 
-#define INIT_GLFW_IN_VISUALRESOURCES 1
-
 #ifdef USE_GLEW
 // Including glew.h and linking with libglew helps older platforms,
 // such as Ubuntu 16.04. Not necessary on later platforms.
@@ -31,9 +29,7 @@
 # include <GL3/gl3.h>
 #endif
 
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
-# include <morph/VisualResources.h>
-#endif
+#include <morph/VisualResources.h>
 
 #include <morph/Config.h>
 #include <morph/HexGrid.h>
@@ -524,29 +520,8 @@ namespace morph {
         //! Private initialization, used by constructors. \a title sets the window title.
         void init (const std::string& title)
         {
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
-#else
-            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
-
-            // Set up error callback
-            glfwSetErrorCallback (morph::Visual::errorCallback);
-
-            // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor();
-            float xscale, yscale;
-            glfwGetMonitorContentScale(primary, &xscale, &yscale);
-
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
-#ifdef __OSX__
-            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-            // Tell glfw that we'd like to do anti-aliasing.
-            glfwWindowHint (GLFW_SAMPLES, 4);
-#endif
 
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -640,13 +615,6 @@ namespace morph {
                                                    title);
         }
 
-#ifndef INIT_GLFW_IN_VISUALRESOURCES
-        //! An error callback function for the GLFW windowing library
-        static void errorCallback (int error, const char* description)
-        {
-            std::cerr << "Error: " << description << " (code "  << error << ")\n";
-        }
-#endif
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
 
@@ -822,9 +790,8 @@ namespace morph {
         //! The window (and OpenGL context) for this Visual
         GLFWwindow* window;
 
-#ifdef INIT_GLFW_IN_VISUALRESOURCES
+        //! Pointer to the singleton GLFW and Freetype resources object
         morph::VisualResources* resources = (morph::VisualResources*)0;
-#endif
 
         //! Current window width
         int window_w;
