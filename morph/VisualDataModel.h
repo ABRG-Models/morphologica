@@ -23,36 +23,8 @@ namespace morph {
         VisualDataModel (GLuint sp, const Vector<float> _offset)
             : morph::VisualModel::VisualModel (sp, _offset) {}
 
-        //! Deconstructor will need to de-allocate memory for data.
-        ~VisualDataModel()
-        {
-#if 0 // How to deal with constness of the pointer to scalarData? Or does constness mean that client code should deallocate? Clear this up!
-            // const std::vector<T>* scalarData = (const std::vector<T>*)0;
-            std::vector<T>* sd = this->scalarData;
-            if (sd != (std::vector<T>*)0) {
-                sd->clear();
-                delete sd;
-            }
-#endif
-#if 0 // How to deal with constness of the pointer to scalarData?
-
-            // const std::vector<Vector<T>>* vectorData = (const std::vector<Vector<T>>*)0;
-            if (this->vectorData != (const std::vector<Vector<T>>*)0) {
-                this->vectorData->clear();
-                delete this->vectorData;
-            }
-#endif
-            // std::vector<Vector<float>>* dataCoords = (std::vector<Vector<float>>*)0;
-            if (this->dataCoords != (std::vector<Vector<float>>*)0) {
-                this->dataCoords->clear();
-                delete this->dataCoords;
-            }
-            // std::vector<std::vector<Vector<float>>*> graphDataCoords;
-            for (auto& gd : this->graphDataCoords) {
-                gd->clear();
-                delete gd;
-            }
-        }
+        //! Deconstructor should *not* deallocate data - client code should do that
+        ~VisualDataModel() {}
 
         //! Reset the autoscaled flags so that the next time data is transformed by
         //! the Scale objects they will autoscale again (assuming they have
@@ -207,11 +179,12 @@ namespace morph {
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
-        //! OpenGL coordinates.
+        //! OpenGL coordinates. Not const as child code may resize or update content.
         std::vector<Vector<float>>* dataCoords = (std::vector<Vector<float>>*)0;
 
         //! Graph data coordinates. Different from dataCoords, because it's a vector of
-        //! vectors of pointers to data, with one pointer for each graph in the model.
+        //! vectors of pointers to data, with one pointer for each graph in the
+        //! model. Not const, too.
         std::vector<std::vector<Vector<float>>*> graphDataCoords;
     };
 

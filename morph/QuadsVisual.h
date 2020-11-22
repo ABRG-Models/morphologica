@@ -41,8 +41,7 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<Vector<float>>;
-            this->dataCoords->resize (this->quads->size());
+            this->dataCoords = new std::vector<Vector<float>>(this->quads->size());
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
                 // q is an array<Flt, 12>. These lines compute the centroid:
