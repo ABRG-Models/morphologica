@@ -204,6 +204,9 @@ if(${glfw3_FOUND})
   add_executable(testVisGraphMin testVisGraphMin.cpp)
   target_link_libraries(testVisGraphMin ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+  add_executable(testVisLogMap testVisLogMap.cpp)
+  target_link_libraries(testVisLogMap ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
   add_executable(testVisQuiver testVisQuiver.cpp)
   target_link_libraries(testVisQuiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
