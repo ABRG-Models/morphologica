@@ -94,7 +94,7 @@ namespace morph {
         //! Policy of style
         stylepolicy policy = stylepolicy::both;
         //! The colour of the marker
-        std::array<float, 3> markercolour = {morph::colour::royalblue};
+        std::array<float, 3> markercolour = morph::colour::royalblue;
         //! marker size in model units
         float markersize = 0.03f;
         //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
@@ -105,7 +105,7 @@ namespace morph {
         //! Show lines between data points? This may become a morph::linestyle thing.
         bool showlines = true;
         //! The colour of the lines between data points
-        std::array<float, 3> linecolour = {morph::colour::black};
+        std::array<float, 3> linecolour = morph::colour::black;
         //! Width of lines between data points
         float linewidth = 0.007f;
         //! Label for the dataset's legend
