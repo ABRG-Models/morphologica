@@ -49,8 +49,6 @@
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
 #include <morph/Vector.h>
-// A base class with static event handling dispatchers
-#include <morph/VisualBase.h>
 #include <morph/ColourMap.h>
 
 #include <string>
@@ -116,7 +114,7 @@ namespace morph {
      * position and field of view of the 'camera' (Visual::zNear, Visual::zFar and
      * Visual::fov).
      */
-    class Visual : VisualBase
+    class Visual
     {
     public:
         /*!
@@ -553,19 +551,17 @@ namespace morph {
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
-                std::cerr << "GLFW window creation failed!\n";
-                throw std::runtime_error("GLFW!");
+                throw std::runtime_error("GLFW window creation failed!");
             }
-
-            // Fix the event handling for benefit of static functions.
-            this->setEventHandling();
+            // now associate "this" object with mWindow object
+            glfwSetWindowUserPointer (this->window, this);
 
             // Set up callbacks
-            glfwSetKeyCallback (this->window, VisualBase::key_callback_dispatch);
-            glfwSetMouseButtonCallback (this->window, VisualBase::mouse_button_callback_dispatch);
-            glfwSetCursorPosCallback (this->window, VisualBase::cursor_position_callback_dispatch);
-            glfwSetWindowSizeCallback (this->window, VisualBase::window_size_callback_dispatch);
-            glfwSetScrollCallback (this->window, VisualBase::scroll_callback_dispatch);
+            glfwSetKeyCallback (this->window, key_callback_dispatch);
+            glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
+            glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
+            glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
+            glfwSetScrollCallback (this->window, scroll_callback_dispatch);
 
             glfwMakeContextCurrent (this->window);
 
@@ -901,10 +897,40 @@ namespace morph {
         Quaternion<float> savedRotation;
 
         /*
+         * GLFW callback dispatch functions
+         */
+
+        static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
+        {
+            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            self->key_callback (_window, key, scancode, action, mods);
+        }
+        static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
+        {
+            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            self->mouse_button_callback (_window, button, action, mods);
+        }
+        static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
+        {
+            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            self->cursor_position_callback (_window, x, y);
+        }
+        static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
+        {
+            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            self->window_size_callback (_window, width, height);
+        }
+        static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
+        {
+            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            self->scroll_callback (_window, xoffset, yoffset);
+        }
+
+        /*
          * GLFW callback handlers
          */
 
-        virtual void key_callback (GLFWwindow* window, int key, int scancode, int action, int mods)
+        virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             // Exit action
             if (key == GLFW_KEY_X && action == GLFW_PRESS) {
@@ -1053,10 +1079,10 @@ namespace morph {
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
 
-            this->key_callback_extra (window, key, scancode, action, mods);
+            this->key_callback_extra (_window, key, scancode, action, mods);
         }
 
-        virtual void cursor_position_callback (GLFWwindow* window, double x, double y)
+        virtual void cursor_position_callback (GLFWwindow* _window, double x, double y)
         {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
@@ -1167,7 +1193,7 @@ namespace morph {
             }
         }
 
-        virtual void mouse_button_callback (GLFWwindow* window, int button, int action, int mods)
+        virtual void mouse_button_callback (GLFWwindow* _window, int button, int action, int mods)
         {
             // If the scene is locked, then ignore the mouse movements
             if (this->sceneLocked) { return; }
@@ -1199,17 +1225,17 @@ namespace morph {
                 this->translateMode = (action == 1);
             }
 
-            this->mouse_button_callback_extra (window, button, action, mods);
+            this->mouse_button_callback_extra (_window, button, action, mods);
         }
 
-        virtual void window_size_callback (GLFWwindow* window, int width, int height)
+        virtual void window_size_callback (GLFWwindow* _window, int width, int height)
         {
             this->window_w = width;
             this->window_h = height;
             this->render();
         }
 
-        virtual void scroll_callback (GLFWwindow* window, double xoffset, double yoffset)
+        virtual void scroll_callback (GLFWwindow* _window, double xoffset, double yoffset)
         {
             if (this->sceneLocked) { return; }
             // x and y can be +/- 1
@@ -1224,9 +1250,9 @@ namespace morph {
         }
 
         //! Extra key callback handling, making it easy for client programs to implement their own actions
-        virtual void key_callback_extra (GLFWwindow* window, int key, int scancode, int action, int mods) {}
+        virtual void key_callback_extra (GLFWwindow* _window, int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
-        virtual void mouse_button_callback_extra (GLFWwindow* window, int button, int action, int mods) {}
+        virtual void mouse_button_callback_extra (GLFWwindow* _window, int button, int action, int mods) {}
     };
 
 } // namespace morph

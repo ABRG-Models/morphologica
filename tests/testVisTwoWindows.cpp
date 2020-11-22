@@ -20,15 +20,13 @@ int main (int argc, char** argv)
     // scaling factor (0.5) for the coordinate arrows
     morph::Visual v(1024, 768, "Visualization", {0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
     v.showCoordArrows = true;
-    // For a white background:
     v.backgroundWhite();
     v.lightingEffects();
 
     // second Visual
     morph::Visual v2(768, 768, "Graphs", {0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
     v2.showCoordArrows = true;
-    // For a white background:
-    v2.backgroundBlack();
+    v2.backgroundWhite();
     v2.lightingEffects();
 
     bool holdVis = false;
@@ -72,7 +70,7 @@ int main (int argc, char** argv)
         v.render();
         v2.render();
         if (holdVis == true) {
-            while (v.readyToFinish == false) {
+            while (v.readyToFinish == false && v2.readyToFinish == false) {
                 glfwWaitEventsTimeout (0.018);
                 v.render();
                 v2.render();

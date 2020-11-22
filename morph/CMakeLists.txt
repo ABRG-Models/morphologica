@@ -46,7 +46,7 @@ Mnist.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
 add_subdirectory(nn) # 'nn' for neural network code
 
 if (${glfw3_FOUND})
-  install( FILES VisualCommon.h VisualBase.h Visual.h VisualModel.h VisualDataModel.h VisualTextModel.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
+  install( FILES VisualCommon.h Visual.h VisualModel.h VisualDataModel.h VisualTextModel.h VisualResources.h VisualFace.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h RodVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)
 endif()
 
 # Install the EXPORT so that morphologica has its own .cmake file and find_package(morphologica) should work
