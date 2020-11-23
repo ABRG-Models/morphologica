@@ -546,7 +546,7 @@ namespace morph {
             glfwMakeContextCurrent (this->window);
 
             // Now make sure that Freetype is set up
-            this->resources->freetype_init();
+            this->resources->freetype_init (this->window);
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;

@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <utility>
+#include <set>
 #include <stdexcept>
 #include <morph/VisualCommon.h>
 #include <morph/VisualFace.h>
@@ -30,9 +31,7 @@ namespace morph {
         ~VisualResources()
         {
             // Clean up the faces
-            for (auto f : this->faces) {
-                delete &f;
-            }
+            for (auto f : this->faces) { delete &f; }
             // We're done with freetype
             FT_Done_FreeType (this->freetype);
             // Delete self
@@ -84,18 +83,19 @@ namespace morph {
     public:
         //! FreeType library object, public for access by client code
         FT_Library freetype;
-        bool freetype_initialized = false;
+        //! To hold the windows for which freetype has been initialized.
+        std::set<GLFWwindow*> freetype_initialized;
 
-        void freetype_init()
+        void freetype_init (GLFWwindow* _window)
         {
-            if (this->freetype_initialized == true) { return; }
+            if (this->freetype_initialized.count(_window) > 0) { return; }
             // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
             morph::gl::Util::checkError (__FILE__, __LINE__);
             if (FT_Init_FreeType (&this->freetype)) {
                 std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
             } else {
-                this->freetype_initialized = true;
+                this->freetype_initialized.insert (_window);
             }
         }
 
