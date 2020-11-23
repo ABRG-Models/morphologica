@@ -89,8 +89,6 @@ int main (int argc, char** argv)
         // Add the GraphVisual (as a VisualModel*)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        float addn = 0.0f;
-        size_t rcount = 0;
         v.render();
         if (holdVis == true) {
             while (v.readyToFinish == false) {
