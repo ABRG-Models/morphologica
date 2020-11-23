@@ -61,6 +61,11 @@ int main (int argc, char** argv)
                 absc.push_back (r);
                 ord.push_back (v);
             }
+            if (r<3.0) {
+                r+=0.0001;
+            } else {
+                r+=0.00001;
+            }
         }
         std::cout << "absc size: " << absc.size() << ", ord size " <<  ord.size() << "absc.max():" << absc.max() << " ord max " << ord.max() << std::endl;
 
@@ -78,6 +83,7 @@ int main (int argc, char** argv)
         gv->xlabel = "r";
         gv->ylabel = "x";
         gv->setdata (absc, ord, ds);
+        gv->twodimensional = false;
         gv->finalize();
 
         // Add the GraphVisual (as a VisualModel*)
