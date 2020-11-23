@@ -182,6 +182,10 @@ namespace morph {
             delete[] bits;
         }
 
+        //! Make this Visual the current one, so that when creating/adding a visual
+        //! model, the vao ids relate to the correct OpenGL context.
+        void setCurrent() { glfwMakeContextCurrent (this->window); }
+
         /*!
          * Add a VisualModel to the scene. The VisualModel* should be a pointer to a
          * visual model which has been newly allocated by the client code. Do not add
@@ -213,8 +217,9 @@ namespace morph {
         }
 
         /*!
-         * Keep on rendering until readToFinish is set true. Used to keep a window
-         * open, and responsive, while displaying the result of a simulation.
+         * Keep on rendering until readToFinish is set true. Used to keep a window open,
+         * and responsive, while displaying the result of a simulation. FIXME: This
+         * won't work for two or more windows because it will block.
          */
         void keepOpen()
         {
