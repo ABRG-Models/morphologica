@@ -145,17 +145,13 @@ namespace morph {
         //! graphDataCoords. Finish up with a call to completeAppend()
         void append (const Flt& _abscissa, const Flt& _ordinate, const size_t didx)
         {
-            std::cout << "GraphVisual::append(" << _abscissa << "," << _ordinate << ")" << std::endl;
             // Transfor the data into temporary containers sd and ad
             Flt o = this->zScale.transform_one (_ordinate);
             Flt a = this->abscissa_scale.transform_one (_abscissa);
-            std::cout << "GraphVisual::append() transformed: (" << a << "," << o << ")" << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             size_t oldsz = this->graphDataCoords[didx]->size();
-            std::cout << "oldsz = " << oldsz << std::endl;
             (this->graphDataCoords[didx])->resize (oldsz+1);
-            std::cout << "new size = " << (1+oldsz) << std::endl;
             (*this->graphDataCoords[didx])[oldsz][0] = a;
             (*this->graphDataCoords[didx])[oldsz][1] = o;
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
@@ -165,7 +161,6 @@ namespace morph {
         //! (CPU side) and update the OpenGL buffers.
         void completeAppend()
         {
-            std::cout << "Complete append...\n";
             this->drawAppendedData();
             this->reinit_buffers();
         }
@@ -225,9 +220,12 @@ namespace morph {
 
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
         {
             DatasetStyle ds(this->policy);
+            if (!name.empty()) {
+                ds.datalabel = name;
+            }
             switch (this->graphDataCoords.size()) {
             case 0:
             {
@@ -361,60 +359,70 @@ namespace morph {
             this->idx = 0;
             this->drawAxes();
             this->drawData();
+            this->drawLegend();
             this->drawTickLabels(); // from which we can store the tick label widths
             this->drawAxisLabels();
+        }
+
+        //! dsi: data set iterator
+        void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end)
+        {
+            // Draw data
+            // for (auto i : data) {...
+            if (this->datastyles[dsi].markerstyle != markerstyle::none) {
+                for (size_t i = coords_start; i < coords_end; ++i) {
+                    this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                }
+            }
+            if (this->datastyles[dsi].showlines == true) {
+                for (size_t i = 1+coords_start; i < coords_end; ++i) {
+                    // Draw tube from location -1 to location 0.
+#ifdef TRUE_THREE_D_LINES
+                    this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                       this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
+                                       this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
+#else
+                    if (this->datastyles[dsi].markergap > 0.0f) {
+                        this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                               this->datastyles[dsi].linecolour,
+                                               this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                    } else {
+                        // No gaps, so draw a perfect set of joined up lines
+                        if (i == 1+coords_start) {
+                            // First line
+                            this->computeFlatLineN (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                    (*this->graphDataCoords[dsi])[i+1],
+                                                    uz,
+                                                    this->datastyles[dsi].linecolour,
+                                                    this->datastyles[dsi].linewidth);
+                        } else if (i == (coords_end-1)) {
+                            // last line
+                            this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                    (*this->graphDataCoords[dsi])[i-2],
+                                                    uz,
+                                                    this->datastyles[dsi].linecolour,
+                                                    this->datastyles[dsi].linewidth);
+                        } else {
+                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                   (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
+                                                   uz,
+                                                   this->datastyles[dsi].linecolour,
+                                                   this->datastyles[dsi].linewidth);
+                        }
+                    }
+#endif
+                }
+            }
         }
 
         void drawAppendedData()
         {
             for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
-
-                std::cout << "drawAppendedData for dataset index " << dsi << std::endl;
                 // Start is old end:
                 size_t coords_start = this->coords_lengths[dsi];
                 size_t coords_end = this->graphDataCoords[dsi]->size();
                 this->coords_lengths[dsi] = coords_end;
-
-                // Draw data
-                if (this->datastyles[dsi].markerstyle != markerstyle::none) {
-                    std::cout << "Draw markers from coords_start = " << coords_start << " to coords_end = " << coords_end << std::endl;
-                    for (size_t i = coords_start; i < coords_end; ++i) {
-                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
-                    }
-                }
-                if (this->datastyles[dsi].showlines == true) {
-                    for (size_t i = 1+coords_start; i < coords_end; ++i) {
-                        // Draw tube from location -1 to location 0.
-                        if (this->datastyles[dsi].markergap > 0.0f) {
-                            this->computeFlatLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                                   this->datastyles[dsi].linecolour,
-                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
-                        } else {
-                            // No gaps, so draw a perfect set of joined up lines
-                            if (i == 1+coords_start) {
-                                // First line
-                                this->computeFlatLineN (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                        (*this->graphDataCoords[dsi])[i+1],
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else if (i == (coords_end-1)) {
-                                // last line
-                                this->computeFlatLineP (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                        (*this->graphDataCoords[dsi])[i-2],
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else {
-                                this->computeFlatLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
-                                                       uz,
-                                                       this->datastyles[dsi].linecolour,
-                                                       this->datastyles[dsi].linewidth);
-                            }
-                        }
-                    }
-                }
+                this->drawDataCommon (dsi, coords_start, coords_end);
             }
         }
 
@@ -423,57 +431,31 @@ namespace morph {
             size_t coords_start = 0;
             this->coords_lengths.resize (this->graphDataCoords.size());
             for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
-
                 size_t coords_end = this->graphDataCoords[dsi]->size();
                 // Record coords length for future appending:
-                std::cout << "Recording coords_lengths[" << dsi<<"] = " << coords_end << std::endl;
                 this->coords_lengths[dsi] = coords_end;
-                // Draw data
-                // for (auto i : data) {...
-                if (this->datastyles[dsi].markerstyle != markerstyle::none) {
-                    for (size_t i = coords_start; i < coords_end; ++i) {
-                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
-                    }
-                }
-                if (this->datastyles[dsi].showlines == true) {
-                    for (size_t i = 1+coords_start; i < coords_end; ++i) {
-                        // Draw tube from location -1 to location 0.
-#ifdef TRUE_THREE_D_LINES
-                        this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
-                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
-#else
-                        if (this->datastyles[dsi].markergap > 0.0f) {
-                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                                   this->datastyles[dsi].linecolour,
-                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
-                        } else {
-                            // No gaps, so draw a perfect set of joined up lines
-                            if (i == 1+coords_start) {
-                                // First line
-                                this->computeFlatLineN (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                        (*this->graphDataCoords[dsi])[i+1],
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else if (i == (coords_end-1)) {
-                                // last line
-                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                        (*this->graphDataCoords[dsi])[i-2],
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else {
-                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
-                                                       uz,
-                                                       this->datastyles[dsi].linecolour,
-                                                       this->datastyles[dsi].linewidth);
-                            }
-                        }
-#endif
-                    }
-                }
+                this->drawDataCommon (dsi, coords_start, coords_end);
+            }
+        }
+
+        void drawLegend()
+        {
+            // Text offset from marker to text
+            morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
+            // Label position
+            morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
+            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
+                lpos[1] = this->height + (float)(dsi+1)*2.0f*this->fontsize;
+                // Legend marker
+                this->marker (lpos, this->datastyles[dsi]);
+                // Legend text
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                // Will need text geometry when drawing legend as a grid to make best use of space
+                //morph::TextGeometry geom = lbl->getTextGeometry (this->datastyles[dsi].datalabel);
+                // Could draw legend text in colour
+                //lbl->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->datastyles[dsi].markercolour);
+                lbl->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
+                this->texts.push_back (lbl);
             }
         }
 
