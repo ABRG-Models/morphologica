@@ -141,6 +141,35 @@ namespace morph {
             this->twodimensional = true;
         }
 
+        //! Append a single datum onto the relevant graph. Build on existing data in
+        //! graphDataCoords. Finish up with a call to completeAppend()
+        void append (const Flt& _abscissa, const Flt& _ordinate, const size_t didx)
+        {
+            std::cout << "GraphVisual::append(" << _abscissa << "," << _ordinate << ")" << std::endl;
+            // Transfor the data into temporary containers sd and ad
+            Flt o = this->zScale.transform_one (_ordinate);
+            Flt a = this->abscissa_scale.transform_one (_abscissa);
+            std::cout << "GraphVisual::append() transformed: (" << a << "," << o << ")" << std::endl;
+            // Now sd and ad can be used to construct dataCoords x/y. They are used to
+            // set the position of each datum into dataCoords
+            size_t oldsz = this->graphDataCoords[didx]->size();
+            std::cout << "oldsz = " << oldsz << std::endl;
+            (this->graphDataCoords[didx])->resize (oldsz+1);
+            std::cout << "new size = " << (1+oldsz) << std::endl;
+            (*this->graphDataCoords[didx])[oldsz][0] = a;
+            (*this->graphDataCoords[didx])[oldsz][1] = o;
+            (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
+        }
+
+        //! After adding to graphDataCoords, we have to create the new OpenGL vertices
+        //! (CPU side) and update the OpenGL buffers.
+        void completeAppend()
+        {
+            std::cout << "Complete append...\n";
+            this->drawAppendedData();
+            this->reinit_buffers();
+        }
+
         //! Update the data for the graph, recomputing the vertices when done.
         void update (const std::vector<Flt>& _abscissae,
                      const std::vector<Flt>& _data, const size_t data_idx)
@@ -310,40 +339,52 @@ namespace morph {
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
         void setthickness (float th) { this->thickness = th; }
 
+        void setdarkbg()
+        {
+            this->darkbg = true;
+            this->axiscolour = {0.8f, 0.8f, 0.8f};
+        }
+
     protected:
+
+        //! The OpenGL indices index
+        VBOint idx = 0;
+
+        //! Stores the length of each entry in graphDataCoords - i.e how many data
+        //! points are in each graph curve
+        std::vector<size_t> coords_lengths;
+
         //! Compute stuff for a graph
         void initializeVertices()
         {
             // The indices index
-            VBOint idx = 0;
-            this->drawAxes (idx);
-            this->drawData (idx);
+            this->idx = 0;
+            this->drawAxes();
+            this->drawData();
             this->drawTickLabels(); // from which we can store the tick label widths
             this->drawAxisLabels();
         }
 
-        void drawData (VBOint& idx)
+        void drawAppendedData()
         {
-            size_t coords_start = 0;
             for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
 
+                std::cout << "drawAppendedData for dataset index " << dsi << std::endl;
+                // Start is old end:
+                size_t coords_start = this->coords_lengths[dsi];
                 size_t coords_end = this->graphDataCoords[dsi]->size();
+                this->coords_lengths[dsi] = coords_end;
 
                 // Draw data
-                // for (auto i : data) {...
                 if (this->datastyles[dsi].markerstyle != markerstyle::none) {
+                    std::cout << "Draw markers from coords_start = " << coords_start << " to coords_end = " << coords_end << std::endl;
                     for (size_t i = coords_start; i < coords_end; ++i) {
-                        this->marker (idx, (*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                     }
                 }
                 if (this->datastyles[dsi].showlines == true) {
                     for (size_t i = 1+coords_start; i < coords_end; ++i) {
                         // Draw tube from location -1 to location 0.
-#ifdef TRUE_THREE_D_LINES
-                        this->computeLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
-                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
-#else
                         if (this->datastyles[dsi].markergap > 0.0f) {
                             this->computeFlatLine (idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                                    this->datastyles[dsi].linecolour,
@@ -372,6 +413,64 @@ namespace morph {
                                                        this->datastyles[dsi].linewidth);
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        void drawData()
+        {
+            size_t coords_start = 0;
+            this->coords_lengths.resize (this->graphDataCoords.size());
+            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
+
+                size_t coords_end = this->graphDataCoords[dsi]->size();
+                // Record coords length for future appending:
+                std::cout << "Recording coords_lengths[" << dsi<<"] = " << coords_end << std::endl;
+                this->coords_lengths[dsi] = coords_end;
+                // Draw data
+                // for (auto i : data) {...
+                if (this->datastyles[dsi].markerstyle != markerstyle::none) {
+                    for (size_t i = coords_start; i < coords_end; ++i) {
+                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                    }
+                }
+                if (this->datastyles[dsi].showlines == true) {
+                    for (size_t i = 1+coords_start; i < coords_end; ++i) {
+                        // Draw tube from location -1 to location 0.
+#ifdef TRUE_THREE_D_LINES
+                        this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
+                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
+#else
+                        if (this->datastyles[dsi].markergap > 0.0f) {
+                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                                   this->datastyles[dsi].linecolour,
+                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                        } else {
+                            // No gaps, so draw a perfect set of joined up lines
+                            if (i == 1+coords_start) {
+                                // First line
+                                this->computeFlatLineN (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i+1],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else if (i == (coords_end-1)) {
+                                // last line
+                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i-2],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else {
+                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
+                            }
+                        }
 #endif
                     }
                 }
@@ -387,13 +486,13 @@ namespace morph {
             morph::Vector<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
                 float _y0_mdl = this->zScale.transform_one (0);
-                lblpos = { 0.9f * this->width,
+                lblpos = {0.9f * this->width,
                            _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 };
             } else {
                 lblpos = {0.5f * this->width - geom.half_width(),
                           -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0};
             }
-            lbl->setupText (this->xlabel, lblpos+this->mv_offset);
+            lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
             this->texts.push_back (lbl);
 
             // y axis label (have to rotate)
@@ -420,9 +519,9 @@ namespace morph {
             if (geom.width() > 2*this->fontsize) {
                 morph::Quaternion<float> leftrot;
                 leftrot.initFromAxisAngle (this->uz, -90.0f);
-                lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset);
+                lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
             } else {
-                lbl->setupText (this->ylabel, lblpos+this->mv_offset);
+                lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
             }
             this->texts.push_back (lbl);
         }
@@ -474,7 +573,7 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
-                lbl->setupText (s, lblpos+this->mv_offset);
+                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
@@ -487,35 +586,35 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
-                lbl->setupText (s, lblpos+this->mv_offset);
+                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
         }
 
-        void drawCrossAxes (VBOint& idx)
+        void drawCrossAxes()
         {
             // Vert zero is not at model(0,0), have to get model coords of data(0,0)
             float _x0_mdl = this->abscissa_scale.transform_one (0);
             float _y0_mdl = this->zScale.transform_one (0);
-            this->computeFlatLine (idx,
+            this->computeFlatLine (this->idx,
                                    {_x0_mdl, -(this->axislinewidth*0.5f),             -this->thickness},
                                    {_x0_mdl, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                    uz, this->axiscolour, this->axislinewidth*0.7f);
             // Horz zero
-            this->computeFlatLine (idx,
+            this->computeFlatLine (this->idx,
                                    {0,           _y0_mdl, -this->thickness},
                                    {this->width, _y0_mdl, -this->thickness},
                                    uz, this->axiscolour, this->axislinewidth*0.7f);
 
             for (auto xt : this->xtick_posns) {
                 // Want to place lines in screen units. So transform the data units
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {(float)xt, _y0_mdl,                      -this->thickness},
                                        {(float)xt, _y0_mdl - this->ticklength,   -this->thickness}, uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
             }
             for (auto yt : this->ytick_posns) {
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {_x0_mdl,                    (float)yt, -this->thickness},
                                        {_x0_mdl - this->ticklength, (float)yt, -this->thickness}, uz,
                                        this->axiscolour, this->axislinewidth*0.5f);
@@ -523,13 +622,13 @@ namespace morph {
         }
 
         //! Draw the axes for the graph
-        void drawAxes (VBOint& idx)
+        void drawAxes()
         {
             // First, ensure that this->xtick_posns/xticks and this->ytick_posns/yticks are populated
             this->computeTickPositions();
 
             if (this->axisstyle == axisstyle::cross) {
-                return this->drawCrossAxes (idx);
+                return this->drawCrossAxes();
             }
 
             if (this->axisstyle == axisstyle::box
@@ -538,12 +637,12 @@ namespace morph {
                 || this->axisstyle == axisstyle::L) {
 
                 // y axis
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {0, -(this->axislinewidth*0.5f),             -this->thickness},
                                        {0, this->height + this->axislinewidth*0.5f, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
                 // x axis
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {0,           0, -this->thickness},
                                        {this->width, 0, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
@@ -554,13 +653,13 @@ namespace morph {
 
                 for (auto xt : this->xtick_posns) {
                     // Want to place lines in screen units. So transform the data units
-                    this->computeFlatLine (idx,
+                    this->computeFlatLine (this->idx,
                                            {(float)xt, 0.0f, -this->thickness},
                                            {(float)xt, tl,   -this->thickness}, uz,
                                            this->axiscolour, this->axislinewidth*0.5f);
                 }
                 for (auto yt : this->ytick_posns) {
-                    this->computeFlatLine (idx,
+                    this->computeFlatLine (this->idx,
                                            {0.0f, (float)yt, -this->thickness},
                                            {tl,   (float)yt, -this->thickness}, uz,
                                            this->axiscolour, this->axislinewidth*0.5f);
@@ -572,12 +671,12 @@ namespace morph {
                 || this->axisstyle == axisstyle::boxfullticks
                 || this->axisstyle == axisstyle::boxcross) {
                 // right axis
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {this->width, -this->axislinewidth*0.5f,               -this->thickness},
                                        {this->width, this->height+(this->axislinewidth*0.5f), -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
                 // top axis
-                this->computeFlatLine (idx,
+                this->computeFlatLine (this->idx,
                                        {0,           this->height, -this->thickness},
                                        {this->width, this->height, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
@@ -592,128 +691,128 @@ namespace morph {
 
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
-                        this->computeFlatLine (idx,
+                        this->computeFlatLine (this->idx,
                                                {(float)xt, this->height,      -this->thickness},
                                                {(float)xt, this->height + tl, -this->thickness}, uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                     for (auto yt : this->ytick_posns) {
-                        this->computeFlatLine (idx,
+                        this->computeFlatLine (this->idx,
                                                {this->width,      (float)yt, -this->thickness},
                                                {this->width + tl, (float)yt, -this->thickness}, uz,
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                 }
 
-                if (this->axisstyle == axisstyle::boxcross) { this->drawCrossAxes (idx); }
+                if (this->axisstyle == axisstyle::boxcross) { this->drawCrossAxes(); }
             }
         }
 
         //! Generate vertices for a marker of the given style at location p
-        void marker (VBOint& idx, morph::Vector<float>& p, const morph::DatasetStyle& style)
+        void marker (morph::Vector<float>& p, const morph::DatasetStyle& style)
         {
             switch (style.markerstyle) {
             case morph::markerstyle::triangle:
             case morph::markerstyle::uptriangle:
             {
-                this->polygonMarker (idx, p, 3, style);
+                this->polygonMarker (p, 3, style);
                 break;
             }
             case morph::markerstyle::downtriangle:
             {
-                this->polygonFlattop (idx, p, 3, style);
+                this->polygonFlattop (p, 3, style);
                 break;
             }
             case morph::markerstyle::square:
             {
-                this->polygonFlattop (idx, p, 4, style);
+                this->polygonFlattop (p, 4, style);
                 break;
             }
             case morph::markerstyle::diamond:
             {
-                this->polygonMarker (idx, p, 4, style);
+                this->polygonMarker (p, 4, style);
                 break;
             }
             case morph::markerstyle::pentagon:
             {
-                this->polygonFlattop (idx, p, 5, style);
+                this->polygonFlattop (p, 5, style);
                 break;
             }
             case morph::markerstyle::uppentagon:
             {
-                this->polygonMarker (idx, p, 5, style);
+                this->polygonMarker (p, 5, style);
                 break;
             }
             case morph::markerstyle::hexagon:
             {
-                this->polygonFlattop (idx, p, 6, style);
+                this->polygonFlattop (p, 6, style);
                 break;
             }
             case morph::markerstyle::uphexagon:
             {
-                this->polygonMarker (idx, p, 6, style);
+                this->polygonMarker (p, 6, style);
                 break;
             }
             case morph::markerstyle::heptagon:
             {
-                this->polygonFlattop (idx, p, 7, style);
+                this->polygonFlattop (p, 7, style);
                 break;
             }
             case morph::markerstyle::upheptagon:
             {
-                this->polygonMarker (idx, p, 7, style);
+                this->polygonMarker (p, 7, style);
                 break;
             }
             case morph::markerstyle::octagon:
             {
-                this->polygonFlattop (idx, p, 8, style);
+                this->polygonFlattop (p, 8, style);
                 break;
             }
             case morph::markerstyle::upoctagon:
             {
-                this->polygonMarker (idx, p, 8, style);
+                this->polygonMarker (p, 8, style);
                 break;
             }
             case morph::markerstyle::circle:
             default:
             {
-                this->polygonMarker (idx, p, 20, style);
+                this->polygonMarker (p, 20, style);
                 break;
             }
             }
         }
 
         // Create an n sided polygon with first vertex 'pointing up'
-        void polygonMarker  (VBOint& idx, morph::Vector<float> p, int n, const morph::DatasetStyle& style)
+        void polygonMarker  (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
 #ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
-            this->computeTube (idx, p, pend, ux, uy,
+            this->computeTube (this->idx, p, pend, ux, uy,
                                style.markercolour, style.markercolour,
                                style.markersize*Flt{0.5}, n);
 #else
             p[2] += this->thickness;
-            this->computeFlatPoly (idx, p, ux, uy,
+            this->computeFlatPoly (this->idx, p, ux, uy,
                                    style.markercolour,
                                    style.markersize*Flt{0.5}, n);
 #endif
         }
 
         // Create an n sided polygon with a flat edge 'pointing up'
-        void polygonFlattop (VBOint& idx, morph::Vector<float> p, int n, const morph::DatasetStyle& style)
+        void polygonFlattop (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
 #ifdef TRUE_THREE_D_PUCKS
             morph::Vector<float> pend = p;
             p[2] += this->thickness*Flt{0.5};
             pend[2] -= this->thickness*Flt{0.5};
-            this->computeTube (idx, p, pend, ux, uy,
+            this->computeTube (this->idx, p, pend, ux, uy,
                                style.markercolour, style.markercolour,
                                style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
 #else
             p[2] += this->thickness;
-            this->computeFlatPoly (idx, p, ux, uy,
+            this->computeFlatPoly (this->idx, p, ux, uy,
                                    style.markercolour,
                                    style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
 #endif
@@ -799,8 +898,11 @@ namespace morph {
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
         morph::stylepolicy policy = stylepolicy::both;
-        //! axis features, starting with the colour for the axis box/lines
+        //! axis features, starting with the colour for the axis box/lines. Text also
+        //! takes this colour.
         std::array<float, 3> axiscolour = {0,0,0};
+        //! Set axis and text colours for a dark or black background
+        bool darkbg = false;
         //! The line width of the main axis bars
         float axislinewidth = 0.006f;
         //! How long should the ticks be?

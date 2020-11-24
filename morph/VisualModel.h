@@ -127,24 +127,9 @@ namespace morph {
             this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
-            // Possibly release (unbind) the vertex buffers, but have to unbind vertex
-            // array object first.
+            // Unbind only the vertex array (not the buffers, that causes GL_INVALID_ENUM errors)
             glBindVertexArray(0);
             morph::gl::Util::checkError (__FILE__, __LINE__);
-
-# if 0
-            // These calls generate GL_INVALID_ENUM errors
-            glBindBuffer (0, this->vbos[posnVBO]);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glBindBuffer (0, this->vbos[normVBO]);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glBindBuffer (0, this->vbos[colVBO]);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            glBindBuffer (0, this->vbos[idxVBO]);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-# endif
-            // Instead, maybe:
-            // glDeleteBuffers (4, this->vbos); But that's not *unbinding* as such, and I do that in the deconstructor
 #endif
         }
 

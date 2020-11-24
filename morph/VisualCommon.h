@@ -1,6 +1,8 @@
 #pragma once
 
 #include <morph/Vector.h>
+#include <stdexcept>
+#include <iostream>
 
 // For GLuint and GLenum
 #ifdef __OSX__
@@ -38,9 +40,10 @@ namespace morph {
             static GLenum checkError (const char *file, int line)
             {
                 GLenum errorCode = 0;
+                unsigned int ecount = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
+                std::string error;
                 while ((errorCode = glGetError()) != GL_NO_ERROR) {
-                    std::string error;
                     switch (errorCode) {
                     case GL_INVALID_ENUM:
                     {
@@ -84,7 +87,9 @@ namespace morph {
                     }
                     }
                     std::cout << error << " | " << file << ":" << line << std::endl;
+                    ++ecount;
                 }
+                if (ecount) { throw std::runtime_error (error); }
 #endif
                 return errorCode;
             }
