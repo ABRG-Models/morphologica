@@ -21,18 +21,18 @@ namespace morph {
             Random() {};
             ~Random() {};
             //! A pointer returned to the single instance of this class
-            static Random* pInstance;
+            static Random<N,K>* pInstance;
 
         public:
             //! The instance public function. Uses the very short name 'i' to keep code tidy.
-            static Random* i()
+            static Random<N,K>* i()
             {
                 // <N,K> template args seem to be optional here, at least on g++/icpc
-                if (Random::pInstance == 0) {
-                    Random::pInstance = new morph::bn::Random;
+                if (Random<N,K>::pInstance == 0) {
+                    Random<N,K>::pInstance = new morph::bn::Random<N,K>;
                     //Random::i()->init(); // If required
                 }
-                return Random::pInstance;
+                return Random<N,K>::pInstance;
             }
 
             //! Hold an array to place random numbers in of 'genosect_t width' - gw
