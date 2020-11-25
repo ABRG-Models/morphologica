@@ -218,6 +218,21 @@ namespace morph {
             }
         }
 
+        //! Obtain the curated dataset colours, by index. Static public function to
+        //! allow other Visuals to colour things in the same order as a graph.
+        static std::array<float, 3> datacolour (size_t data_index)
+        {
+            std::array<float, 3> rtn = morph::colour::black;
+            switch (data_index) {
+            case 0: { rtn = morph::colour::royalblue; break; }
+            case 1: { rtn = morph::colour::crimson; break; }
+            case 2: { rtn = morph::colour::goldenrod2; break; }
+            case 3: { rtn = morph::colour::green2; break; }
+            default: { break; }
+            }
+            return rtn;
+        }
+
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
@@ -226,31 +241,32 @@ namespace morph {
             if (!name.empty()) {
                 ds.datalabel = name;
             }
-            switch (this->graphDataCoords.size()) {
+            size_t data_index = this->graphDataCoords.size();
+            switch (data_index) {
             case 0:
             {
-                this->setstyle (ds, morph::colour::royalblue, morph::markerstyle::square);
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::square);
                 break;
             }
             case 1:
             {
-                this->setstyle (ds, morph::colour::crimson, morph::markerstyle::triangle);
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::triangle);
                 break;
             }
             case 2:
             {
-                this->setstyle (ds, morph::colour::goldenrod2, morph::markerstyle::circle);
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::circle);
                 break;
             }
             case 3:
             {
-                this->setstyle (ds, morph::colour::green2, morph::markerstyle::diamond);
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::diamond);
                 break;
             }
             default:
             {
                 // Everything else gets this:
-                this->setstyle (ds, morph::colour::black, morph::markerstyle::hexagon);
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::hexagon);
                 break;
             }
             }
@@ -359,7 +375,7 @@ namespace morph {
             this->idx = 0;
             this->drawAxes();
             this->drawData();
-            this->drawLegend();
+            if (this->legend == true) { this->drawLegend(); }
             this->drawTickLabels(); // from which we can store the tick label widths
             this->drawAxisLabels();
         }
@@ -442,20 +458,49 @@ namespace morph {
         {
             // Text offset from marker to text
             morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
+
+            size_t gd_size = this->graphDataCoords.size();
+
+            // To determine the legend layout, will need all the text geometries
+            std::vector<morph::TextGeometry> geom;
+            std::vector<morph::VisualTextModel*> legtexts;
+            float text_advance = 0.0f;
+            for (size_t dsi = 0; dsi < gd_size; ++dsi) {
+                // Legend text
+                legtexts.push_back (new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres));
+                geom.push_back (legtexts.back()->getTextGeometry (this->datastyles[dsi].datalabel));
+                if (geom.back().total_advance > text_advance) {
+                    text_advance = geom.back().total_advance;
+                }
+            }
+            //std::cout << "Legend text advance is: " << text_advance << std::endl;
+
+            // What's our legend grid arrangement going to be? Each column will advance by the text_advance, some space and the size of the marker
+            float col_advance = this->datastyles[0].markersize + 2 * toffset[0] + text_advance;
+            //std::cout << "Legend col advance is: " << col_advance << std::endl;
+
+            size_t num_cols = static_cast<size_t>((1.0f - this->dataaxisdist) / col_advance);
+            //std::cout << "num_cols will be " << (1.0f - 1.0f * this->dataaxisdist) << "/" << col_advance << " = "
+            //          << ((1.0f - 1.0f * this->dataaxisdist) / col_advance) << ", which cast to size_t is " << num_cols << std::endl;
+            if (num_cols < 1) { num_cols = 1; }
+            size_t num_rows = gd_size / num_cols;
+
             // Label position
             morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
-            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
-                lpos[1] = this->height + (float)(dsi+1)*2.0f*this->fontsize;
+            for (size_t dsi = 0; dsi < gd_size; ++dsi) {
+
+                size_t col = dsi % num_cols;
+                size_t row = num_rows - (dsi / num_cols);
+                //std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
+
+                lpos[0] = this->dataaxisdist + ((float)col * col_advance);
+                lpos[1] = this->height + (float)(row+1)*2.0f*this->fontsize;
                 // Legend marker
                 this->marker (lpos, this->datastyles[dsi]);
-                // Legend text
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                // Will need text geometry when drawing legend as a grid to make best use of space
-                //morph::TextGeometry geom = lbl->getTextGeometry (this->datastyles[dsi].datalabel);
                 // Could draw legend text in colour
                 //lbl->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->datastyles[dsi].markercolour);
-                lbl->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
-                this->texts.push_back (lbl);
+                legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
+                this->texts.push_back (legtexts[dsi]);
             }
         }
 
@@ -922,6 +967,8 @@ namespace morph {
         std::string xlabel = "x";
         //! The y axis label
         std::string ylabel = "y";
+        //! Whether or not to show a legend
+        bool legend = true;
 
     protected:
         //! This is used to set a spacing between elements in the graph (markers and
