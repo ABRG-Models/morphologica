@@ -142,12 +142,15 @@ namespace morph {
         }
 
         //! Append a single datum onto the relevant graph. Build on existing data in
-        //! graphDataCoords. Finish up with a call to completeAppend()
+        //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
+        //! index and counts up from 0.
         void append (const Flt& _abscissa, const Flt& _ordinate, const size_t didx)
         {
+            this->pendingAppended = true;
             // Transfor the data into temporary containers sd and ad
             Flt o = this->zScale.transform_one (_ordinate);
             Flt a = this->abscissa_scale.transform_one (_abscissa);
+            //std::cout << "transformed coords: " << a << ", " << o << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
             size_t oldsz = this->graphDataCoords[didx]->size();
@@ -157,12 +160,18 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
         }
 
-        //! After adding to graphDataCoords, we have to create the new OpenGL vertices
-        //! (CPU side) and update the OpenGL buffers.
-        void completeAppend()
+        //! Before calling the base class's render method, check if we have any pending data
+        void render (void)
         {
-            this->drawAppendedData();
-            this->reinit_buffers();
+            if (this->pendingAppended == true) {
+                // After adding to graphDataCoords, we have to create the new OpenGL
+                // vertices (CPU side) and update the OpenGL buffers.
+                this->drawAppendedData();
+                this->reinit_buffers();
+                this->pendingAppended = false;
+            }
+            // Now do the usual drawing stuff from VisualModel:
+            VisualModel::render();
         }
 
         //! Update the data for the graph, recomputing the vertices when done.
@@ -233,6 +242,14 @@ namespace morph {
             return rtn;
         }
 
+        //! Prepare an as-yet empty dataset. datamin and datamax are the expected max and min of the data. Or use limits?
+        void prepdata (const std::string name = "")
+        {
+            std::vector<Flt> emptyabsc;
+            std::vector<Flt> emptyord;
+            this->setdata (emptyabsc, emptyord, name);
+        }
+
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
@@ -292,18 +309,20 @@ namespace morph {
             // Compute the zScale and asbcissa_scale for the first added dataset only
             if (this->zScale.autoscaled == false) { this->setsize (this->width, this->height); }
 
-            // Transfor the data into temporary containers sd and ad
-            std::vector<Flt> sd (dsize, Flt{0});
-            std::vector<Flt> ad (dsize, Flt{0});
-            this->zScale.transform (_data, sd);
-            this->abscissa_scale.transform (_abscissae, ad);
+            if (dsize > 0) {
+                // Transfor the data into temporary containers sd and ad
+                std::vector<Flt> sd (dsize, Flt{0});
+                std::vector<Flt> ad (dsize, Flt{0});
+                this->zScale.transform (_data, sd);
+                this->abscissa_scale.transform (_abscissae, ad);
 
-            // Now sd and ad can be used to construct dataCoords x/y. They are used to
-            // set the position of each datum into dataCoords
-            for (size_t i = 0; i < dsize; ++i) {
-                (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                // Now sd and ad can be used to construct dataCoords x/y. They are used to
+                // set the position of each datum into dataCoords
+                for (size_t i = 0; i < dsize; ++i) {
+                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
+                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
+                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                }
             }
         }
 
@@ -368,6 +387,9 @@ namespace morph {
         //! points are in each graph curve
         std::vector<size_t> coords_lengths;
 
+        //! Is there pending appended data that needs to be converted into OpenGL shapes?
+        bool pendingAppended = false;
+
         //! Compute stuff for a graph
         void initializeVertices()
         {
@@ -381,17 +403,20 @@ namespace morph {
         }
 
         //! dsi: data set iterator
-        void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end)
+        void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
         {
-            // Draw data
-            // for (auto i : data) {...
+            // Draw data markers
             if (this->datastyles[dsi].markerstyle != markerstyle::none) {
                 for (size_t i = coords_start; i < coords_end; ++i) {
                     this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                 }
             }
             if (this->datastyles[dsi].showlines == true) {
-                for (size_t i = 1+coords_start; i < coords_end; ++i) {
+
+                // If appending markers to a dataset, need to add the line preceding the first marker
+                if (appending == true) { if (coords_start != 0) { coords_start -= 1; } }
+
+                for (size_t i = coords_start+1; i < coords_end; ++i) {
                     // Draw tube from location -1 to location 0.
 #ifdef TRUE_THREE_D_LINES
                     this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
@@ -431,6 +456,10 @@ namespace morph {
             }
         }
 
+        // Defines a boolean 'true' that can be provided as arg to drawDataCommon()
+        static constexpr bool appending_data = true;
+
+        //! Draw markers and lines for data points that are being appended to a graph
         void drawAppendedData()
         {
             for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
@@ -438,10 +467,11 @@ namespace morph {
                 size_t coords_start = this->coords_lengths[dsi];
                 size_t coords_end = this->graphDataCoords[dsi]->size();
                 this->coords_lengths[dsi] = coords_end;
-                this->drawDataCommon (dsi, coords_start, coords_end);
+                this->drawDataCommon (dsi, coords_start, coords_end, appending_data);
             }
         }
 
+        //! Draw all markers and lines for datasets in the graph (as stored in graphDataCoords)
         void drawData()
         {
             size_t coords_start = 0;
@@ -454,12 +484,13 @@ namespace morph {
             }
         }
 
+        //! Draw the graph legend, above the graph, rather than inside it (so much simpler!)
         void drawLegend()
         {
+            size_t gd_size = this->graphDataCoords.size();
+
             // Text offset from marker to text
             morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
-
-            size_t gd_size = this->graphDataCoords.size();
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
@@ -473,28 +504,44 @@ namespace morph {
                     text_advance = geom.back().total_advance;
                 }
             }
-            //std::cout << "Legend text advance is: " << text_advance << std::endl;
+
+            // If there are no legend texts to show, then clean up and return
+            if (text_advance == 0.0f) {
+                //for (auto& l : legtexts) { delete l; }
+                return;
+            }
+
+            // Adjust the text offset by the last entry in geom
+            if (!geom.empty()) { toffset[1] -= geom.back().height()/2.0f; }
+
+            std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // What's our legend grid arrangement going to be? Each column will advance by the text_advance, some space and the size of the marker
             float col_advance = this->datastyles[0].markersize + 2 * toffset[0] + text_advance;
             //std::cout << "Legend col advance is: " << col_advance << std::endl;
 
-            size_t num_cols = static_cast<size_t>((1.0f - this->dataaxisdist) / col_advance);
-            //std::cout << "num_cols will be " << (1.0f - 1.0f * this->dataaxisdist) << "/" << col_advance << " = "
-            //          << ((1.0f - 1.0f * this->dataaxisdist) / col_advance) << ", which cast to size_t is " << num_cols << std::endl;
-            if (num_cols < 1) { num_cols = 1; }
-            size_t num_rows = gd_size / num_cols;
+            int max_cols = static_cast<int>((1.0f - this->dataaxisdist) / col_advance);
+            std::cout << "max_cols: " << max_cols << std::endl;
+            if (max_cols < 1) { max_cols = 1; }
+            std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
+
+            int num_cols = static_cast<int>(gd_size) <= max_cols ? static_cast<int>(gd_size) : max_cols;
+
+            std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
+            int num_rows = ((int)gd_size / num_cols);
+
+            std::cout << "num_rows = " << num_rows << std::endl;
 
             // Label position
             morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
-            for (size_t dsi = 0; dsi < gd_size; ++dsi) {
+            for (int dsi = 0; dsi < (int)gd_size; ++dsi) {
 
-                size_t col = dsi % num_cols;
-                size_t row = num_rows - (dsi / num_cols);
-                //std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
+                int col = dsi % num_cols;
+                int row = (num_rows-1) - (dsi / num_cols);
+                std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
 
                 lpos[0] = this->dataaxisdist + ((float)col * col_advance);
-                lpos[1] = this->height + (float)(row+1)*2.0f*this->fontsize;
+                lpos[1] = this->height + (1.5f * this->fontsize) + (float)(row)*2.0f*this->fontsize;
                 // Legend marker
                 this->marker (lpos, this->datastyles[dsi]);
                 // Could draw legend text in colour

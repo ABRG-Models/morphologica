@@ -137,7 +137,7 @@ namespace morph {
         virtual void initializeVertices (void) = 0;
 
         //! Render the VisualModel
-        void render (void)
+        virtual void render (void)
         {
             if (this->hide == true) { return; }
 
