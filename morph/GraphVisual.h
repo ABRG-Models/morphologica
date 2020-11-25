@@ -336,7 +336,6 @@ namespace morph {
         //! Set the graph size, in model units.
         void setsize (float _width, float _height)
         {
-            std::cout << __FUNCTION__ << " called\n";
             if (this->zScale.autoscaled == true) {
                 throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
                                           "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
@@ -504,33 +503,28 @@ namespace morph {
                     text_advance = geom.back().total_advance;
                 }
             }
+            //std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // If there are no legend texts to show, then clean up and return
             if (text_advance == 0.0f) {
-                //for (auto& l : legtexts) { delete l; }
+                // FIXME: delete memory pointed to in legtexts
                 return;
             }
 
             // Adjust the text offset by the last entry in geom
             if (!geom.empty()) { toffset[1] -= geom.back().height()/2.0f; }
 
-            std::cout << "Legend text advance is: " << text_advance << std::endl;
-
             // What's our legend grid arrangement going to be? Each column will advance by the text_advance, some space and the size of the marker
             float col_advance = this->datastyles[0].markersize + 2 * toffset[0] + text_advance;
             //std::cout << "Legend col advance is: " << col_advance << std::endl;
-
             int max_cols = static_cast<int>((1.0f - this->dataaxisdist) / col_advance);
-            std::cout << "max_cols: " << max_cols << std::endl;
+            //std::cout << "max_cols: " << max_cols << std::endl;
             if (max_cols < 1) { max_cols = 1; }
-            std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
-
+            //std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
             int num_cols = static_cast<int>(gd_size) <= max_cols ? static_cast<int>(gd_size) : max_cols;
-
-            std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
+            //std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
             int num_rows = ((int)gd_size / num_cols);
-
-            std::cout << "num_rows = " << num_rows << std::endl;
+            //std::cout << "num_rows = " << num_rows << std::endl;
 
             // Label position
             morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
@@ -538,14 +532,12 @@ namespace morph {
 
                 int col = dsi % num_cols;
                 int row = (num_rows-1) - (dsi / num_cols);
-                std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
+                //std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
 
                 lpos[0] = this->dataaxisdist + ((float)col * col_advance);
                 lpos[1] = this->height + (1.5f * this->fontsize) + (float)(row)*2.0f*this->fontsize;
                 // Legend marker
                 this->marker (lpos, this->datastyles[dsi]);
-                // Could draw legend text in colour
-                //lbl->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->datastyles[dsi].markercolour);
                 legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
                 this->texts.push_back (legtexts[dsi]);
             }

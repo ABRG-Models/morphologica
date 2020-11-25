@@ -65,7 +65,8 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
-                      const std::vector<Flt>* _data) {
+                      const std::vector<Flt>* _data)
+        {
             // Set up...
             this->shaderprog = sp;
             this->mv_offset = _offset;
@@ -87,7 +88,8 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
-                      const std::vector<Flt>* _data) {
+                      const std::vector<Flt>* _data)
+        {
             // Set up...
             this->shaderprog = sp;
             this->mv_offset.set_from (_offset);
@@ -110,7 +112,8 @@ namespace morph {
                       const Vector<float> _offset,
                       const std::vector<Flt>* _data,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f) {
+                      const float _hue = 0.0f)
+        {
             // Set up...
             this->shaderprog = sp;
             this->mv_offset = _offset;
@@ -137,7 +140,8 @@ namespace morph {
                       const std::array<float, 3> _offset,
                       const std::vector<Flt>* _data,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f) {
+                      const float _hue = 0.0f)
+        {
             // Set up...
             this->shaderprog = sp;
             this->mv_offset.set_from (_offset);
@@ -166,7 +170,8 @@ namespace morph {
                       const Scale<Flt>& zscale,
                       const Scale<Flt>& cscale,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f) {
+                      const float _hue = 0.0f)
+        {
             // Set up...
             this->shaderprog = sp;
             this->mv_offset = _offset;
@@ -194,7 +199,8 @@ namespace morph {
                       const Scale<Flt>& zscale,
                       const Scale<Flt>& cscale,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f) {
+                      const float _hue = 0.0f)
+        {
             // This (subcalling another constructor) failed:
             //Vector<float> offset_vec;
             //offset_vec.set_from(_offset);
@@ -220,7 +226,8 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices (void) {
+        void initializeVertices (void)
+        {
             this->initializeVerticesHexesInterpolated();
             // or:
             // this->initializeVerticesTris();
@@ -230,7 +237,8 @@ namespace morph {
 
         //! Initialize as triangled. Gives a smooth surface with much
         //! less compute than initializeVerticesHexesInterpolated.
-        void initializeVerticesTris (void) {
+        void initializeVerticesTris (void)
+        {
             unsigned int nhex = this->hg->num();
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 // Scale z:
@@ -265,7 +273,8 @@ namespace morph {
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
-        void initializeVerticesHexesInterpolated (void) {
+        void initializeVerticesHexesInterpolated (void)
+        {
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
             float lr = this->hg->getLR();
@@ -278,17 +287,17 @@ namespace morph {
             std::vector<Flt> dcolour = *(this->scalarData);
             this->colourScale.transform (*(this->scalarData), dcolour);
 
-            Flt datumC = static_cast<Flt>(0.0);   // datum at the centre
-            Flt datumNE = static_cast<Flt>(0.0);  // datum at the hex to the east.
-            Flt datumNNE = static_cast<Flt>(0.0); // etc
-            Flt datumNNW = static_cast<Flt>(0.0);
-            Flt datumNW = static_cast<Flt>(0.0);
-            Flt datumNSW = static_cast<Flt>(0.0);
-            Flt datumNSE = static_cast<Flt>(0.0);
+            Flt datumC = Flt{0};   // datum at the centre
+            Flt datumNE = Flt{0};  // datum at the hex to the east.
+            Flt datumNNE = Flt{0}; // etc
+            Flt datumNNW = Flt{0};
+            Flt datumNW = Flt{0};
+            Flt datumNSW = Flt{0};
+            Flt datumNSE = Flt{0};
 
-            Flt datum = static_cast<Flt>(0.0);
-            Flt third = static_cast<Flt>(0.33333333333333);
-            Flt half = static_cast<Flt>(0.5);
+            Flt datum = Flt{0};
+            Flt third = Flt{0.33333333333333};
+            Flt half = Flt{0.5};
             morph::Vector<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 

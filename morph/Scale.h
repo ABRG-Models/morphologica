@@ -56,7 +56,8 @@ namespace morph {
      * morph::Vector or std::vector.
      */
     template <typename T>
-    class ScaleImplBase {
+    class ScaleImplBase
+    {
     public:
         /*!
          * \brief Transform the given datum using this Scale's parameters.
@@ -96,7 +97,8 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
-        void transform (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
+        void transform (const Container<TT, Allocator>& data, Container<TT, Allocator>& output)
+        {
             size_t dsize = data.size();
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
@@ -117,7 +119,8 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
-        void inverse (const Container<TT, Allocator>& data, Container<TT, Allocator>& output) {
+        void inverse (const Container<TT, Allocator>& data, Container<TT, Allocator>& output)
+        {
             size_t dsize = data.size();
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
@@ -169,7 +172,8 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
-        void autoscale_from (const Container<TT, Allocator>& data) {
+        void autoscale_from (const Container<TT, Allocator>& data)
+        {
             std::pair<TT, TT> mm = MathAlgo::maxmin (data);
             this->compute_autoscale (mm.second, mm.first);
         }
@@ -183,18 +187,21 @@ namespace morph {
         bool do_autoscale = false;
 
         // Set type for transformations/autoscaling
-        void setType (ScaleFn t) {
+        void setType (ScaleFn t)
+        {
             // Reset autoscaled, because any autoscaling will need to be re-computed
             this->autoscaled = false;
             this->type = t;
         }
 
-        void setlog (void) {
+        void setlog (void)
+        {
             this->autoscaled = false;
             this->type = ScaleFn::Logarithmic;
         }
 
-        void setlinear (void) {
+        void setlinear (void)
+        {
             this->autoscaled = false;
             this->type = ScaleFn::Linear;
         }
@@ -240,7 +247,8 @@ namespace morph {
         //! values should be have this value.
         T_el range_max = 1.0;
 
-        virtual T transform_one (const T& datum) const {
+        virtual T transform_one (const T& datum) const
+        {
             if (this->type != ScaleFn::Linear) {
                 throw std::runtime_error ("This transform function is for Linear scaling only");
             }
@@ -258,22 +266,30 @@ namespace morph {
             return rtn;
         }
 
-        virtual T inverse_one (const T& datum) const {
+        virtual T inverse_one (const T& datum) const
+        {
             throw std::runtime_error ("Inverse transform not yet implemented for vectors");
         }
 
-        virtual void compute_autoscale (T input_min, T input_max) {
+        virtual void compute_autoscale (T input_min, T input_max)
+        {
             if (this->type != ScaleFn::Linear) {
                 throw std::runtime_error ("This autoscale function is for Linear scaling only");
             }
-            this->params.resize (2, static_cast<T_el>(0.0));
+            this->params.resize (2, T_el{0});
             // Vector version: get lengths of input_min/max
             T_el imax_len = vec_length (input_max);
             T_el imin_len = vec_length (input_min);
-            // m = rise/run
-            this->params[0] = (this->range_max - this->range_min) / (imax_len - imin_len);
-            // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-            this->params[1] = imin_len; // this->range_min - (this->params[0] * imin_len);
+            // Handle imax_len == imin_len
+            if (imax_len == imin_len) {
+                // params[0] is already 0
+                this->params[1] = (this->range_max-this->range_min)/T_el{2};
+            } else {
+                // m = rise/run
+                this->params[0] = (this->range_max - this->range_min) / (imax_len - imin_len);
+                // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
+                this->params[1] = imin_len; // this->range_min - (this->params[0] * imin_len);
+            }
 
             this->autoscaled = true;
         }
@@ -281,9 +297,10 @@ namespace morph {
         //! Set params for a two parameter scaling
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
-        void setParams (T_el p0, T_el p1) {
+        void setParams (T_el p0, T_el p1)
+        {
             this->do_autoscale = false;
-            this->params.resize (2, static_cast<T_el>(0.0));
+            this->params.resize (2, T_el{0});
             this->params[0] = p0;
             this->params[1] = p1;
         }
@@ -291,16 +308,15 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        T_el getParams (size_t idx) {
-            return this->params[idx];
-        }
+        T_el getParams (size_t idx) { return this->params[idx]; }
 
     private:
         //! Compute vector length
         //! \param vec the vector of type \a T
         //! \return The vector's length
-        T_el vec_length (const T& vec) const {
-            T_el sos = static_cast<T_el>(0);
+        T_el vec_length (const T& vec) const
+        {
+            T_el sos = T_el{0};
             typename T::const_iterator vi = vec.begin();
             while (vi != vec.end()) {
                 const T_el val = *vi;
@@ -341,8 +357,9 @@ namespace morph {
         //! values should be have this value.
         T range_max = 1.0;
 
-        virtual T transform_one (const T& datum) const {
-            T rtn = static_cast<T>(0);
+        virtual T transform_one (const T& datum) const
+        {
+            T rtn = T{0};
             if (this->type == ScaleFn::Logarithmic) {
                 rtn = this->transform_one_log (datum);
             } else if (this->type == ScaleFn::Linear) {
@@ -353,8 +370,9 @@ namespace morph {
             return rtn;
         }
 
-        virtual T inverse_one (const T& datum) const {
-            T rtn = static_cast<T>(0);
+        virtual T inverse_one (const T& datum) const
+        {
+            T rtn = T{0};
             if (this->type == ScaleFn::Logarithmic) {
                 rtn = this->inverse_one_log (datum);
             } else if (this->type == ScaleFn::Linear) {
@@ -365,7 +383,8 @@ namespace morph {
             return rtn;
         }
 
-        virtual void compute_autoscale (T input_min, T input_max) {
+        virtual void compute_autoscale (T input_min, T input_max)
+        {
             if (this->type == ScaleFn::Logarithmic) {
                 this->compute_autoscale_log (input_min, input_max);
             } else if (this->type == ScaleFn::Linear) {
@@ -379,8 +398,9 @@ namespace morph {
         //! Set params for a two parameter scaling
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
-        void setParams (T p0, T p1) {
-            this->params.resize (2, static_cast<T>(0.0));
+        void setParams (T p0, T p1)
+        {
+            this->params.resize (2, T{0});
             this->params[0] = p0;
             this->params[1] = p1;
         }
@@ -388,41 +408,50 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        T getParams (size_t idx) {
-            return this->params[idx];
-        }
+        T getParams (size_t idx) { return this->params[idx]; }
 
     private:
         //! Linear transform for scalar type; y = mx + c
-        T transform_one_linear (const T& datum) const {
+        T transform_one_linear (const T& datum) const
+        {
             return (datum * this->params[0] + this->params[1]);
         }
 
         //! Log transform for scalar type
-        T transform_one_log (const T& datum) const {
+        T transform_one_log (const T& datum) const
+        {
             return (transform_one_linear (std::log(datum)));
         }
 
         //! The inverse linear transform; x = (y-c)/m
-        T inverse_one_linear (const T& datum) const {
+        T inverse_one_linear (const T& datum) const
+        {
             return ((datum-this->params[1])/this->params[0]);
         }
 
         //! The inverse of the log transform is exp.
-        T inverse_one_log (const T& datum) const {
+        T inverse_one_log (const T& datum) const
+        {
             T res = inverse_one_linear(datum);
             return (std::exp (res));
         }
 
-        void compute_autoscale_linear (T input_min, T input_max) {
-            this->params.resize (2, static_cast<T>(0.0));
-            // m = rise/run
-            this->params[0] = (this->range_max - this->range_min) / (input_max - input_min);
-            // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-            this->params[1] = this->range_min - (this->params[0] * input_min);
+        void compute_autoscale_linear (T input_min, T input_max)
+        {
+            this->params.resize (2, T{0});
+            if (input_min == input_max) {
+                this->params[0] = T{0};
+                this->params[1] = (this->range_max - this->range_min) / T{2.0};
+            } else {
+                // m = rise/run
+                this->params[0] = (this->range_max - this->range_min) / (input_max - input_min);
+                // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
+                this->params[1] = this->range_min - (this->params[0] * input_min);
+            }
         }
 
-        void compute_autoscale_log (T input_min, T input_max) {
+        void compute_autoscale_log (T input_min, T input_max)
+        {
             T ln_imin = std::log(input_min);
             T ln_imax = std::log(input_max);
             // Now just scale linearly between ln_imin and ln_imax

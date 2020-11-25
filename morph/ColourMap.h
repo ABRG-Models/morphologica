@@ -57,10 +57,100 @@ namespace morph {
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->type = _t; }
 
+        static std::array<float, 3> nanColour (ColourMapType _t)
+        {
+            std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+            switch (_t) {
+            case ColourMapType::Jet:
+            {
+                // Red is part of Jet, but purple isn't
+                c = {1.0, 0.0f, 1.0f};
+                break;
+            }
+            case ColourMapType::Rainbow:
+            {
+                c = {1.0, 1.0f, 1.0f};
+                break;
+            }
+            case ColourMapType::RainbowZeroBlack:
+            {
+                c = {1.0, 1.0f, 1.0f};
+                break;
+            }
+            case ColourMapType::RainbowZeroWhite:
+            {
+                break;
+            }
+            case ColourMapType::Magma:
+            {
+                c = {1.0, 1.0f, 1.0f};
+                break;
+            }
+            case ColourMapType::Inferno:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Plasma:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Viridis:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Cividis:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Twilight:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Greyscale:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::GreyscaleInv:
+            {
+                // The 'inverted' greyscale tends to white for maximum signal
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Monochrome:
+            case ColourMapType::MonochromeRed:
+            case ColourMapType::MonochromeBlue:
+            case ColourMapType::MonochromeGreen:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            case ColourMapType::Fixed:
+            {
+                c = {1.0, 0.0f, 0.0f};
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+
+            return c;
+        }
+
         //! Convert the scalar datum into an RGB (or BGR) colour
         std::array<float, 3> convert (Flt datum)
         {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
+
+            // Check for nan and return a 'nan' colour for the colour map
+            if (std::isnan(datum) == true) { c = ColourMap<Flt>::nanColour(this->type); return c; }
 
             // Enforce range of datum
             datum = datum > Flt{1.0} ? Flt{1.0} : datum;
