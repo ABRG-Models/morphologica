@@ -490,6 +490,7 @@ namespace morph {
 
             // Text offset from marker to text
             morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
+            toffset += this->mv_offset;
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
@@ -522,9 +523,10 @@ namespace morph {
             if (max_cols < 1) { max_cols = 1; }
             //std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
             int num_cols = static_cast<int>(gd_size) <= max_cols ? static_cast<int>(gd_size) : max_cols;
-            //std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
+            std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
             int num_rows = ((int)gd_size / num_cols);
-            //std::cout << "num_rows = " << num_rows << std::endl;
+            num_rows += (int)gd_size % num_cols ? 1 : 0;
+            std::cout << "num_rows = " << num_rows << std::endl;
 
             // Label position
             morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
@@ -532,10 +534,10 @@ namespace morph {
 
                 int col = dsi % num_cols;
                 int row = (num_rows-1) - (dsi / num_cols);
-                //std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
+                std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
 
                 lpos[0] = this->dataaxisdist + ((float)col * col_advance);
-                lpos[1] = this->height + (1.5f * this->fontsize) + (float)(row)*2.0f*this->fontsize;
+                lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
                 // Legend marker
                 this->marker (lpos, this->datastyles[dsi]);
                 legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
