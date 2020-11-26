@@ -15,7 +15,7 @@
 #include <vector>
 #include <array>
 
-/*!
+/*
  * Macros for testing neighbours. The step along for neighbours on the
  * rows above/below is given by:
  *
@@ -26,7 +26,6 @@
  * NSW   | -rowlen
  * NSE   | -rowlen + 1
  */
-//@{
 #define NE(hi) (this->hg->d_ne[hi])
 #define HAS_NE(hi) (this->hg->d_ne[hi] == -1 ? false : true)
 
@@ -44,7 +43,6 @@
 
 #define NSW(hi) (this->hg->d_nsw[hi])
 #define HAS_NSW(hi) (this->hg->d_nsw[hi] == -1 ? false : true)
-//@}
 
 #define IF_HAS_NE(hi, yesval, noval)  (HAS_NE(hi)  ? yesval : noval)
 #define IF_HAS_NNE(hi, yesval, noval) (HAS_NNE(hi) ? yesval : noval)
@@ -55,17 +53,17 @@
 
 namespace morph {
 
-    //! The template argument Flt is the type of the data which this HexGridVisual
+    //! The template argument T is the type of the data which this HexGridVisual
     //! will visualize.
-    template <class Flt>
-    class HexGridVisual : public VisualDataModel<Flt>
+    template <class T>
+    class HexGridVisual : public VisualDataModel<T>
     {
     public:
         //! Constructor which does not set colour map
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
-                      const std::vector<Flt>* _data)
+                      const std::vector<T>* _data)
         {
             // Set up...
             this->shaderprog = sp;
@@ -88,7 +86,7 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
-                      const std::vector<Flt>* _data)
+                      const std::vector<T>* _data)
         {
             // Set up...
             this->shaderprog = sp;
@@ -110,7 +108,7 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
-                      const std::vector<Flt>* _data,
+                      const std::vector<T>* _data,
                       ColourMapType _cmt,
                       const float _hue = 0.0f)
         {
@@ -138,7 +136,7 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
-                      const std::vector<Flt>* _data,
+                      const std::vector<T>* _data,
                       ColourMapType _cmt,
                       const float _hue = 0.0f)
         {
@@ -166,9 +164,9 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
-                      const std::vector<Flt>* _data,
-                      const Scale<Flt>& zscale,
-                      const Scale<Flt>& cscale,
+                      const std::vector<T>* _data,
+                      const Scale<T, float>& zscale,
+                      const Scale<T, float>& cscale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f)
         {
@@ -195,9 +193,9 @@ namespace morph {
         HexGridVisual(GLuint sp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
-                      const std::vector<Flt>* _data,
-                      const Scale<Flt>& zscale,
-                      const Scale<Flt>& cscale,
+                      const std::vector<T>* _data,
+                      const Scale<T, float>& zscale,
+                      const Scale<T, float>& cscale,
                       ColourMapType _cmt,
                       const float _hue = 0.0f)
         {
@@ -242,9 +240,9 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 // Scale z:
-                Flt datumC = this->zScale.transform ((*this->data)[hi]);
+                T datumC = this->zScale.transform ((*this->data)[hi]);
                 // Scale colour
-                Flt datum = this->colourScale.transform ((*this->data)[hi]);
+                T datum = this->colourScale.transform ((*this->data)[hi]);
                 // And turn it into a colour:
                 std::array<float, 3> clr = this->cm.convert (datum);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -282,22 +280,23 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
-            std::vector<Flt> dcopy = *(this->scalarData);
+            std::vector<float> dcopy (this->scalarData->size());
             this->zScale.transform (*(this->scalarData), dcopy);
-            std::vector<Flt> dcolour = *(this->scalarData);
+            std::vector<float> dcolour (this->scalarData->size());
             this->colourScale.transform (*(this->scalarData), dcolour);
 
-            Flt datumC = Flt{0};   // datum at the centre
-            Flt datumNE = Flt{0};  // datum at the hex to the east.
-            Flt datumNNE = Flt{0}; // etc
-            Flt datumNNW = Flt{0};
-            Flt datumNW = Flt{0};
-            Flt datumNSW = Flt{0};
-            Flt datumNSE = Flt{0};
+            // These Ts are all floats, right?
+            float datumC = 0.0f;   // datum at the centre
+            float datumNE = 0.0f;  // datum at the hex to the east.
+            float datumNNE = 0.0f; // etc
+            float datumNNW = 0.0f;
+            float datumNW = 0.0f;
+            float datumNSW = 0.0f;
+            float datumNSE = 0.0f;
 
-            Flt datum = Flt{0};
-            Flt third = Flt{0.33333333333333};
-            Flt half = Flt{0.5};
+            float datum = 0.0f;
+            float third = 0.3333333f;
+            float half = 0.5f;
             morph::Vector<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int hi = 0; hi < nhex; ++hi) {
 

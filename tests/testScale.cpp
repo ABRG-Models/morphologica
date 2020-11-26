@@ -15,6 +15,15 @@ int main () {
 
     int rtn = 0;
 
+    char testc = 127;
+    std::cout << "test char" << (int)testc << std::endl;
+    testc += 1;
+    std::cout << "test char+1" << (int)testc << std::endl;
+
+    std::cout << "char max" << std::numeric_limits<char>::max() << std::endl;
+    std::cout << "unsigned char max" << std::numeric_limits<unsigned char>::max() << std::endl;
+    std::cout << "unsigned short max" << std::numeric_limits<unsigned short>::max() << std::endl;
+
     Scale<float> s;
     s.do_autoscale = true;
     vector<float> vf = {1,2,3,4,5,8,9,18};

@@ -40,12 +40,12 @@ namespace morph {
         void clearAutoscaleColour() { this->colourScale.autoscaled = false; }
         void clearAutoscaleVector() { this->vectorScale.autoscaled = false; }
 
-        void setZScale (const Scale<T>& zscale)
+        void setZScale (const Scale<T, float>& zscale)
         {
             this->zScale = zscale;
             this->reinit();
         }
-        void setCScale (const Scale<T>& cscale)
+        void setCScale (const Scale<T, float>& cscale)
         {
             this->colourScale = cscale;
             this->reinit();
@@ -67,7 +67,7 @@ namespace morph {
         }
 
         //! Update the scalar data with an associated z-scaling
-        void updateData (const std::vector<T>* _data, const Scale<T>& zscale)
+        void updateData (const std::vector<T>* _data, const Scale<T, float>& zscale)
         {
             this->scalarData = _data;
             this->zScale = zscale;
@@ -75,7 +75,7 @@ namespace morph {
         }
 
         //! Update the scalar data, along with both the z-scaling and the colour-scaling
-        void updateData (const std::vector<T>* _data, const Scale<T>& zscale, const Scale<T>& cscale)
+        void updateData (const std::vector<T>* _data, const Scale<T, float>& zscale, const Scale<T, float>& cscale)
         {
             this->scalarData = _data;
             this->zScale = zscale;
@@ -85,7 +85,7 @@ namespace morph {
 
         //! Update coordinate data and scalar data along with z-scaling for scalar data
         virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
-                                 const Scale<T>& zscale)
+                                 const Scale<T, float>& zscale)
         {
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -95,7 +95,7 @@ namespace morph {
 
         //! Update coordinate data and scalar data along with z- and colour-scaling for scalar data
         virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
-                                 const Scale<T>& zscale, const Scale<T>& cscale)
+                                 const Scale<T, float>& zscale, const Scale<T, float>& cscale)
         {
             this->dataCoords = _coords;
             this->scalarData = _data;
@@ -161,15 +161,15 @@ namespace morph {
 
         //! All data models use a a colour map. Change the type/hue of this colour map
         //! object to generate different types of map.
-        ColourMap<T> cm;
+        ColourMap<float> cm;
 
         //! A Scaling function for the colour map. Perhaps a Scale class contains a
         //! colour map? If not, then this scale might well be autoscaled. Applied to scalarData.
-        Scale<T> colourScale;
+        Scale<T, float> colourScale;
 
         //! A scale to scale (or autoscale) scalarData. This might be used to set z
         //! locations of data coordinates based on scalarData. The scaling may
-        Scale<T> zScale;
+        Scale<T, float> zScale;
 
         //! A scaling function for the vectorData. This will scale the lengths of the
         //! vectorData.
