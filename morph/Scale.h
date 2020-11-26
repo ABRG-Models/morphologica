@@ -10,7 +10,7 @@
  * to range between 0 and 1 (or -1 and 1 or -w and z)
  *
  * Classes created from the template class morph::Scale will derive from one of the
- * morph::ScaleImpl <ntype, T> classes, where ntype is the 'number type' (0 means the
+ * morph::ScaleImpl <ntype, T, S> classes, where ntype is the 'number type' (0 means the
  * numbers are mathematical vectors like morph::Vector, std::array or std::vector; 1
  * means that the numbers are scalars like float, double or int)
  *
@@ -22,6 +22,15 @@
  *   std::vector<float> vf = { 1, 2, 3 };
  *   std::vector<float> result(vf);
  *   s.transform (vf, result);
+ *\endcode
+ *
+ * If the output type is different from the input type, then specify both as template parameters:
+ * \code{.cpp}
+ *   morph::Scale<int, float> s;
+ *   s.do_autoscale = true;
+ *   std::vector<int> vi = { -2, -1, 1, 3 };
+ *   std::vector<float> result(vi.size());
+ *   s.transform (vi, result);
  *\endcode
  *
  * \author Seb James
@@ -54,8 +63,12 @@ namespace morph {
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double, etc or a type which can contain a vector such as std::array,
      * morph::Vector or std::vector.
+     *
+     * \tparam S Output number type. Having separate type allows for scaling of a range
+     * of integers into a floating point value between 0 and 1 which can be advantageous
+     * for graphing of integers.
      */
-    template <typename T>
+    template <typename T, typename S>
     class ScaleImplBase
     {
     public:
@@ -73,7 +86,7 @@ namespace morph {
          *
          * \return The scaled datum.
          */
-        virtual T transform_one (const T& datum) const = 0;
+        virtual S transform_one (const T& datum) const = 0;
 
         /*!
          * Inverse transform
@@ -82,7 +95,7 @@ namespace morph {
          *
          * \return the de-scaled datum
          */
-        virtual T inverse_one (const T& datum) const = 0;
+        virtual T inverse_one (const S& datum) const = 0;
 
         /*!
          * \brief Transform a container of scalars or vectors.
@@ -93,11 +106,30 @@ namespace morph {
          *
          * \param data The input data
          * \param output The scaled output
+         *
+         * \tparam Container A container of values (scalar or vector) for input
+         * (to-be-transformed) data.
+         *
+         * \tparam TT Type for the contained input values which may be a scalar or
+         * vector
+         *
+         * \tparam Allocator Part of the plumbing. Memory allocator for Container.
+         *
+         * \tparam OContainer A container of values (scalar or vector) for the output
+         * transformed data.
+         *
+         * \tparam ST Type for the contained output values which may be a scalar or
+         * vector
+         *
+         * \tparam OAllocator Memory allocator for OContainer.
          */
         template < template <typename, typename> typename Container,
                    typename TT=T,
-                   typename Allocator=std::allocator<TT> >
-        void transform (const Container<TT, Allocator>& data, Container<TT, Allocator>& output)
+                   typename Allocator=std::allocator<TT>,
+                   template <typename, typename> typename OContainer=Container,
+                   typename ST=S,
+                   typename OAllocator=std::allocator<ST> >
+        void transform (const Container<TT, Allocator>& data, OContainer<ST, OAllocator>& output)
         {
             size_t dsize = data.size();
             if (output.size() != dsize) {
@@ -107,7 +139,7 @@ namespace morph {
                 this->autoscale_from<Container> (data); // not const
             }
             typename Container<TT, Allocator>::const_iterator di = data.begin();
-            typename Container<TT, Allocator>::iterator oi = output.begin();
+            typename Container<ST, OAllocator>::iterator oi = output.begin();
             while (di != data.end()) {
                 *oi++ = this->transform_one (*di++);
             }
@@ -116,10 +148,13 @@ namespace morph {
         /*!
          * \brief Inverse transform a container of scalars or vectors.
          */
-        template < template <typename, typename> typename Container,
+        template < template <typename, typename> typename OContainer,
+                   typename ST=S,
+                   typename OAllocator=std::allocator<ST>,
+                   template <typename, typename> typename Container=OContainer,
                    typename TT=T,
                    typename Allocator=std::allocator<TT> >
-        void inverse (const Container<TT, Allocator>& data, Container<TT, Allocator>& output)
+        void inverse (const Container<ST, OAllocator>& data, OContainer<T, Allocator>& output)
         {
             size_t dsize = data.size();
             if (output.size() != dsize) {
@@ -128,7 +163,7 @@ namespace morph {
             if (this->do_autoscale == true && this->autoscaled == false) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
             }
-            typename Container<TT, Allocator>::const_iterator di = data.begin();
+            typename Container<ST, OAllocator>::const_iterator di = data.begin();
             typename Container<TT, Allocator>::iterator oi = output.begin();
             while (di != data.end()) {
                 *oi++ = this->inverse_one (*di++);
@@ -232,22 +267,25 @@ namespace morph {
      *
      * \sa ScaleImplBase
      */
-    template <int ntype = 0, typename T=float>
-    class ScaleImpl : public ScaleImplBase<T>
+    template <int ntype = 0, typename T=float, typename S=float>
+    class ScaleImpl : public ScaleImplBase<T, S>
     {
     public:
         //! In a vector implementation we have to get the type of the components of the
         //! vector type \a T. The component (or element) type is named \a T_el.
         using T_el=std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
+        //! Element type of S
+        using S_el=std::remove_reference_t<decltype(*std::begin(std::declval<S&>()))>;
 
         //! minimum for autoscaling. After autoscaling, the minimum value of the scaled
         //! values should be have this value.
-        T_el range_min = 0.0;
+        S_el range_min = 0.0;
         //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled
         //! values should be have this value.
-        T_el range_max = 1.0;
+        S_el range_max = 1.0;
 
-        virtual T transform_one (const T& datum) const
+        //! Transform a single (math) vector T into a (math) vector S
+        virtual S transform_one (const T& datum) const
         {
             if (this->type != ScaleFn::Linear) {
                 throw std::runtime_error ("This transform function is for Linear scaling only");
@@ -255,18 +293,18 @@ namespace morph {
             if (params.size() != 2) {
                 throw std::runtime_error ("For linear scaling of ND vector lengths, need 2 params (set do_autoscale or call setParams())");
             }
-            T rtn(datum);
+            S rtn(datum);
             T_el vec_len = this->vec_length (datum);
             for (size_t i = 0; i < datum.size(); ++i) {
-                rtn[i] = datum[i] * this->params[0] + this->params[1];
-                T_el el_len = datum[i];
+                rtn[i] = static_cast<S_el>(datum[i]) * this->params[0] + this->params[1];
+                S_el el_len = static_cast<S_el>(datum[i]);
                 // Here's the scaling of a component
-                rtn[i] = (el_len - (el_len/vec_len)*this->params[1]) * this->params[0];
+                rtn[i] = (el_len - (el_len/static_cast<S_el>(vec_len))*this->params[1]) * this->params[0];
             }
             return rtn;
         }
 
-        virtual T inverse_one (const T& datum) const
+        virtual T inverse_one (const S& datum) const
         {
             throw std::runtime_error ("Inverse transform not yet implemented for vectors");
         }
@@ -283,12 +321,12 @@ namespace morph {
             // Handle imax_len == imin_len
             if (imax_len == imin_len) {
                 // params[0] is already 0
-                this->params[1] = (this->range_max-this->range_min)/T_el{2};
+                this->params[1] = (this->range_max-this->range_min)/S_el{2};
             } else {
                 // m = rise/run
-                this->params[0] = (this->range_max - this->range_min) / (imax_len - imin_len);
+                this->params[0] = (this->range_max - this->range_min) / static_cast<S_el>(imax_len - imin_len);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-                this->params[1] = imin_len; // this->range_min - (this->params[0] * imin_len);
+                this->params[1] = static_cast<S_el>(imin_len); // this->range_min - (this->params[0] * imin_len);
             }
 
             this->autoscaled = true;
@@ -297,10 +335,10 @@ namespace morph {
         //! Set params for a two parameter scaling
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
-        void setParams (T_el p0, T_el p1)
+        void setParams (S_el p0, S_el p1)
         {
             this->do_autoscale = false;
-            this->params.resize (2, T_el{0});
+            this->params.resize (2, S_el{0});
             this->params[0] = p0;
             this->params[1] = p1;
         }
@@ -308,7 +346,7 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        T_el getParams (size_t idx) { return this->params[idx]; }
+        S_el getParams (size_t idx) { return this->params[idx]; }
 
     private:
         //! Compute vector length
@@ -327,8 +365,8 @@ namespace morph {
         }
 
         //! The parameters for the scaling. For linear scaling, this will contain two
-        //! scalar values.
-        std::vector<T_el> params;
+        //! scalar values. Note the type is the output element type
+        std::vector<S_el> params;
     };
 
     /*!
@@ -344,22 +382,25 @@ namespace morph {
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double. It is from the type \a T that ntype is determined.
      *
+     * \tparam S The output type for the scaled number. For integer T, this might well
+     * be a floating point type.
+     *
      * \sa ScaleImplBase
      */
-    template<typename T>
-    class ScaleImpl<1, T> : public ScaleImplBase<T>
+    template<typename T, typename S>
+    class ScaleImpl<1, T, S> : public ScaleImplBase<T, S>
     {
     public:
         //! minimum for autoscaling. After autoscaling, the minimum value of the scaled
         //! values should be have this value.
-        T range_min = 0.0;
+        S range_min = 0.0;
         //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled
         //! values should be have this value.
-        T range_max = 1.0;
+        S range_max = 1.0;
 
-        virtual T transform_one (const T& datum) const
+        virtual S transform_one (const T& datum) const
         {
-            T rtn = T{0};
+            S rtn = S{0};
             if (this->type == ScaleFn::Logarithmic) {
                 rtn = this->transform_one_log (datum);
             } else if (this->type == ScaleFn::Linear) {
@@ -370,7 +411,7 @@ namespace morph {
             return rtn;
         }
 
-        virtual T inverse_one (const T& datum) const
+        virtual T inverse_one (const S& datum) const
         {
             T rtn = T{0};
             if (this->type == ScaleFn::Logarithmic) {
@@ -412,25 +453,25 @@ namespace morph {
 
     private:
         //! Linear transform for scalar type; y = mx + c
-        T transform_one_linear (const T& datum) const
+        S transform_one_linear (const T& datum) const
         {
             return (datum * this->params[0] + this->params[1]);
         }
 
         //! Log transform for scalar type
-        T transform_one_log (const T& datum) const
+        S transform_one_log (const T& datum) const
         {
             return (transform_one_linear (std::log(datum)));
         }
 
         //! The inverse linear transform; x = (y-c)/m
-        T inverse_one_linear (const T& datum) const
+        T inverse_one_linear (const S& datum) const
         {
             return ((datum-this->params[1])/this->params[0]);
         }
 
         //! The inverse of the log transform is exp.
-        T inverse_one_log (const T& datum) const
+        T inverse_one_log (const S& datum) const
         {
             T res = inverse_one_linear(datum);
             return (std::exp (res));
@@ -438,15 +479,17 @@ namespace morph {
 
         void compute_autoscale_linear (T input_min, T input_max)
         {
-            this->params.resize (2, T{0});
+            // Here, we need to use the output type for the computations. Does that mean
+            // params is stored in the output type? I think it does.
+            this->params.resize (2, S{0});
             if (input_min == input_max) {
                 this->params[0] = T{0};
-                this->params[1] = (this->range_max - this->range_min) / T{2.0};
+                this->params[1] = (this->range_max - this->range_min) / S{2.0};
             } else {
                 // m = rise/run
-                this->params[0] = (this->range_max - this->range_min) / (input_max - input_min);
+                this->params[0] = (this->range_max - this->range_min) / static_cast<S>(input_max - input_min);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-                this->params[1] = this->range_min - (this->params[0] * input_min);
+                this->params[1] = this->range_min - (this->params[0] * static_cast<S>(input_min));
             }
         }
 
@@ -460,7 +503,7 @@ namespace morph {
 
         //! The parameters for the scaling. If linear, this will contain two scalar
         //! values.
-        std::vector<T> params;
+        std::vector<S> params;
     };
 
     /*!
@@ -478,8 +521,14 @@ namespace morph {
      *   std::vector<float> vf = { 1, 2, 3 };
      *   std::vector<float> result(vf);
      *   s.transform (vf, result);
+     *
+     * \tparam T The type of the numbers (or vectors) that will be scaled.
+     *
+     * \tparam S The type of the output numbers (or for vectors, their
+     * elements). Defaults to be the same type as T, but when scaling integers, may well
+     * be a different type such as float or double
      */
-     template <typename T>
-     struct Scale : public ScaleImpl<number_type<T>::value, T> {};
+    template <typename T, typename S=T>
+    struct Scale : public ScaleImpl<number_type<T>::value, T, S> {};
 
 } // namespace morph
