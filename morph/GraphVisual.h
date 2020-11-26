@@ -490,7 +490,6 @@ namespace morph {
 
             // Text offset from marker to text
             morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
-            toffset += this->mv_offset;
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
@@ -540,7 +539,7 @@ namespace morph {
                 lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
                 // Legend marker
                 this->marker (lpos, this->datastyles[dsi]);
-                legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset, this->axiscolour);
+                legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset+this->mv_offset, this->axiscolour);
                 this->texts.push_back (legtexts[dsi]);
             }
         }
