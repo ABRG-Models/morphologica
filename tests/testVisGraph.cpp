@@ -57,11 +57,11 @@ int main (int argc, char** argv)
         gv->setdata (absc, absc.pow(4), ds);
 #else
         gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
-        gv->setdata (absc, absc);
-        gv->setdata (absc, absc.pow(2)+0.05f);
-        gv->setdata (absc, absc.pow(3)+0.1f);
-        gv->setdata (absc, absc.pow(4)+0.15f);
-        gv->setdata (absc, absc.pow(5)+0.2f);
+        gv->setdata (absc, absc, "linear");
+        gv->setdata (absc, absc.pow(2)+0.05f, "quadratic");
+        gv->setdata (absc, absc.pow(3)+0.1f, "cubic");
+        gv->setdata (absc, absc.pow(4)+0.15f, "quartic");
+        gv->setdata (absc, absc.pow(5)+0.2f, "fifth power");
 #endif
 
 

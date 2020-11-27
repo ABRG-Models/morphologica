@@ -40,8 +40,8 @@ namespace morph {
             static GLenum checkError (const char *file, int line)
             {
                 GLenum errorCode = 0;
-                unsigned int ecount = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
+                unsigned int ecount = 0;
                 std::string error;
                 while ((errorCode = glGetError()) != GL_NO_ERROR) {
                     switch (errorCode) {
