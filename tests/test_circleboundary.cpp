@@ -62,7 +62,7 @@ int main (int argc, char** argv)
         cout << "Created " << data.size() << " floats in data" << endl;
 
         std::array<float, 3> offset = { 0.0, 0.0, 0.0 };
-        unsigned int id = v.addVisualModel (new HexGridVisual<float> (v.shaderprog, &hg, offset, &data, ColourMapType::Rainbow));
+        unsigned int id = v.addVisualModel (new HexGridVisual<float> (v.shaderprog, v.tshaderprog, &hg, offset, &data, ColourMapType::Rainbow));
         Scale<float> zscale;
         zscale.setParams (0, 0);
         static_cast<VisualDataModel<float>*>(v.getVisualModel(id))->setZScale (zscale);

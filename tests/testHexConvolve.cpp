@@ -79,13 +79,17 @@ int main()
 
         // Visualize the 3 maps
         morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
-        unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
+        unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
+        v.getVisualModel(gridId)->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+
         offset[1] += 0.6f;
-        unsigned int gridId1 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &kernel, offset, &kerneldata));
+        unsigned int gridId1 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &kernel, offset, &kerneldata));
+        v.getVisualModel(gridId1)->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
         std::cout << "gridId1 is " << gridId1 << std::endl;
         offset[1] -= 0.6f;
         offset[0] += 1.0f;
-        unsigned int gridId2 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, &hg, offset, &convolved));
+        unsigned int gridId2 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &convolved));
+        v.getVisualModel(gridId2)->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
 
         // Divide existing scale by 10:
         float newGrad = static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;

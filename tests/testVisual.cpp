@@ -76,7 +76,7 @@ int main()
         cout << "Created " << data.size() << " floats in data" << endl;
 
         Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, &hg, offset, &data));
+        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
 
         // Divide existing scale by 10:
