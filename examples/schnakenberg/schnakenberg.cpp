@@ -276,22 +276,29 @@ int main (int argc, char **argv)
     // The second is the colour scaling. Set this to autoscale.
     Scale<FLT> cscale; cscale.do_autoscale = true;
     unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
+                                                                    v1.tshaderprog,
                                                                     RD.hg,
                                                                     spatOff,
                                                                     &(RD.A),
                                                                     zscale,
                                                                     cscale,
-                                                                    ColourMapType::Plasma));
+                                                                    morph::ColourMapType::Plasma));
+    v1.getVisualModel(Agrid)->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
     unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
+                                                                    v1.tshaderprog,
                                                                     RD.hg,
                                                                     spatOff,
                                                                     &(RD.B),
                                                                     zscale,
                                                                     cscale,
-                                                                    ColourMapType::Jet));
+                                                                    morph::ColourMapType::Jet));
+    v1.getVisualModel(Bgrid)->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
 #endif
 
     // Start the loop
