@@ -187,7 +187,7 @@ namespace morph {
             // make the conversion to array<float,3> colour.
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 // Copy, enforce range
-                datum = _datum > T{1.0} ? 1.0f : static_cast<float>(_datum);
+                datum = _datum > T{1} ? 1.0f : static_cast<float>(_datum);
                 datum = datum < 0.0f ? 0.0f : datum;
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
@@ -201,7 +201,7 @@ namespace morph {
             } else if constexpr (std::is_integral<std::decay_t<T>>::value == true) {
                 // For integral types, there's a 'max input range' value
                 datum = _datum < 0 ? 0.0f : (float)_datum / static_cast<float>(this->range_max);
-                datum = datum < 0.0f ? 0.0f : datum;
+                datum = datum > 1.0f ? 1.0f : datum;
 
             } else {
                 throw std::runtime_error ("Unhandled ColourMap data type.");
@@ -228,14 +228,14 @@ namespace morph {
             }
             case ColourMapType::RainbowZeroBlack:
             {
-                if (datum != T{0.0}) {
+                if (datum != T{0}) {
                     c = ColourMap::rainbow (datum);
                 }
                 break;
             }
             case ColourMapType::RainbowZeroWhite:
             {
-                if (datum != T{0.0}) {
+                if (datum != T{0}) {
                     c = ColourMap::rainbow (datum);
                 } else {
                     c = {1.0f, 1.0f, 1.0f};
@@ -277,7 +277,7 @@ namespace morph {
                 // The standard Greyscale Colourmap is best (and matches python Greys
                 // colour map) if white means minimum signal and black means maximum
                 // signal; hence pass 1-datum to ColourMap::greyscale().
-                c = this->greyscale (T{1.0}-datum);
+                c = this->greyscale (T{1}-datum);
                 break;
             }
             case ColourMapType::GreyscaleInv:
