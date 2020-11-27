@@ -314,6 +314,10 @@ add_test(testMathAlgo2 testMathAlgo2)
 add_executable(testScale testScale.cpp)
 add_test(testScale testScale)
 
+# Test the colour mapping
+add_executable(testColourMap testColourMap.cpp)
+add_test(testColourMap testColourMap)
+
 # Test Nelder Mead algorithm
 add_executable(testNMSimplex testNMSimplex.cpp)
 target_compile_definitions(testNMSimplex PUBLIC FLT=float)
