@@ -38,7 +38,16 @@ namespace morph {
         //BGRA?
     };
 
-    template <typename Flt>
+    /*!
+     * Colour mapping
+     *
+     * \tparam T The type of the datum used to traverse the colour map. When this is a
+     * floating point type, then the input datum should be in the range 0.0 to 1.0. If
+     * an integral type, then what? For char/unsigned char then 0-127 or 0-255. When
+     * unsigned short then 0-MAX also. What about if unsigned int or larger? Surely not
+     * the full range of these? Allow a runtime choice?
+     */
+    template <typename T>
     class ColourMap
     {
     private:
@@ -144,17 +153,67 @@ namespace morph {
             return c;
         }
 
-        //! Convert the scalar datum into an RGB (or BGR) colour
-        std::array<float, 3> convert (Flt datum)
+        //! The maximum number for the range of the datum to convert to a colour. 1 for
+        //! floating point variables.
+        T range_max = ColourMap<T>::range_max_init();
+        static constexpr T range_max_init()
         {
+            T rm = T{1};
+            // If integral type, might need to change this
+            if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                rm = 255;
+            } else if constexpr (std::is_same<std::decay_t<T>, char>::value == true) {
+                rm = 127;
+            } else if constexpr (std::is_same<std::decay_t<T>, bool>::value == true) {
+                rm = true;
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned short>::value == true
+                                 || std::is_same<std::decay_t<T>, short>::value == true
+                                 || std::is_same<std::decay_t<T>, unsigned int>::value == true
+                                 || std::is_same<std::decay_t<T>, int>::value == true
+                                 || std::is_same<std::decay_t<T>, unsigned long long int>::value == true
+                                 || std::is_same<std::decay_t<T>, long long int>::value == true) {
+                // For long types, default to 8 bit input; user can change afterwards.
+                rm = 255;
+            }
+            return rm;
+        }
+
+        //! Convert the scalar datum into an RGB (or BGR) colour
+        std::array<float, 3> convert (T _datum)
+        {
+            float datum = 0.0f;
+
+            // Convert T into a suitable value (with a suitable scaling as necessary) to
+            // make the conversion to array<float,3> colour.
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                // Copy, enforce range
+                datum = _datum > T{1} ? 1.0f : static_cast<float>(_datum);
+                datum = datum < 0.0f ? 0.0f : datum;
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                // Copy, and enforce range of datum
+                datum = _datum > 1.0f ? 1.0f : _datum;
+                datum = datum < 0.0f ? 0.0f : datum;
+
+            } else if constexpr (std::is_same<std::decay_t<T>, bool>::value == true) {
+                datum = _datum ? 1.0f : 0.0f;
+
+            } else if constexpr (std::is_integral<std::decay_t<T>>::value == true) {
+                // For integral types, there's a 'max input range' value
+                datum = _datum < 0 ? 0.0f : (float)_datum / static_cast<float>(this->range_max);
+                datum = datum > 1.0f ? 1.0f : datum;
+
+            } else {
+                throw std::runtime_error ("Unhandled ColourMap data type.");
+            }
+
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
 
             // Check for nan and return a 'nan' colour for the colour map
-            if (std::isnan(datum) == true) { c = ColourMap<Flt>::nanColour(this->type); return c; }
-
-            // Enforce range of datum
-            datum = datum > Flt{1.0} ? Flt{1.0} : datum;
-            datum = datum < Flt{0.0} ? Flt{0.0} : datum;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true
+                          || std::is_same<std::decay_t<T>, float>::value == true) {
+                if (std::isnan(datum) == true) { c = ColourMap<T>::nanColour(this->type); return c; }
+            }
 
             switch (this->type) {
             case ColourMapType::Jet:
@@ -169,14 +228,14 @@ namespace morph {
             }
             case ColourMapType::RainbowZeroBlack:
             {
-                if (datum != Flt{0.0}) {
+                if (datum != T{0}) {
                     c = ColourMap::rainbow (datum);
                 }
                 break;
             }
             case ColourMapType::RainbowZeroWhite:
             {
-                if (datum != Flt{0.0}) {
+                if (datum != T{0}) {
                     c = ColourMap::rainbow (datum);
                 } else {
                     c = {1.0f, 1.0f, 1.0f};
@@ -218,7 +277,7 @@ namespace morph {
                 // The standard Greyscale Colourmap is best (and matches python Greys
                 // colour map) if white means minimum signal and black means maximum
                 // signal; hence pass 1-datum to ColourMap::greyscale().
-                c = this->greyscale (Flt{1.0}-datum);
+                c = this->greyscale (T{1}-datum);
                 break;
             }
             case ColourMapType::GreyscaleInv:
@@ -254,7 +313,7 @@ namespace morph {
         }
 
         //! Convert for 4 component colours
-        //array<float, 4> convertAlpha (Flt datum);
+        //array<float, 4> convertAlpha (T datum);
 
         // Set the colour map type.
         void setType (const ColourMapType& tp)
@@ -358,7 +417,7 @@ namespace morph {
          *
          * @returns RGB value in jet colormap
          */
-        static std::array<float,3> jetcolour (Flt datum)
+        static std::array<float,3> jetcolour (float datum)
         {
             float color_table[][3] = {
                 {0.0, 0.0, 0.5}, // #00007F
@@ -374,8 +433,8 @@ namespace morph {
             std::array<float,3> col = {0.0f, 0.0f, 0.0f};
             float ivl = 1.0/8.0;
             for (int i=0; i<8; i++) {
-                Flt llim = (i==0) ? Flt{0.0} : (Flt)i/Flt{8.0};
-                Flt ulim = (i==7) ? Flt{1.0} : ((Flt)(i+1))/Flt{8.0};
+                float llim = (i==0) ? 0.0f : (float)i/8.0f;
+                float ulim = (i==7) ? 1.0f : ((float)(i+1))/8.0f;
                 if (datum >= llim && datum <= ulim) {
                     for (int j=0; j<3; j++) {
                         float c = static_cast<float>(datum - llim);
@@ -414,9 +473,9 @@ namespace morph {
          *
          * @returns RGB value in a mono-colour map, with main colour this->hue;
          */
-        std::array<float,3> monochrome (Flt datum)
+        std::array<float,3> monochrome (float datum)
         {
-            return ColourMap::hsv2rgb (this->hue, static_cast<float>(datum), 1.0f);
+            return ColourMap::hsv2rgb (this->hue, datum, 1.0f);
         }
 
         /*!
@@ -426,69 +485,69 @@ namespace morph {
          * brightness gives the map value. Thus, \a datum = 1 gives white and \a datum =
          * 0 gives black.
          */
-        std::array<float,3> greyscale (Flt datum)
+        std::array<float,3> greyscale (float datum)
         {
-            return ColourMap::hsv2rgb (this->hue, 0.0f, static_cast<float>(datum));
+            return ColourMap::hsv2rgb (this->hue, 0.0f, datum);
             // or
             //return {datum, datum, datum}; // assuming 0 <= datum <= 1
         }
 
         //! A colour map which is a rainbow through the colour space, varying the hue.
-        std::array<float,3> rainbow (Flt datum)
+        std::array<float,3> rainbow (float datum)
         {
-            return ColourMap::hsv2rgb ((float)datum, 1.0f, 1.0f);
+            return ColourMap::hsv2rgb (datum, 1.0f, 1.0f);
         }
 
         //! A copy of matplotlib's magma colourmap
-        std::array<float,3> magma (Flt datum)
+        std::array<float,3> magma (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_magma_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_magma_len-1))));
             std::array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
             return c;
         }
 
         //! A copy of matplotlib's inferno colourmap
-        std::array<float,3> inferno (Flt datum)
+        std::array<float,3> inferno (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_inferno_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_inferno_len-1))));
             std::array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
             return c;
         }
 
         //! A copy of matplotlib's plasma colourmap
-        std::array<float,3> plasma (Flt datum)
+        std::array<float,3> plasma (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_plasma_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_plasma_len-1))));
             std::array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
             return c;
         }
 
         //! A copy of matplotlib's viridis colourmap
-        std::array<float,3> viridis (Flt datum)
+        std::array<float,3> viridis (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_viridis_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_viridis_len-1))));
             std::array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
             return c;
         }
 
         //! A copy of matplotlib's cividis colourmap
-        std::array<float,3> cividis (Flt datum)
+        std::array<float,3> cividis (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_cividis_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_cividis_len-1))));
             std::array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
             return c;
         }
 
         //! A copy of matplotlib's twilight colourmap
-        std::array<float,3> twilight (Flt datum)
+        std::array<float,3> twilight (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (Flt)(morph::cm_twilight_len-1))));
+            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
             std::array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
             return c;
         }
