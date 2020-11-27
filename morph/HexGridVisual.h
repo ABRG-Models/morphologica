@@ -60,13 +60,14 @@ namespace morph {
     {
     public:
         //! Constructor which does not set colour map
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
                       const std::vector<T>* _data)
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -83,13 +84,14 @@ namespace morph {
 
         //! Constructor which does not set colour map and takes an std::array for
         //! _offset for backwards compatibility
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
                       const std::vector<T>* _data)
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset.set_from (_offset);
             this->viewmatrix.translate (this->mv_offset);
 
@@ -105,7 +107,7 @@ namespace morph {
         }
 
         //! Constructor which sets default colour map
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
                       const std::vector<T>* _data,
@@ -114,6 +116,7 @@ namespace morph {
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -133,7 +136,7 @@ namespace morph {
 
         //! Constructor which sets default colour map and takes an std::array for
         //! _offset for backwards compatibility
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
                       const std::vector<T>* _data,
@@ -142,6 +145,7 @@ namespace morph {
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset.set_from (_offset);
             this->viewmatrix.translate (this->mv_offset);
 
@@ -161,7 +165,7 @@ namespace morph {
         }
 
         //! Constructor which sets default colour map and z/colour Scale objects
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const Vector<float> _offset,
                       const std::vector<T>* _data,
@@ -172,6 +176,7 @@ namespace morph {
         {
             // Set up...
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -190,7 +195,7 @@ namespace morph {
 
         //! Constructor which sets default colour map and z/colour Scale objects and
         //! takes an std::array for _offset for backwards compatibility
-        HexGridVisual(GLuint sp,
+        HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
                       const std::array<float, 3> _offset,
                       const std::vector<T>* _data,
@@ -206,6 +211,7 @@ namespace morph {
             //
             // So do it long-hand:
             this->shaderprog = sp;
+            this->tshaderprog = tsp;
             this->mv_offset.set_from (_offset);
             this->viewmatrix.translate (this->mv_offset);
 

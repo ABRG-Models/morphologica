@@ -20,11 +20,14 @@
 #include <morph/MathConst.h>
 #include <morph/VisualCommon.h>
 #include <morph/VisualTextModel.h>
+#include <morph/VisualFace.h>
+#include <morph/colour.h>
 #include <iostream>
 #include <vector>
 #include <array>
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
@@ -179,6 +182,23 @@ namespace morph {
         }
 
     public:
+
+        //! Add a text label to the model at location (within the model coordinates)
+        //! toffset.
+        void addLabel (const std::string& _text,
+                       const morph::Vector<float, 3>& _toffset,
+                       const std::array<float, 3>& _tcolour = morph::colour::black,
+                       const morph::VisualFont _font = morph::VisualFont::Vera,
+                       const float _fontsize = 0.05,
+                       const int _fontres = 24)
+        {
+            if (this->tshaderprog == 0) {
+                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
+            }
+            morph::VisualTextModel* tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
+            tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
+            this->texts.push_back (tm);
+        }
 
         //! Setter for the viewmatrix
         void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
