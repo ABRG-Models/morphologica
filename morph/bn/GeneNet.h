@@ -184,11 +184,10 @@ namespace morph {
                         std::cout << "Setting state for gene " << i
                                   << ", with genome section " << i << " which is "
                                   << std::hex << static_cast<unsigned long long int>(gs)
-                                  << std::dec << " out of " << genome << std::endl;
-
-                        std::cout << "inputs["<<i<<"] is " << GeneNet<N,K>::input_str(inputs[i]) << std::endl;
-                        std::cout << "Moving " << (unsigned int)inputs[i]
-                                  << " rows down the gene " << i << " col of the i/o table\n";
+                                  << std::dec << " out of " << genome
+                                  << "\ninputs["<<i<<"] is " << GeneNet<N,K>::input_str(inputs[i])
+                                  << "\nMoving " << (unsigned int)inputs[i]
+                                  << " rows down the gene " << i << " col of the i/o table" << std::endl;
                     }
                     // This line is 'move (inputs[i]) rows down the gene i column of the
                     // input-output table and read the bit'

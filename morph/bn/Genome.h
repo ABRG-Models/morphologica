@@ -119,13 +119,9 @@ namespace morph {
                 ss << std::dec << std::endl;
                 ss << "Genome table:" << std::endl;
                 ss << "input   output" << std::endl;
-                for (unsigned int i = K; i > 0; --i) {
-                    ss << (i-1);
-                }
+                for (unsigned int i = K; i > 0; --i) { ss << (i-1); }
                 ss << "   ";
-                for (unsigned int i = 0; i < N; ++i) {
-                    ss << i;
-                }
+                for (unsigned int i = 0; i < N; ++i) { ss << i; }
                 ss << " <-- for input, bit posn; for output, array index";
 
                 ss << std::endl << "----------------" << std::endl;
