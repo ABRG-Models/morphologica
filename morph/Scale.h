@@ -439,9 +439,9 @@ namespace morph {
         //! Set params for a two parameter scaling
         //! \param p0 The zeroth parameter
         //! \param p1 The first parameter
-        void setParams (T p0, T p1)
+        void setParams (S p0, S p1)
         {
-            this->params.resize (2, T{0});
+            this->params.resize (2, S{0});
             this->params[0] = p0;
             this->params[1] = p1;
         }
