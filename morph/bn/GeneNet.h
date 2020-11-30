@@ -291,6 +291,71 @@ namespace morph {
                 return ss.str();
             }
 
+            static constexpr bool debug_tables = false;
+            static std::string gene_tables (const Genome<N, K>& genome)
+            {
+                std::stringstream ss;
+
+                // Draw the N Gene tables out - for each gene, what is my output for a
+                // given set of gene states?
+
+                std::array<state_t, N> inputs;
+
+                // Gene table headings, all in a row
+                for (unsigned int i = 0; i<N; ++i) {
+                    ss << "Gene " << (char)('a'+i) << " | ";
+                }
+                ss << "\n";
+                for (unsigned int i = 0; i<N; ++i) { ss << "---------"; }
+                ss << "\n";
+
+                // Heading2
+                for (unsigned int i = 0; i<N; ++i) {
+                    for (unsigned int k = 0; k < K; ++k) {
+                        ss << (char)('a'+k) << " ";
+                    }
+                    ss << " " << (char)('a'+i) << " | ";
+                }
+                ss << "\n";
+                for (unsigned int i = 0; i<N; ++i) { ss << "---------"; }
+                ss << "\n";
+
+                // State/output
+                for (unsigned int j = 0; j < (1 << K); ++j) {
+
+                    for (unsigned int i = 0; i<N; ++i) {
+
+                        genosect_t gs = genome[i];
+
+                        state_t s = (state_t) (j & state_mask);
+
+                        // output the state as 1010etc
+                        ss << GeneNet<N,K>::state_str(s) << " ";
+
+                        // Compute inputs for the current state
+                        GeneNet<N,K>::setup_inputs (s, inputs);
+
+                        // This line is 'move (inputs[i]) rows down the gene i column of the
+                        // input-output table and read the bit'
+                        genosect_t inpit = (genosect_t{1} << inputs[i]);
+                        state_t num = ((gs & inpit) ? 0x1 : 0x0);
+
+                        if constexpr (debug_tables == true) {
+                            std::cout << "for state " << GeneNet<N,K>::state_str(s)
+                                      << "Gene " << (char)('a'+i) << " inputs are "
+                                      << GeneNet<N,K>::input_str(inputs[i])
+                                      << " and the output is " << (num ? "1" : "0")
+                                      << std::endl;
+                        }
+
+                        ss << (num ? "1" : "0") << " | ";
+                    }
+                    ss << std::endl;
+                }
+
+                return ss.str();
+            }
+
             //! A setter for the state of this GeneNet.
             //void set (const state_t& st) { this->state = st; }
 
