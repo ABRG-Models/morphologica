@@ -345,6 +345,7 @@ namespace morph {
                                       << "Gene " << (char)('a'+i) << " inputs are "
                                       << GeneNet<N,K>::input_str(inputs[i])
                                       << " and the output is " << (num ? "1" : "0")
+                                      << ". This bit would go in state[1<<" << N-i-1 << "]"
                                       << std::endl;
                         }
 
