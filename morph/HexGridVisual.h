@@ -172,7 +172,8 @@ namespace morph {
                       const Scale<T, float>& zscale,
                       const Scale<T, float>& cscale,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f)
+                      const float _hue = 0.0f,
+                      const bool _zerogrid = false)
         {
             // Set up...
             this->shaderprog = sp;
@@ -189,6 +190,8 @@ namespace morph {
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
 
+            this->zerogrid = _zerogrid;
+
             this->initializeVertices();
             this->postVertexInit();
         }
@@ -202,7 +205,8 @@ namespace morph {
                       const Scale<T, float>& zscale,
                       const Scale<T, float>& cscale,
                       ColourMapType _cmt,
-                      const float _hue = 0.0f)
+                      const float _hue = 0.0f,
+                      const bool _zerogrid = false)
         {
             // This (subcalling another constructor) failed:
             //Vector<float> offset_vec;
@@ -223,6 +227,8 @@ namespace morph {
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
+
+            this->zerogrid = _zerogrid;
 
             this->initializeVertices();
             this->postVertexInit();
@@ -273,6 +279,9 @@ namespace morph {
                 }
             }
         }
+
+        //! Show a set of hexes at the zero?
+        bool zerogrid = false;
 
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
@@ -465,6 +474,91 @@ namespace morph {
 
                 idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
+
+            // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
+            if (this->zerogrid == true) {
+                for (unsigned int hi = 0; hi < nhex; ++hi) {
+
+                    // z position is always 0
+                    datum = 0.0f;
+                    // Use a single colour for the zero grid
+                    std::array<float, 3> clr = { .8f, .8f, .8f};
+
+                    // First push the 7 positions of the triangle vertices, starting with the centre
+                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datum, this->vertexPositions);
+
+                    // Use the centre position as the first location for finding the normal vector
+                    vtx_0 = {this->hg->d_x[hi], this->hg->d_y[hi], datum};
+                    // NE vertex
+                    this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                    vtx_1 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum};
+                    // SE vertex
+                    this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                    vtx_2 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum};
+                    // S
+                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
+                    // SW
+                    this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                    // NW
+                    this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                    // N
+                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
+
+                    // From vtx_0,1,2 compute normal. This sets the correct normal, but note
+                    // that there is only one 'layer' of vertices; the back of the
+                    // HexGridVisual will be coloured the same as the front. To get lighting
+                    // effects to look really good, the back of the surface could need the
+                    // opposite normal.
+                    morph::Vector<float> plane1 = vtx_1 - vtx_0;
+                    morph::Vector<float> plane2 = vtx_2 - vtx_0;
+                    morph::Vector<float> vnorm = plane2.cross (plane1);
+                    vnorm.renormalize();
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+                    this->vertex_push (vnorm, this->vertexNormals);
+
+                    // Seven vertices with the same colour
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+
+                    // Define indices now to produce the 6 triangles in the hex
+                    this->indices.push_back (idx+1);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+2);
+
+                    this->indices.push_back (idx+2);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+3);
+
+                    this->indices.push_back (idx+3);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+4);
+
+                    this->indices.push_back (idx+4);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+5);
+
+                    this->indices.push_back (idx+5);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+6);
+
+                    this->indices.push_back (idx+6);
+                    this->indices.push_back (idx);
+                    this->indices.push_back (idx+1);
+
+                    idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                }
+            }
+            // End trial grid
         }
 
         //! Initialize as hexes, with a step quad between each
