@@ -29,14 +29,8 @@ public:
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> B;
 
-    /*!
-     * J(x,t) - the "flux current". This is a vector field. May need J_A and J_B.
-     */
-    alignas(alignof(std::array<std::vector<Flt>, 2>))
-    std::array<std::vector<Flt>, 2> J;
-
-    /*!
-     * Schnakenberg
+    /*
+     * Schnakenberg parameters
      * F = k1 - k2 A + k3 A^2 B
      * G = k4        - k3 A^2 B
      */
@@ -45,32 +39,27 @@ public:
     alignas(Flt) Flt k3 = 1.0;
     alignas(Flt) Flt k4 = 1.0;
 
-    /*!
+    /*
      * The diffusion parameters.
      */
-    //@{
     alignas(Flt) Flt D_A = 0.1;
     alignas(Flt) Flt D_B = 0.1;
-    //@}
 
     /*!
      * Simple constructor; no arguments. Simply call RD_Base constructor.
      */
-    RD_Schnakenberg (void) :
-        morph::RD_Base<Flt>() {
-    }
+    RD_Schnakenberg (void) : morph::RD_Base<Flt>() {}
 
     /*!
      * Destructor
      */
-    ~RD_Schnakenberg (void) {
-        // No operation. RD_Base destructor will free HexGrid.
-    }
+    ~RD_Schnakenberg (void) {} // No operation. RD_Base destructor will free HexGrid.
 
     /*!
      * Perform memory allocations, vector resizes and so on.
      */
-    void allocate (void) {
+    void allocate (void)
+    {
         // Always call allocate() from the base class first.
         morph::RD_Base<Flt>::allocate();
         // Resize and zero-initialise the various containers. Note that the size of a
@@ -84,22 +73,18 @@ public:
      * Initialise variables and parameters. Carry out one-time computations required
      * of the model.
      */
-    void init (void) {
+    void init (void)
+    {
         // Initialise A, B with noise
         this->noiseify_vector_variable (this->A, 0.5, 1);
         this->noiseify_vector_variable (this->B, 0.6, 1);
     }
 
-
     /*!
-     * HDF5 file saving/loading methods.
+     * Save the variables to HDF5.
      */
-    //@{
-
-    /*!
-     * Save the variables.
-     */
-    void save (void) {
+    void save (void)
+    {
         std::stringstream fname;
         fname << this->logpath << "/dat_";
         fname.width(5);
@@ -118,15 +103,10 @@ public:
     }
 
     /*!
-     * Computation methods
+     * Schnakenberg computation for reagent A
      */
-    //@{
-
-    /*!
-     * Schnakenberg functions
-     */
-    //@{
-    void compute_dAdt (std::vector<Flt>& A_, std::vector<Flt>& dAdt) {
+    void compute_dAdt (std::vector<Flt>& A_, std::vector<Flt>& dAdt)
+    {
         std::vector<Flt> lapA(this->nhex, 0.0);
         this->compute_laplace (A_, lapA);
 #pragma omp parallel for
@@ -135,7 +115,12 @@ public:
                 + (this->k3 * A_[h] * A_[h] * this->B[h]) + this->D_A * lapA[h];
         }
     }
-    void compute_dBdt (std::vector<Flt>& B_, std::vector<Flt>& dBdt) {
+
+    /*!
+     * Schnakenberg computation for reagent B
+     */
+    void compute_dBdt (std::vector<Flt>& B_, std::vector<Flt>& dBdt)
+    {
         std::vector<Flt> lapB(this->nhex, 0.0);
         this->compute_laplace (B_, lapB);
 #pragma omp parallel for
@@ -144,13 +129,12 @@ public:
             dBdt[h] = this->k4 - (this->k3 * this->A[h] * this->A[h] * B_[h]) + this->D_B * lapB[h];
         }
     }
-    //@}
 
     /*!
-     * Do a single step through the model.
+     * Simulate one timestep of the model
      */
-    void step (void) {
-
+    void step (void)
+    {
         this->stepCount++;
 
         // 1. 4th order Runge-Kutta computation for A

@@ -46,7 +46,8 @@
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const std::string& logpath, const std::string& name,
-               unsigned int frameN, morph::Visual& v) {
+               unsigned int frameN, morph::Visual& v)
+{
     std::stringstream ff1;
     ff1 << logpath << "/" << name<< "_";
     ff1 << std::setw(5) << std::setfill('0') << frameN;
@@ -282,7 +283,7 @@ int main (int argc, char **argv)
                                                                     &(RD.A),
                                                                     zscale,
                                                                     cscale,
-                                                                    morph::ColourMapType::Plasma));
+                                                                    morph::ColourMapType::Jet));
     v1.getVisualModel(Agrid)->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                                         morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
 
