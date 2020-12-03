@@ -218,6 +218,11 @@ namespace morph {
                 vv[i].assign (this->nhex, 0.0);
             }
         }
+        void set_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, Flt value) {
+            for (unsigned int i=0; i<N; ++i) {
+                vv[i].assign (this->nhex, value);
+            }
+        }
         void resize_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, unsigned int M) {
             vv.resize (N);
             for (unsigned int i=0; i<N; ++i) {
@@ -227,6 +232,11 @@ namespace morph {
         void zero_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, unsigned int M) {
             for (unsigned int i=0; i<N; ++i) {
                 vv[i].assign (M, 0.0);
+            }
+        }
+        void set_vector_vector (std::vector<std::vector<Flt> >& vv, unsigned int N, unsigned int M, Flt value) {
+            for (unsigned int i=0; i<N; ++i) {
+                vv[i].assign (M, value);
             }
         }
         //@}
