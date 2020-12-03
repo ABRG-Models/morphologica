@@ -81,61 +81,25 @@ extern "C" {
 
 namespace morph
 {
-    /*!
-     * Callbacks class extends ProcessCallbacks
-     */
+    //! Callbacks class extends ProcessCallbacks
     class ToolsProcessCallbacks : public ProcessCallbacks
     {
     public:
-        ToolsProcessCallbacks (ProcessData* p) {
-            this->parent = p;
-        }
+        ToolsProcessCallbacks (ProcessData* p) { this->parent = p; }
         void startedSignal (std::string msg) {}
-        void errorSignal (int err) {
-            this->parent->setErrorNum (err);
-        }
-        void processFinishedSignal (std::string msg) {
-            this->parent->setProcessFinishedMsg (msg);
-        }
-        void readyReadStandardOutputSignal (void) {
-            this->parent->setStdOutReady (true);
-        }
-        void readyReadStandardErrorSignal (void) {
-            this->parent->setStdErrReady (true);
-        }
+        void errorSignal (int err) { this->parent->setErrorNum (err); }
+        void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
+        void readyReadStandardOutputSignal (void) { this->parent->setStdOutReady (true); }
+        void readyReadStandardErrorSignal (void) { this->parent->setStdErrReady (true); }
     private:
         ProcessData* parent;
     };
 
-    /*!
-     * Allows the use of transform and tolower() on strings with
-     * GNU compiler
-     */
-    class to_lower
-    {
-    public:
-        /*!
-         * Apply lower case operation to the char c.
-         */
-        char operator() (const char c) const {
-            return tolower(c);
-        }
-    };
+    //! Allows use of transform and tolower() on strings with GNU compiler
+    struct to_lower { char operator() (const char c) const { return tolower(c); } };
 
-    /*!
-     * Allows the use of transform and toupper() on strings with
-     * GNU compiler
-     */
-    class to_upper
-    {
-    public:
-        /*!
-         * Apply upper case operation to the char c.
-         */
-        char operator() (const char c) const {
-            return toupper(c);
-        }
-    };
+    //! Allows use of transform and toupper() on strings with GNU compiler
+    struct to_upper { char operator() (const char c) const { return toupper(c); } };
 
     class Tools
     {
