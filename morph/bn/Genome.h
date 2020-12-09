@@ -118,6 +118,7 @@ namespace morph {
                 }
                 ss << std::endl << std::hex;
                 first = true;
+                // NB: In this table, Gene a is (*this)[0], Gene b is (*this)[1] and so on.
                 for (unsigned int i = 0; i<N; ++i) {
                     if (first) {
                         first = false;
