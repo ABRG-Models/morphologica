@@ -56,7 +56,8 @@ namespace morph {
         };
 #endif
 
-        //! The state has N bits in it. Working with N <= 8, so:
+        //! The state has N bits in it. Working with N <= 8 so an unsigned char is
+        //! sufficient. In this code, the MSB of state is what I call Gene a.
         typedef unsigned char state_t;
 
         //! A Boolean gene network class
