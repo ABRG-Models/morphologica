@@ -23,5 +23,7 @@ int main()
          << "Gene 1 climbs Gene 0? " << (gg.i_climbs_j (1,0) ? "true" : "false") << "\n"
          << "Gene 1 descends Gene 0? " << (gg.i_descends_j (1,0) ? "true" : "false") << "\n";
 
+    cout << endl << gg.table();
+
     return 0;
 }
