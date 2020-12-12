@@ -303,7 +303,12 @@ namespace morph {
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
+#ifdef __ICC__
+            morph::Vector<float> dummyzero = {{0.0f, 0.0f, 0.0f}};
+            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, dummyzero));
+#else
             this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, {0,0,0}));
+#endif
             this->datastyles.push_back (ds);
 
             // Compute the zScale and asbcissa_scale for the first added dataset only
@@ -553,11 +558,11 @@ namespace morph {
             morph::Vector<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
                 float _y0_mdl = this->zScale.transform_one (0);
-                lblpos = {0.9f * this->width,
-                           _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 };
+                lblpos = {{0.9f * this->width,
+                           _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 }};
             } else {
-                lblpos = {0.5f * this->width - geom.half_width(),
-                          -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0};
+                lblpos = {{0.5f * this->width - geom.half_width(),
+                           -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0}};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
             this->texts.push_back (lbl);
@@ -576,11 +581,11 @@ namespace morph {
 
             if (this->axisstyle == axisstyle::cross) {
                 float _x0_mdl = this->abscissa_scale.transform_one (0);
-                lblpos = { _x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
-                           0.9f * this->height, 0 };
+                lblpos = {{ _x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                            0.9f * this->height, 0 }};
             } else {
-                lblpos = { -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
-                           0.5f*this->height - downshift, 0 };
+                lblpos = {{ -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                            0.5f*this->height - downshift, 0 }};
             }
 
             if (geom.width() > 2*this->fontsize) {

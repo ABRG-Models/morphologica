@@ -332,7 +332,7 @@ namespace morph {
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {this->hg->d_x[hi], this->hg->d_y[hi], datumC};
+                vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datumC}};
 
                 // NE vertex
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
@@ -348,7 +348,7 @@ namespace morph {
                     datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                vtx_1 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum};
+                vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
 
                 // SE vertex
                 if (HAS_NE(hi) && HAS_NSE(hi)) {
@@ -363,7 +363,7 @@ namespace morph {
                     datum = datumC;
                 }
                 this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                vtx_2 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum};
+                vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
 
                 // S
                 if (HAS_NSE(hi) && HAS_NSW(hi)) {
@@ -488,13 +488,13 @@ namespace morph {
                     this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datum, this->vertexPositions);
 
                     // Use the centre position as the first location for finding the normal vector
-                    vtx_0 = {this->hg->d_x[hi], this->hg->d_y[hi], datum};
+                    vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datum}};
                     // NE vertex
                     this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                    vtx_1 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum};
+                    vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
                     // SE vertex
                     this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                    vtx_2 = {this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum};
+                    vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
                     // S
                     this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
                     // SW
