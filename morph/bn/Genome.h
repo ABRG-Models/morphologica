@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <immintrin.h>
+#include <morph/tools.h>
 #include <morph/bn/Random.h>
 #include <morph/bn/Genosect.h>
 

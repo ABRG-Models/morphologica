@@ -15,13 +15,21 @@ int main()
     gg.randomize();
     cout << "Random gradient Genome:  " << gg << endl;
 
-    gg.set ("2-8");
+    gg.set ("3-4");
 
     cout << "For Gradient genome " << gg << ":\n"
+         << "Gene 0 climbs Gene 0? " << (gg.i_climbs_j (0,0) ? "true" : "false") << "\n"
+         << "Gene 0 descends Gene 0? " << (gg.i_descends_j (0,0) ? "true" : "false") << "\n"
          << "Gene 0 climbs Gene 1? " << (gg.i_climbs_j (0,1) ? "true" : "false") << "\n"
          << "Gene 0 descends Gene 1? " << (gg.i_descends_j (0,1) ? "true" : "false") << "\n"
+         << "Gene 1 climbs Gene 1? " << (gg.i_climbs_j (1,1) ? "true" : "false") << "\n"
+         << "Gene 1 descends Gene 1? " << (gg.i_descends_j (1,1) ? "true" : "false") << "\n"
          << "Gene 1 climbs Gene 0? " << (gg.i_climbs_j (1,0) ? "true" : "false") << "\n"
          << "Gene 1 descends Gene 0? " << (gg.i_descends_j (1,0) ? "true" : "false") << "\n";
+
+    std::string sd = (gg.degenerate() ? "true":"false");
+    cout << "Degenerate? " << sd << std::endl;
+    cout << "Self degenerate? " << (gg.selfdegenerate() ? "true":"false") << std::endl;
 
     cout << endl << gg.table();
 
