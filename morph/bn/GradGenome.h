@@ -47,7 +47,8 @@ namespace morph {
          * type; unsigned char, unsigned int or unsigned long long int.
          *
          * \tparam N The number of genes in the network. Each gene interacts with the
-         * other N genes so there are 2*N*N bits total in the GradGenome.
+         * other N genes so there are 2*N*N bits total in the GradGenome and a maximum
+         * of 2^(2*N*N) possible values (though degeneracy will reduce this number)
          */
         template <size_t N=5>
         struct GradGenome : public std::array<typename GradGenosect<N>::type, N>
@@ -263,6 +264,34 @@ namespace morph {
                     (*this)[i] = std::stoi (p, 0, 16) & this->genosect_mask;
                     i++;
                 }
+            }
+
+            //! Increment the genome to the next one (in ascending order). If no higher
+            //! ones exist, return false.
+            static constexpr genosect_t allones = ((1<<(2*N))-1);
+            bool inc()
+            {
+                // First, run through and find out if ALL fields are ALL ones
+                unsigned int n_allones = 0;
+                for (unsigned int i = 0; i < N; ++i) {
+                    n_allones += (*this)[i] == allones ? 1 : 0;
+                }
+                // If all ones in every genosect, then we can't increment
+                if (n_allones == N) { return false; }
+
+                // Now increment whichever element we have to
+                for (unsigned int i = 0; i < N; ++i) {
+                    // Have we reached all ones?
+                    if ((*this)[i] == allones) {
+                        // Set this one to 0, as we'll increment the next one
+                        (*this)[i] = 0;
+                    } else {
+                        (*this)[i]++;
+                        break;
+                    }
+                }
+
+                return true;
             }
 
             //! Set the genome to zero.

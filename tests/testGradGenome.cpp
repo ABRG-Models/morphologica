@@ -29,9 +29,35 @@ int main()
 
     std::string sd = (gg.degenerate() ? "true":"false");
     cout << "Degenerate? " << sd << std::endl;
-    cout << "Self degenerate? " << (gg.selfdegenerate() ? "true":"false") << std::endl;
+    cout << "Self degenerate? " << (gg.selfdegenerate() ? "true":"false") << endl;
 
     cout << endl << gg.table();
 
+    cout << "\nCycle through a full gradient genome...\n";
+
+    gg.set ("0-0");
+    cout << gg << endl;
+    unsigned int num = 0;
+    unsigned int num_nondegen = 0;
+    while (gg.inc()) {
+        // It's a new genome
+        ++num;
+        std::string s = "";
+        if (gg.degenerate()) {
+            s += " degenerate";
+            if (gg.selfdegenerate()) {
+                s += " self-degenerate";
+            }
+        } else {
+            if (gg.selfdegenerate()) {
+                s += " self-degenerate";
+            } else {
+                s += " non-degenerate";
+                ++num_nondegen;
+            }
+        }
+        cout << gg << s << endl;
+    }
+    cout << "Num possibles: " << num << ", num non-degenerate: " << num_nondegen << endl;
     return 0;
 }
