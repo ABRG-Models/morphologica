@@ -300,6 +300,17 @@ namespace morph {
             //! Genome width
             static constexpr size_t width = 2 * N * N;
 
+
+            //! By default, permit a mutated genome to be degenerate - that is, BOTH the
+            //! climb and descend bits could be set at once, and these cancel out so
+            //! that in that case, the gene neither climbs nor descends. This means that
+            //! the chance of climbing is 1/4, descending is 1/4 and neither climbing
+            //! nor descending has probability 2/4.
+            static constexpr bool permit_degeneracy = true;
+
+            //! By default, do NOT permit gene A to climb/descend gene A.
+            static constexpr bool permit_selfdegeneracy = false;
+
             //! Mutate this genome with bit flip probability p
             void mutate (const float& p)
             {
@@ -311,6 +322,14 @@ namespace morph {
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (2*N); ++j) {
+
+                        if constexpr (permit_selfdegeneracy == false) {
+                            // Test whether bit j would be a self degenerate bit. If so,
+                            // don't flip (it should already be 0)
+                            unsigned int k = (2*(N-i-1)); // k is always even
+                            if (j == k || j == (k+1)) { continue; }
+                        } // else allow flipping of any bit
+
                         if (*riter++ < p) {
                             // Flip bit j
                             gsect ^= (genosect_t{1} << j);

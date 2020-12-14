@@ -35,14 +35,19 @@ int main()
 
     cout << "\nCycle through a full gradient genome...\n";
 
+    morph::bn::GradGenome<n> gg_ndg;
     gg.set ("0-0");
     cout << gg << endl;
     unsigned int num = 0;
     unsigned int num_nondegen = 0;
+    unsigned int num_nonselfdegen = 0;
     while (gg.inc()) {
         // It's a new genome
         ++num;
         std::string s = "";
+        if (!gg.selfdegenerate()) {
+            num_nonselfdegen++;
+        }
         if (gg.degenerate()) {
             s += " degenerate";
             if (gg.selfdegenerate()) {
@@ -54,10 +59,21 @@ int main()
             } else {
                 s += " non-degenerate";
                 ++num_nondegen;
+                gg_ndg = gg;
             }
         }
         cout << gg << s << endl;
     }
-    cout << "Num possibles: " << num << ", num non-degenerate: " << num_nondegen << endl;
+    cout << "Num possibles: " << num << ", num non-degenerate: " << num_nondegen << ", num that are just non-selfdegen: " << num_nonselfdegen << endl;
+
+    cout << "Selected non-degenerate: " << gg_ndg << endl;
+    for (unsigned int i = 0; i < 100; ++i) {
+        gg_ndg.mutate(0.8);
+        cout << "Mutated non-degenerate: " << gg_ndg
+             << ", deg: " << (gg_ndg.degenerate() ? "T":"F")
+             << ", self-deg: " << (gg_ndg.selfdegenerate() ? "T":"F")
+             << endl;
+    }
+
     return 0;
 }
