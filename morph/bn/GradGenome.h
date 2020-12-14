@@ -135,8 +135,16 @@ namespace morph {
                 }
                 ss << std::endl;
 
+                ss << this->shorttable();
+
+                return ss.str();
+            }
+
+            std::string shorttable() const
+            {
+                std::stringstream ss;
                 ss << "Gradient climb/descend short table:\n";
-                first = true;
+                bool first = true;
                 // 'i' header line
                 for (unsigned int i = 0; i<N; ++i) {
                     if (first) {
