@@ -67,13 +67,26 @@ int main()
     cout << "Num possibles: " << num << ", num non-degenerate: " << num_nondegen << ", num that are just non-selfdegen: " << num_nonselfdegen << endl;
 
     cout << "Selected non-degenerate: " << gg_ndg << endl;
-    for (unsigned int i = 0; i < 100; ++i) {
+    for (unsigned int i = 0; i < 10; ++i) {
         gg_ndg.mutate(0.8);
         cout << "Mutated non-degenerate: " << gg_ndg
              << ", deg: " << (gg_ndg.degenerate() ? "T":"F")
              << ", self-deg: " << (gg_ndg.selfdegenerate() ? "T":"F")
              << endl;
     }
+
+    cout << "All useful (non-selfdegenerate AND non-degenerate) genomes for 2 genes:\n";
+    gg.set ("0-0");
+    cout << gg << " ";
+    while (gg.inc()) {
+        // It's a new genome
+        ++num;
+        std::string s = "";
+        if (!gg.selfdegenerate() && !gg.degenerate()) {
+            cout << gg << " ";
+        }
+    }
+    cout << endl;
 
     return 0;
 }
