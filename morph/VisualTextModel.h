@@ -297,13 +297,23 @@ namespace morph {
             this->quad_ids.clear();
             // Our string of letters starts at this location
             float letter_pos = 0.0f; /*this->mv_offset[0]; THERE*/
+            float letter_y = 0.0f;
             float text_epsilon = 0.0f;
             for (std::string::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
+
+                if (*c == '\n') {
+                    // Skip newline, but add a y offset and reset letter_pos
+                    letter_pos = 0.0f;
+                    morph::gl::CharInfo ch = this->face->glchars['h'];
+                    letter_y += this->line_spacing * -ch.size.y() * this->fontscale;
+                    continue;
+                }
+
                 // Add a quad to this->quads
                 morph::gl::CharInfo ci = this->face->glchars[*c];
 
                 float xpos = letter_pos + ci.bearing.x() * this->fontscale;
-                float ypos = /*this->mv_offset[1]*/ - (ci.size.y() - ci.bearing.y()) * this->fontscale;
+                float ypos = letter_y /*this->mv_offset[1]*/ - (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 float w = ci.size.x() * this->fontscale;
                 float h = ci.size.y() * this->fontscale;
 
@@ -445,6 +455,8 @@ namespace morph {
     public:
         //! The colour of the text
         std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
+        //! Line spacing, in multiples of the height of an 'h'
+        float line_spacing = 1.4f;
     protected:
         //! A face for this text
         morph::gl::VisualFace* face = (morph::gl::VisualFace*)0;

@@ -216,6 +216,20 @@ namespace morph {
             this->vm.erase (this->vm.begin() + modelId);
         }
 
+        //! Add a text label to the scene at a given location.
+        void addLabel (const std::string& _text,
+                       const morph::Vector<float, 3>& _toffset,
+                       const std::array<float, 3>& _tcolour = morph::colour::black,
+                       const morph::VisualFont _font = morph::VisualFont::Vera,
+                       const float _fontsize = 0.01,
+                       const int _fontres = 24)
+        {
+            if (this->tshaderprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            morph::VisualTextModel* tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
+            tm->setupText (_text, _toffset, _tcolour);
+            this->texts.push_back (tm);
+        }
+
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window open,
          * and responsive, while displaying the result of a simulation. FIXME: This
@@ -353,13 +367,20 @@ namespace morph {
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
+            Vector<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
             if (this->showTitle == true) {
                 // Render the title text
                 glUseProgram (this->tshaderprog);
-                Vector<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);
                 this->textModel->render();
+            }
+
+            for (auto t : this->texts) {
+                glUseProgram (this->tshaderprog);
+                t->setSceneTranslation (v0);
+                t->setVisibleOn (this->bgcolour);
+                t->render();
             }
 
             glfwSwapBuffers (this->window);
@@ -820,6 +841,8 @@ namespace morph {
 
         //! A VisualTextModel for a title text.
         VisualTextModel* textModel = (VisualTextModel*)0;
+        //! Text models for labels
+        std::vector<morph::VisualTextModel*> texts;
 
         /*
          * Variables to manage projection and rotation of the object

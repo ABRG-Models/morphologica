@@ -26,7 +26,7 @@ int main()
 {
     int rtn = -1;
 
-    Visual v(800,600,"Test window", {0,0}, {.5,.5,.5}, 2.0f, 0.0f);
+    Visual v(800,600,"Visual Title", {0,0}, {.5,.5,.5}, 2.0f, 0.0f);
     // Set up the near and far cutoff distances for rendering objects
     v.zNear = 0.001;
     v.zFar = 50;
@@ -41,9 +41,11 @@ int main()
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
     v.showCoordArrows = true;
+    v.showTitle = true;
     v.coordArrowsInScene = true;
     v.backgroundWhite();
     v.lightingEffects();
+    v.addLabel ("A scene label \ntext", {0.0f, -0.03f, 0.0f});
 
     try {
         string pwd = Tools::getPwd();
