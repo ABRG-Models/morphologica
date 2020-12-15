@@ -66,6 +66,25 @@ namespace morph {
             }
             static constexpr genosect_t genosect_mask = GradGenome<N>::genosect_mask_init();
 
+            //! There is a set of 'self-degeneracy' masks, which prevent the
+            //! self-referencing bits of a genosect_t being set. Used in
+            //! randomize(). Note: not a constexpr because I'm initialising a std::array.
+            static std::array<genosect_t, N> selfdegen_mask_init()
+            {
+                std::array<genosect_t, N> _selfdegen_mask;
+                for (unsigned int i = 0; i < N; ++i) {
+                    _selfdegen_mask[i] = 0;
+                    for (unsigned int j = 0; j < N; ++j) {
+                        // Initialize 1s
+                        if (j != (N-i-1)) {
+                            _selfdegen_mask[i] |= (genosect_t{3} << 2*j);
+                        }
+                    }
+                }
+                return _selfdegen_mask;
+            }
+            std::array<genosect_t, N> selfdegen_mask = GradGenome<N>::selfdegen_mask_init();
+
             //! Each genosect can be up to 64 bits, so no more than 32 genes
             static constexpr bool checkTemplateParams()
             {
@@ -347,10 +366,17 @@ namespace morph {
                 }
             }
 
+            //! This randomises the gradient genome. If permit_selfdegeneracy is false,
+            //! then it does not randomize the bits that would lead to a self-degenerate
+            //! genome.
             void randomize()
             {
                 for (unsigned int i = 0; i < N; ++i) {
-                    (*this)[i] = Random<N,N>::i()->genosect_rng.get() & genosect_mask;
+                    if constexpr (permit_selfdegeneracy == false) {
+                        (*this)[i] = Random<N,N>::i()->genosect_rng.get() & selfdegen_mask[i];
+                    } else {
+                        (*this)[i] = Random<N,N>::i()->genosect_rng.get() & genosect_mask;
+                    }
                 }
             }
 
