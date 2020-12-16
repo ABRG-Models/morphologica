@@ -41,7 +41,7 @@ int main (int argc, char** argv)
         gv->setlimits (-1, 1, -1, 1);
 
         // Set the graphing policy
-        gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
+        gv->policy = morph::stylepolicy::lines; // markers, lines, both, allcolour
 
         // We 'prepare' two datasets, but won't fill them with data yet. However, we do give the data legend label here.
         gv->prepdata ("Third power");
