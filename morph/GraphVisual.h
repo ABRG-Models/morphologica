@@ -161,7 +161,7 @@ namespace morph {
         }
 
         //! Before calling the base class's render method, check if we have any pending data
-        void render (void)
+        void render()
         {
             if (this->pendingAppended == true) {
                 // After adding to graphDataCoords, we have to create the new OpenGL
@@ -435,11 +435,22 @@ namespace morph {
                         // No gaps, so draw a perfect set of joined up lines
                         if (i == 1+coords_start) {
                             // First line
-                            this->computeFlatLineN (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                    (*this->graphDataCoords[dsi])[i+1],
-                                                    uz,
-                                                    this->datastyles[dsi].linecolour,
-                                                    this->datastyles[dsi].linewidth);
+                            if (appending == true) {
+                                this->computeFlatLine (this->idx,
+                                                       (*this->graphDataCoords[dsi])[i-1], // start
+                                                       (*this->graphDataCoords[dsi])[i],   // end
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
+                            } else {
+                                this->computeFlatLineN (this->idx,
+                                                        (*this->graphDataCoords[dsi])[i-1], // start
+                                                        (*this->graphDataCoords[dsi])[i],   // end
+                                                        (*this->graphDataCoords[dsi])[i+1], // next
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            }
                         } else if (i == (coords_end-1)) {
                             // last line
                             this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
