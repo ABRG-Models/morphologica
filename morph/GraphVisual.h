@@ -553,8 +553,19 @@ namespace morph {
 
                 lpos[0] = this->dataaxisdist + ((float)col * col_advance);
                 lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
-                // Legend marker
-                this->marker (lpos, this->datastyles[dsi]);
+                // Legend line/marker
+                if (this->datastyles[dsi].showlines == true) {
+                    // draw short line at lpos
+                    morph::Vector<float, 3> abit = { 0.5f * toffset[0], 0.0f, 0.0f };
+                    this->computeFlatLine (this->idx, lpos - abit, lpos + abit,
+                                           this->uz,
+                                           this->datastyles[dsi].linecolour,
+                                           this->datastyles[dsi].linewidth);
+
+                }
+                if (this->datastyles[dsi].markerstyle != markerstyle::none) {
+                    this->marker (lpos, this->datastyles[dsi]);
+                }
                 legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset+this->mv_offset, this->axiscolour);
                 this->texts.push_back (legtexts[dsi]);
             }
