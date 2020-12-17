@@ -431,26 +431,24 @@ namespace morph {
                         this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                                this->datastyles[dsi].linecolour,
                                                this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                    } else if (appending == true) {
+                        this->computeFlatLineRnd (this->idx,
+                                                  (*this->graphDataCoords[dsi])[i-1], // start
+                                                  (*this->graphDataCoords[dsi])[i],   // end
+                                                  uz,
+                                                  this->datastyles[dsi].linecolour,
+                                                  this->datastyles[dsi].linewidth, 0.0f, true, false);
                     } else {
                         // No gaps, so draw a perfect set of joined up lines
                         if (i == 1+coords_start) {
                             // First line
-                            if (appending == true) {
-                                this->computeFlatLineRnd (this->idx,
-                                                          (*this->graphDataCoords[dsi])[i-1], // start
-                                                          (*this->graphDataCoords[dsi])[i],   // end
-                                                          uz,
-                                                          this->datastyles[dsi].linecolour,
-                                                          this->datastyles[dsi].linewidth, 0.0f, true, false); // true for start caps, false for end caps
-                            } else {
-                                this->computeFlatLineN (this->idx,
-                                                        (*this->graphDataCoords[dsi])[i-1], // start
-                                                        (*this->graphDataCoords[dsi])[i],   // end
-                                                        (*this->graphDataCoords[dsi])[i+1], // next
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            }
+                            this->computeFlatLineN (this->idx,
+                                                    (*this->graphDataCoords[dsi])[i-1], // start
+                                                    (*this->graphDataCoords[dsi])[i],   // end
+                                                    (*this->graphDataCoords[dsi])[i+1], // next
+                                                    uz,
+                                                    this->datastyles[dsi].linecolour,
+                                                    this->datastyles[dsi].linewidth);
                         } else if (i == (coords_end-1)) {
                             // last line
                             this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
