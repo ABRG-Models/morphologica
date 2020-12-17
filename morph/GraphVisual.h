@@ -436,12 +436,12 @@ namespace morph {
                         if (i == 1+coords_start) {
                             // First line
                             if (appending == true) {
-                                this->computeFlatLine (this->idx,
-                                                       (*this->graphDataCoords[dsi])[i-1], // start
-                                                       (*this->graphDataCoords[dsi])[i],   // end
-                                                       uz,
-                                                       this->datastyles[dsi].linecolour,
-                                                       this->datastyles[dsi].linewidth);
+                                this->computeFlatLineRnd (this->idx,
+                                                          (*this->graphDataCoords[dsi])[i-1], // start
+                                                          (*this->graphDataCoords[dsi])[i],   // end
+                                                          uz,
+                                                          this->datastyles[dsi].linecolour,
+                                                          this->datastyles[dsi].linewidth, 0.0f, true, false); // true for start caps, false for end caps
                             } else {
                                 this->computeFlatLineN (this->idx,
                                                         (*this->graphDataCoords[dsi])[i-1], // start
@@ -555,12 +555,12 @@ namespace morph {
                 lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
                 // Legend line/marker
                 if (this->datastyles[dsi].showlines == true) {
-                    // draw short line at lpos
+                    // draw short line at lpos (rounded ends)
                     morph::Vector<float, 3> abit = { 0.5f * toffset[0], 0.0f, 0.0f };
-                    this->computeFlatLine (this->idx, lpos - abit, lpos + abit,
-                                           this->uz,
-                                           this->datastyles[dsi].linecolour,
-                                           this->datastyles[dsi].linewidth);
+                    this->computeFlatLineRnd (this->idx, lpos - abit, lpos + abit,
+                                              this->uz,
+                                              this->datastyles[dsi].linecolour,
+                                              this->datastyles[dsi].linewidth);
 
                 }
                 if (this->datastyles[dsi].markerstyle != markerstyle::none) {

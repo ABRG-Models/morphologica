@@ -1244,11 +1244,11 @@ namespace morph {
             idx += nverts;
         } // end computeLine
 
-        // Like computeLine, but this line has no thickness and you can add end-caps (semi-circles)
+        // Like computeLine, but this line has no thickness.
         void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
                               Vector<float> uz,
                               std::array<float, 3> col,
-                              float w = 0.1f, float shorten = 0.0f, bool endcaps = false)
+                              float w = 0.1f, float shorten = 0.0f)
         {
             // The vector from start to end defines direction of the tube
             Vector<float> vstart = start;
@@ -1272,22 +1272,7 @@ namespace morph {
             Vector<float> c2 = vstart - ww;
             Vector<float> c3 = vend - ww;
             Vector<float> c4 = vend + ww;
-#if 0
-            if (endcaps) {
-                // Push the central point of the start cap - this is at location vstart
-                this->vertex_push (vstart, this->vertexPositions);
-                this->vertex_push (uz, this->vertexNormals);
-                this->vertex_push (col, this->vertexColors);
 
-                // Start cap vertices (a triangle fan)
-                for (int j = 0; j < segments; j++) {
-                    float t = j * morph::PI_F/(float)segments;
-                    this->vertex_push (vstart+c, this->vertexPositions);
-                    this->vertex_push (uz, this->vertexNormals);
-                    this->vertex_push (col, this->vertexColors);
-                }
-            }
-#endif
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
@@ -1304,44 +1289,160 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-#if 0
-            if (endcaps) {
-                // Bottom cap vertices
-                for (int j = 0; j < segments; j++) {
-                    Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
-                    this->vertex_push (vend+c, this->vertexPositions);
-                    this->vertex_push (v, this->vertexNormals);
-                    this->vertex_push (col, this->vertexColors);
-                }
-                // Bottom cap. Push centre vertex as the last vertex.
-                this->vertex_push (vend, this->vertexPositions);
-                this->vertex_push (v, this->vertexNormals);
-                this->vertex_push (col, this->vertexColors);
-            }
-#endif
-
             // Number of vertices = segments * 4 + 2.
             int nverts = 4;
-            if (endcaps) {  nverts += 0; } // fixme
 
             // After creating vertices, push all the indices.
-            //VBOint capMiddle = 4;
-            VBOint _idx = idx;
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
 
-            this->indices.push_back (_idx);
-            this->indices.push_back (_idx+1);
-            this->indices.push_back (_idx+2);
-
-            this->indices.push_back (_idx);
-            this->indices.push_back (_idx+2);
-            this->indices.push_back (_idx+3);
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
 
             // Update idx
             idx += nverts;
+
+        } // end computeFlatLine
+
+        // Like computeFlatLine but with option to add rounded start/end caps (I lazily
+        // draw a whole circle around start/end to achieve this, rather than figuring
+        // out a semi-circle).
+        void computeFlatLineRnd (VBOint& idx, Vector<float> start, Vector<float> end,
+                                 Vector<float> uz,
+                                 std::array<float, 3> col,
+                                 float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
+        {
+            // The vector from start to end defines direction of the tube
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+            Vector<float> v = vend - vstart;
+            v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+            }
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+
+            // corners of the line, and the start angle is determined from vv and w
+            Vector<float> ww = (vv*w*0.5f);
+            Vector<float> c1 = vstart + ww;
+            Vector<float> c2 = vstart - ww;
+            Vector<float> c3 = vend - ww;
+            Vector<float> c4 = vend + ww;
+
+            int segments = 12;
+            float r = 0.5f * w;
+            size_t startvertices = 0;
+            if (startcaps) {
+                // Push the central point of the start cap - this is at location vstart
+                this->vertex_push (vstart, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+                //std::cout << "centre point is index " << (idx + startvertices) << std::endl;
+                ++startvertices;
+
+                // Start cap vertices (a triangle fan)
+                for (int j = 0; j < segments; j++) {
+                    float t = j * morph::TWO_PI_F/(float)segments;
+                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, start[2] };
+                    this->vertex_push (vstart+c, this->vertexPositions);
+                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                    //std::cout << "capvertex is index " << (idx + startvertices) << std::endl;
+                    ++startvertices;
+                }
+                //std::cout << "startvertices = " << startvertices << std::endl;
+            }
+
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            this->vertex_push (c4, this->vertexPositions);
+            this->vertex_push (uz, this->vertexNormals);
+            this->vertex_push (col, this->vertexColors);
+
+            size_t endvertices = 0;
+            if (endcaps) {
+                // Push the central point of the end cap - this is at location vend
+                this->vertex_push (vend, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+                //std::cout << "centre point is index " << (idx + 4 + startvertices + endvertices) << std::endl;
+                ++endvertices;
+
+                // Start cap vertices (a triangle fan)
+                for (int j = 0; j < segments; j++) {
+                    float t = j * morph::TWO_PI_F/(float)segments;
+                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, start[2] };
+                    this->vertex_push (vend+c, this->vertexPositions);
+                    this->vertex_push (uz, this->vertexNormals);
+                    this->vertex_push (col, this->vertexColors);
+                    //std::cout << "capvertex is index " << (idx +  4 + startvertices + endvertices) << std::endl;
+                    ++endvertices;
+                }
+                //std::cout << "endvertices = " << endvertices << std::endl;
+            }
+
+            // After creating vertices, push all the indices.
+
+            if (startcaps) { // prolly startcaps, for flexibility
+                VBOint topcap = idx;
+                for (int j = 0; j < segments; j++) {
+                    int inc1 = 1+j;
+                    int inc2 = 1+((j+1)%segments);
+                    //std::cout << "tri: " << topcap << "," << topcap+inc1 << "," << topcap+inc2 << std::endl;
+                    this->indices.push_back (topcap);
+                    this->indices.push_back (topcap+inc1);
+                    this->indices.push_back (topcap+inc2);
+                }
+                idx += startvertices;
+            }
+
+            //std::cout << "Line tri idxs: " << idx << "," << idx+1 << "," << idx+2 << std::endl;
+            //std::cout << "Line tri idxs: " << idx << "," << idx+2 << "," << idx+3 << std::endl;
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+1);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx);
+            this->indices.push_back (idx+2);
+            this->indices.push_back (idx+3);
+            // Update idx
+            idx += 4;
+
+            if (endcaps) {
+                VBOint botcap = idx;
+                for (int j = 0; j < segments; j++) {
+                    int inc1 = 1+j;
+                    int inc2 = 1+((j+1)%segments);
+                    //std::cout << "tri: " << botcap << "," << botcap+inc1 << "," << botcap+inc2 << std::endl;
+                    this->indices.push_back (botcap);
+                    this->indices.push_back (botcap+inc1);
+                    this->indices.push_back (botcap+inc2);
+                }
+                idx += endvertices;
+            }
+            //std::cout << "end computeFlatLine(Caps): idx = " << idx << std::endl;
         } // end computeFlatLine
 
         //! Like computeFlatLine, but this line has no thickness and you can provide the
-        //! next data points so that this line and the next line can line up perfectly!
+        //! previous and next data points so that this line, the previous line and the
+        //! next line can line up perfectly without drawing a circular rounded 'end cap'!
         void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
                               Vector<float> prev, Vector<float> next,
                               Vector<float> uz,
