@@ -317,6 +317,12 @@ namespace morph {
                 float w = ci.size.x() * this->fontscale;
                 float h = ci.size.y() * this->fontscale;
 
+                // Update extents
+                if (xpos < this->extents[0]) { this->extents[0] = xpos; } // left
+                if (xpos+w > this->extents[1]) { this->extents[1] = xpos+w; } // right
+                if (ypos < this->extents[2]) { this->extents[2] = ypos; } // bottom
+                if (ypos+h > this->extents[3]) { this->extents[3] = ypos+h; } // top
+
                 // What's the order of the vertices for the quads? It is:
                 // Bottom left, Top left, top right, bottom right.
                 std::array<float,12> tbox = { xpos,   ypos,     /*this->mv_offset[2]+*/text_epsilon,
@@ -341,6 +347,8 @@ namespace morph {
                 letter_pos += ((ci.advance>>6)*this->fontscale);
             }
 
+            //std::cout << "After setupText, extents are: (LRBT): " << this->extents << std::endl;
+
             // Ensure we've cleared out vertex info
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -351,6 +359,9 @@ namespace morph {
 
             this->postVertexInit();
         }
+
+        float width() const { return this->extents[1] - this->extents[0]; }
+        float height() const { return this->extents[3] - this->extents[2]; }
 
     protected:
         //! Initialize the vertices that will represent the Quads.
@@ -501,6 +512,10 @@ namespace morph {
         std::string txt;
         //! The Quads that form the 'medium' for the text textures. 12 float = 4 corners
         std::vector<std::array<float,12>> quads;
+        //! left, right, top and bottom extents of the text for this
+        //! VisualTextModel. setupText should modify these as it sets up quads. Order of
+        //! numbers is left, right, bottom, top
+        Vector<float, 4> extents = { 1e7, -1e7, 1e7, -1e7 };
         //! The texture ID for each quad - so that we draw the right texture image over each quad.
         std::vector<unsigned int> quad_ids;
         //! Position within vertex buffer object (if I use an array of VBO)
