@@ -102,6 +102,41 @@ namespace morph {
                 }
             }
 
+            std::string shorttable() const
+            {
+                std::stringstream ss;
+                ss << "Genome table:" << std::endl;
+                ss << "i";
+                for (unsigned int i = K; i > 1; --i) { ss << " "; }
+                ss << "   ";
+                ss << "o" << std::endl;
+                for (unsigned int i = K; i > 0; --i) { ss << (i-1); }
+                ss << "   ";
+                for (unsigned int i = 0; i < N; ++i) { ss << i; }
+
+                ss << " (indices)\n----------------\n";
+                // 1234...
+                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
+                for (unsigned int i = 0; i<N-K; ++i) { ss << " "; }
+                ss << "   ";
+                // abcd...
+                for (unsigned int i = 0; i<N; ++i) { ss << (char)('a'+i); }
+                ss << " <-- ";
+                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
+                ss << "\n----------------\n";
+
+                for (unsigned int j = 0; j < (1 << K); ++j) {
+                    ss << std::bitset<K>(j) << "   ";
+                    for (unsigned int i = 0; i < N; ++i) {
+                        genosect_t mask = genosect_t{1} << j;
+                        ss << (((*this)[i]&mask) >> j);
+                    }
+                    ss << std::endl;
+                }
+
+                return ss.str();
+            }
+
             //! A debugging aid to display the genome in a little table.
             std::string table() const
             {
@@ -129,47 +164,8 @@ namespace morph {
                     }
                 }
                 ss << std::dec << std::endl;
-                ss << "Genome table:" << std::endl;
-                ss << "input   output" << std::endl;
-                for (unsigned int i = K; i > 0; --i) { ss << (i-1); }
-                ss << "   ";
-                for (unsigned int i = 0; i < N; ++i) { ss << i; }
-                ss << " <-- for input, bit posn; for output, array index";
 
-                ss << std::endl << "----------------" << std::endl;
-                // 1234...
-                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
-                for (unsigned int i = 0; i<N-K; ++i) { ss << " "; }
-                ss << "   ";
-                // abcd...
-                for (unsigned int i = 0; i<N; ++i) { ss << (char)('a'+i); }
-                ss << " <-- ";
-                for (unsigned int i = N-K+1; i<=N; ++i) { ss << i; }
-                ss << " is ";
-                for (unsigned int i = N-K+1; i<=N; ++i) {
-                    switch (i) {
-                    case 1: { ss << "i "; break; }
-                    case 2: { ss << "ii "; break; }
-                    case 3: { ss << "iii "; break; }
-                    case 4: { ss << "iv "; break; }
-                    case 5: { ss << "v "; break; }
-                    case 6: { ss << "vi "; break; }
-                    case 7:
-                    default: { ss << "vii "; break; }
-
-                    }
-                }
-                ss << "in Fig 1." << std::endl;
-                ss << "----------------" << std::endl;
-
-                for (unsigned int j = 0; j < (1 << K); ++j) {
-                    ss << std::bitset<K>(j) << "   ";
-                    for (unsigned int i = 0; i < N; ++i) {
-                        genosect_t mask = genosect_t{1} << j;
-                        ss << (((*this)[i]&mask) >> j);
-                    }
-                    ss << std::endl;
-                }
+                ss << this->shorttable();
 
                 return ss.str();
             }
