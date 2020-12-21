@@ -24,7 +24,8 @@ namespace morph {
 
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
-     * applications. It's used a lot in morph::Visual. The matrix data is stored in
+     * applications in which 3D coordinates are often defined in 4D homogeneous
+     * coordinates. It's used a lot in morph::Visual. The matrix data is stored in
      * TransformMatrix::mat, an array of 16 floating point numbers.
      *
      * \templateparam Flt The floating point type in which to store the
