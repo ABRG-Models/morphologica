@@ -60,7 +60,6 @@ int main()
     std::cout << "mi\n" << mi << std::endl;
     std::cout << "mi.invert():\n" << miinv << std::endl;
 
-#if 0
     // Test multiplication
     morph::Matrix33<float> mult1;
     setMatrixSequence (mult1);
@@ -76,100 +75,45 @@ int main()
     mult2.mat[6] = 9;
     mult2.mat[7] = 8;
     mult2.mat[8] = 7;
-    mult2.mat[9] = 6;
-    mult2.mat[10] = 5;
-    mult2.mat[11] = 4;
-    mult2.mat[12] = 3;
-    mult2.mat[13] = 2;
-    mult2.mat[14] = 1;
-    mult2.mat[15] = 0;
     std::cout << "mult2\n" << mult2 << std::endl;
 
     morph::Matrix33<float> mult3 = mult1 * mult2;
     std::cout << "mult1 * mult2 =\n" << mult3 << std::endl;
 
-    if (mult3.mat[0] != 304
-        || mult3.mat[1] != 358
-        || mult3.mat[2] != 412
-        || mult3.mat[3] != 466
-        || mult3.mat[4] != 208
-        || mult3.mat[5] != 246
-        || mult3.mat[6] != 284
-        || mult3.mat[7] != 322
-        || mult3.mat[8] != 112
-        || mult3.mat[9] != 134
-        || mult3.mat[10] != 156
-        || mult3.mat[11] != 178
-        || mult3.mat[12] != 16
-        || mult3.mat[13] != 22
-        || mult3.mat[14] != 28
-        || mult3.mat[15] != 34
+    morph::Matrix33<float> mult3alt = mult1 * mult2.mat;
+    std::cout << "mult1 * mult2.mat =\n" << mult3alt << std::endl;
+
+    if (mult3.mat[0] != 120
+        || mult3.mat[1] != 162
+        || mult3.mat[2] != 204
+        || mult3.mat[3] != 93
+        || mult3.mat[4] != 126
+        || mult3.mat[5] != 159
+        || mult3.mat[6] != 66
+        || mult3.mat[7] != 90
+        || mult3.mat[8] != 114
         ) {
         ++rtn;
     }
+    morph::Matrix33<float> mult1save = mult1;
     mult1 *= mult2;
     std::cout << "mult1 *= mult2 gives\n" << mult1 << std::endl;
-    if (mult1.mat[0] != 304
-        || mult1.mat[1] != 358
-        || mult1.mat[2] != 412
-        || mult1.mat[3] != 466
-        || mult1.mat[4] != 208
-        || mult1.mat[5] != 246
-        || mult1.mat[6] != 284
-        || mult1.mat[7] != 322
-        || mult1.mat[8] != 112
-        || mult1.mat[9] != 134
-        || mult1.mat[10] != 156
-        || mult1.mat[11] != 178
-        || mult1.mat[12] != 16
-        || mult1.mat[13] != 22
-        || mult1.mat[14] != 28
-        || mult1.mat[15] != 34
+    mult1 = mult1save;
+    mult1 *= mult2.mat;
+    std::cout << "mult1 *= mult2.mat gives\n" << mult1 << std::endl;
+
+    if (mult1.mat[0] != 120
+        || mult1.mat[1] != 162
+        || mult1.mat[2] != 204
+        || mult1.mat[3] != 93
+        || mult1.mat[4] != 126
+        || mult1.mat[5] != 159
+        || mult1.mat[6] != 66
+        || mult1.mat[7] != 90
+        || mult1.mat[8] != 114
         ) {
         ++rtn;
     }
 
-    std::array<float, 4> v1 = {1,2,3,4};
-    std::array<float, 4> v2;
-    std::array<float, 4> v3;
-    v2 = mult4 * v1;
-    v3 = mult4inv * v2;
-
-    std::cout << "v1 = (" << v1[0]
-              << "," << v1[1]
-              << "," << v1[2]
-              << "," << v1[3] << ")" << std::endl;
-    std::cout << "v2 = mult4 * v1 = (" << v2[0]
-              << "," << v2[1]
-              << "," << v2[2]
-              << "," << v2[3] << ")" << std::endl;
-    std::cout << "v3 = mult4inv * v2 = (" << v3[0]
-              << "," << v3[1]
-              << "," << v3[2]
-              << "," << v3[3] << ") (should be equal to v1)" << std::endl;
-
-    std::cout << "v1-v3 errors: " << abs(v1[0]-v3[0]) << ", "
-              << abs(v1[1]-v3[1]) << ", "
-              << abs(v1[2]-v3[2]) << ", "
-              << abs(v1[3]-v3[3]) << std::endl;
-
-    float esum = abs(v1[0]-v3[0])
-        + abs(v1[1]-v3[1])
-        + abs(v1[2]-v3[2])
-        + abs(v1[3]-v3[3]);
-
-    if (esum > 1e-5) {
-        std::cout << "Inverse failed to re-create the vector" << std::endl;
-        ++rtn;
-    }
-
-    // test matrix times Vector<T,4> multiplication  std::array = mat * morph::Vector
-    morph::Vector<float, 4> v4 = {1,0,0,0};
-    std::array<float, 4> r = mult4 * v4;
-    std::cout << " mult4 * " << v4 << ": (" << r[0] << "," << r[1] << "," << r[2] << "," << r[3] << ")\n";
-    if ((r[0]==15 && r[1]==17 && r[2]==0 && r[3]==0) == false) {
-        ++rtn;
-    }
-#endif
     return rtn;
 }

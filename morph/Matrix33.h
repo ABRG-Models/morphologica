@@ -231,81 +231,162 @@ namespace morph {
             for (unsigned int i = 0; i<9; ++i) { this->mat[i] *= f; }
         }
 
+        //! Right-multiply this->mat with m2.
+        void operator*= (const std::array<Flt, 9>& m2)
+        {
+            std::array<Flt, 9> result;
+            // Top row
+            result[0] = this->mat[0] * m2[0]
+            + this->mat[3] * m2[1]
+            + this->mat[6] * m2[2];
+            result[3] = this->mat[0] * m2[3]
+            + this->mat[3] * m2[4]
+            + this->mat[6] * m2[5];
+            result[6] = this->mat[0] * m2[6]
+            + this->mat[3] * m2[7]
+            + this->mat[6] * m2[8];
+
+            // Second row
+            result[1] = this->mat[1] * m2[0]
+            + this->mat[4] * m2[1]
+            + this->mat[7] * m2[2];
+            result[4] = this->mat[1] * m2[3]
+            + this->mat[4] * m2[4]
+            + this->mat[7] * m2[5];
+            result[7] = this->mat[1] * m2[6]
+            + this->mat[4] * m2[7]
+            + this->mat[7] * m2[8];
+
+            // Third row
+            result[2] = this->mat[2] * m2[0]
+            + this->mat[5] * m2[1]
+            + this->mat[8] * m2[2];
+            result[5] = this->mat[2] * m2[3]
+            + this->mat[5] * m2[4]
+            + this->mat[8] * m2[5];
+            result[8] = this->mat[2] * m2[6]
+            + this->mat[5] * m2[7]
+            + this->mat[8] * m2[8];
+
+            this->mat.swap (result);
+        }
+
+        //! Right-multiply this->mat with m2.
+        void operator*= (const Matrix33<Flt>& m2)
+        {
+            std::array<Flt, 9> result;
+            // Top row
+            result[0] = this->mat[0] * m2.mat[0]
+            + this->mat[3] * m2.mat[1]
+            + this->mat[6] * m2.mat[2];
+            result[3] = this->mat[0] * m2.mat[3]
+            + this->mat[3] * m2.mat[4]
+            + this->mat[6] * m2.mat[5];
+            result[6] = this->mat[0] * m2.mat[6]
+            + this->mat[3] * m2.mat[7]
+            + this->mat[6] * m2.mat[8];
+
+            // Second row
+            result[1] = this->mat[1] * m2.mat[0]
+            + this->mat[4] * m2.mat[1]
+            + this->mat[7] * m2.mat[2];
+            result[4] = this->mat[1] * m2.mat[3]
+            + this->mat[4] * m2.mat[4]
+            + this->mat[7] * m2.mat[5];
+            result[7] = this->mat[1] * m2.mat[6]
+            + this->mat[4] * m2.mat[7]
+            + this->mat[7] * m2.mat[8];
+
+            // Third row
+            result[2] = this->mat[2] * m2.mat[0]
+            + this->mat[5] * m2.mat[1]
+            + this->mat[8] * m2.mat[2];
+            result[5] = this->mat[2] * m2.mat[3]
+            + this->mat[5] * m2.mat[4]
+            + this->mat[8] * m2.mat[5];
+            result[8] = this->mat[2] * m2.mat[6]
+            + this->mat[5] * m2.mat[7]
+            + this->mat[8] * m2.mat[8];
+
+            this->mat.swap (result);
+        }
+
         //! Return this-> mat * m2
         Matrix33<Flt> operator* (const std::array<Flt, 9>& m2) const
         {
             Matrix33<Flt> result;
             // Top row
             result.mat[0] = this->mat[0] * m2[0]
-                + this->mat[4] * m2[1]
-                + this->mat[8] * m2[2]
-                + this->mat[12] * m2[3];
-            result.mat[4] = this->mat[0] * m2[4]
-                + this->mat[4] * m2[5]
-                + this->mat[8] * m2[6]
-                + this->mat[12] * m2[7];
-            result.mat[8] = this->mat[0] * m2[8]
-                + this->mat[4] * m2[9]
-                + this->mat[8] * m2[10]
-                + this->mat[12] * m2[11];
-            result.mat[12] = this->mat[0] * m2[12]
-                + this->mat[4] * m2[13]
-                + this->mat[8] * m2[14]
-                + this->mat[12] * m2[15];
+            + this->mat[3] * m2[1]
+            + this->mat[6] * m2[2];
+            result.mat[3] = this->mat[0] * m2[3]
+            + this->mat[3] * m2[4]
+            + this->mat[6] * m2[5];
+            result.mat[6] = this->mat[0] * m2[6]
+            + this->mat[3] * m2[7]
+            + this->mat[6] * m2[8];
 
             // Second row
             result.mat[1] = this->mat[1] * m2[0]
-                + this->mat[5] * m2[1]
-                + this->mat[9] * m2[2]
-                + this->mat[13] * m2[3];
-            result.mat[5] = this->mat[1] * m2[4]
-                + this->mat[5] * m2[5]
-                + this->mat[9] * m2[6]
-                + this->mat[13] * m2[7];
-            result.mat[9] = this->mat[1] * m2[8]
-                + this->mat[5] * m2[9]
-                + this->mat[9] * m2[10]
-                + this->mat[13] * m2[11];
-            result.mat[13] = this->mat[1] * m2[12]
-                + this->mat[5] * m2[13]
-                + this->mat[9] * m2[14]
-                + this->mat[13] * m2[15];
+            + this->mat[4] * m2[1]
+            + this->mat[7] * m2[2];
+            result.mat[4] = this->mat[1] * m2[3]
+            + this->mat[4] * m2[4]
+            + this->mat[7] * m2[5];
+            result.mat[7] = this->mat[1] * m2[6]
+            + this->mat[4] * m2[7]
+            + this->mat[7] * m2[8];
 
             // Third row
             result.mat[2] = this->mat[2] * m2[0]
-                + this->mat[6] * m2[1]
-                + this->mat[10] * m2[2]
-                + this->mat[14] * m2[3];
-            result.mat[6] = this->mat[2] * m2[4]
-                + this->mat[6] * m2[5]
-                + this->mat[10] * m2[6]
-                + this->mat[14] * m2[7];
-            result.mat[10] = this->mat[2] * m2[8]
-                + this->mat[6] * m2[9]
-                + this->mat[10] * m2[10]
-                + this->mat[14] * m2[11];
-            result.mat[14] = this->mat[2] * m2[12]
-                + this->mat[6] * m2[13]
-                + this->mat[10] * m2[14]
-                + this->mat[14] * m2[15];
+            + this->mat[5] * m2[1]
+            + this->mat[8] * m2[2];
+            result.mat[5] = this->mat[2] * m2[3]
+            + this->mat[5] * m2[4]
+            + this->mat[8] * m2[5];
+            result.mat[8] = this->mat[2] * m2[6]
+            + this->mat[5] * m2[7]
+            + this->mat[8] * m2[8];
 
-            // Bottom row
-            result.mat[3] = this->mat[3] * m2[0]
-                + this->mat[7] * m2[1]
-                + this->mat[11] * m2[2]
-                + this->mat[15] * m2[3];
-            result.mat[7] = this->mat[3] * m2[4]
-                + this->mat[7] * m2[5]
-                + this->mat[11] * m2[6]
-                + this->mat[15] * m2[7];
-            result.mat[11] = this->mat[3] * m2[8]
-                + this->mat[7] * m2[9]
-                + this->mat[11] * m2[10]
-                + this->mat[15] * m2[11];
-            result.mat[15] = this->mat[3] * m2[12]
-                + this->mat[7] * m2[13]
-                + this->mat[11] * m2[14]
-                + this->mat[15] * m2[15];
+            return result;
+        }
+
+        //! Return this-> mat * m2
+        Matrix33<Flt> operator* (const Matrix33<Flt>& m2) const
+        {
+            Matrix33<Flt> result;
+            // Top row
+            result.mat[0] = this->mat[0] * m2.mat[0]
+            + this->mat[3] * m2.mat[1]
+            + this->mat[6] * m2.mat[2];
+            result.mat[3] = this->mat[0] * m2.mat[3]
+            + this->mat[3] * m2.mat[4]
+            + this->mat[6] * m2.mat[5];
+            result.mat[6] = this->mat[0] * m2.mat[6]
+            + this->mat[3] * m2.mat[7]
+            + this->mat[6] * m2.mat[8];
+
+            // Second row
+            result.mat[1] = this->mat[1] * m2.mat[0]
+            + this->mat[4] * m2.mat[1]
+            + this->mat[7] * m2.mat[2];
+            result.mat[4] = this->mat[1] * m2.mat[3]
+            + this->mat[4] * m2.mat[4]
+            + this->mat[7] * m2.mat[5];
+            result.mat[7] = this->mat[1] * m2.mat[6]
+            + this->mat[4] * m2.mat[7]
+            + this->mat[7] * m2.mat[8];
+
+            // Third row
+            result.mat[2] = this->mat[2] * m2.mat[0]
+            + this->mat[5] * m2.mat[1]
+            + this->mat[8] * m2.mat[2];
+            result.mat[5] = this->mat[2] * m2.mat[3]
+            + this->mat[5] * m2.mat[4]
+            + this->mat[8] * m2.mat[5];
+            result.mat[8] = this->mat[2] * m2.mat[6]
+            + this->mat[5] * m2.mat[7]
+            + this->mat[8] * m2.mat[8];
 
             return result;
         }
