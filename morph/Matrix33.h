@@ -69,10 +69,10 @@ namespace morph {
 
         void setToIdentity()
         {
-            this->mat.fill (static_cast<Flt>(0.0));
-            this->mat[0] = static_cast<Flt>(1.0);
-            this->mat[4] = static_cast<Flt>(1.0);
-            this->mat[8] = static_cast<Flt>(1.0);
+            this->mat.fill (Flt{0.0});
+            this->mat[0] = Flt{1.0};
+            this->mat[4] = Flt{1.0};
+            this->mat[8] = Flt{1.0};
         }
 
         //! Transpose this matrix
@@ -139,8 +139,7 @@ namespace morph {
 
         std::array<Flt, 9> adjugate() const
         {
-            std::array<Flt, 9> adj = this->transpose (this->cofactor());
-            return adj;
+            return this->transpose (this->cofactor());
         }
 
         std::array<Flt, 9> cofactor() const
@@ -232,7 +231,8 @@ namespace morph {
             for (unsigned int i = 0; i<9; ++i) { this->mat[i] *= f; }
         }
 
-        Matrix33<Flt> operator* (const std::array<Flt, 16>& m2) const
+        //! Return this-> mat * m2
+        Matrix33<Flt> operator* (const std::array<Flt, 9>& m2) const
         {
             Matrix33<Flt> result;
             // Top row
