@@ -24,9 +24,10 @@ namespace morph {
 
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
-     * applications in which 3D coordinates are often defined in 4D homogeneous
-     * coordinates. It's used a lot in morph::Visual. The matrix data is stored in
-     * TransformMatrix::mat, an array of 16 floating point numbers.
+     * applications in which 3D coordinates are often given as 4D homogeneous
+     * coordinates (with the fourth element chosen to be equal to 1). It's used a lot in
+     * morph::Visual. The matrix data is stored in TransformMatrix::mat, an array of 16
+     * floating point numbers.
      *
      * \templateparam Flt The floating point type in which to store the
      * TransformMatrix's data.
@@ -85,11 +86,16 @@ namespace morph {
         //! Compute a morphing transformation to turn tri(ABC) into tri(DEF). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
         //! of vertices, then so should DEF.
-        void determineFrom (std::array<Vector<Flt>, 3>& abc,
-                            std::array<Vector<Flt>, 3>& def)
+        void determineFrom (std::array<Vector<Flt,4>, 3>& abc,
+                            std::array<Vector<Flt,4>, 3>& def)
         {
-            // WRITEME: Work out the transformation that makes abc turn into def and set
-            // it in this->mat.
+            // The transformation is quite simple to determine. abc defines a triangle
+            // as 3 columns of 4-vectors (in homogeneous coordinates); def defines a
+            // similar triangle as the target. Let there be a transformation, T such that
+            // Let  T * abc = def
+            //   => T * abc * inv(abc) = def * inv(abc)
+            //   => T = def * inv(abc)
+
         }
 
         //! Apply translation specified by vector @dv
