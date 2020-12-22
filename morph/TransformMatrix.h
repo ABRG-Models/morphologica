@@ -83,19 +83,18 @@ namespace morph {
             this->mat[15] = static_cast<Flt>(1.0);
         }
 
-        //! Compute a morphing transformation to turn tri(ABC) into tri(DEF). Avoid
+        //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
         //! of vertices, then so should DEF.
-        void determineFrom (std::array<Vector<Flt,4>, 3>& abc,
-                            std::array<Vector<Flt,4>, 3>& def)
+        void determineFrom (std::array<Vector<Flt,4>, 4>& abcd,
+                            std::array<Vector<Flt,4>, 4>& efdg)
         {
-            // The transformation is quite simple to determine. abc defines a triangle
-            // as 3 columns of 4-vectors (in homogeneous coordinates); def defines a
+            // The transformation is quite simple to determine. abcd defines a triangle
+            // as 3 columns of 4-vectors (in homogeneous coordinates); efgh defines a
             // similar triangle as the target. Let there be a transformation, T such that
-            // Let  T * abc = def
-            //   => T * abc * inv(abc) = def * inv(abc)
-            //   => T = def * inv(abc)
-
+            // Let  T * abcd = efgh
+            //   => T * abcd * inv(abcd) = efgh * inv(abc)
+            //   => T = efgh * inv(abcd)
         }
 
         //! Apply translation specified by vector @dv

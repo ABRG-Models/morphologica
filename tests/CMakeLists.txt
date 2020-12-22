@@ -274,9 +274,13 @@ add_test(testVector11 testVector11)
 add_executable(testScaleVector testScaleVector.cpp)
 add_test(testScaleVector testScaleVector)
 
-# Test morph::Transformmatrix
+# Test morph::TransformMatrix (4x4 matrix)
 add_executable(testTransformMatrix testTransformMatrix.cpp)
 add_test(testTransformMatrix testTransformMatrix)
+
+# Test morph::Matrix33 (3x3 matrix)
+add_executable(testMatrix33 testMatrix33.cpp)
+add_test(testMatrix33 testMatrix33)
 
 # Test Hex::get_vertex_coord()
 add_executable(testHexVertexPos testHexVertexPos.cpp)
