@@ -231,12 +231,68 @@ namespace morph {
         //! allow other Visuals to colour things in the same order as a graph.
         static std::array<float, 3> datacolour (size_t data_index)
         {
-            std::array<float, 3> rtn = morph::colour::black;
+            std::array<float, 3> rtn = morph::colour::gray50;
             switch (data_index) {
             case 0: { rtn = morph::colour::royalblue; break; }
             case 1: { rtn = morph::colour::crimson; break; }
             case 2: { rtn = morph::colour::goldenrod2; break; }
             case 3: { rtn = morph::colour::green2; break; }
+
+            case 4: { rtn = morph::colour::blue2; break; }
+            case 5: { rtn = morph::colour::blueviolet; break; }
+            case 6: { rtn = morph::colour::khaki1; break; }
+            case 7: { rtn = morph::colour::sapgreen; break; }
+
+            case 8: { rtn = morph::colour::mediumturquoise; break; }
+            case 9: { rtn = morph::colour::seagreen1; break; }
+            case 10: { rtn = morph::colour::darkgoldenrod4; break; }
+            case 11: { rtn = morph::colour::olivedrab2; break; }
+
+            case 12: { rtn = morph::colour::lightsteelblue3; break; }
+            case 13: { rtn = morph::colour::purple; break; }
+            case 14: { rtn = morph::colour::deeppink1; break; }
+            case 15: { rtn = morph::colour::red2; break; }
+
+            case 16: { rtn = morph::colour::royalblue1; break; }
+            case 17: { rtn = morph::colour::mediumorchid1; break; }
+            case 18: { rtn = morph::colour::lightskyblue1; break; }
+            case 19: { rtn = morph::colour::firebrick1; break; }
+
+            case 20: { rtn = morph::colour::royalblue2; break; }
+            case 21: { rtn = morph::colour::mediumorchid2; break; }
+            case 22: { rtn = morph::colour::lightskyblue2; break; }
+            case 23: { rtn = morph::colour::firebrick2; break; }
+
+            case 24: { rtn = morph::colour::royalblue3; break; }
+            case 25: { rtn = morph::colour::mediumorchid3; break; }
+            case 26: { rtn = morph::colour::lightskyblue3; break; }
+            case 27: { rtn = morph::colour::firebrick3; break; }
+
+            case 28: { rtn = morph::colour::royalblue4; break; }
+            case 29: { rtn = morph::colour::mediumorchid4; break; }
+            case 30: { rtn = morph::colour::lightskyblue4; break; }
+            case 31: { rtn = morph::colour::firebrick4; break; }
+
+            case 32: { rtn = morph::colour::brown1; break; }
+            case 33: { rtn = morph::colour::darkolivegreen1; break; }
+            case 34: { rtn = morph::colour::chocolate1; break; }
+            case 35: { rtn = morph::colour::chartreuse; break; }
+
+            case 36: { rtn = morph::colour::brown2; break; }
+            case 37: { rtn = morph::colour::darkolivegreen2; break; }
+            case 38: { rtn = morph::colour::chocolate2; break; }
+            case 39: { rtn = morph::colour::chartreuse2; break; }
+
+            case 40: { rtn = morph::colour::brown3; break; }
+            case 41: { rtn = morph::colour::darkolivegreen3; break; }
+            case 42: { rtn = morph::colour::chocolate3; break; }
+            case 43: { rtn = morph::colour::chartreuse3; break; }
+
+            case 44: { rtn = morph::colour::brown4; break; }
+            case 45: { rtn = morph::colour::darkolivegreen4; break; }
+            case 46: { rtn = morph::colour::chocolate4; break; }
+            case 47: { rtn = morph::colour::chartreuse4; break; }
+
             default: { break; }
             }
             return rtn;
