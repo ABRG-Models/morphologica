@@ -84,9 +84,11 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModel()
         {
+            std::cout << "~VisualModel()\n";
             for (auto& tm : this->texts) { delete (tm); }
             glDeleteBuffers (numVBO, vbos);
             morph::gl::Util::checkError (__FILE__, __LINE__);
+            std::cout << "~VisualModel: delete (vbos)\n";
             delete (this->vbos);
         }
 
@@ -105,6 +107,7 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Create the vertex buffer objects
+            std::cout << "VisualModel::postVertexInit(): new GLuint[] vbos\n";
             this->vbos = new GLuint[numVBO];
 #ifdef __MACS_HAD_OPENGL_450__
             glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only

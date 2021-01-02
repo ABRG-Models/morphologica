@@ -37,7 +37,10 @@ namespace morph {
             this->init (sp, tsp, _lengths, _thickness, _em);
         }
 
-        virtual ~CoordArrows () {}
+        virtual ~CoordArrows ()
+        {
+            std::cout << "~CoordArrows()\n";
+        }
 
         void init (GLuint sp, GLuint tsp,
                    const Vector<float, 3> _lengths, const float _thickness, const float _em)
@@ -74,6 +77,8 @@ namespace morph {
                                                             _em, 48, toffset,
                                                             "Z"));
             }
+
+            std::cout << "CoordArrows texts size: " << this->texts.size() << std::endl;
 
             // Initialize the vertices that will represent the object
             this->initializeVertices();
