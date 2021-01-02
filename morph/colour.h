@@ -378,7 +378,7 @@ namespace morph {
         static constexpr std::array<float, 3> chocolate1={1,0.4980392157,0.1411764706}; //,255,127,36
         static constexpr std::array<float, 3> chocolate2={0.9333333333,0.462745098,0.1294117647}; //,238,118,33
         static constexpr std::array<float, 3> chocolate3={0.8039215686,0.4,0.1137254902}; //,205,102,29
-        static constexpr std::array<float, 3> saddlebrown={0.5450980392,0.2705882353,0.0745098039}; //,139,69,19
+        static constexpr std::array<float, 3> chocolate4={0.5450980392,0.2705882353,0.0745098039}; //,139,69,19
         static constexpr std::array<float, 3> ivoryblack={0.1607843137,0.1411764706,0.1294117647}; //,41,36,33
         static constexpr std::array<float, 3> flesh={1,0.4901960784,0.2509803922}; //,255,125,64
         static constexpr std::array<float, 3> cadmiumorange={1,0.3803921569,0.0117647059}; //,255,97,3
