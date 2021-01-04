@@ -42,5 +42,7 @@ int main()
         rtn = 0;
     }
 
+    delete Hgrid;
+
     return rtn;
 }

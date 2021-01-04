@@ -29,10 +29,7 @@ namespace morph {
             this->init (sp, _offset, _start_coord, _end_coord, _radius, _start_col, _end_col);
         }
 
-        virtual ~RodVisual ()
-        {
-            std::cout << "~RodVisual()\n";
-        }
+        virtual ~RodVisual () {}
 
         void init (GLuint sp, const Vector<float, 3> _offset,
                    const Vector<float, 3> _start_coord, const Vector<float, 3> _end_coord, const float _radius,

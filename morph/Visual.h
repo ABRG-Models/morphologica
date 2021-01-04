@@ -144,7 +144,6 @@ namespace morph {
         //! Deconstructor deallocates CoordArrows and destroys GLFW windows
         ~Visual()
         {
-            std::cout << "~Visual()\n";
             delete this->coordArrows;
             for (unsigned int i = 0; i < this->vm.size(); ++i) {
                 delete this->vm[i];
