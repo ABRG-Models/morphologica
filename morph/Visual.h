@@ -155,6 +155,7 @@ namespace morph {
             this->texts.clear();
             glfwDestroyWindow (this->window);
             glfwTerminate();
+            morph::VisualResources::deregister();
         }
 
         //! Take a screenshot of the window
@@ -558,6 +559,7 @@ namespace morph {
         {
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
+            morph::VisualResources::register_visual();
 
             this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
             if (!this->window) {

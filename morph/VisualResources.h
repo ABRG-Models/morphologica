@@ -28,15 +28,8 @@ namespace morph {
     {
     private:
         VisualResources() {}
-        ~VisualResources()
-        {
-            // Clean up the faces
-            for (auto f : this->faces) { delete &f; }
-            // We're done with freetype
-            FT_Done_FreeType (this->freetype);
-            // Delete self
-            delete VisualResources::pInstance;
-        }
+        //! The deconstructor is never called for a singleton.
+        ~VisualResources() {}
 
         void glfw_init()
         {
@@ -68,6 +61,9 @@ namespace morph {
 
         //! A pointer returned to the single instance of this class
         static VisualResources* pInstance;
+
+        //! How many Visuals are we managing?
+        static int numVisuals;
 
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
@@ -102,11 +98,43 @@ namespace morph {
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
         static VisualResources* i()
         {
-            if (VisualResources::pInstance == 0) {
+            if (VisualResources::pInstance == (VisualResources*)0) {
                 VisualResources::pInstance = new VisualResources;
                 VisualResources::i()->init();
             }
             return VisualResources::pInstance;
+        }
+
+        //! register a morph::Visual as being handled by this VisualResources singleton instance
+        static void register_visual() { VisualResources::numVisuals++; }
+
+        //! De-register a morph::Visual. When there are no morph::Visuals left, deconstruct this VisualResources...
+        static void deregister()
+        {
+            VisualResources::numVisuals--;
+            std::cout << "Number of visuals is now " << VisualResources::numVisuals << std::endl;
+            if (VisualResources::numVisuals <= 0) {
+                VisualResources::pInstance->deconstruct();
+                // Delete self
+                delete VisualResources::pInstance;
+                VisualResources::pInstance = (VisualResources*)0;
+            }
+        }
+
+        void deconstruct()
+        {
+            std::cout << __FUNCTION__ << std::endl;
+            // Clean up the faces, which is a map:
+            // std::map<
+            //          std::pair<morph::VisualFont, unsigned int>,
+            //          morph::gl::VisualFace*
+            //         > faces;
+            // (want to delete the morph::gl::VisualFace)
+            for (auto& f : this->faces) { delete f.second; }
+            this->faces.clear();
+            // We're done with freetype
+            FT_Done_FreeType (this->freetype);
+            // NB: static deregister() will delete self
         }
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture resolution, \a fontpixels.
@@ -126,5 +154,5 @@ namespace morph {
 
     //! Globally initialise instance pointer to NULL
     VisualResources* VisualResources::pInstance = 0;
-
+    int VisualResources::numVisuals = 0;
 } // namespace morph
