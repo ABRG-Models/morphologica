@@ -571,18 +571,20 @@ namespace morph {
             std::vector<morph::VisualTextModel*> legtexts;
             float text_advance = 0.0f;
             for (size_t dsi = 0; dsi < gd_size; ++dsi) {
-                // Legend text
+                // Legend text. If all is well, this will be pushed onto the texts
+                // attribute and deleted when the model is deconstructed.
                 legtexts.push_back (new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres));
                 geom.push_back (legtexts.back()->getTextGeometry (this->datastyles[dsi].datalabel));
                 if (geom.back().total_advance > text_advance) {
                     text_advance = geom.back().total_advance;
                 }
             }
-            //std::cout << "Legend text advance is: " << text_advance << std::endl;
+            std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // If there are no legend texts to show, then clean up and return
-            if (text_advance == 0.0f) {
-                // FIXME: delete memory pointed to in legtexts
+            if (text_advance == 0.0f && !legtexts.empty()) {
+                // delete memory pointed to in legtexts?
+                for (auto& lt : legtexts) { delete lt; }
                 return;
             }
 

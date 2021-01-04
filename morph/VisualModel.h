@@ -85,9 +85,11 @@ namespace morph {
         virtual ~VisualModel()
         {
             for (auto& tm : this->texts) { delete (tm); }
-            glDeleteBuffers (numVBO, vbos);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            delete[] this->vbos;
+            if (this->vbos != (GLuint*)0) {
+                glDeleteBuffers (numVBO, vbos);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                delete[] this->vbos;
+            }
         }
 
         //! Common code to call after the vertices have been set up.

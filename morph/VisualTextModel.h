@@ -116,8 +116,10 @@ namespace morph {
 
         virtual ~VisualTextModel()
         {
-            glDeleteBuffers (numVBO, vbos);
-            delete[] this->vbos;
+            if (this->vbos != (GLuint*)0) {
+                glDeleteBuffers (numVBO, vbos);
+                delete[] this->vbos;
+            }
         }
 
         //! Render the VisualTextModel
@@ -418,25 +420,29 @@ namespace morph {
         //! Common code to call after the vertices have been set up.
         void postVertexInit()
         {
-            // Create vertex array object
+            if (this->vbos == (GLuint*)0) {
+                // Create vertex array object
 #ifdef __MACS_HAD_OPENGL_450__
-            glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
+                glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
 #else
-            glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
+                glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
 #endif
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
 
             glBindVertexArray (this->vao);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            // Create the vertex buffer objects
-            this->vbos = new GLuint[numVBO];
+            if (this->vbos == (GLuint*)0) {
+                // Create the vertex buffer objects
+                this->vbos = new GLuint[numVBO];
 #ifdef __MACS_HAD_OPENGL_450__
-            glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
+                glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
 #else
-            glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
+                glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
 #endif
-            morph::gl::Util::checkError (__FILE__, __LINE__);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
 
             // Set up the indices buffer - bind and buffer the data in this->indices
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
@@ -527,7 +533,7 @@ namespace morph {
         //! Single vbo to use as in example
         GLuint vbo;
         //! Vertex Buffer Objects stored in an array
-        GLuint* vbos;
+        GLuint* vbos = (GLuint*)0;
         //! CPU-side data for indices
         std::vector<VBOint> indices;
         //! CPU-side data for quad vertex positions
