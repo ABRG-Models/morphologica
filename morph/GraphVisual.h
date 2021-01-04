@@ -579,11 +579,11 @@ namespace morph {
                     text_advance = geom.back().total_advance;
                 }
             }
-            std::cout << "Legend text advance is: " << text_advance << std::endl;
+            //std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // If there are no legend texts to show, then clean up and return
             if (text_advance == 0.0f && !legtexts.empty()) {
-                // delete memory pointed to in legtexts?
+                // delete memory pointed to in legtexts
                 for (auto& lt : legtexts) { delete lt; }
                 return;
             }

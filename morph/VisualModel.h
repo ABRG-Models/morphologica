@@ -86,7 +86,7 @@ namespace morph {
         {
             for (auto& tm : this->texts) { delete (tm); }
             if (this->vbos != (GLuint*)0) {
-                glDeleteBuffers (numVBO, vbos);
+                glDeleteBuffers (numVBO, this->vbos);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
                 delete[] this->vbos;
             }

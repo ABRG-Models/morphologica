@@ -117,7 +117,7 @@ namespace morph {
         virtual ~VisualTextModel()
         {
             if (this->vbos != (GLuint*)0) {
-                glDeleteBuffers (numVBO, vbos);
+                glDeleteBuffers (numVBO, this->vbos);
                 delete[] this->vbos;
             }
         }
