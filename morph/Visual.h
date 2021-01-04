@@ -154,7 +154,6 @@ namespace morph {
             for (auto t : this->texts) { delete t; }
             this->texts.clear();
             glfwDestroyWindow (this->window);
-            glfwTerminate();
             morph::VisualResources::deregister();
         }
 

@@ -123,7 +123,6 @@ namespace morph {
 
         void deconstruct()
         {
-            std::cout << __FUNCTION__ << std::endl;
             // Clean up the faces, which is a map:
             // std::map<
             //          std::pair<morph::VisualFont, unsigned int>,
@@ -135,6 +134,9 @@ namespace morph {
             // We're done with freetype
             FT_Done_FreeType (this->freetype);
             // NB: static deregister() will delete self
+
+            // Shut down GLFW
+            glfwTerminate();
         }
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture resolution, \a fontpixels.
