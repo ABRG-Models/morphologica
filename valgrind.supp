@@ -1,0 +1,243 @@
+{
+   hdf5 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:H5TS_cancel_count_inc
+   fun:H5check_version
+   fun:_ZN5morph7HdfDataC1ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEbb
+   fun:main
+}
+
+{
+   hdf5 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:H5CX_push
+   fun:H5open
+   fun:_ZN5morph7HdfDataC1ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEbb
+   fun:main
+}
+
+{
+   hdf5 3
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:H5E_get_stack
+   fun:H5E_clear_stack
+   fun:H5Fcreate
+   fun:_ZN5morph7HdfDataC1ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEbb
+   fun:main
+}
+
+{
+   json 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN4Json5Value13nullSingletonEv
+   obj:/usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.7.4
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+   obj:/usr/lib/x86_64-linux-gnu/ld-2.31.so
+}
+
+{
+   libgdal 0
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*
+   obj:/usr/lib/libgdal.so.26.0.4
+}
+
+{
+   x 0
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:*
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+}
+
+{
+   x 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XGetDefault
+   obj:*
+   obj:*
+}
+
+{
+   x 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_XlcResolveLocaleName
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+}
+
+{
+   x 3
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XGetDefault
+}
+
+{
+   x 4
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+}
+
+{
+   dl 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+
+{
+   dl 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+
+{
+   dl 3
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:*
+   obj:*
+}
+
+{
+   dl 4
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+
+{
+   opencv 1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   fun:_ZN2cv5utils5trace7details15getTraceManagerEv
+   fun:_ZN2cv5utils5trace7details12TraceManager11isActivatedEv
+   fun:_ZN2cv5utils5trace7details6RegionC1ERKNS3_21LocationStaticStorageE
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+   obj:/usr/lib/x86_64-linux-gnu/ld-2.31.so
+}
+
+{
+   opencv 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   fun:_ZN2cv16TLSDataContainerC1Ev
+   fun:_ZN2cv5utils5trace7details12TraceManagerC1Ev
+   fun:_ZN2cv5utils5trace7details15getTraceManagerEv
+   fun:_ZN2cv5utils5trace7details12TraceManager11isActivatedEv
+   fun:_ZN2cv5utils5trace7details6RegionC1ERKNS3_21LocationStaticStorageE
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   obj:/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+}
