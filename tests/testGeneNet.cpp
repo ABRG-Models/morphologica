@@ -31,6 +31,11 @@ int main()
     gnd.state_pos = 0x2;
     gnd.develop (g);
 
+    // Not absolutely necessary, but this call cleans up singleton memory for valgrind
+    // memcheck. Would ideally go in the Genome deconstructor, though this is not
+    // possible because morph::bn::Genome derives from the union std::array
+    morph::bn::Random<n,k>::i_deconstruct();
+
     return 0;
 
 #if 0
