@@ -21,22 +21,22 @@ int main()
       << "}\n";
     f.close();
 
-    morph::Config config(jsonfile);
-    if (!config.ready) {
-        std::cerr << "morph::Config object is not ready for path: " << jsonfile << "\n";
-        return -1;
-    }
-    const bool testbool = config.getBool ("testbool", false);
-    std::cout << "testbool from JSON: " << (testbool ? "true" : "false") << " (expect: true)\n";
-    const int testint = config.getInt ("testint", 3);
-    std::cout << "testint from JSON: " << testint << " (expect: 27)\n";
-    const float testfloat = config.getFloat ("testfloat", 9.8f);
-    std::cout << "testfloat from JSON: " << testfloat << " (expect: 7.63)\n";
+    int rtn = -1;
+    {
+        morph::Config config(jsonfile);
+        if (config.ready) {
+            const bool testbool = config.getBool ("testbool", false);
+            std::cout << "testbool from JSON: " << (testbool ? "true" : "false") << " (expect: true)\n";
+            const int testint = config.getInt ("testint", 3);
+            std::cout << "testint from JSON: " << testint << " (expect: 27)\n";
+            const float testfloat = config.getFloat ("testfloat", 9.8f);
+            std::cout << "testfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
-    if (testbool == true && testint == 27 && testfloat == 7.63f) {
-        std::cout << "All test values were read correctly from the JSON.\n";
-        return 0;
+            if (testbool == true && testint == 27 && testfloat == 7.63f) {
+                std::cout << "All test values were read correctly from the JSON.\n";
+                rtn = 0;
+            }
+        }
     }
-
-    return -1;
+    return rtn;
 }
