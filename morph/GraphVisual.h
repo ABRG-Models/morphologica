@@ -141,6 +141,11 @@ namespace morph {
             this->twodimensional = true;
         }
 
+        ~GraphVisual()
+        {
+            for (auto& gdc : this->graphDataCoords) { delete gdc; }
+        }
+
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
         //! index and counts up from 0.
