@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <utility>
+#include <tuple>
 #include <set>
 #include <stdexcept>
 #include <morph/VisualCommon.h>
@@ -68,7 +69,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::pair<morph::VisualFont, unsigned int>, morph::gl::VisualFace*> faces;
+        std::map<std::tuple<morph::VisualFont, unsigned int, GLFWwindow*>, morph::gl::VisualFace*> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -76,22 +77,33 @@ namespace morph {
             std::cerr << "Error: " << description << " (code "  << error << ")\n";
         }
 
-    public:
-        //! FreeType library object, public for access by client code
-        FT_Library freetype;
-        //! To hold the windows for which freetype has been initialized.
-        std::set<GLFWwindow*> freetype_initialized;
+        //! FreeType library object, public for access by client code?
+        std::map<GLFWwindow*, FT_Library> freetypes;
 
+    public:
+
+        //! Initialize a freetype library instance and add to this->freetypes. I wanted
+        //! to have only a single freetype library instance, but this didn't work, so I
+        //! create one FT_Library for each OpenGL context (i.e. one for each GLFW
+        //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
+        //! but that's a task for the future, as I coded it this way under the false
+        //! assumption that I'd only need one FT_Library.
         void freetype_init (GLFWwindow* _window)
         {
-            if (this->freetype_initialized.count(_window) > 0) { return; }
-            // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            if (FT_Init_FreeType (&this->freetype)) {
-                std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            } else {
-                this->freetype_initialized.insert (_window);
+            FT_Library freetype = (FT_Library)0;
+            try {
+                freetype = this->freetypes.at (_window);
+            } catch (const std::out_of_range& e) {
+                // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                if (FT_Init_FreeType (&freetype)) {
+                    std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+                } else {
+                    std::cout << "Initialized freetype which has value: "
+                              << (unsigned long long int)freetype << std::endl;
+                    this->freetypes[_window] = freetype;
+                }
             }
         }
 
@@ -108,11 +120,11 @@ namespace morph {
         //! register a morph::Visual as being handled by this VisualResources singleton instance
         static void register_visual() { VisualResources::numVisuals++; }
 
-        //! De-register a morph::Visual. When there are no morph::Visuals left, deconstruct this VisualResources...
+        //! De-register a morph::Visual. When there are no morph::Visuals left,
+        //! deconstruct this VisualResources and delete self.
         static void deregister()
         {
             VisualResources::numVisuals--;
-            std::cout << "Number of visuals is now " << VisualResources::numVisuals << std::endl;
             if (VisualResources::numVisuals <= 0) {
                 VisualResources::pInstance->deconstruct();
                 // Delete self
@@ -121,6 +133,7 @@ namespace morph {
             }
         }
 
+        //! Deallocate memory for faces, FT_Librarys and the GLFW system.
         void deconstruct()
         {
             // Clean up the faces, which is a map:
@@ -131,23 +144,26 @@ namespace morph {
             // (want to delete the morph::gl::VisualFace)
             for (auto& f : this->faces) { delete f.second; }
             this->faces.clear();
-            // We're done with freetype
-            FT_Done_FreeType (this->freetype);
-            // NB: static deregister() will delete self
+
+            // We're done with freetype, so clear those up
+            for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
             // Shut down GLFW
             glfwTerminate();
+
+            // Note: static deregister() will delete self
         }
 
-        //! Return a pointer to a VisualFace for the given \a font at the given texture resolution, \a fontpixels.
-        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels)
+        //! Return a pointer to a VisualFace for the given \a font at the given texture
+        //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
+        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, GLFWwindow* _win)
         {
             morph::gl::VisualFace* rtn = (morph::gl::VisualFace*)0;
-            std::pair<morph::VisualFont, unsigned int> key = std::make_pair(font, fontpixels);
+            std::tuple<morph::VisualFont, unsigned int, GLFWwindow*> key = std::make_tuple(font, fontpixels, _win);
             try {
                 rtn = this->faces.at (key);
             } catch (const std::out_of_range& e) {
-                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetype);
+                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetypes.at(_win));
                 rtn = this->faces.at (key);
             }
             return rtn;
@@ -156,5 +172,6 @@ namespace morph {
 
     //! Globally initialise instance pointer to NULL
     VisualResources* VisualResources::pInstance = 0;
+    //! The number of morph::Visuals to which this singleston class provides resources.
     int VisualResources::numVisuals = 0;
 } // namespace morph

@@ -1,5 +1,5 @@
 {
-   hdf5 1
+   libhdf5 suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:calloc
@@ -10,7 +10,7 @@
 }
 
 {
-   hdf5 2
+   libhdf5 suppression 2
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -21,7 +21,7 @@
 }
 
 {
-   hdf5 3
+   libhdf5 suppression 3
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -33,7 +33,7 @@
 }
 
 {
-   json 1
+   libjsoncpp suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:_Znwm
@@ -46,7 +46,7 @@
 }
 
 {
-   libgdal 0
+   libgdal suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:*
@@ -54,7 +54,7 @@
 }
 
 {
-   x 0
+   libX11 suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:*
@@ -62,7 +62,7 @@
 }
 
 {
-   x 1
+   libX11 suppression 2
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -80,7 +80,7 @@
 }
 
 {
-   x 2
+   libX11 supression 3
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -98,7 +98,7 @@
 }
 
 {
-   x 3
+   libX11 suppression 4
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -116,7 +116,7 @@
 }
 
 {
-   x 4
+   libX11 suppression 5
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -134,7 +134,7 @@
 }
 
 {
-   dl 1
+   libdl suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -152,7 +152,7 @@
 }
 
 {
-   dl 2
+   libdl suppression 2
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
@@ -170,7 +170,7 @@
 }
 
 {
-   dl 3
+   libdl suppression 3
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:calloc
@@ -188,7 +188,7 @@
 }
 
 {
-   dl 4
+   libdl suppression 4
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:calloc
@@ -206,7 +206,7 @@
 }
 
 {
-   opencv 1
+   libopencv suppression 1
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:_Znwm
@@ -224,7 +224,7 @@
 }
 
 {
-   opencv 2
+   libopencv suppression 2
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:_Znwm

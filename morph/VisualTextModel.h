@@ -95,7 +95,7 @@ namespace morph {
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, glfwGetCurrentContext());
             this->setupText (_txt);
         }
 
@@ -111,7 +111,7 @@ namespace morph {
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels);
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, glfwGetCurrentContext());
         }
 
         virtual ~VisualTextModel()
