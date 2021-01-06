@@ -24,8 +24,10 @@ namespace morph {
 
     /*!
      * This implements a 4x4 transformation matrix, for use in computer graphics
-     * applications. It's used a lot in morph::Visual. The matrix data is stored in
-     * TransformMatrix::mat, an array of 16 floating point numbers.
+     * applications in which 3D coordinates are often given as 4D homogeneous
+     * coordinates (with the fourth element chosen to be equal to 1). It's used a lot in
+     * morph::Visual. The matrix data is stored in TransformMatrix::mat, an array of 16
+     * floating point numbers.
      *
      * \templateparam Flt The floating point type in which to store the
      * TransformMatrix's data.
@@ -71,37 +73,6 @@ namespace morph {
             return ss.str();
         }
 
-#if 0
-        //! Output to stdout
-        void output() const
-        {
-            std::cout <<"[ "<< mat[0]<<" , "<<mat[4]<<" , "<<mat[8]<<" , "<<mat[12]<<" ;\n";
-            std::cout <<"  "<< mat[1]<<" , "<<mat[5]<<" , "<<mat[9]<<" , "<<mat[13]<<" ;\n";
-            std::cout <<"  "<< mat[2]<<" , "<<mat[6]<<" , "<<mat[10]<<" , "<<mat[14]<<" ;\n";
-            std::cout <<"  "<< mat[3]<<" , "<<mat[7]<<" , "<<mat[11]<<" , "<<mat[15]<<" ]\n";
-        }
-
-        //! Output passed-in column-major array to stdout - this is a static helper
-        static void output (const std::array<Flt, 16>& arr)
-        {
-            std::cout<<"[ "<<arr[0]<<" , "<<arr[4]<<" , "<<arr[8]<<" , "<<arr[12]<<" ;\n";
-            std::cout<<"  "<<arr[1]<<" , "<<arr[5]<<" , "<<arr[9]<<" , "<<arr[13]<<" ;\n";
-            std::cout<<"  "<<arr[2]<<" , "<<arr[6]<<" , "<<arr[10]<<" , "<<arr[14]<<" ;\n";
-            std::cout<<"  "<<arr[3]<<" , "<<arr[7]<<" , "<<arr[11]<<" , "<<arr[15]<<" ]\n";
-        }
-
-        //! Output adj array (in row-major format) to stdout
-        static void outputadj (const std::array<Flt, 32>& arr)
-        {
-            for (unsigned int i = 0; i<4; ++i) {
-                std::cout << "| ";
-                for (unsigned int j = i*8; j < (i*8)+8; ++j) {
-                    std::cout << arr[j] << ",";
-                }
-                std::cout << std::endl;
-            }
-        }
-#endif
         //! Self-explanatory
         void setToIdentity()
         {
@@ -112,6 +83,21 @@ namespace morph {
             this->mat[15] = static_cast<Flt>(1.0);
         }
 
+#ifdef DETERMINE_FROM_PLACEHOLDER
+        //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
+        //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
+        //! of vertices, then so should DEF.
+        void determineFrom (std::array<Vector<Flt,4>, 4>& abcd,
+                            std::array<Vector<Flt,4>, 4>& efdg)
+        {
+            // The transformation is quite simple to determine. abcd defines a triangle
+            // as 3 columns of 4-vectors (in homogeneous coordinates); efgh defines a
+            // similar triangle as the target. Let there be a transformation, T such that
+            // Let  T * abcd = efgh
+            //   => T * abcd * inv(abcd) = efgh * inv(abc)
+            //   => T = efgh * inv(abcd)
+        }
+#endif
         //! Apply translation specified by vector @dv
         void translate (const Vector<Flt>& dv)
         {
