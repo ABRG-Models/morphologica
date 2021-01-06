@@ -155,6 +155,7 @@ namespace morph {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
+            this->indices.clear();
             this->initializeVertices();
             this->reinit_buffers();
         }

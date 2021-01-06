@@ -58,6 +58,7 @@ namespace morph {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
+            this->indices.clear();
 
             // The indices index
             VBOint idx = 0;

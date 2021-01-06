@@ -356,6 +356,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->vertexTextures.clear();
+            this->indices.clear();
 
             this->initializeVertices();
 
