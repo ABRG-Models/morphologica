@@ -83,6 +83,7 @@ namespace morph {
             this->mat[15] = static_cast<Flt>(1.0);
         }
 
+#ifdef DETERMINE_FROM_PLACEHOLDER
         //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
         //! of vertices, then so should DEF.
@@ -96,7 +97,7 @@ namespace morph {
             //   => T * abcd * inv(abcd) = efgh * inv(abc)
             //   => T = efgh * inv(abcd)
         }
-
+#endif
         //! Apply translation specified by vector @dv
         void translate (const Vector<Flt>& dv)
         {
