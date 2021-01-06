@@ -31,12 +31,6 @@ namespace morph {
     template <typename Flt>
     class Matrix33
     {
-    private:
-        //const Flt oneOver360   = 0.00277777777778;
-        //const Flt pi           = 3.14159265358979;
-        //const Flt piOver360    = 0.00872664625997;
-        //const Flt twoPiOver360 = 0.01745329251994;
-
     public:
         //! Default constructor
         Matrix33() { this->setToIdentity(); }
