@@ -148,11 +148,11 @@ namespace morph {
         ReadErrorAction read_error_action = ReadErrorAction::Info;
 
         /*!
-         * Templated version of read_contained_vals, for vector/list/deque (but not map)
-         * and whatever simple value (int, double, float, etc) is contained. Use this to
-         * read, for example: std::vector<double> or std::deque<unsigned int> or
-         * std::list<float>. Can also do std::vector<cv::Point> or
-         * std::deque<cv::Point2d> etc.
+         * Templated version of read_contained_vals, for vector/list/deque (but not map,
+         * which is more complex) and whatever simple value (int, double, float, etc) is
+         * contained. Use this to read, for example: std::vector<double> or
+         * std::deque<unsigned int> or std::vector<float>. Can also do
+         * std::vector<cv::Point> or std::deque<cv::Point2d> etc.
          */
         template < template <typename, typename> typename Container,
                    typename T,
@@ -171,13 +171,23 @@ namespace morph {
                 throw std::runtime_error (ee.str());
             }
 
+            // Read the data from HDF5 into a vector. Thereafter, copy it into the
+            // Container vals. This ensures vals can be std::list.
+            std::vector<T> invals;
+
             // If cv::Point like. Could add pair<float, float> and pair<double, double>,
             // also container of array<T, 2> also.
             if constexpr (std::is_same<std::decay_t<T>, cv::Point2i>::value == true
                           || std::is_same<std::decay_t<T>, cv::Point2f>::value == true
                           || std::is_same<std::decay_t<T>, cv::Point2d>::value == true
                           || std::is_same<std::decay_t<T>, std::array<float, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true) {
+                          || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<float, float>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<double, double>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<int, int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned int, unsigned int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<long long int, long long int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
                 hsize_t dims[2] = {0,0}; // 2D
                 int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
                 if (ndims != 2) {
@@ -189,10 +199,12 @@ namespace morph {
                 if (dims[1] != 2) {
                     std::stringstream ee;
                     ee << "In:\n" << __PRETTY_FUNCTION__
-                       << ":\nError: Expected 2 coordinates to be stored in each cv::Point of " << path;
+                       << ":\nError: Expected 2 coordinates to be stored in each cv::Point/array<*,2>/pair<> of " << path;
                     throw std::runtime_error (ee.str());
                 }
+                invals.resize (dims[0]);
                 vals.resize (dims[0]);
+
             } else {
                 // If standard thing like double, float, int etc:
                 hsize_t dims[1] = {0}; // 1D
@@ -204,46 +216,68 @@ namespace morph {
                        << ":\nError: Expected 1D data to be stored in " << path << ". ndims=" << ndims;
                     throw std::runtime_error (ee.str());
                 }
+                invals.resize (dims[0], T{0});
                 vals.resize (dims[0], T{0});
             }
 
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2i>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2d>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2f>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else {
                 throw std::runtime_error ("HdfData::read_contained_vals<T>: Don't know how to read that type");
             }
+
+            // Copy invals into vals
+            std::copy (invals.begin(), invals.end(), vals.begin());
 
             this->handle_error (status, "Error. status after H5Dread: ");
             status = H5Dclose (dataset_id);
@@ -251,80 +285,18 @@ namespace morph {
         }
 
         // Read pairs
-        void read_contained_vals (const char* path, std::pair<float, float>& vals)
+        template <typename T>
+        void read_contained_vals (const char* path, std::pair<T, T>& vals)
         {
-            std::vector<float> vvals;
+            std::vector<T> vvals;
             this->read_contained_vals (path, vvals);
             if (vvals.size() != 2) {
                 std::stringstream ee;
-                ee << "Error. Expected pair<float, float> data to be stored in a vector of size 2";
+                ee << "Error. Expected pair<T, T> data to be stored in a vector of size 2";
                 throw std::runtime_error (ee.str());
             }
             vals.first = vvals[0];
             vals.second = vvals[1];
-        }
-
-        void read_contained_vals (const char* path, std::pair<double, double>& vals)
-        {
-            std::vector<double> vvals;
-            this->read_contained_vals (path, vvals);
-            if (vvals.size() != 2) {
-                std::stringstream ee;
-                ee << "Error. Expected pair<double, double> data to be stored in a vector of size 2";
-                throw std::runtime_error (ee.str());
-            }
-            vals.first = vvals[0];
-            vals.second = vvals[1];
-        }
-
-        // Read lists of pairs
-        void read_contained_vals (const char* path, std::list<std::pair<float, float>>& vals)
-        {
-            std::string p1(path);
-            p1 += "_first";
-            std::string p2(path);
-            p2 += "_second";
-
-            std::vector<float> first;
-            this->read_contained_vals (p1.c_str(), first);
-            std::vector<float> second;
-            this->read_contained_vals (p2.c_str(), second);
-
-            if (first.size() != second.size()) {
-                std::stringstream ee;
-                ee << "Error. Expected two vectors *_first and *_second of same length.";
-                throw std::runtime_error (ee.str());
-            }
-
-            vals.clear();
-            for (unsigned int i = 0; i < first.size(); ++i) {
-                vals.push_back (std::make_pair (first[i], second[i]));
-            }
-        }
-
-        // Read lists of pairs
-        void read_contained_vals (const char* path, std::list<std::pair<double, double>>& vals)
-        {
-            std::string p1(path);
-            p1 += "_first";
-            std::string p2(path);
-            p2 += "_second";
-
-            std::vector<double> first;
-            this->read_contained_vals (p1.c_str(), first);
-            std::vector<double> second;
-            this->read_contained_vals (p2.c_str(), second);
-
-            if (first.size() != second.size()) {
-                std::stringstream ee;
-                ee << "Error. Expected two vectors *_first and *_second of same length.";
-                throw std::runtime_error (ee.str());
-            }
-
-            vals.clear();
-            for (unsigned int i = 0; i < first.size(); ++i) {
-                vals.push_back (std::make_pair (first[i], second[i]));
-            }
         }
 
         //! Read a vector of 3D coordinates
@@ -676,7 +648,13 @@ namespace morph {
                           || std::is_same<std::decay_t<T>, cv::Point2f>::value == true
                           || std::is_same<std::decay_t<T>, cv::Point2d>::value == true
                           || std::is_same<std::decay_t<T>, std::array<float, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true) {
+                          || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<float, float>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<double, double>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<int, int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned int, unsigned int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<long long int, long long int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
                 hsize_t dim_vec2dcoords[2]; // 2 Dims
                 dim_vec2dcoords[0] = vals.size();
                 dim_vec2dcoords[1] = 2; // 2 ints in each cv::Point
@@ -688,51 +666,81 @@ namespace morph {
                 dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
             }
 
+            // A container suitable for holding the values to be written to the HDF5.
+            // vals is copied into outvals, because if vals is an std::list, it has no
+            // [] operator.
+            std::vector<T> outvals(vals.size());
+            std::copy (vals.begin(), vals.end(), outvals.begin());
+
             hid_t dataset_id = 0;
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2i>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2d>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2f>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
                 dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
+                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else {
                 throw std::runtime_error ("HdfData::add_contained_vals<T>: Don't know how to store that type");
@@ -989,65 +997,14 @@ namespace morph {
             this->add_val (pathtype.c_str(), channels);
         }
 
-
-        //! Add pair of floats
-        void add_contained_vals (const char* path, const std::pair<float, float>& vals)
+        //! Add pair of anything
+        template <typename T>
+        void add_contained_vals (const char* path, const std::pair<T, T>& vals)
         {
-            std::vector<float> vf;
-            vf.push_back (vals.first);
-            vf.push_back (vals.second);
-            this->add_contained_vals (path, vf);
-        }
-
-        //! Add pair of doubles
-        void add_contained_vals (const char* path, const std::pair<double, double>& vals)
-        {
-            std::vector<double> vf;
-            vf.push_back (vals.first);
-            vf.push_back (vals.second);
-            this->add_contained_vals (path, vf);
-        }
-
-        //! Add a list of pairs of floats
-        void add_contained_vals (const char* path, const std::list<std::pair<float, float>>& vals)
-        {
-            // A list of pairs is two cols. Write into two vectors, first and second, then
-            // add_contained_vals from that.
-            std::vector<float> first (vals.size(), 0.0f);
-            std::vector<float> second (vals.size(), 0.0f);
-            unsigned int i = 0;
-            for (std::pair<float, float> p : vals) {
-                first[i] = p.first;
-                second[i] = p.second;
-                ++i;
-            }
-            std::string p1(path);
-            p1 += "_first";
-            std::string p2(path);
-            p2 += "_second";
-            this->add_contained_vals (p1.c_str(), first);
-            this->add_contained_vals (p2.c_str(), second);
-        }
-
-        //! Add a list of pairs of doubles
-        void add_contained_vals (const char* path, const std::list<std::pair<double, double>>& vals)
-        {
-            // A list of pairs is two cols. Write into two vectors, first and second, then
-            // add_contained_vals from that.
-            std::vector<double> first (vals.size(), 0.0f);
-            std::vector<double> second (vals.size(), 0.0f);
-            unsigned int i = 0;
-            for (std::pair<double, double> p : vals) {
-                first[i] = p.first;
-                second[i] = p.second;
-                ++i;
-            }
-            std::string p1(path);
-            p1 += "_first";
-            std::string p2(path);
-            p2 += "_second";
-            this->add_contained_vals (p1.c_str(), first);
-            this->add_contained_vals (p2.c_str(), second);
+            std::vector<T> vT;
+            vT.push_back (vals.first);
+            vT.push_back (vals.second);
+            this->add_contained_vals (path, vT);
         }
 
         //! Add nvals values from the pointer (to doubles) vals.

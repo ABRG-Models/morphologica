@@ -177,6 +177,38 @@ int main()
         }
     }
 
+    cout << "vector<pair<ULL,ULL>>" << endl;
+    vector<std::pair<unsigned long long int, unsigned long long int>> vpi2dpair = { std::make_pair(1ULL,3ULL),
+                                                                                    std::make_pair(3ULL,4ULL),
+                                                                                    std::make_pair(5ULL,7ULL),
+                                                                                    std::make_pair(8ULL,8ULL),
+                                                                                    std::make_pair(9ULL,18ULL) };
+    {
+        HdfData data("test.h5");
+        data.add_contained_vals ("/vpi2dpair", vpi2dpair);
+    } // data closes when out of scope
+
+    vector<std::pair<unsigned long long int, unsigned long long int>> vpi2dpairread;
+    {
+        HdfData data("test.h5", true); // true for read data
+        data.read_contained_vals ("/vpi2dpair", vpi2dpairread);
+    }
+
+    if (vpi2dpair.size() == vpi2dpairread.size()) {
+        //// To here
+        for (unsigned int i = 0; i < vpi2dpair.size(); ++i) {
+            if (vpi2dpair[i].first != vpi2dpairread[i].first) {
+                rtn -= 1;
+                break;
+            }
+            if (vpi2dpair[i].second != vpi2dpairread[i].second) {
+                rtn -= 1;
+                break;
+            }
+            cout << "Coordinate: (" << vpi2dpairread[i].first << "," << vpi2dpairread[i].second << ")" << endl;
+        }
+    }
+
     string tstr = "Thou art more lovely...";
     {
         HdfData data("test.h5");
