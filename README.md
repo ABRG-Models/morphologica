@@ -81,7 +81,7 @@ morphologica code is enclosed in the **morph** namespace. You can see
 the doxygen-generated code documentation at
 https://codedocs.xyz/ABRG-Models/morphologica/
 
-For full, compilable examples of the code, see the examples/ subdirectory.
+For full, compilable, standalone examples of the code, see the standalone_examples/ subdirectory.
 
 See README.coding.md for a quick-start guide to the main classes.
 
@@ -217,16 +217,16 @@ target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 ### Example build files
 
-Each of the examples in **morphologica/examples** has a CMakeLists.txt, written as if each 
+Each of the examples in **morphologica/standalone_examples** has a CMakeLists.txt, written as if each
 example was a standalone project in its own right.
 
-The best example CMakeLists.txt file is the one in **examples/schnakenberg**,
+The best example CMakeLists.txt file is the one in **standalone_examples/schnakenberg**,
 because it uses a broad range of morphologica's features.
 
-In **examples/schnakenberg**, the default cmake build file, **CMakeLists.txt** assumes you did a
+In **standalone_examples/schnakenberg**, the default cmake build file, **CMakeLists.txt** assumes you did a
 'morphologica install' into **/usr/local**, whereas
-**CMakeLists_intree.txt** will (if renamed to CMakeLists.txt) build the code assuming that you 
-placed a copy of the morphologica source  tree *inside* *examples/schnakenberg*.
+**CMakeLists_intree.txt** will (if renamed to CMakeLists.txt) build the code assuming that you
+placed a copy of the morphologica source  tree *inside* *standalone_examples/schnakenberg*.
 
 ### Legacy code and tests
 
