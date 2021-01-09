@@ -155,7 +155,7 @@ add_subdirectory(tests)
 add_subdirectory(fonts)
 
 # Example code (you can also see tests/ for examples)
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 # first we can indicate the documentation build as an option and set it to ON by default
 option (BUILD_DOC "Build documentation" OFF)
