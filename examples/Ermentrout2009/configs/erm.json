@@ -1,16 +1,15 @@
 {
-    // Ermentrout simulation
-    "steps" : 600000,                // Number of steps to simulate for
+    "desc_simulation" : "This is an Ermentrout Keller-Segel based sub-barrel system",
+    "steps" : 300000,
     "win_width" : 800,
     "logevery": 100000,
     "plotevery": 5000,
-    "rhoInit" : 1.9,
     "overwrite_logs": true,
     "logpath" : "./logs/erm",
-    "hextohex_d" : 0.01,           // Hex to hex distance, determines num hexes
+    "hextohex_d" : 0.01,
     "svgpath" : "../morphologica/boundaries/whiskerbarrels.svg",
     "dt" : 0.0001,
-    "boundaryFalloffDist" : 0.01,
+    "boundaryFalloffDist" : 0.03,
     "Dn" : 0.0006,
     "Dc" : 0.000078
 }

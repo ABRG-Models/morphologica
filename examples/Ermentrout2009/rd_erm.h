@@ -67,6 +67,10 @@ public:
     alignas(Flt) std::vector<std::vector<Flt> > lapl;
     //! Holds the Poisson terms (final non-linear term in Ermentrout equation 1)
     alignas(Flt) std::vector<std::vector<Flt> > poiss;
+    //! Sum of c
+    alignas(Flt) std::vector<Flt> sum_c;
+    //! Sum of n
+    alignas(Flt) std::vector<Flt> sum_n;
 
     // Parameters of the Ermentrout model - default values.
     //! Diffusion constant for n
@@ -88,19 +92,21 @@ public:
     unsigned int frameN = 0;
 
     //! Simple constructor; no arguments.
-    RD_Erm (void) : morph::RD_Base<Flt>() {}
+    RD_Erm() : morph::RD_Base<Flt>() {}
 
     //! Perform memory allocations, vector resizes and so on.
-    virtual void allocate (void) { morph::RD_Base<Flt>::allocate(); }
+    virtual void allocate() { morph::RD_Base<Flt>::allocate(); }
 
     //! Initialise HexGrid, variables. Carry out any one-time computations of the model.
-    virtual void init (void)
+    virtual void init()
     {
         // Resize and zero-initialise the various containers
         this->resize_vector_vector (this->c, this->N);
         this->resize_vector_vector (this->n, this->N);
         this->resize_vector_vector (this->lapl, this->N);
         this->resize_vector_vector (this->poiss, this->N);
+        this->sum_n.resize (this->N, Flt{0});
+        this->sum_c.resize (this->N, Flt{0});
 
         // Initialise with noise
         for (unsigned int i  = 0; i < this->N; ++i) {
@@ -110,11 +116,14 @@ public:
     }
 
     //! Compute one step of the model
-    virtual void step (void)
+    virtual void step()
     {
         this->stepCount++;
 
         for (unsigned int i=0; i<this->N; ++i) {
+
+            sum_n[i] = Flt{0};
+            sum_c[i] = Flt{0};
 
             this->compute_poiss (n[i],c[i],i);  // compute the non-linear Poission term in Eq1
             this->compute_lapl (n[i], i);       // populate lapl[i] with laplacian of n
@@ -122,6 +131,7 @@ public:
             // integrate n
             for (unsigned int h=0; h<this->nhex; ++h) {
                 n[i][h] += (a - b*n[i][h] + Dn*lapl[i][h] - chi*poiss[i][h])*this->dt;
+                sum_n[i] += n[i][h];
             }
 
             this->compute_lapl (c[i], i);       // populate lapl[i] with laplacian of c
@@ -131,6 +141,7 @@ public:
             for (unsigned int h=0; h<this->nhex; ++h) {
                 n2 = n[i][h]*n[i][h];
                 c[i][h] += (beta*n2/(1.+n2) - mu*c[i][h] +Dc*lapl[i][h])*this->dt;
+                sum_c[i] += c[i][h];
             }
         }
     }
@@ -228,14 +239,13 @@ public:
     }
 
     //! Save state to HDF5
-    void saveState (void)
+    void saveState()
     {
         std::string fname = this->logpath + "/2Derm.h5";
         morph::HdfData data (fname);
 
         // Save some variables
         for (unsigned int i = 0; i<this->N; ++i) {
-
             std::stringstream vss;
             vss << "c_" << i;
             std::string vname = vss.str();

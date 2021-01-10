@@ -3,13 +3,8 @@
  * Local Dynamic Instabilities', Ermentrout, Simons and Land, PLOS Comp Biol 2009
  */
 
-/*!
- * This will be passed as the template argument for RD_Plot and RD and
- * should be defined when compiling.
- */
 #ifndef FLT
-// Check CMakeLists.txt to change to double or float
-# error "Please define FLT when compiling (hint: See CMakeLists.txt)"
+# error "Please define FLT as float or double when compiling (hint: See CMakeLists.txt)"
 #endif
 
 #include <iostream>
@@ -27,6 +22,7 @@
 // Alias VisualDataModel<FLT>* as VdmPtr, to neaten code
 typedef morph::VisualDataModel<FLT>* VdmPtr;
 #include <morph/HexGridVisual.h>
+#include <morph/GraphVisual.h>
 #include <morph/Vector.h>
 
 // Simulation code header
@@ -73,23 +69,16 @@ int main (int argc, char **argv)
     std::cout << "steps to simulate: " << steps << std::endl;
 
     const unsigned int plotevery = conf.getUInt ("plotevery", 10);
-    const bool vidframes = conf.getBool ("vidframes", false);
-    unsigned int framecount = 0;
-
     const unsigned int win_width = conf.getUInt ("win_width", 340);
     unsigned int win_height = static_cast<unsigned int>(0.8824f * (float)win_width);
 
     // Instantiate the model object
     RD_Erm<FLT> RD;
-
     RD.svgpath = conf.getString ("svgpath", "./ellipse.svg");
     RD.logpath = logpath;
-
     RD.set_dt(static_cast<FLT>(conf.getDouble ("dt", 0.00001)));
     RD.hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
     RD.boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
-;
-
     RD.N = 1;
     RD.Dn = conf.getDouble ("Dn", 0.3);
     RD.Dc = conf.getDouble ("Dc", 0.3*0.3); // 0.3 * Dn
@@ -130,7 +119,7 @@ int main (int argc, char **argv)
     RD.savePositions();
 
     // Set up the morph::Visual object
-    morph::Visual plt (win_width, win_height, "Ermentrout sub-barrels");
+    morph::Visual plt (win_width, win_height, "Ermentrout (Keller-Segel)");
     plt.zNear = 0.001;
     plt.zFar = 50;
     plt.fov = 45;
@@ -146,7 +135,8 @@ int main (int argc, char **argv)
     // Make this larger to "scroll in and out of the image" faster
     plt.scenetrans_stepsize = 0.5;
 
-    // Add a morph::HexGridVisual to the morph::Visual.
+    // Add two morph::HexGridVisuals to the morph::Visual.
+
     morph::Vector<float, 3> spatOff = {0,0,0}; // spatial offset
     // Data scaling parameters
     float _m = 0.2;
@@ -156,10 +146,8 @@ int main (int argc, char **argv)
     // The second is the colour scaling.
     morph::Scale<FLT> cscale; cscale.setParams (_m, _c);
 
-    // The n variable
-    unsigned int side = static_cast<unsigned int>(floor (sqrt (RD.N)));
-    // FIXME: I hate this big constructor. Figure out what's necessary and set the other
-    // stuff as after-the-instantiation setters.
+    // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
+    spatOff[0] -= 0.6 * RD.hg->width();
     morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (plt.shaderprog,
                                                                      plt.tshaderprog,
                                                                      RD.hg,
@@ -167,8 +155,39 @@ int main (int argc, char **argv)
                                                                      &RD.n[0],
                                                                      zscale,
                                                                      cscale,
-                                                                     morph::ColourMapType::Plasma);
+                                                                     morph::ColourMapType::Inferno);
+    hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
+                    morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     unsigned int n_idx = plt.addVisualModel (hgv1);
+
+    // Set up a 3D map of the surface RD.c[0]
+    spatOff[0] *= -1;
+    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (plt.shaderprog,
+                                                                     plt.tshaderprog,
+                                                                     RD.hg,
+                                                                     spatOff,
+                                                                     &RD.c[0],
+                                                                     zscale,
+                                                                     cscale,
+                                                                     morph::ColourMapType::Inferno);
+    hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
+                    morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
+    unsigned int c_idx = plt.addVisualModel (hgv2);
+
+    // Set up a 2D graph with morph::GraphVisual
+    spatOff = {0.5f, -2.0f, 0.0f};
+    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (plt.shaderprog, plt.tshaderprog, spatOff);
+    graph1->setdarkbg(); // colours axes and text
+    graph1->twodimensional = true;
+    graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_ymax", 40000.0f));
+    graph1->policy = morph::stylepolicy::lines;
+    std::stringstream yy;
+    graph1->ylabel = "Sum";
+    graph1->xlabel = "Sim time (s)";
+    graph1->prepdata ("n");
+    graph1->prepdata ("c");
+    graph1->finalize();
+    plt.addVisualModel (static_cast<morph::VisualModel*>(graph1));
 
     // Set up the render clock
     std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
@@ -182,7 +201,10 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // Plot n and c
             static_cast<VdmPtr>(plt.getVisualModel(n_idx))->updateData (&RD.n[0]);
-            // add c
+            static_cast<VdmPtr>(plt.getVisualModel(c_idx))->updateData (&RD.c[0]);
+            // Append to the 2D graph of sums:
+            graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_n[0], 0);
+            graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_c[0], 1);
         }
 
          // Save data every 'logevery' steps
