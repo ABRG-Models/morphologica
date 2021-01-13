@@ -3,6 +3,8 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
+**New** morphologica has a YouTube channel with some demo/tutorial content: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
+
 This header-only c++ code installs headers which
 contain **simulation support facilities** for our simulations of
 dynamical systems.
