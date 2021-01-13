@@ -26,7 +26,7 @@ int main()
 {
     int rtn = -1;
 
-    Visual v(800,600,"Visual Title", {0,0}, {.5,.5,.5}, 2.0f, 0.0f);
+    Visual v(1600,1000,"morph::Visual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     // Set up the near and far cutoff distances for rendering objects
     v.zNear = 0.001;
     v.zFar = 50;
@@ -42,10 +42,12 @@ int main()
     v.scenetrans_stepsize = 0.5;
     v.showCoordArrows = true;
     v.showTitle = true;
-    v.coordArrowsInScene = true;
+    v.coordArrowsInScene = false;
     v.backgroundWhite();
     v.lightingEffects();
-    v.addLabel ("A scene label \ntext", {0.0f, -0.03f, 0.0f});
+    v.addLabel ("Each object is derived from morph::VisualModel", {0.005f, -0.02f, 0.0f});
+    v.addLabel ("This is a morph::CoordArrows object", {0.03f, -0.23f, 0.0f});
+    v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     try {
         string pwd = Tools::getPwd();
@@ -77,7 +79,7 @@ int main()
         }
         cout << "Created " << data.size() << " floats in data" << endl;
 
-        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
         unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
         cout << "Added HexGridVisual with gridId " << gridId << endl;
 

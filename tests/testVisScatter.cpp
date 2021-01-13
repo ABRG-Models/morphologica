@@ -22,10 +22,11 @@ int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization", {0,0}, {1,1,1}, 1.0f, 0.05f);
+    Visual v(1024, 768, "morph::ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.coordArrowsInScene = true;
+    v.showTitle = true;
     // Blueish background:
     v.bgcolour = {0.6f, 0.6f, 0.8f, 0.5f};
     v.lightingEffects();
@@ -44,22 +45,20 @@ int main (int argc, char** argv)
         Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<Vector<float, 3>> points;
-        points.push_back ({0,0,0});
-        points.push_back ({.1,.1,0});
-        points.push_back ({.2,.22,0});
-        points.push_back ({.3,.28,0});
-        points.push_back ({.4,.39,0});
-        points.push_back ({.6,.55,0});
-        points.push_back ({.65,.7,0});
-        points.push_back ({.76,.8,0});
-        points.push_back ({.9,.9,0});
-
-#if 0
-        vector<float> data;
-#else
-        vector<float> data = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
-#endif
+        std::vector<morph::Vector<float, 3>> points(20*20);
+        vector<float> data(20*20);
+        size_t k = 0;
+        for (int i = -10; i < 10; ++i) {
+            for (int j = -10; j < 10; ++j) {
+                float x = 0.1*i;
+                float y = 0.1*j;
+                // z is some function of x, y
+                float z = x * std::exp(-(x*x) - (y*y));
+                points[k] = {x, y, z};
+                data[k] = z;
+                k++;
+            }
+        }
 
         unsigned int visId = v.addVisualModel (new ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, ColourMapType::Plasma));
 
