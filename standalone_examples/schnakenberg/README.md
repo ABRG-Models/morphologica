@@ -15,6 +15,7 @@ done that, then you can build and run schnakenberg like this:
 echo "I assume you installed the morphologica headers..."
 mkdir build && pushd build
 cmake ..
+make
 popd
 ./build/schnakenberg ./schakenberg.json
 ```
@@ -29,6 +30,7 @@ cp CMakeLists_intree.txt CMakeLists.txt
 git clone git@github.com:ABRG-Models/morphologica
 mkdir build && pushd build
 cmake ..
+make
 popd
 ./build/schnakenberg ./schakenberg.json
 ```
