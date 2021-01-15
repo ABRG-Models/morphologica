@@ -63,11 +63,16 @@ namespace morph {
 
         void setToIdentity()
         {
-            this->mat.fill (Flt{0.0});
-            this->mat[0] = Flt{1.0};
-            this->mat[4] = Flt{1.0};
-            this->mat[8] = Flt{1.0};
+            this->mat.fill (Flt{0});
+            this->mat[0] = Flt{1};
+            this->mat[4] = Flt{1};
+            this->mat[8] = Flt{1};
         }
+
+        //! Access elements of the matrix
+        Flt& operator[] (size_t idx) { return this->mat[idx]; }
+        // note: assume Flt is a built-in type here (safe - Flt will be float or double)
+        const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
 
         //! Transpose this matrix
         void transpose()
@@ -208,12 +213,12 @@ namespace morph {
         {
             Flt det = this->determinant();
             Matrix33<Flt> rtn;
-            if (det == Flt{0.0}) {
+            if (det == Flt{0}) {
                 std::cout << "NB: The transform matrix has no inverse (determinant is 0)" << std::endl;
-                rtn.mat.fill (Flt{0.0});
+                rtn.mat.fill (Flt{0});
             } else {
                 rtn.mat = this->adjugate();
-                rtn *= (Flt{1.0}/det);
+                rtn *= (Flt{1}/det);
             }
             return rtn;
         }
