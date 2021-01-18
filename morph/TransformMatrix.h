@@ -88,6 +88,31 @@ namespace morph {
         // note: assume Flt is a built-in type here (safe - Flt will be float or double)
         const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
 
+        //! Access a given row of the matrix
+        morph::Vector<Flt, 4> row (size_t idx) const
+        {
+            morph::Vector<Flt, 4> r = {0,0,0,0};
+            if (idx > 3) { return r; }
+            r[0] = this->mat[idx];
+            r[1] = this->mat[idx+4];
+            r[2] = this->mat[idx+8];
+            r[3] = this->mat[idx+12];
+            return r;
+        }
+
+        //! Access a given column of the matrix
+        morph::Vector<Flt, 4> col (size_t idx) const
+        {
+            morph::Vector<Flt, 4> c = {0,0,0,0};
+            if (idx > 3) { return c; }
+            idx *= 4;
+            c[0] = this->mat[idx];
+            c[1] = this->mat[++idx];
+            c[2] = this->mat[++idx];
+            c[3] = this->mat[++idx];
+            return c;
+        }
+
 #ifdef DETERMINE_FROM_PLACEHOLDER
         //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order

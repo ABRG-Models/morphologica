@@ -74,6 +74,29 @@ namespace morph {
         // note: assume Flt is a built-in type here (safe - Flt will be float or double)
         const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
 
+        //! Access a given row of the matrix
+        morph::Vector<Flt, 3> row (size_t idx) const
+        {
+            morph::Vector<Flt, 3> r = {0,0,0};
+            if (idx > 2) { return r; }
+            r[0] = this->mat[idx];
+            r[1] = this->mat[idx+3];
+            r[2] = this->mat[idx+6];
+            return r;
+        }
+
+        //! Access a given column of the matrix
+        morph::Vector<Flt, 3> col (size_t idx) const
+        {
+            morph::Vector<Flt, 3> c = {0,0,0};
+            if (idx > 2) { return c; }
+            idx *= 3;
+            c[0] = this->mat[idx];
+            c[1] = this->mat[++idx];
+            c[2] = this->mat[++idx];
+            return c;
+        }
+
         //! Transpose this matrix
         void transpose()
         {
