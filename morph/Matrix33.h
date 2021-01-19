@@ -428,7 +428,7 @@ namespace morph {
             + this->mat[8] * v1[2];
             return v;
         }
-#if 0 // The one above should work as a Vector IS an array.
+
         //! Do matrix times vector multiplication, v = mat * v1
         Vector<Flt, 3> operator* (const Vector<Flt, 3>& v1) const
         {
@@ -444,7 +444,7 @@ namespace morph {
             + this->mat[8] * v1[2];
             return v;
         }
-#endif
+
         //! Overload the stream output operator
         friend std::ostream& operator<< <Flt> (std::ostream& os, const Matrix33<Flt>& tm);
     };
