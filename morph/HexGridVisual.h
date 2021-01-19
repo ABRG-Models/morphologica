@@ -565,7 +565,8 @@ namespace morph {
         //! hex. Might look cool. Writeme.
         void initializeVerticesHexesStepped (void) {}
 
-    private:
+    //private:
+    protected:
         //! The HexGrid to visualize
         const HexGrid* hg;
     };
