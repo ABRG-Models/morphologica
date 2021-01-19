@@ -63,10 +63,38 @@ namespace morph {
 
         void setToIdentity()
         {
-            this->mat.fill (Flt{0.0});
-            this->mat[0] = Flt{1.0};
-            this->mat[4] = Flt{1.0};
-            this->mat[8] = Flt{1.0};
+            this->mat.fill (Flt{0});
+            this->mat[0] = Flt{1};
+            this->mat[4] = Flt{1};
+            this->mat[8] = Flt{1};
+        }
+
+        //! Access elements of the matrix
+        Flt& operator[] (size_t idx) { return this->mat[idx]; }
+        // note: assume Flt is a built-in type here (safe - Flt will be float or double)
+        const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
+
+        //! Access a given row of the matrix
+        morph::Vector<Flt, 3> row (size_t idx) const
+        {
+            morph::Vector<Flt, 3> r = {0,0,0};
+            if (idx > 2) { return r; }
+            r[0] = this->mat[idx];
+            r[1] = this->mat[idx+3];
+            r[2] = this->mat[idx+6];
+            return r;
+        }
+
+        //! Access a given column of the matrix
+        morph::Vector<Flt, 3> col (size_t idx) const
+        {
+            morph::Vector<Flt, 3> c = {0,0,0};
+            if (idx > 2) { return c; }
+            idx *= 3;
+            c[0] = this->mat[idx];
+            c[1] = this->mat[++idx];
+            c[2] = this->mat[++idx];
+            return c;
         }
 
         //! Transpose this matrix
@@ -208,12 +236,12 @@ namespace morph {
         {
             Flt det = this->determinant();
             Matrix33<Flt> rtn;
-            if (det == Flt{0.0}) {
+            if (det == Flt{0}) {
                 std::cout << "NB: The transform matrix has no inverse (determinant is 0)" << std::endl;
-                rtn.mat.fill (Flt{0.0});
+                rtn.mat.fill (Flt{0});
             } else {
                 rtn.mat = this->adjugate();
-                rtn *= (Flt{1.0}/det);
+                rtn *= (Flt{1}/det);
             }
             return rtn;
         }
@@ -400,7 +428,7 @@ namespace morph {
             + this->mat[8] * v1[2];
             return v;
         }
-#if 0 // The one above should work as a Vector IS an array.
+
         //! Do matrix times vector multiplication, v = mat * v1
         Vector<Flt, 3> operator* (const Vector<Flt, 3>& v1) const
         {
@@ -416,7 +444,7 @@ namespace morph {
             + this->mat[8] * v1[2];
             return v;
         }
-#endif
+
         //! Overload the stream output operator
         friend std::ostream& operator<< <Flt> (std::ostream& os, const Matrix33<Flt>& tm);
     };

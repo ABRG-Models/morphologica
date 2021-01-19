@@ -76,11 +76,41 @@ namespace morph {
         //! Self-explanatory
         void setToIdentity()
         {
-            this->mat.fill (static_cast<Flt>(0.0));
-            this->mat[0] = static_cast<Flt>(1.0);
-            this->mat[5] = static_cast<Flt>(1.0);
-            this->mat[10] = static_cast<Flt>(1.0);
-            this->mat[15] = static_cast<Flt>(1.0);
+            this->mat.fill (Flt{0});
+            this->mat[0] = Flt{1};
+            this->mat[5] = Flt{1};
+            this->mat[10] = Flt{1};
+            this->mat[15] = Flt{1};
+        }
+
+        //! Access elements of the matrix
+        Flt& operator[] (size_t idx) { return this->mat[idx]; }
+        // note: assume Flt is a built-in type here (safe - Flt will be float or double)
+        const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
+
+        //! Access a given row of the matrix
+        morph::Vector<Flt, 4> row (size_t idx) const
+        {
+            morph::Vector<Flt, 4> r = {0,0,0,0};
+            if (idx > 3) { return r; }
+            r[0] = this->mat[idx];
+            r[1] = this->mat[idx+4];
+            r[2] = this->mat[idx+8];
+            r[3] = this->mat[idx+12];
+            return r;
+        }
+
+        //! Access a given column of the matrix
+        morph::Vector<Flt, 4> col (size_t idx) const
+        {
+            morph::Vector<Flt, 4> c = {0,0,0,0};
+            if (idx > 3) { return c; }
+            idx *= 4;
+            c[0] = this->mat[idx];
+            c[1] = this->mat[++idx];
+            c[2] = this->mat[++idx];
+            c[3] = this->mat[++idx];
+            return c;
         }
 
 #ifdef DETERMINE_FROM_PLACEHOLDER
@@ -432,12 +462,12 @@ namespace morph {
         {
             Flt det = this->determinant();
             TransformMatrix<Flt> rtn;
-            if (det == static_cast<Flt>(0.0)) {
+            if (det == Flt{0}) {
                 std::cout << "NB: The transform matrix has no inverse (determinant is 0)" << std::endl;
-                rtn.mat.fill (static_cast<Flt>(0.0));
+                rtn.mat.fill (Flt{0});
             } else {
                 rtn.mat = this->adjugate();
-                rtn *= (static_cast<Flt>(1.0)/det);
+                rtn *= (Flt{1}/det);
             }
             return rtn;
         }
@@ -897,19 +927,19 @@ namespace morph {
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
-                + this->mat[12] * 1.0;
+                + this->mat[12]; // * 1
             v[1] = this->mat[1] * v1.x()
                 + this->mat[5] * v1.y()
                 + this->mat[9] * v1.z()
-                + this->mat[13] * 1.0;
+                + this->mat[13];
             v[2] = this->mat[2] * v1.x()
                 + this->mat[6] * v1.y()
                 + this->mat[10] * v1.z()
-                + this->mat[14] * 1.0;
+                + this->mat[14];
             v[3] = this->mat[3] * v1.x()
                 + this->mat[7] * v1.y()
                 + this->mat[11] * v1.z()
-                + this->mat[15] * 1.0;
+                + this->mat[15];
             return v;
         }
 
@@ -994,7 +1024,7 @@ namespace morph {
             Flt fovRad_ov2 = fovDeg * piOver360; // fovDeg/2 converted to radians
 
             Flt sineFov = std::sin (fovRad_ov2);
-            if (sineFov == static_cast<Flt>(0.0)) { return; }
+            if (sineFov == Flt{0}) { return; }
             Flt cotanFov = std::cos (fovRad_ov2) / sineFov;
             Flt clip = zFar - zNear;
 
