@@ -58,19 +58,19 @@ class RD_Erm : public morph::RD_Base<Flt>
 {
 public:
     //! Set N>1 for maintaining multiple expression gradients
-    alignas(Flt) unsigned int N = 1;
+    alignas(alignof(unsigned int)) unsigned int N = 1;
     //! The c_i(x,t) variables from the Ermentrout paper (chemoattractant concentration)
-    alignas(Flt) std::vector<std::vector<Flt> > c;
+    alignas(alignof(std::vector<std::vector<Flt> >)) std::vector<std::vector<Flt> > c;
     //! The n_i(x,t) variables from the Ermentrout paper (density of tc axons)
-    alignas(Flt) std::vector<std::vector<Flt> > n;
+    alignas(alignof(std::vector<std::vector<Flt> >)) std::vector<std::vector<Flt> > n;
     //! Holds the Laplacian
-    alignas(Flt) std::vector<std::vector<Flt> > lapl;
+    alignas(alignof(std::vector<std::vector<Flt> >)) std::vector<std::vector<Flt> > lapl;
     //! Holds the Poisson terms (final non-linear term in Ermentrout equation 1)
-    alignas(Flt) std::vector<std::vector<Flt> > poiss;
+    alignas(alignof(std::vector<std::vector<Flt> >)) std::vector<std::vector<Flt> > poiss;
     //! Sum of c
-    alignas(Flt) std::vector<Flt> sum_c;
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> sum_c;
     //! Sum of n
-    alignas(Flt) std::vector<Flt> sum_n;
+    alignas(alignof(std::vector<Flt>)) std::vector<Flt> sum_n;
 
     // Parameters of the Ermentrout model - default values.
     //! Diffusion constant for n
