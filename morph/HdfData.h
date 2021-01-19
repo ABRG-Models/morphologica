@@ -25,11 +25,19 @@ namespace morph {
      * exception; output some information to stdout, output a warning to stderr or just
      * carry on and accept that you can't read that thing.
      */
-    enum class ReadErrorAction {
+    enum class ReadErrorAction
+    {
         Exception,
         Warning,
         Info,
         Continue
+    };
+
+    enum class FileAccess
+    {
+        ReadOnly,
+        TruncateWrite,
+        ReadWrite
     };
 
     /*!
@@ -48,7 +56,7 @@ namespace morph {
          * or necessary in the future, then this will need to become an enumerated class
          * or type, with read_only/read_write/write_only options.
          */
-        bool read_mode = false;
+        FileAccess file_access = FileAccess::TruncateWrite;
 
         /*!
          * If there's an error in status, output a context (given by emsg) sensible
@@ -107,12 +115,33 @@ namespace morph {
          * going to have data written into it at all. Finally, set
          * show_hdf_internal_errors to true to switch on libhdf's verbose error output.
          */
-        HdfData (const std::string fname, const bool read_data = false, const bool show_hdf_internal_errors = false)
+        HdfData (const std::string fname,
+                 const FileAccess _file_access = FileAccess::TruncateWrite,
+                 const bool show_hdf_internal_errors = false)
         {
-            this->read_mode = read_data;
-            if (this->read_mode == true) {
+            this->init (fname, _file_access, show_hdf_internal_errors);
+        }
+
+        HdfData (const std::string fname, const bool read_data, const bool show_hdf_internal_errors = false)
+        {
+            FileAccess _file_access = (read_data ? FileAccess::ReadOnly : FileAccess::TruncateWrite);
+            this->init (fname, _file_access, show_hdf_internal_errors);
+        }
+
+    private:
+        void init (const std::string fname,
+                   const FileAccess _file_access,
+                   const bool show_hdf_internal_errors)
+        {
+            this->file_access = _file_access;
+            if (this->file_access == FileAccess::ReadOnly) {
+                std::cout << "Open read-only\n";
                 this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+            } else if (this->file_access == FileAccess::ReadWrite) {
+                std::cout << "Open read-write\n";
+                this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
             } else {
+                std::cout << "Open for writing (after truncation)\n";
                 this->file_id = H5Fcreate (fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
             }
             // Check it's open, if not throw exception
@@ -127,6 +156,7 @@ namespace morph {
             }
         }
 
+    public:
         //! Deconstruct, closing the file_id
         ~HdfData()
         {

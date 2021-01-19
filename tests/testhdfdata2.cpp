@@ -26,14 +26,20 @@ int main()
                                    { 7.0, 7.0, 8.0 },
                                    { 9.0, 9.0, 10.0 } };
     {
-        HdfData data("test.h5");
+        HdfData data("test0.h5");
         data.add_contained_vals ("/testvecarray", va);
     } // data closes when out of scope
 
+    // Demonstrate appending data to an existing HDF5 file:
+    {
+        HdfData data("test0.h5", morph::FileAccess::ReadWrite);
+        data.add_contained_vals ("/testvecarray2", va);
+    }
+
     vector<array<float, 3>> varead;
     {
-        HdfData data("test.h5", true); // true for read data
-        data.read_contained_vals ("/testvecarray", varead);
+        HdfData data("test0.h5", morph::FileAccess::ReadOnly);
+        data.read_contained_vals ("/testvecarray2", varead);
     }
 
     if (va.size() == varead.size()) {
