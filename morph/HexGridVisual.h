@@ -570,41 +570,33 @@ namespace morph {
         const HexGrid* hg;
     };
 
-
-
-
-
-template <class T>
-class HexGridVisualManual : public morph::HexGridVisual<T> {
-
+    //! Extended HexGridVisual class for plotting with individual red, green and blue
+    //! values (i.e., without a ColourMap).
+    template <class T>
+    class HexGridVisualManual : public morph::HexGridVisual<T>
+    {
     public:
+        //! Individual colour values for plotting
+        std::vector<float> R, G, B;
 
-    std::vector<float> R, G, B;
+        HexGridVisualManual(GLuint sp, GLuint tsp,
+                            const morph::HexGrid* _hg,
+                            const morph::Vector<float> _offset,
+                            const std::vector<T>* _data,
+                            const morph::Scale<T, float>& zscale,
+                            const morph::Scale<T, float>& cscale,
+                            morph::ColourMapType _cmt)
+            : morph::HexGridVisual<T>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
+        {
+            R.resize (this->hg->num(), 0.0f);
+            G.resize (this->hg->num(), 0.0f);
+            B.resize (this->hg->num(), 0.0f);
+        };
 
-    HexGridVisualManual(GLuint sp, GLuint tsp,
-                      const morph::HexGrid* _hg,
-                      const morph::Vector<float> _offset,
-                      const std::vector<T>* _data,
-                      const morph::Scale<T, float>& zscale,
-                      const morph::Scale<T, float>& cscale,
-                      morph::ColourMapType _cmt
-                      ) : morph::HexGridVisual<T>(sp, tsp,
-                      _hg,
-                      _offset,
-                      _data,
-                      zscale,
-                      cscale,
-                      _cmt){
-
-                      R.resize(this->hg->num(),0.);
-                      G.resize(this->hg->num(),0.);
-                      B.resize(this->hg->num(),0.);
-    };
-
-//! Initialize as hexes, with z position of each of the 6
+        //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
-        void initializeVertices(void)
+        void initializeVertices (void)
         {
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
@@ -645,10 +637,8 @@ class HexGridVisualManual : public morph::HexGridVisual<T> {
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
 
-                // SWNOTE: The following line differentiates this from the parent class
+                // SWNOTE: The following line differentiates this from the parent class:
                 std::array<float, 3> clr = {R[hi], G[hi], B[hi]};
-
-                //
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -797,7 +787,6 @@ class HexGridVisualManual : public morph::HexGridVisual<T> {
                 idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
         }
-
     };
 
 } // namespace morph
