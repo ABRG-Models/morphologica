@@ -700,9 +700,6 @@ namespace morph {
                 dim_singleparam[0] = N;
                 dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
             }
-            if (dataspace_id < 0) {
-                std::cout << "Failed to create dataspace...\n";
-            }
 
             hid_t dataset_id = 0;
             herr_t status = 0;
@@ -824,11 +821,6 @@ namespace morph {
                 hsize_t dim_singleparam[1];
                 dim_singleparam[0] = vals.size();
                 dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-            }
-            if (dataspace_id < 0) {
-                std::cout << "add_contained_vals<Container, T, Allocator> Failed to create dataspace...\n";
-            } else {
-                std::cout << "add_contained_vals<Container, T, Allocator> dataspace_id = " << dataspace_id << "\n";
             }
 
             // A container suitable for holding the values to be written to the HDF5.
@@ -964,9 +956,6 @@ namespace morph {
             dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
-            if (dataspace_id < 0) {
-                std::cout << "add_contained_vals<T, N>(const char*, vector<Vector<T,N>>) Failed to create dataspace...\n";
-            }
             // Now determine width of T and select the most suitable data type to pass to open_dataset()
             hid_t dataset_id = 0;
             herr_t status = 0;
@@ -1020,7 +1009,6 @@ namespace morph {
             // Copy the data out of the point and into a nice contiguous array
             std::vector<T> data_array(2, 0);
             data_array[0] = val.x;
-            //std::cout << "val: ("  << val.x << "," << val.y << ")" << std::endl;
             data_array[1] = val.y;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
