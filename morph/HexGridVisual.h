@@ -570,4 +570,234 @@ namespace morph {
         const HexGrid* hg;
     };
 
+
+
+
+
+template <class T>
+class HexGridVisualManual : public morph::HexGridVisual<T> {
+
+    public:
+
+    std::vector<float> R, G, B;
+
+    HexGridVisualManual(GLuint sp, GLuint tsp,
+                      const morph::HexGrid* _hg,
+                      const morph::Vector<float> _offset,
+                      const std::vector<T>* _data,
+                      const morph::Scale<T, float>& zscale,
+                      const morph::Scale<T, float>& cscale,
+                      morph::ColourMapType _cmt
+                      ) : morph::HexGridVisual<T>(sp, tsp,
+                      _hg,
+                      _offset,
+                      _data,
+                      zscale,
+                      cscale,
+                      _cmt){
+
+                      R.resize(this->hg->num(),0.);
+                      G.resize(this->hg->num(),0.);
+                      B.resize(this->hg->num(),0.);
+    };
+
+//! Initialize as hexes, with z position of each of the 6
+        //! outer edges of the hexes interpolated, but a single colour
+        //! for each hex. Gives a smooth surface.
+        void initializeVertices(void)
+        {
+            float sr = this->hg->getSR();
+            float vne = this->hg->getVtoNE();
+            float lr = this->hg->getLR();
+
+            unsigned int nhex = this->hg->num();
+            unsigned int idx = 0;
+
+            std::vector<float> dcopy (this->scalarData->size());
+            this->zScale.transform (*(this->scalarData), dcopy);
+            std::vector<float> dcolour (this->scalarData->size());
+            this->colourScale.transform (*(this->scalarData), dcolour);
+
+            // These Ts are all floats, right?
+            float datumC = 0.0f;   // datum at the centre
+            float datumNE = 0.0f;  // datum at the hex to the east.
+            float datumNNE = 0.0f; // etc
+            float datumNNW = 0.0f;
+            float datumNW = 0.0f;
+            float datumNSW = 0.0f;
+            float datumNSE = 0.0f;
+
+            float datum = 0.0f;
+            float third = 0.3333333f;
+            float half = 0.5f;
+            morph::Vector<float> vtx_0, vtx_1, vtx_2;
+            for (unsigned int hi = 0; hi < nhex; ++hi) {
+
+                // Use the linear scaled copy of the data, dcopy.
+                datumC   = dcopy[hi];
+                datumNE  = HAS_NE(hi)  ? dcopy[NE(hi)]  : datumC; // datum Neighbour East
+                datumNNE = HAS_NNE(hi) ? dcopy[NNE(hi)] : datumC; // datum Neighbour North East
+                datumNNW = HAS_NNW(hi) ? dcopy[NNW(hi)] : datumC; // etc
+                datumNW  = HAS_NW(hi)  ? dcopy[NW(hi)]  : datumC;
+                datumNSW = HAS_NSW(hi) ? dcopy[NSW(hi)] : datumC;
+                datumNSE = HAS_NSE(hi) ? dcopy[NSE(hi)] : datumC;
+
+                // Use a single colour for each hex, even though hex z positions are
+                // interpolated. Do the _colour_ scaling:
+
+                // SWNOTE: The following line differentiates this from the parent class
+                std::array<float, 3> clr = {R[hi], G[hi], B[hi]};
+
+                //
+
+                // First push the 7 positions of the triangle vertices, starting with the centre
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
+
+                // Use the centre position as the first location for finding the normal vector
+                vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datumC}};
+
+                // NE vertex
+                if (HAS_NNE(hi) && HAS_NE(hi)) {
+                    // Compute mean of this->data[hi] and NE and E hexes
+                    datum = third * (datumC + datumNNE + datumNE);
+                } else if (HAS_NNE(hi) || HAS_NE(hi)) {
+                    if (HAS_NNE(hi)) {
+                        datum = half * (datumC + datumNNE);
+                    } else {
+                        datum = half * (datumC + datumNE);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
+
+                // SE vertex
+                if (HAS_NE(hi) && HAS_NSE(hi)) {
+                    datum = third * (datumC + datumNE + datumNSE);
+                } else if (HAS_NE(hi) || HAS_NSE(hi)) {
+                    if (HAS_NE(hi)) {
+                        datum = half * (datumC + datumNE);
+                    } else {
+                        datum = half * (datumC + datumNSE);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
+
+                // S
+                if (HAS_NSE(hi) && HAS_NSW(hi)) {
+                    datum = third * (datumC + datumNSE + datumNSW);
+                } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
+                    if (HAS_NSE(hi)) {
+                        datum = half * (datumC + datumNSE);
+                    } else {
+                        datum = half * (datumC + datumNSW);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
+
+                // SW
+                if (HAS_NW(hi) && HAS_NSW(hi)) {
+                    datum = third * (datumC + datumNW + datumNSW);
+                } else if (HAS_NW(hi) || HAS_NSW(hi)) {
+                    if (HAS_NW(hi)) {
+                        datum = half * (datumC + datumNW);
+                    } else {
+                        datum = half * (datumC + datumNSW);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+
+                // NW
+                if (HAS_NNW(hi) && HAS_NW(hi)) {
+                    datum = third * (datumC + datumNNW + datumNW);
+                } else if (HAS_NNW(hi) || HAS_NW(hi)) {
+                    if (HAS_NNW(hi)) {
+                        datum = half * (datumC + datumNNW);
+                    } else {
+                        datum = half * (datumC + datumNW);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+
+                // N
+                if (HAS_NNW(hi) && HAS_NNE(hi)) {
+                    datum = third * (datumC + datumNNW + datumNNE);
+                } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
+                    if (HAS_NNW(hi)) {
+                        datum = half * (datumC + datumNNW);
+                    } else {
+                        datum = half * (datumC + datumNNE);
+                    }
+                } else {
+                    datum = datumC;
+                }
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
+
+                // From vtx_0,1,2 compute normal. This sets the correct normal, but note
+                // that there is only one 'layer' of vertices; the back of the
+                // HexGridVisual will be coloured the same as the front. To get lighting
+                // effects to look really good, the back of the surface could need the
+                // opposite normal.
+                morph::Vector<float> plane1 = vtx_1 - vtx_0;
+                morph::Vector<float> plane2 = vtx_2 - vtx_0;
+                morph::Vector<float> vnorm = plane2.cross (plane1);
+                vnorm.renormalize();
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+
+                // Seven vertices with the same colour
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+
+                // Define indices now to produce the 6 triangles in the hex
+                this->indices.push_back (idx+1);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+2);
+
+                this->indices.push_back (idx+2);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+3);
+
+                this->indices.push_back (idx+3);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+4);
+
+                this->indices.push_back (idx+4);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+5);
+
+                this->indices.push_back (idx+5);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+6);
+
+                this->indices.push_back (idx+6);
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+1);
+
+                idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+            }
+        }
+
+    };
+
 } // namespace morph
