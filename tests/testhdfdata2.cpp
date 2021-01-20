@@ -26,14 +26,20 @@ int main()
                                    { 7.0, 7.0, 8.0 },
                                    { 9.0, 9.0, 10.0 } };
     {
-        HdfData data("test.h5");
+        HdfData data("test0.h5");
         data.add_contained_vals ("/testvecarray", va);
     } // data closes when out of scope
 
+    // Demonstrate appending data to an existing HDF5 file:
+    {
+        HdfData data("test0.h5", morph::FileAccess::ReadWrite);
+        data.add_contained_vals ("/testvecarray2", va);
+    }
+
     vector<array<float, 3>> varead;
     {
-        HdfData data("test.h5", true); // true for read data
-        data.read_contained_vals ("/testvecarray", varead);
+        HdfData data("test0.h5", morph::FileAccess::ReadOnly);
+        data.read_contained_vals ("/testvecarray2", varead);
     }
 
     if (va.size() == varead.size()) {
@@ -53,6 +59,21 @@ int main()
             cout << "Coordinate: (" << va[i][0] << "," << va[i][1] << "," << va[i][2] << ")" << endl;
         }
     }
+
+    // Demonstrate overwriting data to an existing HDF5 file:
+    va[0][0] = 100.0f;
+    {
+        HdfData data("test0.h5", morph::FileAccess::ReadWrite);
+        data.add_contained_vals ("/testvecarray2", va);
+    }
+    // And read back:
+    {
+        HdfData data("test0.h5", morph::FileAccess::ReadOnly);
+        data.read_contained_vals ("/testvecarray2", varead);
+    }
+    cout << "varead[0][0] = " << varead[0][0] << " (should be 100) varead size: " << varead.size() << "\n";
+    if (varead.size() != va.size()) { rtn -= 1; }
+    if (varead[0][0] != 100.0f) { rtn -= 1; }
 
     cout << "vector<array<float, 12>>" << endl;
     vector<array<float, 12>> va12 = { { 1., 1., 2., 1., 1., 2., 1., 1., 2., 1., 1., 2. },

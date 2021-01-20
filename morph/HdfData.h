@@ -25,11 +25,24 @@ namespace morph {
      * exception; output some information to stdout, output a warning to stderr or just
      * carry on and accept that you can't read that thing.
      */
-    enum class ReadErrorAction {
+    enum class ReadErrorAction
+    {
         Exception,
         Warning,
         Info,
         Continue
+    };
+
+    /*!
+     * Used as a flag to the HdfData constructor to allow you to specify whether the
+     * data file should be opened for reading, writing (truncating the file at the
+     * outset) or for read/write.
+     */
+    enum class FileAccess
+    {
+        ReadOnly,
+        TruncateWrite,
+        ReadWrite
     };
 
     /*!
@@ -42,13 +55,8 @@ namespace morph {
         //! The HDF5 file id.
         hid_t file_id = -1;
 
-        /*!
-         * Operate in read mode? If true, open the HDF5 file in read-only mode. If
-         * false, open and truncate the HDF5 file. If read-write access becomes useful
-         * or necessary in the future, then this will need to become an enumerated class
-         * or type, with read_only/read_write/write_only options.
-         */
-        bool read_mode = false;
+        //! The file access mode chosen by the user at construction time.
+        FileAccess file_access = FileAccess::TruncateWrite;
 
         /*!
          * If there's an error in status, output a context (given by emsg) sensible
@@ -61,6 +69,24 @@ namespace morph {
                 ee << emsg << status;
                 throw std::runtime_error (ee.str());
             }
+        }
+
+        /*!
+         * Open a dataset, by creating it, unless we're in read-write mode. In that
+         * case, create it and if that fails, open it.
+         */
+        hid_t open_dataset (const char* path, hid_t dtype_id, hid_t space_id)
+        {
+            hid_t dataset_id = H5Dcreate2 (this->file_id, path, dtype_id, space_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            if (this->file_access == FileAccess::ReadWrite) {
+                if (dataset_id < 0) {
+                    dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+                    if (dataset_id < 0) {
+                        std::cout << "dataset_id still negative after H5Dcreate2/H5Dopen2: " << dataset_id << std::endl;
+                    }
+                }
+            }
+            return dataset_id;
         }
 
         /*!
@@ -107,12 +133,33 @@ namespace morph {
          * going to have data written into it at all. Finally, set
          * show_hdf_internal_errors to true to switch on libhdf's verbose error output.
          */
-        HdfData (const std::string fname, const bool read_data = false, const bool show_hdf_internal_errors = false)
+        HdfData (const std::string fname,
+                 const FileAccess _file_access = FileAccess::TruncateWrite,
+                 const bool show_hdf_internal_errors = false)
         {
-            this->read_mode = read_data;
-            if (this->read_mode == true) {
+            this->init (fname, _file_access, show_hdf_internal_errors);
+        }
+
+        HdfData (const std::string fname, const bool read_data, const bool show_hdf_internal_errors = false)
+        {
+            FileAccess _file_access = (read_data ? FileAccess::ReadOnly : FileAccess::TruncateWrite);
+            this->init (fname, _file_access, show_hdf_internal_errors);
+        }
+
+    private:
+        void init (const std::string fname,
+                   const FileAccess _file_access,
+                   const bool show_hdf_internal_errors)
+        {
+            this->file_access = _file_access;
+            if (this->file_access == FileAccess::ReadOnly) {
+                // std::cout << "Open read-only\n";
                 this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+            } else if (this->file_access == FileAccess::ReadWrite) {
+                // std::cout << "Open read-write\n";
+                this->file_id = H5Fopen (fname.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
             } else {
+                // std::cout << "Open for writing (after truncation)\n";
                 this->file_id = H5Fcreate (fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
             }
             // Check it's open, if not throw exception
@@ -127,6 +174,7 @@ namespace morph {
             }
         }
 
+    public:
         //! Deconstruct, closing the file_id
         ~HdfData()
         {
@@ -401,7 +449,6 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-
         //! Templated read_val for bitsets
         template <size_t N>
         void read_val (const char* path, std::bitset<N>& val)
@@ -516,7 +563,6 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-
         /*!
          * Given a path like /a/b/c, verify and if necessary create group a, then verify
          * and if necessary create group b so that the dataset c can be succesfully
@@ -545,7 +591,6 @@ namespace morph {
             }
         }
 
-
         /*!
          * Makes necessary calls to add a double or float (or integer types if the
          * overloads are added) to an HDF5 file store, using path as the name of the
@@ -565,31 +610,31 @@ namespace morph {
             hid_t dataset_id = 0;
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &val);
             } else if constexpr (std::is_same<typename std::decay<T>::type, bool>::value == true) {
                 unsigned int uival = (val == true ? 1 : 0);
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &uival);
             } else {
                 throw std::runtime_error ("HdfData::add_val<T>: Don't know how to add that type");
             }
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 1: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -615,9 +660,124 @@ namespace morph {
             hsize_t dim_singlestring[1];
             dim_singlestring[0] = str.size();
             hid_t dataspace_id = H5Screate_simple (1, dim_singlestring, NULL);
-            hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_C_S1, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t dataset_id = this->open_dataset (path, H5T_C_S1, dataspace_id);
             herr_t status = H5Dwrite (dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, str.c_str());
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 2: ");
+            status = H5Dclose (dataset_id);
+            this->handle_error (status, "Error. status after H5Dclose: ");
+            status = H5Sclose (dataspace_id);
+            this->handle_error (status, "Error. status after H5Sclose: ");
+        }
+
+        /*!
+         * Add an array of T, where T may be various 2D coordinates or just scalar
+         * values. Unfortunately, this looks very similar to the following template for
+         * Container<T, Allocator> instead of std::array
+         */
+        template<typename T, size_t N>
+        void add_contained_vals (const char* path, const std::array<T, N>& vals)
+        {
+            this->process_groups (path);
+            hid_t dataspace_id = 0;
+            if constexpr (std::is_same<std::decay_t<T>, cv::Point2i>::value == true
+                          || std::is_same<std::decay_t<T>, cv::Point2f>::value == true
+                          || std::is_same<std::decay_t<T>, cv::Point2d>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<float, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<float, float>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<double, double>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<int, int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned int, unsigned int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<long long int, long long int>>::value == true
+                          || std::is_same<std::decay_t<T>, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
+                hsize_t dim_vec2dcoords[2]; // 2 Dims
+                dim_vec2dcoords[0] = N;
+                dim_vec2dcoords[1] = 2; // 2 ints in each cv::Point
+                // Note 2 dims (1st arg, which is rank = 2)
+                dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
+            } else {
+                hsize_t dim_singleparam[1];
+                dim_singleparam[0] = N;
+                dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
+            }
+            if (dataspace_id < 0) {
+                std::cout << "Failed to create dataspace...\n";
+            }
+
+            hid_t dataset_id = 0;
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2i>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2d>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2f>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else {
+                throw std::runtime_error ("HdfData::add_contained_vals<T, N>: Don't know how to store that type");
+            }
+            this->handle_error (status, "Error. status after H5Dwrite 3: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -665,6 +825,11 @@ namespace morph {
                 dim_singleparam[0] = vals.size();
                 dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
             }
+            if (dataspace_id < 0) {
+                std::cout << "add_contained_vals<Container, T, Allocator> Failed to create dataspace...\n";
+            } else {
+                std::cout << "add_contained_vals<Container, T, Allocator> dataspace_id = " << dataspace_id << "\n";
+            }
 
             // A container suitable for holding the values to be written to the HDF5.
             // vals is copied into outvals, because if vals is an std::list, it has no
@@ -675,77 +840,77 @@ namespace morph {
             hid_t dataset_id = 0;
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2i>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2d>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2f>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else {
-                throw std::runtime_error ("HdfData::add_contained_vals<T>: Don't know how to store that type");
+                throw std::runtime_error ("HdfData::add_contained_vals<Container<T, Allocator>>: Don't know how to store that type");
             }
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 4: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -761,9 +926,9 @@ namespace morph {
             dim_vec3dcoords[1] = 3; // 3 floats in each array<float,3>
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vec3dcoords, NULL);
-            hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
             herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 5: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -779,9 +944,9 @@ namespace morph {
             dim_vec12f[0] = vals.size();
             dim_vec12f[1] = 12;
             hid_t dataspace_id = H5Screate_simple (2, dim_vec12f, NULL);
-            hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
             herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 6: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -799,37 +964,40 @@ namespace morph {
             dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
-            // Now determine width of T and select the most suitable H5Dcreate2 call
+            if (dataspace_id < 0) {
+                std::cout << "add_contained_vals<T, N>(const char*, vector<Vector<T,N>>) Failed to create dataspace...\n";
+            }
+            // Now determine width of T and select the most suitable data type to pass to open_dataset()
             hid_t dataset_id = 0;
             herr_t status = 0;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else {
                 throw std::runtime_error ("HdfData::add_contained_vals<T,N>: Don't know how to store that type");
             }
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 7: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -846,7 +1014,7 @@ namespace morph {
             dim_vec2dcoord[1] = 2; // 2 coordinates in a cv::Point_
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vec2dcoord, NULL);
-            // Now determine width of T and select the most suitable H5Dcreate2 call
+            // Now determine width of T and select the most suitable data type to pass to open_dataset()
             hid_t dataset_id = 0;
             herr_t status = 0;
             // Copy the data out of the point and into a nice contiguous array
@@ -855,33 +1023,33 @@ namespace morph {
             //std::cout << "val: ("  << val.x << "," << val.y << ")" << std::endl;
             data_array[1] = val.y;
             if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data_array[0]));
 
             } else {
                 throw std::runtime_error ("HdfData::add_contained_vals: Don't know how to store a cv::Point_ of that type");
             }
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 8: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -917,7 +1085,7 @@ namespace morph {
             case CV_8UC3:
             case CV_8UC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U8LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U8LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -926,7 +1094,7 @@ namespace morph {
             case CV_8SC3:
             case CV_8SC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I8LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I8LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -935,7 +1103,7 @@ namespace morph {
             case CV_16UC3:
             case CV_16UC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_U16LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_U16LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_USHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -944,7 +1112,7 @@ namespace morph {
             case CV_16SC3:
             case CV_16SC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I16LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I16LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_SHORT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -953,7 +1121,7 @@ namespace morph {
             case CV_32SC3:
             case CV_32SC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_STD_I32LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -962,7 +1130,7 @@ namespace morph {
             case CV_32FC3:
             case CV_32FC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F32LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -971,7 +1139,7 @@ namespace morph {
             case CV_64FC3:
             case CV_64FC4:
             {
-                dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals.data);
                 break;
             }
@@ -983,7 +1151,7 @@ namespace morph {
             }
             }
 
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 9: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -1014,9 +1182,9 @@ namespace morph {
             hsize_t dim_singleparam[1];
             dim_singleparam[0] = nvals;
             hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-            hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
             herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals);
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 10: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
@@ -1030,9 +1198,9 @@ namespace morph {
             hsize_t dim_singleparam[1];
             dim_singleparam[0] = nvals;
             hid_t dataspace_id = H5Screate_simple (1, dim_singleparam, NULL);
-            hid_t dataset_id = H5Dcreate2 (this->file_id, path, H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
             herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, vals);
-            this->handle_error (status, "Error. status after H5Dwrite: ");
+            this->handle_error (status, "Error. status after H5Dwrite 11: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
