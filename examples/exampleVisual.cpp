@@ -2,9 +2,8 @@
  * An example morph::Visual scene, containing a HexGrid.
  */
 
-#include <utility>
 #include <iostream>
-#include <fstream>
+#include <vector>
 #include <cmath>
 
 #include <morph/Scale.h>
