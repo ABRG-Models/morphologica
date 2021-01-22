@@ -123,7 +123,6 @@ int main (int argc, char **argv)
     plt.zNear = 0.001;
     plt.zFar = 50;
     plt.fov = 45;
-    plt.setZDefault (-10.0f);
     plt.showCoordArrows = true;
     plt.showTitle = false;
     // You can lock movement of the scene
@@ -181,7 +180,6 @@ int main (int argc, char **argv)
     graph1->twodimensional = true;
     graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_ymax", 40000.0f));
     graph1->policy = morph::stylepolicy::lines;
-    std::stringstream yy;
     graph1->ylabel = "Sum";
     graph1->xlabel = "Sim time (s)";
     graph1->prepdata ("n");
