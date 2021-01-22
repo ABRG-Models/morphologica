@@ -175,16 +175,8 @@ target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
 add_test(testhdfdata3d testhdfdata3d)
 
 if(${glfw3_FOUND})
-  # Test morph::Visual class
-  add_executable(testVisual testVisual.cpp)
-  target_link_libraries(testVisual ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-  #add_test(testVisual testVisual)
-
   add_executable(testbighexgrid testbighexgrid.cpp)
   target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
-  add_executable(testHexConvolve testHexConvolve.cpp)
-  target_link_libraries(testHexConvolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisQuads testVisQuads.cpp)
   target_link_libraries(testVisQuads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
