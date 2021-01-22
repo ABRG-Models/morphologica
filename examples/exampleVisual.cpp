@@ -5,7 +5,6 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include <stdexcept>
 #include <cmath>
 
 #include <morph/Scale.h>
