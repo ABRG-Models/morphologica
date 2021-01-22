@@ -1,32 +1,23 @@
-#include "morph/Visual.h"
-#include "morph/VisualDataModel.h"
-#include "morph/HexGridVisual.h"
-#include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
-#include "morph/tools.h"
 #include <utility>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <cmath>
-#include "morph/Scale.h"
-#include "morph/Vector.h"
 
-using namespace std;
-using morph::Visual;
-using morph::VisualDataModel;
-using morph::HexGrid;
-using morph::HexGridVisual;
-using morph::Tools;
-using morph::HexDomainShape;
-using morph::ReadCurves;
-using morph::Scale;
-using morph::Vector;
+#include <morph/Scale.h>
+#include <morph/Vector.h>
+#include <morph/Visual.h>
+#include <morph/VisualDataModel.h>
+#include <morph/HexGridVisual.h>
+#include <morph/HexGrid.h>
+#include <morph/ReadCurves.h>
+#include <morph/tools.h>
 
 int main()
 {
     int rtn = -1;
 
-    Visual v(1600,1000,"morph::Visual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, "morph::Visual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     // Set up the near and far cutoff distances for rendering objects
     v.zNear = 0.001;
     v.zFar = 50;
@@ -50,26 +41,26 @@ int main()
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     try {
-        string pwd = Tools::getPwd();
-        string curvepath = "./tests/trial.svg";
+        std::string pwd = morph::Tools::getPwd();
+        std::string curvepath = "./tests/trial.svg";
         if (pwd.substr(pwd.length()-11) == "build/tests") {
             curvepath = "./../tests/trial.svg";
         }
-        ReadCurves r(curvepath);
+        morph::ReadCurves r(curvepath);
 
-        HexGrid hg(0.01, 3, 0, HexDomainShape::Boundary);
+        morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
         hg.setBoundary (r.getCorticalPath());
 
-        cout << hg.extent() << endl;
+        std::cout << hg.extent() << std::endl;
 
-        cout << "Number of hexes in grid:" << hg.num() << endl;
-        cout << "Last vector index:" << hg.lastVectorIndex() << endl;
+        std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
+        std::cout << "Last vector index:" << hg.lastVectorIndex() << std::endl;
 
         if (hg.num() != 1604) {
             rtn = -1;
         }
 
-        vector<float> data;
+        std::vector<float> data;
         unsigned int nhex = hg.num();
         data.resize(nhex, 0.0);
 
@@ -77,19 +68,19 @@ int main()
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.5 + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
         }
-        cout << "Created " << data.size() << " floats in data" << endl;
+        std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
-        Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
-        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
-        cout << "Added HexGridVisual with gridId " << gridId << endl;
+        morph::Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
+        unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
+        std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
 
         // Divide existing scale by 10:
-        float newGrad = static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
+        float newGrad = static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
         // Set this in a new zscale object:
-        Scale<float> zscale;
+        morph::Scale<float> zscale;
         zscale.setParams (newGrad, 0);
         // And set it back into the visual model:
-        static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->setZScale (zscale);
+        static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->setZScale (zscale);
 
         v.render();
 
@@ -98,9 +89,9 @@ int main()
             v.render();
         }
 
-    } catch (const exception& e) {
-        cerr << "Caught exception reading trial.svg: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Caught exception reading trial.svg: " << e.what() << std::endl;
+        std::cerr << "Current working directory: " << morph::Tools::getPwd() << std::endl;
         rtn = -1;
     }
 
