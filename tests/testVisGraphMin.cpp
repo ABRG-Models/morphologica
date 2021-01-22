@@ -10,7 +10,6 @@ int main (int argc, char** argv)
 {
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
-    v.zNear = 0.001;
     v.backgroundWhite();
 
     // Create a new GraphVisual with offset within the scene of 0,0,0
