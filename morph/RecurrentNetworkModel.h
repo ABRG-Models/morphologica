@@ -619,7 +619,7 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                v.addVisualModel (new HexGridVisual<float> (v.shaderprog, v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
                 v.render();
                 v.render();
                 v.saveImage(fname);
@@ -654,7 +654,7 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                v.addVisualModel (new HexGridVisual<float> (v.shaderprog,v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
                 v.render();
                 v.render();
                 v.saveImage(fname);

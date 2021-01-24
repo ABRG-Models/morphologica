@@ -58,8 +58,8 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# Tell the program where the morph fonts are. Assuming you installed morphologica in /usr/local:
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share/fonts\\\"\"")
+# Tell the program where the morph fonts are, to compile them into the binary
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Find the libraries which will be needed
 find_package(OpenCV REQUIRED)
@@ -69,7 +69,6 @@ find_package(glfw3 REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(Freetype REQUIRED)
-find_package(morphologica REQUIRED)
 
 # Define collections of includes that have to be made for morphologica
 get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
@@ -77,10 +76,16 @@ set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
-# MORPH_INCLUDE_PATH is set to the location at which the header directory 'morph' is found:
-set(MORPH_INCLUDE_PATH /usr/local CACHE PATH "The path to the morphologica headers (e.g. /usr/local/include or \$HOME/usr/include)")
+# Assuming that you installed morphologica in-tree (i.e. 'next to' XXX.cpp).
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
 include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include)
-include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include/morph)
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})
+
+#
+# All the library finding is now done. It's time to compile the program.
+#
+
+
 
 # Define which code makes up the recurrent net program
 add_executable(recurrentnet recurrentnet.cpp)
@@ -88,17 +93,13 @@ add_executable(recurrentnet recurrentnet.cpp)
 # Define how recurrentnet will be compiled
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
 
-# Set the linking for the recurrentnet program:
-#
-# jsoncpp is required for morph::Config:
-target_link_libraries(recurrentnet jsoncpp_lib)
-# For morph::HdfData:
-target_link_libraries(recurrentnet ${HDF5_C_LIBRARIES})
-# Armadillo is used by Bezier class code which is used in morph::HexGrid:
-target_link_libraries(recurrentnet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
-# To enable morph::Visual we need OpenCV and GL libraries:
-target_link_libraries(recurrentnet ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
-# Here's the right way to enable libomp for parallel processing:
+# Morphologica code requires a number of libraries, collected into 'CORE' and 'GL'.
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
+
+target_link_libraries(recurrentnet ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
+
+
 if(OpenMP_FOUND)
   target_link_libraries(recurrentnet OpenMP::OpenMP_CXX)
 endif()
