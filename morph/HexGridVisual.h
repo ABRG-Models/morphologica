@@ -627,8 +627,8 @@ namespace morph {
         };
 
     protected:
-        //! In this manual-colour-setting HexGridVisual, just need to override this function
-        virtual std::array<float, 3> setColour (unsigned int hi)
+        //! In this manual-colour-setting HexGridVisual we override this:
+        std::array<float, 3> setColour (unsigned int hi) override
         {
             std::array<float, 3> clr = {R[hi], G[hi], B[hi]};
             return clr;
