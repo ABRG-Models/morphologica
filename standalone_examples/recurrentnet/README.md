@@ -19,9 +19,11 @@ Run using `python test.py`.
 
 This will first populate the test folder with map.h5  and network.h5, and then run an example network before also creating outputs.h5, weights.h5, and log.txt.
 
-You can then run `./build/recurrentnet test 0 0` to generate .png files showing the settled responses for each network node to four input patterns. 
+You can then run `./build/recurrentnet test 0 -2` to generate .png files showing the settled responses for each network node to four input patterns.  
 
-Note that running test.py defines the structure of an input-output map and saves it into in test/map.h5, and this map corresponds to the classic XOR-problem. You can specify arbitrarily complicated maps for training/testing in this way, for example using values of X, Y, and F, to represent visual images. Running test.py also defines a network corresponding to that in Figure 1 of Pineda (1987 - full reference below), saved as a vector of pre-synaptic node identities and a vector of post-synaptic node identities into the file test/network.h5.   
+Note that running test.py defines the structure of an input-output map and saves it into in test/map.h5, and this map corresponds to the classic XOR-problem. For the example, the response of node 2 (the network's output node) should be a 2x2 checkboard pattern, showing high/low responses in diagonal quadrants of the input space.
+
+You can specify arbitrarily complicated maps for training/testing in this way, for example using values of X, Y, and F, to represent visual images. Running test.py also defines a network corresponding to that in Figure 1 of Pineda (1987 - full reference below), saved as a vector of pre-synaptic node identities and a vector of post-synaptic node identities into the file test/network.h5.   
   
 
 ## Overview
