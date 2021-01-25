@@ -3,6 +3,21 @@
 This folder contains a set of example morphologica programs to help
 new users to get started using the library.
 
+These examples will build alongside the unit tests when you do a
+morphologica build like this:
+
+```bash
+# Clone morphologica if you didn't already
+git clone git@github.com/ABRG-Models/morphologica
+cd morphologica
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+```
+You'll find the example program binaries in `build/examples`.
+
 ## Ermentrout2009
 
 Contains an implementation of a Keller-Segel reaction diffusion system.
