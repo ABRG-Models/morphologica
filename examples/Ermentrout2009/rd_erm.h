@@ -149,7 +149,7 @@ public:
     //! Computes the Laplacian Stable with dt = 0.0001;
     void compute_lapl (std::vector<Flt>& fa, unsigned int i)
     {
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) shared(lapl, fa, i)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
 
             // 1. The D Del^2 term
@@ -195,7 +195,7 @@ public:
     void compute_poiss (std::vector<Flt>& fa1, std::vector<Flt>& fa2, unsigned int i)
     {
         // Compute non-linear term
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) shared(poiss, fa1, fa2)
         for (unsigned int hi=0; hi<this->nhex; ++hi) {
 
             std::vector<Flt> dum1(6,fa1[hi]);

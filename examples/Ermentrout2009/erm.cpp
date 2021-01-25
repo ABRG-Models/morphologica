@@ -155,6 +155,7 @@ int main (int argc, char **argv)
                                                                      zscale,
                                                                      cscale,
                                                                      morph::ColourMapType::Inferno);
+    hgv1->hexVisMode = morph::HexVisMode::Triangles;
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     unsigned int n_idx = plt.addVisualModel (hgv1);
@@ -171,6 +172,7 @@ int main (int argc, char **argv)
                                                                      morph::ColourMapType::Inferno);
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
+    hgv2->hexVisMode = morph::HexVisMode::Triangles;
     unsigned int c_idx = plt.addVisualModel (hgv2);
 
     // Set up a 2D graph with morph::GraphVisual

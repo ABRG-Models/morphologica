@@ -54,6 +54,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
+find_package(OpenMP)
+if(OpenMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 # Following `cmake --help-policy CMP0072`
 set(OpenGL_GL_PREFERENCE "GLVND")
 
