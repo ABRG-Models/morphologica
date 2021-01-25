@@ -19,6 +19,15 @@
 #define numVBOs 6
 
 namespace morph{ namespace softmats{
+/**
+ * Opengl rendering for the softmats
+ * 
+ * This class controls all the visualization aspects of the simulation
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
+
+    // Light properties
     struct Light{
         GLuint globalAmbLoc;
         GLuint ambLoc;
@@ -40,12 +49,14 @@ namespace morph{ namespace softmats{
         float lightSpecular[4];
     };
 
+    // Camera data
     struct Camera{
         float x;
         float y; 
         float z;
     };
 
+    // Viewport data
     struct ViewPort{
         GLuint mvLoc;
         GLuint prLoc;
@@ -67,21 +78,31 @@ namespace morph{ namespace softmats{
         Camera camera;
         ViewPort viewPort;
         Light light;
+        // Matrices and reserved locations in the shader
         GLuint typeLoc, nLoc;        
         glm::mat4 mMat, mvMat, tMat, rMat, sMat, invTrMat;
         GLuint textureId;
     public:
+        // Initializes the glfw window and opengl contexts
         void init();
+        // Sets up the VAOs and VBOs
         void setup();
+        // Sets up the static vertices for the ground
         void setupGround( Body *ground);
+        // Returns true if the window has been invalidated
         bool shouldClose();
 
-        void preDisplay();
+        // Sets up the matrices and other properties common to all entities
+        void preDisplay();  
+        // Sends the ground to the GPU
         void displayGround();
+        // Updates and sends a body vertices
         void displayBody( Body* b );
+        // Finish up the display
         void postDisplay();
+        // Sets the camera position - TO IMPROVE
         void setCamera(float az, float ev);
-
+        // Sets up the lights
         void installLights( Body*b, glm::mat4 vMatrix );
         
         View();

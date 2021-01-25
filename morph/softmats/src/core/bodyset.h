@@ -6,7 +6,11 @@
 namespace morph{ namespace softmats{
     class Constraint;
     class Body;
-
+ /**
+ * Stores a group of bodies in the simulation
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
     class BodySet{
     private:
         std::vector<Constraint *> constraints;

@@ -12,7 +12,10 @@ using namespace arma;
 
 namespace morph{ namespace softmats{
 
-
+/**
+ * AABB box
+ * @author Alejandro Jimenez Rodriguez
+ */
 class Box{
 public:
     vec min;

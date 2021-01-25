@@ -4,7 +4,13 @@
 #include "point.h"
 
 namespace morph{ namespace softmats{
-
+/**
+ * Face data structure
+ * 
+ * The face has a current normal (normal) and a candidate normal (normal_c)
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
     typedef struct Face{
         std::vector<Point*> points;
         arma::vec normal_c;

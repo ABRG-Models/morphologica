@@ -29,7 +29,7 @@ AnimatSource* SoftmatSim::animatSource( int n, int period, float x, float y, flo
     return as;
 }
 
-// Creation members
+// The new position of the animat is not validated with respect to others.
 Animat* SoftmatSim::animat(float x, float y, float z, double mass){
     Animat* a = new Animat(x, y, z);
     a->setMass( mass );
@@ -51,10 +51,6 @@ Ground* SoftmatSim::ground( float height ){
     std::cout << "Finished setting up ground\n";
     return f;
 }
-
-// AnimatSource* SoftmatSim::source( Point *p ){
-
-// }
 
 // Enviroment control
 void SoftmatSim::light( bool v ){

@@ -75,10 +75,6 @@ std::vector<Point *>& TriangleMesh::getVertices(){
     return vertices;
 }
 
-std::vector<glm::vec2>& TriangleMesh::getTexCoords(){
-    return texCoords;
-}
-
 std::vector<Face *>& TriangleMesh::getFaces(){
     return faces;
 }

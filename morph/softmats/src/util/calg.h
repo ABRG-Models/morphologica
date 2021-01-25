@@ -15,6 +15,10 @@ using namespace std;
 
 namespace morph{
 namespace softmats{
+/**
+ * General computational algorithms used in the simulation
+ * @author Alejandro Jimenez Rodriguez
+ */
 
 struct PolyData{
     vec x1;
@@ -34,10 +38,14 @@ float rtflsp( PolyData& data, float x1, float x2, float xacc );
 vec clamp( vec x1, vec x2, vec x3, vec x4, vec c, vec *p1, vec *p2 );
 // -------
 // Collision and contact detection & response
+// These functions are not used at the moment but are expected to be used.
+// They distribute the impulses among the points in a more principled way but
+// need to be tested
 vector<vec> getInelasticImpulses( Face* f, Point* p, vec *w );
 vector<vec> getInelasticImpulses( Edge&ep, Edge &ef );
 // vector<vec> getCollisionImpulses( CFace& f, CPoint& p, vec *wp );
 // vector<vec> getCollisionImpulses( Edge& ep, Edge& ef );
+
 // -------
 // Utility computational geometry functions
 vec centroid( vector<Point *>& points );

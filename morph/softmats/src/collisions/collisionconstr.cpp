@@ -13,7 +13,6 @@ void CollisionConstraint::init( BodySet *bs ){
     bodySet = bs;
 
 	for( Body* b : bs->getBodies() )
-		// if( b->type == BodyType::ANIMAT )
 			registerObject( b );
 }
 
@@ -26,7 +25,6 @@ void CollisionConstraint::reset(){
 }
 
 void CollisionConstraint::registerObject( Body *b ){
-	std::cout << "Registering object for collision detection\n";
 	vector<int> objIdxs;
 	vector<Point*>& gPoints = b->getMesh()->getVertices();
 	vector<Face*>& gFaces = b->getMesh()->getFaces();
@@ -50,7 +48,6 @@ void CollisionConstraint::registerObject( Body *b ){
 
 	this->indexes[b] = objIdxs;
 	this->objects[b] = this->objects.size();
-	std::cout << "Object registered\n";
 }
 
 void CollisionConstraint::firstPass( int step ){
@@ -60,7 +57,6 @@ void CollisionConstraint::firstPass( int step ){
 		CPoint cp = this->points[i];
 		Point* p = cp.point;
 		vector<int> idxs = indexes[cp.body]; 
-		// cout << "step: " << step << "\n";
 		this->ht.hashIn( cp.point->x_c, i, step );
 	}
 
@@ -71,13 +67,11 @@ void CollisionConstraint::firstPass( int step ){
 }
 
 void CollisionConstraint::secondPass( int step ){
-	cout << "Faces: " << faces.size() << " \n";
 	for( int i = 0; i < this->faces.size(); i++ ){		
 		CFace cf = this->faces[i];
 		this->evaluateContacts( cf, step );
 	}
 
-	cout << "Done second pass\n";
 }
 
 void CollisionConstraint::evaluateContacts( CFace& cf, int step ){
@@ -150,7 +144,6 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 void CollisionConstraint::generate( int step ){
 	collisions->clear();
 
-
 	TimeManager::getInstance()->tic();
     firstPass(step);
 	TimeManager::getInstance()->toc();
@@ -165,7 +158,7 @@ void CollisionConstraint::solve(){
 	if( collisions->count() == 0 ) return;
 
 	for( Collision* c : collisions->collisions ){
-		if( !c->active ){ std::cout<<"Inactive contact\n"; continue;}
+		if( !c->active ){ continue;}
 
 		c->solve( this->collisionTest );
 	}

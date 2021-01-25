@@ -9,12 +9,24 @@
 namespace morph{ namespace softmats{
 class Collision;
 
+/**
+ * Different kinds of tests for determining collisions between 
+ * primitives.
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class CollisionTest{
 public:
     virtual Collision *testFPCollision( Face* f, Point *p ) = 0;
     virtual Collision *testEECollision( Edge& ep, Edge& ef ) = 0;
 };
 
+/**
+ * Continuous tests find the exact point in the ray x -> x_c 
+ * at which two moving primitives intersect.
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class ContinuousCollisionTest : public CollisionTest{
 private:
 
@@ -24,6 +36,11 @@ public:
     Collision *testEECollision( Edge& ep, Edge& ef );
 };
 
+/**
+ * Ground collision testing to be using when no other animats are in the simulation
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class GroundCollisionTest : public CollisionTest{
 private:
     double height;

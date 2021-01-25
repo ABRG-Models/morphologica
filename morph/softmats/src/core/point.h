@@ -5,18 +5,25 @@
 #include <algorithm>
 
 namespace morph{ namespace softmats{
-
+/**
+ * Point data structure
+ * 
+ * Note that the point has a current position (x) and a candidate position (x_c) 
+ * to which constraints are applied
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 typedef struct Point{
-    arma::vec x;
-    arma::vec v;
-    arma::vec normal;
-    arma::vec x_c;
-    arma::vec fext;
-    glm::vec2 uv;
+    arma::vec x; // current position
+    arma::vec v; // current velocity
+    arma::vec normal; // current normal
+    arma::vec x_c; // candidate position
+    arma::vec fext; // external force
+    glm::vec2 uv; // texture coordinates
     
-    bool lock;
-    double w;
-    std::vector<Point *> adj;
+    bool lock; // Is the point to be moved?
+    double w; // Inverse mass
+    std::vector<Point *> adj; // Adjacent points in the mesh
 
     Point(){ 
         this->x = {0.0, 0.0, 0.0};

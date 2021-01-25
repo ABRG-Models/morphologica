@@ -7,7 +7,13 @@
 #include "../core/trianglemesh.h"
 
 namespace morph{ namespace softmats{
+/**
+ * Class hierarchy to load or generate meshes
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 
+// General interface
 class MeshProvider{
 private:	
 
@@ -19,27 +25,36 @@ public:
 
 };
 
+/**
+ * Procedural generation of a sphere mesh 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class SphereMeshProvider: public MeshProvider{
 private:
 	float toRadians( float );
 public:
-	enum SphereType{TYPICAL}; 
+	enum SphereType{TYPICAL}; // More kinds of spheres expected to be supported in the future
 	SphereType type;
-
 	SphereMeshProvider( SphereType type );
 	TriangleMesh* buildMesh();	
 };
 
-
+/**
+ * Provides a mesh for the ground plane
+ * @author Alejandro Jimenez Rodriguez
+ */
 class PlaneMeshProvider : public MeshProvider{
-private:	
-
+private:
 public:
 	PlaneMeshProvider( );
 	TriangleMesh* buildMesh();
 };
 
-
+/**
+ * Loads the mesh from a given obj file
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class ObjMeshProvider : public MeshProvider{
 private:
 	const char* path;

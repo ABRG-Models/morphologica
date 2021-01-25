@@ -8,7 +8,11 @@
 #include "face.h"
 
 namespace morph{ namespace softmats{
-
+/**
+ * Represets an Animat body
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
 class Animat : public Body{
 private:  
     void init(int);    

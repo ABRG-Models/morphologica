@@ -5,6 +5,11 @@
 #include "box.h"
 
 namespace morph{ namespace softmats{
+/**
+ * Supporting data structures for the collision detection
+ * 
+ * @author Alejandro Jimenez Rodriguez
+ */
     typedef struct CPoint {
         Point* point;
         Body *body;

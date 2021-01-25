@@ -13,10 +13,9 @@ void setup( SoftmatSim *s ){
     AnimatSource *as = s->animatSource(5, 100, -2.0, 1.5, 0.0);
     s->ground( -2.0 );
     s->gravity( 10.0 );
-    s->video();
+    // s->video();
     // s->camera(-0.0, 2.2);
 
-    // std::vector<Point>& v = a->getVertices();
     // v[0].lock = true;
     // s.lights(true);
     
