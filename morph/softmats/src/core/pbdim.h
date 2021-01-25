@@ -7,7 +7,6 @@ namespace morph{ namespace softmats{
 class PBD{
 private:
     double h;
-    int numIterations;
 public:
     PBD();
     void generateConstraints( BodySet *bs, int step );
@@ -15,9 +14,6 @@ public:
     void projectConstraints( BodySet *bs );    
     void loop( BodySet *bs, int step );
 
-    // Accesors
-    double getTimeStep();
-    void setTimeStep( double h );
 };
 
 }}

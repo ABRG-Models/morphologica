@@ -8,6 +8,7 @@ using namespace morph::softmats;
 SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *), 
                         void (*update)(SoftmatSim *), 
                         void(*draw)(SoftmatSim *) ){
+    
     this->setup = setup;
     this->update = update;
     this->draw = draw;
@@ -15,6 +16,17 @@ SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *),
     view = new View();
     animats = new BodySet();
     running = true;
+    videoRecorder = nullptr;
+}
+
+void SoftmatSim::video(){
+    videoRecorder = new VideoRecorder(600, 600);
+}
+
+AnimatSource* SoftmatSim::animatSource( int n, int period, float x, float y, float z){
+    AnimatSource* as = new AnimatSource(n, period, x, y, z);
+    sources.push_back(as);
+    return as;
 }
 
 // Creation members
@@ -98,8 +110,22 @@ void SoftmatSim::drawAll(){
 
 void SoftmatSim::initialize(){
     CollisionConstraint *cc = new CollisionConstraint();
+    // cc->setCollisionTest(new GroundCollisionTest(theGround));
+    cc->setCollisionTest(new ContinuousCollisionTest());
     animats->addConstraint( cc );
 }
+
+void SoftmatSim::spawnSources( int step ){
+    for( AnimatSource* as : sources ){
+        Animat *a = as->getAnimat(step);
+        if( a != nullptr ){
+            animats->add( a );
+            animats->reset();
+            gravity(10.0);
+        }
+    }
+}
+
 // Run
 void SoftmatSim::run(){
     
@@ -107,23 +133,31 @@ void SoftmatSim::run(){
     initialize(); 
     int step = 0;
 
+    if( videoRecorder != nullptr )
+        videoRecorder->setup();
+
     while( running && !view->shouldClose() ){
+        spawnSources(step);
+
         (*update)(this);
         solver->loop( animats, step );
         
         for( Body *b : animats->getBodies() )
             b->getMesh()->updateVertexNormals();
 
-        std::cout << "About to display\n";
         view->preDisplay();
         (*draw)(this);
         view->postDisplay();
-        std::cout << "Display complete\n";
+
+        if( videoRecorder != nullptr )
+            videoRecorder->notify();
         // running = false;
         step++;
     }
 
     (*finishFn)( this );
+    if( videoRecorder != nullptr )
+        videoRecorder->notifyEnd();
 }
 
 void SoftmatSim::cleanup(){

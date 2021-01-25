@@ -1,19 +1,21 @@
 #include "shapeconstr.h"
+#include "../util/config.h"
 
 using namespace morph::softmats;
 
 arma::vec ShapeMatchingContraint::computeCM( bool c = false){
-    int n = body->getMesh()->getVertices().size();
     arma::vec cm = arma::zeros<arma::vec>(3);
+    double msum = 0;
 
     for( Point* pt : body->getMesh()->getVertices() ){
         if( c )
-            cm += pt->x_c;
+            cm += pt->x_c/pt->w;
         else
-            cm += pt->x;
+            cm += pt->x/pt->w;
+        msum += 1.0/pt->w;
     }    
 
-    return cm/(float)n;
+    return cm/msum;
 }
 
 void ShapeMatchingContraint::precompute( ){
@@ -77,6 +79,10 @@ void ShapeMatchingContraint::generate( int step ){
 // Do nothing
 }
 
+void ShapeMatchingContraint::reset(){
+// ?
+}
+
 void ShapeMatchingContraint::solve(){
 
     arma::vec x_cm = this->computeCM( true );
@@ -84,17 +90,19 @@ void ShapeMatchingContraint::solve(){
     std::vector<Point *>& vert = body->getMesh()->getVertices(); 
     arma::vec g;
     arma::vec dx;
+    double h = Config::getConfig()->getTimeStep();
 
     for( int i = 0; i < vert.size(); ++i ){        
         g = this->T*(shape[i]->x - this->x0_cm) + x_cm;
         dx = alpha*(g - vert[i]->x_c);
-        vert[i]->x_c += dx;
+        arma::vec nx = vert[i]->x_c + dx;
+        vert[i]->x_c = nx;
     }
 }
 
 ShapeMatchingContraint::ShapeMatchingContraint( double alpha ){
     this->alpha = alpha;
-    this->beta = 0.5;
+    this->beta = 0.0;
 }
 
 void ShapeMatchingContraint::updateVelocity(){

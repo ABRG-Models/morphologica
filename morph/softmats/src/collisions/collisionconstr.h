@@ -8,6 +8,7 @@
 #include "chashtable.h"
 #include "collisiondstruct.h"
 #include "collision.h"
+#include "collisiontest.h"
 
 namespace morph{ namespace softmats {
 
@@ -21,6 +22,7 @@ private:
 	CHashTable ht;
     BodySet *bodySet;
     CollisionList *collisions;
+    CollisionTest *collisionTest;
     // Hashes points and computes aabb
 	void firstPass( int step ); 
 	// Check the faces and handles collisions
@@ -37,6 +39,9 @@ public:
     void generate( int step = 0 );
     void solve();
     void updateVelocity();
+    void reset();
+
+    void setCollisionTest( CollisionTest* test );
 
     CollisionConstraint();
     ~CollisionConstraint();

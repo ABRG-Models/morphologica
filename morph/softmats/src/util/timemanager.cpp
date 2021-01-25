@@ -15,6 +15,7 @@ TimeManager* TimeManager::getInstance(){
 void TimeManager::tic(){
     this->start = std::chrono::steady_clock::now();
 }
+
 void TimeManager::toc(){
     this->end = std::chrono::steady_clock::now();
     int ellapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

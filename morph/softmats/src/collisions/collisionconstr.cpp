@@ -1,6 +1,7 @@
 #include "collisionconstr.h"
 #include "box.h"
 #include "../util/timemanager.h"
+#include "../util/config.h"
 
 using namespace morph::softmats;
 
@@ -14,6 +15,14 @@ void CollisionConstraint::init( BodySet *bs ){
 	for( Body* b : bs->getBodies() )
 		// if( b->type == BodyType::ANIMAT )
 			registerObject( b );
+}
+
+void CollisionConstraint::reset(){
+	points.clear();
+	faces.clear();
+	indexes.clear();
+	objects.clear();
+	collisions->clear();
 }
 
 void CollisionConstraint::registerObject( Body *b ){
@@ -113,37 +122,24 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 	Face* f = cf.face;
 	vec pd = {ht.discretize(p->x(0)), ht.discretize(p->x(1)), ht.discretize(p->x(2))};
 
-	// if( !cf.aabb->inside( p ))
-	// 	return;
-	// 	Check for face-point collisions
-	vec w;
-	double hc;
-	bool colliding = isColliding( cf, cp, &w, &hc, 0.01 );
+	if( arma::dot( p->x_c - f->points[0]->x_c, f->normal) > 0.1 || 
+		cf.body == cp.body ) return;
+
+	FPCollision *fpc = (FPCollision *)collisionTest->testFPCollision(f, p);
 	
-	if( colliding ){
-		std::cout << "FPCollision!\n";
-		std::cout << "Face: " << f << "\n";
-		std::cout << "Point: " << p << "\n";
-		if( cf.body->type == BodyType::ANIMAT ){
-			cout << "one animat\n";
-			cin.get();
-		}
-		// p->lock = true;
-		FPCollision *fpc = new FPCollision( hc, f, p, w );
-		fpc->impulses = getInelasticImpulses( f, p, &w );
+	if( fpc != nullptr ){
 		collisions->push( fpc );		
 	}
 	
 	vector<Edge> pedges = cp.body->getMesh()->getPointEdges( p );
 	vector<Edge> fedges = cp.body->getMesh()->getFaceEdges( f );
+	EECollision *eec;
 
 	for( Edge& ep : pedges ){
 		for( Edge& ef : fedges ){	
-			colliding = isColliding( ep, ef, &hc, 0.01 );
+			eec = (EECollision *)collisionTest->testEECollision( ep, ef );
 
-			if( colliding ){
-				EECollision* eec = new EECollision( hc, ep, ef );
-				eec->impulses = getInelasticImpulses( ep, ef );
+			if( eec != nullptr ){
 				collisions->push( eec );
 			}
 		} // For
@@ -152,86 +148,40 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 
 
 void CollisionConstraint::generate( int step ){
-	std::cout << "Generating constraint\n";
-	std::cout << "First pass\n";
 	collisions->clear();
+
+
 	TimeManager::getInstance()->tic();
     firstPass(step);
 	TimeManager::getInstance()->toc();
-	std::cout << "Second pass\n";
 	TimeManager::getInstance()->tic();
 	secondPass(step);
 	TimeManager::getInstance()->toc();
-	std::cout << "Constraint generated " << collisions->count() << " collisions detected\n";
 	
 }
 
 void CollisionConstraint::solve(){
-	double h = 0.01;
 
 	if( collisions->count() == 0 ) return;
 
 	for( Collision* c : collisions->collisions ){
-		if( c->ctype == 0 ){ // FPCollision
-			Point *p = ((FPCollision*)c)->p;
-			Face *f = ((FPCollision*)c)->f;
+		if( !c->active ){ std::cout<<"Inactive contact\n"; continue;}
 
-			// vec v = (p->x_c - p->x)/h;
-			p->x_c = p->x + 0.8*c->hc*p->v;
-
-			for( Point *q : f->points){
-				q->x_c = q->x + 0.5*c->hc*q->v;
-			}
-		}else{
-			cin.get();
-			Point *p1 = ((EECollision *)c)->e1.p1;
-			Point *p2 = ((EECollision *)c)->e1.p2;
-			Point *q1 = ((EECollision *)c)->e2.p1;
-			Point *q2 = ((EECollision *)c)->e2.p2;
-
-			p1->x_c = p1->x + c->hc*p1->v;
-			// p1->lock = true;
-			p2->x_c = p2->x + c->hc*p2->v;
-			// p2->lock = true;
-			q1->x_c = q1->x + c->hc*q1->v;
-			// q1->lock = true;
-			q2->x_c = q2->x + c->hc*q2->v;
-			// q2->lock = true;
-		}
+		c->solve( this->collisionTest );
 	}
+
 }
 
 void CollisionConstraint::updateVelocity(){
-	cout <<"Updating velocities\n";
+
 	while( !collisions->isEmpty() ){
 		Collision* c = collisions->pop();
-		vector<vec> impulses;
-
-		if( c->ctype == 0 ){ // FPCollision
-			Point *p = ((FPCollision*)c)->p;
-			Face *f = ((FPCollision*)c)->f;
-			vec wp =  ((FPCollision*)c)->w;
-
-			p->v += ((FPCollision*)c)->impulses[3];
-
-			for( int i = 0; i < f->points.size(); ++i ){
-				f->points[i]->v += ((FPCollision*)c)->impulses[i];
-			}
-		}else{
-			cin.get();
-			Point *p1 = ((EECollision *)c)->e1.p1;
-			Point *p2 = ((EECollision *)c)->e1.p2;
-			Point *q1 = ((EECollision *)c)->e2.p1;
-			Point *q2 = ((EECollision *)c)->e2.p2;
-
-			p1->v += ((EECollision *)c)->impulses[0];
-			p2->v += ((EECollision *)c)->impulses[1];
-			p2->v += ((EECollision *)c)->impulses[2];
-			p2->v += ((EECollision *)c)->impulses[3];
-		}	
+		c->updateVelocity();	
 	}
+}
 
-	cout << "Done velocity update\n";
+void CollisionConstraint::setCollisionTest( CollisionTest* test ){
+	collisionTest = test;
 }
 
 CollisionConstraint::CollisionConstraint():ht(5000,0.2){

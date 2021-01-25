@@ -7,8 +7,13 @@
 using namespace morph::softmats;
 
 Ground::Ground( float height ){
+    this->height = height;
     type = BodyType::GROUND;
     init( height );
+}
+
+double Ground::getHeight(){
+    return height;
 }
 
 void Ground::init( float height ){

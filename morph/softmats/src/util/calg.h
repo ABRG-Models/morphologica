@@ -16,17 +16,24 @@ using namespace std;
 namespace morph{
 namespace softmats{
 
+struct PolyData{
+    vec x1;
+    vec x2;
+    vec x3;
+    vec x4;
+    vec v1;
+    vec v2;
+    vec v3;
+    vec v4;
+};
+
 // -------
 // Root finding functions
-template<typename F>
-void zbrak( F fx, float x1, float x2, int n, float xb1[], float xb2[], int *nb );
-template<typename F>
-float rtflsp( F func, float x1, float x2, float xacc );
+void zbrak( PolyData& data, float x1, float x2, int n, float xb1[], float xb2[], int *nb );
+float rtflsp( PolyData& data, float x1, float x2, float xacc );
 vec clamp( vec x1, vec x2, vec x3, vec x4, vec c, vec *p1, vec *p2 );
 // -------
 // Collision and contact detection & response
-bool isColliding( CFace& f, CPoint& p, vec *w, double* hc, double current_h );
-bool isColliding( Edge& ep, Edge& ef, double* hc, double current_h );
 vector<vec> getInelasticImpulses( Face* f, Point* p, vec *w );
 vector<vec> getInelasticImpulses( Edge&ep, Edge &ef );
 // vector<vec> getCollisionImpulses( CFace& f, CPoint& p, vec *wp );

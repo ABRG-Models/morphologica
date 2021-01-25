@@ -14,6 +14,7 @@ public:
     virtual void generate( int step = 0 ) = 0;
     virtual void solve() = 0;
     virtual void updateVelocity() = 0;
+    virtual void reset() = 0;
 };
 
 }}

@@ -25,6 +25,7 @@ namespace morph{ namespace softmats{
         void generate(  int step = 0);
         void solve();
         void updateVelocity();
+        void reset();
 
         ShapeMatchingContraint( double alpha );
         ~ShapeMatchingContraint();

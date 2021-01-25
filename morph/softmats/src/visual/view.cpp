@@ -65,7 +65,7 @@ void View::init( ){
 	glfwSwapInterval( 1 );
 
 	renderingProgram = OpenglUtils::createShaderProgram("shaders/softmats.vsh", "shaders/softmats.fsh");
-	camera.x = 0.0f; camera.y = -2.001f; camera.z = 8.5f;
+	camera.x = 0.0f; camera.y = -0.5f; camera.z = 10.5f;
 	viewPort.x = 0.0f; viewPort.y = -2.0f; viewPort.z = 0.0f;
 	light.initialLightLoc = glm::vec3(5.0f, 2.0f, 2.0f);
 	// White light

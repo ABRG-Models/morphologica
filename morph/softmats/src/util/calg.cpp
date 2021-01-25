@@ -1,12 +1,16 @@
 #include "calg.h"
+#include "../util/config.h"
 
 using namespace arma;
 using namespace morph::softmats;
 
-template<typename F>
-void morph::softmats::zbrak( F fx, float x1, float x2, int n, float xb1[], float xb2[], int *nb ){
+void morph::softmats::zbrak( PolyData& data, float x1, float x2, int n, float xb1[], float xb2[], int *nb ){
     int nbb, i;
     float x, fp, fc, dx;
+
+	auto fx = [=]( float t ){
+        return collision_poly( t, data.x1, data.x2, data.x3, data.x4, data.v1, data.v2, data.v3, data.v4 );
+    };
 
     nbb = 0;
     dx = (x2 - x1)/n;
@@ -27,11 +31,14 @@ void morph::softmats::zbrak( F fx, float x1, float x2, int n, float xb1[], float
     *nb = nbb;
 }
 
-template<typename F>
-float morph::softmats::rtflsp( F func, float x1, float x2, float xacc ){
+float morph::softmats::rtflsp( PolyData& data, float x1, float x2, float xacc ){
     const int MAXIT_FP = 30;
 	int j;
     float fl, fh, xl, xh, swap, dx, del, f, rtf;
+
+	auto func = [=]( float t ){
+        return collision_poly( t, data.x1, data.x2, data.x3, data.x4, data.v1, data.v2, data.v3, data.v4 );
+    };
 
     fl = func(x1);
     fh = func(x2);
@@ -182,101 +189,7 @@ double morph::softmats::collision_poly(double t, vec x1, vec x2, vec x3, vec x4,
 	vec b = x31 + t*v31;
 	vec c = x41 + t*v41;
 
-	return dot(cross( a, b ), c);
-}
-
-
-bool morph::softmats::isColliding( CFace& cf, CPoint& cp, vec *w, double* hc, double current_h ){
-	// cout << "Checking f-p collision: h = " << current_h << endl;
-	double h = current_h;
-	double delta = 1e-10;
-	vector<Point *> fpoints = cf.face->points;
-	vec x1 = fpoints[0]->x;
-	vec x2 = fpoints[1]->x;
-	vec x3 = fpoints[2]->x;
-	vec x4 = cp.point->x;
-	vec v1 = (fpoints[0]->x_c - fpoints[0]->x)/h;
-	vec v2 = (fpoints[1]->x_c - fpoints[1]->x)/h;
-	vec v3 = (fpoints[2]->x_c - fpoints[2]->x)/h;
-	vec v4 = (cp.point->x_c - cp.point->x)/h;
-
-	auto fx = [&]( float t ){
-        return collision_poly( t, x1, x2, x3, x4, v1, v2, v3, v4 );
-    };
-	
-	int nb = 3;
-    float tb1[3], tb2[3];
-    zbrak( fx, 0.0, h, 30, tb1, tb2, &nb );
-
-    if( nb == 0 ){
-		return false;
-	}
-
-	float t1, t2, rt = 10000, trt;
-
-	for( int i = 0; i < nb; i++ ){
-		t1 = tb1[i];
-		t2 = tb2[i];
-		rt = rtflsp( fx, t1, t2, 1e-10);
-		
-		vec u1 = x1 + rt*v1;
-		vec u2 = x2 + rt*v2;
-		vec u3 = x3 + rt*v3;
-		vec y =  x4 + rt*v4;
-		vec nt = cross(u1-u2, u1-u3);
-
-		(*w) = computeBarycentricCoords( u1, u2, u3, y );
-		(*hc) = rt;
-
-		if( fabs(dot(nt, u1-y)) < 0.0001 && allInInterval( *w, -delta, 1-delta) ){
-			return true;
-		}
-	}
-	
-	return false;	
-}
-
-bool morph::softmats::isColliding( Edge& ep, Edge& ef, double *hc, double current_h ){
-	// cout << "Checking e-e collision" << endl;
-	double h = current_h;
-	// if( h < 1e-6 )
-	// 	{cout << "step too small!"<< endl;cin.get();}
-	double delta = 1e-6;
-	vec x1 = ep.p1->x;
-	vec x2 = ep.p2->x;
-	vec x3 = ef.p1->x;
-	vec x4 = ef.p2->x;
-	vec v1 = (ep.p1->x_c - x1)/h;
-	vec v2 = (ep.p2->x_c - x2)/h;
-	vec v3 = (ef.p1->x_c - x3)/h;
-	vec v4 = (ef.p2->x_c - x4)/h;
-
-	vec n = computeEdgeNormal(x1, x2, x3, x4 );
-
-	auto f = [&]( float t ){
-        return collision_poly( t, x1, x2, x3, x4, v1, v2, v3, v4 );
-    };
-
-	int nb = 3;
-    float tb1[3], tb2[3];
-    zbrak( f, 0.0, h, 30, tb1, tb2, &nb );
-    // cout << "Potential roots:" << nb << endl;
-
-    if( nb == 0 ) return false;
-
-	float t1, t2, rt = 10000, trt;
-	
-	for( int i = 0; i < nb; i++ ){
-		t1 = tb1[i];
-		t2 = tb2[i];
-		rt = rtflsp( f, t1, t2, 1e-10);
-		
-		double d = computeEdgeDistance( x1 + rt*v1, x2 + rt*v2, x3 + rt*v3, x4 + rt*v4 );
-		(*hc) = rt;
-		if( d < delta ) return true;
-	}
-	
-	return false;	
+	return arma::dot(arma::cross( a, b ), c);
 }
 
 vector<vec> morph::softmats::getInelasticImpulses( Face* face, Point* point, vec *wp ){
@@ -472,9 +385,6 @@ vector<vec> morph::softmats::getInelasticImpulses( Edge& ep, Edge& ef ){
 // }
 
 
-/**
- * getCentroid - DEPRECATED 
- */
 vec morph::softmats::centroid( vector<Point*>& points ){
 	vec cm = arma::zeros<vec>(3);
 
@@ -491,7 +401,7 @@ bool morph::softmats::allInInterval( vec w, double a, double b ){
 	for( int i = 0; i < 3; i++ )
 		r = r && (w(i) >= a  && w(i) <= b);
 
-return r;
+	return r;
 }
 	
 

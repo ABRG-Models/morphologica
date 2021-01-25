@@ -17,6 +17,14 @@ void BodySet::addConstraint( Constraint *c ){
         constraints.push_back(c);
     }
 }
+
+void BodySet::reset(){
+    for( Constraint* c : constraints ){
+        c->reset();
+        c->init(this);    
+    }
+
+}
         
 std::vector<Constraint *> BodySet::getConstraints(){
     return constraints;

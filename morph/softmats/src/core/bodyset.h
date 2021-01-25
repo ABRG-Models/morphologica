@@ -17,6 +17,7 @@ namespace morph{ namespace softmats{
         std::vector<Body *> getBodies();
         void addConstraint( Constraint *c );
         std::vector<Constraint *> getConstraints();
+        void reset();
         BodySet();
         ~BodySet();
     };

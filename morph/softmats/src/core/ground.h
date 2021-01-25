@@ -9,10 +9,11 @@ namespace morph{ namespace softmats{
 
 class Ground: public Body{
 private:
-    
+    double height;
     void init( float height );
 public:    
     Ground( float height );
+    double getHeight();
 };
 
 }}
