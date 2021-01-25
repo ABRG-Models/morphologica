@@ -59,12 +59,12 @@ int main()
     while (v.readyToFinish == false) {
         glfwWaitEventsTimeout (0.00001);
         if (k > 8.0f) { k = 1.0f; }
-#if 1
-#pragma omp parallel for shared(r,k)
+
+#pragma omp parallel for shared(r,k,data)
         for (unsigned int hi=0; hi<hg.num(); ++hi) {
             data[hi] = std::sin(k*r[hi])/k*r[hi];
         }
-#endif
+
         hgv->updateData (&data);
         k += 0.02f;
 
@@ -82,7 +82,6 @@ int main()
         v.render();
         fcount++;
     }
-
 
     return 0;
 }
