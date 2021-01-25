@@ -267,9 +267,9 @@ namespace morph {
         {
             unsigned int nhex = this->hg->num();
 
-            std::vector<float> dcopy (this->scalarData->size());
+            this->dcopy.resize (this->scalarData->size());
             this->zScale.transform (*(this->scalarData), dcopy);
-            std::vector<float> dcolour (this->scalarData->size());
+            this->dcolour.resize (this->scalarData->size());
             this->colourScale.transform (*(this->scalarData), dcolour);
 
             for (unsigned int hi = 0; hi < nhex; ++hi) {
