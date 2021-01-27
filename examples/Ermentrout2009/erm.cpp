@@ -141,9 +141,9 @@ int main (int argc, char **argv)
     float _m = 0.2;
     float _c = 0.0;
     // Z position scaling - how hilly/bumpy the visual will be.
-    morph::Scale<FLT> zscale; zscale.setParams (_m/10.0f, _c/10.0f);
+    morph::Scale<FLT, float> zscale; zscale.setParams (_m/10.0f, _c/10.0f);
     // The second is the colour scaling.
-    morph::Scale<FLT> cscale; cscale.setParams (_m, _c);
+    morph::Scale<FLT, float> cscale; cscale.setParams (_m, _c);
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * RD.hg->width();

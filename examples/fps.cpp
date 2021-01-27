@@ -8,7 +8,6 @@
 #include <chrono>
 #include <sstream>
 
-#include <morph/Scale.h>
 #include <morph/Vector.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
