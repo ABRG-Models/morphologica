@@ -273,9 +273,9 @@ int main (int argc, char **argv)
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
     // Z position scaling - how hilly/bumpy the visual will be.
-    Scale<FLT> zscale; zscale.setParams (0.2f, 0.0f);
+    Scale<FLT, float> zscale; zscale.setParams (0.2f, 0.0f);
     // The second is the colour scaling. Set this to autoscale.
-    Scale<FLT> cscale; cscale.do_autoscale = true;
+    Scale<FLT, float> cscale; cscale.do_autoscale = true;
     unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
                                                                     v1.tshaderprog,
                                                                     RD.hg,
