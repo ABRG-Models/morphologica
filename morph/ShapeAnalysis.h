@@ -169,6 +169,28 @@ namespace morph {
             return rtn;
         }
 
+        //! Like get_contour_map, but no pre-normalizing and sets contours to the flag value
+        //! (used by SPW in SOM model analysis steps)
+        static std::vector<Flt> get_contour_map_flag_nonorm (HexGrid* hg,std::vector<Flt> & f, Flt threshold, Flt flagVal) {
+            unsigned int nhex = hg->num();
+            std::vector<Flt> rtn (nhex, 0.0);
+            for (auto h : hg->hexen) {
+                if (h.onBoundary() == false) {
+                    if (f[h.vi] >= threshold) {
+                        if ((h.has_ne() && f[h.ne->vi] < threshold)
+                            || (h.has_nne() && f[h.nne->vi] < threshold)
+                            || (h.has_nnw() && f[h.nnw->vi] < threshold)
+                            || (h.has_nw() && f[h.nw->vi] < threshold)
+                            || (h.has_nsw() && f[h.nsw->vi] < threshold)
+                            || (h.has_nse() && f[h.nse->vi] < threshold) ) {
+                            rtn[h.vi] = flagVal;
+                        }
+                    }
+                }
+            }
+            return rtn;
+        }
+
         //! Like get_contour_map, but for N vector<Flt>s in @f, return N+1 positive values in the
         //! return vector. Good for plotting contours with ColourMapType::RainbowZeroBlack or
         //! ColourMapType::RainbowZeroWhite
