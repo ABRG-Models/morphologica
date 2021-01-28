@@ -3,15 +3,15 @@
 
 #include <iostream>
 #include "view.h"
-#include "opencv/cv.h"
 #include "opencv2/opencv.hpp"
+// plus #include <opencv2/videoio.hpp> ?
 
 namespace morph{ namespace softmats{
 
 class VideoRecorder{
 /**
  * Video rendering of the simulation
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 protected:
