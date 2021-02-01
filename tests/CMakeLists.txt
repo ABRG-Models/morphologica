@@ -388,3 +388,7 @@ if (APPLE)
   target_compile_options(testGradGenome PUBLIC "-mavx")
 endif()
 #add_test(testGradGenome testGradGenome )
+
+# Test Cartesian (rectangular) grid
+add_executable(testcartgrid testcartgrid.cpp)
+add_test(testcartgrid testcartgrid)

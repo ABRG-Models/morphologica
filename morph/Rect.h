@@ -8,7 +8,6 @@
  */
 #pragma once
 
-#include <limits>
 #include <string>
 #include <list>
 #include <utility>
@@ -16,21 +15,16 @@
 #include <morph/Vector.h>
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
-#include <morph/MathConst.h>
-//#define DEBUG_WITH_COUT 1
-#ifdef DEBUG_WITH_COUT
-#include <iostream>
-#endif
 
 /*
  * Flags
  */
 
 /*!
- * Set true when ne has been set. Use of iterators (Rect::ne etc) rather than pointers for
- * neighbouring rects means we can't do any kind of check to see if the iterator is valid, so we
- * have to keep separate boolean flags for whether or not each Rect has a neighbour. Those flags are
- * kept in Rect::flags.
+ * Set true when ne has been set. Use of iterators (Rect::ne etc) rather than pointers
+ * for neighbouring rects means we can't do any kind of check to see if the iterator is
+ * valid, so we have to keep separate boolean flags for whether or not each Rect has a
+ * neighbour. Those flags are kept in Rect::flags.
  */
 #define RECT_HAS_NE                0x1
 //! True when this rect has a Neighbour to the North East
@@ -92,8 +86,8 @@ namespace morph {
     /*!
      * Describes a regular rectangular 'pixel'.
      *
-     * The centre of the rect in a Cartesian right hand coordinate system is represented with x, y
-     * and z:
+     * The centre of the rect in a Cartesian right hand coordinate system is represented
+     * with x, y and z:
      *
      *  y
      *  ^
@@ -111,14 +105,25 @@ namespace morph {
     {
     public:
         /*!
-         * Constructor taking index, dimension and integer position indices. Computes Cartesian
-         * location from these.
+         * Constructor taking index, dimension for a square pixel and integer position
+         * indices. Computes Cartesian location from these.
          */
         Rect (const unsigned int& idx, const float& d_, const int& xi_, const int& yi_)
         {
             this->vi = idx;
             this->dx = d_;
             this->dy = d_;
+            this->xi = xi_;
+            this->yi = yi_;
+            this->computeLocation();
+        }
+
+        //! Constructor for a rectangular pixel
+        Rect (const unsigned int& idx, const float& dx_, const float& dy_, const int& xi_, const int& yi_)
+        {
+            this->vi = idx;
+            this->dx = dx_;
+            this->dy = dy_;
             this->xi = xi_;
             this->yi = yi_;
             this->computeLocation();
@@ -131,42 +136,25 @@ namespace morph {
         bool operator< (const Rect& rhs) const
         {
             // Compare position first.
-            if (this->x < rhs.x) {
-                return true;
-            }
-            if (this->x > rhs.x) {
-                return false;
-            }
-            if (this->y < rhs.y) {
-                return true;
-            }
-            if (this->y > rhs.y) {
-                return false;
-            }
+            if (this->x < rhs.x) { return true; }
+            if (this->x > rhs.x) { return false; }
+            if (this->y < rhs.y) { return true; }
+            if (this->y > rhs.y) { return false; }
             // If position can't differentiate, compare vector index
-            if (this->vi < rhs.vi) {
-                return true;
-            }
-            #if 0
-            if (this->vi > rhs.vi) {
-                return false;
-            }
-            #endif
+            if (this->vi < rhs.vi) { return true; }
             return false;
         }
 
         /*!
-         * Save the data for this Rect into the already open HdfData object \a h5data in the path
-         * \a h5path.
+         * Save the data for this Rect into the already open HdfData object \a h5data in
+         * the path \a h5path.
          */
         void save (HdfData& h5data, const std::string& h5path) const
         {
             std::string dpath = h5path + "/vi";
             h5data.add_val (dpath.c_str(), this->vi);
-#if 0
             dpath = h5path + "/di";
             h5data.add_val (dpath.c_str(), this->di);
-#endif
             dpath = h5path + "/x";
             h5data.add_val (dpath.c_str(), this->x);
             dpath = h5path + "/y";
@@ -177,8 +165,10 @@ namespace morph {
             h5data.add_val (dpath.c_str(), this->r);
             dpath = h5path + "/phi";
             h5data.add_val (dpath.c_str(), this->phi);
-            dpath = h5path + "/d";
-            h5data.add_val (dpath.c_str(), this->d);
+            dpath = h5path + "/dx";
+            h5data.add_val (dpath.c_str(), this->dx);
+            dpath = h5path + "/dy";
+            h5data.add_val (dpath.c_str(), this->dy);
             dpath = h5path + "/xi";
             h5data.add_val (dpath.c_str(), this->xi);
             dpath = h5path + "/yi";
@@ -206,14 +196,14 @@ namespace morph {
             h5data.read_val (dpath.c_str(), this->r);
             dpath = h5path + "/phi";
             h5data.read_val (dpath.c_str(), this->phi);
-            dpath = h5path + "/d";
-            h5data.read_val (dpath.c_str(), this->d);
-            dpath = h5path + "/ri";
-            h5data.read_val (dpath.c_str(), this->ri);
-            dpath = h5path + "/gi";
-            h5data.read_val (dpath.c_str(), this->gi);
-            dpath = h5path + "/bi";
-            h5data.read_val (dpath.c_str(), this->bi);
+            dpath = h5path + "/dx";
+            h5data.read_val (dpath.c_str(), this->dx);
+            dpath = h5path + "/dy";
+            h5data.read_val (dpath.c_str(), this->dy);
+            dpath = h5path + "/xi";
+            h5data.read_val (dpath.c_str(), this->xi);
+            dpath = h5path + "/yi";
+            h5data.read_val (dpath.c_str(), this->yi);
             dpath = h5path + "/distToBoundary";
             h5data.read_val (dpath.c_str(), this->distToBoundary);
             unsigned int flgs = 0;
@@ -266,8 +256,8 @@ namespace morph {
         }
 
         /*!
-         * Produce a string containing information about this rect, focussing on Cartesian position
-         * information.
+         * Produce a string containing information about this rect, focussing on
+         * Cartesian position information.
          */
         std::string outputCart (void) const
         {
@@ -339,8 +329,8 @@ namespace morph {
         }
 
         /*!
-         * Convert ri, gi and bi indices into x and y coordinates and also r and phi coordinates,
-         * based on the rect-to-rect distance d.
+         * Convert xi and yi indices into x and y coordinates and also r and phi
+         * coordinates, based on the rect-to-rect distances dx and dy.
          */
         void computeLocation (void)
         {
@@ -353,8 +343,8 @@ namespace morph {
         }
 
         /*!
-         * Compute the distance from the point given (in two-dimensions only; x and y) by \a
-         * cartesianPoint to the centre of this Rect.
+         * Compute the distance from the point given (in two-dimensions only; x and y)
+         * by \a cartesianPoint to the centre of this Rect.
          */
         template <typename LFlt>
         float distanceFrom (const std::pair<LFlt, LFlt> cartesianPoint) const
@@ -365,8 +355,8 @@ namespace morph {
         }
 
         /*!
-         * Compute the distance from the point given (in two-dimensions only; x and y) by the
-         * BezCoord \a cartesianPoint to the centre of this Rect.
+         * Compute the distance from the point given (in two-dimensions only; x and y)
+         * by the BezCoord \a cartesianPoint to the centre of this Rect.
          */
         float distanceFrom (const BezCoord<float>& cartesianPoint) const
         {
@@ -393,7 +383,6 @@ namespace morph {
          */
         unsigned int vi;
 
-#ifdef REALLY_NEED_QUESTIONMARK
         /*!
          * This is the index into the d_ vectors in CartGrid which can be used to find
          * the variables recorded for this Rect. It's used in morph::CartGrid to
@@ -402,18 +391,17 @@ namespace morph {
          * This indexes into the d_ vectors in the CartGrid object to which this Rect
          * belongs. The d_ vectors are ordered differently from the list<Rect> object in
          * CartGrid::rects and hence we have this attribute di in addition to the vector
-         * index vi, which provides an index into list<Rect> or vector<Rect> objects which
-         * either are, or are arranged like, RectGrid::rects
+         * index vi, which provides an index into list<Rect> or vector<Rect> objects
+         * which either are, or are arranged like, RectGrid::rects
          */
         unsigned int di = 0;
-#endif
 
         //! Cartesian coordinate 'x' of the centre of the Rect. Public, for direct access by client code.
         float x = 0.0f;
         //! Cartesian 'y' coordinate of the centre of the Rect.
         float y = 0.0f;
 
-        //! Polar coordinates of the centre of the Rect. Public, for direct access by client code.
+        //! Polar coordinates of the centre of the Rect.
         float r = 0.0f;
         //! Polar coordinate angle
         float phi = 0.0f;
@@ -459,8 +447,8 @@ namespace morph {
         float getTwoV (void) const { return 2.0f * this->dy; }
 
         /*
-         * Indices in x/y directions. These lie in the x-y plane. They index in positive and
-         * negative directions, starting from the Rect at (0,0,z)
+         * Indices in x/y directions. These lie in the x-y plane. They index in positive
+         * and negative directions, starting from the Rect at (0,0,z)
          */
 
         //! Index in +x direction - positive East
@@ -493,8 +481,8 @@ namespace morph {
          */
         bool boundaryRect (void) const { return this->flags & RECT_IS_BOUNDARY ? true : false; }
         /*!
-         * Mark the Rect as a boundary Rect. Boundary rects are also, by definition, inside the
-         * boundary.
+         * Mark the Rect as a boundary Rect. Boundary rects are also, by definition,
+         * inside the boundary.
          */
         void setBoundaryRect (void) { this->flags |= (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
         void unsetBoundaryREct (void) { this->flags &= ~(RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
@@ -548,15 +536,15 @@ namespace morph {
         }
 
         /*!
-         * This can be populated with the distance to the nearest boundary rect, so that an algorithm
-         * can set values in a rect based this metric.
+         * This can be populated with the distance to the nearest boundary rect, so that
+         * an algorithm can set values in a rect based this metric.
          */
         float distToBoundary = -1.0f;
 
         /*!
-         * Return true if this is a boundary rect - one on the outside edge of a rect grid. The result
-         * is based on testing neihgbour relations, rather than examining the value of the
-         * RECT_IS_BOUNDARY flag.
+         * Return true if this is a boundary rect - one on the outside edge of a rect
+         * grid. The result is based on testing neihgbour relations, rather than
+         * examining the value of the RECT_IS_BOUNDARY flag.
          */
         bool onBoundary()
         {
@@ -647,8 +635,8 @@ namespace morph {
         void unset_nse (void) { this->flags ^= RECT_HAS_NSE; }
 
         /*!
-         * Test if have neighbour at position \a ni.
-         * East: 0, North-East: 1, North: 2, North-West: 3, West: 4, South-West: 5, South: 6, South-East: 7
+         * Test if have neighbour at position \a ni.  East: 0, North-East: 1, North: 2,
+         * North-West: 3, West: 4, South-West: 5, South: 6, South-East: 7
          */
         bool has_neighbour (unsigned short ni)
         {
@@ -702,8 +690,9 @@ namespace morph {
         }
 
         /*!
-         * Get a list<Rect>::iterator to the neighbour at position \a ni.
-         * East: 0, North-East: 1, North: 2, North-West: 3, West: 4, South-West: 5, South: 6, South-East: 7
+         * Get a list<Rect>::iterator to the neighbour at position \a ni.  East: 0,
+         * North-East: 1, North: 2, North-West: 3, West: 4, South-West: 5, South: 6,
+         * South-East: 7
          */
         std::list<Rect>::iterator get_neighbour (unsigned short ni)
         {
@@ -870,16 +859,18 @@ namespace morph {
         }
 
         /*!
-         * Return true if coord is reasonably close to being in the same location as the vertex at
-         * vertex \a ni with the distance threshold being set from the Rect to Rect spacing. This is for
-         * distinguishing between vertices and centres on a RectGrid.
+         * Return true if coord is reasonably close to being in the same location as the
+         * vertex at vertex \a ni with the distance threshold being set from the Rect to
+         * Rect spacing. This is for distinguishing between vertices and centres on a
+         * RectGrid.
          */
         template <typename LFlt>
         bool compare_vertex_coord (int ni, std::pair<LFlt, LFlt>& coord) const
         {
             std::pair<float, float> vc = this->get_vertex_coord (ni);
-            if (std::abs(vc.first - coord.first) < this->d/100
-                && std::abs(vc.second - coord.second) < this->d/100) {
+            float sr_thresh = this->getSR()/100.0f;
+            if (std::abs(vc.first - coord.first) < sr_thresh
+                && std::abs(vc.second - coord.second) < sr_thresh) {
                 return true;
             }
             return false;
@@ -901,15 +892,17 @@ namespace morph {
         }
 
         /*!
-         * Return true if coord is reasonably close to being in the same location as the centre of
-         * the Rect, with the distance threshold being set from the Rect to Rect spacing. This is for
-         * distinguishing between vertices and centres on a RectGrid.
+         * Return true if coord is reasonably close to being in the same location as the
+         * centre of the Rect, with the distance threshold being set from the Rect to
+         * Rect spacing. This is for distinguishing between vertices and centres on a
+         * RectGrid.
          */
         template <typename LFlt>
         bool compare_coord (std::pair<LFlt, LFlt>& coord) const
         {
-            if (std::abs(this->x - coord.first) < this->d/100
-                && std::abs(this->y - coord.second) < this->d/100) {
+            float sr_thresh = this->getSR()/100.0f;
+            if (std::abs(this->x - coord.first) < sr_thresh
+                && std::abs(this->y - coord.second) < sr_thresh) {
                 return true;
             }
             return false;
