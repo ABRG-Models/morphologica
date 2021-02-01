@@ -3,7 +3,12 @@
 
 int main()
 {
-    morph::CartGrid cg(2.309401, 4000);
+    morph::CartGrid cg(2.0f, 8.0f);
     std::cout << "Set up " << cg.num() << " pixels in a Cartesian grid." << std::endl;
-    return (cg.num() == 2257669 ? 0 : -1);
+
+    for (auto a : cg.rects) {
+        std::cout << a.outputCart() << std::endl;
+    }
+
+    return (cg.num() == 25 ? 0 : -1);
 }

@@ -216,7 +216,7 @@ namespace morph {
          * Produce a string containing information about this rect, showing grid
          * location in dimensionless xi,yi units. Also show nearest neighbours.
          */
-        std::string output (void) const
+        std::string output() const
         {
             std::string s("Rect ");
             s += std::to_string(this->vi) + " (";
@@ -259,10 +259,10 @@ namespace morph {
          * Produce a string containing information about this rect, focussing on
          * Cartesian position information.
          */
-        std::string outputCart (void) const
+        std::string outputCart() const
         {
             std::string s("Rect ");
-            s += std::to_string(this->vi).substr(0,2) + " (";
+            s += std::to_string(this->vi) + " (";
             s += std::to_string(this->xi).substr(0,4) + ",";
             s += std::to_string(this->yi).substr(0,4) + ") is at (x,y) = ("
                 + std::to_string(this->x).substr(0,4) +"," + std::to_string(this->y).substr(0,4) + ")";
@@ -270,7 +270,7 @@ namespace morph {
         }
 
         //! Output "(x,y)" coordinate string
-        std::string outputXY (void) const
+        std::string outputXY() const
         {
             std::string s("(");
             s += std::to_string(this->x).substr(0,4) + "," + std::to_string(this->y).substr(0,4) + ")";
@@ -278,7 +278,7 @@ namespace morph {
         }
 
         //! Output a string containing just "XiYi(xi, yi)"
-        std::string outputXiYi (void) const
+        std::string outputXiYi() const
         {
             std::string s("XiYi(");
             s += std::to_string(this->xi).substr(0,4) + ",";
@@ -332,7 +332,7 @@ namespace morph {
          * Convert xi and yi indices into x and y coordinates and also r and phi
          * coordinates, based on the rect-to-rect distances dx and dy.
          */
-        void computeLocation (void)
+        void computeLocation()
         {
             // Compute Cartesian location
             this->x = this->dx*this->xi;
@@ -410,7 +410,7 @@ namespace morph {
         float z = 0.0f;
 
         //! Get the Cartesian position of this Rect as a fixed size array.
-        morph::Vector<float, 3> position (void) const
+        morph::Vector<float, 3> position() const
         {
             morph::Vector<float,3> rtn = { { this->x, this->y, this->z } };
             return rtn;
@@ -422,29 +422,29 @@ namespace morph {
         float dy = 1.0f;
 
         // Getters for dx, dy
-        float get_dx (void) const { return this->dx; }
-        float get_dy (void) const { return this->dy; }
+        float get_dx() const { return this->dx; }
+        float get_dy() const { return this->dy; }
 
         //! Get the shortest distance from the centre of the Rect to its perimeter. This is the "short radius".
-        float getSR (void) const { return ((this->dx < this->dy ? this->dx : this->dy) * 0.5f); }
+        float getSR() const { return ((this->dx < this->dy ? this->dx : this->dy) * 0.5f); }
 
         //! The distance from the centre of the Rect to any of the vertices. This is the "long radius".
-        float getLR (void) const { return (std::sqrt (this->dx * this->dx + this->dy * this->dy) * 0.5f); }
+        float getLR() const { return (std::sqrt (this->dx * this->dx + this->dy * this->dy) * 0.5f); }
 
         //! Compute and return the area of the Rect
-        float getArea (void) const { return (this->dx * this->dy); }
+        float getArea() const { return (this->dx * this->dy); }
 
         //! The vertical distance between Rect centres on adjacent rows.
-        float getV (void) const { return this->dy; }
+        float getV() const { return this->dy; }
 
         //! The vertical distance from the centre of the Rect to the "north east" vertex of the Rect
-        float getVtoNE (void) const { return std::sqrt (this->dx * this->dx + this->dy * this->dy); }
+        float getVtoNE() const { return std::sqrt (this->dx * this->dx + this->dy * this->dy); }
 
         /*!
          * Return twice the vertical distance between Rect centres on adjacent
          * rows. (unlikely to be useful, but included to match API of morph::Hex)
          */
-        float getTwoV (void) const { return 2.0f * this->dy; }
+        float getTwoV() const { return 2.0f * this->dy; }
 
         /*
          * Indices in x/y directions. These lie in the x-y plane. They index in positive
@@ -457,7 +457,7 @@ namespace morph {
         int yi = 0;
 
         //! Getter for this->flags
-        unsigned int getFlags (void) const { return this->flags; }
+        unsigned int getFlags() const { return this->flags; }
 
         //! Set one or more flags, defined by flg, true
         void setFlag (unsigned int flg) { this->flags |= flg; }
@@ -479,27 +479,27 @@ namespace morph {
          * expected that client code will then re-set the neighbour relations so that
          * onBoundary() would return true.
          */
-        bool boundaryRect (void) const { return this->flags & RECT_IS_BOUNDARY ? true : false; }
+        bool boundaryRect() const { return this->flags & RECT_IS_BOUNDARY ? true : false; }
         /*!
          * Mark the Rect as a boundary Rect. Boundary rects are also, by definition,
          * inside the boundary.
          */
-        void setBoundaryRect (void) { this->flags |= (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
-        void unsetBoundaryREct (void) { this->flags &= ~(RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
+        void setBoundaryRect() { this->flags |= (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
+        void unsetBoundaryREct() { this->flags &= ~(RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY); }
 
         //! Returns true if this Rect is known to be inside the boundary.
-        bool insideBoundary (void) const { return this->flags & RECT_INSIDE_BOUNDARY ? true : false; }
+        bool insideBoundary() const { return this->flags & RECT_INSIDE_BOUNDARY ? true : false; }
         //! Set the flag that says this Rect is known to be inside the boundary.
-        void setInsideBoundary (void) { this->flags |= RECT_INSIDE_BOUNDARY; }
+        void setInsideBoundary() { this->flags |= RECT_INSIDE_BOUNDARY; }
         //! Unset the flag that says this Rect is inside the boundary.
-        void unsetInsideBoundary (void) { this->flags &= ~RECT_INSIDE_BOUNDARY; }
+        void unsetInsideBoundary() { this->flags &= ~RECT_INSIDE_BOUNDARY; }
 
         //! Returns true if this Rect is known to be inside a 'domain'.
-        bool insideDomain (void) const { return this->flags & RECT_INSIDE_DOMAIN ? true : false; }
+        bool insideDomain() const { return this->flags & RECT_INSIDE_DOMAIN ? true : false; }
         //! Set flag that says this Rect is known to be inside a 'domain'.
-        void setInsideDomain (void) { this->flags |= RECT_INSIDE_DOMAIN; }
+        void setInsideDomain() { this->flags |= RECT_INSIDE_DOMAIN; }
         //! Unset flag that says this Rect is known to be inside domain.
-        void unsetInsideDomain (void) { this->flags &= ~RECT_INSIDE_DOMAIN; }
+        void unsetInsideDomain() { this->flags &= ~RECT_INSIDE_DOMAIN; }
 
         /*!
          * Set the RECT_USER_FLAG_0/1/2/3 from the passed in unsigned int.
@@ -526,7 +526,7 @@ namespace morph {
         }
 
         //! Set all user flags to the unset state
-        void resetUserFlags (void) { this->flags &= RECT_NON_USER; }
+        void resetUserFlags() { this->flags &= RECT_NON_USER; }
 
         //! Getter for each user flag
         bool getUserFlag (unsigned int uflg_num) const
@@ -601,38 +601,38 @@ namespace morph {
         }
 
         //! Return true if this Rect has a Neighbour to the East
-        bool has_ne (void) const { return ((this->flags & RECT_HAS_NE) == RECT_HAS_NE); }
+        bool has_ne() const { return ((this->flags & RECT_HAS_NE) == RECT_HAS_NE); }
         //! Return true if this Rect has a Neighbour to the North East
-        bool has_nne (void) const { return ((this->flags & RECT_HAS_NNE) == RECT_HAS_NNE); }
+        bool has_nne() const { return ((this->flags & RECT_HAS_NNE) == RECT_HAS_NNE); }
         //! Return true if this Rect has a Neighbour to the North
-        bool has_nn (void) const { return ((this->flags & RECT_HAS_NN) == RECT_HAS_NN); }
+        bool has_nn() const { return ((this->flags & RECT_HAS_NN) == RECT_HAS_NN); }
         //! Return true if this Rect has a Neighbour to the North West
-        bool has_nnw (void) const { return ((this->flags & RECT_HAS_NNW) == RECT_HAS_NNW); }
+        bool has_nnw() const { return ((this->flags & RECT_HAS_NNW) == RECT_HAS_NNW); }
         //! Return true if this Rect has a Neighbour to the West
-        bool has_nw (void) const { return ((this->flags & RECT_HAS_NW) == RECT_HAS_NW); }
+        bool has_nw() const { return ((this->flags & RECT_HAS_NW) == RECT_HAS_NW); }
         //! Return true if this Rect has a Neighbour to the South West
-        bool has_nsw (void) const { return ((this->flags & RECT_HAS_NSW) == RECT_HAS_NSW); }
+        bool has_nsw() const { return ((this->flags & RECT_HAS_NSW) == RECT_HAS_NSW); }
         //! Return true if this Rect has a Neighbour to the South
-        bool has_ns (void) const { return ((this->flags & RECT_HAS_NS) == RECT_HAS_NS); }
+        bool has_ns() const { return ((this->flags & RECT_HAS_NS) == RECT_HAS_NS); }
         //! Return true if this Rect has a Neighbour to the South East
-        bool has_nse (void) const { return ((this->flags & RECT_HAS_NSE) == RECT_HAS_NSE); }
+        bool has_nse() const { return ((this->flags & RECT_HAS_NSE) == RECT_HAS_NSE); }
 
         //! Set flags to say that this Rect has NO neighbour to East
-        void unset_ne (void) { this->flags ^= RECT_HAS_NE; }
+        void unset_ne() { this->flags ^= RECT_HAS_NE; }
         //! Set flags to say that this Rect has NO neighbour to North East
-        void unset_nne (void) { this->flags ^= RECT_HAS_NNE; }
+        void unset_nne() { this->flags ^= RECT_HAS_NNE; }
         //! Set flags to say that this Rect has NO neighbour to North
-        void unset_nn (void) { this->flags ^= RECT_HAS_NN; }
+        void unset_nn() { this->flags ^= RECT_HAS_NN; }
         //! Set flags to say that this Rect has NO neighbour to North West
-        void unset_nnw (void) { this->flags ^= RECT_HAS_NNW; }
+        void unset_nnw() { this->flags ^= RECT_HAS_NNW; }
         //! Set flags to say that this Rect has NO neighbour to West
-        void unset_nw (void) { this->flags ^= RECT_HAS_NW; }
+        void unset_nw() { this->flags ^= RECT_HAS_NW; }
         //! Set flags to say that this Rect has NO neighbour to South West
-        void unset_nsw (void) { this->flags ^= RECT_HAS_NSW; }
+        void unset_nsw() { this->flags ^= RECT_HAS_NSW; }
         //! Set flags to say that this Rect has NO neighbour to South
-        void unset_ns (void) { this->flags ^= RECT_HAS_NS; }
+        void unset_ns() { this->flags ^= RECT_HAS_NS; }
         //! Set flags to say that this Rect has NO neighbour to South East
-        void unset_nse (void) { this->flags ^= RECT_HAS_NSE; }
+        void unset_nse() { this->flags ^= RECT_HAS_NSE; }
 
         /*!
          * Test if have neighbour at position \a ni.  East: 0, North-East: 1, North: 2,
@@ -909,7 +909,7 @@ namespace morph {
         }
 
         //! Un-set the pointers on all my neighbours so that THEY no longer point to ME.
-        void disconnectNeighbours (void)
+        void disconnectNeighbours()
         {
             if (this->has_ne()) {
                 if (this->ne->has_nw()) {
