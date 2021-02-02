@@ -101,7 +101,7 @@ namespace morph {
          * bottom? Set this to a larger number if the boundary is expected to grow
          * during a simulation.
          */
-        unsigned int d_growthbuffer_horz = 5;
+        unsigned int d_growthbuffer_horz = 0;
         unsigned int d_growthbuffer_vert = 0;
 
         //! Add entries to all the d_ vectors for the Rect pointed to by ri.
@@ -699,43 +699,42 @@ namespace morph {
             while (bpi->has_nw()) { bpi = bpi->nw; }
             while (bpi->has_ns()) { bpi = bpi->ns; }
             bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+            //std::cout << "set flag at start on rect " << bpi->outputCart() << std::endl;
 
             while (bpi->has_ne()) {
                 bpi = bpi->ne;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+                //std::cout << "set flag going E on rect " << bpi->outputCart() << std::endl;
             }
             while (bpi->has_nn()) {
                 bpi = bpi->nn;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+                //std::cout << "set flag going N on rect " << bpi->outputCart() << std::endl;
             }
             while (bpi->has_nw()) {
                 bpi = bpi->nw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+                //std::cout << "set flag going W on rect " << bpi->outputCart() << std::endl;
             }
             while (bpi->has_ns() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
                 bpi = bpi->ns;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+                //std::cout << "set flag going S on rect " << bpi->outputCart() << std::endl;
             }
+
             // Check that the boundary is contiguous, starting from SW corner and
             // heading E (to go anticlockwise)
             std::set<unsigned int> seen;
             std::list<morph::Rect>::iterator ri = bpi;
-            std::cout << "Contig?" << std::endl;
             if (this->boundaryContiguous (bpi, ri, seen, RECT_NEIGHBOUR_POS_E) == false) {
-                std::cout << "No." << std::endl;
                 throw std::runtime_error ("The boundary is not a contiguous sequence of rects.");
-            } else {
-                std::cout << "Yes.\n";
             }
 
             if (this->domainShape == morph::CartDomainShape::Boundary) {
                 // Boundary IS contiguous, discard rects outside the boundary.
                 this->discardOutsideBoundary();
-            } else {
-                //throw std::runtime_error ("setBoundary (const list<Rect>& pRects) doesn't know what to do if domain shape is not CartDomainShape::Boundary.");
             }
 
-            std::cout << "populate_d_vectors...\n";
             this->populate_d_vectors();
         }
 
@@ -1031,10 +1030,9 @@ namespace morph {
          */
         void populate_d_vectors (const std::array<int, 4>& extnts)
         {
-            // First, find the starting rect. For Rectangular and parallelogram domains,
-            // that's the bottom left rect.
+            // A rectangle iterator
             std::list<morph::Rect>::iterator ri = this->rects.begin();
-            // bottom left rect.
+            // Bottom left rectangle
             std::list<morph::Rect>::iterator blr = this->rects.end();
 
             if (this->domainShape == morph::CartDomainShape::Rectangle) {
@@ -1042,7 +1040,7 @@ namespace morph {
                 // Use neighbour relations to go from bottom left to top right.  Find rect on bottom row.
                 while (ri != this->rects.end()) {
                     if (ri->yi == extnts[2]) {
-                        // We're on the bottom row
+                        // std::cout << "We're on the bottom row\n";
                         break;
                     }
                     ++ri;
@@ -1055,7 +1053,7 @@ namespace morph {
 
                 // Sanity check
                 if (blr->has_ne() == false || blr->has_nw() == true) {
-                    throw std::runtime_error ("We expect the bottom left rect to have an east, but no east neighbour.");
+                    throw std::runtime_error ("We expect the bottom left rect to have an east, but no west neighbour.");
                 }
 
             } // else Hexagon or Boundary starts from 0, hi already set to rects.begin();
@@ -1065,11 +1063,11 @@ namespace morph {
 
             // Now raster through the rects, building the d_ vectors.
             if (this->domainShape == morph::CartDomainShape::Rectangle) {
-                bool next_row_ne = true;
+
                 this->d_push_back (ri);
+
                 do {
                     ri = ri->ne;
-
                     this->d_push_back (ri);
 
                     if (ri->has_ne() == false) {
@@ -1077,15 +1075,11 @@ namespace morph {
                             // last (i.e. top) row and no neighbour east, so finished.
                             break;
                         } else {
-                            if (next_row_ne == true) {
-                                ri = blr->nne;
-                                next_row_ne = false;
-                                blr = ri;
-                            } else {
-                                ri = blr->nnw;
-                                next_row_ne = true;
-                                blr = ri;
-                            }
+                            // Carriage return
+                            ri = blr;
+                            // Line feed (Move to the next row up)
+                            blr = ri->nn;
+                            ri = blr;
                             this->d_push_back (ri);
                         }
                     }
@@ -1352,8 +1346,6 @@ namespace morph {
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->d));
 
-            DBG ("Creating Cartesian grid with maxRow: " << maxRow);
-
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
 
@@ -1370,15 +1362,20 @@ namespace morph {
                 for (int xi = -halfRows; xi <= halfRows; ++xi) {
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
                     auto ri = this->rects.end(); ri--;
+                    //std::cout << "emplaced Rect " << ri->outputCart() << std::endl;
                     if (xi > -halfRows) {
                         auto ri_w = ri; ri_w--;
                         ri_w->set_ne (ri);
                         ri->set_nw (ri_w);
                     }
                     if (yi > -halfCols) {
+                        //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << pri << "]"
+                        //          << (*prevRow)[pri]->outputCart() << " as S of Rect ri = " << ri->outputCart() << std::endl;
                         (*prevRow)[pri]->set_nn (ri);
                         ri->set_ns ((*prevRow)[pri]);
                         if (xi > -halfRows) {
+                            //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << (pri-1) << "]"
+                            //          << (*prevRow)[pri-1]->outputCart() << " as SW of Rect ri = " << ri->outputCart() << std::endl;
                             (*prevRow)[pri-1]->set_nne (ri);
                             ri->set_nsw ((*prevRow)[pri-1]);
                         }
@@ -1390,8 +1387,8 @@ namespace morph {
                 std::vector<std::list<morph::Rect>::iterator>* tmp = prevRow;
                 prevRow = nextPrevRow;
                 nextPrevRow = tmp;
+                nextPrevRow->clear();
             }
-            DBG ("Finished creating " << this->rects.size() << " rects.");
         }
 
         /*!
@@ -1440,7 +1437,6 @@ namespace morph {
         bool boundaryContiguous (std::list<Rect>::const_iterator bri,
                                  std::list<Rect>::const_iterator ri, std::set<unsigned int>& seen, int dirn)
         {
-            std::cout << __FUNCTION__ << " called for rect " << ri->outputCart() << std::endl;
             bool rtn = false;
             std::list<morph::Rect>::const_iterator ri_next;
             seen.insert (ri->vi);
@@ -1453,53 +1449,12 @@ namespace morph {
                     && ri->has_neighbour(dirn+i)
                     && ri->get_neighbour(dirn+i)->testFlags(RECT_IS_BOUNDARY) == true
                     && seen.find(ri->get_neighbour(dirn+i)->vi) == seen.end()) {
-                    std::cout << ri->neighbour_pos(dirn+i) << std::endl;
+                    //std::cout << ri->neighbour_pos(dirn+i) << std::endl;
                     ri_next = ri->get_neighbour(dirn+i);
                     rtn = (this->boundaryContiguous (bri, ri_next, seen, dirn+i));
                 }
             }
-#if 0
-            if (rtn == false && ri->has_ne() && ri->ne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->ne->vi) == seen.end()) {
-                std::cout << "E" << std::endl;
-                ri_next = ri->ne;
-                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_E));
-            }
-            if (rtn == false && ri->has_nne() && ri->nne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nne->vi) == seen.end()) {
-                std::cout << "NE" << std::endl;
-                ri_next = ri->nne;
-                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_NE));
-            }
-            if (rtn == false && ri->has_nn() && ri->nn->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nn->vi) == seen.end()) {
-                std::cout << "N" << std::endl;
-                ri_next = ri->nn;
-                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_N));
-            }
-            if (rtn == false && ri->has_nnw() && ri->nnw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nnw->vi) == seen.end()) {
-                std::cout << "NW" << std::endl;
-                ri_next = ri->nnw;
-                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_NW));
-            }
-            if (rtn == false && ri->has_nw() && ri->nw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nw->vi) == seen.end()) {
-                std::cout << "W" << std::endl;
-                ri_next = ri->nw;
-                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_W));
-            }
-            if (rtn == false && ri->has_nsw() && ri->nsw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nsw->vi) == seen.end()) {
-                std::cout << "SW" << std::endl;
-                ri_next = ri->nsw;
-                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_SW));
-            }
-            if (rtn == false && ri->has_ns() && ri->ns->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->ns->vi) == seen.end()) {
-                std::cout << "S" << std::endl;
-                ri_next = ri->ns;
-                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_S));
-            }
-            if (rtn == false && ri->has_nse() && ri->nse->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nse->vi) == seen.end()) {
-                std::cout << "SE" << std::endl;
-                ri_next = ri->nse;
-                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_SE));
-            }
-#endif
+
             if (rtn == false) {
                 // Checked all neighbours
                 if (ri == bri) {
@@ -1965,43 +1920,44 @@ namespace morph {
         {
             // Return object contains {ri-left, ri-right, gi-bottom, gi-top, gi at ri-left, gi at ri-right}
             // i.e. {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
-            std::array<int, 4> rtn = {{0,0,0,0}};
+            std::array<int, 4> extents = {{0,0,0,0}};
 
-            // Find the furthest left and right rects and the further up and down rects.
+            // Find the furthest left and right rects and the furthest up and down rects.
             std::array<float, 4> limits = {{0,0,0,0}};
             bool first = true;
             for (auto r : this->rects) {
                 if (r.testFlags(RECT_IS_BOUNDARY) == true) {
                     if (first) {
-                        limits = {{r.x, r.x, r.y, r.y}};
+                        limits = {r.x, r.x, r.y, r.y};
+                        extents = {r.xi, r.xi, r.yi, r.yi};
                         first = false;
                     }
                     if (r.x < limits[0]) {
                         limits[0] = r.x;
-                        rtn[0] = r.xi;
+                        extents[0] = r.xi;
                     }
                     if (r.x > limits[1]) {
                         limits[1] = r.x;
-                        rtn[1] = r.xi;
+                        extents[1] = r.xi;
                     }
                     if (r.y < limits[2]) {
                         limits[2] = r.y;
-                        rtn[2] = r.yi;
+                        extents[2] = r.yi;
                     }
                     if (r.y > limits[3]) {
                         limits[3] = r.y;
-                        rtn[3] = r.yi;
+                        extents[3] = r.yi;
                     }
                 }
             }
 
             // Add 'growth buffer'
-            rtn[0] -= this->d_growthbuffer_horz;
-            rtn[1] += this->d_growthbuffer_horz;
-            rtn[2] -= this->d_growthbuffer_vert;
-            rtn[3] += this->d_growthbuffer_vert;
+            extents[0] -= this->d_growthbuffer_horz;
+            extents[1] += this->d_growthbuffer_horz;
+            extents[2] -= this->d_growthbuffer_vert;
+            extents[3] += this->d_growthbuffer_vert;
 
-            return rtn;
+            return extents;
         }
 
         /*!

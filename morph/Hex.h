@@ -853,7 +853,7 @@ namespace morph {
         std::pair<float, float> get_vertex_coord (unsigned int ni) const
         {
             std::pair<float, float> rtn = {-2.0, -2.0};
-            if (ni > 6) {
+            if (ni > 5) {
                 return rtn;
             }
             rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
@@ -868,7 +868,7 @@ namespace morph {
         std::pair<float, float> get_vertex_coord (int ni) const
         {
             std::pair<float, float> rtn = {-3.0, -3.0};
-            if (ni > 6) {
+            if (ni > 5) {
                 rtn.first = -4.0f;
                 return rtn;
             }

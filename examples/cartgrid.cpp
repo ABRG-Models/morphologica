@@ -44,28 +44,23 @@ int main()
     v.addLabel ("This is a\nmorph::CartGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a HexGrid to show in the scene
-    morph::CartGrid cg(0.5, 1.5);
+    morph::CartGrid cg(0.01, 0.01, 1.1, 1.5);
     std::cout << "Number of pixels in grid:" << cg.num() << std::endl;
     cg.setBoundaryOnOuterEdge();
-    std::cout << "0...\n";
 
     // Make some dummy data (a sine wave) to make an interesting surface
     std::vector<float> data(cg.num(), 0.0);
     for (unsigned int ri=0; ri<cg.num(); ++ri) {
-        std::cout << cg.d_x.size() << std::endl;
-        std::cout << "cg.d_x["<<ri<<"]=" << cg.d_x[ri] << std::endl;
-        data[ri] = 0.05f + 0.05f*std::sin(10.0f*cg.d_x[ri]); // Range 0->1
+        //std::cout << cg.d_x.size() << std::endl;
+        //std::cout << "cg.d_x["<<ri<<"]=" << cg.d_x[ri] << std::endl;
+        data[ri] = 0.05f + 0.05f*std::sin(20.0f*cg.d_x[ri]) * std::sin(10.0f*cg.d_y[ri]) ; // Range 0->1
     }
 
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
     morph::Vector<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    std::cout << "new CargGridVisual...\n";
     morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v.shaderprog, v.tshaderprog, &cg, offset);
-    std::cout << "1...\n";
     cgv->setScalarData (&data);
-    std::cout << "2...\n";
     cgv->finalize();
-    std::cout << "3...\n";
     unsigned int gridId = v.addVisualModel (cgv);
     std::cout << "Added CartGridVisual with gridId " << gridId << std::endl;
 
