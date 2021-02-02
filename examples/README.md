@@ -22,14 +22,26 @@ You'll find the example program binaries in `build/examples`.
 
 Contains an implementation of a Keller-Segel reaction diffusion system.
 
-## exampleVisual.cpp
+## visual.cpp
 
 An example morph::Visual program which shows a morph::HexGrid and some
 text labels.
 
-## hexConvolve.cpp
+## convolve.cpp
 
 An example demonstrating the use of morph::HexGrid, its
 HexGrid::convolve function, the morph::Random class and a
 visualization of the input, the convolution kernel and the resulting
 output.
+
+## fps.cpp
+
+A dynamic HexGrid program showing an animated surface
+
+## hexgrid.cpp
+
+Example HexGridVisual
+
+## cartgrid.cpp
+
+Example Cartesian grid (CartGridVisual)
