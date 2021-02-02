@@ -587,7 +587,7 @@ namespace morph {
          * is based on testing neihgbour relations, rather than examining the value of the
          * HEX_IS_BOUNDARY flag.
          */
-        bool onBoundary()
+        bool onBoundary() const
         {
             return ((this->flags & HEX_HAS_NEIGHB_ALL) == HEX_HAS_NEIGHB_ALL) ? false : true;
         }
@@ -659,7 +659,7 @@ namespace morph {
          * Test if have neighbour at position \a ni.
          * East: 0, North-East: 1, North-West: 2, West: 3, South-West: 4, South-East: 5
          */
-        bool has_neighbour (unsigned short ni)
+        bool has_neighbour (unsigned short ni) const
         {
             switch (ni) {
             case HEX_NEIGHBOUR_POS_E:
@@ -704,7 +704,7 @@ namespace morph {
          * Get a list<Hex>::iterator to the neighbour at position \a ni.
          * East: 0, North-East: 1, North-West: 2, West: 3, South-West: 4, South-East: 5
          */
-        std::list<Hex>::iterator get_neighbour (unsigned short ni)
+        std::list<Hex>::iterator get_neighbour (unsigned short ni) const
         {
             std::list<Hex>::iterator hi;
             switch (ni) {
