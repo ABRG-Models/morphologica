@@ -198,7 +198,7 @@ namespace morph {
 
         /*!
          * Save this CartGrid (and all the rects in it) into the HDF5 file at the
-         * location @path.
+         * location \a path.
          */
         void save (const std::string& path)
         {
@@ -264,7 +264,7 @@ namespace morph {
         }
 
         /*!
-         * Populate this CartGrid from the HDF5 file at the location @path.
+         * Populate this CartGrid from the HDF5 file at the location \a path.
          */
         void load (const std::string& path)
         {
@@ -504,9 +504,9 @@ namespace morph {
         }
 
         /*!
-         * Sets boundary to match the list of rects passed in as @a pRects. Note, that
+         * Sets boundary to match the list of rects passed in as \a pRects. Note, that
          * unlike void setBoundary (const BezCurvePath& p), this method does not apply
-         * any offset to the positions of the rects in @a pRects.
+         * any offset to the positions of the rects in \a pRects.
          */
         void setBoundary (const std::list<Rect>& pRects)
         {
@@ -533,7 +533,8 @@ namespace morph {
             // Check that the boundary is contiguous.
             std::set<unsigned int> seen;
             std::list<morph::Rect>::iterator ri = bpoint;
-            if (this->boundaryContiguous (bpoint, ri, seen) == false) {
+            if (this->boundaryContiguous (bpoint, ri, seen, RECT_NEIGHBOUR_POS_E) == false) {
+                std::cout << "Uh oh\n";
                 throw std::runtime_error ("The boundary is not a contiguous sequence of rects.");
             }
 
@@ -623,7 +624,7 @@ namespace morph {
             {
                 std::set<unsigned int> seen;
                 std::list<morph::Rect>::iterator hi = nearbyBoundaryPoint;
-                if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen) == false) {
+                if (this->boundaryContiguous (nearbyBoundaryPoint, hi, seen, RECT_NEIGHBOUR_POS_E) == false) {
                     throw std::runtime_error ("The constructed boundary is not a contiguous sequence of rectangular elements.");
                 }
             }
@@ -676,76 +677,65 @@ namespace morph {
             {
                 std::set<unsigned int> seen;
                 std::list<morph::Rect>::iterator ri = nearbyBoundaryPoint;
-                if (this->boundaryContiguous (nearbyBoundaryPoint, ri, seen) == false) {
+                if (this->boundaryContiguous (nearbyBoundaryPoint, ri, seen, RECT_NEIGHBOUR_POS_E) == false) {
                     throw std::runtime_error ("The constructed boundary is not a contiguous sequence of rects.");
                 }
             }
         }
 
         /*!
-         * Set all the outer rects as being "boundary" rects. This makes it possible
-         * to create the default hexagon of rects, then mark the outer rects as being
-         * the boundary.
+         * Set all the outer rects as being "boundary" rects. This makes it possible to
+         * create the default/original rectangle of rects, then mark the outer rects as
+         * being the boundary.
          *
-         * Works only on the initial hexagonal layout of rects.
+         * Works only on the initial layout of rects.
          */
         void setBoundaryOnOuterEdge()
         {
             // From centre head to boundary, then mark boundary and walk
             // around the edge.
             std::list<morph::Rect>::iterator bpi = this->rects.begin();
-            while (bpi->has_nne()) { bpi = bpi->nne; }
+            // Head to the south west corner
+            while (bpi->has_nw()) { bpi = bpi->nw; }
+            while (bpi->has_ns()) { bpi = bpi->ns; }
             bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
+
             while (bpi->has_ne()) {
                 bpi = bpi->ne;
-                bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            }
-            while (bpi->has_nse()) {
-                bpi = bpi->nse;
-                bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            }
-            while (bpi->has_ns()) {
-                bpi = bpi->ns;
-                bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            }
-            while (bpi->has_nsw()) {
-                bpi = bpi->nsw;
-                bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            }
-            while (bpi->has_nw()) {
-                bpi = bpi->nw;
-                bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            }
-            while (bpi->has_nnw()) {
-                bpi = bpi->nnw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             }
             while (bpi->has_nn()) {
                 bpi = bpi->nn;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             }
-            while (bpi->has_nne()) {
-                bpi = bpi->nne;
+            while (bpi->has_nw()) {
+                bpi = bpi->nw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             }
-            while (bpi->has_ne() && bpi->ne->testFlags(RECT_IS_BOUNDARY) == false) {
-                bpi = bpi->ne;
+            while (bpi->has_ns() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
+                bpi = bpi->ns;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             }
-            // Check that the boundary is contiguous.
+            // Check that the boundary is contiguous, starting from SW corner and
+            // heading E (to go anticlockwise)
             std::set<unsigned int> seen;
             std::list<morph::Rect>::iterator ri = bpi;
-            if (this->boundaryContiguous (bpi, ri, seen) == false) {
+            std::cout << "Contig?" << std::endl;
+            if (this->boundaryContiguous (bpi, ri, seen, RECT_NEIGHBOUR_POS_E) == false) {
+                std::cout << "No." << std::endl;
                 throw std::runtime_error ("The boundary is not a contiguous sequence of rects.");
+            } else {
+                std::cout << "Yes.\n";
             }
 
             if (this->domainShape == morph::CartDomainShape::Boundary) {
                 // Boundary IS contiguous, discard rects outside the boundary.
                 this->discardOutsideBoundary();
             } else {
-                throw std::runtime_error ("setBoundary (const list<Rect>& pRects) doesn't know what to do if domain shape is not CartDomainShape::Boundary.");
+                //throw std::runtime_error ("setBoundary (const list<Rect>& pRects) doesn't know what to do if domain shape is not CartDomainShape::Boundary.");
             }
 
+            std::cout << "populate_d_vectors...\n";
             this->populate_d_vectors();
         }
 
@@ -1433,53 +1423,86 @@ namespace morph {
             }
             std::set<unsigned int> seen;
             std::list<morph::Rect>::const_iterator hi = bhi;
-            return this->boundaryContiguous (bhi, hi, seen);
+            return this->boundaryContiguous (bhi, hi, seen, RECT_NEIGHBOUR_POS_E);
         }
 
         /*!
          * Determine whether the boundary is contiguous, starting from the boundary
          * Rect iterator \a bhi.
          *
+         * If following the boundary clockwise, then need to search neighbours "starting
+         * from the one that's clockwise around from the last one that was on the
+         * boundary"
+         *
          * The overload with brects takes a list of Rect pointers and populates it with
          * pointers to the rects on the boundary.
          */
-        bool boundaryContiguous (std::list<Rect>::const_iterator bhi,
-                                 std::list<Rect>::const_iterator hi, std::set<unsigned int>& seen)
+        bool boundaryContiguous (std::list<Rect>::const_iterator bri,
+                                 std::list<Rect>::const_iterator ri, std::set<unsigned int>& seen, int dirn)
         {
+            std::cout << __FUNCTION__ << " called for rect " << ri->outputCart() << std::endl;
             bool rtn = false;
-            std::list<morph::Rect>::const_iterator hi_next;
-            seen.insert (hi->vi);
+            std::list<morph::Rect>::const_iterator ri_next;
+            seen.insert (ri->vi);
             // Insert into the std::list of Rect pointers, too
-            this->brects.push_back ((morph::Rect*)&(*hi));
+            this->brects.push_back ((morph::Rect*)&(*ri));
 
-            if (rtn == false && hi->has_ne() && hi->ne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->ne->vi) == seen.end()) {
-                hi_next = hi->ne;
-                rtn = (this->boundaryContiguous (bhi, hi_next, seen));
+            // increasing direction is an anticlockwise sense
+            for (int i = 0; i < 8; ++i) {
+                if (rtn == false
+                    && ri->has_neighbour(dirn+i)
+                    && ri->get_neighbour(dirn+i)->testFlags(RECT_IS_BOUNDARY) == true
+                    && seen.find(ri->get_neighbour(dirn+i)->vi) == seen.end()) {
+                    std::cout << ri->neighbour_pos(dirn+i) << std::endl;
+                    ri_next = ri->get_neighbour(dirn+i);
+                    rtn = (this->boundaryContiguous (bri, ri_next, seen, dirn+i));
+                }
             }
-            if (rtn == false && hi->has_nne() && hi->nne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->nne->vi) == seen.end()) {
-                hi_next = hi->nne;
-                rtn = (this->boundaryContiguous (bhi, hi_next, seen));
+#if 0
+            if (rtn == false && ri->has_ne() && ri->ne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->ne->vi) == seen.end()) {
+                std::cout << "E" << std::endl;
+                ri_next = ri->ne;
+                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_E));
             }
-            if (rtn == false && hi->has_nnw() && hi->nnw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->nnw->vi) == seen.end()) {
-                hi_next = hi->nnw;
-                rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+            if (rtn == false && ri->has_nne() && ri->nne->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nne->vi) == seen.end()) {
+                std::cout << "NE" << std::endl;
+                ri_next = ri->nne;
+                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_NE));
             }
-            if (rtn == false && hi->has_nw() && hi->nw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->nw->vi) == seen.end()) {
-                hi_next = hi->nw;
-                rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+            if (rtn == false && ri->has_nn() && ri->nn->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nn->vi) == seen.end()) {
+                std::cout << "N" << std::endl;
+                ri_next = ri->nn;
+                rtn = (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_N));
             }
-            if (rtn == false && hi->has_nsw() && hi->nsw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->nsw->vi) == seen.end()) {
-                hi_next = hi->nsw;
-                rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+            if (rtn == false && ri->has_nnw() && ri->nnw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nnw->vi) == seen.end()) {
+                std::cout << "NW" << std::endl;
+                ri_next = ri->nnw;
+                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_NW));
             }
-            if (rtn == false && hi->has_nse() && hi->nse->testFlags(RECT_IS_BOUNDARY) == true && seen.find(hi->nse->vi) == seen.end()) {
-                hi_next = hi->nse;
-                rtn =  (this->boundaryContiguous (bhi, hi_next, seen));
+            if (rtn == false && ri->has_nw() && ri->nw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nw->vi) == seen.end()) {
+                std::cout << "W" << std::endl;
+                ri_next = ri->nw;
+                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_W));
             }
-
+            if (rtn == false && ri->has_nsw() && ri->nsw->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nsw->vi) == seen.end()) {
+                std::cout << "SW" << std::endl;
+                ri_next = ri->nsw;
+                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_SW));
+            }
+            if (rtn == false && ri->has_ns() && ri->ns->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->ns->vi) == seen.end()) {
+                std::cout << "S" << std::endl;
+                ri_next = ri->ns;
+                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_S));
+            }
+            if (rtn == false && ri->has_nse() && ri->nse->testFlags(RECT_IS_BOUNDARY) == true && seen.find(ri->nse->vi) == seen.end()) {
+                std::cout << "SE" << std::endl;
+                ri_next = ri->nse;
+                rtn =  (this->boundaryContiguous (bri, ri_next, seen, RECT_NEIGHBOUR_POS_SE));
+            }
+#endif
             if (rtn == false) {
                 // Checked all neighbours
-                if (hi == bhi) {
+                if (ri == bri) {
                     // Back at start, nowhere left to go! return true.
                     rtn = true;
                 }
@@ -1552,52 +1575,18 @@ namespace morph {
          * assumes that setBoundary (const BezCurvePath&) has been called to mark the
          * Rects that lie on the boundary.
          */
-        bool findBoundaryRect (std::list<Rect>::const_iterator& hi) const
+        bool findBoundaryRect (std::list<Rect>::const_iterator& ri) const
         {
-            if (hi->testFlags(RECT_IS_BOUNDARY) == true) {
+            if (ri->testFlags(RECT_IS_BOUNDARY) == true) {
                 // No need to change the Rect iterator
                 return true;
             }
 
-            if (hi->has_ne()) {
-                std::list<morph::Rect>::const_iterator ci(hi->ne);
+            // On a Cartesian grid should be able to simply go south until we hit a boundary rect
+            if (ri->has_ns()) {
+                std::list<morph::Rect>::const_iterator ci(ri->ns);
                 if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
-                    return true;
-                }
-            }
-            if (hi->has_nne()) {
-                std::list<morph::Rect>::const_iterator ci(hi->nne);
-                if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
-                    return true;
-                }
-            }
-            if (hi->has_nnw()) {
-                std::list<morph::Rect>::const_iterator ci(hi->nnw);
-                if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
-                    return true;
-                }
-            }
-            if (hi->has_nw()) {
-                std::list<morph::Rect>::const_iterator ci(hi->nw);
-                if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
-                    return true;
-                }
-            }
-            if (hi->has_nsw()) {
-                std::list<morph::Rect>::const_iterator ci(hi->nsw);
-                if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
-                    return true;
-                }
-            }
-            if (hi->has_nse()) {
-                std::list<morph::Rect>::const_iterator ci(hi->nse);
-                if (this->findBoundaryRect (ci) == true) {
-                    hi = ci;
+                    ri = ci;
                     return true;
                 }
             }

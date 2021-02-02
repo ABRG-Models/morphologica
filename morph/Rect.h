@@ -304,6 +304,11 @@ namespace morph {
                 s = "NE";
                 break;
             }
+            case RECT_NEIGHBOUR_POS_N:
+            {
+                s = "N";
+                break;
+            }
             case RECT_NEIGHBOUR_POS_NW:
             {
                 s = "NW";
@@ -317,6 +322,11 @@ namespace morph {
             case RECT_NEIGHBOUR_POS_SW:
             {
                 s = "SW";
+                break;
+            }
+            case RECT_NEIGHBOUR_POS_S:
+            {
+                s = "S";
                 break;
             }
             case RECT_NEIGHBOUR_POS_SE:
@@ -638,7 +648,7 @@ namespace morph {
          * Test if have neighbour at position \a ni.  East: 0, North-East: 1, North: 2,
          * North-West: 3, West: 4, South-West: 5, South: 6, South-East: 7
          */
-        bool has_neighbour (unsigned short ni)
+        bool has_neighbour (unsigned short ni) const
         {
             switch (ni) {
             case RECT_NEIGHBOUR_POS_E:
@@ -694,7 +704,7 @@ namespace morph {
          * North-East: 1, North: 2, North-West: 3, West: 4, South-West: 5, South: 6,
          * South-East: 7
          */
-        std::list<Rect>::iterator get_neighbour (unsigned short ni)
+        std::list<Rect>::iterator get_neighbour (unsigned short ni) const
         {
             std::list<Rect>::iterator hi;
             switch (ni) {

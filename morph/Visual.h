@@ -32,8 +32,8 @@
 #include <morph/VisualResources.h>
 
 #include <morph/Config.h>
-#include <morph/HexGrid.h>
-#include <morph/HexGridVisual.h>
+//#include <morph/HexGrid.h>
+//#include <morph/HexGridVisual.h>
 #include <morph/QuadsVisual.h>
 #include <morph/PointRowsVisual.h>
 #include <morph/ScatterVisual.h>

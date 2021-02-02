@@ -16,3 +16,6 @@ target_link_libraries(hexConvolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${
 # Plots a surface, counts (and shows) the frames per second
 add_executable(fps fps.cpp)
 target_link_libraries(fps ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(cartgrid cartgrid.cpp)
+target_link_libraries(cartgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
