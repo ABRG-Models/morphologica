@@ -184,9 +184,6 @@ if(${glfw3_FOUND})
   add_executable(testVisPointRows testVisPointRows.cpp)
   target_link_libraries(testVisPointRows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
-  add_executable(testVisScatter testVisScatter.cpp)
-  target_link_libraries(testVisScatter ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
   add_executable(testVisGraph testVisGraph.cpp)
   target_link_libraries(testVisGraph ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
@@ -198,12 +195,6 @@ if(${glfw3_FOUND})
 
   add_executable(testVisGraphMin testVisGraphMin.cpp)
   target_link_libraries(testVisGraphMin ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
-  add_executable(testVisLogMap testVisLogMap.cpp)
-  target_link_libraries(testVisLogMap ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
-  add_executable(testVisQuiver testVisQuiver.cpp)
-  target_link_libraries(testVisQuiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
   target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)

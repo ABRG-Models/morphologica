@@ -45,3 +45,15 @@ Example HexGridVisual
 ## cartgrid.cpp
 
 Example Cartesian grid (CartGridVisual)
+
+## logisticmap.cpp
+
+Computes the logistic map and displays with a morph::GraphVisual.
+
+## quiver.cpp
+
+An example quiver plot using morph::QuiverVisual.
+
+## scatter.cpp
+
+An example three dimensional scatter plot of spheres using morph::ScatterVisual.

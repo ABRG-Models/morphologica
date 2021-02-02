@@ -24,15 +24,6 @@ int main (int argc, char** argv)
     v.backgroundBlack();
     v.lightingEffects();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        if (a1.size() > 0) {
-            holdVis = true;
-        }
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program\n";
-
     try {
         morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
@@ -71,11 +62,9 @@ int main (int argc, char** argv)
         std::cout << "Added Visual with visId " << visId << std::endl;
 
         v.render();
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                v.render();
-            }
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
 
     } catch (const std::exception& e) {
