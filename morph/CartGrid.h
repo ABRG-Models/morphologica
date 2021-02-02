@@ -23,7 +23,6 @@
 #include <vector>
 #include <stdexcept>
 
-
 namespace morph {
 
     enum class CartDomainShape {
@@ -1361,7 +1360,10 @@ namespace morph {
                 size_t pri = 0;
                 for (int xi = -halfRows; xi <= halfRows; ++xi) {
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
+
                     auto ri = this->rects.end(); ri--;
+                    this->vrects.push_back (&(*ri));
+
                     //std::cout << "emplaced Rect " << ri->outputCart() << std::endl;
                     if (xi > -halfRows) {
                         auto ri_w = ri; ri_w--;
@@ -1378,6 +1380,10 @@ namespace morph {
                             //          << (*prevRow)[pri-1]->outputCart() << " as SW of Rect ri = " << ri->outputCart() << std::endl;
                             (*prevRow)[pri-1]->set_nne (ri);
                             ri->set_nsw ((*prevRow)[pri-1]);
+                        }
+                        if (xi < halfRows) {
+                            (*prevRow)[pri+1]->set_nnw (ri);
+                            ri->set_nse ((*prevRow)[pri+1]);
                         }
                     }
                     ++pri;

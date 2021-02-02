@@ -39,15 +39,6 @@
 #define NSW(hi) (this->cg->d_nsw[hi])
 #define HAS_NSW(hi) (this->cg->d_nsw[hi] == -1 ? false : true)
 
-#define IF_HAS_NE(hi, yesval, noval)  (HAS_NE(hi)  ? yesval : noval)
-#define IF_HAS_NNE(hi, yesval, noval) (HAS_NNE(hi) ? yesval : noval)
-#define IF_HAS_NN(hi, yesval, noval) (HAS_NN(hi) ? yesval : noval)
-#define IF_HAS_NNW(hi, yesval, noval) (HAS_NNW(hi) ? yesval : noval)
-#define IF_HAS_NW(hi, yesval, noval)  (HAS_NW(hi)  ? yesval : noval)
-#define IF_HAS_NSW(hi, yesval, noval) (HAS_NSW(hi) ? yesval : noval)
-#define IF_HAS_NS(hi, yesval, noval) (HAS_NS(hi) ? yesval : noval)
-#define IF_HAS_NSE(hi, yesval, noval) (HAS_NSE(hi) ? yesval : noval)
-
 namespace morph {
 
     enum class CartVisMode
@@ -155,17 +146,17 @@ namespace morph {
         //! Show a set of hexes at the zero?
         bool zerogrid = false;
 
-        //! Initialize as hexes, with z position of each of the 6
-        //! outer edges of the hexes interpolated, but a single colour
-        //! for each hex. Gives a smooth surface.
+        //! Initialize as a rectangle made of 4 triangles for each rect, with z position
+        //! of each of the 4 outer edges of the triangles interpolated, but a single colour
+        //! for each rectangle. Gives a smooth surface in which you can see the pixels.
         void initializeVerticesRectsInterpolated (void)
         {
-#if 0
-            float sr = this->cg->getSR();
-            float vne = this->cg->getVtoNE();
-            float lr = this->cg->getLR();
+            float dx = this->cg->getd();
+            float hx = 0.5f * dx;
+            float dy = this->cg->getv();
+            float vy = 0.5f * dy;
 
-            unsigned int nhex = this->cg->num();
+            unsigned int nrect = this->cg->num();
             unsigned int idx = 0;
 
             this->dcopy.resize (this->scalarData->size());
@@ -173,126 +164,104 @@ namespace morph {
             this->dcolour.resize (this->scalarData->size());
             this->colourScale.transform (*(this->scalarData), dcolour);
 
-            // These Ts are all floats, right?
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
-            float datumNNE = 0.0f; // etc
+            float datumNNE = 0.0f;
+            float datumNN = 0.0f;
             float datumNNW = 0.0f;
             float datumNW = 0.0f;
             float datumNSW = 0.0f;
+            float datumNS = 0.0f;
             float datumNSE = 0.0f;
 
             float datum = 0.0f;
-            float third = 0.3333333f;
-            float half = 0.5f;
+
             morph::Vector<float> vtx_0, vtx_1, vtx_2;
-            for (unsigned int hi = 0; hi < nhex; ++hi) {
+            for (unsigned int ri = 0; ri < nrect; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
-                datumC   = dcopy[hi];
-                datumNE  = HAS_NE(hi)  ? dcopy[NE(hi)]  : datumC; // datum Neighbour East
-                datumNNE = HAS_NNE(hi) ? dcopy[NNE(hi)] : datumC; // datum Neighbour North East
-                datumNNW = HAS_NNW(hi) ? dcopy[NNW(hi)] : datumC; // etc
-                datumNW  = HAS_NW(hi)  ? dcopy[NW(hi)]  : datumC;
-                datumNSW = HAS_NSW(hi) ? dcopy[NSW(hi)] : datumC;
-                datumNSE = HAS_NSE(hi) ? dcopy[NSE(hi)] : datumC;
+                datumC  = dcopy[ri];
+                datumNE =  HAS_NE(ri)  ? dcopy[NE(ri)] : datumC;
+                //std::cout << "NE? " << (HAS_NE(ri) ? "yes\n" : "no\n");
+                datumNN =  HAS_NN(ri)  ? dcopy[NN(ri)] : datumC;
+                datumNW =  HAS_NW(ri)  ? dcopy[NW(ri)] : datumC;
+                //std::cout << "NW? " << (HAS_NW(ri) ? "yes\n" : "no\n");
+                datumNS =  HAS_NS(ri)  ? dcopy[NS(ri)] : datumC;
+                datumNNE = HAS_NNE(ri) ? dcopy[NNE(ri)] : datumC;
+                datumNNW = HAS_NNW(ri) ? dcopy[NNW(ri)] : datumC;
+                datumNSW = HAS_NSW(ri) ? dcopy[NSW(ri)] : datumC;
+                datumNSE = HAS_NSE(ri) ? dcopy[NSE(ri)] : datumC;
 
-                // Use a single colour for each hex, even though hex z positions are
-                // interpolated. Do the _colour_ scaling:
-                std::array<float, 3> clr = this->setColour (hi);
+                // Use a single colour for each rect, even though rectangle's z
+                // positions are interpolated. Do the _colour_ scaling:
+                std::array<float, 3> clr = this->setColour (ri);
 
-                // First push the 7 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->cg->d_x[hi], this->cg->d_y[hi], datumC, this->vertexPositions);
+                // First push the 5 positions of the triangle vertices, starting with the centre
+                this->vertex_push (this->cg->d_x[ri], this->cg->d_y[ri], datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->cg->d_x[hi], this->cg->d_y[hi], datumC}};
+                vtx_0 = {{this->cg->d_x[ri], this->cg->d_y[ri], datumC}};
 
                 // NE vertex
-                if (HAS_NNE(hi) && HAS_NE(hi)) {
-                    // Compute mean of this->data[hi] and NE and E hexes
-                    datum = third * (datumC + datumNNE + datumNE);
-                } else if (HAS_NNE(hi) || HAS_NE(hi)) {
-                    if (HAS_NNE(hi)) {
-                        datum = half * (datumC + datumNNE);
-                    } else {
-                        datum = half * (datumC + datumNE);
-                    }
+                // Compute mean of this->data[ri] and N, NE and E elements
+                //datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
+                if (HAS_NN(ri) && HAS_NE(ri) && HAS_NNE(ri)) {
+                    datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
+                } else if (HAS_NE(ri)) {
+                    // Assume no NN and no NNE
+                    datum = 0.5f * (datumC + datumNE);
+                } else if (HAS_NN(ri)) {
+                    // Assume no NE and no NNE
+                    datum = 0.5f * (datumC + datumNN);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[hi]+sr, this->cg->d_y[hi]+vne, datum, this->vertexPositions);
-                vtx_1 = {{this->cg->d_x[hi]+sr, this->cg->d_y[hi]+vne, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
+                vtx_1 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum}};
 
                 // SE vertex
-                if (HAS_NE(hi) && HAS_NSE(hi)) {
-                    datum = third * (datumC + datumNE + datumNSE);
-                } else if (HAS_NE(hi) || HAS_NSE(hi)) {
-                    if (HAS_NE(hi)) {
-                        datum = half * (datumC + datumNE);
-                    } else {
-                        datum = half * (datumC + datumNSE);
-                    }
+                //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
+                // SE vertex
+                if (HAS_NS(ri) && HAS_NE(ri) && HAS_NSE(ri)) {
+                    datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
+                } else if (HAS_NE(ri)) {
+                    // Assume no NS and no NSE
+                    datum = 0.5f * (datumC + datumNE);
+                } else if (HAS_NS(ri)) {
+                    // Assume no NE and no NSE
+                    datum = 0.5f * (datumC + datumNS);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[hi]+sr, this->cg->d_y[hi]-vne, datum, this->vertexPositions);
-                vtx_2 = {{this->cg->d_x[hi]+sr, this->cg->d_y[hi]-vne, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
+                vtx_2 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum}};
 
-                // S
-                if (HAS_NSE(hi) && HAS_NSW(hi)) {
-                    datum = third * (datumC + datumNSE + datumNSW);
-                } else if (HAS_NSE(hi) || HAS_NSW(hi)) {
-                    if (HAS_NSE(hi)) {
-                        datum = half * (datumC + datumNSE);
-                    } else {
-                        datum = half * (datumC + datumNSW);
-                    }
-                } else {
-                    datum = datumC;
-                }
-                this->vertex_push (this->cg->d_x[hi], this->cg->d_y[hi]-lr, datum, this->vertexPositions);
 
-                // SW
-                if (HAS_NW(hi) && HAS_NSW(hi)) {
-                    datum = third * (datumC + datumNW + datumNSW);
-                } else if (HAS_NW(hi) || HAS_NSW(hi)) {
-                    if (HAS_NW(hi)) {
-                        datum = half * (datumC + datumNW);
-                    } else {
-                        datum = half * (datumC + datumNSW);
-                    }
+                // SW vertex
+                //datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
+                if (HAS_NS(ri) && HAS_NW(ri) && HAS_NSW(ri)) {
+                    datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
+                } else if (HAS_NW(ri)) {
+                    datum = 0.5f * (datumC + datumNW);
+                } else if (HAS_NS(ri)) {
+                    datum = 0.5f * (datumC + datumNS);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[hi]-sr, this->cg->d_y[hi]-vne, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
 
-                // NW
-                if (HAS_NNW(hi) && HAS_NW(hi)) {
-                    datum = third * (datumC + datumNNW + datumNW);
-                } else if (HAS_NNW(hi) || HAS_NW(hi)) {
-                    if (HAS_NNW(hi)) {
-                        datum = half * (datumC + datumNNW);
-                    } else {
-                        datum = half * (datumC + datumNW);
-                    }
+                // NW vertex
+                //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
+                if (HAS_NN(ri) && HAS_NW(ri) && HAS_NNW(ri)) {
+                    datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
+                } else if (HAS_NW(ri)) {
+                    datum = 0.5f * (datumC + datumNW);
+                } else if (HAS_NN(ri)) {
+                    datum = 0.5f * (datumC + datumNN);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[hi]-sr, this->cg->d_y[hi]+vne, datum, this->vertexPositions);
-
-                // N
-                if (HAS_NNW(hi) && HAS_NNE(hi)) {
-                    datum = third * (datumC + datumNNW + datumNNE);
-                } else if (HAS_NNW(hi) || HAS_NNE(hi)) {
-                    if (HAS_NNW(hi)) {
-                        datum = half * (datumC + datumNNW);
-                    } else {
-                        datum = half * (datumC + datumNNE);
-                    }
-                } else {
-                    datum = datumC;
-                }
-                this->vertex_push (this->cg->d_x[hi], this->cg->d_y[hi]+lr, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -308,19 +277,15 @@ namespace morph {
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
-                this->vertex_push (vnorm, this->vertexNormals);
-                this->vertex_push (vnorm, this->vertexNormals);
 
-                // Seven vertices with the same colour
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
+                // Five vertices with the same colour
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
 
-                // Define indices now to produce the 6 triangles in the hex
+                // Define indices now to produce the 4 triangles in the hex
                 this->indices.push_back (idx+1);
                 this->indices.push_back (idx);
                 this->indices.push_back (idx+2);
@@ -335,22 +300,16 @@ namespace morph {
 
                 this->indices.push_back (idx+4);
                 this->indices.push_back (idx);
-                this->indices.push_back (idx+5);
-
-                this->indices.push_back (idx+5);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+6);
-
-                this->indices.push_back (idx+6);
-                this->indices.push_back (idx);
                 this->indices.push_back (idx+1);
 
-                idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
             }
 
+#if 0
             // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
+            // Instead use cg->getExtents() and plot two triangles.
             if (this->zerogrid == true) {
-                for (unsigned int hi = 0; hi < nhex; ++hi) {
+                for (unsigned int hi = 0; hi < nrect; ++hi) {
 
                     // z position is always 0
                     datum = 0.0f;

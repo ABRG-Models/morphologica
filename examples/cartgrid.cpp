@@ -44,7 +44,7 @@ int main()
     v.addLabel ("This is a\nmorph::CartGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a HexGrid to show in the scene
-    morph::CartGrid cg(0.01, 0.01, 1.1, 1.5);
+    morph::CartGrid cg(0.01, 0.01, 1, 1);
     std::cout << "Number of pixels in grid:" << cg.num() << std::endl;
     cg.setBoundaryOnOuterEdge();
 
@@ -59,6 +59,7 @@ int main()
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
     morph::Vector<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v.shaderprog, v.tshaderprog, &cg, offset);
+    cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->finalize();
     unsigned int gridId = v.addVisualModel (cgv);
