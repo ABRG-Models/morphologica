@@ -35,13 +35,6 @@ for data visualization.
 An example morph::Visual program which shows a morph::HexGrid and some
 text labels.
 
-### convolve.cpp
-
-An example demonstrating the use of morph::HexGrid, its
-HexGrid::convolve function, the morph::Random class and a
-visualization of the input, the convolution kernel and the resulting
-output.
-
 ### fps.cpp
 
 A dynamic HexGrid program showing an animated surface
@@ -53,10 +46,6 @@ Example HexGridVisual
 ### cartgrid.cpp
 
 Example Cartesian grid (CartGridVisual)
-
-### logisticmap.cpp
-
-Computes the logistic map and displays with a morph::GraphVisual.
 
 ### quiver.cpp
 
@@ -95,11 +84,22 @@ This program is also conditially compiled into the exectuable
 pointrows_mesh, which renders the same points as a ball-and-stick
 mesh.
 
-## Computational model examples
+## Computational and scientific model examples
 
 These are examples of models that we've re-implemented from the
 literature. These examples make use of most of the basic facilities in
 morphologic; morph::Config, morph::HdfData and morph::Visual.
+
+### convolve.cpp
+
+An example demonstrating the use of morph::HexGrid, its
+HexGrid::convolve function, the morph::Random class and a
+visualization of the input, the convolution kernel and the resulting
+output.
+
+### logisticmap.cpp
+
+Computes the logistic map and displays with a morph::GraphVisual.
 
 ### Ermentrout2009
 
