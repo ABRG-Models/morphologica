@@ -33,15 +33,6 @@ int main (int argc, char** argv)
     v2.backgroundWhite();
     v2.lightingEffects();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        if (a1.size() > 0) {
-            holdVis = true;
-        }
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical windows for this program\n";
-
     try {
         // Set up data for the first Visual
         morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
@@ -61,7 +52,8 @@ int main (int argc, char** argv)
         quivs.push_back ({0.3,  -0.1,  0});
 
         // NB: Before adding VisualModel, and before creating a new QuiverVisual, we
-        // need the OpenGL context to be correct, so set it on the first Visual, v:
+        // need the OpenGL context to be correct, so set it on the first Visual, v with
+        // Visual::setCurrent():
         v.setCurrent();
         unsigned int visId = v.addVisualModel (new morph::QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::Cividis));
 
@@ -76,17 +68,10 @@ int main (int argc, char** argv)
         gv->finalize();
         v2.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
-        // no need to explicitly set contexts when rendering because the first thing the
-        // render call does is set context.
-        v.render();
-        v2.render();
-
-        if (holdVis == true) {
-            while (v.readyToFinish == false && v2.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                v.render();
-                v2.render();
-            }
+        while (v.readyToFinish == false && v2.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
+            v2.render();
         }
 
     } catch (const std::exception& e) {

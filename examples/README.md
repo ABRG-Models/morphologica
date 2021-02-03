@@ -61,3 +61,8 @@ An example three dimensional scatter plot of spheres using morph::ScatterVisual.
 ## graph1.cpp to graph4.cpp
 
 Various examples of the use of morph::GraphVisual.
+
+## twowindows.cpp
+
+An example to show how to create two morph::Visuals, and hence two
+windows, in your program.
