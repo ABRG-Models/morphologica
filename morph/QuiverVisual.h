@@ -33,7 +33,7 @@ namespace morph {
     {
     public:
         QuiverVisual(GLuint sp,
-                     std::vector<Vector<Flt>>* _coords,
+                     std::vector<Vector<float>>* _coords,
                      const Vector<float> _offset,
                      const std::vector<Vector<Flt,3>>* _quivers,
                      ColourMapType _cmt,
@@ -76,8 +76,9 @@ namespace morph {
             VBOint idx = 0;
 
             Vector<Flt> half = {0.5,0.5,0.5};
-            Vector<Flt> start, end, coords_i, vectorData_i, halfquiv;
-            std::array<Flt, 3> clr;
+            Vector<Flt> vectorData_i, halfquiv;
+            Vector<float> start, end, coords_i;
+            std::array<float, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
                 coords_i = (*this->dataCoords)[i];
                 vectorData_i = (*this->vectorData)[i];
@@ -111,7 +112,7 @@ namespace morph {
                 this->computeSphere (idx, coords_i, clr, lengths[i]/10.0);
                 // Compute a tip for the cone.
                 Vector<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
-                Vector<Flt> tip;
+                Vector<float> tip;
                 // Multiply vectorData_i by a fraction and that's the cone end. Note
                 // reuse of halfquiv variable
                 std::transform (frac.begin(), frac.end(),
