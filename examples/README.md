@@ -24,67 +24,69 @@ you to drag, Left-button down allows you to rotate. Press 't' to
 change the axis of rotations. Press 'h' and have a look at stdout to
 see some other key presses. 'x' exits. 'a' Resets the view.
 
-## Ermentrout2009
+## morph::Visual examples
 
-Contains an implementation of a Keller-Segel reaction diffusion system.
+These simple examples showcase the features in morphologica's
+morph::Visual code. They're a useful place to see what the code can do
+for data visualization.
 
-## visual.cpp
+### visual.cpp
 
 An example morph::Visual program which shows a morph::HexGrid and some
 text labels.
 
-## convolve.cpp
+### convolve.cpp
 
 An example demonstrating the use of morph::HexGrid, its
 HexGrid::convolve function, the morph::Random class and a
 visualization of the input, the convolution kernel and the resulting
 output.
 
-## fps.cpp
+### fps.cpp
 
 A dynamic HexGrid program showing an animated surface
 
-## hexgrid.cpp
+### hexgrid.cpp
 
 Example HexGridVisual
 
-## cartgrid.cpp
+### cartgrid.cpp
 
 Example Cartesian grid (CartGridVisual)
 
-## logisticmap.cpp
+### logisticmap.cpp
 
 Computes the logistic map and displays with a morph::GraphVisual.
 
-## quiver.cpp
+### quiver.cpp
 
 An example quiver plot using morph::QuiverVisual.
 
-## scatter.cpp
+### scatter.cpp
 
 An example three dimensional scatter plot of spheres using morph::ScatterVisual.
 
-## graph1.cpp to graph4.cpp
+### graph1.cpp to graph4.cpp
 
 Various examples of the use of morph::GraphVisual.
 
-## twowindows.cpp
+### twowindows.cpp
 
 An example to show how to create two morph::Visuals, and hence two
 windows, in your program.
 
-## rods.cpp
+### rods.cpp
 
 An example of the very simple VisualModel, morph::RodVisual, which
 simply draws a polygonal rod. You can specify how many sides, so this
 can be used to draw rods of square section, or rods which appear to be
 cylindrical.
 
-## quads.cpp
+### quads.cpp
 
 An example of morph::QuadsVisual.
 
-## pointrows.cpp
+### pointrows.cpp
 
 An example of morph::PointRowsVisual, which is used to render a
 surface made of adjacent rows of points.
@@ -92,3 +94,13 @@ surface made of adjacent rows of points.
 This program is also conditially compiled into the exectuable
 pointrows_mesh, which renders the same points as a ball-and-stick
 mesh.
+
+## Computational model examples
+
+These are examples of models that we've re-implemented from the
+literature. These examples make use of most of the basic facilities in
+morphologic; morph::Config, morph::HdfData and morph::Visual.
+
+### Ermentrout2009
+
+Contains an implementation of a Keller-Segel reaction diffusion system.
