@@ -22,13 +22,6 @@ int main (int argc, char** argv)
     v.backgroundWhite();
     v.lightingEffects();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        holdVis = a1.empty() ? false : true;
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
-
     try {
         morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
 
@@ -100,11 +93,9 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         v.render();
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                v.render();
-            }
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
 
     } catch (const std::exception& e) {

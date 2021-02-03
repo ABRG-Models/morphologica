@@ -57,3 +57,7 @@ An example quiver plot using morph::QuiverVisual.
 ## scatter.cpp
 
 An example three dimensional scatter plot of spheres using morph::ScatterVisual.
+
+## graph1.cpp to graph4.cpp
+
+Various examples of the use of morph::GraphVisual.

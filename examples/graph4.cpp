@@ -22,13 +22,6 @@ int main (int argc, char** argv)
     v.backgroundWhite();
     v.lightingEffects();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        holdVis = a1.empty() ? false : true;
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
-
     try {
         morph::vVector<float> absc =  {-1.0, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0};
         morph::vVector<float> data = absc.pow(3);
@@ -55,19 +48,17 @@ int main (int argc, char** argv)
         size_t rcount = 0;
         size_t idx = 0;
         v.render();
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                // Slowly update the content of the graph
-                if (rcount++ % 20 == 0 && idx < absc.size()) {
-                    // Append to dataset 0
-                    gv->append (absc[idx], data[idx], 0);
-                    // Append to dataset 1
-                    gv->append (absc[idx], data2[idx], 1);
-                    ++idx;
-                }
-                v.render();
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            // Slowly update the content of the graph
+            if (rcount++ % 20 == 0 && idx < absc.size()) {
+                // Append to dataset 0
+                gv->append (absc[idx], data[idx], 0);
+                // Append to dataset 1
+                gv->append (absc[idx], data2[idx], 1);
+                ++idx;
             }
+            v.render();
         }
 
     } catch (const std::exception& e) {

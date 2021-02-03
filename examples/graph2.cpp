@@ -22,13 +22,6 @@ int main (int argc, char** argv)
     v.backgroundWhite();
     v.lightingEffects();
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        holdVis = a1.empty() ? false : true;
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
-
     try {
         morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
         morph::vVector<float> data = absc.pow(3);
@@ -79,17 +72,15 @@ int main (int argc, char** argv)
         float addn = 0.0f;
         size_t rcount = 0;
         v.render();
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                // Don't update this fast. That's crazy!
-                if ((rcount++)%20 == 0) {
-                    gv->update (absc, absc.pow(2)*addn, 1);
-                    addn += 0.2f;
-                }
-                // want gv->update (datasets); // to update all at once. THEN I'm done.
-                v.render();
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            // Don't update this fast. That's crazy!
+            if ((rcount++)%20 == 0) {
+                gv->update (absc, absc.pow(2)*addn, 1);
+                addn += 0.2f;
             }
+            // want gv->update (datasets); // to update all at once. THEN I'm done.
+            v.render();
         }
 
     } catch (const std::exception& e) {
