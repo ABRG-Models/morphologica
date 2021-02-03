@@ -27,15 +27,6 @@ int main (int argc, char** argv)
     // Switch on a mix of diffuse/ambient lighting
     v.lightingEffects(true);
 
-    bool holdVis = false;
-    if (argc > 1) {
-        std::string a1(argv[1]);
-        if (a1.size() > 0) {
-            holdVis = true;
-        }
-    }
-    std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
-
     try {
         morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
@@ -57,11 +48,9 @@ int main (int argc, char** argv)
         std::cout << "Added RodVisual with visId " << visId << std::endl;
 #endif
         v.render();
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                v.render();
-            }
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
 
     } catch (const std::exception& e) {

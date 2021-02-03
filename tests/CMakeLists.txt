@@ -178,17 +178,8 @@ if(${glfw3_FOUND})
   add_executable(testbighexgrid testbighexgrid.cpp)
   target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
-  add_executable(testVisQuads testVisQuads.cpp)
-  target_link_libraries(testVisQuads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
-  add_executable(testVisPointRows testVisPointRows.cpp)
-  target_link_libraries(testVisPointRows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
   target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
-  add_executable(testVisRod testVisRod.cpp)
-  target_link_libraries(testVisRod ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
   target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)

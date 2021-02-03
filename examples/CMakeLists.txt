@@ -46,3 +46,16 @@ target_link_libraries(graph4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPAC
 
 add_executable(twowindows twowindows.cpp)
 target_link_libraries(twowindows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(rod rod.cpp)
+target_link_libraries(rod ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(quads quads.cpp)
+target_link_libraries(quads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(pointrows pointrows.cpp)
+target_link_libraries(pointrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(pointrows_mesh pointrows.cpp)
+target_compile_definitions(pointrows_mesh PUBLIC MESH=1)
+target_link_libraries(pointrows_mesh ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)

@@ -26,15 +26,6 @@ int main (int argc, char** argv)
     v.showCoordArrows = true;
     v.lightingEffects (true);
 
-    bool holdVis = false;
-    if (argc > 1) {
-        string a1(argv[1]);
-        if (a1.size() > 0) {
-            holdVis = true;
-        }
-    }
-    cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
-
     try {
         morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::Scale<float> scale;
@@ -79,11 +70,9 @@ int main (int argc, char** argv)
 
         v.render();
 
-        if (holdVis == true) {
-            while (v.readyToFinish == false) {
-                glfwWaitEventsTimeout (0.018);
-                v.render();
-            }
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
 
     } catch (const exception& e) {

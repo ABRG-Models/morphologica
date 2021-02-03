@@ -66,3 +66,23 @@ Various examples of the use of morph::GraphVisual.
 
 An example to show how to create two morph::Visuals, and hence two
 windows, in your program.
+
+## rods.cpp
+
+An example of the very simple VisualModel, morph::RodVisual, which
+simply draws a polygonal rod. You can specify how many sides, so this
+can be used to draw rods of square section, or rods which appear to be
+cylindrical.
+
+## quads.cpp
+
+An example of morph::QuadsVisual.
+
+## pointrows.cpp
+
+An example of morph::PointRowsVisual, which is used to render a
+surface made of adjacent rows of points.
+
+This program is also conditially compiled into the exectuable
+pointrows_mesh, which renders the same points as a ball-and-stick
+mesh.
