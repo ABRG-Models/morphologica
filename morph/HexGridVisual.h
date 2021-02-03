@@ -659,6 +659,15 @@ namespace morph {
         //! Individual colour values for plotting
         std::vector<float> R, G, B;
 
+        HexGridVisualManual(GLuint sp, GLuint tsp, const morph::HexGrid* _hg, const morph::Vector<float> _offset)
+            : morph::HexGridVisual<T>(sp, tsp, _hg, _offset)
+        {
+            R.resize (this->hg->num(), 0.0f);
+            G.resize (this->hg->num(), 0.0f);
+            B.resize (this->hg->num(), 0.0f);
+        };
+
+#ifdef HGV_DEPRECATED
         HexGridVisualManual(GLuint sp, GLuint tsp,
                             const morph::HexGrid* _hg,
                             const morph::Vector<float> _offset,
@@ -672,6 +681,7 @@ namespace morph {
             G.resize (this->hg->num(), 0.0f);
             B.resize (this->hg->num(), 0.0f);
         };
+#endif
 
     protected:
         //! In this manual-colour-setting HexGridVisual we override this:
