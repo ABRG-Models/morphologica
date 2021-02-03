@@ -146,6 +146,15 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object.
         virtual void initializeVertices (void) = 0;
 
+        //! A function to call initialiseVertices and postVertexInit after any necessary
+        //! attributes have been set (see, for example, setting the colour maps up in
+        //! VisualDataModel).
+        void finalize()
+        {
+            this->initializeVertices();
+            this->postVertexInit();
+        }
+
         //! Render the VisualModel
         virtual void render (void)
         {

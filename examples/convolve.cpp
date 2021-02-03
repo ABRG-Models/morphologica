@@ -71,26 +71,39 @@ int main()
 
     // Visualize the 3 maps
     morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
-    unsigned int gridId = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
-    v.getVisualModel(gridId)->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    hgv->setScalarData (&data);
+    hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    hgv->finalize();
+    unsigned int gridId = v.addVisualModel (hgv);
 
     offset[1] += 0.6f;
-    unsigned int gridId1 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &kernel, offset, &kerneldata));
-    v.getVisualModel(gridId1)->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
+    morph::HexGridVisual<float>* kgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &kernel, offset);
+    kgv->setScalarData (&kerneldata);
+    kgv->finalize();
+    unsigned int gridId1 = v.addVisualModel (kgv);
     std::cout << "gridId1 is " << gridId1 << std::endl;
+    // Labels can be added after finalize() and after addVisualModel, and you can use
+    // the gridId to get the pointer as here:
+    v.getVisualModel(gridId1)->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
+
     offset[1] -= 0.6f;
     offset[0] += 1.0f;
-    unsigned int gridId2 = v.addVisualModel (new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &convolved));
-    v.getVisualModel(gridId2)->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    morph::HexGridVisual<float>* rgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    rgv->setScalarData (&convolved);
+    rgv->finalize();
+    rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    v.addVisualModel (rgv);
 
     // Demonstrate how to divide existing scale by 10:
     float newGrad = static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
     // Set this in a new zscale object:
     morph::Scale<float> zscale;
     zscale.setParams (newGrad, 0);
-    // And set it back into the visual model:
-    static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->setZScale (zscale);
-    static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId2))->setZScale (zscale);
+    // And set it back into the visual model. Here's the 'grid id' way:
+    static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->updateZScale (zscale);
+    // But if you already have the pointer to hand, this is cleaner:
+    rgv->updateZScale (zscale);
 
     while (v.readyToFinish == false) {
         glfwWaitEventsTimeout (0.018);

@@ -140,39 +140,35 @@ int main (int argc, char **argv)
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
-    // Z position scaling - how hilly/bumpy the visual will be.
-    morph::Scale<FLT, float> zscale; zscale.setParams (_m/10.0f, _c/10.0f);
-    // The second is the colour scaling.
     morph::Scale<FLT, float> cscale; cscale.setParams (_m, _c);
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * RD.hg->width();
-    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (plt.shaderprog,
-                                                                     plt.tshaderprog,
-                                                                     RD.hg,
-                                                                     spatOff,
-                                                                     &RD.n[0],
-                                                                     zscale,
-                                                                     cscale,
-                                                                     morph::ColourMapType::Inferno);
+    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (plt.shaderprog, plt.tshaderprog, RD.hg, spatOff);
+    hgv1->setScalarData (&RD.n[0]);
+    // You can directly set VisualDataModel::zScale and ::colourScale:
+    hgv1->zScale.setParams (_m/10.0f, _c/10.0f);
+    // ...or use setters to copy one in:
+    hgv1->setCScale (cscale);
+    hgv1->cm.setType (morph::ColourMapType::Inferno);
     hgv1->hexVisMode = morph::HexVisMode::Triangles;
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
+    hgv1->finalize();
     unsigned int n_idx = plt.addVisualModel (hgv1);
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
-    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (plt.shaderprog,
-                                                                     plt.tshaderprog,
-                                                                     RD.hg,
-                                                                     spatOff,
-                                                                     &RD.c[0],
-                                                                     zscale,
-                                                                     cscale,
-                                                                     morph::ColourMapType::Inferno);
+    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (plt.shaderprog, plt.tshaderprog, RD.hg, spatOff);
+    hgv2->setScalarData (&RD.c[0]);
+    hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
+    hgv2->setCScale (cscale);
+    hgv2->cm.setType (morph::ColourMapType::Inferno);
+    hgv2->hexVisMode = morph::HexVisMode::Triangles;
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->hexVisMode = morph::HexVisMode::Triangles;
+    hgv2->finalize();
     unsigned int c_idx = plt.addVisualModel (hgv2);
 
     // Set up a 2D graph with morph::GraphVisual

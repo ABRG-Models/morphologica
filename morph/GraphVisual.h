@@ -392,13 +392,6 @@ namespace morph {
             }
         }
 
-        //! Gets the graph ready for display after client setup of public attributes is done.
-        void finalize()
-        {
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
         //! Set the graph size, in model units.
         void setsize (float _width, float _height)
         {

@@ -65,33 +65,12 @@ namespace morph {
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
             this->cg = _cg;
-            // Note: CartGridVisual::finalize should be called before rendering
-        }
-
-        // Setters for features. Call these after constructor, but before finalize()
-        void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
-
-        void setColourScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
-
-        void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
-
-        void setColourMap (ColourMapType _cmt, const float _hue = 0.0f)
-        {
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-        }
-
-        void setZeroGrid (const bool _zerogrid) { this->zerogrid = _zerogrid; }
-
-        void finalize()
-        {
-            this->initializeVertices();
-            this->postVertexInit();
+            // Note: VisualModel::finalize() should be called before rendering
         }
 
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             switch (this->cartVisMode) {
             case CartVisMode::Triangles:
@@ -111,7 +90,7 @@ namespace morph {
         // Initialize vertex buffer objects and vertex array object.
 
         //! Initialize as a minimal, triangled surface
-        void initializeVerticesTris (void)
+        void initializeVerticesTris()
         {
             unsigned int nrect = this->cg->num();
 
@@ -149,7 +128,7 @@ namespace morph {
         //! Initialize as a rectangle made of 4 triangles for each rect, with z position
         //! of each of the 4 outer edges of the triangles interpolated, but a single colour
         //! for each rectangle. Gives a smooth surface in which you can see the pixels.
-        void initializeVerticesRectsInterpolated (void)
+        void initializeVerticesRectsInterpolated()
         {
             float dx = this->cg->getd();
             float hx = 0.5f * dx;

@@ -40,24 +40,33 @@ namespace morph {
         void clearAutoscaleColour() { this->colourScale.autoscaled = false; }
         void clearAutoscaleVector() { this->vectorScale.autoscaled = false; }
 
-        void setZScale (const Scale<T, float>& zscale)
+        void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
+        void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
+        void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
+
+        void updateZScale (const Scale<T, float>& zscale)
         {
             this->zScale = zscale;
             this->reinit();
         }
-        void setCScale (const Scale<T, float>& cscale)
+
+        void updateCScale (const Scale<T, float>& cscale)
         {
             this->colourScale = cscale;
             this->reinit();
         }
+
         void setVectorScale (const Scale<Vector<T>>& vscale)
         {
             this->vectorScale = vscale;
             this->reinit();
         }
 
-        // Methods to update the scalarData, vectorData, dataCoords and/or scaling and
-        // re-compute the vertices.
+        void setColourMap (ColourMapType _cmt, const float _hue = 0.0f)
+        {
+            this->cm.setHue (_hue);
+            this->cm.setType (_cmt);
+        }
 
         //! Update the scalar data
         void updateData (const std::vector<T>* _data)
@@ -159,6 +168,8 @@ namespace morph {
             this->initializeVertices();
             this->reinit_buffers();
         }
+
+        void setZeroGrid (const bool _zerogrid) { this->zerogrid = _zerogrid; }
 
         //! All data models use a a colour map. Change the type/hue of this colour map
         //! object to generate different types of map.

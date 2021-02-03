@@ -66,6 +66,24 @@ namespace morph {
     class HexGridVisual : public VisualDataModel<T>
     {
     public:
+        //! Simplest constructor. Use this in all new code!
+        HexGridVisual(GLuint sp, GLuint tsp, const HexGrid* _hg, const Vector<float> _offset)
+        {
+            this->shaderprog = sp;
+            this->tshaderprog = tsp;
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+            this->hg = _hg;
+        }
+
+#define HGV_DEPRECATED 1
+        // All of the following constructors are deprecated in favour of the simple
+        // constructor above. After construction with the above, Colour, z scales and
+        // data should be set with setScalarData() setCScale() etc, then
+        // VisualModel::finalize() should be called.
+#ifdef HGV_DEPRECATED
         //! Constructor which does not set colour map
         HexGridVisual(GLuint sp, GLuint tsp,
                       const HexGrid* _hg,
@@ -239,6 +257,7 @@ namespace morph {
             this->initializeVertices();
             this->postVertexInit();
         }
+#endif // HGV_DEPRECATED
 
         //! Hexes to mark out. There are hex iterators, that I can do if (markedHexes.count(hi)) {}
         std::set<unsigned int> markedHexes;
@@ -249,7 +268,7 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             switch (this->hexVisMode) {
             case HexVisMode::Triangles:
@@ -270,7 +289,7 @@ namespace morph {
 
         //! Initialize as triangled. Gives a smooth surface with much
         //! less compute than initializeVerticesHexesInterpolated.
-        void initializeVerticesTris (void)
+        void initializeVerticesTris()
         {
             unsigned int nhex = this->hg->num();
 
@@ -316,7 +335,7 @@ namespace morph {
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
-        void initializeVerticesHexesInterpolated (void)
+        void initializeVerticesHexesInterpolated()
         {
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
@@ -608,7 +627,7 @@ namespace morph {
 
         //! Initialize as hexes, with a step quad between each
         //! hex. Might look cool. Writeme.
-        void initializeVerticesHexesStepped (void) {}
+        void initializeVerticesHexesStepped() {}
 
         //! How to render the hexes. Triangles are faster, HexInterp allows you to see
         //! the scale of the hexes in your sim
