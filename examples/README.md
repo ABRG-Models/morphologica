@@ -32,7 +32,7 @@ morphologic; morph::Config, morph::HdfData and morph::Visual.
 
 ### convolve.cpp
 
-![Screenshot of the convolve program](https://github.com/ABRG-Models/morphologica/blob/main/convolve.png?raw=true)
+![Screenshot of the convolve program](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/convolve.png?raw=true)
 
 An example demonstrating the use of morph::HexGrid, its
 HexGrid::convolve function, the morph::Random class and a
