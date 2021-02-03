@@ -24,6 +24,27 @@ you to drag, Left-button down allows you to rotate. Press 't' to
 change the axis of rotations. Press 'h' and have a look at stdout to
 see some other key presses. 'x' exits. 'a' Resets the view.
 
+## Computational and scientific model examples
+
+These are examples of models that we've re-implemented from the
+literature. These examples make use of most of the basic facilities in
+morphologic; morph::Config, morph::HdfData and morph::Visual.
+
+### convolve.cpp
+
+An example demonstrating the use of morph::HexGrid, its
+HexGrid::convolve function, the morph::Random class and a
+visualization of the input, the convolution kernel and the resulting
+output.
+
+### logisticmap.cpp
+
+Computes the logistic map and displays with a morph::GraphVisual.
+
+### Ermentrout2009
+
+Contains an implementation of a Keller-Segel reaction diffusion system.
+
 ## morph::Visual examples
 
 These simple examples showcase the features in morphologica's
@@ -83,24 +104,3 @@ surface made of adjacent rows of points.
 This program is also conditially compiled into the exectuable
 pointrows_mesh, which renders the same points as a ball-and-stick
 mesh.
-
-## Computational and scientific model examples
-
-These are examples of models that we've re-implemented from the
-literature. These examples make use of most of the basic facilities in
-morphologic; morph::Config, morph::HdfData and morph::Visual.
-
-### convolve.cpp
-
-An example demonstrating the use of morph::HexGrid, its
-HexGrid::convolve function, the morph::Random class and a
-visualization of the input, the convolution kernel and the resulting
-output.
-
-### logisticmap.cpp
-
-Computes the logistic map and displays with a morph::GraphVisual.
-
-### Ermentrout2009
-
-Contains an implementation of a Keller-Segel reaction diffusion system.
