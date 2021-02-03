@@ -89,7 +89,14 @@ morphologica code is enclosed in the **morph** namespace. You can see
 the doxygen-generated code documentation at
 https://codedocs.xyz/ABRG-Models/morphologica/
 
-For full, compilable, standalone examples of the code, see the standalone_examples/ subdirectory.
+For example programs which are compiled when you do the standard
+cmake-driven build of morphologica, see both the tests/ subdirectory
+and the examples/ subdirectory. The readme in examples/ has some nice
+screenshots.
+
+For full, compilable, standalone examples of the code, see the
+standalone_examples/ subdirectory. Use these as templates for creating
+your own projects which use morphologica library code.
 
 See README.coding.md for a quick-start guide to the main classes.
 
