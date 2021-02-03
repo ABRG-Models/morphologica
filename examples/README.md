@@ -32,16 +32,18 @@ morphologic; morph::Config, morph::HdfData and morph::Visual.
 
 ### convolve.cpp
 
-![Screenshot of the convolve program](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/convolve.png?raw=true)
-
 An example demonstrating the use of morph::HexGrid, its
 HexGrid::convolve function, the morph::Random class and a
 visualization of the input, the convolution kernel and the resulting
 output.
 
+![Screenshot of the convolve program](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/convolve.png?raw=true)
+
 ### logisticmap.cpp
 
-Computes the logistic map and displays with a morph::GraphVisual.
+Computes the logistic map and displays with a morph::GraphVisual, using diamond shaped markers.
+
+![Screenshot of the logisticmap program](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/logisticmap.png?raw=true)
 
 ### Ermentrout2009
 
