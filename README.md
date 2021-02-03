@@ -43,6 +43,10 @@ as well as saving any final data, we use morph::Config to save out a
 information which morph::Config can extract so that we could find the
 exact version of the simulation for future reproducion of the result.
 
+![Shows a variety of visualisations created with morphologica](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/examples.png?raw=true)
+
+*A selection of visualisations made with morphologica. **A** 2D graphs. **B** A self-organising map simulation (orientation preference maps). **C** Three dimensional quiver plot. **D** gene driven reaction diffusion model. **E** Debugging a large model.*
+
 Although it need not be incorporated into your actual simulation,
 morphologica does also provide classes that you might find
 useful. Examples include:
