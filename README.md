@@ -1,5 +1,7 @@
 # morphologica
 
+![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
+
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
