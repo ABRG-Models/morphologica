@@ -240,6 +240,13 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! Hexes to mark out. There are hex iterators, that I can do if (markedHexes.count(hi)) {}
+        std::set<unsigned int> markedHexes;
+
+        //! Mark a hex at location r,g,b=0 - it should be outlined with a ring, or
+        //! something, so that it is visible.
+        void markHex (unsigned int hi) { this->markedHexes.insert(hi); }
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices (void)
@@ -272,10 +279,16 @@ namespace morph {
             this->dcolour.resize (this->scalarData->size());
             this->colourScale.transform (*(this->scalarData), dcolour);
 
+            std::array<float, 3> blkclr = {0,0,0};
+
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 std::array<float, 3> clr = this->setColour (hi);
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], dcopy[hi], this->vertexPositions);
-                this->vertex_push (clr, this->vertexColors);
+                if (this->markedHexes.count(hi)) {
+                    this->vertex_push (blkclr, this->vertexColors);
+                } else {
+                    this->vertex_push (clr, this->vertexColors);
+                }
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
@@ -344,6 +357,7 @@ namespace morph {
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
                 std::array<float, 3> clr = this->setColour (hi);
+                std::array<float, 3> blkclr = {0,0,0};
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
                 this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
@@ -455,13 +469,27 @@ namespace morph {
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
 
-                // Seven vertices with the same colour
+                // Usually seven vertices with the same colour, but if the hex is
+                // marked, then three of the vertices are given the colour black,
+                // marking the hex out visually.
                 this->vertex_push (clr, this->vertexColors);
+                if (this->markedHexes.count(hi)) {
+                    this->vertex_push (blkclr, this->vertexColors);
+                } else {
+                    this->vertex_push (clr, this->vertexColors);
+                }
                 this->vertex_push (clr, this->vertexColors);
+                if (this->markedHexes.count(hi)) {
+                    this->vertex_push (blkclr, this->vertexColors);
+                } else {
+                    this->vertex_push (clr, this->vertexColors);
+                }
                 this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
-                this->vertex_push (clr, this->vertexColors);
+                if (this->markedHexes.count(hi)) {
+                    this->vertex_push (blkclr, this->vertexColors);
+                } else {
+                    this->vertex_push (clr, this->vertexColors);
+                }
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 6 triangles in the hex
