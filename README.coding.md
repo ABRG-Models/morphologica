@@ -47,7 +47,7 @@ The code to read this is easy to use:
     // Each type has a named method for access. Here's unsigned int:
     const unsigned int logevery = conf.getUInt ("logevery", 1000);
     // And a string:
-    string logpath = conf.getString ("logpath", "fromfilename");
+    std::string logpath = conf.getString ("logpath", "fromfilename");
 }
 ```
 At the end of your program, it's a good idea to write out a copy of
@@ -58,12 +58,12 @@ information about the simulation run:
 {
     // Add information into the existing morph::Config object:
     conf.set ("float_width", (unsigned int)sizeof(FLT)); // FLT is a template param
-    string tnow = morph::Tools::timeNow();
+    std::string tnow = morph::Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow);
     if (argc > 0) { conf.set("argv0", argv[0]); }
     if (argc > 1) { conf.set("argv1", argv[1]); }
     conf.insertGitInfo ("sim/"); // checks 'sim' dir for any post-commit changes
-    const string paramsCopy = logpath + "/params.json";
+    const std::string paramsCopy = logpath + "/params.json";
     conf.write (paramsCopy);
     if (conf.ready == false) { /* handle error */ }
 }
