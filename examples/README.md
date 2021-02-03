@@ -49,6 +49,14 @@ Computes the logistic map and displays with a morph::GraphVisual, using diamond 
 
 Contains an implementation of a Keller-Segel reaction diffusion system.
 
+**From the base of morphologica**, run like this (the program needs to access the file ./boundaries/whiskerbarrels.svg):
+
+```bash
+/build/examples/Ermentrout2009/erm ./examples/Ermentrout2009/configs/erm.json
+```
+
+![Screenshot of the erm.cpp program, showing a bullseye mode](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/erm.png?raw=true)
+
 ## morph::Visual examples
 
 These simple examples showcase the features in morphologica's
