@@ -1,15 +1,15 @@
 /*
  * Visualize a test surface
  */
-#include "morph/Visual.h"
-#include "morph/ColourMap.h"
+#include <morph/Visual.h>
+#include <morph/ColourMap.h>
 #ifdef MESH
-#include "morph/PointRowsMeshVisual.h"
+#include <morph/PointRowsMeshVisual.h>
 #else
-#include "morph/PointRowsVisual.h"
+#include <morph/PointRowsVisual.h>
 #endif
-#include "morph/Scale.h"
-#include "morph/Vector.h"
+#include <morph/Scale.h>
+#include <morph/Vector.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -18,8 +18,11 @@
 int main (int argc, char** argv)
 {
     int rtn = -1;
-
-    morph::Visual v(1024, 768, "morph::PointRows(Mesh)", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+#ifdef MESH
+    morph::Visual v(1024, 768, "morph::PointRowsMeshVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+#else
+    morph::Visual v(1024, 768, "morph::PointRowsVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
+#endif
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.lightingEffects (true);

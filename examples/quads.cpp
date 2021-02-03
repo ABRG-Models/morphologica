@@ -1,14 +1,14 @@
 /*
  * Visualize a test surface
  */
-#include "morph/Visual.h"
+#include <morph/Visual.h>
 #ifdef MESH
-# include "morph/QuadsMeshVisual.h"
+# include <morph/QuadsMeshVisual.h>
 #else
-# include "morph/QuadsVisual.h"
+# include <morph/QuadsVisual.h>
 #endif
-#include "morph/Scale.h"
-#include "morph/Vector.h"
+#include <morph/Scale.h>
+#include <morph/Vector.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>

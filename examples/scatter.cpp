@@ -1,11 +1,11 @@
 /*
  * Visualize a test surface
  */
-#include "morph/Visual.h"
-#include "morph/ColourMap.h"
-#include "morph/ScatterVisual.h"
-#include "morph/Scale.h"
-#include "morph/Vector.h"
+#include <morph/Visual.h>
+#include <morph/ColourMap.h>
+#include <morph/ScatterVisual.h>
+#include <morph/Scale.h>
+#include <morph/Vector.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
