@@ -18,6 +18,12 @@ cd ..
 ```
 You'll find the example program binaries in `build/examples`.
 
+The examples are almost all built on the morph::Visual environment,
+which means you can interact with the mouse. Right-button down allows
+you to drag, Left-button down allows you to rotate. Press 't' to
+change the axis of rotations. Press 'h' and have a look at stdout to
+see some other key presses. 'x' exits. 'a' Resets the view.
+
 ## Ermentrout2009
 
 Contains an implementation of a Keller-Segel reaction diffusion system.
