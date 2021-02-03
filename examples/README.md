@@ -68,29 +68,45 @@ for data visualization.
 An example morph::Visual program which shows a morph::HexGrid and some
 text labels.
 
+![Screenshot of a morph::Visual scene](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/visual.png?raw=true)
+
 ### fps.cpp
 
 A dynamic HexGrid program showing an animated surface
+
+![Screenshot of the animated hexgrid program, fps.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/fps.png?raw=true)
 
 ### hexgrid.cpp
 
 Example HexGridVisual
 
+![Screenshot of hexgrid.cpp showing a sinusoidal landscape in the jet colour map](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/hexgrid.png?raw=true)
+
 ### cartgrid.cpp
 
 Example Cartesian grid (CartGridVisual)
+
+![Screenshot of cartgrid.cpp showing a sinusoidal landscape in the jet colour map](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/cartgrid.png?raw=true)
 
 ### quiver.cpp
 
 An example quiver plot using morph::QuiverVisual.
 
+![Screenshot of a 3D quiver plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/quiver.png?raw=true)
+
 ### scatter.cpp
 
-An example three dimensional scatter plot of spheres using morph::ScatterVisual.
+An example three dimensional scatter plot of spheres using
+morph::ScatterVisual. Note that in this example, the coordinate arrows
+are set within the scene (and so move with the model).
+
+![Screenshot of a 3D scatter plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/scatter.png?raw=true)
 
 ### graph1.cpp to graph4.cpp
 
 Various examples of the use of morph::GraphVisual.
+
+![Screenshot of graph3.cpp, showing some example graphs](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/graph3.png?raw=true)
 
 ### twowindows.cpp
 
