@@ -2,27 +2,20 @@
  * Visualize a test surface
  */
 #include "morph/Visual.h"
-using morph::Visual;
 #include "morph/ColourMap.h"
-using morph::ColourMapType;
 #include "morph/ScatterVisual.h"
-using morph::ScatterVisual;
 #include "morph/Scale.h"
-using morph::Scale;
 #include "morph/Vector.h"
-using morph::Vector;
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <array>
 
-using namespace std;
-
 int main (int argc, char** argv)
 {
     int rtn = -1;
 
-    Visual v(1024, 768, "morph::ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);
+    morph::Visual v(1024, 768, "morph::ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);
     v.zNear = 0.001;
     v.showCoordArrows = true;
     v.coordArrowsInScene = true;
@@ -32,12 +25,12 @@ int main (int argc, char** argv)
     v.lightingEffects();
 
     try {
-        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        Scale<float> scale;
+        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
         std::vector<morph::Vector<float, 3>> points(20*20);
-        vector<float> data(20*20);
+        std::vector<float> data(20*20);
         size_t k = 0;
         for (int i = -10; i < 10; ++i) {
             for (int j = -10; j < 10; ++j) {
@@ -51,9 +44,9 @@ int main (int argc, char** argv)
             }
         }
 
-        unsigned int visId = v.addVisualModel (new ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, ColourMapType::Plasma));
+        unsigned int visId = v.addVisualModel (new morph::ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, morph::ColourMapType::Plasma));
 
-        cout << "Added Visual with visId " << visId << endl;
+        std::cout << "Added Visual with visId " << visId << std::endl;
 
         v.render();
         while (v.readyToFinish == false) {
@@ -61,8 +54,8 @@ int main (int argc, char** argv)
             v.render();
         }
 
-    } catch (const exception& e) {
-        cerr << "Caught exception: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Caught exception: " << e.what() << std::endl;
         rtn = -1;
     }
 

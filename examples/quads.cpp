@@ -2,7 +2,6 @@
  * Visualize a test surface
  */
 #include "morph/Visual.h"
-//#define MESH 1
 #ifdef MESH
 # include "morph/QuadsMeshVisual.h"
 #else
@@ -14,8 +13,6 @@
 #include <fstream>
 #include <cmath>
 #include <array>
-
-using namespace std;
 
 int main (int argc, char** argv)
 {
@@ -31,34 +28,34 @@ int main (int argc, char** argv)
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<array<float, 12>> surfBoxes;
+        std::vector<std::array<float, 12>> surfBoxes;
 
-        array<float,12> box1 = { 0,0,0,
-                                 0.5,1,0.5,
-                                 1.5,1,0.5,
-                                 2,0,0 };
+        std::array<float,12> box1 = { 0,0,0,
+                                      0.5,1,0.5,
+                                      1.5,1,0.5,
+                                      2,0,0 };
 
-        array<float,12> box2 = { 0.5,1,0.5,
-                                 0,2,0,
-                                 2,2,0,
-                                 1.5,1,0.5 };
+        std::array<float,12> box2 = { 0.5,1,0.5,
+                                      0,2,0,
+                                      2,2,0,
+                                      1.5,1,0.5 };
 
-        array<float,12> box3 = { 4,0,0,
-                                 3.5,1,0.5,
-                                 5,1,0.5,
-                                 4.5,0,0 };
+        std::array<float,12> box3 = { 4,0,0,
+                                      3.5,1,0.5,
+                                      5,1,0.5,
+                                      4.5,0,0 };
 
-        array<float,12> box4 = { 3.5,1,0.5,
-                                 4,2,0,
-                                 4.5,2,0,
-                                 5,1,0.5};
+        std::array<float,12> box4 = { 3.5,1,0.5,
+                                      4,2,0,
+                                      4.5,2,0,
+                                      5,1,0.5};
 
         surfBoxes.push_back (box1);
         surfBoxes.push_back (box2);
         surfBoxes.push_back (box3);
         surfBoxes.push_back (box4);
 
-        vector<float> data = {0.1, 0.2, 0.5, 0.95};
+        std::vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
 #ifdef MESH
         unsigned int visId = v.addVisualModel (new morph::QuadsMeshVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
@@ -66,20 +63,17 @@ int main (int argc, char** argv)
         unsigned int visId = v.addVisualModel (new morph::QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome));
 #endif
 
-        cout << "Added Visual with visId " << visId << endl;
-
-        v.render();
+        std::cout << "Added Visual with visId " << visId << std::endl;
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);
             v.render();
         }
 
-    } catch (const exception& e) {
-        cerr << "Caught exception: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Caught exception: " << e.what() << std::endl;
         rtn = -1;
     }
-
 
     return rtn;
 }
