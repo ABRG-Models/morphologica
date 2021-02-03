@@ -17,7 +17,7 @@ int main()
 {
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, ?
-    morph::Visual v(1600, 1000, "morph::Visual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
@@ -31,7 +31,7 @@ int main()
     // The coordinate arrows can be hidden
     v.showCoordArrows = true;
     // The title can be hidden
-    v.showTitle = true;
+    v.showTitle = false;
     // The coord arrows can be displayed within the scene (rather than in, say, the corner)
     v.coordArrowsInScene = false;
     // You can set the background (white, black, or any other colour)
@@ -39,8 +39,6 @@ int main()
     // You can switch on the "lighting shader" which puts diffuse light into the scene
     v.lightingEffects();
     // Add some text labels to the scene
-    v.addLabel ("Each object is derived from morph::VisualModel", {0.005f, -0.02f, 0.0f});
-    v.addLabel ("This is a morph::CoordArrows object", {0.03f, -0.23f, 0.0f});
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a HexGrid to show in the scene
