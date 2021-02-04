@@ -3,6 +3,9 @@
 # Land, PLOS Comp Biol 2009
 add_subdirectory(Ermentrout2009)
 
+# The Lotka-Volterra population model. See Pau, 1992, p654.
+add_subdirectory(LotkaVolterra)
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
@@ -63,3 +66,7 @@ target_link_libraries(pointrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LA
 add_executable(pointrows_mesh pointrows.cpp)
 target_compile_definitions(pointrows_mesh PUBLIC MESH=1)
 target_link_libraries(pointrows_mesh ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(rosenbrock rosenbrock.cpp)
+target_compile_definitions(rosenbrock PUBLIC FLT=float)
+target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
