@@ -55,7 +55,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
 endif()
 
 find_package(OpenMP)
-if(OpenMP_FOUND)
+if(OpenMP_CXX_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 

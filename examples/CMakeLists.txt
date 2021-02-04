@@ -15,11 +15,10 @@ target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAP
 
 # Plots a surface, counts (and shows) the frames per second
 add_executable(fps fps.cpp)
-if(APPLE)
+if(APPLE AND OpenMP_CXX_FOUND)
   target_link_libraries(fps OpenMP::OpenMP_CXX ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 else()
   target_link_libraries(fps ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
 endif()
 
 add_executable(cartgrid cartgrid.cpp)
