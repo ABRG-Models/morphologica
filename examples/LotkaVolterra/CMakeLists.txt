@@ -2,7 +2,7 @@
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
 add_executable(lv lv.cpp)
-target_compile_definitions(lv PUBLIC F=float)
+target_compile_definitions(lv PUBLIC FLT=float COMPILE_PLOTTING)
 if(APPLE)
   target_link_libraries(lv OpenMP::OpenMP_CXX ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib ${HDF5_C_LIBRARIES})
 else()

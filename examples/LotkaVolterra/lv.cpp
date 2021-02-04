@@ -11,9 +11,9 @@
  * This will be passed as the template argument for RD_classes and
  * should be defined when compiling.
  */
-#ifndef F
+#ifndef FLT
 // Check CMakeLists.txt to change to double or float
-# error "Please define F when compiling (hint: See CMakeLists.txt)"
+# error "Please define FLT when compiling (hint: See CMakeLists.txt)"
 #endif
 
 /*!
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
      */
     morph::Config conf(paramsfile);
     if (!conf.ready) {
-        cerr << "Error setting up JSON config: " << conf.emsg << endl;
+        std::cerr << "Error setting up JSON config: " << conf.emsg << std::endl;
         return 1;
     }
 
@@ -112,19 +112,18 @@ int main (int argc, char **argv)
         // Using json filename as logpath
         std::string justfile = paramsfile;
         // Remove trailing .json and leading directories
-        std::vector<std::string> pth = Tools::stringToVector (justfile, "/");
+        std::vector<std::string> pth = morph::Tools::stringToVector (justfile, "/");
         justfile = pth.back();
         morph::Tools::searchReplace (".json", "", justfile);
         // Use logbase as the subdirectory into which this should go
         logbase = conf.getString ("logbase", "logs/");
-        if (logbase.back() != '/') {
-            logbase += '/';
-        }
+        if (logbase.back() != '/') { logbase += '/'; }
         logpath = logbase + justfile;
     }
     if (argc == 3) {
         std::string argpath(argv[2]);
-        std::cerr << "Overriding the config-given logpath " << logpath << " with " << argpath << std::endl;
+        std::cerr << "Overriding the config-given logpath " << logpath
+                  << " with " << argpath << std::endl;
         logpath = argpath;
         if (overwrite_logs == true) {
             std::cerr << "WARNING: You set a command line log path.\n"
@@ -134,7 +133,7 @@ int main (int argc, char **argv)
     }
 
     // The length of one timestep
-    const F dt = static_cast<F>(conf.getDouble ("dt", 0.00001));
+    const FLT dt = static_cast<FLT>(conf.getDouble ("dt", 0.00001));
 
     std::cout << "steps to simulate: " << steps << std::endl;
 
@@ -180,7 +179,7 @@ int main (int argc, char **argv)
     /*
      * Instantiate and set up the model object
      */
-    RD_Schnakenberg<F> RD;
+    RD_lv<FLT> RD;
 
     RD.svgpath = ""; // We'll do an elliptical boundary, so set svgpath empty
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
@@ -247,13 +246,13 @@ int main (int argc, char **argv)
     // Before starting the simulation, create the HexGridVisuals.
 
     // Spatial offset, for positioning of HexGridVisuals
-    morph::Vector<float> spatOff;
+    morph::Vector<float> spatOff = {0.0f, 0.0f, 0.0f};
     float xzero = 0.0f;
 
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<F> uvm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    morph::HexGridVisual<FLT>* uvm = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     uvm->setScalarData (&(RD.u));
     uvm->zScale.setParams (0.2f, 0.0f);
     uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
@@ -264,7 +263,7 @@ int main (int argc, char **argv)
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<F> vvm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    morph::HexGridVisual<FLT>* vvm = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     vvm->setScalarData (&(RD.v));
     vvm->zScale.setParams (0.2f, 0.0f);
     vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
@@ -318,8 +317,8 @@ int main (int argc, char **argv)
     // in there, such as the F. If float_width is 4, then
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
-    conf.set ("float_width", (unsigned int)sizeof(F));
-    std::string tnow = Tools::timeNow();
+    conf.set ("float_width", (unsigned int)sizeof(FLT));
+    std::string tnow = morph::Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("dt", RD.get_dt());

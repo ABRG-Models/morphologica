@@ -1,0 +1,28 @@
+{
+    "sect_global" : "Global simulation parameters",
+    "desc_steps" : "The number of steps to simulate for",
+    "steps" : 125000,
+    "logevery": 5000,
+    "plotevery": 500,
+    "saveplots": false,
+    "overwrite_logs": true,
+    "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
+    "hextohex_d" : 0.02,
+    "svgpath" : "./ellipse.svg",
+    "boundaryFalloffDist" : 0.01,
+    "dt" : 0.000005,
+
+    "sect_ellipse" : "Ellipse parameters",
+    "ellipse_a" : 0.8,
+    "ellipse_b" : 0.6,
+
+    "sect_model_params" : "Lotka-Volterra model parameters",
+    "D1" : 0.5,
+    "D2" : 0.6,
+    "a1"  : 3,
+    "b1"  : 1,
+    "c1"  : 2,
+    "a2"  : 3,
+    "b2"  : 1,
+    "c2"  : 2
+}
