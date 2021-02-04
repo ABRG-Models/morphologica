@@ -1,28 +1,39 @@
 {
     "sect_global" : "Global simulation parameters",
     "desc_steps" : "The number of steps to simulate for",
-    "steps" : 125000,
+    "steps" : 10000,
     "logevery": 5000,
-    "plotevery": 500,
+    "plotevery": 50,
     "saveplots": false,
     "overwrite_logs": true,
     "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
     "hextohex_d" : 0.02,
     "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
-    "dt" : 0.000005,
+    "dt" : 0.00005,
 
     "sect_ellipse" : "Ellipse parameters",
     "ellipse_a" : 0.8,
     "ellipse_b" : 0.6,
 
     "sect_model_params" : "Lotka-Volterra model parameters",
-    "D1" : 0.5,
-    "D2" : 0.6,
+
+    "desc_D1" : "The diffusion constant for population 1 (aka 'u')",
+    "D1" : 0.1,
+    "desc_D2" : "The diffusion constant for population 2 (aka 'v')",
+    "D2" : 0.9,
+
+    "desc_a1" : "a1 is the growth rate of population 1 (aka 'u')",
     "a1"  : 3,
+    "desc_b1" : "b1 is the attrition rate of u due to its own population pressure",
     "b1"  : 1,
-    "c1"  : 2,
-    "a2"  : 3,
-    "b2"  : 1,
-    "c2"  : 2
+    "desc_c1" : "c1 is the attrition rate of u due to the pressure of the *other* population (v)",
+    "c1"  : -2,
+
+    "desc_a2" : "a2 is the growth rate of population 2 (aka 'v')",
+    "a2"  : 6,
+    "desc_b2" : "b2 is the attrition rate of v due to its own population pressure",
+    "b2"  : 2,
+    "desc_c2" : "c1 is the attrition rate of v due to the pressure of u",
+    "c2"  : 5
 }
