@@ -43,6 +43,7 @@ namespace morph {
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
         void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
+        void setDataCoords (std::vector<Vector<float>>* _coords) { this->dataCoords = _coords; }
 
         void updateZScale (const Scale<T, float>& zscale)
         {

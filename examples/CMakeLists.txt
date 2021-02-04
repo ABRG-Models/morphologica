@@ -67,3 +67,7 @@ target_link_libraries(pointrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LA
 add_executable(pointrows_mesh pointrows.cpp)
 target_compile_definitions(pointrows_mesh PUBLIC MESH=1)
 target_link_libraries(pointrows_mesh ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(rosenbrock rosenbrock.cpp)
+target_compile_definitions(rosenbrock PUBLIC FLT=float)
+target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
