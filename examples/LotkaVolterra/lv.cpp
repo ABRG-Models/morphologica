@@ -201,13 +201,15 @@ int main (int argc, char **argv)
     // After allocate(), we can set up parameters:
     RD.set_dt(dt);
 
-    // Set the Schakenberg model parameters:
-    RD.k1 = conf.getDouble ("k1", 1);
-    RD.k2 = conf.getDouble ("k2", 1);
-    RD.k3 = conf.getDouble ("k3", 1);
-    RD.k4 = conf.getDouble ("k4", 1);
-    RD.D_A = conf.getDouble ("D_A", 0.1);
-    RD.D_B = conf.getDouble ("D_B", 0.1);
+    // Set the model parameters:
+    RD.a1 = conf.getDouble ("a1", 1);
+    RD.b1 = conf.getDouble ("b1", 1);
+    RD.c1 = conf.getDouble ("c1", 1);
+    RD.a2 = conf.getDouble ("a2", 1);
+    RD.b2 = conf.getDouble ("b2", 1);
+    RD.c2 = conf.getDouble ("c2", 1);
+    RD.D1 = conf.getDouble ("D1", 0.1);
+    RD.D2 = conf.getDouble ("D2", 0.1);
 
     // Now parameters are set, call init(), which in this example simply initializes A
     // and B with noise.
@@ -251,24 +253,24 @@ int main (int argc, char **argv)
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<F> avm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
-    avm->setScalarData (&(RD.A));
-    avm->zScale.setParams (0.2f, 0.0f);
-    avm->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+    morph::HexGridVisual<F> uvm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    uvm->setScalarData (&(RD.u));
+    uvm->zScale.setParams (0.2f, 0.0f);
+    uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
-    avm->finalize();
-    v1.addVisualModel (avm);
+    uvm->finalize();
+    v1.addVisualModel (uvm);
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<F> bvm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
-    bvm->setScalarData (&(RD.B));
-    bvm->zScale.setParams (0.2f, 0.0f);
-    bvm->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+    morph::HexGridVisual<F> vvm = new morph::HexGridVisual<F> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    vvm->setScalarData (&(RD.v));
+    vvm->zScale.setParams (0.2f, 0.0f);
+    vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
-    bvm->finalize();
-    v1.addVisualModel (bvm);
+    vvm->finalize();
+    v1.addVisualModel (vvm);
 #endif
 
     // Start the loop
@@ -281,11 +283,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            avm->updateData (&(RD.A));
-            avm->clearAutoscaleColour();
+            uvm->updateData (&(RD.u));
+            uvm->clearAutoscaleColour();
 
-            bvm->updateData (&(RD.B));
-            bvm->clearAutoscaleColour();
+            vvm->updateData (&(RD.v));
+            vvm->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {
@@ -320,12 +322,6 @@ int main (int argc, char **argv)
     std::string tnow = Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);
-    conf.set ("D_A", RD.D_A);
-    conf.set ("D_B", RD.D_B);
-    conf.set ("k1", RD.k1);
-    conf.set ("k2", RD.k2);
-    conf.set ("k3", RD.k3);
-    conf.set ("k4", RD.k4);
     conf.set ("dt", RD.get_dt());
     // Store the binary name and command argument into root, too.
     if (argc > 0) { conf.set("argv0", argv[0]); }

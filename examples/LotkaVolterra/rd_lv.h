@@ -23,13 +23,15 @@ public:
     alignas(alignof(std::vector<Flt>))
     std::vector<Flt> v;
 
-    alignas(Flt) Flt k1 = 1.0;
-    alignas(Flt) Flt k2 = 1.0;
-    alignas(Flt) Flt k3 = 1.0;
-    alignas(Flt) Flt k4 = 1.0;
+    alignas(Flt) Flt a1 = 1.0;
+    alignas(Flt) Flt b1 = 1.0;
+    alignas(Flt) Flt c1 = 1.0;
+    alignas(Flt) Flt a2 = 1.0;
+    alignas(Flt) Flt b2 = 1.0;
+    alignas(Flt) Flt c2 = 1.0;
 
-    alignas(Flt) Flt D_u = 0.1;
-    alignas(Flt) Flt D_v = 0.1;
+    alignas(Flt) Flt D1 = 0.1;
+    alignas(Flt) Flt D2 = 0.1;
 
     RD_lv (void) : morph::RD_Base<Flt>() {}
     ~RD_lv (void) {}
@@ -80,8 +82,7 @@ public:
         this->compute_laplace (u_, lapu);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; ++h) {
-            dudt[h] = this->k1 - (this->k2 * u_[h])
-                + (this->k3 * u_[h] * u_[h] * this->v[h]) + this->D_u * lapu[h];
+            dudt[h] = this->D1 * lapu[h] + (u_[h] * (a1 - b1 * u_[h] - c1 * v[h]));
         }
     }
 
@@ -91,8 +92,7 @@ public:
         this->compute_laplace (v_, lapv);
 #pragma omp parallel for
         for (unsigned int h=0; h<this->nhex; ++h) {
-            // G = k4        - k3 u^2 v
-            dvdt[h] = this->k4 - (this->k3 * this->u[h] * this->u[h] * v_[h]) + this->D_v * lapv[h];
+            dvdt[h] = this->D2 * lapv[h] + (v_[h] * (a2 - b2 * v_[h] - c2 * u[h]));
         }
     }
 
@@ -153,49 +153,49 @@ public:
 
         // 2. 4th order Runge-Kutta computation of v
         {
-            // Btst: "B at a test point". Btst is a temporary estimate for B.
-            std::vector<Flt> Btst(this->nhex, 0.0);
-            std::vector<Flt> dBdt(this->nhex, 0.0);
+            // vtst: "v at a test point". vtst is a temporary estimate for v.
+            std::vector<Flt> vtst(this->nhex, 0.0);
+            std::vector<Flt> dvdt(this->nhex, 0.0);
             std::vector<Flt> K1(this->nhex, 0.0);
             std::vector<Flt> K2(this->nhex, 0.0);
             std::vector<Flt> K3(this->nhex, 0.0);
             std::vector<Flt> K4(this->nhex, 0.0);
 
             // RK Stage 1
-            this->compute_dBdt (this->B, dBdt);
+            this->compute_dvdt (this->v, dvdt);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                K1[h] = dBdt[h] * this->dt;
-                Btst[h] = this->B[h] + K1[h] * 0.5 ;
+                K1[h] = dvdt[h] * this->dt;
+                vtst[h] = this->v[h] + K1[h] * 0.5 ;
             }
 
             // RK Stage 2
-            this->compute_dBdt (Btst, dBdt);
+            this->compute_dvdt (vtst, dvdt);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                K2[h] = dBdt[h] * this->dt;
-                Btst[h] = this->B[h] + K2[h] * 0.5;
+                K2[h] = dvdt[h] * this->dt;
+                vtst[h] = this->v[h] + K2[h] * 0.5;
             }
 
             // RK Stage 3
-            this->compute_dBdt (Btst, dBdt);
+            this->compute_dvdt (vtst, dvdt);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                K3[h] = dBdt[h] * this->dt;
-                Btst[h] = this->B[h] + K3[h];
+                K3[h] = dvdt[h] * this->dt;
+                vtst[h] = this->v[h] + K3[h];
             }
 
             // RK Stage 4
-            this->compute_dBdt (Btst, dBdt);
+            this->compute_dvdt (vtst, dvdt);
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                K4[h] = dBdt[h] * this->dt;
+                K4[h] = dvdt[h] * this->dt;
             }
 
             // Final sum together.
 #pragma omp parallel for
             for (unsigned int h=0; h<this->nhex; ++h) {
-                B[h] += ((K1[h] + 2.0 * (K2[h] + K3[h]) + K4[h])/(Flt)6.0);
+                v[h] += ((K1[h] + 2.0 * (K2[h] + K3[h]) + K4[h])/(Flt)6.0);
             }
         }
     }
