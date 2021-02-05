@@ -2,12 +2,10 @@
 #include "box.h"
 #include "../util/timemanager.h"
 #include "../util/config.h"
+#include "contact.h"
 
 using namespace morph::softmats;
 
-void CollisionConstraint::init( Body *b ){
-// Do nothing
-}
 
 void CollisionConstraint::init( BodySet *bs ){
     bodySet = bs;
@@ -21,7 +19,7 @@ void CollisionConstraint::reset(){
 	faces.clear();
 	indexes.clear();
 	objects.clear();
-	collisions->clear();
+	contacts->clear();
 }
 
 void CollisionConstraint::registerObject( Body *b ){
@@ -122,7 +120,7 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 	FPCollision *fpc = (FPCollision *)collisionTest->testFPCollision(f, p);
 	
 	if( fpc != nullptr ){
-		collisions->push( fpc );		
+		contacts->push( cp.body, cf.body, fpc );		
 	}
 	
 	vector<Edge> pedges = cp.body->getMesh()->getPointEdges( p );
@@ -134,7 +132,7 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 			eec = (EECollision *)collisionTest->testEECollision( ep, ef );
 
 			if( eec != nullptr ){
-				collisions->push( eec );
+				contacts->push( cp.body, cf.body, eec );
 			}
 		} // For
 	}
@@ -142,35 +140,59 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 
 
 void CollisionConstraint::generate( int step ){
-	collisions->clear();
+	contacts->clear();
 
-	TimeManager::getInstance()->tic();
+	// TimeManager::getInstance()->tic();
     firstPass(step);
-	TimeManager::getInstance()->toc();
-	TimeManager::getInstance()->tic();
+	// TimeManager::getInstance()->toc();
+	// TimeManager::getInstance()->tic();
 	secondPass(step);
-	TimeManager::getInstance()->toc();
+	// TimeManager::getInstance()->toc();
 	
 }
 
 void CollisionConstraint::solve(){
 
-	if( collisions->count() == 0 ) return;
+	if( contacts->count() == 0 ) return;
 
-	for( Collision* c : collisions->collisions ){
-		if( !c->active ){ continue;}
+	for( Contact* contact: contacts->getContacts() ){
+		for( Collision* c : contact->getCollisions() ){
+			if( !c->active ){ continue;}
 
-		c->solve( this->collisionTest );
+			c->solve( this->collisionTest );
+		}
 	}
 
 }
 
 void CollisionConstraint::updateVelocity(){
+	double epsilon = Config::getConfig()->getTimeStep()/2.0;
 
-	while( !collisions->isEmpty() ){
-		Collision* c = collisions->pop();
-		c->updateVelocity();	
+	for( Contact* contact: contacts->getContacts() ){
+		for( Collision* c : contact->getCollisions() ){
+			c->updateVelocity();
+			// Resting contact
+			if( c->ctype == 0 ){
+				FPCollision *fpc = (FPCollision *)c;
+				double v1 = arma::norm(fpc->p->v);
+				double v2 = arma::norm((fpc->f->points[0]->v +
+				                       fpc->f->points[1]->v +
+									   fpc->f->points[2]->v)/3.0);
+				if( v1 < epsilon && v2 < epsilon ){
+					fpc->p->v *= 0.0;
+					for( Point *p : fpc->f->points) p->v *= 0;
+				}else 
+					c->active = false;
+			}
+			
+		}
 	}
+
+	contacts->prune();
+}
+
+ContactList* CollisionConstraint::getContacts(){
+	return contacts;
 }
 
 void CollisionConstraint::setCollisionTest( CollisionTest* test ){
@@ -178,10 +200,10 @@ void CollisionConstraint::setCollisionTest( CollisionTest* test ){
 }
 
 CollisionConstraint::CollisionConstraint():ht(5000,0.2){
-	collisions = new CollisionList();
+	contacts = new ContactList();
 }
 
 CollisionConstraint::~CollisionConstraint(){
-	collisions->clear();
-	delete collisions;
+	contacts->clear();
+	delete contacts;
 }

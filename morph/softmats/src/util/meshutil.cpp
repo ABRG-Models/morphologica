@@ -137,9 +137,6 @@ TriangleMesh* ObjMeshProvider::buildMesh(){
 
 	fclose( f );
 
-	std::cout << "mesh build: " << mesh->getVertices().size() << " vertices, " <<
-			     mesh->getFaces().size() << " faces\n";
-
 	mesh->updateVertexNormals();
 	mesh->center();
 

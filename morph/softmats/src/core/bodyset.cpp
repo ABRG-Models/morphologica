@@ -1,4 +1,6 @@
 #include "bodyset.h"
+#include <iostream>
+#include "../collisions/collisionconstr.h"
 
 using namespace morph::softmats;
 
@@ -11,17 +13,43 @@ std::vector<Body *> BodySet::getBodies(){
     return bodies;
 }
         
-void BodySet::addConstraint( Constraint *c ){
+void BodySet::addCollisionConstraint( Constraint *c ){
     if( c != NULL ){
-        c->init( this );
+        ((CollisionConstraint *)c)->init( this );
         constraints.push_back(c);
     }
+}
+
+bool BodySet::hasContacts(){
+    if( !constraints.empty() ){
+        try{
+            CollisionConstraint *cc = (CollisionConstraint *)constraints[0];
+            return !cc->getContacts()->isEmpty();
+        }catch(std::exception& e){
+            std::cerr << "Was not expecting other type of constraints at the moment\n";
+        }
+    }
+
+    return false;
+}
+
+ContactList* BodySet::getContacts(){
+    if( !constraints.empty() ){
+        try{
+            CollisionConstraint *cc = (CollisionConstraint *)constraints[0];
+            return cc->getContacts();
+        }catch(std::exception& e){
+            std::cerr << "Was not expecting other type of constraints at the moment\n";
+        }
+    }
+
+    return nullptr;
 }
 
 void BodySet::reset(){
     for( Constraint* c : constraints ){
         c->reset();
-        c->init(this);    
+        ((CollisionConstraint *)c)->init(this);    
     }
 
 }

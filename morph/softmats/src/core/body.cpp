@@ -1,4 +1,5 @@
 #include "body.h"
+#include "shapeconstr.h"
 
 using namespace morph::softmats;
 
@@ -6,9 +7,9 @@ Body::Body(){
     
 }
 
-void Body::addConstraint( Constraint *c ){
+void Body::addShapeConstraint( Constraint *c ){
     if( c != NULL ){
-        c->init( this );
+        ((ShapeMatchingContraint *)c)->init( this );
         constraints.push_back( c );
     }
 }

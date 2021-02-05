@@ -65,25 +65,5 @@ public:
     void updateVelocity();
 };
 
-/**
- * Manages the list of collisions
- * 
- * @au*thor Alejandro Jimenez Rodriguez
- */
-class CollisionList{
-private:
-    
-public:
-vector<Collision *> collisions;
-    CollisionList();
-
-    void push( Collision* c );
-    int count();
-    bool isEmpty();
-    void clear();
-    // Removes and returns the first collision in the queue
-    Collision* pop();
-    void discount( double hc );
-};
 }}
 #endif // COLLISION

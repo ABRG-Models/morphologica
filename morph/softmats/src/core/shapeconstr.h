@@ -2,10 +2,11 @@
 #include "constraint.h"
 #include <vector>
 #include "body.h"
-#include "bodyset.h"
 #include <armadillo>
 
 namespace morph{ namespace softmats{
+class Point;
+class Body;
 /**
  * Shape matching algortithm
  * 
@@ -42,7 +43,6 @@ namespace morph{ namespace softmats{
     public:
         // --- Inherited constraint methods ----
         void init( Body *b );
-        void init( BodySet *bs );
         void generate(  int step = 0);
         void solve();
         void updateVelocity();

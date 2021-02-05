@@ -9,6 +9,7 @@
 #include "core/bodyset.h"
 #include "core/animatsource.h"
 #include "visual/video.h"
+#include "collisions/collision.h"
 
 namespace morph{ namespace softmats{
 /**
@@ -34,12 +35,14 @@ private:
     View *view;
     // Video Renderer
     VideoRecorder* videoRecorder;
+    // frame rate
+    int fps;
     // ------ user defined listeners --------
     void (*setup)(SoftmatSim *);
     void (*update)(SoftmatSim *);
     void(*draw)(SoftmatSim *);
     void (*finishFn)(const SoftmatSim *s);
-    void (*contactFn)(const SoftmatSim *s, const std::vector<Animat *>& animats);
+    void (*contactFn)(const SoftmatSim *s, ContactList* contacts);
 
     /**
      * Generates new sources based on the corresponding period.
@@ -94,7 +97,7 @@ public:
     // Sets the onfinish listener
     void onFinish( void (*f)(const SoftmatSim *s) );
     // Sets the onContact Listener
-    void onContact( void (*f)(const SoftmatSim *s, const std::vector<Animat *>& animats) );
+    void onContact( void (*f)(const SoftmatSim *s, ContactList* contacts) );
     // ----------- For future implementation -------------
     // void onAnimatContact( void (*f)(const Animat* a, std::vector<Point*> points) );
     // Investigation

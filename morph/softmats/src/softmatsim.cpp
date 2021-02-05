@@ -7,7 +7,7 @@ using namespace morph::softmats;
 
 SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *), 
                         void (*update)(SoftmatSim *), 
-                        void(*draw)(SoftmatSim *) ){
+                        void(*draw)(SoftmatSim *) ):fps(20){
     
     this->setup = setup;
     this->update = update;
@@ -17,6 +17,7 @@ SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *),
     animats = new BodySet();
     running = true;
     videoRecorder = nullptr;
+    contactFn = nullptr;
 }
 
 void SoftmatSim::video(){
@@ -35,9 +36,7 @@ Animat* SoftmatSim::animat(float x, float y, float z, double mass){
     a->setMass( mass );
     a->setConstraints();
     a->type = BodyType::ANIMAT;
-    std::cout << "Adding animat\n";
     animats->add(a);
-    std::cout << "Animat added\n";
     return a;
 }
 
@@ -45,10 +44,8 @@ Ground* SoftmatSim::ground( float height ){
     Ground *f = new Ground( height );
     f->type = BodyType::GROUND;
     this->theGround = f;
-    std::cout << "Adding the ground\n";
     animats->add(f);
     view->setupGround( f );
-    std::cout << "Finished setting up ground\n";
     return f;
 }
 
@@ -59,7 +56,6 @@ void SoftmatSim::light( bool v ){
 
 void SoftmatSim::gravity( float v ){
     for( Body* a : animats->getBodies() ){
-        std::cout << "Setting gravity for " << a << "\n";
         for( Point* p : a->getMesh()->getVertices() ){
             if( p->w > 0 )
                 p->fext = {0.0, -fabs(v)/p->w, 0.0};
@@ -80,7 +76,7 @@ void SoftmatSim::onFinish( void (*f)(const SoftmatSim *s) ){
     this->finishFn = f;
 }
 
-void SoftmatSim::onContact( void (*f)(const SoftmatSim *s, const vector<Animat *>& animats) ){
+void SoftmatSim::onContact( void (*f)(const SoftmatSim *s, ContactList* contacts) ){
     this->contactFn = f;
 }
 
@@ -99,7 +95,6 @@ void SoftmatSim::drawAll(){
     for( Body *b : animats->getBodies() ){
         if( b->type == BodyType::ANIMAT ){
             view->displayBody( b );
-            std::cout << "Faces body: " << b->getMesh()->getFaces().size() << "\n";
         }
     }
 }
@@ -108,7 +103,7 @@ void SoftmatSim::initialize(){
     CollisionConstraint *cc = new CollisionConstraint();
     // cc->setCollisionTest(new GroundCollisionTest(theGround));
     cc->setCollisionTest(new ContinuousCollisionTest());
-    animats->addConstraint( cc );
+    animats->addCollisionConstraint( cc );
 }
 
 void SoftmatSim::spawnSources( int step ){
@@ -124,8 +119,11 @@ void SoftmatSim::spawnSources( int step ){
 
 // Run
 void SoftmatSim::run(){
-    
-    (*setup)( this );  
+    try{(*setup)( this );}
+    catch(std::exception& ex ){
+        std::cerr << "Error calling user defined setup\n";
+    }
+
     initialize(); 
     int step = 0;
 
@@ -134,21 +132,35 @@ void SoftmatSim::run(){
 
     while( running && !view->shouldClose() ){
         spawnSources(step);
+        
+        try{(*update)(this);}catch(std::exception& ex ){
+            std::cerr << "Error calling user defined update\n";
+        }
 
-        (*update)(this);
         solver->loop( animats, step );
+
+        if( contactFn != nullptr && animats->hasContacts() ){
+            try{(*contactFn)(this, animats->getContacts() );}catch(std::exception& ex ){
+                std::cerr << "Error calling user defined contact processing\n";
+            }
+        }
         
         for( Body *b : animats->getBodies() )
             b->getMesh()->updateVertexNormals();
 
+        if( step++ % fps == 20 ) continue;
+
         view->preDisplay();
-        (*draw)(this);
+        try{(*draw)(this);}catch(std::exception& ex ){
+            std::cerr << "Error calling user defined draw\n";
+        }
+
         view->postDisplay();
 
         if( videoRecorder != nullptr )
             videoRecorder->notify();
         // running = false;
-        step++;
+        // step++;
     }
 
     (*finishFn)( this );

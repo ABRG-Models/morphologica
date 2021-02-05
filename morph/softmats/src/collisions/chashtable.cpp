@@ -51,7 +51,6 @@ void CHashTable::hashIn( vec point, int index, int step ){
 }
 
 void CHashTable::discretizeBox( Box *b ){
-	//cout << "Discretizing box - min: " << printvec(b->min) << ", max: "<<printvec(b->max)<<endl;
 	b->min(0) = discretize(b->min(0));
 	b->min(1) = discretize(b->min(1));
 	b->min(2) = discretize(b->min(2));

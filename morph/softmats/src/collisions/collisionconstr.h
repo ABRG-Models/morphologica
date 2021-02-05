@@ -9,8 +9,10 @@
 #include "collisiondstruct.h"
 #include "collision.h"
 #include "collisiontest.h"
+#include "contactlist.h"
 
 namespace morph{ namespace softmats {
+class BodySet;
 /**
  * Collision detection and response managing.
  * The spatial scanning is performed efficiently with spatial hashing. The response and update are implemented separatedly
@@ -32,7 +34,7 @@ private:
     // The corresponding body set
     BodySet *bodySet;
     // List of all active collisions
-    CollisionList *collisions;
+    ContactList *contacts;
     // Current collision testing strategy being used
     CollisionTest *collisionTest;
     // Hashes points and computes aabb
@@ -48,11 +50,11 @@ private:
     
 public:
     // Inherited constraints methods
-    void init( Body *b );
     void init( BodySet *bs );
     void generate( int step = 0 );
     void solve();
     void updateVelocity();
+    ContactList* getContacts();
     void reset();
     // Add the body points to the ongoing collection of points for detection
     void registerObject( Body *b );

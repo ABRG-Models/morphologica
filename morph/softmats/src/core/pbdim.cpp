@@ -41,7 +41,7 @@ void PBD::projectConstraints( BodySet *bs ){
 }
 
 void PBD::loop( BodySet *bs, int step ){
-    std::cout << "advancing velocity\n";
+    // Advancing body velocity
     for(Body* b : bs->getBodies() ){
         if( b->type == BodyType::GROUND ) continue;
         for( Point* q : b->getMesh()->getVertices() ){
@@ -50,7 +50,7 @@ void PBD::loop( BodySet *bs, int step ){
         }
     }
 
-    std::cout << "Generating candidate pos\n";
+    // Computing candidate positions
     for(Body* b : bs->getBodies() ){
         if( b->type == BodyType::GROUND ) continue;  
 
@@ -61,19 +61,20 @@ void PBD::loop( BodySet *bs, int step ){
         b->getMesh()->computeNormals( true );
     }
     
-     for( Body *b : bs->getBodies() ){
+    // Solving the body constraint (shape matching)
+    for( Body *b : bs->getBodies() ){
         for( Constraint *c : b->getConstraints() ){
             c->solve();
         }
     } 
-    std::cout << "Generating constraints\n";
+    // Generating collision constraints
     generateConstraints( bs, step );
 
-    // std::cout << "Projecting constrints\n";
+    // Projecting constraints
     for( int i = 0; i < Config::getConfig()->getNumIterations(); ++i )
         projectConstraints( bs );
 
-    std::cout << "Updating state\n";
+    // Update the state to valid positions
     for(Body* b : bs->getBodies() ){  
         if( b->type == BodyType::GROUND ) continue;
              
@@ -87,6 +88,6 @@ void PBD::loop( BodySet *bs, int step ){
         b->getMesh()->computeNormals( false );
     }
 
-    std::cout << "Updating velocities\n";
+    // Update velocity
     velocityUpdate( bs );
 }

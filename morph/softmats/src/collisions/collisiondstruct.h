@@ -5,6 +5,7 @@
 #include "box.h"
 
 namespace morph{ namespace softmats{
+
 /**
  * Supporting data structures for the collision detection
  * 

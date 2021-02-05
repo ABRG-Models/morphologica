@@ -33,7 +33,6 @@ void ShapeMatchingContraint::precompute( ){
 }
 
 void ShapeMatchingContraint::init( Body *b ){
-    std::cout << "Initializing shape matching constraint\n";
     for( Point* p : b->getMesh()->getVertices() ){
         Point *q = new Point();
         q->x = p->x; 
@@ -69,10 +68,6 @@ void ShapeMatchingContraint::computeMatrices( arma::vec x_cm ){
     // A = A/cbrtf(arma::det(A));
     
     this->T = this->beta*A + (1 - this->beta)*R;
-}
-
-void ShapeMatchingContraint::init( BodySet *bs ){
-// Do nothing
 }
 
 void ShapeMatchingContraint::generate( int step ){

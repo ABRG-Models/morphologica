@@ -4,7 +4,6 @@
 using namespace morph::softmats;
 
 void View::setupGround( Body *ground){
-	std::cout << "Setting up the ground in view\n";
 	std::vector<Face *>& faces = ground->getMesh()->getFaces();
 	std::vector<Point *>& vert = ground->getMesh()->getVertices();
 
@@ -14,25 +13,21 @@ void View::setupGround( Body *ground){
 	int i;
 
 	for( Face* f : faces ){
-		std::cout << "Adding vertices\n";
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[0]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[1]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[2]->x(i));
 		
-		std::cout << "Adding coords\n";
 		tvalues.push_back(f->points[0]->uv.s);
 		tvalues.push_back(f->points[0]->uv.t);
 		tvalues.push_back(f->points[1]->uv.s);
 		tvalues.push_back(f->points[1]->uv.t);
 		tvalues.push_back(f->points[2]->uv.s);
 		tvalues.push_back(f->points[2]->uv.t);
-		std::cout << "Adding normals\n";
+		
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[0]->normal(i));
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[1]->normal(i));
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[2]->normal(i));
 	}
-
-	std::cout << "Binding buffers\n";
 
 	// vertices
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
@@ -52,7 +47,6 @@ void View::setup(){
 }
 
 void View::init( ){
-	std::cout << "Initializing the view\n";
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
@@ -183,7 +177,6 @@ void View::displayGround(){
 }
 
 void View::displayBody( Body* b ){
-	std::cout << "Rendering body\n";
 	std::vector<Face *>& faces = b->getMesh()->getFaces();
 	std::vector<Point *>& vert = b->getMesh()->getVertices();
 

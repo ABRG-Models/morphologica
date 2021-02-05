@@ -1,13 +1,32 @@
 #include "collision.h"
+#include "contactlist.h"
+#include "contact.h"
 
 using namespace morph::softmats;
 
-// Collision List
-CollisionList::CollisionList(){
-
+Contact::Contact(Body* A, Body* B ):A(A), B(B){
 }
 
-void CollisionList::push( Collision* c ){
+Body* Contact::getA(){
+    return A;
+}
+
+Body* Contact::getB(){
+    return B;
+}
+
+double Contact::getContactArea( bool includeFloor ){
+    if( !includeFloor && (A->type==BodyType::GROUND || B->type == BodyType::GROUND ) )
+        return 0.0;
+
+    return collisions.size();
+}
+
+bool Contact::hasCollisions(){
+    return !collisions.empty();
+}
+
+void Contact::addCollision( Collision* c  ){
     vector<Collision *>::iterator it;
     // cout << "Number of collisions before: " << collisions.size() << endl;
     // if( collisions.empty() )collisions.push_back( c );
@@ -24,6 +43,74 @@ void CollisionList::push( Collision* c ){
 
     if( !exist )
         collisions.push_back( c );
+}
+
+vector<Collision*>& Contact::getCollisions(){
+    return collisions;
+}
+
+// Collision List
+ContactList::ContactList(){
+
+}
+
+Contact *ContactList::findContact( Body *A, Body *B ){
+	for( Contact *fc : contacts )
+		if( (fc->getA() == A && fc->getB() == B) ||
+			(fc->getB() == A && fc->getA() == B))
+			return fc;
+
+	return NULL;
+}
+
+void Contact::clearCollisions(){
+    collisions.clear();
+}
+
+void Contact::clearInactiveCollisions(){
+    vector<Collision*>::iterator it;
+
+    for( it = collisions.begin(); it != collisions.end(); ){
+        if( !(*it)->active )
+            it = collisions.erase(it);
+        else
+            ++it;
+    }
+}
+
+void ContactList::prune(){
+    vector<Contact*>::iterator it;
+    for( it = contacts.begin(); it != contacts.end(); ){
+        Contact *c = (*it);
+        c->clearInactiveCollisions();
+
+        if( !c->hasCollisions() )
+            it = contacts.erase(it);
+        else
+            ++it;
+    }
+}
+
+double ContactList::getContactArea( bool includefloor ){
+    double area = 0.0;
+
+    for( Contact *c : contacts ){
+        area += c->getContactArea( false );
+    }
+}
+
+void ContactList::push( Body* A, Body* B, Collision* c ){
+    
+    Contact *contact = findContact(A, B);
+
+	if( contact == NULL ){
+		contact = new Contact( A, B );
+        contacts.push_back(contact);
+	}
+
+	contact->addCollision( c );
+
+    
     // else{
     //     for( it = collisions.begin(); it != collisions.end(); ++it  ){
     //         if( (*it)->hc > c->hc ){
@@ -42,34 +129,35 @@ void CollisionList::push( Collision* c ){
     // cin.get();
 }
 
-void CollisionList::clear(){
-    collisions.clear();
+void ContactList::clear(){
+    for( Contact *c : contacts )
+        c->clearCollisions();
+
+    contacts.clear();
 }
 
-int CollisionList::count(){
-    return collisions.size();
+int ContactList::count(){
+    return contacts.size();
 }
 
-bool CollisionList::isEmpty(){
-    return collisions.empty();
+bool ContactList::isEmpty(){
+    return contacts.empty();
 }
 
-Collision* CollisionList::pop(){
-    // cout << "Poping!" << collisions.size() << endl;
-    if( !this->isEmpty() ){
-        // cout << "Getting collision" << endl;
-        Collision *c = this->collisions[0];
-        this->collisions.erase( collisions.begin() );
+// Collision* ContactList::pop(){
+//     // cout << "Poping!" << collisions.size() << endl;
+//     if( !this->isEmpty() ){
+//         // cout << "Getting collision" << endl;
+//         Collision *c = this->collisions[0];
+//         this->collisions.erase( collisions.begin() );
 
-        return c;
-    }
+//         return c;
+//     }
 
-    return NULL;
-}
-
-void CollisionList::discount( double hc ){
-    for( Collision *c : collisions )
-        c->hc -= hc;
+//     return NULL;
+// }
+vector<Contact*>& ContactList::getContacts(){
+    return contacts;
 }
 
 // Collision

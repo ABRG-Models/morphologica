@@ -228,7 +228,6 @@ vector<vec> morph::softmats::getInelasticImpulses( Face* face, Point* point, vec
 	double vn;
 
 	vn = -dot(v_rel, n);
-	// cout << "Relative velocity: " << vn << ", with vb: " << printvec(vb) << endl;
 
 	// Adding impulse
 	double w_p = point->w;

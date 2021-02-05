@@ -6,6 +6,7 @@
 #include "face.h"
 
 namespace morph{ namespace softmats{
+
 /**
  * Ground body
  * 

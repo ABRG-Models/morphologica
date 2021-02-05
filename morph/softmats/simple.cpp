@@ -1,5 +1,6 @@
 #include "src/softmatsim.h"
 #include "src/core/animat.h"
+#include "src/collisions/collision.h"
 
 using namespace morph::softmats;
 
@@ -10,7 +11,7 @@ void setup( SoftmatSim *s ){
     std::cout << "Setting up the simulation\n";
     // a = s->animat(-2.0, -1.0, 0.0, 100.0 );
     // b = s->animat(-1.5, 1.1, 0.0, 100.0 );
-    AnimatSource *as = s->animatSource(5, 100, -2.0, 1.5, 0.0);
+    AnimatSource *as = s->animatSource(5, 100, 0.0, 1.5, 0.0);
     s->ground( -2.0 );
     s->gravity( 10.0 );
     // s->video();
@@ -35,8 +36,8 @@ void onFinish( const SoftmatSim *s ){
     std::cout<< "Simulation finished\n";
 }
 
-void onContact( const SoftmatSim *s, const vector<Animat *>& animats ){
-    std::cout << "Contact\n";
+void onContact( const SoftmatSim *s, ContactList *contacts ){
+    std::cout << "Contact: " << contacts->getContactArea( false ) << "\n";
 }
 
 // void onAnimatContact( const Animat* a, vector<Receptor*> receptors ){

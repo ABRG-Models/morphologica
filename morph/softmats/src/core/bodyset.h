@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "constraint.h"
+#include "../collisions/contactlist.h"
 #include "body.h"
 
 namespace morph{ namespace softmats{
@@ -19,8 +20,10 @@ namespace morph{ namespace softmats{
 
         void add( Body* b );
         std::vector<Body *> getBodies();
-        void addConstraint( Constraint *c );
+        void addCollisionConstraint( Constraint *c );
         std::vector<Constraint *> getConstraints();
+        bool hasContacts();
+        ContactList* getContacts();
         void reset();
         BodySet();
         ~BodySet();

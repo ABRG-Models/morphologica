@@ -5,8 +5,8 @@
 #include "trianglemesh.h"
 
 namespace morph{ namespace softmats{
+
     enum BodyType{ ANIMAT, GROUND };
-    class Constraint;
     
     // Material information used for lighting
     struct Material{
@@ -33,7 +33,7 @@ namespace morph{ namespace softmats{
         Body();
         ~Body();
         BodyType type;
-        void addConstraint( Constraint *c );
+        void addShapeConstraint( Constraint *c );
         std::vector<Constraint *> getConstraints();
         TriangleMesh *getMesh();
         void setMesh( TriangleMesh *mesh );

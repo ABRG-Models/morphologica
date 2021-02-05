@@ -20,10 +20,8 @@ Animat::Animat( float x, float y, float z ){
 }
 
 void Animat::setConstraints(){
-    std::cout << "Setting up constraint\n";
     ShapeMatchingContraint *smc = new ShapeMatchingContraint( 0.2 );
-    this->addConstraint( smc );
-    std::cout << "Constraint added\n";
+    this->addShapeConstraint( smc );
 }
 
 void Animat::setMass( double m ){
