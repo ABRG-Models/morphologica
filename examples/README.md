@@ -45,6 +45,17 @@ Computes the logistic map and displays with a morph::GraphVisual, using diamond 
 
 ![Screenshot of the logisticmap program](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/logisticmap.png?raw=true)
 
+### rosenbrock.cpp
+
+This program find the minimum of the Rosenbrock banana function using
+the Nelder-Mead simplex optimization method (coded as the class
+morph::NMSimplex). The walk of the simplex down the function surface
+is animated. Note that the scaling of the colour map is set so that
+only the lowest part of the surface is resolved in the green to blue
+part of the map (which is Inferno)
+
+![Screenshot of Rosenbrock banana function with Nelder-Mead triangle](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/rosenbrock.png?raw=true)
+
 ### Ermentrout2009
 
 Contains an implementation of a Keller-Segel reaction diffusion system.
@@ -56,6 +67,12 @@ Contains an implementation of a Keller-Segel reaction diffusion system.
 ```
 
 ![Screenshot of the erm.cpp program, showing a bullseye mode](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/erm.png?raw=true)
+
+### LotkaVolterra
+
+Contains an implementation of the Lotka-Volterra population model cast as a reaction diffusion system.
+
+![Shows two surfaces for two population variables, u and v](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/lotkavolterra.png?raw=true)
 
 ## morph::Visual examples
 
