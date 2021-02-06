@@ -45,6 +45,24 @@ void Contact::addCollision( Collision* c  ){
         collisions.push_back( c );
 }
 
+void Contact::updateReceptors(){
+    Body *ground = nullptr;
+    Body *animat = nullptr;
+
+    if( A->type == BodyType::GROUND && B->type == BodyType::ANIMAT ){
+        ground = A;
+        animat = B;
+    }else if( B->type == BodyType::GROUND && A->type == BodyType::ANIMAT ){
+        ground = B;
+        animat = A;
+    }
+
+    if( ground != nullptr ){
+        for( Point *p : animat->getMesh()->getVertices() )
+            p->ground_receptor = true;
+    }
+}
+
 vector<Collision*>& Contact::getCollisions(){
     return collisions;
 }
@@ -142,6 +160,12 @@ int ContactList::count(){
 
 bool ContactList::isEmpty(){
     return contacts.empty();
+}
+
+void ContactList::updateReceptors(){
+    for( Contact *c : contacts ){
+        c->updateReceptors();
+    }
 }
 
 // Collision* ContactList::pop(){

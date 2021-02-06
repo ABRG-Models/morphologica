@@ -13,15 +13,15 @@ SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *),
     this->update = update;
     this->draw = draw;
     this->solver = new PBD();
-    view = new View();
+    view = new SoftmatsView();
     animats = new BodySet();
     running = true;
     videoRecorder = nullptr;
     contactFn = nullptr;
 }
 
-void SoftmatSim::video(){
-    videoRecorder = new VideoRecorder(600, 600);
+void SoftmatSim::video( std::string title ){
+    videoRecorder = new VideoRecorder(title, 600, 600);
 }
 
 AnimatSource* SoftmatSim::animatSource( int n, int period, float x, float y, float z){
@@ -55,16 +55,8 @@ void SoftmatSim::light( bool v ){
 }
 
 void SoftmatSim::gravity( float v ){
-    for( Body* a : animats->getBodies() ){
-        for( Point* p : a->getMesh()->getVertices() ){
-            if( p->w > 0 )
-                p->fext = {0.0, -fabs(v)/p->w, 0.0};
-            else
-                p->fext = {0.0, 0.0, 0.0};
-            
-            p->fext.print();
-        }
-    }
+    arma::vec f = {0.0, -fabs(v), 0.0};
+    animats->addExternalForce( f );
 }
 
 void SoftmatSim::camera( float az, float ev ){
@@ -112,7 +104,6 @@ void SoftmatSim::spawnSources( int step ){
         if( a != nullptr ){
             animats->add( a );
             animats->reset();
-            gravity(10.0);
         }
     }
 }
@@ -132,11 +123,14 @@ void SoftmatSim::run(){
 
     while( running && !view->shouldClose() ){
         spawnSources(step);
+
+        animats->resetForces();
         
         try{(*update)(this);}catch(std::exception& ex ){
             std::cerr << "Error calling user defined update\n";
         }
 
+        animats->resetReceptors();
         solver->loop( animats, step );
 
         if( contactFn != nullptr && animats->hasContacts() ){
@@ -151,6 +145,7 @@ void SoftmatSim::run(){
         if( step++ % fps == 20 ) continue;
 
         view->preDisplay();
+
         try{(*draw)(this);}catch(std::exception& ex ){
             std::cerr << "Error calling user defined draw\n";
         }

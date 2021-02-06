@@ -5,7 +5,7 @@
 #include "core/animat.h"
 #include "core/ground.h"
 #include "core/pbdim.h"
-#include "visual/view.h"
+#include "visual/softmatsview.h"
 #include "core/bodyset.h"
 #include "core/animatsource.h"
 #include "visual/video.h"
@@ -91,7 +91,7 @@ public:
     // Controls the camera - TO IMPROVE
     void camera( float az, float ev );
     // Records video
-    void video();
+    void video( std::string title );
 
     // Listener
     // Sets the onfinish listener

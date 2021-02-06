@@ -1,9 +1,9 @@
-#include "view.h"
+#include "softmatsview.h"
 #include "../util/openglutils.h"
 
 using namespace morph::softmats;
 
-void View::setupGround( Body *ground){
+void SoftmatsView::setupGround( Body *ground){
 	std::vector<Face *>& faces = ground->getMesh()->getFaces();
 	std::vector<Point *>& vert = ground->getMesh()->getVertices();
 
@@ -40,13 +40,13 @@ void View::setupGround( Body *ground){
 	glBufferData(GL_ARRAY_BUFFER, nvalues.size()*4, &nvalues[0], GL_STATIC_DRAW );
 }
 
-void View::setup(){
+void SoftmatsView::setup(){
 	glGenVertexArrays( numVAOs, vao );
 	glBindVertexArray( vao[0] );
 	glGenBuffers( numVBOs, vbo );	
 }
 
-void View::init( ){
+void SoftmatsView::init( ){
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
@@ -84,7 +84,7 @@ void View::init( ){
 	setup();
 }
 
-void View::installLights( Body *b, glm::mat4 vMatrix ){
+void SoftmatsView::installLights( Body *b, glm::mat4 vMatrix ){
 	float zero[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	light.posV = glm::vec3(vMatrix*glm::vec4(light.currentPos,1.0));
 	light.pos[0] = light.posV.x;
@@ -123,7 +123,7 @@ void View::installLights( Body *b, glm::mat4 vMatrix ){
 }
 
 
-void View::preDisplay( ){
+void SoftmatsView::preDisplay( ){
     
 	glClear( GL_DEPTH_BUFFER_BIT );
 	// glClearColor( 0.0, 0.18, 0.3, 1.0 );
@@ -142,7 +142,7 @@ void View::preDisplay( ){
 	viewPort.vMat = glm::translate( glm::mat4(1.0f), glm::vec3(-camera.x, -camera.y, -camera.z) );
 }
 
-void View::displayGround(){
+void SoftmatsView::displayGround(){
 	mMat = glm::mat4(1.0f);
     mvMat = viewPort.vMat*mMat;
 	invTrMat = glm::transpose(glm::inverse(mvMat));
@@ -176,7 +176,7 @@ void View::displayGround(){
     glDrawArrays( GL_TRIANGLES, 0, 6 );
 }
 
-void View::displayBody( Body* b ){
+void SoftmatsView::displayBody( Body* b ){
 	std::vector<Face *>& faces = b->getMesh()->getFaces();
 	std::vector<Point *>& vert = b->getMesh()->getVertices();
 
@@ -247,27 +247,27 @@ void View::displayBody( Body* b ){
     glDrawArrays( GL_TRIANGLES, 0, faces.size()*3 );
 }
 
-void View::setCamera(float az, float ev){
+void SoftmatsView::setCamera(float az, float ev){
 	float r = 20.0f;
 	this->camera.x = r*sin(az)*cos(ev);
 	this->camera.y = r*sin(az)*sin(ev);
 	this->camera.z = r*cos(az);
 }
 
-bool View::shouldClose(){
+bool SoftmatsView::shouldClose(){
 	return glfwWindowShouldClose( window );
 }
 
-void View::postDisplay(){
+void SoftmatsView::postDisplay(){
 	glfwSwapBuffers( window );
 	glfwPollEvents();
 }
 
-View::View(){
+SoftmatsView::SoftmatsView(){
 	init();
 }
 
 
-View::~View(){
+SoftmatsView::~SoftmatsView(){
 
 }

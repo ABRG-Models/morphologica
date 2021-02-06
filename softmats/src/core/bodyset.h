@@ -14,6 +14,7 @@ namespace morph{ namespace softmats{
  */
     class BodySet{
     private:
+        arma::vec fext;
         std::vector<Constraint *> constraints;
         std::vector<Body *> bodies;
     public:
@@ -25,6 +26,9 @@ namespace morph{ namespace softmats{
         bool hasContacts();
         ContactList* getContacts();
         void reset();
+        void addExternalForce( arma::vec f );
+        void resetForces();
+        void resetReceptors();
         BodySet();
         ~BodySet();
     };

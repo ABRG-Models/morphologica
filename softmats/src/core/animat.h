@@ -21,6 +21,9 @@ public:
     
     void setMass( double m );
     void setConstraints();
+    void addGroundImpulse( arma::vec f );
+    void move( double x, double y, double z );
+    
 };
 
 }}

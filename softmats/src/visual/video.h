@@ -4,6 +4,8 @@
 #include <iostream>
 #include "view.h"
 #include "opencv2/opencv.hpp"
+#include <string>
+
 // plus #include <opencv2/videoio.hpp> ?
 
 namespace morph{ namespace softmats{
@@ -18,8 +20,9 @@ protected:
 	cv::VideoWriter outputVideo;
 	int width;
 	int height;
+	std::string title;
 public:
-	VideoRecorder( int width, int height );
+	VideoRecorder( std::string title, int width, int height );
 	// Creates the videoWrite object
 	void setup();
 	// Saves a frame

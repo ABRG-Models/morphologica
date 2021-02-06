@@ -24,6 +24,7 @@ namespace morph{ namespace softmats{
 
     class Body{
     private:
+        arma::vec fext;
         std::vector<Constraint *> constraints;
     protected:
         TriangleMesh* mesh;
@@ -37,5 +38,8 @@ namespace morph{ namespace softmats{
         std::vector<Constraint *> getConstraints();
         TriangleMesh *getMesh();
         void setMesh( TriangleMesh *mesh );
+        void setExternalForce( arma::vec f );    
+        void resetForces();
+        void updateReceptors();
     };
 }}

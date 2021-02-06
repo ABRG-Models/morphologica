@@ -14,6 +14,7 @@
 #include <cmath>
 #include "../util/openglutils.h"
 #include "../core/body.h"
+#include "view.h"
 
 #define numVAOs 1
 #define numVBOs 6
@@ -70,7 +71,7 @@ namespace morph{ namespace softmats{
         glm::mat4 vMat;
     };
 
-    class View{
+    class SoftmatsView : public View{
     private:    
         GLFWwindow* window;
         GLuint renderingProgram;
@@ -105,8 +106,8 @@ namespace morph{ namespace softmats{
         // Sets up the lights
         void installLights( Body*b, glm::mat4 vMatrix );
         
-        View();
-        ~View();
+        SoftmatsView();
+        ~SoftmatsView();
     }; 
 
 }}

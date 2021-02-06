@@ -23,6 +23,7 @@ public:
     vector<Contact*>& getContacts();
     void prune();
     double getContactArea( bool includefloor );
+    void updateReceptors();
     // Removes and returns the first collision in the queue
     // Collision* pop();
 };

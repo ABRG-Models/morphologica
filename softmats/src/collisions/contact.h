@@ -23,6 +23,7 @@ public:
     double getContactArea( bool includeFloor );
     void clearInactiveCollisions();
     vector<Collision*>& getCollisions();
+    void updateReceptors();
 };
 
 }}

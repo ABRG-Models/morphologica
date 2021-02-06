@@ -23,6 +23,8 @@ typedef struct Point{
     
     bool lock; // Is the point to be moved?
     double w; // Inverse mass
+    double temp_receptor;
+    bool ground_receptor;
     std::vector<Point *> adj; // Adjacent points in the mesh
 
     Point(){ 

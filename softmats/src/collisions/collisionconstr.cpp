@@ -172,23 +172,24 @@ void CollisionConstraint::updateVelocity(){
 		for( Collision* c : contact->getCollisions() ){
 			c->updateVelocity();
 			// Resting contact
-			if( c->ctype == 0 ){
-				FPCollision *fpc = (FPCollision *)c;
-				double v1 = arma::norm(fpc->p->v);
-				double v2 = arma::norm((fpc->f->points[0]->v +
-				                       fpc->f->points[1]->v +
-									   fpc->f->points[2]->v)/3.0);
-				if( v1 < epsilon && v2 < epsilon ){
-					fpc->p->v *= 0.0;
-					for( Point *p : fpc->f->points) p->v *= 0;
-				}else 
-					c->active = false;
-			}
+			// if( c->ctype == 0 ){
+			// 	FPCollision *fpc = (FPCollision *)c;
+			// 	double v1 = arma::norm(fpc->p->v);
+			// 	double v2 = arma::norm((fpc->f->points[0]->v +
+			// 	                       fpc->f->points[1]->v +
+			// 						   fpc->f->points[2]->v)/3.0);
+			// 	if( v1 < epsilon && v2 < epsilon ){
+			// 		fpc->p->v *= 0.0;
+			// 		for( Point *p : fpc->f->points) p->v *= 0;
+			// 	}else 
+			// 		c->active = false;
+			// }
 			
 		}
 	}
 
 	contacts->prune();
+	contacts->updateReceptors();
 }
 
 ContactList* CollisionConstraint::getContacts(){

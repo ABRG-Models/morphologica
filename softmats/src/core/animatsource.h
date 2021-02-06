@@ -12,6 +12,7 @@ private:
     int n;
     int period;
     int count;
+    double mass;
     arma::vec pos;
 public:
     AnimatSource( int numAnimats, int period, float x, float y, float z );
@@ -21,6 +22,7 @@ public:
      * or null otherwise
      */
     Animat* getAnimat( int step );
+    void setMass( double mass );
 };
 
 }}

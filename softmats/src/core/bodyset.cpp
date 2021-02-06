@@ -20,6 +20,18 @@ void BodySet::addCollisionConstraint( Constraint *c ){
     }
 }
 
+void BodySet::addExternalForce( arma::vec f ){
+    this->fext += f;
+}
+
+void BodySet::resetForces(){
+    for( Body* b: bodies )
+        b->setExternalForce( fext );
+
+    for( Body *b : bodies )
+        b->resetForces();
+}
+
 bool BodySet::hasContacts(){
     if( !constraints.empty() ){
         try{
@@ -46,6 +58,11 @@ ContactList* BodySet::getContacts(){
     return nullptr;
 }
 
+void BodySet::resetReceptors(){
+    for( Body *b : bodies )
+        b->updateReceptors();
+}
+
 void BodySet::reset(){
     for( Constraint* c : constraints ){
         c->reset();
@@ -59,7 +76,7 @@ std::vector<Constraint *> BodySet::getConstraints(){
 }
         
 BodySet::BodySet(){
-
+    fext = {0.0, 0.0, 0.0};
 }
         
 BodySet::~BodySet(){

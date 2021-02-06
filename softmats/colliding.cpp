@@ -2,33 +2,30 @@
 #include "src/core/animat.h"
 #include "src/collisions/collision.h"
 
+/**
+ * Two softmats approaching each other and colliding
+ */
+
 using namespace morph::softmats;
 
 Animat *a;
 Animat *b;
 
 void setup( SoftmatSim *s ){
-    std::cout << "Setting up the simulation\n";
-    // a = s->animat(-2.0, -1.0, 0.0, 100.0 );
-    // b = s->animat(-1.5, 1.1, 0.0, 100.0 );
-    AnimatSource *as = s->animatSource(5, 100, 0.0, 1.5, 0.0);
+    a = s->animat(-2.0, -1.0, 0.0, 100.0 );
+    b = s->animat(2.0, -1.0, 0.0, 100.0 );
     s->ground( -2.0 );
     s->gravity( 10.0 );
-    // s->video();
-    // s->camera(-0.0, 2.2);
-
-    // v[0].lock = true;
-    // s.lights(true);
-    
+    s->video("colliding_softmats");
+    // s->camera(-0.0, 2.2);    
 }
 
 void update( SoftmatSim *s ){   
-   //std::cout << "Updating the simulation\n";
-
+    a->move(1.0, 0.0, 0.0);
+    b->move(-1.0, 0.0, 0.0);
 }
 
 void draw( SoftmatSim *s  ){
-    //std::cout << "Drawing\n";
     s->drawAll();
 }
 

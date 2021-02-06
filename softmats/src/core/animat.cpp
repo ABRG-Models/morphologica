@@ -37,5 +37,20 @@ void Animat::init( int prec ){
     mesh = mp.buildMesh();
 }
 
+void Animat::addGroundImpulse( arma::vec f ){
+    for( Point* p : getMesh()->getVertices() ){
+        if( p->ground_receptor )
+            p->fext += f;
+    }
+}
+
+void Animat::move(  double x, double y, double z ){
+    arma::vec dir = {x, y, z};
+    dir /= norm(dir);
+    addGroundImpulse( 10*dir );
+}
+
+
+
 
 

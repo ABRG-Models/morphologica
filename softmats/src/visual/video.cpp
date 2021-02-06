@@ -1,14 +1,18 @@
 #include "video.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 using namespace morph::softmats;
 
-VideoRecorder::VideoRecorder( int width, int height ){
+VideoRecorder::VideoRecorder(std::string title, int width, int height ){
 	this->width = width;
     this->height = height;
+    this->title = title;
 }
 
 void VideoRecorder::setup(){
-    this->outputVideo.open("video.avi", cv::VideoWriter::fourcc('M','J','P','G'), 20.0f, cv::Size( this->width, this->height ), true);
+    this->outputVideo.open(title + ".avi", cv::VideoWriter::fourcc('M','J','P','G'), 20.0f, cv::Size( this->width, this->height ), true);
 }
 
 void VideoRecorder::notify(){

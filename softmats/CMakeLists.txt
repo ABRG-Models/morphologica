@@ -46,7 +46,7 @@ file(GLOB SOURCES
 	src/collisions/*.h
 )
 
-set(targets simple)
+set(targets colliding)
 
 foreach(X IN LISTS targets)
 	message("Configuring ${X}")
