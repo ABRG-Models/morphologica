@@ -128,6 +128,9 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 # be compiled static if needed)
 add_subdirectory(morph)
 
+# Softmats add_subdirectory
+add_subdirectory(softmats)
+
 # We have to make a morph/rapidxml-1.13 installation for client code
 # that uses the ReadCurves class.
 add_subdirectory(include)
@@ -137,7 +140,7 @@ enable_testing()
 add_subdirectory(tests)
 
 # Example code (you can also see tests/ for examples)
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 # first we can indicate the documentation build as an option and set it to ON by default
 option (BUILD_DOC "Build documentation" OFF)

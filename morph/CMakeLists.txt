@@ -44,7 +44,6 @@ Mnist.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 # There are also headeres in sub directories
 add_subdirectory(nn) # 'nn' for neural network code
-add_subdirectory(animats) # Animats library
 
 if (${glfw3_FOUND})
   install( FILES VisualBase.h Visual.h VisualModel.h VisualDataModel.h CoordArrows.h HexGridVisual.h QuadsVisual.h PointRowsVisual.h ScatterVisual.h QuiverVisual.h VisualDefaultShaders.h RecurrentNetworkModel.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph)

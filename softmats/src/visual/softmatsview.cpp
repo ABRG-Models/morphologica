@@ -47,18 +47,23 @@ void SoftmatsView::setup(){
 }
 
 void SoftmatsView::init( ){
+	std::cout << "Initializing window\n";
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
 	window = glfwCreateWindow( 600, 600, "Soft body simulator", NULL, NULL );
 	glfwMakeContextCurrent( window );
+	std::cout << "Window created\n";
 
 	if( glewInit() != GLEW_OK ){ exit(EXIT_FAILURE); }
 
+	std::cout << "Glew initialized\n";
 	glfwSwapInterval( 1 );
 
 	renderingProgram = OpenglUtils::createShaderProgram("shaders/softmats.vsh", "shaders/softmats.fsh");
+	OpenglUtils::checkOpenGLError();
+	std::cout << "Shaders loaded\n";
 	camera.x = 0.0f; camera.y = -0.5f; camera.z = 10.5f;
 	viewPort.x = 0.0f; viewPort.y = -2.0f; viewPort.z = 0.0f;
 	light.initialLightLoc = glm::vec3(5.0f, 2.0f, 2.0f);

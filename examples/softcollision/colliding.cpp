@@ -1,6 +1,6 @@
-#include "src/softmatsim.h"
-#include "src/core/animat.h"
-#include "src/collisions/collision.h"
+#include <softmats/src/softmatsim.h>
+#include <softmats/src/core/animat.h>
+#include <softmats/src/collisions/collision.h>
 
 /**
  * Two softmats approaching each other and colliding
@@ -16,7 +16,7 @@ void setup( SoftmatSim *s ){
     b = s->animat(2.0, -1.0, 0.0, 100.0 );
     s->ground( -2.0 );
     s->gravity( 10.0 );
-    s->video("colliding_softmats");
+    // s->video("colliding_softmats");
     // s->camera(-0.0, 2.2);    
 }
 
