@@ -1,5 +1,6 @@
 #include "softmatsview.h"
 #include "../util/openglutils.h"
+#include "../util/config.h"
 
 using namespace morph::softmats;
 
@@ -60,8 +61,9 @@ void SoftmatsView::init( ){
 
 	std::cout << "Glew initialized\n";
 	glfwSwapInterval( 1 );
-
-	renderingProgram = OpenglUtils::createShaderProgram("shaders/softmats.vsh", "shaders/softmats.fsh");
+	std::string vshader = Config::getConfig()->getShaderLocation() + "softmats.vsh";
+	std::string fshader = Config::getConfig()->getShaderLocation() + "softmats.fsh";
+	renderingProgram = OpenglUtils::createShaderProgram(vshader.c_str(), fshader.c_str());
 	OpenglUtils::checkOpenGLError();
 	std::cout << "Shaders loaded\n";
 	camera.x = 0.0f; camera.y = -0.5f; camera.z = 10.5f;

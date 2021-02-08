@@ -13,6 +13,7 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # find_package(Armadillo REQUIRED)
 find_package(OpenCV REQUIRED)
 # find_package(LAPACK REQUIRED)
+find_package(jsoncpp REQUIRED)
 
 #include_directories(
 #	${GLFW_INCLUDE}
@@ -30,9 +31,8 @@ set(ALL_LIBS
 	armadillo
 	lapack
 	${OpenCV_LIBS}
+	jsoncpp_lib
 )
-
-
 
 file(GLOB SOURCES
     src/*.cpp
@@ -51,7 +51,8 @@ file(GLOB HEADERS
 )
 
 add_library(softmats SHARED ${SOURCES})
-
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+include_directories(${JSON_INC_PATH})
 
 target_include_directories(softmats PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> # so include "morph/blah.h" works

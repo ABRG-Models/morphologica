@@ -5,6 +5,7 @@
 #include "shapeconstr.h"
 #include "../util/meshutil.h"
 #include "../util/openglutils.h"
+#include "../util/config.h"
 
 using namespace morph::softmats;
 
@@ -33,7 +34,7 @@ void Animat::setMass( double m ){
 
 void Animat::init( int prec ){
     // SphereMeshProvider mp( SphereMeshProvider::TYPICAL );
-    ObjMeshProvider mp( "../res/models/sphere.obj" );
+    ObjMeshProvider mp( Config::getConfig()->getMeshLocation().c_str() );
     mesh = mp.buildMesh();
 }
 

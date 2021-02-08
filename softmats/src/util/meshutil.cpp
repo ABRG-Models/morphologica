@@ -111,13 +111,14 @@ TriangleMesh* PlaneMeshProvider::buildMesh( ){
 }
 
 // ObjMeshProvider
-ObjMeshProvider::ObjMeshProvider( const char* path ){
+ObjMeshProvider::ObjMeshProvider( std::string path ){
 	this->path = path;
 }
 
 
 TriangleMesh* ObjMeshProvider::buildMesh(){
-	FILE *f = fopen( this->path, "r" );
+	
+	FILE *f = fopen( this->path.c_str(), "r" );
 	ObjMeshProccessChain *chain = new VertexChainLink( 
 								  new TextureChainLink(
 								  new FaceChainLink(NULL))); 

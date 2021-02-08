@@ -57,9 +57,9 @@ public:
  */
 class ObjMeshProvider : public MeshProvider{
 private:
-	const char* path;
+	std::string path;
 public:
-	ObjMeshProvider( const char* path );
+	ObjMeshProvider( std::string path );
 	TriangleMesh* buildMesh();
 };
 

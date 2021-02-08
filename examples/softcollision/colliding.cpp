@@ -42,8 +42,14 @@ void onContact( const SoftmatSim *s, ContactList *contacts ){
 // }
 
 int main( int n, char** args ){
+    if (n < 2) {
+        std::cerr << "Usage: " << args[0] << " /path/to/params.json [/path/to/logdir]" << std::endl;
+        return 1;
+    }
 
-    SoftmatSim sim( &setup, &update, &draw );
+    // Loading configuration
+    std::string pfile = args[1];
+    SoftmatSim sim( pfile, &setup, &update, &draw );
     sim.onFinish( &onFinish );
     sim.onContact( &onContact );
     sim.run();

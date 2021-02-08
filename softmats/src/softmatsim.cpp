@@ -2,13 +2,16 @@
 #include "core/point.h"
 #include "collisions/collisionconstr.h"
 #include <cmath>
+#include "util/config.h"
 
 using namespace morph::softmats;
 
-SoftmatSim::SoftmatSim( void (*setup)(SoftmatSim *), 
+SoftmatSim::SoftmatSim( std::string configFile,
+                        void (*setup)(SoftmatSim *), 
                         void (*update)(SoftmatSim *), 
                         void(*draw)(SoftmatSim *) ):fps(20){
     
+    Config::configPath = configFile;
     this->setup = setup;
     this->update = update;
     this->draw = draw;

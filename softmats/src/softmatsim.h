@@ -55,7 +55,7 @@ private:
     // Is the simulation still running?
     bool running;
 public:
-    SoftmatSim( void (*setup)(SoftmatSim *), void (*update)(SoftmatSim *), void(*draw)(SoftmatSim *) );
+    SoftmatSim( std::string configFile, void (*setup)(SoftmatSim *), void (*update)(SoftmatSim *), void(*draw)(SoftmatSim *) );
 
     // Creation members
     /**

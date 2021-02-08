@@ -1,6 +1,6 @@
-#include "src/softmatsim.h"
-#include "src/core/animat.h"
-#include "src/collisions/collision.h"
+#include <softmats/src/softmatsim.h>
+#include <softmats/src/core/animat.h>
+#include <softmats/src/collisions/collision.h>
 
 using namespace morph::softmats;
 
@@ -14,7 +14,7 @@ void setup( SoftmatSim *s ){
     AnimatSource *as = s->animatSource(10, 100, 0.0, 2.5, 0.0);
     s->ground( -2.0 );
     s->gravity( 10.0 );
-    // s->video();
+    // s->video("bags");
     // s->camera(-0.0, 2.2);
 
     // v[0].lock = true;
@@ -45,8 +45,14 @@ void onContact( const SoftmatSim *s, ContactList *contacts ){
 // }
 
 int main( int n, char** args ){
+    if (n < 2) {
+        std::cerr << "Usage: " << args[0] << " /path/to/params.json [/path/to/logdir]" << std::endl;
+        return 1;
+    }
 
-    SoftmatSim sim( &setup, &update, &draw );
+    // Loading configuration
+    std::string pfile = args[1];
+    SoftmatSim sim( pfile, &setup, &update, &draw );
     sim.onFinish( &onFinish );
     sim.onContact( &onContact );
     sim.run();
