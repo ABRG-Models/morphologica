@@ -278,6 +278,18 @@ namespace morph {
             return len;
         }
 
+        /*!
+         * Find the squared length of the vector.
+         *
+         * \return the square of the length
+         */
+        S length_sq() const
+        {
+            auto add_squared = [](S a, S b) { return a + b * b; };
+            const S len_sq = std::accumulate (this->begin(), this->end(), S{0}, add_squared);
+            return len_sq;
+        }
+
         //! Return the value of the longest component of the vector.
         S longest() const
         {
