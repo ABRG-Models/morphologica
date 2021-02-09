@@ -89,5 +89,6 @@ void PBD::loop( BodySet *bs, int step ){
     }
 
     // Update velocity
+    // TO-DO: Add some damping
     velocityUpdate( bs );
 }

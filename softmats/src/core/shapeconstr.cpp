@@ -55,7 +55,7 @@ void ShapeMatchingContraint::computeMatrices( arma::vec x_cm ){
     arma::mat Apq( n, n, arma::fill::zeros );
     std::vector<Point *>& vert = body->getMesh()->getVertices(); 
     
-    for( int i = 0; i < vert.size(); ++i ){        
+    for( unsigned int i = 0; i < vert.size(); ++i ){        
         p = vert[i]->x_c - x_cm;
         q = shape[i]->x - this->x0_cm;        
         Apq += (1.0/vert[i]->w)*p*q.t();
@@ -87,10 +87,10 @@ void ShapeMatchingContraint::solve(){
     arma::vec dx;
     double h = Config::getConfig()->getTimeStep();
 
-    for( int i = 0; i < vert.size(); ++i ){        
+    for( unsigned int i = 0; i < vert.size(); ++i ){        
         g = this->T*(shape[i]->x - this->x0_cm) + x_cm;
         dx = alpha*(g - vert[i]->x_c);
-        arma::vec nx = vert[i]->x_c + dx;
+        arma::vec nx = vert[i]->x_c + dx - 0.01*h*vert[i]->v;
         vert[i]->x_c = nx;
     }
 }

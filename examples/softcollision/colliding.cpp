@@ -16,7 +16,7 @@ void setup( SoftmatSim *s ){
     b = s->animat(2.0, -1.0, 0.0, 100.0 );
     s->ground( -2.0 );
     s->gravity( 10.0 );
-    // s->video("colliding_softmats");
+    s->video("colliding_softmats");
     // s->camera(-0.0, 2.2);    
 }
 
