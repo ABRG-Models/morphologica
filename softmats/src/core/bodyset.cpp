@@ -5,8 +5,10 @@
 using namespace morph::softmats;
 
 void BodySet::add( Body * b ){
-    if( b != NULL )
+    if( b != NULL ){
+        b->setId(bodies.size());
         bodies.push_back(b);
+    }
 }
 
 std::vector<Body *> BodySet::getBodies(){

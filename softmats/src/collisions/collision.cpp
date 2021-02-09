@@ -28,9 +28,9 @@ bool Contact::hasCollisions(){
 
 void Contact::addCollision( Collision* c  ){
     vector<Collision *>::iterator it;
-    // cout << "Number of collisions before: " << collisions.size() << endl;
-    // if( collisions.empty() )collisions.push_back( c );
+    
     bool exist = false;
+
     if( c->ctype == 0 ){
         FPCollision *fpc = (FPCollision*)c;
 
@@ -40,6 +40,8 @@ void Contact::addCollision( Collision* c  ){
                     exist = true;
         }
     }
+
+    // Not adding edge collisions!
 
     if( !exist )
         collisions.push_back( c );
@@ -67,9 +69,25 @@ vector<Collision*>& Contact::getCollisions(){
     return collisions;
 }
 
+void Contact::print(){
+    std::cout << "Contact: A = " << A->getId() << 
+                 ", B = " << B->getId() << 
+                 ". Collisions: " << getCollisions().size() << "\n";
+}
 // Collision List
 ContactList::ContactList(){
 
+}
+
+void ContactList::print(){
+    std::cout << "List of contacts ("<< contacts.size() << "): \n";
+
+    for( Contact *c : contacts ){
+        if( c != nullptr )
+            c->print();
+        else
+            std::cerr << "Null contact!\n";
+    }
 }
 
 Contact *ContactList::findContact( Body *A, Body *B ){
@@ -113,8 +131,11 @@ double ContactList::getContactArea( bool includefloor ){
     double area = 0.0;
 
     for( Contact *c : contacts ){
-        area += c->getContactArea( false );
+        if( c != nullptr )
+            area += c->getContactArea( false );
     }
+
+    return area;
 }
 
 void ContactList::push( Body* A, Body* B, Collision* c ){
@@ -186,7 +207,6 @@ vector<Contact*>& ContactList::getContacts(){
 
 // Collision
 Collision::Collision( double hc, vec cp, vec cnormal ):hc(hc), cp(cp), cnormal(cnormal), active(true){
-
 }
 
 // FPCollision
@@ -264,6 +284,7 @@ void EECollision::solve(CollisionTest *collisionTest){
         double cc2 = arma::dot(p2->x_c - cp, cnormal);
         double cc3 = arma::dot(q1->x_c - cp, cnormal);
         double cc4 = arma::dot(q2->x_c - cp, cnormal);
+
         if( p1->w > 0 && !p1->lock )
             p1->x_c += -cc1*cr*cnormal;
         if( p2->w > 0 && !p2->lock )
@@ -271,7 +292,7 @@ void EECollision::solve(CollisionTest *collisionTest){
         if( q1->w > 0 && !q1->lock )
             q1->x_c -= -cc3*cr*cnormal;
         if( q2->w > 0 && !q2->lock )
-            q2->x_c -= -cc1*cr*cnormal;
+            q2->x_c -= -cc4*cr*cnormal;
     }
 }
 

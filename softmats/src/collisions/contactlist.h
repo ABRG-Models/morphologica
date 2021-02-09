@@ -24,6 +24,7 @@ public:
     void prune();
     double getContactArea( bool includefloor );
     void updateReceptors();
+    void print();
     // Removes and returns the first collision in the queue
     // Collision* pop();
 };

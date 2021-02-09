@@ -26,6 +26,7 @@ namespace morph{ namespace softmats{
     private:
         arma::vec fext;
         std::vector<Constraint *> constraints;
+        int id;
     protected:
         TriangleMesh* mesh;
     public:
@@ -41,5 +42,7 @@ namespace morph{ namespace softmats{
         void setExternalForce( arma::vec f );    
         void resetForces();
         void updateReceptors();
+        int getId();
+        void setId( int id );
     };
 }}

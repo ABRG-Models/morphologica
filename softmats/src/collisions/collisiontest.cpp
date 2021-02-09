@@ -32,7 +32,7 @@ Collision* ContinuousCollisionTest::testFPCollision( Face* f, Point *p ){
 		return nullptr;
 	}
 
-	float t1, t2, rt = 10000, trt;
+	float t1, t2, rt = 10000;
 
 	for( int i = 0; i < nb; i++ ){
 		t1 = tb1[i];
@@ -89,7 +89,7 @@ Collision* ContinuousCollisionTest::testEECollision( Edge& ep, Edge& ef ){
 
     if( nb == 0 ) return nullptr;
 
-	float t1, t2, rt = 10000, trt;
+	float t1, t2, rt = 10000;
 	
 	for( int i = 0; i < nb; i++ ){
 		t1 = tb1[i];

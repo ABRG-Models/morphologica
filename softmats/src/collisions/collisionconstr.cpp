@@ -11,7 +11,7 @@ void CollisionConstraint::init( BodySet *bs ){
     bodySet = bs;
 
 	for( Body* b : bs->getBodies() )
-			registerObject( b );
+		registerObject( b );
 }
 
 void CollisionConstraint::reset(){
@@ -50,10 +50,9 @@ void CollisionConstraint::registerObject( Body *b ){
 
 void CollisionConstraint::firstPass( int step ){
 
-	for( int i = 0; i < this->points.size(); i++ ){
+	for( unsigned int i = 0; i < this->points.size(); i++ ){
 		// Add hash
 		CPoint cp = this->points[i];
-		Point* p = cp.point;
 		vector<int> idxs = indexes[cp.body]; 
 		this->ht.hashIn( cp.point->x_c, i, step );
 	}
@@ -65,7 +64,7 @@ void CollisionConstraint::firstPass( int step ){
 }
 
 void CollisionConstraint::secondPass( int step ){
-	for( int i = 0; i < this->faces.size(); i++ ){		
+	for( unsigned int i = 0; i < this->faces.size(); i++ ){		
 		CFace cf = this->faces[i];
 		this->evaluateContacts( cf, step );
 	}
@@ -99,8 +98,7 @@ void CollisionConstraint::evaluateContacts( CFace& cf, int step ){
 void CollisionConstraint::handleCollisions( CFace& cf, CHashItem chi, int step ){
 	
 	for( list<int>::iterator it = chi.items.begin(); it != chi.items.end(); ++it ){
-		CPoint cp = this->points[*it];
-		Point* p = cp.point;		
+		CPoint cp = this->points[*it];		
 		
 		if( cp.body == cf.body ){continue;}
 		this->storeCollision( cf, cp );
@@ -112,7 +110,7 @@ void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
 	
 	Point* p = cp.point;
 	Face* f = cf.face;
-	vec pd = {ht.discretize(p->x(0)), ht.discretize(p->x(1)), ht.discretize(p->x(2))};
+	//vec pd = {ht.discretize(p->x(0)), ht.discretize(p->x(1)), ht.discretize(p->x(2))};
 
 	if( arma::dot( p->x_c - f->points[0]->x_c, f->normal) > 0.1 || 
 		cf.body == cp.body ) return;
@@ -166,7 +164,7 @@ void CollisionConstraint::solve(){
 }
 
 void CollisionConstraint::updateVelocity(){
-	double epsilon = Config::getConfig()->getTimeStep()/2.0;
+	// double epsilon = Config::getConfig()->getTimeStep()/2.0;
 
 	for( Contact* contact: contacts->getContacts() ){
 		for( Collision* c : contact->getCollisions() ){

@@ -36,6 +36,14 @@ void Body::updateReceptors(){
     }
 }
 
+int Body::getId(){
+    return id;
+}
+
+void Body::setId( int id ){
+    this->id = id;
+}
+
 void Body::resetForces(){
     
     for( Point* p : getMesh()->getVertices() ){

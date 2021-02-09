@@ -37,7 +37,8 @@ void onFinish( const SoftmatSim *s ){
 }
 
 void onContact( const SoftmatSim *s, ContactList *contacts ){
-    std::cout << "Contact: " << contacts->getContactArea( false ) << "\n";
+    contacts->print();
+    std::cout << "Contact area : " << contacts->getContactArea( false ) << "\n";
 }
 
 // void onAnimatContact( const Animat* a, vector<Receptor*> receptors ){
