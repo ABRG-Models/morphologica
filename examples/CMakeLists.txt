@@ -6,6 +6,9 @@ add_subdirectory(Ermentrout2009)
 # The Lotka-Volterra population model. See Pau, 1992, p654.
 add_subdirectory(LotkaVolterra)
 
+# A retinotectal model published by Simpson and Goodhill, 2011
+add_subdirectory(SimpsonGoodhill)
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
