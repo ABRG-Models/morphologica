@@ -79,12 +79,13 @@ struct SimpsonGoodhill
 
     void run()
     {
-        for (unsigned int i = 0; i < 10; ++i) {
+        for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             std::cout << "step\n";
             this->step();
             std::cout << "vis\n";
             this->vis();
         }
+        std::cout << "Done simulating\n";
         this->v->keepOpen();
     }
 
@@ -92,7 +93,7 @@ struct SimpsonGoodhill
     {
         glfwPollEvents();
         this->setScatter();
-        this->sv->finalize();
+        this->sv->reinit();
         this->v->render();
     }
 
@@ -136,13 +137,14 @@ struct SimpsonGoodhill
             ++i;
         }
         // Visualization init
-        const unsigned int ww = this->conf->getUInt ("win_width", 340);
+        const unsigned int ww = this->conf->getUInt ("win_width", 800);
         unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
         this->v->lightingEffects();
 
         morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
         this->sv = new morph::ScatterVisual<T> (v->shaderprog, offset);
+        this->sv->radiusFixed = 0.02f;
         this->setScatter();
         this->sv->finalize();
         v->addVisualModel (this->sv);
