@@ -1,28 +1,24 @@
 /*
  * Visualize a quiver field
  */
-#include "morph/Visual.h"
-using morph::Visual;
-#include "morph/ColourMap.h"
-using morph::ColourMapType;
-#include "morph/QuiverVisual.h"
-using morph::QuiverVisual;
-#include "morph/ScatterVisual.h"
-#include "morph/Vector.h"
-using morph::Vector;
-#include "morph/Scale.h"
+#include <morph/Visual.h>
+#include <morph/ColourMap.h>
+#include <morph/QuiverVisual.h>
+#include <morph/ScatterVisual.h>
+#include <morph/Vector.h>
+#include <morph/Scale.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <array>
 
-using namespace std;
-
 int main (int argc, char** argv)
 {
+    using namespace std;
+
     int rtn = -1;
 
-    Visual v(1024, 768, "Visualization");
+    morph::Visual v(1024, 768, "Visualization");
     v.zNear = 0.001;
     v.showCoordArrows = true;
     // For a white background:
@@ -38,23 +34,23 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
-        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        vector<Vector<float, 3>> coords;
+        vector<morph::Vector<float, 3>> coords;
         coords.push_back ({0, 0,   0});
         coords.push_back ({1, 1,   0});
         coords.push_back ({2, 0,   0});
         coords.push_back ({1, 0.8, 0});
         coords.push_back ({2, 0.5, 0});
 
-        vector<Vector<float, 3>> quivs;
+        vector<morph::Vector<float, 3>> quivs;
         quivs.push_back ({0.3,   0.4,  0});
         quivs.push_back ({0.1,   0.2,  0.1});
         quivs.push_back ({-0.1,  0,    0});
         quivs.push_back ({-0.04, 0.05, -.2});
         quivs.push_back ({0.3,  -0.1,  0});
 
-        unsigned int visId = v.addVisualModel (new morph::QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, ColourMapType::Cividis));
+        unsigned int visId = v.addVisualModel (new morph::QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::Cividis));
 
         cout << "Added Visual with visId " << visId << endl;
 
@@ -62,7 +58,7 @@ int main (int argc, char** argv)
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<Vector<float, 3>> points;
+        vector<morph::Vector<float, 3>> points;
         points.push_back ({0,0,0});
         points.push_back ({1,1,0});
         points.push_back ({2,2.2,0});
@@ -70,7 +66,14 @@ int main (int argc, char** argv)
         points.push_back ({4,3.9,0});
         vector<float> data = {0.1, 0.2, 0.5, 0.6, 0.95};
 
-        unsigned int visId_s = v.addVisualModel (new morph::ScatterVisual<float> (v.shaderprog, &points, offset, &data, 0.03f, scale, ColourMapType::Plasma));
+        morph::ScatterVisual<float>* sv = new morph::ScatterVisual<float> (v.shaderprog, offset);
+        sv->setDataCoords (&points);
+        sv->setScalarData (&data);
+        sv->radiusFixed = 0.03f;
+        sv->colourScale = scale;
+        sv->cm.setType (morph::ColourMapType::Plasma);
+        sv->finalize();
+        unsigned int visId_s = v.addVisualModel (sv);
 
         cout << "Added Visual with visId " << visId_s << endl;
 
