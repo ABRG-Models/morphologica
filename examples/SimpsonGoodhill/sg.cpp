@@ -79,23 +79,28 @@ struct SimpsonGoodhill
 
     void run()
     {
-        for (unsigned int i = 0; i < 100; ++i) {
+        for (unsigned int i = 0; i < 10; ++i) {
+            std::cout << "step\n";
             this->step();
+            std::cout << "vis\n";
+            this->vis();
         }
-        this->vis();
+        this->v->keepOpen();
     }
 
     void vis()
     {
+        glfwPollEvents();
+        this->setScatter();
+        this->sv->finalize();
+        this->v->render();
     }
 
     void step()
     {
-        //auto obranches(this->branches);
+        // Update each branch's position once
         for (auto& b8 : this->branches) {
             for (auto& b : b8) {
-                // b is ref to type 'branch<T>'
-                //b.update (obranches);
                 b.update (this->branches);
             }
         }
@@ -135,6 +140,29 @@ struct SimpsonGoodhill
         unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
         this->v->lightingEffects();
+
+        morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
+        this->sv = new morph::ScatterVisual<T> (v->shaderprog, offset);
+        this->setScatter();
+        this->sv->finalize();
+        v->addVisualModel (this->sv);
+    }
+
+    std::vector<T> colourdata;
+    std::vector<morph::Vector<float, 3>> coords;
+
+    void setScatter()
+    {
+        this->colourdata.clear();
+        this->coords.clear();
+        for (auto& b8 : this->branches) {
+            for (size_t j = 0; j < 8; ++j) {
+                colourdata.push_back (b8[j].EphA);
+                coords.push_back ({b8[j].path.back().x(), b8[j].path.back().y(), 0});
+            }
+        }
+        this->sv->setScalarData (&this->colourdata);
+        this->sv->setDataCoords (&this->coords);
     }
 
     // Access to a parameter configuration object
@@ -145,6 +173,8 @@ struct SimpsonGoodhill
     std::vector<std::array<branch<T>, 8>> branches;
     // A visual environment
     morph::Visual* v;
+    // Scatter plot for the visualization
+    morph::ScatterVisual<T>* sv;
 };
 
 int main (int argc, char **argv)
