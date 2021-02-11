@@ -27,55 +27,18 @@ namespace morph {
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:
-        ScatterVisual(GLuint sp,
-                      std::vector<Vector<float,3>>* _coords,
-                      const Vector<float, 3> _offset,
-                      const std::vector<Flt>* _data,
-                      const Scale<Flt>& _scale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f) {
-            // Set up...
+        // New style morph::VisualModel constructor, to be used with intermediate calls
+        // to set scale, dat, etc and final call to finalize() before use.
+        ScatterVisual(GLuint sp, const Vector<float, 3> _offset)
+        {
             this->shaderprog = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
-            this->colourScale = _scale;
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        ScatterVisual(GLuint sp,
-                      std::vector<Vector<float,3>>* _coords,
-                      const Vector<float, 3> _offset,
-                      const std::vector<Flt>* _data,
-                      const float fr,
-                      const Scale<Flt>& _scale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f) {
-            // Set up...
-            this->shaderprog = sp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-            this->colourScale = _scale;
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-            this->radiusFixed = fr;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
         }
 
         //! Compute spheres for a scatter plot
-        void initializeVertices (void) {
-
+        void initializeVertices (void)
+        {
             unsigned int ncoords = this->dataCoords->size();
             unsigned int ndata = this->scalarData->size();
 
@@ -108,12 +71,11 @@ namespace morph {
         }
 
         //! Set this->radiusFixed, then re-compute vertices.
-        void setRadius (float fr) {
+        void setRadius (float fr)
+        {
             this->radiusFixed = fr;
             this->reinit();
         }
-
-    private:
 
         //! Change this to get larger or smaller spheres.
         Flt radiusFixed = 0.05;

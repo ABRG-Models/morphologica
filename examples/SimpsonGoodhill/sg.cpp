@@ -12,6 +12,8 @@
 #include <morph/CartGrid.h>
 #include <morph/Config.h>
 #include <morph/Random.h>
+#include <morph/Visual.h>
+#include <morph/ScatterVisual.h>
 
 // Retinotectal axon branch
 template<typename T>
@@ -101,6 +103,7 @@ struct SimpsonGoodhill
 
     void init()
     {
+        // Simulation init
         morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
         T gr = T{1}/T{19};
@@ -110,8 +113,7 @@ struct SimpsonGoodhill
         this->branches.resize(this->retina->num());
         // init all branches with relevant termination zone
         size_t i = 0;
-        size_t rns = this->retina->num() * 2 * 8;
-        std::vector<T> rn = rng.get (rns);
+        std::vector<T> rn = rng.get (this->retina->num() * 2 * 8);
         for (auto& b8 : this->branches) {
             branch<T> b;
             // Set the branch's termination zone
@@ -128,6 +130,11 @@ struct SimpsonGoodhill
             }
             ++i;
         }
+        // Visualization init
+        const unsigned int ww = this->conf->getUInt ("win_width", 340);
+        unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
+        this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
+        this->v->lightingEffects();
     }
 
     // Access to a parameter configuration object
@@ -136,6 +143,8 @@ struct SimpsonGoodhill
     morph::CartGrid* retina;
     // 20x20x8 branches, as per the paper
     std::vector<std::array<branch<T>, 8>> branches;
+    // A visual environment
+    morph::Visual* v;
 };
 
 int main (int argc, char **argv)
