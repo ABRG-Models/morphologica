@@ -11,6 +11,7 @@
 
 #include <morph/CartGrid.h>
 #include <morph/Config.h>
+#include <morph/Random.h>
 
 // Retinotectal axon branch
 template<typename T>
@@ -40,9 +41,9 @@ struct branch
                 C += bk * W;
             }
         }
-        // Possibly do C -= self, as I looped over ALL branches, above
+        // Possibly do C -= self, as I looped over ALL branches, above (same for I)
         C.renormalize(); // achieves 1/|Bb|
-        I.renormalize(); // achieves 1/|Bb|
+        I.renormalize();
 
         // Paper equation 1
         k += (G * m[0] + C * m[1] + I * m[2]); // * v where v=1
@@ -51,7 +52,7 @@ struct branch
     // The location and all previous locations of this branch.
     std::vector<morph::Vector<T, 2>> path;
     // Termination zone for this branch
-    morph::Vector<T, 2> tz;
+    morph::Vector<T, 2> tz = { T{0}, T{0} };
     // EphA expression for this branch
     T EphA = 0;
     // EphB expression for this branch
@@ -76,8 +77,14 @@ struct SimpsonGoodhill
 
     void run()
     {
-        this->step();
-        // Visualise here.
+        for (unsigned int i = 0; i < 100; ++i) {
+            this->step();
+        }
+        this->vis();
+    }
+
+    void vis()
+    {
     }
 
     void step()
@@ -94,19 +101,31 @@ struct SimpsonGoodhill
 
     void init()
     {
+        morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
         T gr = T{1}/T{19};
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
+        this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num());
         // init all branches with relevant termination zone
         size_t i = 0;
+        size_t rns = this->retina->num() * 2 * 8;
+        std::vector<T> rn = rng.get (rns);
         for (auto& b8 : this->branches) {
             branch<T> b;
+            // Set the branch's termination zone
             b.tz = {this->retina->d_x[i], this->retina->d_y[i]};
+            // Set its ephrin interaction parameters (though these may be related to the tz)
             b.EphA = this->retina->d_x[i];
             b.EphB = this->retina->d_y[i];
-            for (size_t j = 0; j < 8; ++j) { b8[j] = b; }
+            // Set its initial location randomly
+            for (size_t j = 0; j < 8; ++j) {
+                morph::Vector<T, 2> initpos = { rn[i+2*j], rn[i+2*j+1] };
+                b.path.clear();
+                b.path.push_back (initpos);
+                b8[j] = b;
+            }
             ++i;
         }
     }
