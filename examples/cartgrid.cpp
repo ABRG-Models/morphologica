@@ -44,6 +44,9 @@ int main()
     // Create a HexGrid to show in the scene
     morph::CartGrid cg(0.01, 0.01, 1, 1);
     std::cout << "Number of pixels in grid:" << cg.num() << std::endl;
+
+    // *NB* This call (or any other 'set boundary' call) is essential, as it sets up the
+    // d_ vectors in the CartGrid. Without it, the CartGrid will be unusable!
     cg.setBoundaryOnOuterEdge();
 
     // Make some dummy data (a sine wave) to make an interesting surface
