@@ -49,16 +49,18 @@ struct branch
 
         // Paper equation 1
         k += (G * m[0] + C * m[1] + I * m[2]); // * v where v=1
-        this->path.push_back (k);
+        this->next = k;
     }
     // The location and all previous locations of this branch.
     std::vector<morph::Vector<T, 2>> path;
+    // Place the next computed location for path in 'next' so that while computing, we
+    // don't modify the numbers we're working from. After looping through all branches,
+    // add this to path.
+    morph::Vector<T, 2> next;
     // Termination zone for this branch
     morph::Vector<T, 2> tz = { T{0}, T{0} };
     // EphA expression for this branch
     T EphA = 0;
-    // EphB expression for this branch
-    T EphB = 0;
     // Parameter vector (hardcoded, see Table 2 in paper)
     static constexpr morph::Vector<T, 3> m = { T{0.02}, T{0.2}, T{0.15} };
     // Distance parameter r is used as 2r
@@ -105,6 +107,17 @@ struct SimpsonGoodhill
                 b.update (this->branches);
             }
         }
+        // Once done, add next to path
+        for (auto& b8 : this->branches) {
+            for (auto& b : b8) {
+                // Push back if b.next is on the tectum, otherwise, leave in position
+                if (b.next[0] < T{0} || b.next[0] > T{1} || b.next[1] < T{0} || b.next[1] > T{1}) {
+                    b.path.push_back (b.path.back());
+                } else {
+                    b.path.push_back (b.next);
+                }
+            }
+        }
     }
 
     void init()
@@ -112,7 +125,8 @@ struct SimpsonGoodhill
         // Simulation init
         morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
-        T gr = T{1}/T{19};
+        T gr = T{1}/T{20};
+        std::cout << "Grid element length " << gr << std::endl;
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
@@ -125,8 +139,7 @@ struct SimpsonGoodhill
             // Set the branch's termination zone
             b.tz = {this->retina->d_x[i], this->retina->d_y[i]};
             // Set its ephrin interaction parameters (though these may be related to the tz)
-            b.EphA = this->retina->d_x[i];
-            b.EphB = this->retina->d_y[i];
+            b.EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[i])); // R(x) = 0.26e^(2.3x) + 1.05,
             // Set its initial location randomly
             for (size_t j = 0; j < 8; ++j) {
                 morph::Vector<T, 2> initpos = { rn[i+2*j], rn[i+2*j+1] };
