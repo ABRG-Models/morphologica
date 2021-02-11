@@ -129,8 +129,7 @@ int main (int argc, char **argv)
     v.sceneLocked = conf.getBool ("sceneLocked", false);
     // You can set the default scene x/y/z offsets
     v.setZDefault (conf.getFloat ("z_default", -10.0f));
-    v.setSceneTransXY (conf.getFloat ("x_default", 0.0f),
-                         conf.getFloat ("y_default", 0.0f));
+    v.setSceneTransXY (conf.getFloat ("x_default", 0.0f), conf.getFloat ("y_default", 0.0f));
     // Make this larger to "scroll in and out of the image" faster
     v.scenetrans_stepsize = 0.5;
 
