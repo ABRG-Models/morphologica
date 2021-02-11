@@ -16,20 +16,52 @@
 template<typename T>
 struct branch
 {
-    void update()
+    void update (const std::vector<std::array<branch<T>, 8>>& branches)
     {
-        morph::Vector<T, 2> G, C, I;
-        G =
-        morph::Vector<T, 2> newpos = path.back();
-        newpos += (m[0] * G + m[1] * C + m[2] * I); // * v where v=1
-    }
+        // Current location is named k
+        morph::Vector<T, 2> k = path.back();
+        // Chemoaffinity is G
+        morph::Vector<T, 2> G = this->tz - k;
+        // Competition, C, and Axon-axon interactions, I, computed during the same loop
+        // over the other branches
+        morph::Vector<T, 2> C = {0, 0};
+        morph::Vector<T, 2> I = {0, 0};
+        morph::Vector<T, 2> nvec = {0, 0}; // null vector
+        for (auto b8 : branches) {
+            for (auto b : b8) {
+                morph::Vector<T, 2> bk = k - b.path.back();
+                T d = bk.length();
+                T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
+                T Q = b.EphA / this->EphA; // forward signalling (used predominantly in paper)
+                //T Q = this->EphA / b.EphA; // reverse signalling
+                //T Q = std::max(b.EphA / this->EphA, this->EphA / b.EphA); // bi-dir signalling
+                bk.renormalize();
+                I += Q > this->s ? bk * W : nvec;
+                C += bk * W;
+            }
+        }
+        // Possibly do C -= self, as I looped over ALL branches, above
+        C.renormalize(); // achieves 1/|Bb|
+        I.renormalize(); // achieves 1/|Bb|
 
+        // Paper equation 1
+        k += (G * m[0] + C * m[1] + I * m[2]); // * v where v=1
+        this->path.push_back (k);
+    }
     // The location and all previous locations of this branch.
     std::vector<morph::Vector<T, 2>> path;
     // Termination zone for this branch
     morph::Vector<T, 2> tz;
-    // Parameter vector (hardcoded)
-    morph::Vector<T, 3> m = { T{1}, T{1}, T{1} };
+    // EphA expression for this branch
+    T EphA = 0;
+    // EphB expression for this branch
+    T EphB = 0;
+    // Parameter vector (hardcoded, see Table 2 in paper)
+    static constexpr morph::Vector<T, 3> m = { T{0.02}, T{0.2}, T{0.15} };
+    // Distance parameter r is used as 2r
+    static constexpr T two_r = T{0.1};
+    // Signalling ratio parameter
+    static constexpr T s = T{1.1};
 };
 
 template<typename T>
@@ -40,30 +72,46 @@ struct SimpsonGoodhill
         this->conf = cfg;
         this->init();
     }
-    ~SimpsonGoodhhill() { delete this->retina; }
+    ~SimpsonGoodhill() { delete this->retina; }
 
     void run()
     {
+        this->step();
+        // Visualise here.
+    }
+
+    void step()
+    {
+        //auto obranches(this->branches);
         for (auto& b8 : this->branches) {
             for (auto& b : b8) {
                 // b is ref to type 'branch<T>'
-                b.update();
+                //b.update (obranches);
+                b.update (this->branches);
             }
         }
-
-        // Visualise here.
     }
 
     void init()
     {
         // gr is grid element length
-        T gr = T{1}/T{20};
+        T gr = T{1}/T{19};
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
+        std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num());
         // init all branches with relevant termination zone
+        size_t i = 0;
+        for (auto& b8 : this->branches) {
+            branch<T> b;
+            b.tz = {this->retina->d_x[i], this->retina->d_y[i]};
+            b.EphA = this->retina->d_x[i];
+            b.EphB = this->retina->d_y[i];
+            for (size_t j = 0; j < 8; ++j) { b8[j] = b; }
+            ++i;
+        }
     }
 
-    // Access to aparamteres configuration
+    // Access to a parameter configuration object
     morph::Config* conf;
     // 20x20 RGCs, each with 8 axon branches growing.
     morph::CartGrid* retina;
