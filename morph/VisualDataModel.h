@@ -43,6 +43,7 @@ namespace morph {
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
         void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
+        void setVectorData (const std::vector<Vector<float>>* _vectors) { this->vectorData = _vectors; }
         void setDataCoords (std::vector<Vector<float>>* _coords) { this->dataCoords = _coords; }
 
         void updateZScale (const Scale<T, float>& zscale)
@@ -179,6 +180,10 @@ namespace morph {
         //! A Scaling function for the colour map. Perhaps a Scale class contains a
         //! colour map? If not, then this scale might well be autoscaled. Applied to scalarData.
         Scale<T, float> colourScale;
+        // scale for second colour (when used with vectorData)
+        Scale<T, float> colourScale2;
+        // scale for third colour (when used with vectorData)
+        Scale<T, float> colourScale3;
 
         //! A scale to scale (or autoscale) scalarData. This might be used to set z
         //! locations of data coordinates based on scalarData. The scaling may
