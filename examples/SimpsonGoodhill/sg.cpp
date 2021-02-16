@@ -196,26 +196,31 @@ struct SimpsonGoodhill
         morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
         this->sv = new morph::ScatterVisual<T> (v->shaderprog, offset);
         this->sv->radiusFixed = 0.01f;
-        this->sv->cm.setType (morph::ColourMapType::Jet);
+        this->sv->cm.setType (morph::ColourMapType::Duochrome);
+        this->sv->cm.setHueRG();
         this->setScatter();
         this->sv->finalize();
         v->addVisualModel (this->sv);
     }
 
-    std::vector<T> colourdata;
+    std::vector<T> ephcolourdata;
+    std::vector<morph::Vector<float, 3>> rgcposcolourdata;
     std::vector<morph::Vector<float, 3>> coords;
 
     void setScatter()
     {
-        this->colourdata.clear();
+        this->rgcposcolourdata.clear();
+        this->ephcolourdata.clear();
         this->coords.clear();
         for (auto& b8 : this->branches) {
             for (size_t j = 0; j < 8; ++j) {
-                colourdata.push_back (b8[j].EphA);
+                ephcolourdata.push_back (b8[j].EphA);
+                rgcposcolourdata.push_back ( {b8[j].tz.x(), b8[j].tz.y(), 0} );
                 coords.push_back ({b8[j].path.back().x(), b8[j].path.back().y(), 0});
             }
         }
-        this->sv->setScalarData (&this->colourdata);
+        this->sv->setScalarData (&this->ephcolourdata);
+        this->sv->setVectorData (&this->rgcposcolourdata);
         this->sv->setDataCoords (&this->coords);
     }
 

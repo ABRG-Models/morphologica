@@ -40,9 +40,9 @@ namespace morph {
         void initializeVertices (void)
         {
             unsigned int ncoords = this->dataCoords->size();
-            unsigned int ndata = this->scalarData->size();
+            unsigned int ndata = this->scalarData == (const std::vector<Flt>*)0 ? 0 : this->scalarData->size();
             // If we have vector data, then manipulate colour accordingly.
-            unsigned int nvdata = this->vectorData->size();
+            unsigned int nvdata = this->vectorData == (const std::vector<Vector<Flt>>*)0 ? 0 : this->vectorData->size();
 
             if (ndata > 0 && ncoords != ndata) {
                 std::cout << "ScatterVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
@@ -61,12 +61,10 @@ namespace morph {
             std::vector<Flt> vdcopy2;
             std::vector<Flt> vdcopy3;
             if (ndata && !nvdata) {
-                std::cout << "Colouring from scalar data\n";
                 dcopy = *(this->scalarData);
                 this->colourScale.do_autoscale = true;
                 this->colourScale.transform (*this->scalarData, dcopy);
             } else if (nvdata) {
-                std::cout << "have vector data\n";
                 vdcopy1.resize(this->vectorData->size());
                 vdcopy2.resize(this->vectorData->size());
                 vdcopy3.resize(this->vectorData->size());
@@ -80,7 +78,6 @@ namespace morph {
                     dcopy[i] = (*this->vectorData)[i][0];
                     dcopy2[i] = (*this->vectorData)[i][1];
                     dcopy3[i] = (*this->vectorData)[i][2];
-                    std::cout << "i=" << i << " R: " << dcopy[i] << ", G: "<< dcopy2[i] << ", B: " << dcopy3[i] << std::endl;
                 }
 
                 this->colourScale.do_autoscale = true;
@@ -91,6 +88,14 @@ namespace morph {
                 this->colourScale2.transform (dcopy2, vdcopy2);
                 this->colourScale3.transform (dcopy3, vdcopy3);
 
+#if 0
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    std::cout << "i=" << i
+                              << " R: " << vdcopy1[i]
+                              << ", G: " << vdcopy2[i]
+                              << ", B: " << vdcopy3[i] << std::endl;
+                }
+#endif
             } // else no scaling required - spheres will be one colour
 
             // The indices index
