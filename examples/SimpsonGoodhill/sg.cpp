@@ -127,9 +127,8 @@ struct SimpsonGoodhill
     void run()
     {
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
-            std::cout << "step\n";
+            std::cout << "step " << i << "\n";
             this->step();
-            std::cout << "vis\n";
             this->vis();
         }
         std::cout << "Done simulating\n";
