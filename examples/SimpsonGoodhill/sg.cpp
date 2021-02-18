@@ -14,6 +14,7 @@
 #include <morph/Random.h>
 #include <morph/Visual.h>
 #include <morph/ScatterVisual.h>
+#include <morph/CartGridVisual.h>
 
 #include "branch.h"
 //#include "branchvisual.h"
@@ -31,7 +32,7 @@ struct SimpsonGoodhill
     void run()
     {
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
-            std::cout << "step " << i << "\n";
+            if (i%100 == 0) { std::cout << "step " << i << "\n"; }
             this->step();
             this->vis();
         }
@@ -56,15 +57,12 @@ struct SimpsonGoodhill
         for (auto& b : this->branches) { b.path.push_back (b.next); }
     }
 
-    // Branches per axon
-    static constexpr unsigned int bpa = 1;
-
     void init()
     {
         // Simulation init
         morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
-        T gr = T{1}/T{20};
+        T gr = T{1}/T{rgcside};
         std::cout << "Grid element length " << gr << std::endl;
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
         this->retina->setBoundaryOnOuterEdge();
@@ -75,7 +73,7 @@ struct SimpsonGoodhill
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
-            std::cout << "tzone: d_x[" << ri << "]";
+            //std::cout << "tzone: d_x[" << ri << "]";
             // Set its ephrin interaction parameters (though these may be related to the tz)
             this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
             // Set its initial location randomly
@@ -98,6 +96,33 @@ struct SimpsonGoodhill
         this->setScatter();
         this->sv->finalize();
         v->addVisualModel (this->sv);
+
+        // Show a vis of the retina, to compare positions/colours. Duh, Use CartgridVisual!
+        offset[0] += 2.2f;
+#if 1
+        morph::ScatterVisual<float>* svr = new morph::ScatterVisual<float> (v->shaderprog, offset);
+        std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
+        svr->setDataCoords (&points);
+        //sv->setScalarData (&data);
+        // Set the vector data to the coordinates - we'll visualize duochrome based on x and y
+        svr->setVectorData (&points);
+        svr->radiusFixed = 0.035f;
+        //svr->colourScale = scale;
+        svr->cm.setType (morph::ColourMapType::Duochrome);
+        svr->cm.setHueRG();
+        svr->finalize();
+        v->addVisualModel (svr);
+#else
+        // Need to scale the vectorData into correct colour values to get the CartGridVisual to work
+        morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
+        cgv->cartVisMode = morph::CartVisMode::RectInterp;
+        std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
+        cgv->setVectorData (&points);
+        cgv->cm.setType (morph::ColourMapType::Duochrome);
+        cgv->cm.setHueRG();
+        cgv->finalize();
+        v->addVisualModel (cgv);
+#endif
     }
 
     std::vector<T> ephcolourdata;
@@ -119,13 +144,17 @@ struct SimpsonGoodhill
         this->sv->setDataCoords (&this->coords);
     }
 
+    // Branches per axon
+    static constexpr unsigned int bpa = 1;
+    // Number of RGCs on a side
+    static constexpr unsigned int rgcside = 1;
     // Access to a parameter configuration object
     morph::Config* conf;
-    // 20x20 RGCs, each with 8 axon branches growing.
+    // rgcside^2 RGCs, each with bpa axon branches growing.
     morph::CartGrid* retina;
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
-    // 20x20x8 branches, as per the paper
+    // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
     // A visual environment
     morph::Visual* v;
