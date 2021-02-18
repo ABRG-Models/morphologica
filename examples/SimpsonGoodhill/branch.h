@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <morph/Vector.h>
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
@@ -88,7 +89,7 @@ struct branch
         this->next = k;
     }
     // The location and all previous locations of this branch.
-    std::vector<morph::Vector<T, 2>> path;
+    std::deque<morph::Vector<T, 2>> path;
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
     // add this to path.

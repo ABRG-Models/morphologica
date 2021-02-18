@@ -1,4 +1,7 @@
 {
+    "goslow" : true,
+    "rgcside" : 9,
+    "bpa" : 1,
     "steps" : 1000,
     "m1" : 0.02,
     "m2" : 0.07,

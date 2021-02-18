@@ -44,9 +44,7 @@ public:
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             // First draw the path
-            unsigned int start = 1;
-            if (b.path.size() - this->history > 1) { start = b.path.size() - this->history; }
-            for (unsigned int i = start; i < b.path.size(); ++i) {
+            for (unsigned int i = 1; i < b.path.size(); ++i) {
                 last[0] = b.path[i-1][0];
                 last[1] = b.path[i-1][1];
                 cur[0] = b.path[i][0];
@@ -70,8 +68,6 @@ public:
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.02;
     Flt linewidth = 0.02;
-    //! How many steps back in time to go?
-    unsigned int history = 30;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
     // Hues for colour control with vectorData

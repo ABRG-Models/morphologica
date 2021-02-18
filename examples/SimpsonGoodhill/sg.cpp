@@ -32,10 +32,8 @@ struct SimpsonGoodhill
     {
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             this->step();
-            if (i%100 == 0) {
-                this->vis();
-                std::cout << "step " << i << "\n";
-            }
+            this->vis();
+            if (i%100 == 0) { std::cout << "step " << i << "\n"; }
         }
         std::cout << "Done simulating\n";
         this->v->keepOpen();
@@ -43,7 +41,11 @@ struct SimpsonGoodhill
 
     void vis()
     {
-        glfwPollEvents(); //glfwWaitEventsTimeout (0.1); // to add artificial slowing
+        if (this->goslow == true) {
+            glfwWaitEventsTimeout (0.1); // to add artificial slowing
+        } else {
+            glfwPollEvents();
+        }
         this->bv->reinit();
         this->v->render();
     }
@@ -54,12 +56,18 @@ struct SimpsonGoodhill
 #pragma omp parallel for
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Once 'next' has been updated, add next to path:
-        for (auto& b : this->branches) { b.path.push_back (b.next); }
+        for (auto& b : this->branches) {
+            b.path.push_back (b.next);
+            if (b.path.size() > this->history) { b.path.pop_front(); }
+        }
     }
 
     void init()
     {
         // Simulation init
+        this->rgcside = this->conf->getUInt ("rgcside", 20);
+        this->bpa = this->conf->getUInt ("bpa", 8);
+        this->goslow = this->conf->getBool ("goslow", false);
         morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
         T gr = T{1}/T{rgcside};
@@ -70,8 +78,6 @@ struct SimpsonGoodhill
         this->branches.resize(this->retina->num() * bpa);
         std::vector<T> rn = rng.get (this->retina->num() * 2 * bpa);
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
-            // Reserve sufficient memory space in the vector
-            this->branches[i].path.reserve (this->conf->getUInt ("steps", 1000));
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
@@ -100,13 +106,13 @@ struct SimpsonGoodhill
         // Offset for visuals
         morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
 
-        //
+        // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
         this->bv->finalize();
         v->addVisualModel (this->bv);
 
         // Show a vis of the retina, to compare positions/colours
-        offset[0] += 3.0f;
+        offset[0] += 2.3f;
         offset[1] += 0.5f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
@@ -123,9 +129,13 @@ struct SimpsonGoodhill
     std::vector<morph::Vector<float, 3>> coords;
 
     // Branches per axon
-    static constexpr unsigned int bpa = 8;
+    unsigned int bpa = 8;
     // Number of RGCs on a side
-    static constexpr unsigned int rgcside = 20;
+    unsigned int rgcside = 20;
+    // If true, then slow things down a bit
+    bool goslow = false;
+    // How many steps to store/show history?
+    static constexpr size_t history = 30;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
@@ -150,8 +160,8 @@ int main (int argc, char **argv)
         paramsfile = std::string(argv[1]);
     } else {
         // Create an empty/default json file
-        paramsfile = "sg.json";
-        morph::Tools::copyStringToFile ("{ \"steps\"=1000 }\n", paramsfile);
+        paramsfile = "./sg.json";
+        morph::Tools::copyStringToFile ("{ \"steps\" : 1000 }\n", paramsfile);
     }
 
     morph::Config conf(paramsfile);
