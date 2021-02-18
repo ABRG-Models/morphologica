@@ -97,23 +97,9 @@ struct SimpsonGoodhill
         this->sv->finalize();
         v->addVisualModel (this->sv);
 
-        // Show a vis of the retina, to compare positions/colours. Duh, Use CartgridVisual!
+        // Show a vis of the retina, to compare positions/colours
         offset[0] += 2.2f;
-#if 1
-        morph::ScatterVisual<float>* svr = new morph::ScatterVisual<float> (v->shaderprog, offset);
-        std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
-        svr->setDataCoords (&points);
-        //sv->setScalarData (&data);
-        // Set the vector data to the coordinates - we'll visualize duochrome based on x and y
-        svr->setVectorData (&points);
-        svr->radiusFixed = 0.035f;
-        //svr->colourScale = scale;
-        svr->cm.setType (morph::ColourMapType::Duochrome);
-        svr->cm.setHueRG();
-        svr->finalize();
-        v->addVisualModel (svr);
-#else
-        // Need to scale the vectorData into correct colour values to get the CartGridVisual to work
+        offset[1] += 0.5f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
@@ -122,7 +108,6 @@ struct SimpsonGoodhill
         cgv->cm.setHueRG();
         cgv->finalize();
         v->addVisualModel (cgv);
-#endif
     }
 
     std::vector<T> ephcolourdata;
@@ -147,7 +132,7 @@ struct SimpsonGoodhill
     // Branches per axon
     static constexpr unsigned int bpa = 1;
     // Number of RGCs on a side
-    static constexpr unsigned int rgcside = 1;
+    static constexpr unsigned int rgcside = 10;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.

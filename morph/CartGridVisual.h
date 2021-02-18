@@ -94,10 +94,28 @@ namespace morph {
         {
             unsigned int nrect = this->cg->num();
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
+            if (this->scalarData != (const std::vector<T>*)0) {
+                this->dcopy.resize (this->scalarData->size());
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->dcolour.resize (this->scalarData->size());
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            } else if (this->vectorData != (const std::vector<Vector<T>>*)0) {
+                this->dcopy.resize (this->vectorData->size());
+                this->dcolour.resize (this->vectorData->size());
+                this->dcolour2.resize (this->vectorData->size());
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    this->dcolour[i] = (*this->vectorData)[i][0];
+                    this->dcolour2[i] = (*this->vectorData)[i][1];
+                    // Could also extract a third colour for Trichrome vs Duochrome
+                }
+                this->colourScale.transform (this->dcolour, this->dcolour);
+                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
+                this->colourScale.autoscaled = false;
+                this->colourScale.transform (this->dcolour2, this->dcolour2);
+                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
+                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
+                          << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
+            }
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
@@ -138,11 +156,28 @@ namespace morph {
             unsigned int nrect = this->cg->num();
             unsigned int idx = 0;
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
-
+            if (this->scalarData != (const std::vector<T>*)0) {
+                this->dcopy.resize (this->scalarData->size());
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->dcolour.resize (this->scalarData->size());
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            } else if (this->vectorData != (const std::vector<Vector<T>>*)0) {
+                this->dcopy.resize (this->vectorData->size());
+                this->dcolour.resize (this->vectorData->size());
+                this->dcolour2.resize (this->vectorData->size());
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    this->dcolour[i] = (*this->vectorData)[i][0];
+                    this->dcolour2[i] = (*this->vectorData)[i][1];
+                    // Could also extract a third colour for Trichrome vs Duochrome
+                }
+                this->colourScale.transform (this->dcolour, this->dcolour);
+                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
+                this->colourScale.autoscaled = false;
+                this->colourScale.transform (this->dcolour2, this->dcolour2);
+                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
+                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
+                          << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
+            }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
             float datumNNE = 0.0f;
@@ -380,7 +415,13 @@ namespace morph {
         //! An overridable function to set the colour of hex hi
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
-            std::array<float, 3> clr = this->cm.convert (this->dcolour[hi]);
+            std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
+            if (this->cm.getType() == morph::ColourMapType::Duochrome) {
+                // Use vectorData
+                clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
+            } else {
+                clr = this->cm.convert (this->dcolour[hi]);
+            }
             return clr;
         }
 
@@ -389,8 +430,9 @@ namespace morph {
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;
-        //! A copy of the scalarData, scaled to be a colour value
+        //! A copy of the scalarData (or first field of vectorData), scaled to be a colour value
         std::vector<float> dcolour;
+        std::vector<float> dcolour2;
     };
 
     //! Extended CartGridVisual class for plotting with individual red, green and blue
