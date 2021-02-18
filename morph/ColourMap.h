@@ -344,6 +344,8 @@ namespace morph {
         //! Convert for 4 component colours
         //array<float, 4> convertAlpha (T datum);
 
+        ColourMapType getType() const { return this->type; }
+
         // Set the colour map type.
         void setType (const ColourMapType& tp)
         {
