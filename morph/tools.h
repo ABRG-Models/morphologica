@@ -833,7 +833,7 @@ namespace morph
          * Output a list of strings as a csv string.
          */
         static std::string listToCsv (const std::list<std::string>& listList,
-                                 const char separator = ',');
+                                      const char separator = ',');
 
         /*!
          * Output a set of strings as a csv string.
@@ -1597,6 +1597,19 @@ namespace morph
                 from.read (buf, 63);
                 to.append (buf, from.gcount());
             }
+        }
+
+        static void copyStringToFile (const std::string& fromstr, const std::string& to)
+        {
+            std::ofstream out;
+            out.open (to.c_str(), std::ios::out|std::ios::trunc);
+            if (!out.is_open()) {
+                std::stringstream ee;
+                ee << "Failed to open file '" << to << "' for writing";
+                throw std::runtime_error (ee.str());
+            }
+            out << fromstr;
+            out.close();
         }
 
         //! Append the file from to the filestream appendTo
@@ -2748,9 +2761,9 @@ namespace morph
          */
         template <typename ST>
         static std::vector<ST> splitStringWithEncs (const ST& s,
-                                               const ST& separatorChars = ST(";, "),
-                                               const ST& enclosureChars = ST("\"'"),
-                                               const typename ST::value_type& escapeChar = typename ST::value_type(0));
+                                                    const ST& separatorChars = ST(";, "),
+                                                    const ST& enclosureChars = ST("\"'"),
+                                                    const typename ST::value_type& escapeChar = typename ST::value_type(0));
 
     }; // class Tools
 
