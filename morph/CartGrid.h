@@ -10,6 +10,7 @@
 #include <morph/BezCoord.h>
 #include <morph/MathConst.h>
 #include <morph/HdfData.h>
+#include <morph/Vector.h>
 
 #include <set>
 #include <list>
@@ -1182,6 +1183,26 @@ namespace morph {
             }
 
             return theRegion;
+        }
+
+        //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
+        std::vector<morph::Vector<float, 3>> getCoordinates3()
+        {
+            std::vector<morph::Vector<float, 3>> coords (this->num());
+            for (unsigned int i = 0; i < this->num(); ++i) {
+                coords[i] = { this->d_x[i], this->d_y[i], this->z };
+            }
+            return coords;
+        }
+
+        //! Get all the (x,y) coordinates from the grid and return as vector of Vectors
+        std::vector<morph::Vector<float, 2>> getCoordinates2()
+        {
+            std::vector<morph::Vector<float, 2>> coords (this->num());
+            for (unsigned int i = 0; i < this->num(); ++i) {
+                coords[i] = { this->d_x[i], this->d_y[i] };
+            }
+            return coords;
         }
 
         /*!
