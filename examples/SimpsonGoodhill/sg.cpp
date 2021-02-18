@@ -145,17 +145,20 @@ struct SimpsonGoodhill
 int main (int argc, char **argv)
 {
     // Set up config object
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " /path/to/params.json" << std::endl;
-        return 1;
+    std::string paramsfile;
+    if (argc >= 2) {
+        paramsfile = std::string(argv[1]);
+    } else {
+        // Create an empty/default json file
+        paramsfile = "sg.json";
+        morph::Tools::copyStringToFile ("{ \"steps\"=1000 }\n", paramsfile);
     }
-    std::string paramsfile (argv[1]);
+
     morph::Config conf(paramsfile);
     if (!conf.ready) {
         std::cerr << "Failed to read config " << paramsfile << ". Exiting.\n";
         return 1;
     }
-
     SimpsonGoodhill<float> model (&conf);
     model.run();
 
