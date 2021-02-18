@@ -146,6 +146,40 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object.
         virtual void initializeVertices (void) = 0;
 
+        //! Re-initialize the buffers. Client code might have appended to
+        //! vertexPositions/Colors/Normals and indices before calling this method.
+        void reinit_buffers()
+        {
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+            // Now re-set up the VBOs
+#ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
+            glBindVertexArray (this->vao);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
+#endif
+            int sz = this->indices.size() * sizeof(VBOint);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
+
+#ifdef CAREFULLY_UNBIND_AND_REBIND
+            glBindVertexArray(0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+#endif
+        }
+
+        //! Re-create the model - called after updating data
+        void reinit()
+        {
+            // Fixme: Better not to clear, then repeatedly pushback here:
+            this->vertexPositions.clear();
+            this->vertexNormals.clear();
+            this->vertexColors.clear();
+            this->indices.clear();
+            this->initializeVertices();
+            this->reinit_buffers();
+        }
+
         //! A function to call initialiseVertices and postVertexInit after any necessary
         //! attributes have been set (see, for example, setting the colour maps up in
         //! VisualDataModel).

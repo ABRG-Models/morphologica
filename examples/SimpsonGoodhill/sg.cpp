@@ -13,11 +13,10 @@
 #include <morph/Config.h>
 #include <morph/Random.h>
 #include <morph/Visual.h>
-#include <morph/ScatterVisual.h>
 #include <morph/CartGridVisual.h>
 
+#include "branchvisual.h"
 #include "branch.h"
-//#include "branchvisual.h"
 
 template<typename T>
 struct SimpsonGoodhill
@@ -32,9 +31,11 @@ struct SimpsonGoodhill
     void run()
     {
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
-            if (i%100 == 0) { std::cout << "step " << i << "\n"; }
             this->step();
-            this->vis();
+            if (i%100 == 0) {
+                this->vis();
+                std::cout << "step " << i << "\n";
+            }
         }
         std::cout << "Done simulating\n";
         this->v->keepOpen();
@@ -42,9 +43,8 @@ struct SimpsonGoodhill
 
     void vis()
     {
-        glfwPollEvents();
-        this->setScatter();
-        this->sv->reinit();
+        glfwPollEvents(); //glfwWaitEventsTimeout (0.1); // to add artificial slowing
+        this->bv->reinit();
         this->v->render();
     }
 
@@ -52,7 +52,7 @@ struct SimpsonGoodhill
     {
         // Compute the next position for each branch:
 #pragma omp parallel for
-        for (auto& b : this->branches) { b.compute_next (this->branches); }
+        for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) { b.path.push_back (b.next); }
     }
@@ -70,6 +70,8 @@ struct SimpsonGoodhill
         this->branches.resize(this->retina->num() * bpa);
         std::vector<T> rn = rng.get (this->retina->num() * 2 * bpa);
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
+            // Reserve sufficient memory space in the vector
+            this->branches[i].path.reserve (this->conf->getUInt ("steps", 1000));
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
@@ -82,23 +84,29 @@ struct SimpsonGoodhill
             this->branches[i].path.push_back (initpos);
             this->branches[i].id = i;
         }
+        // Parameters settable from json
+        this->m[0] = this->conf->getDouble ("m1", 0.02);
+        this->m[1] = this->conf->getDouble ("m2", 0.2);
+        this->m[2] = this->conf->getDouble ("m3", 0.15);
+        this->m[3] = this->conf->getDouble ("mborder", 0.1);
+
         // Visualization init
         const unsigned int ww = this->conf->getUInt ("win_width", 800);
         unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
+        this->v->backgroundWhite();
         this->v->lightingEffects();
 
+        // Offset for visuals
         morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
-        this->sv = new morph::ScatterVisual<T> (v->shaderprog, offset);
-        this->sv->radiusFixed = 0.01f;
-        this->sv->cm.setType (morph::ColourMapType::Duochrome);
-        this->sv->cm.setHueRG();
-        this->setScatter();
-        this->sv->finalize();
-        v->addVisualModel (this->sv);
+
+        //
+        this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->bv->finalize();
+        v->addVisualModel (this->bv);
 
         // Show a vis of the retina, to compare positions/colours
-        offset[0] += 2.2f;
+        offset[0] += 3.0f;
         offset[1] += 0.5f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
@@ -114,37 +122,24 @@ struct SimpsonGoodhill
     std::vector<morph::Vector<float, 3>> rgcposcolourdata;
     std::vector<morph::Vector<float, 3>> coords;
 
-    void setScatter()
-    {
-        this->rgcposcolourdata.clear();
-        this->ephcolourdata.clear();
-        this->coords.clear();
-        for (auto& b : this->branches) {
-            ephcolourdata.push_back (b.EphA);
-            rgcposcolourdata.push_back ( {b.tz.x(), b.tz.y(), 0} );
-            coords.push_back ({b.path.back().x(), b.path.back().y(), 0});
-        }
-        this->sv->setScalarData (&this->ephcolourdata);
-        this->sv->setVectorData (&this->rgcposcolourdata);
-        this->sv->setDataCoords (&this->coords);
-    }
-
     // Branches per axon
-    static constexpr unsigned int bpa = 1;
+    static constexpr unsigned int bpa = 8;
     // Number of RGCs on a side
-    static constexpr unsigned int rgcside = 10;
+    static constexpr unsigned int rgcside = 20;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
     morph::CartGrid* retina;
+    // Parameters vecto (See Table 2 in the paper)
+    morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
     // A visual environment
     morph::Visual* v;
-    // Scatter plot for the visualization
-    morph::ScatterVisual<T>* sv;
+    // Specialised visualization of agents with a history
+    BranchVisual<T>* bv;
 };
 
 int main (int argc, char **argv)
