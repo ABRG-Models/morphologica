@@ -982,6 +982,147 @@ namespace morph {
         } // end of sphere calculation
 
         /*!
+         * Code for creating a sphere as part of this model. I'll use a sphere at the
+         * centre of the arrows.
+         *
+         * \param idx The index into the 'vertex indices array'
+         * \param so The sphere offset. Where to place this sphere...
+         * \param sc The sphere colour.
+         * \param sc2 The sphere's second colour - used for cap and first ring
+         * \param r Radius of the sphere
+         * \param rings Number of rings used to render the sphere
+         * \param segments Number of segments used to render the sphere
+         */
+        void computeSphere (VBOint& idx, Vector<float> so,
+                            std::array<float, 3> sc, std::array<float, 3> sc2,
+                            float r = 1.0f, int rings = 10, int segments = 12)
+        {
+            // First cap, draw as a triangle fan, but record indices so that
+            // we only need a single call to glDrawElements.
+            float rings0 = M_PI * -0.5;
+            float _z0  = sin(rings0);
+            float z0  = r * _z0;
+            float r0 =  cos(rings0);
+            float rings1 = M_PI * (-0.5 + 1.0f / rings);
+            float _z1 = sin(rings1);
+            float z1 = r * _z1;
+            float r1 = cos(rings1);
+            // Push the central point
+            this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
+            this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
+            this->vertex_push (sc2, this->vertexColors);
+
+            VBOint capMiddle = idx++;
+            VBOint ringStartIdx = idx;
+            VBOint lastRingStartIdx = idx;
+
+            bool firstseg = true;
+            for (int j = 0; j < segments; j++) {
+                float segment = 2 * M_PI * (float) (j) / segments;
+                float x = cos(segment);
+                float y = sin(segment);
+
+                float _x1 = x*r1;
+                float x1 = _x1*r;
+                float _y1 = y*r1;
+                float y1 = _y1*r;
+
+                this->vertex_push (so[0]+x1, so[1]+y1, so[2]+z1, this->vertexPositions);
+                this->vertex_push (_x1, _y1, _z1, this->vertexNormals);
+                this->vertex_push (sc2, this->vertexColors);
+
+                if (!firstseg) {
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (idx-1);
+                    this->indices.push_back (idx++);
+                } else {
+                    idx++;
+                    firstseg = false;
+                }
+            }
+            this->indices.push_back (capMiddle);
+            this->indices.push_back (idx-1);
+            this->indices.push_back (capMiddle+1);
+
+            // Now add the triangles around the rings
+            for (int i = 2; i < rings; i++) {
+
+                rings0 = M_PI * (-0.5 + (float) (i) / rings);
+                _z0  = sin(rings0);
+                z0  = r * _z0;
+                r0 =  cos(rings0);
+
+                for (int j = 0; j < segments; j++) {
+
+                    // "current" segment
+                    float segment = 2 * M_PI * (float)j / segments;
+                    float x = cos(segment);
+                    float y = sin(segment);
+
+                    // One vertex per segment
+                    float _x0 = x*r0;
+                    float x0 = _x0*r;
+                    float _y0 = y*r0;
+                    float y0 = _y0*r;
+
+                    // NB: Only add ONE vertex per segment. ALREADY have the first ring!
+                    this->vertex_push (so[0]+x0, so[1]+y0, so[2]+z0, this->vertexPositions);
+                    // The vertex normal of a vertex that makes up a sphere is
+                    // just a normal vector in the direction of the vertex.
+                    this->vertex_push (_x0, _y0, _z0, this->vertexNormals);
+                    if (i == 2 || i > (rings-2)) {
+                        this->vertex_push (sc2, this->vertexColors);
+                    } else {
+                        this->vertex_push (sc, this->vertexColors);
+                    }
+                    if (j == segments - 1) {
+                        // Last vertex is back to the start
+                        this->indices.push_back (ringStartIdx++);
+                        this->indices.push_back (idx);
+                        this->indices.push_back (lastRingStartIdx);
+                        this->indices.push_back (lastRingStartIdx);
+                        this->indices.push_back (idx++);
+                        this->indices.push_back (lastRingStartIdx+segments);
+                    } else {
+                        this->indices.push_back (ringStartIdx++);
+                        this->indices.push_back (idx);
+                        this->indices.push_back (ringStartIdx);
+                        this->indices.push_back (ringStartIdx);
+                        this->indices.push_back (idx++);
+                        this->indices.push_back (idx);
+                    }
+                }
+                lastRingStartIdx += segments;
+            }
+
+            // bottom cap
+            rings0 = M_PI * 0.5;
+            _z0  = sin(rings0);
+            z0  = r * _z0;
+            r0 =  cos(rings0);
+            // Push the central point of the bottom cap
+            this->vertex_push (so[0]+0.0f, so[1]+0.0f, so[2]+z0, this->vertexPositions);
+            this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
+            this->vertex_push (sc2, this->vertexColors);
+            capMiddle = idx++;
+            firstseg = true;
+            // No more vertices to push, just do the indices for the bottom cap
+            ringStartIdx = lastRingStartIdx;
+            for (int j = 0; j < segments; j++) {
+                if (j != segments - 1) {
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (ringStartIdx++);
+                    this->indices.push_back (ringStartIdx);
+                } else {
+                    // Last segment
+                    this->indices.push_back (capMiddle);
+                    this->indices.push_back (ringStartIdx);
+                    this->indices.push_back (lastRingStartIdx);
+                }
+            }
+        }
+
+        /*!
          * Create a cone.
          *
          * \param idx The index into the 'vertex array'
