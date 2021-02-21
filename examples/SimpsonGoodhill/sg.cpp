@@ -77,6 +77,8 @@ struct SimpsonGoodhill
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
         std::vector<T> rn = rng.get (this->retina->num() * 2 * bpa);
+        T EphA_max = -1e9;
+        T EphA_min = 1e9;
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
@@ -84,12 +86,17 @@ struct SimpsonGoodhill
             //std::cout << "tzone: d_x[" << ri << "]";
             // Set its ephrin interaction parameters (though these may be related to the tz)
             this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
+            EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
+            EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set its initial location randomly
             morph::Vector<T, 2> initpos = { rn[2*i], rn[2*i+1] };
             this->branches[i].path.clear();
             this->branches[i].path.push_back (initpos);
             this->branches[i].id = i;
         }
+        // The min/max of EphA is used below to set a morph::Scale in branchvisual
+        std::cout << "EphA range: " << EphA_min << " to " << EphA_max << std::endl;
+
         // Parameters settable from json
         this->m[0] = this->conf->getDouble ("m1", 0.02);
         this->m[1] = this->conf->getDouble ("m2", 0.2);
@@ -108,6 +115,7 @@ struct SimpsonGoodhill
 
         // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->finalize();
         v->addVisualModel (this->bv);
 
@@ -161,7 +169,7 @@ int main (int argc, char **argv)
     } else {
         // Create an empty/default json file
         paramsfile = "./sg.json";
-        morph::Tools::copyStringToFile ("{ \"steps\" : 1000 }\n", paramsfile);
+        morph::Tools::copyStringToFile ("{}\n", paramsfile);
     }
 
     morph::Config conf(paramsfile);

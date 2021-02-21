@@ -16,6 +16,7 @@
 #endif
 #include <morph/VisualModel.h>
 #include <morph/Vector.h>
+#include <morph/Scale.h>
 #include <vector>
 #include <array>
 
@@ -33,6 +34,8 @@ public:
         this->viewmatrix.translate (this->mv_offset);
     }
 
+    morph::Scale<Flt, Flt> EphA_scale;
+
     //! Compute spheres for a scatter plot
     void initializeVertices (void)
     {
@@ -41,6 +44,7 @@ public:
         for (auto b : *this->branches) {
             // Colour comes from target location.
             std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            std::array<float, 3> clr2 = { this->EphA_scale.transform_one(b.EphA), 0, 0 };
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             // First draw the path
@@ -52,7 +56,7 @@ public:
                 this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
             }
             // Finally, a sphere at the last location
-            this->computeSphere (idx, cur, clr, this->radiusFixed, 10, 12);
+            this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 10, 12);
         }
     }
 

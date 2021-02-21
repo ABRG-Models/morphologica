@@ -2,7 +2,7 @@
     "goslow" : true,
     "rgcside" : 9,
     "bpa" : 1,
-    "steps" : 1000,
+    "steps" : 100,
     "m1" : 0.02,
     "m2" : 0.07,
     "m3" : 0.06,
