@@ -2234,6 +2234,20 @@ namespace morph
         }
 
         /*!
+         * Given a path to a file, identify the path and return it in the first element
+         * of a pair of strings, returning the filename as the second element. The
+         * unixPath could then be reconstructed as rt.first + string("/") + rtn.second.
+         */
+        static std::pair<std::string, std::string> getUnixPathAndFile (const std::string& unixPath)
+        {
+            std::string fpath(unixPath);
+            std::string fname(unixPath);
+            morph::Tools::stripUnixFile (fpath);
+            morph::Tools::stripUnixPath (fname);
+            return std::make_pair (fpath, fname);
+        }
+
+        /*!
          * Given a path like /path/to/file.ext or just file.ext in str, remove the file
          * suffix.
          */
