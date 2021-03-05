@@ -49,6 +49,8 @@ void SoftmatsView::setup(){
 
 void SoftmatsView::init( ){
 	std::cout << "Initializing window\n";
+	glewExperimental = true;
+	
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
