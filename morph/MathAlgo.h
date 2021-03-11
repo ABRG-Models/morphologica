@@ -116,6 +116,7 @@ namespace morph {
             return dist_sq;
         }
 
+#ifdef USE_Q_INVSQRT
         //! Quake fast 1/sqrt(x) approximation. Error ~1%
         //! See https://www.youtube.com/watch?v=p8u_k2LIZyo for explanation
         static float Q_invsqrt (float number)
@@ -133,6 +134,7 @@ namespace morph {
             //y = y * (threehalfs - (x2 * y * y));  // 2nd iteration can be removed
             return y;
         }
+#endif
 
         //! Centroid of a set of 2D coordinates @points.
         template<typename T>
