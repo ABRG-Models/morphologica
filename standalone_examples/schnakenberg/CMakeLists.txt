@@ -61,7 +61,6 @@ find_package(LAPACK REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
-find_package(morphologica REQUIRED)
 
 # Define collections of includes that have to be made for morphologica
 get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
