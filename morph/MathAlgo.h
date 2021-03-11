@@ -116,6 +116,24 @@ namespace morph {
             return dist_sq;
         }
 
+        //! Quake fast 1/sqrt(x) approximation. Error ~1%
+        //! See https://www.youtube.com/watch?v=p8u_k2LIZyo for explanation
+        static float Q_invsqrt (float number)
+        {
+            long i;
+            float x2, y;
+            const float threehalfs = 1.5f;
+
+            x2 = number * 0.5f;
+            y = number;
+            i = *(long*)&y;          // evil floating point bit hack. i is like log(y)
+                                     // (the bits of y are the log of y)
+            i = 0x5f3759df - (i>>1); // what the fuck? -(i>>1) is -log(y)/2
+            y = y * (threehalfs - (x2 * y * y));  // 1st iteration
+            //y = y * (threehalfs - (x2 * y * y));  // 2nd iteration can be removed
+            return y;
+        }
+
         //! Centroid of a set of 2D coordinates @points.
         template<typename T>
         static std::pair<T,T> centroid2D (const std::vector<std::pair<T,T>> points) {
