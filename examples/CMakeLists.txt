@@ -70,3 +70,16 @@ target_link_libraries(pointrows_mesh ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
 add_executable(rosenbrock rosenbrock.cpp)
 target_compile_definitions(rosenbrock PUBLIC FLT=float)
 target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+#
+# Softmats examples
+#
+
+# Colliding softmats
+add_subdirectory(softcollision)
+
+# Bags and contact already
+add_subdirectory(bags)
+
+# Huddling
+add_subdirectory(huddling)
