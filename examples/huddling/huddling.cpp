@@ -43,7 +43,9 @@ void generatePups( SoftmatSim *s, int n ){
     float z = -l*w/2.0;
 
     for( int i = 0; i < n; i++ ){
-        pups.push_back( s->animat(x, -1.5, z, 100.0 ) );
+        Pup p;
+        p.animat = s->animat(x, -1.5, z, 100.0);
+        pups.push_back( p );
         x += w;
 
         if( x > l*w/2.0 ){
@@ -54,39 +56,39 @@ void generatePups( SoftmatSim *s, int n ){
 }
 
 void processPupContact( Pup& pa, Pup& pb, Contact* c ){
-    pa.tl = 0.0;
-    pa.tr = 0.0;
-    pa.tc = 0.0;
-    pb.tl = 0.0;
-    pb.tr = 0.0;
-    pb.tc = 0.0;
+    pa.Tl = 0.0;
+    pa.Tr = 0.0;
+    pa.Tc = 0.0;
+    pb.Tl = 0.0;
+    pb.Tr = 0.0;
+    pb.Tc = 0.0;
 
     for( Collision *col : c->getCollisions() ){
         arma::vec cpa = col->cp - centroid(pa.animat->getMesh()->getVertices());
         // Determining half space of the point for pa
         arma::vec fa = {cosf(pa.theta), 0, sinf(pa.theta)};
-        arma::vec ofa = {f(0), 0, -f(2)};
-        float dira = arma::dot( of, cpa );
+        arma::vec ofa = {fa(0), 0, -fa(2)};
+        float dira = arma::dot( ofa, cpa );
         // Adding Tl or Tl and Tc
         if( dira < 0 )
-            pa.tl += (pa.Tb + pb.Tb)/2.0;
+            pa.Tl += (pa.Tb + pb.Tb)/2.0;
         else
-            pa.tr += (pa.Tb + pb.Tb)/2.0;
+            pa.Tr += (pa.Tb + pb.Tb)/2.0;
         // Repeat for Pb   
         arma::vec cpb = col->cp - centroid(pb.animat->getMesh()->getVertices());
         // Determining half space of the point for pa
         arma::vec fb = {cosf(pb.theta), 0, sinf(pb.theta)};
-        arma::vec ofb = {f(0), 0, -f(2)};
-        float dirb = arma::dot( of, cpb );
+        arma::vec ofb = {fb(0), 0, -fb(2)};
+        float dirb = arma::dot( ofb, cpb );
         // Adding Tl or Tl and Tc
         if( dirb < 0 )
-            pb.tl += (pb.Tb + pa.Tb)/2.0;
+            pb.Tl += (pb.Tb + pa.Tb)/2.0;
         else
-            pb.tr += (pa.Tb + pb.Tb)/2.0;
+            pb.Tr += (pa.Tb + pb.Tb)/2.0;
     }
 
-    pa.tc = (pa.tl + pa.tr)/2.0;
-    pb.tc = (pb.tl + pb.tr)/2.0;
+    pa.Tc = (pa.Tl + pa.Tr)/2.0;
+    pb.Tc = (pb.Tl + pb.Tr)/2.0;
 }
 
 void setup( SoftmatSim *s ){
@@ -108,8 +110,8 @@ void update( SoftmatSim *s ){
     for( Pup& p : pups ){
         evolvePup( p );
 
-        x = cosf(p->theta);
-        z = sinf(p->theta);
+        x = cosf(p.theta);
+        z = sinf(p.theta);
         p.animat->move(x, 0, z);
     }
 }
@@ -125,16 +127,16 @@ void onFinish( const SoftmatSim *s ){
 
 void onContact( const SoftmatSim *s, ContactList *contacts ){
     for( Contact* c: contacts->getContacts() ){
-        Pup &pa, &pb;
+        // Pup &pa = 0, &pb = 0;
 
-        for( Pup& p: pups ){
-            if( c->getA() == p.animat )
-                pa = p;
-            else if( c->getB() == p.animat )
-                pb = p;
-        }
+        // for( Pup& p: pups ){
+        //     if( c->getA() == p.animat )
+        //         &pa = p;
+        //     else if( c->getB() == p.animat )
+        //         &pb = p;
+        // }
 
-        processPupContact( pa, pb, c );
+        // processPupContact( pa, pb, c );
     }
 }
 
