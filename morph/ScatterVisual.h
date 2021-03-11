@@ -27,6 +27,18 @@ namespace morph {
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:
+        //! Simplest constructor. Use this in all new code!
+        ScatterVisual(GLuint sp, const Vector<float> _offset)
+        {
+            this->shaderprog = sp;
+            this->mv_offset = _offset;
+            this->viewmatrix.translate (this->mv_offset);
+            this->zScale.setParams (1, 0);
+            this->colourScale.do_autoscale = true;
+        }
+
+#define USE_DEPRECATED_CONSTRUCTORS 1
+#ifdef USE_DEPRECATED_CONSTRUCTORS
         ScatterVisual(GLuint sp,
                       std::vector<Vector<float,3>>* _coords,
                       const Vector<float, 3> _offset,
@@ -49,6 +61,8 @@ namespace morph {
             this->postVertexInit();
         }
 
+        //! This constructor allows for setting the fixed radius,
+        //! ScatterVisual::radiusFixed.
         ScatterVisual(GLuint sp,
                       std::vector<Vector<float,3>>* _coords,
                       const Vector<float, 3> _offset,
@@ -72,6 +86,7 @@ namespace morph {
             this->initializeVertices();
             this->postVertexInit();
         }
+#endif
 
         //! Compute spheres for a scatter plot
         void initializeVertices (void) {
@@ -112,8 +127,6 @@ namespace morph {
             this->radiusFixed = fr;
             this->reinit();
         }
-
-    private:
 
         //! Change this to get larger or smaller spheres.
         Flt radiusFixed = 0.05;
