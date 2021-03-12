@@ -201,13 +201,10 @@ bool FaceChainLink::doProcess( FILE *f, char *s, TriangleMesh* mesh ){
 
     if( strcmp( s, "f" ) == 0 ){
 
-        // FIXME This looks like debug code; vi, vj and vk were set by the fscanf
-        // line. I've left these, zero initialized, but this code will crash if run.
-        int vi=0; int vj=0; int vk=0; int nk=0;
-
-        // int vi, vj, vk, ti, tj, tk, ni, nj, nk;
+        // FIXME alejandro: What does this do? It's causing lots of warnings, but if I remove the fscanf line, then the code crashes! Please fix the warnings ;)
+        int vi, vj, vk, ti, tj, tk, ni, nj, nk;
         // int matches = fscanf(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vi, &ti, &ni, &vj, &tj, &nj, &vk, &tk, &nk );
-        // int matches = fscanf(f, "%d//%d %d//%d %d//%d\n", &vi, &ni, &vj, &nj, &vk, &nk );
+        int matches = fscanf(f, "%d//%d %d//%d %d//%d\n", &vi, &ni, &vj, &nj, &vk, &nk );
         // if (matches != 9){
         //     cerr<<"Error in the format of the mesh file"<<endl;
         //     return false;
