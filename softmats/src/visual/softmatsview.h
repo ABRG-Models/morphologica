@@ -2,7 +2,6 @@
 #ifndef SOFTMATS_VIEW_H
 #define SOFTMATS_VIEW_H
 
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,9 +21,9 @@
 namespace morph{ namespace softmats{
 /**
  * Opengl rendering for the softmats
- * 
+ *
  * This class controls all the visualization aspects of the simulation
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 
@@ -35,10 +34,10 @@ namespace morph{ namespace softmats{
         GLuint diffLoc;
         GLuint specLoc;
         GLuint posLoc;
-        GLuint mAmbLoc; 
+        GLuint mAmbLoc;
         GLuint mDiffLoc;
         GLuint mSpecLoc;
-        GLuint mShiLoc; 
+        GLuint mShiLoc;
         glm::vec3 currentPos;
         glm::vec3 posV;
         float pos[3];
@@ -53,7 +52,7 @@ namespace morph{ namespace softmats{
     // Camera data
     struct Camera{
         float x;
-        float y; 
+        float y;
         float z;
     };
 
@@ -72,7 +71,7 @@ namespace morph{ namespace softmats{
     };
 
     class SoftmatsView : public View{
-    private:    
+    private:
         GLFWwindow* window;
         GLuint renderingProgram;
         GLuint vao[numVAOs], vbo[numVBOs];
@@ -80,7 +79,7 @@ namespace morph{ namespace softmats{
         ViewPort viewPort;
         Light light;
         // Matrices and reserved locations in the shader
-        GLuint typeLoc, nLoc;        
+        GLuint typeLoc, nLoc;
         glm::mat4 mMat, mvMat, tMat, rMat, sMat, invTrMat;
         GLuint textureId;
     public:
@@ -94,7 +93,7 @@ namespace morph{ namespace softmats{
         bool shouldClose();
 
         // Sets up the matrices and other properties common to all entities
-        void preDisplay();  
+        void preDisplay();
         // Sends the ground to the GPU
         void displayGround();
         // Updates and sends a body vertices
@@ -105,10 +104,10 @@ namespace morph{ namespace softmats{
         void setCamera(float az, float ev);
         // Sets up the lights
         void installLights( Body*b, glm::mat4 vMatrix );
-        
+
         SoftmatsView();
         ~SoftmatsView();
-    }; 
+    };
 
 }}
 

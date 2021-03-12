@@ -1,3 +1,6 @@
+#ifdef USE_GLEW
+#include <GL/glew.h>
+#endif
 #include "softmatsview.h"
 #include "../util/openglutils.h"
 #include "../util/config.h"
@@ -17,14 +20,14 @@ void SoftmatsView::setupGround( Body *ground){
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[0]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[1]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[2]->x(i));
-		
+
 		tvalues.push_back(f->points[0]->uv.s);
 		tvalues.push_back(f->points[0]->uv.t);
 		tvalues.push_back(f->points[1]->uv.s);
 		tvalues.push_back(f->points[1]->uv.t);
 		tvalues.push_back(f->points[2]->uv.s);
 		tvalues.push_back(f->points[2]->uv.t);
-		
+
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[0]->normal(i));
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[1]->normal(i));
 		for(i=0; i<3; ++i)nvalues.push_back(f->points[2]->normal(i));
@@ -44,13 +47,14 @@ void SoftmatsView::setupGround( Body *ground){
 void SoftmatsView::setup(){
 	glGenVertexArrays( numVAOs, vao );
 	glBindVertexArray( vao[0] );
-	glGenBuffers( numVBOs, vbo );	
+	glGenBuffers( numVBOs, vbo );
 }
 
 void SoftmatsView::init( ){
 	std::cout << "Initializing window\n";
+#ifdef USE_GLEW
 	glewExperimental = true;
-	
+#endif
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
@@ -58,10 +62,10 @@ void SoftmatsView::init( ){
 	window = glfwCreateWindow( 600, 600, "Soft body simulator", NULL, NULL );
 	glfwMakeContextCurrent( window );
 	std::cout << "Window created\n";
-
+#ifdef USE_GLEW
 	if( glewInit() != GLEW_OK ){ exit(EXIT_FAILURE); }
-
 	std::cout << "Glew initialized\n";
+#endif
 	glfwSwapInterval( 1 );
 	std::string vshader = Config::getConfig()->getShaderLocation() + "softmats.vsh";
 	std::string fshader = Config::getConfig()->getShaderLocation() + "softmats.fsh";
@@ -89,7 +93,7 @@ void SoftmatsView::init( ){
 	light.lightSpecular[2] = 1.0f;
 	light.lightSpecular[3] = 1.0f;
     // textureId = Utils::loadTextureImage("../res/fabric.jpg");
-    textureId = OpenglUtils::loadTextureChecker( 1000, 1000 );	
+    textureId = OpenglUtils::loadTextureChecker( 1000, 1000 );
 	setup();
 }
 
@@ -127,13 +131,13 @@ void SoftmatsView::installLights( Body *b, glm::mat4 vMatrix ){
 		glProgramUniform4fv( renderingProgram, light.mAmbLoc, 1, zero );
 		glProgramUniform4fv( renderingProgram, light.mDiffLoc, 1, zero );
 		glProgramUniform4fv( renderingProgram, light.mSpecLoc, 1, zero );
-		glProgramUniform1f( renderingProgram, light.mShiLoc, 0.0f );	
+		glProgramUniform1f( renderingProgram, light.mShiLoc, 0.0f );
 	}
 }
 
 
 void SoftmatsView::preDisplay( ){
-    
+
 	glClear( GL_DEPTH_BUFFER_BIT );
 	// glClearColor( 0.0, 0.18, 0.3, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
@@ -194,13 +198,13 @@ void SoftmatsView::displayBody( Body* b ){
 	std::vector<float> nvalues;
 	int i;
 
-	for( Face* f : faces ){	
+	for( Face* f : faces ){
 		// std::cout << "Face: " << f.p1 << ", " << f.p2 << ", " << f.p3 << "\n";
 		//std::cout << "x: " << vert[f.p3].x(0) << ", y: " << vert[f.p3].x(1) <<", z: " << vert[f.p3].x(2) << std::endl;
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[0]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[1]->x(i));
 		for(i=0; i<3; ++i)pvalues.push_back(f->points[2]->x(i));
-		
+
 		tvalues.push_back(f->points[0]->uv.s);
 		tvalues.push_back(f->points[0]->uv.t);
 		tvalues.push_back(f->points[1]->uv.s);

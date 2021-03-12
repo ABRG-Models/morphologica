@@ -1,7 +1,6 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#include <iostream>
 #include "view.h"
 #include "opencv2/opencv.hpp"
 #include <string>
