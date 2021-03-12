@@ -28,17 +28,17 @@ void CollisionConstraint::registerObject( Body *b ){
 	vector<Face*>& gFaces = b->getMesh()->getFaces();
 	// Put all the pointers to points in the corresponding vector
 	for( int i = 0; i < gPoints.size(); i++ ){
-		
+
 		objIdxs.push_back( this->points.size() );
-		CPoint cp = {.point = gPoints[i], 
-					 .body = b, 
+		CPoint cp = {.point = gPoints[i],
+					 .body = b,
 					 .originalIdx = i};
 		this->points.push_back( cp );
 	}
-	
+
 	for( int i = 0; i < gFaces.size(); i++ ){
 		CFace cf = {.face = gFaces[i],
-					.body = b, 
+					.body = b,
 					.aabb = new Box(),
 					.originalIdx = i};
 		this->faces.push_back( cf );
@@ -53,7 +53,7 @@ void CollisionConstraint::firstPass( int step ){
 	for( unsigned int i = 0; i < this->points.size(); i++ ){
 		// Add hash
 		CPoint cp = this->points[i];
-		vector<int> idxs = indexes[cp.body]; 
+		vector<int> idxs = indexes[cp.body];
 		this->ht.hashIn( cp.point->x_c, i, step );
 	}
 
@@ -64,7 +64,7 @@ void CollisionConstraint::firstPass( int step ){
 }
 
 void CollisionConstraint::secondPass( int step ){
-	for( unsigned int i = 0; i < this->faces.size(); i++ ){		
+	for( unsigned int i = 0; i < this->faces.size(); i++ ){
 		CFace cf = this->faces[i];
 		this->evaluateContacts( cf, step );
 	}
@@ -74,19 +74,19 @@ void CollisionConstraint::secondPass( int step ){
 void CollisionConstraint::evaluateContacts( CFace& cf, int step ){
 	unsigned int h;
 	// Discretizing the AABB
-	this->ht.discretizeBox(cf.aabb);	
+	this->ht.discretizeBox(cf.aabb);
 
 	// Hashing the cells
 	for( int kx = (int)cf.aabb->min(0); kx <= cf.aabb->max(0); kx++ ){
 		for( int ky = (int)cf.aabb->min(1); ky <= cf.aabb->max(1); ky++ ){
 			for( int kz = (int)cf.aabb->min(2); kz <= cf.aabb->max(2); kz++ )
 			{
-				
-				vec p = {kx, ky, kz};				
+
+                            vec p = {static_cast<double>(kx), static_cast<double>(ky), static_cast<double>(kz)};
 				h = ht.getHashDiscrete( p );
 				CHashItem chi = ht.getItem( h );
 
-				if( chi.timestamp == step ){					
+				if( chi.timestamp == step ){
 					this->handleCollisions( cf, chi, step );
 				}
 			}
@@ -96,37 +96,37 @@ void CollisionConstraint::evaluateContacts( CFace& cf, int step ){
 }
 
 void CollisionConstraint::handleCollisions( CFace& cf, CHashItem chi, int step ){
-	
+
 	for( list<int>::iterator it = chi.items.begin(); it != chi.items.end(); ++it ){
-		CPoint cp = this->points[*it];		
-		
+		CPoint cp = this->points[*it];
+
 		if( cp.body == cf.body ){continue;}
 		this->storeCollision( cf, cp );
 	}
-	
+
 }
 
 void CollisionConstraint::storeCollision( CFace& cf, CPoint& cp ){
-	
+
 	Point* p = cp.point;
 	Face* f = cf.face;
 	//vec pd = {ht.discretize(p->x(0)), ht.discretize(p->x(1)), ht.discretize(p->x(2))};
 
-	if( arma::dot( p->x_c - f->points[0]->x_c, f->normal) > 0.1 || 
+	if( arma::dot( p->x_c - f->points[0]->x_c, f->normal) > 0.1 ||
 		cf.body == cp.body ) return;
 
 	FPCollision *fpc = (FPCollision *)collisionTest->testFPCollision(f, p);
-	
+
 	if( fpc != nullptr ){
-		contacts->push( cp.body, cf.body, fpc );		
+		contacts->push( cp.body, cf.body, fpc );
 	}
-	
+
 	vector<Edge> pedges = cp.body->getMesh()->getPointEdges( p );
 	vector<Edge> fedges = cp.body->getMesh()->getFaceEdges( f );
 	EECollision *eec;
 
 	for( Edge& ep : pedges ){
-		for( Edge& ef : fedges ){	
+		for( Edge& ef : fedges ){
 			eec = (EECollision *)collisionTest->testEECollision( ep, ef );
 
 			if( eec != nullptr ){
@@ -146,7 +146,7 @@ void CollisionConstraint::generate( int step ){
 	// TimeManager::getInstance()->tic();
 	secondPass(step);
 	// TimeManager::getInstance()->toc();
-	
+
 }
 
 void CollisionConstraint::solve(){
@@ -179,10 +179,10 @@ void CollisionConstraint::updateVelocity(){
 			// 	if( v1 < epsilon && v2 < epsilon ){
 			// 		fpc->p->v *= 0.0;
 			// 		for( Point *p : fpc->f->points) p->v *= 0;
-			// 	}else 
+			// 	}else
 			// 		c->active = false;
 			// }
-			
+
 		}
 	}
 

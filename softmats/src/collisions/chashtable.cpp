@@ -15,13 +15,13 @@ int CHashTable::discretize( double a ){
 }
 
 unsigned int CHashTable::getHash( vec point ){
-	
+
 	int x = discretize(point(0));
 	int y = discretize(point(1));
 	int z = discretize(point(2));
-	vec p = {x, y, z};
+	vec p = {static_cast<double>(x), static_cast<double>(y), static_cast<double>(z)};
 	return this->getHashDiscrete(p);
-	
+
 }
 
 unsigned int CHashTable::getHashDiscrete( vec p ){

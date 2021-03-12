@@ -3,6 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+//#else
+//# include <GL3/gl3.h>
+#endif
+
 using namespace morph::softmats;
 
 string OpenglUtils::readShaderSource( const char* path ){
@@ -60,7 +66,7 @@ GLuint OpenglUtils::loadTextureChecker( int width, int height ){
             for( k = 0; k < 3; ++k )
                 data[i][j][k] = v;
         }
-    
+
     return loadTexture( data, width, height );
 }
 
@@ -70,7 +76,7 @@ GLuint OpenglUtils::loadTextureImage( const char* textImagePath ){
     return loadTexture( data, width, height );
 }
 
-GLuint OpenglUtils::loadTexture( const void* data, int width, int height ){       
+GLuint OpenglUtils::loadTexture( const void* data, int width, int height ){
 
     if( data != NULL ){
         GLuint texture;
@@ -107,10 +113,10 @@ GLuint OpenglUtils::createShaderProgram( const char* vn, const char* fn ){
     string fs = readShaderSource( fn );
     const char *vshaderSource = vs.c_str();
     const char *fshaderSource = fs.c_str();
-    
+
     GLuint vShader = glCreateShader( GL_VERTEX_SHADER );
     GLuint fShader = glCreateShader( GL_FRAGMENT_SHADER );
-    
+
     glShaderSource( vShader, 1, &vshaderSource, NULL );
     glShaderSource( fShader, 1, &fshaderSource, NULL );
     glCompileShader( vShader );

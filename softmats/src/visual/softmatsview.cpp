@@ -5,6 +5,12 @@
 #include "../util/openglutils.h"
 #include "../util/config.h"
 
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+//#else
+//# include <GL3/gl3.h>
+#endif
+
 using namespace morph::softmats;
 
 void SoftmatsView::setupGround( Body *ground){
