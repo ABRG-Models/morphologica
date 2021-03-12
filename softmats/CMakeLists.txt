@@ -28,6 +28,7 @@ else()
     jsoncpp_lib
     )
 endif()
+
 if(USE_GLEW)
   list (APPEND ALL_LIBS ${GLEW_LIBRARIES})
 endif(USE_GLEW)
