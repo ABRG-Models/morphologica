@@ -5,9 +5,6 @@ cmake_minimum_required (VERSION 2.6)
 # Following `cmake --help-policy CMP0072`
 set(OpenGL_GL_PREFERENCE "GLVND")
 
-# Most packages found by morphologica's top level CMakeLists.txt
-find_package(GLEW REQUIRED)
-
 if(APPLE AND OpenMP_CXX_FOUND)
   # Armadillo uses OpenMP, and on Mac, that means linking the libomp library
   set(ALL_LIBS
@@ -18,7 +15,6 @@ if(APPLE AND OpenMP_CXX_FOUND)
     ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${OpenCV_LIBS}
-    ${GLEW_LIBRARIES} # To go
     jsoncpp_lib
     )
 else()
@@ -29,10 +25,12 @@ else()
     ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${OpenCV_LIBS}
-    ${GLEW_LIBRARIES} # To go
     jsoncpp_lib
     )
 endif()
+if(USE_GLEW)
+  list (APPEND ALL_LIBS ${GLEW_LIBRARIES})
+endif(USE_GLEW)
 
 file(GLOB SOURCES
   src/*.cpp
