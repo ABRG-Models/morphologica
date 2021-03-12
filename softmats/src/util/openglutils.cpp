@@ -1,4 +1,12 @@
 #include "openglutils.h"
+
+#ifdef USE_GLEW
+# include <GL/glew.h>
+#endif
+#include <GLFW/glfw3.h>
+#include <iostream>
+#include <fstream>
+
 // Necessary for stb_image to work
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -60,7 +68,7 @@ GLuint OpenglUtils::loadTextureChecker( int width, int height ){
             for( k = 0; k < 3; ++k )
                 data[i][j][k] = v;
         }
-    
+
     return loadTexture( data, width, height );
 }
 
@@ -70,7 +78,7 @@ GLuint OpenglUtils::loadTextureImage( const char* textImagePath ){
     return loadTexture( data, width, height );
 }
 
-GLuint OpenglUtils::loadTexture( const void* data, int width, int height ){       
+GLuint OpenglUtils::loadTexture( const void* data, int width, int height ){
 
     if( data != NULL ){
         GLuint texture;
@@ -107,10 +115,10 @@ GLuint OpenglUtils::createShaderProgram( const char* vn, const char* fn ){
     string fs = readShaderSource( fn );
     const char *vshaderSource = vs.c_str();
     const char *fshaderSource = fs.c_str();
-    
+
     GLuint vShader = glCreateShader( GL_VERTEX_SHADER );
     GLuint fShader = glCreateShader( GL_FRAGMENT_SHADER );
-    
+
     glShaderSource( vShader, 1, &vshaderSource, NULL );
     glShaderSource( fShader, 1, &fshaderSource, NULL );
     glCompileShader( vShader );

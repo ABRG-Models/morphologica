@@ -2,17 +2,19 @@
 #ifndef SOFTMATS_OPENGLUTILS_H
 #define SOFTMATS_OPENGLUTILS_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
+// For GLuint
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include <GL3/gl3.h>
+#endif
 #include <string>
-#include <fstream>
 
 using namespace std;
 namespace morph{ namespace softmats{
 /**
  * General opengl related utilities
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 class OpenglUtils{

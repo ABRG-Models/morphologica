@@ -1,4 +1,4 @@
-#version 430
+#version 410
 
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 tCoords;
@@ -32,7 +32,7 @@ uniform int type;
 
 out vec2 tc;
 
-void main( void ){	
+void main( void ){
     vec4 color;
 
     vec4 P = mv_matrix*vec4( position.x, position.y, position.z, 1.0 );

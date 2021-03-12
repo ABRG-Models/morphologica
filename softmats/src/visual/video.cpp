@@ -1,12 +1,15 @@
 #include "video.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+
+#ifdef __OSX__
+# include <OpenGL/gl3.h>
+#else
+# include <GL3/gl3.h>
+#endif
 
 using namespace morph::softmats;
 
 VideoRecorder::VideoRecorder(std::string title, int width, int height ){
-	this->width = width;
+    this->width = width;
     this->height = height;
     this->title = title;
 }
