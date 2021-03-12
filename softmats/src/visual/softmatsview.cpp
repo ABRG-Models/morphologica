@@ -64,7 +64,7 @@ void SoftmatsView::init( ){
 	if( !glfwInit() ){ exit(EXIT_FAILURE); }
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 1 );
 	window = glfwCreateWindow( 600, 600, "Soft body simulator", NULL, NULL );
 	glfwMakeContextCurrent( window );
 	std::cout << "Window created\n";
