@@ -23,31 +23,44 @@ find_package(jsoncpp REQUIRED)
 #    ${OpenCV_INCLUDE_DIRS}
 #)
 
-set(ALL_LIBS
-	${OPENGL_LIBRARY}
-	glfw
-	${GLM_LIBRARY}
-	GLEW
-	armadillo
-	lapack
-	${OpenCV_LIBS}
-	jsoncpp_lib
-)
+if(APPLE AND OpenMP_CXX_FOUND)
+  # Armadillo uses OpenMP, and on Mac, that means linking the libomp library
+  set(ALL_LIBS
+    OpenMP::OpenMP_CXX
+    OpenGL::GL
+    glfw
+    ${GLM_LIBRARY}
+    ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${OpenCV_LIBS}
+    jsoncpp_lib
+    )
+else()
+  set(ALL_LIBS
+    OpenGL::GL
+    glfw
+    ${GLM_LIBRARY}
+    ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${OpenCV_LIBS}
+    jsoncpp_lib
+    )
+endif()
 
 file(GLOB SOURCES
-    src/*.cpp
-	src/visual/*.cpp
-	src/core/*.cpp
-	src/util/*.cpp
-	src/collisions/*.cpp
+  src/*.cpp
+  src/visual/*.cpp
+  src/core/*.cpp
+  src/util/*.cpp
+  src/collisions/*.cpp
 )
 
 file(GLOB HEADERS
-	src/*.h
-	src/visual/*.h
-	src/core/*.h
-	src/util/*.h
-	src/collisions/*.h
+  src/*.h
+  src/visual/*.h
+  src/core/*.h
+  src/util/*.h
+  src/collisions/*.h
 )
 
 add_library(softmats SHARED ${SOURCES})
