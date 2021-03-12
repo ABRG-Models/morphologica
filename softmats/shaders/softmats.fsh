@@ -1,4 +1,4 @@
-#version 410
+#version 430
 
 // Input data
 in vec2 tc;
