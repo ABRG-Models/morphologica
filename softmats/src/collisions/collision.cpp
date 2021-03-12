@@ -71,8 +71,8 @@ vector<Collision*>& Contact::getCollisions(){
 
 void Contact::print(){
     std::cout << "Contact: A = " << A->getId() <<
-                 ", B = " << B->getId() <<
-                 ". Collisions: " << getCollisions().size() << "\n";
+    ", B = " << B->getId() <<
+    ". Collisions: " << getCollisions().size() << "\n";
 }
 // Collision List
 ContactList::ContactList(){
@@ -91,12 +91,12 @@ void ContactList::print(){
 }
 
 Contact *ContactList::findContact( Body *A, Body *B ){
-	for( Contact *fc : contacts )
-		if( (fc->getA() == A && fc->getB() == B) ||
-			(fc->getB() == A && fc->getA() == B))
-			return fc;
+    for( Contact *fc : contacts )
+        if( (fc->getA() == A && fc->getB() == B) ||
+            (fc->getB() == A && fc->getA() == B))
+            return fc;
 
-	return NULL;
+    return NULL;
 }
 
 void Contact::clearCollisions(){
@@ -142,12 +142,12 @@ void ContactList::push( Body* A, Body* B, Collision* c ){
 
     Contact *contact = findContact(A, B);
 
-	if( contact == NULL ){
-		contact = new Contact( A, B );
+    if( contact == NULL ){
+        contact = new Contact( A, B );
         contacts.push_back(contact);
-	}
+    }
 
-	contact->addCollision( c );
+    contact->addCollision( c );
 
 
     // else{
@@ -244,7 +244,7 @@ void FPCollision::solve(CollisionTest *collisionTest){
 
 void FPCollision::updateVelocity(){
     arma::vec vel, fvec;
-	double cr = 0.01;
+    double cr = 0.01;
     vel = p->v;
     vel -= 2.0 * cr * arma::dot(vel, f->normal_c) * f->normal_c;
     fvec = -(vel - arma::dot(vel, f->normal_c) * f->normal_c);
@@ -260,7 +260,7 @@ void FPCollision::updateVelocity(){
 
 // EECollision
 EECollision::EECollision( double hc, vec cp, vec cnormal, Edge e1, Edge e2 ):Collision(hc,cp,cnormal), e1(e1), e2(e2){
-     this->ctype = 1;
+    this->ctype = 1;
 }
 
 
@@ -303,7 +303,7 @@ void EECollision::updateVelocity(){
     Point *q2 = e2.p2;
 
     arma::vec vel, fvec;
-	double cr = 1.0;
+    double cr = 1.0;
 
     if( p1->w > 0 && !p1->lock ){
         vel = p1->v;

@@ -8,7 +8,6 @@ Box::Box(){
 }
 
 Box::Box( vec min, vec max ){
-	
     this->min = min;
     this->max = max;
 }

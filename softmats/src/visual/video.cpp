@@ -5,7 +5,7 @@
 using namespace morph::softmats;
 
 VideoRecorder::VideoRecorder(std::string title, int width, int height ){
-	this->width = width;
+    this->width = width;
     this->height = height;
     this->title = title;
 }
