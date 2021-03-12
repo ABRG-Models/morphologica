@@ -1,8 +1,8 @@
-#include "softmatsview.h"
-
 #ifdef USE_GLEW
 # include <GL/glew.h>
 #endif
+
+#include "softmatsview.h"
 
 #include "../util/openglutils.h"
 #include "../util/config.h"
@@ -61,9 +61,17 @@ void SoftmatsView::init( ){
 
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 1 ); // OpenGL 4.1 is max supported on Mac
-	window = glfwCreateWindow( 600, 600, "Soft body simulator", NULL, NULL );
+#ifdef __OSX__
+        glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+        window = glfwCreateWindow( 600, 600, "Soft body simulator", NULL, NULL );
 	glfwMakeContextCurrent( window );
-	std::cout << "Window created\n";
+	if (!window) {
+            // Window or OpenGL context creation failed
+            throw std::runtime_error("GLFW window creation failed!");
+        }
+        std::cout << "Window created\n";
 
 #ifdef USE_GLEW
 	if( glewInit() != GLEW_OK ){ exit(EXIT_FAILURE); }
@@ -156,6 +164,8 @@ void SoftmatsView::preDisplay( ){
 	viewPort.pMat = glm::perspective( 1.0472f, viewPort.aspect, 0.1f, 1000.0f );
 	// View and model matrices
 	viewPort.vMat = glm::translate( glm::mat4(1.0f), glm::vec3(-camera.x, -camera.y, -camera.z) );
+
+        glViewport (0, 0, viewPort.width, viewPort.height);
 }
 
 void SoftmatsView::displayGround(){
