@@ -2,7 +2,6 @@
 #ifndef SOFTMATS_OPENGLUTILS_H
 #define SOFTMATS_OPENGLUTILS_H
 
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
@@ -12,7 +11,7 @@ using namespace std;
 namespace morph{ namespace softmats{
 /**
  * General opengl related utilities
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 class OpenglUtils{
