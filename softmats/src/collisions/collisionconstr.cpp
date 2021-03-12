@@ -27,7 +27,7 @@ void CollisionConstraint::registerObject( Body *b ){
 	vector<Point*>& gPoints = b->getMesh()->getVertices();
 	vector<Face*>& gFaces = b->getMesh()->getFaces();
 	// Put all the pointers to points in the corresponding vector
-	for( int i = 0; i < gPoints.size(); i++ ){
+	for( int i = 0; i < static_cast<int>(gPoints.size()); i++ ){
 
 		objIdxs.push_back( this->points.size() );
 		CPoint cp = {.point = gPoints[i],
@@ -36,7 +36,7 @@ void CollisionConstraint::registerObject( Body *b ){
 		this->points.push_back( cp );
 	}
 
-	for( int i = 0; i < gFaces.size(); i++ ){
+	for( int i = 0; i < static_cast<int>(gFaces.size()); i++ ){
 		CFace cf = {.face = gFaces[i],
 					.body = b,
 					.aabb = new Box(),

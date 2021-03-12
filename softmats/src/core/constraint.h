@@ -6,7 +6,7 @@ namespace morph{ namespace softmats{
 class Constraint{
 /**
  * General constraint interface for Bodies and BodySets
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 public:

@@ -15,7 +15,7 @@ using namespace morph::softmats;
 
 void SoftmatsView::setupGround( Body *ground){
 	std::vector<Face *>& faces = ground->getMesh()->getFaces();
-	std::vector<Point *>& vert = ground->getMesh()->getVertices();
+	//std::vector<Point *>& vert = ground->getMesh()->getVertices();
 
 	std::vector<float> pvalues;
 	std::vector<float> tvalues;
@@ -197,7 +197,7 @@ void SoftmatsView::displayGround(){
 
 void SoftmatsView::displayBody( Body* b ){
 	std::vector<Face *>& faces = b->getMesh()->getFaces();
-	std::vector<Point *>& vert = b->getMesh()->getVertices();
+	//std::vector<Point *>& vert = b->getMesh()->getVertices();
 
 	std::vector<float> pvalues;
 	std::vector<float> tvalues;
