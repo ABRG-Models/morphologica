@@ -44,7 +44,7 @@ float morph::softmats::rtflsp( PolyData& data, float x1, float x2, float xacc ){
     fh = func(x2);
 
     if( fl*fh > 0.0 ){
-        cout << "Error, no bracketing" << endl; 
+        cout << "Error, no bracketing" << endl;
         return 0.0;
     }
 
@@ -76,7 +76,7 @@ float morph::softmats::rtflsp( PolyData& data, float x1, float x2, float xacc ){
         }
 
         dx = xh - xl;
-        if( std::fabs(del) < xacc || f == 0.0 ) return rtf; 
+        if( std::fabs(del) < xacc || f == 0.0 ) return rtf;
     }
 
     cout << "Error: failed to converge" << endl;
@@ -109,7 +109,7 @@ vec morph::softmats::normalCoefficients( vec x1, vec x2, vec x3, vec x4 ){
 	// cout << B << endl;
 	c = solve( A, B );
 	// cout << "c: " << c << endl;
-	
+
 	return c;
 }
 
@@ -120,7 +120,7 @@ vec morph::softmats::clamp( vec x1, vec x2, vec x3, vec x4, vec c, vec *p1, vec 
 
 	double a = c(0);
 	double b = c(1);
-	
+
 	a = a < 0.0? 0.0 : (a > 1.0? 1.0 : a);
 	b = b < 0.0? 0.0 : (b > 1.0? 1.0 : b);
 
@@ -154,11 +154,11 @@ vec morph::softmats::computeEdgeNormal( vec x1, vec x2, vec x3, vec x4 ){
 	vec x31 = x3 - x1;
 
 	// Check if they are parallel
-	double p = norm(cross(x21, x43));	
+	double p = norm(cross(x21, x43));
 
 	if( p < 0.0001 ){
 		// cout << "Parallel edges" << endl;
-		if( norm( x1 - x3 ) < norm( x1 - x4 )) 
+		if( norm( x1 - x3 ) < norm( x1 - x4 ))
 			return x1 - x3;
 		else
 			return x1 - x4;
@@ -175,7 +175,7 @@ vec morph::softmats::computeEdgeNormal( vec x1, vec x2, vec x3, vec x4 ){
 
 double morph::softmats::computeEdgeDistance( vec x1, vec x2, vec x3, vec x4 ){
 	return norm( computeEdgeNormal(x1, x2, x3, x4) );
-} 
+}
 
 double morph::softmats::collision_poly(double t, vec x1, vec x2, vec x3, vec x4, vec v1, vec v2, vec v3, vec v4 ){
 	vec x21 = x2 - x1;
@@ -236,7 +236,7 @@ vector<vec> morph::softmats::getInelasticImpulses( Face* face, Point* point, vec
 	double It = wt == 0? 0.0 : vn/(wt);
 
 
-	double I = 2*Ip/( 1 + w(0)*w(0) + w(1)*w(1) + w(2)*w(2) );
+	// double I = 2*Ip/( 1 + w(0)*w(0) + w(1)*w(1) + w(2)*w(2) );
 	// vector<vec> vels ={ -(w(0)*I*wt)*n, -(w(1)*I*wt)*n, -(w(2)*I*wt)*n, (I*w_p)*n};
 	vector<vec> vels ={ -wt*It*n, -wt*It*n, -wt*It*n, w_p*Ip*n };
 	// cout << "Face-point Impuses: " << vels[0] << ", " << vels[1] << ", " << vels[2] << ", " << vels[3] << endl;
@@ -260,16 +260,16 @@ vector<vec> morph::softmats::getInelasticImpulses( Edge& ep, Edge& ef ){
 	// Compute relative velocity
 	vec c = normalCoefficients( x1, x2, x3, x4 );
 	vec p1, p2;
-	
+
 	c = clamp( x1, x2, x3, x4, c, &p1, &p2 );
 	double a = c(0);
 	double b = c(1);
 	vec va = (1-a)*v1 + a*v2;
 	vec vb = (1-b)*v3 + b*v4;
-	
+
 	vec v_rel = va - vb;
 	double vn = -dot( v_rel, n );
-	
+
 	// Compute impulse
 	double w1 = ep.p1->w;
 	double w2 = ef.p2->w;
@@ -328,7 +328,7 @@ vector<vec> morph::softmats::getInelasticImpulses( Edge& ep, Edge& ef ){
 
 // 	double I = 2*Ip/( 1 + w(0)*w(0) + w(1)*w(1) + w(2)*w(2) );
 // 	vector<vec> vels ={ -(w(0)*I/mt)*n, -(w(1)*I/mt)*n, -(w(2)*I/mt)*n, (I/mp)*n};
-	
+
 // 	return vels;
 
 // }
@@ -353,14 +353,14 @@ vector<vec> morph::softmats::getInelasticImpulses( Edge& ep, Edge& ef ){
 // 	c = clamp( x1, x2, x3, x4, c, &p1, &p2 );
 // 	double a = c(0);
 // 	double b = c(1);
-	
+
 // 	vec va = (1-a)*v1 + a*v2;
 // 	vec vb = (1-b)*v3 + b*v4;
-	
-// 	vec v_rel = va - vb;
-// 	double vn = -dot( v_rel, n );	
 
-	
+// 	vec v_rel = va - vb;
+// 	double vn = -dot( v_rel, n );
+
+
 // 	// Compute impulse
 // 	double m1 = ep->v0->m;
 // 	double m2 = ef->v0->m;
@@ -379,7 +379,7 @@ vector<vec> morph::softmats::getInelasticImpulses( Edge& ep, Edge& ef ){
 // 	double I1 = 2*Ip/(a*a + (1-a)*(1-a) + b*b + (1-b)*(1-b));
 // 	double I2 = 2*If/(a*a + (1-a)*(1-a) + b*b + (1-b)*(1-b));
 // 	vector<vec> vels = {(1-a)*(I1/m1)*n, a*(I1/m1)*n, -(1-b)*(I2/m2)*n, -b*(I2/m2)*n};
-	
+
 // 	return vels;
 // }
 
@@ -402,7 +402,7 @@ bool morph::softmats::allInInterval( vec w, double a, double b ){
 
 	return r;
 }
-	
+
 
 
 vec morph::softmats::computeBarycentricCoords( vec p1, vec p2, vec p3, vec pos ){

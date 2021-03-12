@@ -74,7 +74,7 @@ void processPupContact( Pup& pa, Pup& pb, Contact* c ){
             pa.Tl += (pa.Tb + pb.Tb)/2.0;
         else
             pa.Tr += (pa.Tb + pb.Tb)/2.0;
-        // Repeat for Pb   
+        // Repeat for Pb
         arma::vec cpb = col->cp - centroid(pb.animat->getMesh()->getVertices());
         // Determining half space of the point for pa
         arma::vec fb = {cosf(pb.theta), 0, sinf(pb.theta)};
@@ -101,10 +101,10 @@ void setup( SoftmatSim *s ){
 
     // v[0].lock = true;
     // s.lights(true);
-    
+
 }
 
-void update( SoftmatSim *s ){   
+void update( SoftmatSim *s ){
     float x, z;
 
     for( Pup& p : pups ){
@@ -126,6 +126,7 @@ void onFinish( const SoftmatSim *s ){
 }
 
 void onContact( const SoftmatSim *s, ContactList *contacts ){
+#if 0
     for( Contact* c: contacts->getContacts() ){
         // Pup &pa = 0, &pb = 0;
 
@@ -138,6 +139,7 @@ void onContact( const SoftmatSim *s, ContactList *contacts ){
 
         // processPupContact( pa, pb, c );
     }
+#endif
 }
 
 // void onAnimatContact( const Animat* a, vector<Receptor*> receptors ){

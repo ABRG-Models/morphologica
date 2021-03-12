@@ -50,6 +50,7 @@ file(GLOB HEADERS
 )
 
 add_library(softmats SHARED ${SOURCES})
+set_source_files_properties(src/util/stb_image.h PROPERTIES COMPILE_FLAGS "-Wno-unused-but-set-variable" )
 get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
 include_directories(${JSON_INC_PATH})
 

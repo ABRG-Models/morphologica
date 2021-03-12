@@ -11,7 +11,7 @@ void setup( SoftmatSim *s ){
     std::cout << "Setting up the simulation\n";
     // a = s->animat(-2.0, -1.0, 0.0, 100.0 );
     // b = s->animat(-1.5, 1.1, 0.0, 100.0 );
-    AnimatSource *as = s->animatSource(10, 200, 0.0, 2.5, 0.0);
+    /*AnimatSource *as =*/ s->animatSource(10, 200, 0.0, 2.5, 0.0);
     s->ground( -2.0 );
     s->gravity( 10.0 );
     s->video("bags");
@@ -19,10 +19,10 @@ void setup( SoftmatSim *s ){
 
     // v[0].lock = true;
     // s.lights(true);
-    
+
 }
 
-void update( SoftmatSim *s ){   
+void update( SoftmatSim *s ){
    //std::cout << "Updating the simulation\n";
 
 }

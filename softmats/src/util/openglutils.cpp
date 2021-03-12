@@ -59,8 +59,8 @@ GLuint OpenglUtils::loadTextureChecker( int width, int height ){
     unsigned int i, j, k;
     int v = 128;
 
-    for( i = 0; i < width; ++i)
-        for( j = 0; j < height; ++j ){
+    for( i = 0; i < static_cast<unsigned int>(width); ++i)
+        for( j = 0; j < static_cast<unsigned int>(height); ++j ){
             v = (((i & 0x80) == 0) ^ ((j & 0x80) == 0)) * 255;
 
             for( k = 0; k < 3; ++k )
