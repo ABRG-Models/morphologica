@@ -415,6 +415,23 @@ namespace morph {
         }
 
         /*!
+         * Return the arithmentic mean of the elements
+         */
+        S mean() const
+        {
+            const S sum = std::accumulate (this->begin(), this->end(), S{0});
+            return sum / this->size();
+        }
+
+        /*!
+         * Return the sum of the elements
+         */
+        S sum() const
+        {
+            return std::accumulate (this->begin(), this->end(), S{0});
+        }
+
+        /*!
          * Compute the element-wise pth power of the vector
          *
          * \return a vVector whose elements have been raised to the power p
