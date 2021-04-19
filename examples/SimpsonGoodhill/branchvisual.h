@@ -43,7 +43,8 @@ public:
         // For each branch, draw it.
         for (auto b : *this->branches) {
             // Colour comes from target location.
-            std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
+            //std::cout << "Colour for this branch: [" << b.tz[0] << ", " << b.tz[1] << ", 0]\n";
+            std::array<float, 3> clr = { b.tz[0]+0.5, b.tz[1]+0.5, 0 };
             std::array<float, 3> clr2 = { this->EphA_scale.transform_one(b.EphA), 0, 0 };
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };

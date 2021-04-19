@@ -100,10 +100,6 @@ struct branch
     T EphA = 0;
     // A sequence id
     int id = 0;
-    // Parameter vector (hardcoded, see Table 2 in paper) where here, m[3] (the last
-    // element) is the border effect magnitude.
-    // The competition seems too strong.
-    //static constexpr morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // Distance parameter r is used as 2r
     static constexpr T two_r = T{0.1};
     static constexpr T r = T{0.05};

@@ -57,8 +57,10 @@ struct SimpsonGoodhill
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
-            b.path.push_back (b.next);
-            if (b.path.size() > this->history) { b.path.pop_front(); }
+            if (this->history && b.id % 1 == 0) {
+                b.path.push_back (b.next);
+                if (b.path.size() > this->history) { b.path.pop_front(); }
+            }
         }
     }
 
@@ -68,7 +70,6 @@ struct SimpsonGoodhill
         this->rgcside = this->conf->getUInt ("rgcside", 20);
         this->bpa = this->conf->getUInt ("bpa", 8);
         this->goslow = this->conf->getBool ("goslow", false);
-        morph::RandUniform<T, std::mt19937> rng;
         // gr is grid element length
         T gr = T{1}/T{rgcside};
         std::cout << "Grid element length " << gr << std::endl;
@@ -76,7 +77,15 @@ struct SimpsonGoodhill
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
-        std::vector<T> rn = rng.get (this->retina->num() * 2 * bpa);
+        // Axon initial positions x and y are uniformly randomly selected
+        morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
+        morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
+        // A normally distributed perturbation is added for each branch. SD=0.1.
+        morph::RandNormal<T, std::mt19937> rng_p(T{0}, T{0.1});
+        // Generate random number sequences all at once
+        std::vector<T> rn_x = rng_x.get (this->retina->num());
+        std::vector<T> rn_y = rng_y.get (this->retina->num());
+        std::vector<T> rn_p = rng_p.get (this->retina->num() * 2 * bpa);
         T EphA_max = -1e9;
         T EphA_min = 1e9;
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
@@ -88,8 +97,8 @@ struct SimpsonGoodhill
             this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
-            // Set its initial location randomly
-            morph::Vector<T, 2> initpos = { rn[2*i], rn[2*i+1] };
+            // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
+            morph::Vector<T, 2> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->branches[i].path.clear();
             this->branches[i].path.push_back (initpos);
             this->branches[i].id = i;
@@ -140,10 +149,10 @@ struct SimpsonGoodhill
     unsigned int bpa = 8;
     // Number of RGCs on a side
     unsigned int rgcside = 20;
-    // If true, then slow things down a bit
+    // If true, then slow things down a bit in the visualization
     bool goslow = false;
     // How many steps to store/show history?
-    static constexpr size_t history = 30;
+    static constexpr size_t history = 2;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.
