@@ -1,4 +1,6 @@
 {
+    "desc_movie" : "save pngs?",
+    "movie" : false,
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
     "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length. There are thus (rgcside * rgcside) axons",

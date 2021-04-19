@@ -32,14 +32,14 @@ struct SimpsonGoodhill
     {
         for (unsigned int i = 0; i < this->conf->getUInt ("steps", 1000); ++i) {
             this->step();
-            this->vis();
+            this->vis(i);
             if (i%100 == 0) { std::cout << "step " << i << "\n"; }
         }
         std::cout << "Done simulating\n";
         this->v->keepOpen();
     }
 
-    void vis()
+    void vis(unsigned int stepnum)
     {
         if (this->goslow == true) {
             glfwWaitEventsTimeout (0.1); // to add artificial slowing
@@ -48,6 +48,15 @@ struct SimpsonGoodhill
         }
         this->bv->reinit();
         this->v->render();
+        if (this->conf->getBool ("movie", false)) {
+            std::stringstream frame;
+            frame << "frames/";
+            frame.width(4);
+            frame.fill('0');
+            frame << stepnum;
+            frame << ".png";
+            this->v->saveImage(frame.str());
+        }
     }
 
     void step()
@@ -57,8 +66,11 @@ struct SimpsonGoodhill
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
+            //if (b.id%1000 == 0) {
+            //if (b.id == 1000) {
             b.path.push_back (b.next);
             if (b.path.size() > this->history) { b.path.pop_front(); }
+            //}
         }
     }
 
@@ -111,7 +123,7 @@ struct SimpsonGoodhill
         this->m[3] = this->conf->getDouble ("mborder", 0.1);
 
         // Visualization init
-        const unsigned int ww = this->conf->getUInt ("win_width", 800);
+        const unsigned int ww = this->conf->getUInt ("win_width", 1600);
         unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
         this->v->backgroundWhite();
