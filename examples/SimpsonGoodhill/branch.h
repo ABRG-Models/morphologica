@@ -13,67 +13,77 @@ struct branch
     // branches and the parameters vector, m
     void compute_next (const std::vector<branch<T>>& branches, const morph::Vector<T, 4>& m)
     {
-        // Current location is named k
-        morph::Vector<T, 2> k = path.back();
+        // Current location is named b
+        morph::Vector<T, 2> b = path.back();
         // Chemoaffinity is G
-        morph::Vector<T, 2> G = this->tz - k;
+        morph::Vector<T, 2> G = this->tz - b; // or x_b0 - x_b, in paper
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
         // over the other branches
         morph::Vector<T, 2> C = {0, 0};
         morph::Vector<T, 2> I = {0, 0};
         morph::Vector<T, 2> nullvec = {0, 0}; // null vector
-        for (auto b : branches) {
-            if (b.id == this->id) { continue; } // Don't interact with self
-            morph::Vector<T, 2> bk = k - b.path.back();
-            T d = bk.length();
+        // Other branches are called k, making a set B_b, with a number of members that I call n_k
+        T n_k = T{0};
+        for (auto k : branches) {
+            if (k.id == this->id) { continue; } // Don't interact with self
+            // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
+            // sums these. However, that gives a competition term with a sign error. So
+            // here, sum up the unit vectors kb.
+            morph::Vector<T, 2> kb = b - k.path.back();
+            T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
-            T Q = b.EphA / this->EphA; // forward signalling (used predominantly in paper)
-            //T Q = this->EphA / b.EphA; // reverse signalling
-            //T Q = std::max(b.EphA / this->EphA, this->EphA / b.EphA); // bi-dir signalling
-            bk.renormalize();
-            I += Q > this->s ? bk * W : nullvec;
-            C += bk * W;
+            T Q = k.EphA / this->EphA; // forward signalling (used predominantly in paper)
+            //T Q = this->EphA / k.EphA; // reverse signalling
+            //T Q = std::max(k.EphA / this->EphA, this->EphA / k.EphA); // bi-dir signalling
+            kb.renormalize(); // as in paper, vector bk is a unit vector
+            I += Q > this->s ? kb * W : nullvec;
+            C += kb * W;
+            if (W > T{0}) { n_k += T{1}; }
         }
-        C.renormalize(); // achieves 1/|Bb|
-        I.renormalize();
+
+        // Do the 1/|B_b| multiplication
+        if (n_k > T{0}) {
+            C = C/n_k;
+            I = I/n_k;
+        } // else C and I will be {0,0} still
 
         // Border effect. A force perpendicular to the boundary, falling off over the
         // distance r.
         morph::Vector<T, 2> B = {0, 0};
-        // Test k, to see if it's near the border. Use winding number to see if it's
+        // Test b, to see if it's near the border. Use winding number to see if it's
         // inside? Then, if outside, find out which edge it's nearest and apply that
-        // force. Too complex. Instead, look at k's location. If x<0, then add component
+        // force. Too complex. Instead, look at b's location. If x<0, then add component
         // to B[0]; if y<0 then add component to B[1], etc.
-        if (k[0] < T{0}) {
+        if (b[0] < T{0}) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[0] = T{1};
-        } else if (k[0] < r) {
-            B[0] = T{1} * (T{1} - k[0]/r); // B[0] prop 1 - k/r
-        } else if (k[0] > 1) {
+        } else if (b[0] < r) {
+            B[0] = T{1} * (T{1} - b[0]/r); // B[0] prop 1 - b/r
+        } else if (b[0] > 1) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[0] = T{-1};
-        } else if (k[0] > (1-r)) {
-            B[0] = -(k[0] + r - T{1})/r; // B[0] prop (k+r-1)/r
+        } else if (b[0] > (1-r)) {
+            B[0] = -(b[0] + r - T{1})/r; // B[0] prop (b+r-1)/r
         }
 
-        if (k[1] < T{0}) {
+        if (b[1] < T{0}) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[1] = T{1};
-        } else if (k[1] < r) {
-            B[1] = T{1} - k[1]/r;
-        } else if (k[1] > 1) {
+        } else if (b[1] < r) {
+            B[1] = T{1} - b[1]/r;
+        } else if (b[1] > 1) {
             G = {0,0};
             I = {0,0};
             C = {0,0};
             B[1] = T{-1};
-        } else if (k[1] > (1-r)) {
-            B[1] = -(k[1] + r - T{1})/r; // B[1] prop (k+r-1)/r
+        } else if (b[1] > (1-r)) {
+            B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
         }
 
 #ifdef _DEBUG
@@ -81,12 +91,12 @@ struct branch
         if (thestep.length() > 0.1f) {
             std::cout << "Step size is " << thestep.length() << std::endl;
         }
-        k += thestep; // * v where v=1
+        b += thestep; // * v where v=1
 #else
         // Paper equation 1
-        k += (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
+        b += (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
 #endif
-        this->next = k;
+        this->next = b;
     }
     // The location and all previous locations of this branch.
     std::deque<morph::Vector<T, 2>> path;

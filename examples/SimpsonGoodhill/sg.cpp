@@ -57,10 +57,8 @@ struct SimpsonGoodhill
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
-            if (this->history && b.id % 1 == 0) {
-                b.path.push_back (b.next);
-                if (b.path.size() > this->history) { b.path.pop_front(); }
-            }
+            b.path.push_back (b.next);
+            if (b.path.size() > this->history) { b.path.pop_front(); }
         }
     }
 
@@ -152,7 +150,7 @@ struct SimpsonGoodhill
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
     // How many steps to store/show history?
-    static constexpr size_t history = 2;
+    static constexpr size_t history = 20;
     // Access to a parameter configuration object
     morph::Config* conf;
     // rgcside^2 RGCs, each with bpa axon branches growing.

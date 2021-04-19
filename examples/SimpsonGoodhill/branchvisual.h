@@ -42,9 +42,8 @@ public:
         VBOint idx = 0;
         // For each branch, draw it.
         for (auto b : *this->branches) {
-            // Colour comes from target location.
-            //std::cout << "Colour for this branch: [" << b.tz[0] << ", " << b.tz[1] << ", 0]\n";
-            std::array<float, 3> clr = { b.tz[0]+0.5, b.tz[1]+0.5, 0 };
+            // Colour comes from target location. Note additional factor 0.5, which is a bit of a hack
+            std::array<float, 3> clr = { b.tz[0]+Flt{0.5}, b.tz[1]+Flt{0.5}, 0 };
             std::array<float, 3> clr2 = { this->EphA_scale.transform_one(b.EphA), 0, 0 };
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
@@ -56,8 +55,9 @@ public:
                 cur[1] = b.path[i][1];
                 this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
             }
-            // Finally, a sphere at the last location
-            this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 10, 12);
+            // Finally, a sphere at the last location. Tune number of rings (second last
+            // arg) in sphere to change size of clr2 disc at top
+            this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
         }
     }
 
@@ -71,8 +71,8 @@ public:
     //! Pointer to a vector of branches to visualise
     std::vector<branch<Flt>>* branches = (std::vector<branch<Flt>>*)0;
     //! Change this to get larger or smaller spheres.
-    Flt radiusFixed = 0.02;
-    Flt linewidth = 0.02;
+    Flt radiusFixed = 0.01;
+    Flt linewidth = 0.008;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
     // Hues for colour control with vectorData
