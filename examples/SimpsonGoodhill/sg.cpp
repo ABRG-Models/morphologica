@@ -18,6 +18,7 @@
 #include "branchvisual.h"
 #include "branch.h"
 #include "netvisual.h"
+#include "net.h"
 
 template<typename T>
 struct SimpsonGoodhill
@@ -67,10 +68,11 @@ struct SimpsonGoodhill
 #pragma omp parallel for
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
         // Update centroids
-        for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids[i] = {T{0}, T{0}}; }
+        for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
             unsigned int ri = b.id/this->bpa;
-            this->ax_centroids[ri] += b.next / static_cast<T>(this->bpa);
+            this->ax_centroids.p[ri][0] += b.next[0] / static_cast<T>(this->bpa);
+            this->ax_centroids.p[ri][1] += b.next[1] / static_cast<T>(this->bpa);
         }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
@@ -96,7 +98,10 @@ struct SimpsonGoodhill
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
-        this->ax_centroids.resize(this->retina->num(), morph::Vector<T,2>({T{0},T{0}}));
+
+        //this->ax_centroids.resize(this->retina->num(), morph::Vector<T,2>({T{0},T{0}}));
+        std::cout << "Retina is " << this->retina->widthnum() << " wide and " << this->retina->depthnum() << " high\n";
+        this->ax_centroids.init (this->retina->widthnum(), this->retina->depthnum());
         // Axon initial positions x and y are uniformly randomly selected
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
@@ -118,10 +123,11 @@ struct SimpsonGoodhill
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
-            morph::Vector<T, 2> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
-            this->ax_centroids[ri] += initpos / static_cast<T>(bpa);
+            morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+            morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
+            this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
             this->branches[i].path.clear();
-            this->branches[i].path.push_back (initpos);
+            this->branches[i].path.push_back (initpos2);
             this->branches[i].id = i;
         }
         // The min/max of EphA is used below to set a morph::Scale in branchvisual
@@ -142,7 +148,7 @@ struct SimpsonGoodhill
         this->v->lightingEffects();
 
         // Offset for visuals
-        morph::Vector<float> offset = { -0.5f, -0.5f, 0.0f };
+        morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
         this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
@@ -151,12 +157,13 @@ struct SimpsonGoodhill
         v->addVisualModel (this->bv);
 
         // Centroids of branches viewed with a NetVisual
+        offset[0] += 1.3f;
         this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
         this->cv->finalize();
         v->addVisualModel (this->cv);
 
         // Show a vis of the retina, to compare positions/colours
-        offset[0] += 2.3f;
+        offset[0] += 1.8f;
         offset[1] += 0.5f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
@@ -191,7 +198,8 @@ struct SimpsonGoodhill
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
     // Centroid of the branches for each axon
-    std::vector<morph::Vector<T, 2>> ax_centroids;
+    //std::vector<morph::Vector<T, 2>> ax_centroids;
+    net<T> ax_centroids;
     // A visual environment
     morph::Visual* v;
     // Specialised visualization of agents with a history

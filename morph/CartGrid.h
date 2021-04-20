@@ -899,6 +899,15 @@ namespace morph {
             return (xmax - xmin);
         }
 
+        //! Return the number of elements that the CartGrid is wide
+        int widthnum() const
+        {
+            // {ximin, ximax, yimin, yimax}
+            std::array<int, 4> extents = this->findBoundaryExtents();
+            int wn = std::abs(extents[0]) + std::abs(extents[1]) + 1;
+            return wn;
+        }
+
         /*!
          * Returns the 'depth' of the CartGrid (from -y to +y)
          */
@@ -908,6 +917,15 @@ namespace morph {
             float ymin = this->v * float(extents[2]);
             float ymax = this->v * float(extents[3]);
             return (ymax - ymin);
+        }
+
+        //! Return the number of elements that the CartGrid is deep (or high) - y
+        int depthnum() const
+        {
+            // {ximin, ximax, yimin, yimax}
+            std::array<int, 4> extents = this->findBoundaryExtents();
+            int dn = std::abs(extents[2]) + std::abs(extents[3]) + 1;
+            return dn;
         }
 
         /*!

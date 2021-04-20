@@ -21,11 +21,13 @@
 #include <vector>
 #include <array>
 
+#include "net.h"
+
 template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, const morph::Vector<float, 3> _offset, std::vector<morph::Vector<Flt, 2>>* _locations)
+    NetVisual(GLuint sp, const morph::Vector<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
         this->shaderprog = sp;
@@ -36,15 +38,17 @@ public:
     void initializeVertices (void)
     {
         VBOint idx = 0;
-        // For each centroid, draw it.
-        for (auto l : *this->locations) {
-            // Colour comes from target location. Note additional factor 0.5, which is a bit of a hack
-            std::array<float, 3> clr = { 0, 0, 0 };
-            morph::Vector<float, 3> cur = { l[0], l[1], 0 };
-            this->computeSphere (idx, cur, clr, this->radiusFixed, 14, 12);
-            // Use this for lines to neighbours, when possible
-            //this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
-       }
+        std::array<float, 3> clr = { 0, 0, 0 };
+        // Spheres at the net vertices
+        for (auto p : this->locations->p) {
+            this->computeSphere (idx, p, clr, this->radiusFixed, 14, 12);
+        }
+        // Connections
+        for (auto c : this->locations->c) {
+            morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
+            morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+            this->computeFlatLineRnd (idx, c1, c2, this->uz, clr, this->linewidth, 0.0f, true, false);
+        }
     }
 
     //! Set this->radiusFixed, then re-compute vertices.
@@ -55,7 +59,7 @@ public:
     }
 
     //! Pointer to a vector of locations to visualise
-    std::vector<morph::Vector<Flt,2>>* locations = (std::vector<morph::Vector<Flt,2>>*)0;
+    net<Flt>* locations = (net<Flt>*)0;
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.008;
     //! A normal vector, fixed as pointing up
