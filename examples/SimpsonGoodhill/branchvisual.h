@@ -70,6 +70,7 @@ public:
 
     //! Pointer to a vector of branches to visualise
     std::vector<branch<Flt>>* branches = (std::vector<branch<Flt>>*)0;
+    //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = 0.01;
     Flt linewidth = 0.008;

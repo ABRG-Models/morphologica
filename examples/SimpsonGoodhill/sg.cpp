@@ -17,6 +17,7 @@
 
 #include "branchvisual.h"
 #include "branch.h"
+#include "netvisual.h"
 
 template<typename T>
 struct SimpsonGoodhill
@@ -47,6 +48,7 @@ struct SimpsonGoodhill
             glfwPollEvents();
         }
         this->bv->reinit();
+        this->cv->reinit();
         this->v->render();
         if (this->conf->getBool ("movie", false)) {
             std::stringstream frame;
@@ -64,6 +66,12 @@ struct SimpsonGoodhill
         // Compute the next position for each branch:
 #pragma omp parallel for
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
+        // Update centroids
+        for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids[i] = {T{0}, T{0}}; }
+        for (auto& b : this->branches) {
+            unsigned int ri = b.id/this->bpa;
+            this->ax_centroids[ri] += b.next / static_cast<T>(this->bpa);
+        }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
             //if (b.id%1000 == 0) {
@@ -81,12 +89,14 @@ struct SimpsonGoodhill
         this->bpa = this->conf->getUInt ("bpa", 8);
         this->goslow = this->conf->getBool ("goslow", false);
         // gr is grid element length
-        T gr = T{1}/T{rgcside};
+        T gr_denom = rgcside;
+        T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
+        this->ax_centroids.resize(this->retina->num(), morph::Vector<T,2>({T{0},T{0}}));
         // Axon initial positions x and y are uniformly randomly selected
         morph::RandUniform<T, std::mt19937> rng_x(T{0}, T{1.0});
         morph::RandUniform<T, std::mt19937> rng_y(T{-0.2}, T{0});
@@ -109,6 +119,7 @@ struct SimpsonGoodhill
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
             morph::Vector<T, 2> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
+            this->ax_centroids[ri] += initpos / static_cast<T>(bpa);
             this->branches[i].path.clear();
             this->branches[i].path.push_back (initpos);
             this->branches[i].id = i;
@@ -123,8 +134,9 @@ struct SimpsonGoodhill
         this->m[3] = this->conf->getDouble ("mborder", 0.1);
 
         // Visualization init
-        const unsigned int ww = this->conf->getUInt ("win_width", 1600);
+        const unsigned int ww = this->conf->getUInt ("win_width", 1200);
         unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
+        std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
         this->v->backgroundWhite();
         this->v->lightingEffects();
@@ -137,6 +149,11 @@ struct SimpsonGoodhill
         this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->finalize();
         v->addVisualModel (this->bv);
+
+        // Centroids of branches viewed with a NetVisual
+        this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
+        this->cv->finalize();
+        v->addVisualModel (this->cv);
 
         // Show a vis of the retina, to compare positions/colours
         offset[0] += 2.3f;
@@ -173,10 +190,14 @@ struct SimpsonGoodhill
     morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
+    // Centroid of the branches for each axon
+    std::vector<morph::Vector<T, 2>> ax_centroids;
     // A visual environment
     morph::Visual* v;
     // Specialised visualization of agents with a history
     BranchVisual<T>* bv;
+    // Centroid visual
+    NetVisual<T>* cv;
 };
 
 int main (int argc, char **argv)
