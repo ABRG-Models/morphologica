@@ -94,12 +94,11 @@ struct SimpsonGoodhill
         T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
-        this->retina = new morph::CartGrid(gr, gr, 1, 1);
+        this->retina = new morph::CartGrid(gr, gr, 0.0f, 0.0f, 0.95f, 0.95f);
         this->retina->setBoundaryOnOuterEdge();
         std::cout << "Retina has " << this->retina->num() << " cells\n";
         this->branches.resize(this->retina->num() * bpa);
 
-        //this->ax_centroids.resize(this->retina->num(), morph::Vector<T,2>({T{0},T{0}}));
         std::cout << "Retina is " << this->retina->widthnum() << " wide and " << this->retina->depthnum() << " high\n";
         this->ax_centroids.init (this->retina->widthnum(), this->retina->depthnum());
         // Axon initial positions x and y are uniformly randomly selected
@@ -117,7 +116,6 @@ struct SimpsonGoodhill
             // Set the branch's termination zone
             unsigned int ri = i/bpa; // retina index
             this->branches[i].tz = {this->retina->d_x[ri], this->retina->d_y[ri]};
-            //std::cout << "tzone: d_x[" << ri << "]";
             // Set its ephrin interaction parameters (though these may be related to the tz)
             this->branches[i].EphA = T{1.05} + (T{0.26} * std::exp (T{2.3} * this->retina->d_x[ri])); // R(x) = 0.26e^(2.3x) + 1.05,
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
@@ -141,7 +139,7 @@ struct SimpsonGoodhill
 
         // Visualization init
         const unsigned int ww = this->conf->getUInt ("win_width", 1200);
-        unsigned int wh = static_cast<unsigned int>(0.8824f * (float)ww);
+        unsigned int wh = static_cast<unsigned int>(0.5625f * (float)ww);
         std::cout << "New morph::Visual with width/height: " << ww << "/" << wh << std::endl;
         this->v = new morph::Visual (ww, wh, "Simpson-Goodhill extended XBAM");
         this->v->backgroundWhite();
@@ -163,8 +161,7 @@ struct SimpsonGoodhill
         v->addVisualModel (this->cv);
 
         // Show a vis of the retina, to compare positions/colours
-        offset[0] += 1.8f;
-        offset[1] += 0.5f;
+        offset[0] += 1.3f;
         morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
@@ -198,7 +195,6 @@ struct SimpsonGoodhill
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
     // Centroid of the branches for each axon
-    //std::vector<morph::Vector<T, 2>> ax_centroids;
     net<T> ax_centroids;
     // A visual environment
     morph::Visual* v;

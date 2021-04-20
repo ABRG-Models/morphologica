@@ -32,9 +32,13 @@ namespace morph {
     };
 
     /*!
-     * This class is used to build an cartesian grid of rectanglular elements.
+     * This class is used to build an cartesian grid of rectangular elements.
      *
-     * It has been developed from HexGrid.h
+     * It has been developed from HexGrid.h. It looks byzantine in complexity, given
+     * than it's 'only' supposed to provide a way to track a rectangular grid. This is
+     * because, as with HexGrid.h, the initial grid is intended to provide a region from
+     * which an arbitrary boundary region can be 'cut out' AND it maintains all the
+     * neighbour relationships correctly.
      *
      * Optionally, a boundary may be set by calling setBoundary (const
      * BezCurvePath&). If this is done, then the boundary is converted to a set of
@@ -83,18 +87,6 @@ namespace morph {
 
         //! Distance to boundary for any element.
         alignas(8) std::vector<float> d_distToBoundary;
-
-        //! The length of a row in the initial, rectangular domain.
-        unsigned int d_rowlen = 0;
-
-        //! The number of rows in the initial domain.
-        unsigned int d_numrows = 0;
-
-        /*!
-         * d_rowlen * d_numrows is the initial domain size in number of rectangular
-         * elements.
-         */
-        unsigned int d_size = 0;
 
         /*!
          * How many additional rects to grow out to the left and right; top and
@@ -208,9 +200,6 @@ namespace morph {
             cgdata.add_val ("/x_span", x_span);
             cgdata.add_val ("/y_span", y_span);
             cgdata.add_val ("/z", z);
-            cgdata.add_val ("/d_rowlen", d_rowlen);
-            cgdata.add_val ("/d_numrows", d_numrows);
-            cgdata.add_val ("/d_size", d_size);
             cgdata.add_val ("/d_growthbuffer_horz", d_growthbuffer_horz);
             cgdata.add_val ("/d_growthbuffer_vert", d_growthbuffer_vert);
 
@@ -274,9 +263,6 @@ namespace morph {
             cgdata.read_val ("/x_span", this->x_span);
             cgdata.read_val ("/y_span", this->y_span);
             cgdata.read_val ("/z", this->z);
-            cgdata.read_val ("/d_rowlen", this->d_rowlen);
-            cgdata.read_val ("/d_numrows", this->d_numrows);
-            cgdata.read_val ("/d_size", this->d_size);
             cgdata.read_val ("/d_growthbuffer_horz", this->d_growthbuffer_horz);
             cgdata.read_val ("/d_growthbuffer_vert", this->d_growthbuffer_vert);
 
@@ -448,7 +434,7 @@ namespace morph {
             }
         }
 
-        //! Default constructor
+        //! Default constructor creates symmetric grid centered about 0,0.
         CartGrid(): d(1.0f), v(1.0f), x_span(1.0f), y_span(1.0f), z(0.0f) {}
 
         //! Construct then load from file.
@@ -471,6 +457,22 @@ namespace morph {
             this->domainShape = shape;
 
             this->init();
+        }
+
+        //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and creating to x2,y2.
+        CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
+                  CartDomainShape shape = CartDomainShape::Rectangle)
+        {
+            this->d = d_;
+            this->v = v_;
+            this->x_span = x2 - x1;
+            this->y_span = y2 - y1;
+            this->z = z_;
+            this->domainShape = shape;
+
+            // init2 is the non-symmetic initialisation for making arbitrary rectangular grids.
+            std::cout << "call init2("<<x1<<", etc)\n";
+            this->init2 (x1, y1, x2, y2);
         }
 
         //! Initialisation common code
@@ -1421,6 +1423,63 @@ namespace morph {
                             ri->set_nsw ((*prevRow)[pri-1]);
                         }
                         if (xi < halfRows) {
+                            (*prevRow)[pri+1]->set_nnw (ri);
+                            ri->set_nse ((*prevRow)[pri+1]);
+                        }
+                    }
+                    ++pri;
+                    nextPrevRow->push_back (ri);
+                }
+                // Swap prevRow and nextPrevRow.
+                std::vector<std::list<morph::Rect>::iterator>* tmp = prevRow;
+                prevRow = nextPrevRow;
+                nextPrevRow = tmp;
+                nextPrevRow->clear();
+            }
+        }
+
+        //! Initialize a non-symmetric rectangular grid.
+        void init2 (float x1, float y1, float x2, float y2)
+        {
+            int _xi = x1/this->d;
+            int _xf = x2/this->d;
+            int _yi = y1/this->d;
+            int _yf = y2/this->d;
+
+            std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
+
+            // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
+            unsigned int vi = 0;
+
+            std::vector<std::list<morph::Rect>::iterator> prevRowEven;
+            std::vector<std::list<morph::Rect>::iterator> prevRowOdd;
+
+            // Swap pointers between rows.
+            std::vector<std::list<morph::Rect>::iterator>* prevRow = &prevRowEven;
+            std::vector<std::list<morph::Rect>::iterator>* nextPrevRow = &prevRowOdd;
+
+            // Build grid, raster style.
+            for (int yi = _yi; yi <= _yf; ++yi) {
+                size_t pri = 0;
+                for (int xi = _xi; xi <= _xf; ++xi) {
+                    this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
+
+                    auto ri = this->rects.end(); ri--;
+                    this->vrects.push_back (&(*ri));
+
+                    if (xi > _xi) {
+                        auto ri_w = ri; ri_w--;
+                        ri_w->set_ne (ri);
+                        ri->set_nw (ri_w);
+                    }
+                    if (yi > _yi) {
+                        (*prevRow)[pri]->set_nn (ri);
+                        ri->set_ns ((*prevRow)[pri]);
+                        if (xi > _xi) {
+                            (*prevRow)[pri-1]->set_nne (ri);
+                            ri->set_nsw ((*prevRow)[pri-1]);
+                        }
+                        if (xi < _xf) {
                             (*prevRow)[pri+1]->set_nnw (ri);
                             ri->set_nse ((*prevRow)[pri+1]);
                         }

@@ -1,6 +1,7 @@
 {
     "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
+    "win_width" : 1920,
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
     "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length. There are thus (rgcside * rgcside) axons. Because morph::CartGrid has a (0,0) element and is always symmetric, this has to be ODD.",
