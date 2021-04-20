@@ -38,16 +38,17 @@ public:
     void initializeVertices (void)
     {
         VBOint idx = 0;
-        std::array<float, 3> clr = { 0, 0, 0 };
         // Spheres at the net vertices
-        for (auto p : this->locations->p) {
-            this->computeSphere (idx, p, clr, this->radiusFixed, 14, 12);
+        for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
+            this->computeSphere (idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
         }
         // Connections
         for (auto c : this->locations->c) {
             morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
             morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
-            this->computeFlatLineRnd (idx, c1, c2, this->uz, clr, this->linewidth, 0.0f, true, false);
+            std::array<float, 3> clr1 = this->locations->clr[c[0]];
+            std::array<float, 3> clr2 = this->locations->clr[c[1]];
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, 0.01f);
         }
     }
 
@@ -64,8 +65,4 @@ public:
     Flt linewidth = 0.008;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
-    // Hues for colour control with vectorData
-    //float hue1 = 0.1f;
-    //float hue2 = 0.5f;
-    //float hue3 = -1.0f;
 };

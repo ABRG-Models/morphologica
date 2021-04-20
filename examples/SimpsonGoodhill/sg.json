@@ -1,10 +1,10 @@
 {
-    "desc_movie" : "save pngs?",
+    "desc_movie" : "If true, then save images to make a movie",
     "movie" : false,
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,
-    "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length. There are thus (rgcside * rgcside) axons",
-    "rgcside" : 19,
+    "desc_rgcside" : "The retina is modelled as a square grid of cells. This is the side length. There are thus (rgcside * rgcside) axons. Because morph::CartGrid has a (0,0) element and is always symmetric, this has to be ODD.",
+    "rgcside" : 21,
     "desc_bpa" : "Branches per axon",
     "bpa" : 8,
     "desc_steps" : "How many simulation steps should be computed?",

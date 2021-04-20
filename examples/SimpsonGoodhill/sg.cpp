@@ -87,11 +87,11 @@ struct SimpsonGoodhill
     void init()
     {
         // Simulation init
-        this->rgcside = this->conf->getUInt ("rgcside", 20);
+        this->rgcside = this->conf->getUInt ("rgcside", this->rgcside);
         this->bpa = this->conf->getUInt ("bpa", 8);
         this->goslow = this->conf->getBool ("goslow", false);
         // gr is grid element length
-        T gr_denom = rgcside;
+        T gr_denom = rgcside-1;
         T gr = T{1}/gr_denom;
         std::cout << "Grid element length " << gr << std::endl;
         this->retina = new morph::CartGrid(gr, gr, 1, 1);
@@ -182,7 +182,7 @@ struct SimpsonGoodhill
     // Branches per axon
     unsigned int bpa = 8;
     // Number of RGCs on a side
-    unsigned int rgcside = 20;
+    unsigned int rgcside = 21;
     // If true, then slow things down a bit in the visualization
     bool goslow = false;
     // How many steps to store/show history?
