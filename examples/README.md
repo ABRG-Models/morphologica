@@ -78,7 +78,7 @@ Contains an implementation of the Lotka-Volterra population model cast as a reac
 
 Contains an implementation of the model described in the paper 'A
 simple model can unify a broad range of phenomena in retinotectal map
-development', Biological Cybernetics, 2011, by Hugh Simpson and Geoffrey Goodhill.
+development', Biological Cybernetics, 2011, by Hugh Simpson and Geoffrey Goodhill. This one is notable because it is an **agent based model**, rather than a reaction diffusion model. Proof that morphologica is useful for many different types of model! The image shows results for the wildtype model, Figs 2B to 2D in the paper, with parameters exactly as given in the paper.
 
 **From the base of morphologica**, run like this:
 
