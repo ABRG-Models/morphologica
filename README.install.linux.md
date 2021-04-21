@@ -22,10 +22,10 @@ To install the necessary dependencies on Ubuntu or Debian Linux:
 ```sh
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev \
-                 libopencv-dev libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev \
-                 libglm-dev
+                 libopencv-dev libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev
+
 ```
-This is a complete recipe for dependencies on Ubuntu 20.04!
+This is a complete recipe for dependencies on Ubuntu 20.04! Note that for the optional softmats code, you'll also need *libglm-dev*.
 
 ### Package-managed dependencies for Arch Linux
 

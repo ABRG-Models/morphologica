@@ -77,8 +77,10 @@ add_executable(rosenbrock rosenbrock.cpp)
 target_compile_definitions(rosenbrock PUBLIC FLT=float)
 target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+if(SOFTMATS)
+
 #
-# Softmats examples
+# Optional Softmats examples
 #
 
 # Colliding softmats
@@ -89,3 +91,5 @@ add_subdirectory(bags)
 
 # Huddling
 add_subdirectory(huddling)
+
+endif(SOFTMATS)

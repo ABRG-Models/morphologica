@@ -147,8 +147,11 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 # be compiled static if needed)
 add_subdirectory(morph)
 
-# Softmats add_subdirectory
-add_subdirectory(softmats)
+option(SOFTMATS OFF)
+if(SOFTMATS)
+  # Softmats add_subdirectory
+  add_subdirectory(softmats)
+endif(SOFTMATS)
 
 # We have to make a morph/rapidxml-1.13 installation for client code
 # that uses the ReadCurves class.
