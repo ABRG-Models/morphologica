@@ -86,7 +86,7 @@ development', 2011, by Hugh Simpson and Geoffrey Goodhill.
 /build/examples/SimpsonGoodhill/sg ./examples/SimpsonGoodhill/sg.json
 ```
 
-![Screenshot of the sg.cpp program, showing the wildtype model (cf. Figs 2B-2D](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/sg.png?raw=true)
+![Screenshot of the sg.cpp program, showing the wildtype model (cf. Figs 2B-2D)](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/sg.png?raw=true)
 
 ## morph::Visual examples
 
