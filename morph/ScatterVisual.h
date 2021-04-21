@@ -89,13 +89,19 @@ namespace morph {
 #endif
 
         //! Compute spheres for a scatter plot
-        void initializeVertices (void) {
-
+        void initializeVertices (void)
+        {
             unsigned int ncoords = this->dataCoords->size();
-            unsigned int ndata = this->scalarData->size();
+            unsigned int ndata = this->scalarData == (const std::vector<Flt>*)0 ? 0 : this->scalarData->size();
+            // If we have vector data, then manipulate colour accordingly.
+            unsigned int nvdata = this->vectorData == (const std::vector<Vector<Flt>>*)0 ? 0 : this->vectorData->size();
 
             if (ndata > 0 && ncoords != ndata) {
                 std::cout << "ScatterVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;
+                return;
+            }
+            if (nvdata > 0 && ncoords != nvdata) {
+                std::cout << "ScatterVisual Error: ncoords ("<<ncoords<<") != nvdata ("<<nvdata<<"), return (no model)." << std::endl;
                 return;
             }
 
@@ -103,10 +109,45 @@ namespace morph {
             // client code to set it?
 
             std::vector<Flt> dcopy;
-            if (ndata) {
+            std::vector<Flt> vdcopy1;
+            std::vector<Flt> vdcopy2;
+            std::vector<Flt> vdcopy3;
+            if (ndata && !nvdata) {
                 dcopy = *(this->scalarData);
                 this->colourScale.do_autoscale = true;
                 this->colourScale.transform (*this->scalarData, dcopy);
+            } else if (nvdata) {
+                vdcopy1.resize(this->vectorData->size());
+                vdcopy2.resize(this->vectorData->size());
+                vdcopy3.resize(this->vectorData->size());
+
+                std::vector<Flt> dcopy2, dcopy3;
+                dcopy.resize(this->vectorData->size());
+                dcopy2.resize(this->vectorData->size());
+                dcopy3.resize(this->vectorData->size());
+
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    dcopy[i] = (*this->vectorData)[i][0];
+                    dcopy2[i] = (*this->vectorData)[i][1];
+                    dcopy3[i] = (*this->vectorData)[i][2];
+                }
+
+                this->colourScale.do_autoscale = true;
+                this->colourScale2.do_autoscale = true;
+                this->colourScale3.do_autoscale = true;
+
+                this->colourScale.transform (dcopy, vdcopy1);
+                this->colourScale2.transform (dcopy2, vdcopy2);
+                this->colourScale3.transform (dcopy3, vdcopy3);
+
+#if 0
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    std::cout << "i=" << i
+                              << " R: " << vdcopy1[i]
+                              << ", G: " << vdcopy2[i]
+                              << ", B: " << vdcopy3[i] << std::endl;
+                }
+#endif
             } // else no scaling required - spheres will be one colour
 
             // The indices index
@@ -115,21 +156,32 @@ namespace morph {
             for (unsigned int i = 0; i < ncoords; ++i) {
                 // Scale colour (or use single colour)
                 std::array<float, 3> clr = this->cm.getHueRGB();
-                if (ndata) {
+                if (ndata && !nvdata) {
                     clr = this->cm.convert (dcopy[i]);
+                } else if (nvdata) {
+                    // Combine colour from two values. vdcopy1, vdcopy2? OR just do RGB for now?
+                    // ColourMap in 'dual hue' (or triple hue) mode.
+                    //std::cout << "Convert colour from vdcopy1[i]: " << vdcopy1[i] << ", vdcopy2[i]: " << vdcopy2[i] << std::endl;
+                    clr = this->cm.convert (vdcopy1[i], vdcopy2[i]);
                 }
-                this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed);
+                this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
             }
         }
 
         //! Set this->radiusFixed, then re-compute vertices.
-        void setRadius (float fr) {
+        void setRadius (float fr)
+        {
             this->radiusFixed = fr;
             this->reinit();
         }
 
         //! Change this to get larger or smaller spheres.
         Flt radiusFixed = 0.05;
+
+        // Hues for colour control with vectorData
+        float hue1 = 0.1f;
+        float hue2 = 0.5f;
+        float hue3 = -1.0f;
     };
 
 } // namespace morph

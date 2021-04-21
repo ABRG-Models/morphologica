@@ -119,20 +119,19 @@ int main (int argc, char **argv)
     RD.savePositions();
 
     // Set up the morph::Visual object
-    morph::Visual plt (win_width, win_height, "Ermentrout (Keller-Segel)");
-    plt.zNear = 0.001;
-    plt.zFar = 50;
-    plt.fov = 45;
-    plt.showCoordArrows = true;
-    plt.showTitle = false;
+    morph::Visual v (win_width, win_height, "Ermentrout (Keller-Segel)");
+    v.zNear = 0.001;
+    v.zFar = 50;
+    v.fov = 45;
+    v.showCoordArrows = true;
+    v.showTitle = false;
     // You can lock movement of the scene
-    plt.sceneLocked = conf.getBool ("sceneLocked", false);
+    v.sceneLocked = conf.getBool ("sceneLocked", false);
     // You can set the default scene x/y/z offsets
-    plt.setZDefault (conf.getFloat ("z_default", -10.0f));
-    plt.setSceneTransXY (conf.getFloat ("x_default", 0.0f),
-                         conf.getFloat ("y_default", 0.0f));
+    v.setZDefault (conf.getFloat ("z_default", -10.0f));
+    v.setSceneTransXY (conf.getFloat ("x_default", 0.0f), conf.getFloat ("y_default", 0.0f));
     // Make this larger to "scroll in and out of the image" faster
-    plt.scenetrans_stepsize = 0.5;
+    v.scenetrans_stepsize = 0.5;
 
     // Add two morph::HexGridVisuals to the morph::Visual.
 
@@ -144,7 +143,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * RD.hg->width();
-    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (plt.shaderprog, plt.tshaderprog, RD.hg, spatOff);
+    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
     hgv1->setScalarData (&RD.n[0]);
     // You can directly set VisualDataModel::zScale and ::colourScale:
     hgv1->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -155,11 +154,11 @@ int main (int argc, char **argv)
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv1->finalize();
-    unsigned int n_idx = plt.addVisualModel (hgv1);
+    unsigned int n_idx = v.addVisualModel (hgv1);
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
-    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (plt.shaderprog, plt.tshaderprog, RD.hg, spatOff);
+    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
     hgv2->setScalarData (&RD.c[0]);
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
@@ -169,11 +168,11 @@ int main (int argc, char **argv)
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->hexVisMode = morph::HexVisMode::Triangles;
     hgv2->finalize();
-    unsigned int c_idx = plt.addVisualModel (hgv2);
+    unsigned int c_idx = v.addVisualModel (hgv2);
 
     // Set up a 2D graph with morph::GraphVisual
     spatOff = {0.5f, -2.0f, 0.0f};
-    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (plt.shaderprog, plt.tshaderprog, spatOff);
+    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v.shaderprog, v.tshaderprog, spatOff);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = true;
     graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_ymax", 40000.0f));
@@ -183,7 +182,7 @@ int main (int argc, char **argv)
     graph1->prepdata ("n");
     graph1->prepdata ("c");
     graph1->finalize();
-    plt.addVisualModel (static_cast<morph::VisualModel*>(graph1));
+    v.addVisualModel (static_cast<morph::VisualModel*>(graph1));
 
     // Set up the render clock
     std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
@@ -196,8 +195,8 @@ int main (int argc, char **argv)
 
         if ((RD.stepCount % plotevery) == 0) {
             // Plot n and c
-            static_cast<VdmPtr>(plt.getVisualModel(n_idx))->updateData (&RD.n[0]);
-            static_cast<VdmPtr>(plt.getVisualModel(c_idx))->updateData (&RD.c[0]);
+            static_cast<VdmPtr>(v.getVisualModel(n_idx))->updateData (&RD.n[0]);
+            static_cast<VdmPtr>(v.getVisualModel(c_idx))->updateData (&RD.c[0]);
             // Append to the 2D graph of sums:
             graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_n[0], 0);
             graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_c[0], 1);
@@ -216,7 +215,7 @@ int main (int argc, char **argv)
         std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
         if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
             glfwPollEvents();
-            plt.render();
+            v.render();
             lastrender = std::chrono::steady_clock::now();
         }
     }
@@ -245,7 +244,7 @@ int main (int argc, char **argv)
     }
 
     std::cout << "Press x in graphics window to exit.\n";
-    plt.keepOpen();
+    v.keepOpen();
 
     return 0;
 };

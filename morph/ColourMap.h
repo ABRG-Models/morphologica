@@ -26,6 +26,8 @@ namespace morph {
         MonochromeRed,
         MonochromeBlue,
         MonochromeGreen,
+        Duochrome,    // Two fixed hues, vary saturation of each with two input numbers.
+        Trichrome,    // As for Duochrome, but with three inputs
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -54,11 +56,21 @@ namespace morph {
         //! Type of map
         ColourMapType type = ColourMapType::Jet;
         //! The hue (range 0 to 1.0f) as used in HSV colour values for Monochrome maps.
-        float hue = 0.0;
+        float hue = 0.0f;
         //! The saturation, used for ColourMapType::Fixed only
-        float sat = 1.0;
+        float sat = 1.0f;
         //! The value, used for ColourMapType::Fixed only
-        float val = 1.0;
+        float val = 1.0f;
+
+        // Used by Duochrome
+        float hue2 = 0.33f;
+        float sat2 = 1.0f;
+        float val2 = 1.0f;
+
+        // Used by Trichrome
+        float hue3 = 0.66f;
+        float sat3 = 1.0f;
+        float val3 = 1.0f;
 
     public:
         //! Default constructor is required, but need not do anything.
@@ -66,6 +78,7 @@ namespace morph {
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->type = _t; }
 
+        //! Return the colour that represents not-a-number
         static std::array<float, 3> nanColour (ColourMapType _t)
         {
             std::array<float, 3> c = {0.0f, 0.0f, 0.0f};
@@ -176,6 +189,22 @@ namespace morph {
                 rm = 255;
             }
             return rm;
+        }
+
+        std::array<float, 3> convert (T _datum1, T _datum2)
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("Set ColourMapType to Duochrome.");
+            }
+            return this->duochrome (_datum1, _datum2);
+        }
+
+        std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
+        {
+            if (this->type != ColourMapType::Trichrome) {
+                throw std::runtime_error ("Set ColourMapType to Trichrome.");
+            }
+            return this->trichrome (_datum1, _datum2, _datum3);
         }
 
         //! Convert the scalar datum into an RGB (or BGR) colour
@@ -315,6 +344,8 @@ namespace morph {
         //! Convert for 4 component colours
         //array<float, 4> convertAlpha (T datum);
 
+        ColourMapType getType() const { return this->type; }
+
         // Set the colour map type.
         void setType (const ColourMapType& tp)
         {
@@ -347,6 +378,61 @@ namespace morph {
             }
         }
 
+        // Set Duochrome to be Red-Blue
+        void setHueRB()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("red-blue colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.0f;
+            this->hue2 = 0.6667f;
+        }
+
+        void setHueBR()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("blue-red colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.6667f;
+            this->hue2 = 0.0f;
+        }
+
+        // Set Duochrome to be Green-Blue
+        void setHueGB()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("green-blue colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.3333f;
+            this->hue2 = 0.6667f;
+        }
+        void setHueBG()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("blue-green colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.66667f;
+            this->hue2 = 0.3333f;
+        }
+
+        // Red-green
+        void setHueRG()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("red-green colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.0f;
+            this->hue2 = 0.3333f;
+        }
+        void setHueGR()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("green-red colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.33333f;
+            this->hue2 = 0.0f;
+        }
+
         // Set the hue... unless you can't/shouldn't
         void setHue (const float& h)
         {
@@ -356,6 +442,23 @@ namespace morph {
             case ColourMapType::MonochromeGreen:
             {
                 throw std::runtime_error ("This colour map does not accept changes to the hue");
+                break;
+            }
+            case ColourMapType::Duochrome:
+            {
+                // Special case duochrome - take first hue, and set second hue to be orthogonal
+                this->hue = h;
+                this->hue2 = h + 0.3333f;
+                if (this->hue2 > 1.0f) { this->hue2 -= 1.0f; }
+                break;
+            }
+            case ColourMapType::Trichrome:
+            {
+                this->hue = h;
+                this->hue2 = h + 0.3333f;
+                if (this->hue2 > 1.0f) { this->hue2 -= 1.0f; }
+                this->hue3 = h + 0.6667f;
+                if (this->hue3 > 1.0f) { this->hue3 -= 1.0f; }
                 break;
             }
             default:
@@ -396,7 +499,7 @@ namespace morph {
 
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
-#if 0
+#if 0 // Bit pointless, setRGB, given that ColourMaps are supposed to convert from a number INTO RGB.
         void setRGB (const float& r, const float& g, const float& b)
         {
             if (this->type != ColourMapType::Fixed) {
@@ -476,6 +579,44 @@ namespace morph {
         std::array<float,3> monochrome (float datum)
         {
             return ColourMap::hsv2rgb (this->hue, datum, 1.0f);
+        }
+
+        /*!
+         * @param datum1 gray value from 0.0 to 1.0
+         * @param datum2 gray value from 0.0 to 1.0
+         *
+         * @returns RGB value in a dual-colour map, with colour this->hue and this->hue2;
+         */
+        std::array<float,3> duochrome (float datum1, float datum2)
+        {
+            std::array<float,3> clr1 = ColourMap::hsv2rgb (this->hue, datum1, datum1);
+            std::array<float,3> clr2 = ColourMap::hsv2rgb (this->hue2, datum2, datum2);
+            clr1[0] += clr2[0];
+            clr1[1] += clr2[1];
+            clr1[2] += clr2[2];
+            clr1[0] = clr1[0] > 1.0f ? 1.0f : clr1[0];
+            clr1[1] = clr1[1] > 1.0f ? 1.0f : clr1[1];
+            clr1[2] = clr1[2] > 1.0f ? 1.0f : clr1[2];
+            return clr1;
+        }
+
+        /*!
+         * @param datum1 gray value from 0.0 to 1.0
+         * @param datum2 gray value from 0.0 to 1.0
+         * @param datum3 gray value from 0.0 to 1.0
+         *
+         * @returns RGB value in a tri-colour map, with colour this->hue, this->hue2
+         * and this->hue3.
+         */
+        std::array<float,3> trichrome (float datum1, float datum2, float datum3)
+        {
+            std::array<float,3> clr1 = ColourMap::hsv2rgb (this->hue, datum1, datum1);
+            std::array<float,3> clr2 = ColourMap::hsv2rgb (this->hue2, datum2, datum2);
+            std::array<float,3> clr3 = ColourMap::hsv2rgb (this->hue3, datum3, datum3);
+            clr1[0] += clr2[0] + clr3[0];
+            clr1[1] += clr2[1] + clr3[1];
+            clr1[2] += clr2[2] + clr3[2];
+            return clr1;
         }
 
         /*!

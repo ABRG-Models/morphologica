@@ -6,6 +6,9 @@ add_subdirectory(Ermentrout2009)
 # The Lotka-Volterra population model. See Pau, 1992, p654.
 add_subdirectory(LotkaVolterra)
 
+# A retinotectal model published by Simpson and Goodhill, 2011
+add_subdirectory(SimpsonGoodhill)
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
@@ -38,6 +41,9 @@ target_link_libraries(quiver ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPAC
 
 add_executable(scatter scatter.cpp)
 target_link_libraries(scatter ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(duochrome duochrome.cpp)
+target_link_libraries(duochrome ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
 add_executable(graph1 graph1.cpp)
 target_link_libraries(graph1 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)

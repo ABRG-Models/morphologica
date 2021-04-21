@@ -43,6 +43,7 @@ namespace morph {
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
         void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
+        void setVectorData (const std::vector<Vector<float>>* _vectors) { this->vectorData = _vectors; }
         void setDataCoords (std::vector<Vector<float>>* _coords) { this->dataCoords = _coords; }
 
         void updateZScale (const Scale<T, float>& zscale)
@@ -136,40 +137,6 @@ namespace morph {
             this->reinit();
         }
 
-        //! Re-initialize the buffers. Client code might have appended to
-        //! vertexPositions/Colors/Normals and indices before calling this method.
-        void reinit_buffers()
-        {
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-            // Now re-set up the VBOs
-#ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
-            glBindVertexArray (this->vao);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
-#endif
-            int sz = this->indices.size() * sizeof(VBOint);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
-
-#ifdef CAREFULLY_UNBIND_AND_REBIND
-            glBindVertexArray(0);
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
-        }
-
-        //! Re-create the model - called after updating data
-        void reinit()
-        {
-            // Fixme: Better not to clear, then repeatedly pushback here:
-            this->vertexPositions.clear();
-            this->vertexNormals.clear();
-            this->vertexColors.clear();
-            this->indices.clear();
-            this->initializeVertices();
-            this->reinit_buffers();
-        }
-
         void setZeroGrid (const bool _zerogrid) { this->zerogrid = _zerogrid; }
 
         //! All data models use a a colour map. Change the type/hue of this colour map
@@ -179,6 +146,10 @@ namespace morph {
         //! A Scaling function for the colour map. Perhaps a Scale class contains a
         //! colour map? If not, then this scale might well be autoscaled. Applied to scalarData.
         Scale<T, float> colourScale;
+        // scale for second colour (when used with vectorData)
+        Scale<T, float> colourScale2;
+        // scale for third colour (when used with vectorData)
+        Scale<T, float> colourScale3;
 
         //! A scale to scale (or autoscale) scalarData. This might be used to set z
         //! locations of data coordinates based on scalarData. The scaling may
