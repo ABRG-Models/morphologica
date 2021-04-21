@@ -65,8 +65,16 @@ struct SimpsonGoodhill
     void step()
     {
         // Compute the next position for each branch:
+#ifdef __OSX__
+        // Mac compiler didn't like omp parallel for in front of a for(auto...
+#pragma omp parallel for
+        for (unsigned int i = 0; i < this->branches.size(); ++i) {
+            this->branches[i].compute_next (this->branches, this->m);
+        }
+#else
 #pragma omp parallel for
         for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
+#endif
         // Update centroids
         for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
