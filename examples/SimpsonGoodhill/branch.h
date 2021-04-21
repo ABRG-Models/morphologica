@@ -5,7 +5,8 @@
 #include <morph/Vector.h>
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
-// termination zone, and the algorithm for computing the next position.
+// termination zone, and the algorithm for computing the next position. Could derive
+// from an 'agent' base class.
 template<typename T>
 struct branch
 {

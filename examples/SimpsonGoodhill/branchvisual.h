@@ -2,7 +2,8 @@
  * \file
  *
  * Visualise a bunch of agents (as spheres), each of which has a history of locations
- * that it has visited previously, which could be shown as tracks (tubes, say).
+ * that it has visited previously, shown as lines. A coloured cap is used to indicate
+ * EphA expression level.
  *
  * \author Seb James
  * \date 2021
@@ -36,15 +37,15 @@ public:
 
     morph::Scale<Flt, Flt> EphA_scale;
 
-    //! Compute spheres for a scatter plot
     void initializeVertices (void)
     {
         VBOint idx = 0;
-        // For each branch, draw it.
+        // For each branch, draw lines for the path history and a sphere for teh current
+        // location, with a second colour for the EphA expression.
         for (auto b : *this->branches) {
             // Colour comes from target location.
             std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
-            std::array<float, 3> clr2 = { this->EphA_scale.transform_one(b.EphA), 0, 0 };
+            std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
             morph::Vector<float, 3> last = { 0, 0, 0 };
             morph::Vector<float, 3> cur = { 0, 0, 0 };
             // First draw the path
@@ -76,8 +77,4 @@ public:
     Flt linewidth = 0.008;
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
-    // Hues for colour control with vectorData
-    float hue1 = 0.1f;
-    float hue2 = 0.5f;
-    float hue3 = -1.0f;
 };
