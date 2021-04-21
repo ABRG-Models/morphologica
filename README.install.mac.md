@@ -53,6 +53,10 @@ Finally, use Mac ports to install the rest of the dependencies:
 sudo port install cmake armadillo opencv
 ```
 
+*Note: The OpenGL maths library glm/glm.hpp is also required for the
+ softmats compilation. I've not recently had to figure out how to do
+ this with Mac ports and so I don't know how to.*
+
 *Be aware that if you have conflicting versions of any of the
  libraries in another location (such as /usr/local), you may run into
  problems during the build.*
@@ -175,6 +179,10 @@ cmake ..
 make
 sudo make install
 ```
+
+#### glm
+
+The softmats code requires the OpenGL math library GLM. Can't remember how I got this on a Mac!
 
 ## Build morphologica on Mac
 

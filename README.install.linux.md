@@ -1,8 +1,8 @@
 # Build and Install morphologica on GNU/Linux
 
-You don't *need* to build and install morphologica to use the headers, but 
-you *will* need to install the dependencies. The cmake-driven morphologica 
-build & install process installs the header files and font files that are 
+You don't *need* to build and install morphologica to use the headers, but
+you *will* need to install the dependencies. The cmake-driven morphologica
+build & install process installs the header files and font files that are
 required to build against morphologica. Some libraries may also be installed.
 
 The build process also compiles a set of test programs, which require
@@ -22,7 +22,8 @@ To install the necessary dependencies on Ubuntu or Debian Linux:
 ```sh
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev \
-                 libopencv-dev libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev
+                 libopencv-dev libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev \
+                 libglm-dev
 ```
 This is a complete recipe for dependencies on Ubuntu 20.04!
 
