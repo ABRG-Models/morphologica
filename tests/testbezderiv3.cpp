@@ -63,9 +63,11 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         normals[i] = Point2d(norms[i].x(),norms[i].y());
     }
 
+    int lw = sz/4;
+
     // This is the fit line.
     for (size_t i=1; i<fitted.size(); i++) {
-        line (pImg, fitted[i-1], fitted[i], linecolfit, 2);
+        line (pImg, fitted[i-1], fitted[i], linecolfit, lw);
     }
 
     // Add the control points in similar colours
@@ -78,31 +80,33 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         for (size_t cc = 0; cc<ctrls.size(); ++cc) {
             Point p1(ctrls[cc].first, ctrls[cc].second);
             circle (pImg, p1, sz, linecol, 2);
+#if 0
             if (cc==0 || cc==ctrls.size()-1) {
-                circle (pImg, p1, sz-2, M_YELLOW, -1);
+                circle (pImg, p1, sz-1, M_YELLOW, -1);
             } else {
-                circle (pImg, p1, sz-2, M_GREEN, -1);
+                circle (pImg, p1, sz-1, M_GREEN, -1);
             }
+#endif
         }
         // Draw in the lines to the control points
         Point ps(ctrls[0].first, ctrls[0].second);
         Point pe(ctrls[1].first, ctrls[1].second);
-        line (pImg, ps, pe, linecol, 1);
+        line (pImg, ps, pe, linecol, lw/2);
         Point ps2(ctrls[ctrls.size()-2].first, ctrls[ctrls.size()-2].second);
         Point pe2(ctrls[ctrls.size()-1].first, ctrls[ctrls.size()-1].second);
-        line (pImg, ps2, pe2, linecol, 1);
+        line (pImg, ps2, pe2, linecol, lw/2);
         j++;
     }
 
     // The user control points
     for (unsigned int i = 0; i < v.size(); ++i) {
         Point p1(v[i].first, v[i].second);
-        circle (pImg, p1, 5, M_CTRL, -1);
+        circle (pImg, p1, sz/2, M_CTRL, -1);
     }
 
     for (unsigned int i = 0; i < w.size(); ++i) {
         Point p1(w[i].first, w[i].second);
-        circle (pImg, p1, 5, M_CTRL, -1);
+        circle (pImg, p1, sz/2, M_CTRL, -1);
     }
 }
 
@@ -120,8 +124,8 @@ int main (int argc, char** argv)
 
     int rtn = 0;
     vector<pair<FLT,FLT>> v;
-    FLT fac = 2.2;
-    FLT xoff = -300.0;
+    FLT fac = 3.4;
+    FLT xoff = -400.0;
     v.push_back (make_pair (xoff+fac*200,fac*500));
     v.push_back (make_pair (xoff+fac*300,fac*450));
     v.push_back (make_pair (xoff+fac*400,fac*400));
@@ -129,7 +133,7 @@ int main (int argc, char** argv)
 
     vector<pair<FLT,FLT>> w;
     w.push_back (v.back());
-    w.push_back (make_pair (xoff+fac*500,fac*240));
+    w.push_back (make_pair (xoff+fac*440,fac*180));
     w.push_back (make_pair (xoff+fac*580,fac*30));
     w.push_back (make_pair (xoff+fac*630,fac*20));
 
@@ -144,11 +148,11 @@ int main (int argc, char** argv)
     bcp.addCurve (cv2);
 
     // Create a frame as the background for our drawing.
-    Mat frame = Mat (1200, 1200, CV_8UC3, M_WHITE);
+    Mat frame = Mat (1800, 1800, CV_8UC3, M_WHITE);
 
     // Draw
     cout << "Draw the two analytical best-fit curves..." << endl;
-    draw (frame, bcp, v, w, M_BLUE, 12);
+    draw (frame, bcp, v, w, M_BLUE, 24);
 
     cout << "Do the control point-equalizing 0th order optimization..."<< endl;
     bool withopt = false;
@@ -159,7 +163,7 @@ int main (int argc, char** argv)
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    draw (frame, bcp, v, w, M_RED, 8);
+    draw (frame, bcp, v, w, M_RED, 16);
 
 #if 0
     // Reset and fit with optimzation
