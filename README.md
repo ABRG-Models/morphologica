@@ -90,8 +90,8 @@ morphologica code is enclosed in the **morph** namespace. You can see
 the doxygen-generated code documentation at
 https://codedocs.xyz/ABRG-Models/morphologica/
 
-For example programs which are compiled when you do the standard
-cmake-driven build of morphologica, see both the tests/ subdirectory
+You can find example programs which are compiled when you do the standard
+cmake-driven build of morphologica in both the tests/ subdirectory
 and the examples/ subdirectory. The readme in examples/ has some nice
 screenshots.
 
