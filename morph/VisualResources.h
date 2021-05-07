@@ -100,8 +100,8 @@ namespace morph {
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
                 } else {
-                    std::cout << "Initialized freetype which has value: "
-                              << (unsigned long long int)freetype << std::endl;
+                    //std::cout << "Initialized freetype which has value: "
+                    //          << (unsigned long long int)freetype << std::endl;
                     this->freetypes[_window] = freetype;
                 }
             }
