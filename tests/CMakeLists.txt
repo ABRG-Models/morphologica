@@ -221,6 +221,9 @@ add_test(testVector testVector)
 add_executable(testvVector testvVector.cpp)
 add_test(testvVector testvVector)
 
+add_executable(testvVectorOfVectors testvVectorOfVectors.cpp)
+add_test(testvVectorOfVectors testvVectorOfVectors)
+
 # It's possible to modify testVector.cpp to be c++-11 or c++-14 friendly:
 add_executable(testVector14 testVector14.cpp)
 target_compile_features(testVector14 PUBLIC cxx_std_14)
