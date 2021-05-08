@@ -604,6 +604,38 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
+        //! Addition which should work for any member type that implements the + operator
+        Vector<S, N> operator+ (const S& s) const
+        {
+            Vector<S, N> rtn;
+            auto add_s = [s](S coord) { return coord + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
+            return rtn;
+        }
+
+        //! Addition += operator for any time same as the enclosed type that implements + op
+        void operator+= (const S& s) const
+        {
+            auto add_s = [s](S coord) { return coord + s; };
+            std::transform (this->begin(), this->end(), this->begin(), add_s);
+        }
+
+        //! Subtraction which should work for any member type that implements the - operator
+        Vector<S, N> operator- (const S& s) const
+        {
+            Vector<S, N> rtn;
+            auto subtract_s = [s](S coord) { return coord - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
+        }
+
+        //! Subtraction -= operator for any time same as the enclosed type that implements - op
+        void operator-= (const S& s) const
+        {
+            auto subtract_s = [s](S coord) { return coord - s; };
+            std::transform (this->begin(), this->end(), this->begin(), subtract_s);
+        }
+
         //! Overload the stream output operator
         friend std::ostream& operator<< <S, N> (std::ostream& os, const Vector<S, N>& v);
     };

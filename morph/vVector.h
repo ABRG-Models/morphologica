@@ -727,7 +727,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator- (const _S& s) const
         {
-            vVector<S> rtn;
+            vVector<S> rtn(this->size());
             auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
@@ -738,6 +738,46 @@ namespace morph {
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
+        {
+            auto subtract_s = [s](S coord) { return coord - s; };
+            std::transform (this->begin(), this->end(), this->begin(), subtract_s);
+        }
+
+        /*!
+         * Addition which should work for any member type that implements the + operator
+         */
+        vVector<S> operator+ (const S& s) const
+        {
+            vVector<S> rtn(this->size());
+            auto add_s = [s](S coord) { return coord + s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), add_s);
+            return rtn;
+        }
+
+        /*!
+         * Addition += operator for any time same as the enclosed type that implements + op
+         */
+        void operator+= (const S& s) const
+        {
+            auto add_s = [s](S coord) { return coord + s; };
+            std::transform (this->begin(), this->end(), this->begin(), add_s);
+        }
+
+        /*!
+         * Subtraction which should work for any member type that implements the - operator
+         */
+        vVector<S> operator- (const S& s) const
+        {
+            vVector<S> rtn(this->size());
+            auto subtract_s = [s](S coord) { return coord - s; };
+            std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
+            return rtn;
+        }
+
+        /*!
+         * Subtraction -= operator for any time same as the enclosed type that implements - op
+         */
+        void operator-= (const S& s) const
         {
             auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);

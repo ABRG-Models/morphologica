@@ -18,8 +18,30 @@ int main()
     vV.push_back ({4.0f,8.1f});
     vV.push_back ({5.0f,12.1f});
 
-    std::cout << vV << std::endl;
-    std::cout << vV/2.0f << std::endl; // !!!!!
+    // Output the initial vector of vectors:
+    std::cout << "Original vVector of Vectors: " << vV << std::endl;
+    // This divides each element of the vector of vectors vV by 2
+    std::cout << "  (vVector of Vectors) / 2 : " << vV/2.0f << std::endl;
+    morph::vVector<morph::Vector<float, 2>> vV2 = vV/2.0f;
+    if (vV2[1][0] != 1.5f) { --rtn; }
 
+    // Add/subtract vectors
+    std::cout << "  (vVector of Vectors) / + (1,-1) : " << vV + morph::Vector<float, 2>({1,-1}) << std::endl;
+    vV2 = vV + morph::Vector<float, 2>({1,-1});
+    if (vV2[1][0] != 4.0f) { --rtn; }
+
+    std::cout << "  (vVector of Vectors) / - (1,-1) : " << vV - morph::Vector<float, 2>({1,-1}) << std::endl;
+    vV2 = vV - morph::Vector<float, 2>({1,-1});
+    if (vV2[3][0] != 4.0f) { --rtn; }
+
+    std::cout << "  (vVector of Vectors) + 2.0f : " << vV + 2.0f << std::endl;
+    vV2 = vV + 2.0f;
+    if (vV2[2][1] != 10.1f) { --rtn; }
+
+    std::cout << "  (vVector of Vectors) - 10UL : " << vV - 10UL << std::endl;
+    vV2 = vV - 10UL;
+    if (vV2[2][0] != -6.0f) { --rtn; }
+
+    std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
