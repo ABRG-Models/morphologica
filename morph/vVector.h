@@ -99,18 +99,14 @@ namespace morph {
          */
         static constexpr S unitThresh = 0.001;
 
-        /*!
-         * Set data members from an std::vector (may not be necessary?)
-         */
+        //! Set data members from an std::vector (may not be necessary?)
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
         {
             std::copy (vec.begin(), vec.end(), this->begin());
         }
 
-        /*!
-         * Set data members from an std::array, matching the size of the array first.
-         */
+        //! Set data members from an std::array, matching the size of the array first.
         template <typename _S=S, size_t N>
         void set_from (const std::array<_S, N>& ar)
         {
@@ -162,9 +158,7 @@ namespace morph {
             } // else do nothing?
         }
 
-        /*!
-         * A function to set the value of each element of the vector.
-         */
+        //! A function to set the value of each element of the vector.
         template <typename _S=S>
         void set (const _S& val)
         {
@@ -210,8 +204,10 @@ namespace morph {
             return ss.str();
         }
 
-        //! Output the vector in a form suitable to paste into Python, as a numpy
-        //! vector, assuming you imported numpy as np
+        /*!
+         * Output the vector in a form suitable to paste into Python, as a numpy vector,
+         * assuming you imported numpy as np
+         */
         std::string str_numpy() const
         {
             std::stringstream ss;
@@ -221,9 +217,7 @@ namespace morph {
             return ss.str();
         }
 
-        /*!
-         * Renormalize the vector to length 1.0. Only for S types that are floating point.
-         */
+        //! Renormalize the vector to length 1.0. Only for S types that are floating point.
         template <typename F=S, std::enable_if_t<!std::is_integral<std::decay_t<F>>::value, int> = 0 >
         void renormalize()
         {
@@ -236,9 +230,7 @@ namespace morph {
             }
         }
 
-        /*!
-         * Zero the vector. Set all coordinates to 0
-         */
+        //! Zero the vector. Set all coordinates to 0
         void zero()
         {
             std::fill (this->begin(), this->end(), S{0});
@@ -330,9 +322,7 @@ namespace morph {
             return len_sq;
         }
 
-        /*!
-         * Return the value of the longest component of the vector.
-         */
+        //! Return the value of the longest component of the vector.
         S longest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
@@ -341,9 +331,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Return the index of the longest component of the vector.
-         */
+        //! Return the index of the longest component of the vector.
         size_t arglongest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
@@ -352,9 +340,7 @@ namespace morph {
             return idx;
         }
 
-        /*!
-         * Return the value of the shortest component of the vector.
-         */
+        //! Return the value of the shortest component of the vector.
         S shortest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
@@ -363,9 +349,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Return the index of the shortest component of the vector.
-         */
+        //! Return the index of the shortest component of the vector.
         size_t argshortest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
@@ -374,9 +358,7 @@ namespace morph {
             return idx;
         }
 
-        /*!
-         * Return the value of the maximum (most positive) component of the vector.
-         */
+        //! Return the value of the maximum (most positive) component of the vector.
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
@@ -384,9 +366,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Return the index of the maximum (most positive) component of the vector.
-         */
+        //! Return the index of the maximum (most positive) component of the vector.
         size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
@@ -394,9 +374,7 @@ namespace morph {
             return idx;
         }
 
-        /*!
-         * Return the value of the minimum (smallest or most negative) component of the vector.
-         */
+        //! Return the value of the minimum (smallest or most negative) component of the vector.
         S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
@@ -404,9 +382,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Return the index of the minimum (smallest or most negative) component of the vector.
-         */
+        //! Return the index of the minimum (smallest or most negative) component of the vector.
         size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
@@ -414,18 +390,14 @@ namespace morph {
             return idx;
         }
 
-        /*!
-         * Return the arithmentic mean of the elements
-         */
+        //! Return the arithmentic mean of the elements
         S mean() const
         {
             const S sum = std::accumulate (this->begin(), this->end(), S{0});
             return sum / this->size();
         }
 
-        /*!
-         * Return the sum of the elements
-         */
+        //! Return the sum of the elements
         S sum() const
         {
             return std::accumulate (this->begin(), this->end(), S{0});
@@ -629,9 +601,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
-        /*!
-         * Scalar divide by s
-         */
+        //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator/ (const _S& s) const
         {
@@ -641,9 +611,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Scalar divide by s
-         */
+        //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
@@ -651,9 +619,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
-        /*!
-         * vVector addition operator
-         */
+        //! vVector addition operator
         template<typename _S=S>
         vVector<S> operator+ (const vVector<_S>& v) const
         {
@@ -664,9 +630,7 @@ namespace morph {
             return vrtn;
         }
 
-        /*!
-         * vVector addition operator
-         */
+        //! vVector addition operator
         template<typename _S=S>
         void operator+= (const vVector<_S>& v)
         {
@@ -675,9 +639,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), add_v);
         }
 
-        /*!
-         * Vector subtraction operator
-         */
+        //! Vector subtraction operator
         template<typename _S=S>
         vVector<S> operator- (const vVector<_S>& v) const
         {
@@ -688,9 +650,7 @@ namespace morph {
             return vrtn;
         }
 
-        /*!
-         * Vector subtraction operator
-         */
+        //! Vector subtraction operator
         template<typename _S=S>
         void operator-= (const vVector<_S>& v)
         {
@@ -699,9 +659,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 
-        /*!
-         * Scalar addition
-         */
+        //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator+ (const _S& s) const
         {
@@ -711,9 +669,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Scalar addition
-         */
+        //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
@@ -721,9 +677,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
-        /*!
-         * Scalar subtraction
-         */
+        //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator- (const _S& s) const
         {
@@ -733,9 +687,7 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Scalar subtraction
-         */
+        //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
@@ -743,9 +695,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
-        /*!
-         * Addition which should work for any member type that implements the + operator
-         */
+        //! Addition which should work for any member type that implements the + operator
         vVector<S> operator+ (const S& s) const
         {
             vVector<S> rtn(this->size());
@@ -754,18 +704,14 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Addition += operator for any time same as the enclosed type that implements + op
-         */
+        //! Addition += operator for any time same as the enclosed type that implements + op
         void operator+= (const S& s) const
         {
             auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
-        /*!
-         * Subtraction which should work for any member type that implements the - operator
-         */
+        //! Subtraction which should work for any member type that implements the - operator
         vVector<S> operator- (const S& s) const
         {
             vVector<S> rtn(this->size());
@@ -774,18 +720,14 @@ namespace morph {
             return rtn;
         }
 
-        /*!
-         * Subtraction -= operator for any time same as the enclosed type that implements - op
-         */
+        //! Subtraction -= operator for any time same as the enclosed type that implements - op
         void operator-= (const S& s) const
         {
             auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
-        /*!
-         * Overload the stream output operator
-         */
+        //! Overload the stream output operator
         friend std::ostream& operator<< <S> (std::ostream& os, const vVector<S>& v);
     };
 
