@@ -358,6 +358,26 @@ namespace morph {
             return idx;
         }
 
+        //! Return the arithmentic mean of the elements
+        S mean() const
+        {
+            const S sum = std::accumulate (this->begin(), this->end(), S{0});
+            return sum / this->size();
+        }
+
+        //! Return the sum of the elements
+        S sum() const
+        {
+            return std::accumulate (this->begin(), this->end(), S{0});
+        }
+
+        //! Return the product of the elements
+        S product() const
+        {
+            auto _product = [](S a, S b) mutable { return a ? a * b : b; };
+            return std::accumulate (this->begin(), this->end(), S{0}, _product);
+        }
+
         /*!
          * Compute the element-wise pth power of the vector
          *

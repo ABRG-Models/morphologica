@@ -113,5 +113,8 @@ int main() {
          << "), longest component: " << maxlongest.longest() << " (at index "
          << maxlongest.arglongest() << ")\n";
 
+    Vector<float, 4> totimes = { 1.0f, 2.0f, 3.0f, 4.0f };
+    cout << "Cumulative product of " << totimes << " is " << totimes.product() << endl;
+
     return rtn;
 }

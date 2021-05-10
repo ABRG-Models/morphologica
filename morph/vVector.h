@@ -403,6 +403,13 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0});
         }
 
+        //! Return the product of the elements
+        S product() const
+        {
+            auto _product = [](S a, S b) mutable { return a ? a * b : b; };
+            return std::accumulate (this->begin(), this->end(), S{0}, _product);
+        }
+
         /*!
          * Compute the element-wise pth power of the vector
          *
