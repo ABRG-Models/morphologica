@@ -302,9 +302,16 @@ namespace morph {
         //! Return the index of the longest component of the vector.
         size_t arglongest() const
         {
-            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
-            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
-            size_t idx = (thelongest - this->begin());
+            size_t idx = 0;
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+                auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+                idx = (thelongest - this->begin());
+            } else {
+                auto vec_compare = [](S a, S b) { return (a.length() < b.length()); };
+                auto thelongest = std::max_element (this->begin(), this->end(), vec_compare);
+                idx = (thelongest - this->begin());
+            }
             return idx;
         }
 
@@ -320,9 +327,17 @@ namespace morph {
         //! Return the index of the shortest component of the vector.
         size_t argshortest() const
         {
-            auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
-            auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
-            size_t idx = (theshortest - this->begin());
+            size_t idx = 0;
+            // Check on the type S. If S is a Vector thing, then abs_compare needs to be different.
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
+                auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
+                idx = (theshortest - this->begin());
+            } else {
+                auto vec_compare = [](S a, S b) { return (a.length() > b.length()); };
+                auto theshortest = std::max_element (this->begin(), this->end(), vec_compare);
+                idx = (theshortest - this->begin());
+            }
             return idx;
         }
 
