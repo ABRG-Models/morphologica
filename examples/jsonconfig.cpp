@@ -34,6 +34,8 @@ int main()
 
     morph::Config config(jsonfile);
     if (config.ready) {
+
+        // Single values are easy to read
         const bool testbool = config.getBool ("testbool", false);
         std::cout << "\ntestbool from JSON: " << (testbool ? "true" : "false") << " (expect: true)\n";
         const int testint = config.getInt ("testint", 3);
@@ -41,7 +43,7 @@ int main()
         const float testfloat = config.getFloat ("testfloat", 9.8f);
         std::cout << "\ntestfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
-        // Guidance molecule array of parameters:
+        // A simple array
         const Json::Value testarray = config.getArray("testarray");
         std::cout << "\nValues of the simple array \"testarray\":\n   [   ";
         for (unsigned int j = 0; j < testarray.size(); ++j) {
@@ -49,11 +51,12 @@ int main()
         }
         std::cout << "]\n";
 
+        // A more complicated array in which each array element is itself a JSON object
         const Json::Value testarray_of_objects = config.getArray("testarray_of_objects");
         std::cout << "\nValues of the array of objects \"testarray_of_objects\":\n";
         for (unsigned int j = 0; j < testarray_of_objects.size(); ++j) {
             Json::Value v = testarray_of_objects[j];
-            // Each object has a "desc", an "x" and a "y" item
+            // Each object has a "desc", an "x" and a "y" item:
             std::string desc = v.get ("desc", "unknown").asString();
             float x = v.get ("x", -1.0f).asFloat();
             double y = v.get ("y", -1.0f).asDouble();
