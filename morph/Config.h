@@ -289,6 +289,11 @@ namespace morph {
             this->checkready (__FUNCTION__);
             return this->root[arrayname];
         }
+        Json::Value getValue (const std::string& thing) const
+        {
+            this->checkready (__FUNCTION__);
+            return this->root[thing];
+        }
 
         // Setters
         void set (const std::string& thing, bool value)
