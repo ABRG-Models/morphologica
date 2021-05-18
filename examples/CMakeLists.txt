@@ -77,6 +77,9 @@ add_executable(rosenbrock rosenbrock.cpp)
 target_compile_definitions(rosenbrock PUBLIC FLT=float)
 target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(jsonconfig jsonconfig.cpp)
+target_link_libraries(jsonconfig jsoncpp_lib)
+
 if(SOFTMATS)
 
 #
