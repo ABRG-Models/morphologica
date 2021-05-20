@@ -493,7 +493,7 @@ namespace morph {
          */
 
         float zNear = 0.001;
-        float zFar = 15.0;
+        float zFar = 300.0;
         float fov = 30.0;
 
         //! Set to true to show the coordinate arrows
