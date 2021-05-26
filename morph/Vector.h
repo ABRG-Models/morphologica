@@ -121,21 +121,47 @@ namespace morph {
         void set_from (const std::array<_S, (N+1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
-            for (size_t i = 0; i < N; ++i) {
-                (*this)[i] = ar[i];
-            }
+            for (size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
 
         /*!
-         * Set an N-D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
+         * Set the data members of this Vector from the passed in, smaller array, \a ar,
+         * ignoring the last element of this vector (which is set to 0). Used when
+         * working with 2D vectors that you want to visualise in a 3D environment with
+         * z set to 0.
+         */
+        template <typename _S=S>
+        void set_from (const std::array<_S, (N-1)>& ar)
+        {
+            // Don't use std::copy here, because ar has more elements than *this.
+            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
+            (*this)[N-1] = S{0};
+        }
+
+        // Return a vector with one less dimension - losing the last one.
+        Vector<S, N-1> less_one_dim () const
+        {
+            Vector<S, N-1> rtn;
+            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
+            return rtn;
+        }
+
+        /*!
+         * Set an N D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
          */
         template <typename _S=S>
         void set_from (const Vector<_S, (N+1)>& v)
         {
-            for (size_t i = 0; i < N; ++i) {
-                (*this)[i] = v[i];
-            }
+            for (size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
+        }
+
+        //! Set an N D Vector from an (N-1) D Vector.
+        template <typename _S=S>
+        void set_from (const Vector<_S, (N-1)>& v)
+        {
+            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
+            (*this)[N-1] = S{0};
         }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
