@@ -674,7 +674,7 @@ namespace morph {
             return rtn;
         }
 
-        //! Addition += operator for any time same as the enclosed type that implements + op
+        //! Addition += operator for any type same as the enclosed type that implements + op
         void operator+= (const S& s) const
         {
             auto add_s = [s](S coord) { return coord + s; };
