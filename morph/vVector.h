@@ -311,7 +311,8 @@ namespace morph {
         }
 
         /*!
-         * Find the squared length of the vector.
+         * Find the squared length of the vector which is the same as the sum of squared
+         * elements, if elements are scalar.
          *
          * \return the length squared
          */
@@ -329,6 +330,23 @@ namespace morph {
             auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
             S rtn = *thelongest;
             return rtn;
+        }
+
+        /*!
+         * Return the sum of the squares of the elements. If S typed elements are
+         * Vectors then return the sum of the squares of the lengths of the elements in
+         * the zeroth element of the return S type.
+         */
+        S sos() const
+        {
+            S _sos = S{0};
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                _sos = this->length_sq();
+            } else {
+                // S is a Vector so i is a Vector.
+                for (auto& i : *this) { _sos[0] += i.length_sq(); }
+            }
+            return _sos;
         }
 
         //! Return the index of the longest component of the vector.
