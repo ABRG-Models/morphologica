@@ -284,6 +284,21 @@ namespace morph {
         }
 
         /*!
+         * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
+         * swapping x and y in a 2D Vector.
+         */
+        void rotate()
+        {
+            if (this->size() > 1) {
+                S z_el = (*this)[0];
+                for (size_t i = 1; i < this->size(); ++i) {
+                    (*this)[i-1] = (*this)[i];
+                }
+                (*this)[this->size()-1] = z_el;
+            } // else no op
+        }
+
+        /*!
          * Test to see if this vector is a unit vector (it doesn't *have* to be).
          *
          * \return true if the length of the vector is 1.
@@ -323,15 +338,6 @@ namespace morph {
             return len_sq;
         }
 
-        //! Return the value of the longest component of the vector.
-        S longest() const
-        {
-            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
-            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
-            S rtn = *thelongest;
-            return rtn;
-        }
-
         /*!
          * Return the sum of the squares of the elements. If S typed elements are
          * Vectors then return the sum of the squares of the lengths of the elements in
@@ -347,6 +353,15 @@ namespace morph {
                 for (auto& i : *this) { _sos[0] += i.length_sq(); }
             }
             return _sos;
+        }
+
+        //! Return the value of the longest component of the vector.
+        S longest() const
+        {
+            auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
+            auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
+            S rtn = *thelongest;
+            return rtn;
         }
 
         //! Return the index of the longest component of the vector.

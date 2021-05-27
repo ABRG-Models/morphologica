@@ -227,6 +227,21 @@ namespace morph {
             }
         }
 
+        /*!
+         * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
+         * swapping x and y in a 2D Vector.
+         */
+        void rotate()
+        {
+            if constexpr (N>1) {
+                S z_el = (*this)[0];
+                for (size_t i = 1; i < N; ++i) {
+                    (*this)[i-1] = (*this)[i];
+                }
+                (*this)[N-1] = z_el;
+            } // else no op
+        }
+
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
