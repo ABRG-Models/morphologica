@@ -1294,6 +1294,28 @@ namespace morph
         }
 
         /*!
+         * Create directory if required (i.e. create it unless it already exists). Throw
+         * exception on failure.
+         *
+         * \return true if directory was created, false if directory already existed
+         */
+        static bool createDirIf (const std::string& path)
+        {
+            std::stringstream ee;
+
+            if (morph::Tools::dirExists (path) == false) {
+                morph::Tools::createDir (path);
+                if (morph::Tools::dirExists (path) == false) {
+                    ee << "Failed to create the directory " << path;
+                    throw std::runtime_error (ee.str());
+                }
+                return true; // Because directory was created
+            }
+
+            return false; // Because directory exists and did not need to be created
+        }
+
+        /*!
          * Set the permissions for the provided file
          */
         static void setPermissions (const std::string& filepath, const mode_t mode)
