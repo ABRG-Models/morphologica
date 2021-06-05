@@ -94,7 +94,9 @@ tar xvf path/to/downloaded/armadillo-9.900.3.tar.xz
 cd armadillo-9.900.3
 mkdir build
 cd build
-cmake ..
+cmake .. 
+# or optionally: cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14
+# which will set the install locn and get the code compiled for targets as old as mac 10.14
 make
 sudo make install
 ```
