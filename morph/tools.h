@@ -29,9 +29,11 @@
 #ifdef __WIN__
 # include <direct.h>
 # define GetCurrentDir _getcwd
+# define SetCurrentDir _chdir // perhaps
 #else
 # include <unistd.h>
 # define GetCurrentDir getcwd
+# define SetCurrentDir chdir
 #endif
 
 extern "C" {
@@ -367,6 +369,15 @@ namespace morph
             char b[FILENAME_MAX];
             GetCurrentDir (b, FILENAME_MAX);
             return std::string(b);
+        }
+
+        /*!
+         * Set the working directory. Returns 0 on success, -1 & sets errno otherwise
+         */
+        static int setPwd (const std::string& directory)
+        {
+            int rtn = SetCurrentDir (directory.c_str());
+            return rtn;
         }
 
         /*!
