@@ -144,6 +144,25 @@ namespace morph {
             } // else do nothing?
         }
 
+        //! Return a vector with one less dimension - losing the last one.
+        vVector<S> less_one_dim () const
+        {
+            size_t N = this->size();
+            vVector<S> rtn(N-1);
+            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
+            return rtn;
+        }
+
+        //! Return a vector with one additional dimension - setting it to 0.
+        vVector<S> plus_one_dim () const
+        {
+            size_t N = this->size();
+            vVector<S> rtn(N+1);
+            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            rtn[N] = S{0};
+            return rtn;
+        }
+
         /*!
          * Set an N-D vVector from an N+1 D vVector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.

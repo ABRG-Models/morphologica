@@ -138,14 +138,6 @@ namespace morph {
             (*this)[N-1] = S{0};
         }
 
-        // Return a vector with one less dimension - losing the last one.
-        Vector<S, N-1> less_one_dim () const
-        {
-            Vector<S, N-1> rtn;
-            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
-            return rtn;
-        }
-
         /*!
          * Set an N D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
@@ -162,6 +154,23 @@ namespace morph {
         {
             for (size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
             (*this)[N-1] = S{0};
+        }
+
+        //! Return a vector with one less dimension - losing the last one.
+        Vector<S, N-1> less_one_dim () const
+        {
+            Vector<S, N-1> rtn;
+            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
+            return rtn;
+        }
+
+        //! Return a vector with one additional dimension - setting it to 0.
+        Vector<S, N+1> plus_one_dim () const
+        {
+            Vector<S, N+1> rtn;
+            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            rtn[N] = S{0};
+            return rtn;
         }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
