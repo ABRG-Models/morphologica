@@ -93,6 +93,13 @@ namespace morph {
     // To enable debugging, set true.
     const bool debug_shaders = false;
 
+    //! Whether to render with perspective or orthographic
+    enum class perspective_type
+    {
+        perspective,
+        orthographic
+    };
+
     /*!
      * Visual 'scene' class
      *
@@ -292,8 +299,12 @@ namespace morph {
             glViewport(0, 0, fb_width, fb_height);
 #endif
 
-            // Set the perspective from the width/height
-            this->setPerspective();
+            // Set the perspective
+            if (this->ptype == perspective_type::orthographic) {
+                this->setOrthographic();
+            } else {
+                this->setPerspective();
+            }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
             TransformMatrix<float> sceneview;
@@ -484,6 +495,14 @@ namespace morph {
             this->invproj = this->projection.invert();
         }
 
+        //! Set perspective for ortho projection
+        void setOrthographic()
+        {
+            this->projection.setToIdentity();
+            this->projection.orthographic (this->ortho_bl, this->ortho_tr, this->zNear, this->zFar);
+            this->invproj = this->projection.invert();
+        }
+
         //! Set to true when the program should end
         bool readyToFinish = false;
 
@@ -510,6 +529,14 @@ namespace morph {
 
         //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
         bool sceneLocked = false;
+
+        //! Can change this to orthographic
+        perspective_type ptype = perspective_type::perspective;
+
+        //! Orthographic screen bottom left coordinate (you can change these to encapsulate your models)
+        morph::Vector<float, 2> ortho_bl = { -1.0f, -1.0f };
+        //! Orthographic screen top right coordinate
+        morph::Vector<float, 2> ortho_tr = { 1.0f, 1.0f };
 
         //! The background colour; black by default.
         std::array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };

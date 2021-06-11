@@ -1043,10 +1043,25 @@ namespace morph {
             (*this) *= persMat;
         }
 
-#ifdef WRITTEN
         //! Make an orthographic projection
-        void orthographic (Flt fovDeg, Flt aspect, Flt zNear, Flt zFar) {}
-#endif
+        void orthographic (const Vector<Flt, 2>& bl, const Vector<Flt, 2>& tr,
+                           const Flt zNear, const Flt zFar)
+        {
+            if (zNear == zFar) { return; }
+
+            // Orthographic matrix to multiply self by
+            std::array<Flt, 16> orthoMat;
+            orthoMat.fill (Flt{0});
+            orthoMat[0] = Flt{2}/(tr[0]-bl[1]);
+            orthoMat[5] = Flt{2}/(tr[1]-bl[1]);
+            orthoMat[10] = Flt{-2}/(zFar-zNear);
+            orthoMat[12] = -(tr[0]+bl[1])/(tr[0]-bl[0]);
+            orthoMat[13] = -(tr[1]+bl[1])/(tr[1]-bl[1]);
+            orthoMat[14] = -(zFar+zNear)/(zFar-zNear);
+            orthoMat[15] = Flt{1};
+
+            (*this) *= orthoMat;
+        }
 
         //! Overload the stream output operator
         friend std::ostream& operator<< <Flt> (std::ostream& os, const TransformMatrix<Flt>& tm);
