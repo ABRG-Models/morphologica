@@ -217,6 +217,10 @@ add_test(testQuaternion testQuaternion)
 add_executable(testVector testVector.cpp)
 add_test(testVector testVector)
 
+# testVector elemental operations
+add_executable(testVectorElementOps testVectorElementOps.cpp)
+add_test(testVectorElementOps testVectorElementOps)
+
 # Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
 add_executable(testvVector testvVector.cpp)
 add_test(testvVector testvVector)

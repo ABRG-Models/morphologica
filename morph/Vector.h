@@ -251,6 +251,18 @@ namespace morph {
             } // else no op
         }
 
+        //! If N is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
+        void rotate_pairs()
+        {
+            static_assert ((N%2==0), "N must be even to call morph::Vector::rotate_pairs");
+            S tmp_el = S{0};
+            for (size_t i = 0; i < N; i+=2) {
+                tmp_el = (*this)[i];
+                (*this)[i] = (*this)[i+1];
+                (*this)[i+1] = tmp_el;
+            }
+        }
+
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
@@ -446,11 +458,11 @@ namespace morph {
         /*!
          * Compute the element-wise pth power of the vector
          *
-         * \return a vVector whose elements have been raised to the power p
+         * \return a Vector whose elements have been raised to the power p
          */
-        Vector<S> pow (const S& p) const
+        Vector<S, N> pow (const S& p) const
         {
-            Vector<S> rtn(this->size());
+            Vector<S, N> rtn;
             auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
@@ -461,11 +473,11 @@ namespace morph {
         /*!
          * Compute the element-wise square root of the vector
          *
-         * \return a vVector whose elements have been square-rooted
+         * \return a Vector whose elements have been square-rooted
          */
-        Vector<S> sqrt() const
+        Vector<S, N> sqrt() const
         {
-            Vector<S> rtn(this->size());
+            Vector<S, N> rtn;
             auto sqrt_element = [](S coord) { return std::sqrt(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
@@ -476,17 +488,62 @@ namespace morph {
         /*!
          * Compute the element-wise square of the vector
          *
-         * \return a vVector whose elements have been squared
+         * \return a Vector whose elements have been squared
          */
-        Vector<S> sq() const
+        Vector<S, N> sq() const
         {
-            Vector<S> rtn(this->size());
+            Vector<S, N> rtn;
             auto sq_element = [](S coord) { return std::pow(coord, 2); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
         }
         //! Replace each element with its own square
         void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
+
+        /*!
+         * Compute the element-wise natural log of the vector
+         *
+         * \return a Vector whose elements have been logged
+         */
+        Vector<S, N> log() const
+        {
+            Vector<S, N> rtn;
+            auto log_element = [](S coord) { return std::log(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), log_element);
+            return rtn;
+        }
+        //! Replace each element with its own natural log
+        void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
+
+        /*!
+         * Compute the element-wise natural exponential of the vector
+         *
+         * \return a Vector whose elements have been exponentiated
+         */
+        Vector<S, N> exp() const
+        {
+            Vector<S, N> rtn;
+            auto exp_element = [](S coord) { return std::exp(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
+            return rtn;
+        }
+        //! Replace each element with its own natural exponential
+        void exp_inplace() { for (auto& i : *this) { i = std::exp(i); } }
+
+        /*!
+         * Compute the element-wise absolute values of the vector
+         *
+         * \return a Vector of the absolute values of *this
+         */
+        Vector<S, N> abs() const
+        {
+            Vector<S, N> rtn;
+            auto abs_element = [](S coord) { return std::abs(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
+            return rtn;
+        }
+        //! Replace each element with its own absolute value
+        void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
 
         /*!
          * Unary negate operator
@@ -552,7 +609,7 @@ namespace morph {
         Vector<S, N> operator* (const Vector<_S, N>& v) const
         {
             Vector<S, N> rtn;
-            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<S>());
+            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>());
             return rtn;
         }
 
@@ -564,7 +621,7 @@ namespace morph {
         template <typename _S=S>
         void operator*= (const Vector<_S, N>& v)
         {
-            std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<S>());
+            std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::multiplies<S>());
         }
 
         /*!
@@ -593,6 +650,32 @@ namespace morph {
         {
             auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+        }
+
+        /*!
+         * operator/ gives a 'Hadamard' division - elementwise division.
+         *
+         * If the vectors are of differing lengths, then an exception is thrown.
+         *
+         * \return elementwise division of left hand size (*this) by right hand size (\a v)
+         */
+        template<typename _S=S>
+        Vector<S, N> operator/ (const Vector<_S, N>& v) const
+        {
+            Vector<S, N> rtn;
+            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
+            return rtn;
+        }
+
+        /*!
+         * Vector division /= operator.
+         *
+         * Element by element division. Divide *this vector by \a v, elementwise.
+         */
+        template <typename _S=S>
+        void operator/= (const Vector<_S, N>& v)
+        {
+            std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
 
         //! Scalar divide by s

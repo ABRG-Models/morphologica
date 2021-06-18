@@ -317,6 +317,21 @@ namespace morph {
             } // else no op
         }
 
+        //! If size is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
+        void rotate_pairs()
+        {
+            size_t N = this->size();
+            if (N%2!=0) {
+                throw std::runtime_error ("vVector size must be even to call morph::Vector::rotate_pairs");
+            }
+            S tmp_el = S{0};
+            for (size_t i = 0; i < N; i+=2) {
+                tmp_el = (*this)[i];
+                (*this)[i] = (*this)[i+1];
+                (*this)[i+1] = tmp_el;
+            }
+        }
+
         /*!
          * Test to see if this vector is a unit vector (it doesn't *have* to be).
          *
@@ -528,6 +543,51 @@ namespace morph {
         void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
 
         /*!
+         * Compute the element-wise natural logarithm of the vector
+         *
+         * \return a vVector whose elements have been logged
+         */
+        vVector<S> log() const
+        {
+            vVector<S> rtn(this->size());
+            auto log_element = [](S coord) { return std::log(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), log_element);
+            return rtn;
+        }
+        //! Replace each element with its own log
+        void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
+
+        /*!
+         * Compute the element-wise natural exponential of the vector
+         *
+         * \return a vVector whose elements have been exponentiate
+         */
+        vVector<S> exp() const
+        {
+            vVector<S> rtn(this->size());
+            auto exp_element = [](S coord) { return std::exp(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
+            return rtn;
+        }
+        //! Replace each element with its own exp
+        void exp_inplace() { for (auto& i : *this) { i = std::exp(i); } }
+
+        /*!
+         * Compute the element-wise absolute values of the vector
+         *
+         * \return a vVector whose elements have been 'absed'
+         */
+        vVector<S> abs() const
+        {
+            vVector<S> rtn(this->size());
+            auto abs_element = [](S coord) { return std::abs(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
+            return rtn;
+        }
+        //! Replace each element with its absolute value
+        void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+
+        /*!
          * Unary negate operator
          *
          * \return a vVector whose elements have been negated.
@@ -631,7 +691,7 @@ namespace morph {
                 throw std::runtime_error ("vVector::operator*: Hadamard product is defined here for vectors of same dimensionality only");
             }
             vVector<S, Al> rtn(this->size(), S{0});
-            std::transform (v.begin(), v.end(), this->begin(), rtn.begin(), std::multiplies<S>());
+            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>());
             return rtn;
         }
 
@@ -644,9 +704,43 @@ namespace morph {
         template <typename _S=S>
         void operator*= (const vVector<_S>& v) {
             if (v.size() == this->size()) {
-                std::transform (v.begin(), v.end(), this->begin(), this->begin(), std::multiplies<S>());
+                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::multiplies<S>());
             } else {
                 throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
+            }
+        }
+
+        /*!
+         * operator/ gives element by element division
+         *
+         * 'Hadamard' division - elementwise division. If the vectors are of
+         * differing lengths, then an exception is thrown.
+         *
+         * \return Hadamard division of left hand size (*this) by right hand size (\a v)
+         */
+        template<typename _S=S>
+        vVector<S, Al> operator/ (const vVector<_S>& v) const
+        {
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vVector::operator*: Hadamard division is defined here for vectors of same dimensionality only");
+            }
+            vVector<S, Al> rtn(this->size(), S{0});
+            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
+            return rtn;
+        }
+
+        /*!
+         * vVector division /= operator.
+         *
+         * Hadamard division. Divide *this vector by \a v, elementwise. If \a v has a
+         * different number of elements to *this, then an exception is thrown.
+         */
+        template <typename _S=S>
+        void operator/= (const vVector<_S>& v) {
+            if (v.size() == this->size()) {
+                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
+            } else {
+                throw std::runtime_error ("vVector::operator*=: Hadamard division is defined here for vectors of same dimensionality only");
             }
         }
 
