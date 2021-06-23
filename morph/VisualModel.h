@@ -1573,7 +1573,7 @@ namespace morph {
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::TWO_PI_F/(float)segments;
-                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, start[2] };
+                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -1611,7 +1611,7 @@ namespace morph {
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::TWO_PI_F/(float)segments;
-                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, start[2] };
+                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
