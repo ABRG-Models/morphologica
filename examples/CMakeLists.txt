@@ -80,6 +80,8 @@ target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${L
 add_executable(jsonconfig jsonconfig.cpp)
 target_link_libraries(jsonconfig jsoncpp_lib)
 
+add_executable(randvec randvec.cpp)
+
 if(SOFTMATS)
 
 #
