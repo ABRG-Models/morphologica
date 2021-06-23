@@ -19,6 +19,7 @@
 #include <morph/Quaternion.h>
 #include <morph/ColourMap.h>
 #include <morph/colour.h>
+#include <morph/histo.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -45,6 +46,7 @@ namespace morph {
         octagon,
         upoctagon,
         circle,
+        bar, // Special. For a bar graph.
         numstyles
     };
 
@@ -74,6 +76,8 @@ namespace morph {
         lines,          // coloured lines
         both,           // coloured markers, black lines
         allcolour,      // coloured markers and lines
+        bar,            // bar graph. marker colour is the bar colour
+        bar_outlines,   // bar graph, drawn with colour AND outlines in linecolour
         numstyles
     };
 
@@ -110,6 +114,9 @@ namespace morph {
         float linewidth = 0.007f;
         //! Label for the dataset's legend
         std::string datalabel = "";
+
+        //! Used only for bargraphs. The width of the bar to draw.
+        float barwidth = 1.0f;
 
         //! A setter to set both colours to the same value
         void setcolour (const std::array<float, 3>& c)
@@ -311,14 +318,76 @@ namespace morph {
             this->setdata (emptyabsc, emptyord, name);
         }
 
+        //! Set a bargraph dataset into the graph. Note that the bar widths have to be passed in (and stored)
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const Flt& _barwidth, const std::string name = "")
+        {
+            DatasetStyle ds(this->policy);
+            if (!name.empty()) { ds.datalabel = name; }
+            ds.barwidth = _barwidth;
+            ds.linewidth = ds.barwidth/10.0;
+
+            size_t data_index = this->graphDataCoords.size();
+            // Set markerstyle based on policy
+            if (this->policy == morph::stylepolicy::bar) {
+                ds.markerstyle = morph::markerstyle::bar;
+            } // else no change?
+
+            if (this->policy == morph::stylepolicy::bar_outlines) {
+                ds.showlines = true;
+            } else if (this->policy == morph::stylepolicy::bar) {
+                ds.showlines = false;
+            } // else don't change show lines
+
+            ds.markercolour = GraphVisual<Flt>::datacolour(data_index);
+            ds.linecolour = morph::colour::black; // For now.
+
+            this->setdata (_abscissae, _data, ds);
+        }
+
+        //! Special setdata for a morph::histo object
+        void setdata (const morph::histo<Flt>& h, const std::string name = "")
+        {
+            DatasetStyle ds(this->policy);
+            if (!name.empty()) { ds.datalabel = name; }
+
+            // The binwidth is the width within h's range. Our barwidth with be within range 0-1
+            if (this->policy == morph::stylepolicy::bar_outlines) {
+                ds.barwidth = 0.8*(h.binwidth / h.range);
+            } else {
+                ds.barwidth = h.binwidth / h.range;
+            }
+            //std::cout << "h.binwidth, h.range: " << h.binwidth << ", " << h.range << std::endl;
+            //std::cout << "barwidth: " << ds.barwidth << std::endl;
+            //std::cout << "graph this->width " << this->width << std::endl;
+
+            ds.linewidth = ds.barwidth/10.0;
+
+            size_t data_index = this->graphDataCoords.size();
+
+            // Set markerstyle based on policy
+            if (this->policy == morph::stylepolicy::bar || this->policy == morph::stylepolicy::bar_outlines) {
+                ds.markerstyle = morph::markerstyle::bar;
+            } // else no change?
+
+            if (this->policy == morph::stylepolicy::bar_outlines) {
+                ds.showlines = true;
+            } else if (this->policy == morph::stylepolicy::bar) {
+                ds.showlines = false;
+            } // else don't change show lines
+
+            ds.markercolour = GraphVisual<Flt>::datacolour(data_index);
+            ds.linecolour = morph::colour::black; // For now.
+
+            this->setdata (h.bins, h.proportions, ds);
+        }
+
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
         {
             DatasetStyle ds(this->policy);
-            if (!name.empty()) {
-                ds.datalabel = name;
-            }
+            if (!name.empty()) { ds.datalabel = name; }
+
             size_t data_index = this->graphDataCoords.size();
             switch (data_index) {
             case 0:
@@ -465,11 +534,19 @@ namespace morph {
         {
             // Draw data markers
             if (this->datastyles[dsi].markerstyle != markerstyle::none) {
-                for (size_t i = coords_start; i < coords_end; ++i) {
-                    this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                if (this->datastyles[dsi].markerstyle == markerstyle::bar) {
+                    for (size_t i = coords_start; i < coords_end; ++i) {
+                        this->bar ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                    }
+                } else {
+                    for (size_t i = coords_start; i < coords_end; ++i) {
+                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                    }
                 }
             }
-            if (this->datastyles[dsi].showlines == true) {
+            if (this->datastyles[dsi].markerstyle == markerstyle::bar && this->datastyles[dsi].showlines == true) {
+                // No need to do anything, lines will have been drawn by GraphVisual::bar()
+            } else if (this->datastyles[dsi].showlines == true) {
 
                 // If appending markers to a dataset, need to add the line preceding the first marker
                 if (appending == true) { if (coords_start != 0) { coords_start -= 1; } }
@@ -853,6 +930,36 @@ namespace morph {
                 }
 
                 if (this->axisstyle == axisstyle::boxcross) { this->drawCrossAxes(); }
+            }
+        }
+
+        //! Generate vertices for a bar of a bar graph, with p1 and p2 defining the top
+        //! left and right corners of the bar. bottom left and right assumed to be on x
+        //! axis.
+        void bar (morph::Vector<float>& p, const morph::DatasetStyle& style)
+        {
+            morph::Vector<float> p1 = p;
+            p1[0] -= style.barwidth/2.0f;
+            p1[2] += this->thickness;
+            morph::Vector<float> p2 = p;
+            p2[0] += style.barwidth/2.0f;
+            p2[2] += this->thickness;
+
+            morph::Vector<float> p1b = p1;
+            p1b[1] = 0;
+            morph::Vector<float> p2b = p2;
+            p2b[1] = 0;
+
+            this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
+
+            if (style.showlines == true) {
+                p1b[2] += this->thickness;
+                p1[2] += this->thickness;
+                p2[2] += this->thickness;
+                p2b[2] += this->thickness;
+                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, style.linewidth, 0.0f, false, true);
+                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, style.linewidth, 0.0f, true, true);
+                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, style.linewidth, 0.0f, true, false);
             }
         }
 
