@@ -780,6 +780,37 @@ namespace morph {
             idx += nverts;
         } // end computeTube with ux/uy vectors for faces
 
+        //! Compute a Quad from 4 arbitrary corners
+        void computeFlatQuad (VBOint& idx,
+                              Vector<float> c1, Vector<float> c2,
+                              Vector<float> c3, Vector<float> c4,
+                              std::array<float, 3> col)
+        {
+            // is the face normal
+            Vector<float> u1 = c1-c2;
+            Vector<float> u2 = c2-c3;
+            Vector<float> v = u1.cross(u2);
+            v.renormalize();
+            // Push corner vertices
+            this->vertex_push (c1, this->vertexPositions);
+            this->vertex_push (c2, this->vertexPositions);
+            this->vertex_push (c3, this->vertexPositions);
+            this->vertex_push (c4, this->vertexPositions);
+            // Colours/normals
+            for (size_t i = 0; i < 4; ++i) {
+                this->vertex_push (col, this->vertexColors);
+                this->vertex_push (v, this->vertexNormals);
+            }
+            VBOint botLeft = idx;
+            this->indices.push_back (botLeft);
+            this->indices.push_back (botLeft+1);
+            this->indices.push_back (botLeft+2);
+            this->indices.push_back (botLeft);
+            this->indices.push_back (botLeft+2);
+            this->indices.push_back (botLeft+3);
+            idx += 4;
+        }
+
         /*!
          * Compute a tube. This version requires unit vectors for orientation of the
          * tube end faces/vertices (useful for graph markers). The other version uses a
