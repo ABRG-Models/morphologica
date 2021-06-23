@@ -538,8 +538,8 @@ namespace morph {
         //! Orthographic screen top right coordinate
         morph::Vector<float, 2> ortho_tr = { 1.0f, 1.0f };
 
-        //! The background colour; black by default.
-        std::array<float, 4> bgcolour = { 0.0f, 0.0f, 0.0f, 0.0f };
+        //! The background colour; white by default.
+        std::array<float, 4> bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
 
         /*
          * User can directly set bgcolour for any background colour they like, but
