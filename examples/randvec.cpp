@@ -37,9 +37,7 @@ int main()
 
     // Create a new GraphVisual with offset within the scene of 0,0,0
     morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
-    gv->policy = morph::stylepolicy::bar;
-    gv->twodimensional = false;
-    gv->setdata (h);
+    gv->setdata (h); // to become gv->add_bargraph (h [,morph::colour::darkorchid1] [,morph::colour::orchid2])
     gv->xlabel = "Scalar product";
     gv->ylabel = "Proportion";
     gv->finalize();

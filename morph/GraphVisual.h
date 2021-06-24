@@ -68,16 +68,27 @@ namespace morph {
         numstyles
     };
 
-    //! When generating default graphs, should we generate marker-only graphs, line-only
-    //! graphs or marker+line graphs?
+    //! When generating a graph, should we generate marker-only graphs, line-only graphs
+    //! or marker+line graphs? Each DatasetStyle contains a stylepolicy.
     enum class stylepolicy
     {
         markers,        // coloured markers, with differing shapes
         lines,          // coloured lines
         both,           // coloured markers, black lines
         allcolour,      // coloured markers and lines
-        bar,            // bar graph. marker colour is the bar colour
-        bar_outlines,   // bar graph, drawn with colour AND outlines in linecolour
+        bar,            // bar graph. marker colour is the bar colour, linecolour is the outline colour (if used)
+        numstyles
+    };
+
+    //! When autoscaling data, do we purely autoscale from the data, using the data's
+    //! min and max values, or do we autoscale from a fixed value (such as 0) to the
+    //! data's max, or do we scale the graph to two fixed values, set by the user?
+    enum class scalingpolicy
+    {
+        autoscale,      // full autoscaling to data min and max
+        manual_min,     // Use the GraphVisual's abs/datamin_y attribute when scaling, and data's max
+        manual_max,     // Unlikely to be used, but use data's min and abs/datamax_y
+        manual,         // Use abs/datamin_y and abs/datamax_y for scaling - i.e. full manual scaling
         numstyles
     };
 
@@ -93,13 +104,15 @@ namespace morph {
             } else if (p == stylepolicy::lines) {
                 this->markerstyle = markerstyle::none;
                 this->markergap = 0.0f;
+            } else if (p == stylepolicy::bar) {
+                this->markerstyle = markerstyle::bar;
             }
         }
         //! Policy of style
         stylepolicy policy = stylepolicy::both;
         //! The colour of the marker
         std::array<float, 3> markercolour = morph::colour::royalblue;
-        //! marker size in model units
+        //! marker size in model units. Used as bar width for bar graphs
         float markersize = 0.03f;
         //! The markerstyle. triangle, square, diamond, downtriangle, hexagon, circle, etc
         morph::markerstyle markerstyle = markerstyle::square;
@@ -114,9 +127,6 @@ namespace morph {
         float linewidth = 0.007f;
         //! Label for the dataset's legend
         std::string datalabel = "";
-
-        //! Used only for bargraphs. The width of the bar to draw.
-        float barwidth = 1.0f;
 
         //! A setter to set both colours to the same value
         void setcolour (const std::array<float, 3>& c)
@@ -148,10 +158,7 @@ namespace morph {
             this->twodimensional = true;
         }
 
-        ~GraphVisual()
-        {
-            for (auto& gdc : this->graphDataCoords) { delete gdc; }
-        }
+        ~GraphVisual() { for (auto& gdc : this->graphDataCoords) { delete gdc; } }
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -310,38 +317,12 @@ namespace morph {
             return rtn;
         }
 
-        //! Prepare an as-yet empty dataset. datamin and datamax are the expected max and min of the data. Or use limits?
+        //! Prepare an as-yet empty dataset.
         void prepdata (const std::string name = "")
         {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
             this->setdata (emptyabsc, emptyord, name);
-        }
-
-        //! Set a bargraph dataset into the graph. Note that the bar widths have to be passed in (and stored)
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const Flt& _barwidth, const std::string name = "")
-        {
-            DatasetStyle ds(this->policy);
-            if (!name.empty()) { ds.datalabel = name; }
-            ds.barwidth = _barwidth;
-            ds.linewidth = ds.barwidth/10.0;
-
-            size_t data_index = this->graphDataCoords.size();
-            // Set markerstyle based on policy
-            if (this->policy == morph::stylepolicy::bar) {
-                ds.markerstyle = morph::markerstyle::bar;
-            } // else no change?
-
-            if (this->policy == morph::stylepolicy::bar_outlines) {
-                ds.showlines = true;
-            } else if (this->policy == morph::stylepolicy::bar) {
-                ds.showlines = false;
-            } // else don't change show lines
-
-            ds.markercolour = GraphVisual<Flt>::datacolour(data_index);
-            ds.linecolour = morph::colour::black; // For now.
-
-            this->setdata (_abscissae, _data, ds);
         }
 
         //! Special setdata for a morph::histo object
@@ -350,34 +331,32 @@ namespace morph {
             DatasetStyle ds(this->policy);
             if (!name.empty()) { ds.datalabel = name; }
 
-            // The binwidth is the width within h's range. Our barwidth with be within range 0-1
-            if (this->policy == morph::stylepolicy::bar_outlines) {
-                ds.barwidth = 0.8*(h.binwidth / h.range);
-            } else {
-                ds.barwidth = h.binwidth / h.range;
-            }
-            //std::cout << "h.binwidth, h.range: " << h.binwidth << ", " << h.range << std::endl;
-            //std::cout << "barwidth: " << ds.barwidth << std::endl;
-            //std::cout << "graph this->width " << this->width << std::endl;
-
-            ds.linewidth = ds.barwidth/10.0;
+            // Because this overload of setdata sets bargraph data, I want it to force the graph to be stylepolicy::bar
+            ds.policy = morph::stylepolicy::bar;
+            ds.markerstyle = morph::markerstyle::bar;
+            // How to choose? User sets afterwards?
+            ds.showlines = true;
+            ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / h.range);
+            ds.linewidth = ds.markersize/10.0;
 
             size_t data_index = this->graphDataCoords.size();
-
-            // Set markerstyle based on policy
-            if (this->policy == morph::stylepolicy::bar || this->policy == morph::stylepolicy::bar_outlines) {
-                ds.markerstyle = morph::markerstyle::bar;
-            } // else no change?
-
-            if (this->policy == morph::stylepolicy::bar_outlines) {
-                ds.showlines = true;
-            } else if (this->policy == morph::stylepolicy::bar) {
-                ds.showlines = false;
-            } // else don't change show lines
-
             ds.markercolour = GraphVisual<Flt>::datacolour(data_index);
             ds.linecolour = morph::colour::black; // For now.
 
+            // Because this is bar graph data, make sure to compute the zScale now from
+            // 0 -> max and NOT from min -> max.
+            this->scalingpolicy_y = morph::scalingpolicy::manual_min;
+            this->datamin_y = Flt{0};
+            this->setdata (h.bins, h.proportions, ds);
+        }
+
+        //! Set graph from histogram with pre-configured datasetstyle
+        void setdata (const morph::histo<Flt>& h, const DatasetStyle& ds)
+        {
+            // Because this is bar graph data, make sure to compute the zScale now from
+            // 0 -> max and NOT from min -> max.
+            this->scalingpolicy_y = morph::scalingpolicy::manual_min;
+            this->datamin_y = Flt{0};
             this->setdata (h.bins, h.proportions, ds);
         }
 
@@ -420,6 +399,67 @@ namespace morph {
             this->setdata (_abscissae, _data, ds);
         }
 
+    protected:
+        //! Compute the scaling of zScale and abscissa_scale according to the scalingpolicies
+        void compute_scaling (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
+        {
+            std::pair<Flt, Flt> data_maxmin = morph::MathAlgo::maxmin (_data);
+            std::pair<Flt, Flt> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);
+            this->setsize (this->width, this->height);
+
+            // x axis - the abscissa
+            switch (this->scalingpolicy_x) {
+            case morph::scalingpolicy::manual:
+            {
+                this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+                break;
+            }
+            case morph::scalingpolicy::manual_min:
+            {
+                this->abscissa_scale.compute_autoscale (this->datamin_x, absc_maxmin.first);
+                break;
+            }
+            case morph::scalingpolicy::manual_max:
+            {
+                this->abscissa_scale.compute_autoscale (absc_maxmin.second, this->datamax_x);
+                break;
+            }
+            case morph::scalingpolicy::autoscale:
+            default:
+            {
+                this->abscissa_scale.compute_autoscale (absc_maxmin.second, absc_maxmin.first);
+                break;
+            }
+            }
+
+            // y axis - the ordinate
+            switch (this->scalingpolicy_y) {
+            case morph::scalingpolicy::manual:
+            {
+                this->zScale.compute_autoscale (this->datamin_y, this->datamax_y);
+                break;
+            }
+            case morph::scalingpolicy::manual_min:
+            {
+                this->zScale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                break;
+            }
+            case morph::scalingpolicy::manual_max:
+            {
+                this->zScale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                break;
+            }
+            case morph::scalingpolicy::autoscale:
+            default:
+            {
+                this->zScale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                break;
+            }
+            }
+        }
+
+    public:
+
         //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
         //! style. The locations of the markers for each dataset are computed and stored
         //! in this->graohDataCoords, one vector for each dataset.
@@ -442,10 +482,10 @@ namespace morph {
             this->datastyles.push_back (ds);
 
             // Compute the zScale and asbcissa_scale for the first added dataset only
-            if (this->zScale.autoscaled == false) { this->setsize (this->width, this->height); }
+            if (this->zScale.autoscaled == false) { this->compute_scaling (_abscissae, _data); }
 
             if (dsize > 0) {
-                // Transfor the data into temporary containers sd and ad
+                // Transform the data into temporary containers sd and ad
                 std::vector<Flt> sd (dsize, Flt{0});
                 std::vector<Flt> ad (dsize, Flt{0});
                 this->zScale.transform (_data, sd);
@@ -459,6 +499,16 @@ namespace morph {
                     (*this->graphDataCoords[didx])[i][2] = Flt{0};
                 }
             }
+        }
+
+        //! Setter for the dataaxisdist attribute
+        void setdataaxisdist (float proportion)
+        {
+            if (this->zScale.autoscaled == true) {
+                throw std::runtime_error ("Have already scaled the data, can't set the dataaxisdist now.\n"
+                                          "Hint: call GraphVisual::setdataaxisdist() BEFORE GraphVisual::setdata() or ::setlimits()");
+            }
+            this->dataaxisdist = proportion;
         }
 
         //! Set the graph size, in model units.
@@ -482,23 +532,52 @@ namespace morph {
             this->thickness *= this->width;
         }
 
+        //! Set manual limits for the x axis (abscissa)
+        void setlimits_x (Flt _xmin, Flt _xmax)
+        {
+            this->scalingpolicy_x = morph::scalingpolicy::manual;
+            this->datamin_x = _xmin;
+            this->datamax_x = _xmax;
+            this->setsize (this->width, this->height);
+            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+        }
+
+        //! Set manual limits for the y axis (ordinate)
+        void setlimits_y (Flt _ymin, Flt _ymax)
+        {
+            this->scalingpolicy_y = morph::scalingpolicy::manual;
+            this->datamin_y = _ymin;
+            this->datamax_y = _ymax;
+            this->setsize (this->width, this->height);
+            this->zScale.compute_autoscale (this->datamin_y, this->datamax_y);
+        }
+
         // Axis ranges. The length of each axis could be determined from the data and
         // abscissas for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/abscissas might need
         // to extend.
         void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax)
         {
+            // Set limits with 4 args gives fully manual scaling
+            this->scalingpolicy_x = morph::scalingpolicy::manual;
+            this->datamin_x = _xmin;
+            this->datamax_x = _xmax;
+            this->scalingpolicy_y = morph::scalingpolicy::manual;
+            this->datamin_y = _ymin;
+            this->datamax_y = _ymax;
+
             // First make sure that the range_min/max are correctly set
             this->setsize (this->width, this->height);
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
-            this->zScale.compute_autoscale (_ymin, _ymax);
-            this->abscissa_scale.compute_autoscale (_xmin, _xmax);
+            this->zScale.compute_autoscale (this->datamin_y, this->datamax_y);
+            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
         }
 
         //! Set the 'object thickness' attribute (maybe used just for 'object spacing')
         void setthickness (float th) { this->thickness = th; }
 
+        //! Tell this GraphVisual that it's going to be rendered on a dark background. Updates axis colour.
         void setdarkbg()
         {
             this->darkbg = true;
@@ -685,7 +764,7 @@ namespace morph {
                 lpos[0] = this->dataaxisdist + ((float)col * col_advance);
                 lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
                 // Legend line/marker
-                if (this->datastyles[dsi].showlines == true) {
+                if (this->datastyles[dsi].showlines == true && this->datastyles[dsi].markerstyle != markerstyle::bar) {
                     // draw short line at lpos (rounded ends)
                     morph::Vector<float, 3> abit = { 0.5f * toffset[0], 0.0f, 0.0f };
                     this->computeFlatLineRnd (this->idx, lpos - abit, lpos + abit,
@@ -695,7 +774,12 @@ namespace morph {
 
                 }
                 if (this->datastyles[dsi].markerstyle != markerstyle::none) {
-                    this->marker (lpos, this->datastyles[dsi]);
+                    if (this->datastyles[dsi].markerstyle == markerstyle::bar) {
+                        // For bar graph, show a small square (or rect?) with the colour
+                        this->bar_symbol (lpos, this->datastyles[dsi]);
+                    } else {
+                        this->marker (lpos, this->datastyles[dsi]);
+                    }
                 }
                 legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset+this->mv_offset, this->axiscolour);
                 this->texts.push_back (legtexts[dsi]);
@@ -938,17 +1022,50 @@ namespace morph {
         //! axis.
         void bar (morph::Vector<float>& p, const morph::DatasetStyle& style)
         {
-            morph::Vector<float> p1 = p;
-            p1[0] -= style.barwidth/2.0f;
-            p1[2] += this->thickness;
-            morph::Vector<float> p2 = p;
-            p2[0] += style.barwidth/2.0f;
-            p2[2] += this->thickness;
+            // To update the z position of the data, must also add z thickness to p[2]
+            p[2] += thickness;
 
+            morph::Vector<float> p1 = p;
+            p1[0] -= style.markersize/2.0f;
+            morph::Vector<float> p2 = p;
+            p2[0] += style.markersize/2.0f;
+
+            // Zero is at (height*dataaxisdist)
             morph::Vector<float> p1b = p1;
-            p1b[1] = 0;
+            p1b[1] = this->height * this->dataaxisdist;
             morph::Vector<float> p2b = p2;
-            p2b[1] = 0;
+            p2b[1] = this->height * this->dataaxisdist;
+
+            this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
+
+            if (style.showlines == true) {
+                p1b[2] += this->thickness/2.0f;
+                p1[2] += this->thickness/2.0f;
+                p2[2] += this->thickness/2.0f;
+                p2b[2] += this->thickness/2.0f;
+                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, style.linewidth, 0.0f, false, true);
+                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, style.linewidth, 0.0f, true, true);
+                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, style.linewidth, 0.0f, true, false);
+            }
+        }
+
+        //! Special code to draw a marker representing a bargraph bar for the legend
+        void bar_symbol (morph::Vector<float>& p, const morph::DatasetStyle& style)
+        {
+            p[2] += this->thickness;
+
+            morph::Vector<float> p1 = p;
+            p1[0] -= 0.035f; // Note fixed size for legend
+            morph::Vector<float> p2 = p;
+            p2[0] += 0.035f;
+
+            // Zero is at (height*dataaxisdist)
+            morph::Vector<float> p1b = p1;
+            p1b[1] -= 0.03f;
+            morph::Vector<float> p2b = p2;
+            p2b[1] -= 0.03f;
+
+            float outline_width = 0.005f; // also fixed
 
             this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
 
@@ -957,9 +1074,10 @@ namespace morph {
                 p1[2] += this->thickness;
                 p2[2] += this->thickness;
                 p2b[2] += this->thickness;
-                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, style.linewidth, 0.0f, false, true);
-                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, style.linewidth, 0.0f, true, true);
-                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, style.linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (this->idx, p1b, p1,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (this->idx, p1,  p2,  this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (this->idx, p2,  p2b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
+                this->computeFlatLineRnd (this->idx, p2b, p1b, this->uz, style.linecolour, outline_width, 0.0f, true, true);
             }
         }
 
@@ -1149,6 +1267,16 @@ namespace morph {
     public:
         //! A scaling for the abscissa. I'll use zScale to scale the data values
         morph::Scale<Flt> abscissa_scale;
+        //! What's the scaling policy for the abscissa?
+        morph::scalingpolicy scalingpolicy_x = morph::scalingpolicy::autoscale;
+        //! If required, the abscissa's minimum/max data values
+        Flt datamin_x = Flt{0};
+        Flt datamax_x = Flt{1};
+        //! What's the scaling policy for the ordinate?
+        morph::scalingpolicy scalingpolicy_y = morph::scalingpolicy::autoscale;
+        //! If required, the abscissa's minimum/max data values
+        Flt datamin_y = Flt{0};
+        Flt datamax_y = Flt{1};
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
