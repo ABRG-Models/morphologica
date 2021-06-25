@@ -433,6 +433,43 @@ namespace morph {
             this->hue2 = 0.0f;
         }
 
+        // Cyan-magenta
+        void setHueCM()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("cyna-magenta colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.5f;
+            this->hue2 = 0.8333f;
+        }
+        void setHueMC()
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("magenta-cyan colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = 0.83333f;
+            this->hue2 = 0.5f;
+        }
+
+        void setDualHue(const float& h)
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("Dual-hue colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = h;
+            this->hue2 = h+0.3333f;
+            if (hue2 > 1.0f) { hue2 -= 1.0f; }
+        }
+        void setDualAntiHue(const float& h)
+        {
+            if (this->type != ColourMapType::Duochrome) {
+                throw std::runtime_error ("Dual-hue colour map hues only makes sense for ColourMapType::Duochrome");
+            }
+            this->hue = h;
+            this->hue2 = h-0.3333f;
+            if (hue2 < 0.0f) { hue2 += 1.0f; }
+        }
+
         // Set the hue... unless you can't/shouldn't
         void setHue (const float& h)
         {
