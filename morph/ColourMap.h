@@ -439,7 +439,7 @@ namespace morph {
         void setHueCM()
         {
             if (this->type != ColourMapType::Duochrome) {
-                throw std::runtime_error ("cyna-magenta colour map hues only makes sense for ColourMapType::Duochrome");
+                throw std::runtime_error ("cyan-magenta colour map hues only makes sense for ColourMapType::Duochrome");
             }
             this->hue = 0.5f;
             this->hue2 = 0.8333f;
