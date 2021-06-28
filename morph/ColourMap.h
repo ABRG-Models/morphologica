@@ -191,6 +191,7 @@ namespace morph {
             return rm;
         }
 
+        //! An overload of convert for DuoChrome ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2)
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -199,6 +200,7 @@ namespace morph {
             return this->duochrome (_datum1, _datum2);
         }
 
+        //! An overload of convert for TriChrome ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
         {
             if (this->type != ColourMapType::Trichrome) {
@@ -341,12 +343,10 @@ namespace morph {
             return c;
         }
 
-        //! Convert for 4 component colours
-        //array<float, 4> convertAlpha (T datum);
-
+        //! Getter for type, the ColourMapType of this ColourMap.
         ColourMapType getType() const { return this->type; }
 
-        // Set the colour map type.
+        //! Setter for type, the ColourMapType of this ColourMap.
         void setType (const ColourMapType& tp)
         {
             this->type = tp;
@@ -378,7 +378,7 @@ namespace morph {
             }
         }
 
-        // Set Duochrome to be Red-Blue
+        //! Set Duochrome to be Red-blue
         void setHueRB()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -387,7 +387,7 @@ namespace morph {
             this->hue = 0.0f;
             this->hue2 = 0.6667f;
         }
-
+        // Set Duochrome to be Blue-red
         void setHueBR()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -397,7 +397,7 @@ namespace morph {
             this->hue2 = 0.0f;
         }
 
-        // Set Duochrome to be Green-Blue
+        //! Set Duochrome to be Green-Blue
         void setHueGB()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -406,6 +406,7 @@ namespace morph {
             this->hue = 0.3333f;
             this->hue2 = 0.6667f;
         }
+        //! Set Duochrome to be Blue-Green
         void setHueBG()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -415,7 +416,7 @@ namespace morph {
             this->hue2 = 0.3333f;
         }
 
-        // Red-green
+        //! Set Duochrome to be Red-Green
         void setHueRG()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -424,6 +425,7 @@ namespace morph {
             this->hue = 0.0f;
             this->hue2 = 0.3333f;
         }
+        //! Set Duochrome to be Green-Red
         void setHueGR()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -433,7 +435,7 @@ namespace morph {
             this->hue2 = 0.0f;
         }
 
-        // Cyan-magenta
+        //! Set up a Cyan-Magenta Duochrome colour scheme
         void setHueCM()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -442,6 +444,7 @@ namespace morph {
             this->hue = 0.5f;
             this->hue2 = 0.8333f;
         }
+        //! Set up a Magenta-Cyan Duochrome colour scheme
         void setHueMC()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -451,6 +454,7 @@ namespace morph {
             this->hue2 = 0.5f;
         }
 
+        //! Set a ColourMapType::Duochrome map using h as the first hue and h+0.3333 as the second hue
         void setDualHue(const float& h)
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -460,6 +464,7 @@ namespace morph {
             this->hue2 = h+0.3333f;
             if (hue2 > 1.0f) { hue2 -= 1.0f; }
         }
+        //! Set a ColourMapType::DuoChrome map using h as the first hue and h-0.3333 as the second hue
         void setDualAntiHue(const float& h)
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -470,7 +475,7 @@ namespace morph {
             if (hue2 < 0.0f) { hue2 += 1.0f; }
         }
 
-        // Set the hue... unless you can't/shouldn't
+        //! Set the hue... unless you can't/shouldn't
         void setHue (const float& h)
         {
             switch (this->type) {
@@ -516,6 +521,7 @@ namespace morph {
             this->sat = _s;
         }
 
+        //! Set just the colour's value (ColourMapType::Fixed only)
         void setVal (const float& _v)
         {
             if (this->type != ColourMapType::Fixed) {
@@ -524,6 +530,7 @@ namespace morph {
             this->val = _v;
         }
 
+        //! Set the colour by hue, saturation and value (ColourMapType::Fixed only)
         void setHSV (const float& h, const float& s, const float& v)
         {
             if (this->type != ColourMapType::Fixed) {
@@ -534,6 +541,7 @@ namespace morph {
             this->val = v;
         }
 
+        //! Set the colour by hue, saturation and value (defined in an array) (ColourMapType::Fixed only)
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
 #if 0 // Bit pointless, setRGB, given that ColourMaps are supposed to convert from a number INTO RGB.
