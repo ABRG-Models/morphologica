@@ -1,5 +1,7 @@
 /*
- * The scalar products of a set of random vectors should follow the beta distribution.
+ * The scalar products of a set of randomly directed, normalised vectors should follow
+ * the beta distribution. Here, I multiply their length by a normally distributed amount
+ * near 1.
  */
 
 #include <morph/Vector.h>
@@ -17,12 +19,16 @@ int main()
 
     // Create N normalized vectors at random.
     morph::vVector<morph::Vector<float, n>> vVecs(N);
-    morph::RandUniform<float> rng(-1.0f, 1.0f);
+    morph::RandUniform<float> rn_u(-1.0f, 1.0f);
+    morph::RandNormal<float> rn_n(1.0f, 0.06f);
     for (size_t i = 0; i < N; ++i) {
         for (size_t j = 0; j < n; ++j) {
-            vVecs[i][j] = rng.get();
+            vVecs[i][j] = rn_u.get();
         }
+        // Renormalise
         vVecs[i].renormalize();
+        // Multiply length by a normally distributed amount near 1
+        vVecs[i] *= rn_n.get();
     }
 
     // Get scalar products between pairs
