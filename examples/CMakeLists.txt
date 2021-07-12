@@ -60,6 +60,9 @@ target_link_libraries(graph4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPAC
 add_executable(graph_bar graph_bar.cpp)
 target_link_libraries(graph_bar ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(linregr linregr.cpp)
+target_link_libraries(linregr ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
 add_executable(twowindows twowindows.cpp)
 target_link_libraries(twowindows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 

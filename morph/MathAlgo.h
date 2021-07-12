@@ -20,13 +20,12 @@ namespace morph {
      */
     struct MathAlgo
     {
-        /*!
+        /*
          * Functions which can take objects where T is EITHER a scalar, such as float
          * or double (or int, etc, if it makes sense) OR a mathematical vector
          * encapsulated in a std::list, std::vector or std::array (or any other STL
          * container which needs just a type and an allocator to be initialised).
          */
-        //@{
         /*******************************************************************/
 
         /*!
@@ -69,12 +68,84 @@ namespace morph {
         }
 
         /*******************************************************************/
-        //@}
 
-        /*!
+        /*
          * Functions without specific scalar/vector implementations
          */
-        //@{
+
+        //! Return mean and sum of squared deviations from the mean
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static std::pair<T,T> meansos (const Container<T, Allocator>& values)
+        {
+            std::pair<T,T> meansos = {T{0},T{0}};
+            if (values.empty()) { return meansos; }
+            for (T val : values) { meansos.first += val; }
+            meansos.first /= values.size();
+
+            for (T val : values) {
+                // Add up sum of squared deviations
+                meansos.second += ((val-meansos.first)*(val-meansos.first));
+            }
+
+            return meansos;
+        }
+
+        //! Covariance of two sets of numbers
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static T covariance (const Container<T, Allocator>& x,
+                             const Container<T, Allocator>& y)
+        {
+            if (x.empty() || y.empty()) { throw std::runtime_error ("x or y is empty."); }
+            if (x.size() != y.size()) {
+                throw std::runtime_error ("covariance: both number arrays to be same size.");
+            }
+            std::pair<T,T> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
+            std::pair<T,T> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
+            T cov = T{0};
+            for (size_t i = 0; i < x.size(); ++i) {
+                cov += ((x[i] - ms_x.first) * (y[i] - ms_y.first));
+            }
+            return cov;
+        }
+
+        //! Covariance of two sets of numbers, where means of x and y have already been computed
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static T covariance (const Container<T, Allocator>& x, const T mean_x,
+                             const Container<T, Allocator>& y, const T mean_y)
+        {
+            if (x.empty() || y.empty()) { throw std::runtime_error ("x or y is empty."); }
+            if (x.size() != y.size()) {
+                throw std::runtime_error ("covariance: both number arrays to be same size.");
+            }
+            T cov = T{0};
+            for (size_t i = 0; i < x.size(); ++i) {
+                cov += ((x[i] - mean_x) * (y[i] - mean_y));
+            }
+            return cov;
+        }
+
+        //! Linear regression. Return slope (first) and offset (second) (m and c from 'y
+        //! = mx + c') in an std::pair
+        template < template <typename, typename> typename Container,
+                   typename T,
+                   typename Allocator=std::allocator<T> >
+        static std::pair<T,T> linregr (const Container<T, Allocator>& x,
+                                       const Container<T, Allocator>& y)
+        {
+            std::pair<T,T> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
+            std::pair<T,T> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
+            T cov_xy = MathAlgo::covariance<Container, T, Allocator> (x, ms_x.first, y, ms_y.first);
+            T m = cov_xy / ms_x.second;
+            T c = ms_y.first - (m * ms_x.first);
+            return std::make_pair (m, c);
+        }
+
         //! Compute distance from p1 to p2 (ND)
         template<typename T, std::size_t N>
         static T distance (const std::array<T, N> p1, const std::array<T, N> p2) {
@@ -340,10 +411,9 @@ namespace morph {
             }
         }
 
-        /*!
+        /*
          * Functions which help you to arrange dots on circular rings
          */
-        //@{
 
         //! How many items (dots, for example) could you arrange on a circle of
         //! radius=@radius with @d between each item's centre?
@@ -413,9 +483,6 @@ namespace morph {
             //std::cout << "n_dots for d=" << d << " is " << n_dots << std::endl;
             return n_dots;
         }
-
-        //@}
-        //@}
 
     }; // struct MathAlgo
 
