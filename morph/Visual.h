@@ -565,11 +565,13 @@ namespace morph {
         {
             this->scenetrans[0] = _x;
             this->scenetrans[1] = _y;
+            this->scenetrans_default[0] = _x;
+            this->scenetrans_default[1] = _y;
         }
         //! Set the scene's y value. Use this to shift your scene objects left or right
-        void setSceneTransX (float _x) { this->scenetrans[0] = _x; }
+        void setSceneTransX (float _x) { this->scenetrans[0] = _x; this->scenetrans_default[0] = _x; }
         //! Set the scene's y value. Use this to shift your scene objects up and down
-        void setSceneTransY (float _y) { this->scenetrans[1] = _y; }
+        void setSceneTransY (float _y) { this->scenetrans[1] = _y; this->scenetrans_default[1] = _y; }
         //! Set the scene's z value. Use this to bring the 'camera' closer to your scene
         //! objects (that is, your morph::VisualModel objects).
         void setSceneTransZ (float _z)
@@ -579,6 +581,7 @@ namespace morph {
             }
             this->setZDefault (_z);
             this->scenetrans[2] = _z;
+            this->scenetrans_default[2] = _z;
         }
 
         void lightingEffects (bool effects_on = true)
@@ -671,6 +674,10 @@ namespace morph {
                 this->scenetrans[0] = vconf.getFloat ("scenetrans_x", this->scenetrans[0]);
                 this->scenetrans[1] = vconf.getFloat ("scenetrans_y", this->scenetrans[1]);
                 this->scenetrans[2] = vconf.getFloat ("scenetrans_z", this->scenetrans[2]);
+                // Place the same numbers into scenetrans_default, too.
+                this->scenetrans_default[0] = vconf.getFloat ("scenetrans_x", this->scenetrans[0]);
+                this->scenetrans_default[1] = vconf.getFloat ("scenetrans_y", this->scenetrans[1]);
+                this->scenetrans_default[2] = vconf.getFloat ("scenetrans_z", this->scenetrans[2]);
                 this->rotation.w = vconf.getFloat ("scenerotn_w", this->rotation.w);
                 this->rotation.x = vconf.getFloat ("scenerotn_x", this->rotation.x);
                 this->rotation.y = vconf.getFloat ("scenerotn_y", this->rotation.y);
@@ -906,7 +913,7 @@ namespace morph {
         Vector<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        const Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+        Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
