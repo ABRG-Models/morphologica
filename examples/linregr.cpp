@@ -26,18 +26,20 @@ int main()
     morph::Visual v(1024, 768, "Linear regression", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
     morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-    morph::DatasetStyle ds(morph::stylepolicy::markers); // Draw a bar graph by creating a bar policy DatasetStyle
+    // The first dataset shows the data points
+    morph::DatasetStyle ds(morph::stylepolicy::markers);
     ds.markercolour = morph::colour::blue3;
     ds.markersize = 0.05;
     ds.datalabel = "data";
     gv->setdata (absc, ord, ds);
 
-    // Add a line graph for the fit
-    morph::DatasetStyle ds2(morph::stylepolicy::lines); // Draw a bar graph by creating a bar policy DatasetStyle
+    // The second dataset is for the fit
+    morph::DatasetStyle ds2(morph::stylepolicy::lines);
     ds2.linecolour = morph::colour::lightsteelblue2;
     ds2.datalabel = "fit";
     gv->setdata (absc, fit, ds2);
 
+    // Add axis labels, finalize and add to our morph::Visual:
     gv->xlabel = "x";
     gv->ylabel = "y";
     gv->finalize();
