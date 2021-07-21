@@ -28,7 +28,6 @@ TriangleMesh* SphereMeshProvider::buildMesh(){
         p->x = {0, 0, 0};
         p->v = {0, 0, 0};
         vertices.push_back(p);
-        p->uv = glm::vec2();
     }
 
     float x,y,z, r = 3.0f;
@@ -42,7 +41,7 @@ TriangleMesh* SphereMeshProvider::buildMesh(){
             z = (float) r*sin(toRadians(j*360.0f/prec))*(float)fabs(cos(asin(y/r)));
 
             vertices[k]->x = {x, y, z};
-            vertices[k]->uv = glm::vec2((float)j/(prec), (float)i/(prec));
+            vertices[k]->uv = {(float)j/(prec), (float)i/(prec)};
             vertices[k]->normal = {x, y, z};
         }
     }

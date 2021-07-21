@@ -1,5 +1,4 @@
 #include <armadillo>
-#include <glm/glm.hpp>
 #include <cmath>
 #include "animat.h"
 #include "shapeconstr.h"
@@ -50,8 +49,3 @@ void Animat::move(  double x, double y, double z ){
     dir /= norm(dir);
     addGroundImpulse( 10*dir );
 }
-
-
-
-
-

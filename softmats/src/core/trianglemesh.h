@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <vector>
 #include "face.h"
 #include "point.h"
@@ -10,10 +9,10 @@ namespace morph{ namespace softmats{
 class TriangleMesh{
  /**
  * Mesh data structure
- * 
+ *
  * Represents a mesh for a given body. This implementation can be made more
  * efficient through a half-edge implementation (TO-DO).
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 private:
@@ -32,7 +31,7 @@ public:
 
     /**
      * Recomputes the normals of the faces.
-     * 
+     *
      * @param candidate - If true, the normals are computed for the candidate position
      * @see pbdim.h
      */
