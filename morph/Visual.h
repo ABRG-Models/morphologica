@@ -583,6 +583,28 @@ namespace morph {
             this->scenetrans[2] = _z;
             this->scenetrans_default[2] = _z;
         }
+        void setSceneTrans (float _x, float _y, float _z)
+        {
+            if (_z>0.0f) {
+                std::cout << "WARNING setSceneTrans(): Normally, the default z value is negative.\n";
+            }
+            this->scenetrans[0] = _x;
+            this->scenetrans_default[0] = _x;
+            this->scenetrans[1] = _y;
+            this->scenetrans_default[1] = _y;
+            this->setZDefault (_z);
+            this->scenetrans[2] = _z;
+            this->scenetrans_default[2] = _z;
+        }
+        void setSceneTrans (const morph::Vector<float, 3>& _xyz)
+        {
+            if (_xyz[2] > 0.0f) {
+                std::cout << "WARNING setSceneTrans(Vector<>&): Normally, the default z value is negative.\n";
+            }
+            this->setZDefault (_xyz[2]);
+            this->scenetrans = _xyz;
+            this->scenetrans_default = _xyz;
+        }
 
         void lightingEffects (bool effects_on = true)
         {
