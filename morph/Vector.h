@@ -278,9 +278,7 @@ namespace morph {
         void randomize()
         {
             RandUniform<S> ru;
-            for (auto& i : *this) {
-                i = ru.get();
-            }
+            ru.get (*this);
         }
 
         /*!
@@ -293,9 +291,7 @@ namespace morph {
         void randomize (S min, S max)
         {
             RandUniform<S> ru (min, max);
-            for (auto& i : *this) {
-                i = ru.get();
-            }
+            ru.get (*this);
         }
 
         /*!
@@ -308,9 +304,7 @@ namespace morph {
         void randomizeN (S _mean, S _sd)
         {
             RandNormal<S> rn (_mean, _sd);
-            for (auto& i : *this) {
-                i = rn.get();
-            }
+            rn.get (*this);
         }
 
         /*!
