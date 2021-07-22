@@ -114,6 +114,13 @@ namespace morph {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
 
+        //! Set all elements from the value type v
+        template <typename _S=S>
+        void set_from (const _S& v)
+        {
+            std::fill (this->begin(), this->end(), v);
+        }
+
         /*!
          * Set the data members of this vVector from the passed in, larger array, \a ar,
          * ignoring the last element of \a ar. Used when working with 4D vectors in

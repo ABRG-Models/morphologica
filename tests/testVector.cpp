@@ -89,6 +89,8 @@ int main() {
     array<double, 4> a2 = { 5,6,8,8 };
     d1.set_from (a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
+    d1.set_from (5.6);
+    cout << "d1 should be 5.6 for all elements: " << d1 << endl;
 
     // Test hadamard operator* (elementwise multiplication)
     Vector<double, 3> h1 = {1.0, 2.0, 3.0};

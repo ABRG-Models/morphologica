@@ -110,6 +110,8 @@ int main() {
     array<double, 4> a2 = { 5,6,8,8 };
     d1.set_from_onelonger(a2);
     cout << "d1 should be 5,6,8: " << d1 << endl;
+    d1.set_from (88.3);
+    cout << "d1 should be 88.3 in all elements: " << d1 << endl;
 
     // Test hadamard operator* (elementwise multiplication)
     vVector<double> h1 = {1.0, 2.0, 3.0};

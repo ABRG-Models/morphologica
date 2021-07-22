@@ -156,6 +156,13 @@ namespace morph {
             (*this)[N-1] = S{0};
         }
 
+        //! Set all elements from the value type v
+        template <typename _S=S>
+        void set_from (const _S& v)
+        {
+            std::fill (this->begin(), this->end(), v);
+        }
+
         //! Return a vector with one less dimension - losing the last one.
         Vector<S, N-1> less_one_dim () const
         {
