@@ -27,12 +27,12 @@ void SoftmatsView::setupGround( Body *ground){
         for(i=0; i<3; ++i)pvalues.push_back(f->points[1]->x(i));
         for(i=0; i<3; ++i)pvalues.push_back(f->points[2]->x(i));
 
-        tvalues.push_back(f->points[0]->uv.s);
-        tvalues.push_back(f->points[0]->uv.t);
-        tvalues.push_back(f->points[1]->uv.s);
-        tvalues.push_back(f->points[1]->uv.t);
-        tvalues.push_back(f->points[2]->uv.s);
-        tvalues.push_back(f->points[2]->uv.t);
+        tvalues.push_back(f->points[0]->uv[0]);
+        tvalues.push_back(f->points[0]->uv[1]);
+        tvalues.push_back(f->points[1]->uv[0]);
+        tvalues.push_back(f->points[1]->uv[1]);
+        tvalues.push_back(f->points[2]->uv[0]);
+        tvalues.push_back(f->points[2]->uv[1]);
 
         for(i=0; i<3; ++i)nvalues.push_back(f->points[0]->normal(i));
         for(i=0; i<3; ++i)nvalues.push_back(f->points[1]->normal(i));
@@ -78,9 +78,9 @@ void SoftmatsView::init( ){
     renderingProgram = OpenglUtils::createShaderProgram(vshader.c_str(), fshader.c_str());
     OpenglUtils::checkOpenGLError();
     std::cout << "Shaders loaded\n";
-    camera.x = 0.0f; camera.y = -0.5f; camera.z = 10.5f;
+    camera = { 0.0f, -0.5f, 10.5f };
     viewPort.x = 0.0f; viewPort.y = -2.0f; viewPort.z = 0.0f;
-    light.initialLightLoc = glm::vec3(5.0f, 2.0f, 2.0f);
+    light.initialLightLoc = { 5.0f, 2.0f, 2.0f };
     // White light
     light.globalAmbient[0] = 0.9f;
     light.globalAmbient[1] = 0.9f;
@@ -103,12 +103,9 @@ void SoftmatsView::init( ){
     setup();
 }
 
-void SoftmatsView::installLights( Body *b, glm::mat4 vMatrix ){
+void SoftmatsView::installLights( Body *b, morph::TransformMatrix<float>& vMatrix ){
     float zero[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    light.posV = glm::vec3(vMatrix*glm::vec4(light.currentPos,1.0));
-    light.pos[0] = light.posV.x;
-    light.pos[1] = light.posV.y;
-    light.pos[2] = light.posV.z;
+    light.posV = (vMatrix * light.currentPos).less_one_dim();
 
     // Get some locations
     light.globalAmbLoc = glGetUniformLocation( renderingProgram, "globalAmbient" );
@@ -126,7 +123,7 @@ void SoftmatsView::installLights( Body *b, glm::mat4 vMatrix ){
     glProgramUniform4fv( renderingProgram, light.ambLoc, 1, light.lightAmbient );
     glProgramUniform4fv( renderingProgram, light.diffLoc, 1, light.ligthDiffuse );
     glProgramUniform4fv( renderingProgram, light.specLoc, 1, light.lightSpecular );
-    glProgramUniform4fv( renderingProgram, light.posLoc, 1, light.pos );
+    glProgramUniform4fv( renderingProgram, light.posLoc, 1, light.posV.data() );
 
     if( b != NULL ){
         glProgramUniform4fv( renderingProgram, light.mAmbLoc, 1, b->material.matAmb );
@@ -156,23 +153,25 @@ void SoftmatsView::preDisplay( ){
     // Build perspective matrix
     glfwGetFramebufferSize( window, &viewPort.width, &viewPort.height );
     viewPort.aspect = (float)viewPort.width/(float)viewPort.height;
-    viewPort.pMat = glm::perspective( 1.0472f, viewPort.aspect, 0.1f, 1000.0f );
-    // View and model matrices
-    viewPort.vMat = glm::translate( glm::mat4(1.0f), glm::vec3(-camera.x, -camera.y, -camera.z) );
+    viewPort.pMat.setToIdentity();
+    viewPort.pMat.perspective( 60.0f, viewPort.aspect, 0.1f, 1000.0f ); // 60 degrees is 1.0472 rads
+    viewPort.vMat.setToIdentity();
+    viewPort.vMat.translate( -camera );
 }
 
 void SoftmatsView::displayGround(){
-    mMat = glm::mat4(1.0f);
+    mMat.setToIdentity();
     mvMat = viewPort.vMat*mMat;
-    invTrMat = glm::transpose(glm::inverse(mvMat));
+    invTrMat = mvMat.invert();
+    invTrMat.transpose();
     // Setup light
-    light.currentPos = glm::vec3(light.initialLightLoc.x, light.initialLightLoc.y, light.initialLightLoc.z);
+    light.currentPos = light.initialLightLoc;
     installLights(NULL, viewPort.vMat);
 
     // Copy matrices into uniform variables
-    glUniformMatrix4fv( viewPort.mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat) );
-    glUniformMatrix4fv( viewPort.prLoc, 1, GL_FALSE, glm::value_ptr(viewPort.pMat) );
-    glUniformMatrix4fv( nLoc, 1, GL_FALSE, glm::value_ptr(invTrMat));
+    glUniformMatrix4fv( viewPort.mvLoc, 1, GL_FALSE, mvMat.mat.data() );
+    glUniformMatrix4fv( viewPort.prLoc, 1, GL_FALSE, viewPort.pMat.mat.data() );
+    glUniformMatrix4fv( nLoc, 1, GL_FALSE, invTrMat.mat.data());
     glUniform1i( typeLoc, 0 );
     //Associate VBO with the corresponding vertex attribute in the vertex shader
     glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
@@ -211,12 +210,12 @@ void SoftmatsView::displayBody( Body* b ){
         for(i=0; i<3; ++i)pvalues.push_back(f->points[1]->x(i));
         for(i=0; i<3; ++i)pvalues.push_back(f->points[2]->x(i));
 
-        tvalues.push_back(f->points[0]->uv.s);
-        tvalues.push_back(f->points[0]->uv.t);
-        tvalues.push_back(f->points[1]->uv.s);
-        tvalues.push_back(f->points[1]->uv.t);
-        tvalues.push_back(f->points[2]->uv.s);
-        tvalues.push_back(f->points[2]->uv.t);
+        tvalues.push_back(f->points[0]->uv[0]); // was .s when uv was a ::vec2
+        tvalues.push_back(f->points[0]->uv[1]);
+        tvalues.push_back(f->points[1]->uv[0]);
+        tvalues.push_back(f->points[1]->uv[1]);
+        tvalues.push_back(f->points[2]->uv[0]);
+        tvalues.push_back(f->points[2]->uv[1]);
 
         for(i=0; i<3; ++i)nvalues.push_back(f->points[0]->normal(i));
         for(i=0; i<3; ++i)nvalues.push_back(f->points[1]->normal(i));
@@ -233,17 +232,18 @@ void SoftmatsView::displayBody( Body* b ){
     glBindBuffer( GL_ARRAY_BUFFER, vbo[5] );
     glBufferData(GL_ARRAY_BUFFER, nvalues.size()*4, &nvalues[0], GL_DYNAMIC_DRAW );
 
-    mMat = glm::mat4(1.0f);
+    mMat.setToIdentity();
     mvMat = viewPort.vMat*mMat;
-    invTrMat = glm::transpose(glm::inverse(mvMat));
+    invTrMat = mvMat.invert();
+    invTrMat.transpose();
     // Setup light
-    light.currentPos = glm::vec3(light.initialLightLoc.x, light.initialLightLoc.y, light.initialLightLoc.z);
+    light.currentPos = light.initialLightLoc;
     installLights(b, viewPort.vMat);
 
     // Copy matrices into uniform variables
-    glUniformMatrix4fv( viewPort.mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat) );
-    glUniformMatrix4fv( viewPort.prLoc, 1, GL_FALSE, glm::value_ptr(viewPort.pMat) );
-    glUniformMatrix4fv( nLoc, 1, GL_FALSE, glm::value_ptr(invTrMat));
+    glUniformMatrix4fv( viewPort.mvLoc, 1, GL_FALSE, mvMat.mat.data() );
+    glUniformMatrix4fv( viewPort.prLoc, 1, GL_FALSE, viewPort.pMat.mat.data() );
+    glUniformMatrix4fv( nLoc, 1, GL_FALSE, invTrMat.mat.data() );
     glUniform1i( typeLoc, 1 );
     //Associate VBO with the corresponding vertex attribute in the vertex shader
     glBindBuffer( GL_ARRAY_BUFFER, vbo[3] );
@@ -268,9 +268,7 @@ void SoftmatsView::displayBody( Body* b ){
 
 void SoftmatsView::setCamera(float az, float ev){
     float r = 20.0f;
-    this->camera.x = r*sin(az)*cos(ev);
-    this->camera.y = r*sin(az)*sin(ev);
-    this->camera.z = r*cos(az);
+    this->camera = { r*sin(az)*cos(ev), r*sin(az)*sin(ev), r*cos(az) };
 }
 
 bool SoftmatsView::shouldClose(){

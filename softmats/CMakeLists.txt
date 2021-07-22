@@ -11,7 +11,6 @@ if(APPLE AND OpenMP_CXX_FOUND)
     OpenMP::OpenMP_CXX
     OpenGL::GL
     glfw
-    ${GLM_LIBRARY}
     ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${OpenCV_LIBS}
@@ -21,7 +20,6 @@ else()
   set(ALL_LIBS
     OpenGL::GL
     glfw
-    ${GLM_LIBRARY}
     ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${OpenCV_LIBS}

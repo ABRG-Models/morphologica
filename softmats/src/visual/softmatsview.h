@@ -3,9 +3,8 @@
 #define SOFTMATS_VIEW_H
 
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <morph/Vector.h>
+#include <morph/TransformMatrix.h>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -38,22 +37,15 @@ namespace morph{ namespace softmats{
         GLuint mDiffLoc;
         GLuint mSpecLoc;
         GLuint mShiLoc;
-        glm::vec3 currentPos;
-        glm::vec3 posV;
-        float pos[3];
-        glm::vec3 initialLightLoc;
+        morph::Vector<float, 3> currentPos;
+        morph::Vector<float, 3> posV;
+        //float pos[3]; // posV.data() can do what pos[] does
+        morph::Vector<float, 3> initialLightLoc;
         // White light
         float globalAmbient[4];
         float lightAmbient[4];
         float ligthDiffuse[4];
         float lightSpecular[4];
-    };
-
-    // Camera data
-    struct Camera{
-        float x;
-        float y;
-        float z;
     };
 
     // Viewport data
@@ -66,8 +58,8 @@ namespace morph{ namespace softmats{
         int width;
         int height;
         float aspect;
-        glm::mat4 pMat;
-        glm::mat4 vMat;
+        morph::TransformMatrix<float> pMat;
+        morph::TransformMatrix<float> vMat;
     };
 
     class SoftmatsView : public View{
@@ -75,12 +67,13 @@ namespace morph{ namespace softmats{
         GLFWwindow* window;
         GLuint renderingProgram;
         GLuint vao[numVAOs], vbo[numVBOs];
-        Camera camera;
+        // camera position
+        morph::Vector<float, 3> camera;
         ViewPort viewPort;
         Light light;
         // Matrices and reserved locations in the shader
         GLuint typeLoc, nLoc;
-        glm::mat4 mMat, mvMat, tMat, rMat, sMat, invTrMat;
+        morph::TransformMatrix<float> mMat, mvMat, tMat, rMat, sMat, invTrMat; // morph::TransformMatrix
         GLuint textureId;
     public:
         // Initializes the glfw window and opengl contexts
@@ -103,7 +96,7 @@ namespace morph{ namespace softmats{
         // Sets the camera position - TO IMPROVE
         void setCamera(float az, float ev);
         // Sets up the lights
-        void installLights( Body*b, glm::mat4 vMatrix );
+        void installLights( Body*b, morph::TransformMatrix<float>& vMatrix );
 
         SoftmatsView();
         ~SoftmatsView();

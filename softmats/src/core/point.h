@@ -1,16 +1,16 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <armadillo>
 #include <vector>
 #include <algorithm>
+#include <morph/Vector.h>
 
 namespace morph{ namespace softmats{
 /**
  * Point data structure
- * 
- * Note that the point has a current position (x) and a candidate position (x_c) 
+ *
+ * Note that the point has a current position (x) and a candidate position (x_c)
  * to which constraints are applied
- * 
+ *
  * @author Alejandro Jimenez Rodriguez
  */
 typedef struct Point{
@@ -19,20 +19,20 @@ typedef struct Point{
     arma::vec normal; // current normal
     arma::vec x_c; // candidate position
     arma::vec fext; // external force
-    glm::vec2 uv; // texture coordinates
-    
+    morph::Vector<float, 2> uv; // texture coordinates
+
     bool lock; // Is the point to be moved?
     double w; // Inverse mass
     double temp_receptor;
     bool ground_receptor;
     std::vector<Point *> adj; // Adjacent points in the mesh
 
-    Point(){ 
+    Point(){
         this->x = {0.0, 0.0, 0.0};
         this->x_c = {0.0, 0.0, 0.0};
         this->v = {0.0, 0.0, 0.0};
         this->normal = {0.0, 0.0, 0.0};
-        this->uv = glm::vec2(0.0f, 0.0f);
+        this->uv = {0.0f, 0.0f};
         this->lock = false;
     }
 
