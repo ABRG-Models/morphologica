@@ -741,7 +741,8 @@ namespace morph {
             if (!geom.empty()) { toffset[1] -= geom.back().height()/2.0f; }
 
             // What's our legend grid arrangement going to be? Each column will advance by the text_advance, some space and the size of the marker
-            float col_advance = this->datastyles[0].markersize + 2 * toffset[0] + text_advance;
+            float col_advance = 2 * toffset[0] + text_advance;
+            if (!datastyles.empty()) { col_advance += this->datastyles[0].markersize; }
             //std::cout << "Legend col advance is: " << col_advance << std::endl;
             int max_cols = static_cast<int>((1.0f - this->dataaxisdist) / col_advance);
             //std::cout << "max_cols: " << max_cols << std::endl;
@@ -749,14 +750,18 @@ namespace morph {
             //std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
             int num_cols = static_cast<int>(gd_size) <= max_cols ? static_cast<int>(gd_size) : max_cols;
             std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
-            int num_rows = ((int)gd_size / num_cols);
-            num_rows += (int)gd_size % num_cols ? 1 : 0;
+            int num_rows = (int)gd_size;
+            if (num_cols != 0) {
+                num_rows = ((int)gd_size / num_cols);
+                num_rows += (int)gd_size % num_cols ? 1 : 0;
+            }
             std::cout << "num_rows = " << num_rows << std::endl;
 
             // Label position
             morph::Vector<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
             for (int dsi = 0; dsi < (int)gd_size; ++dsi) {
 
+                if (num_cols == 0) { throw std::runtime_error ("GraphVisual::drawLegend: Why is num_cols 0?"); }
                 int col = dsi % num_cols;
                 int row = (num_rows-1) - (dsi / num_cols);
                 std::cout << "Dataset  " << dsi << " will be on row " << row << " and col " << col << std::endl;
