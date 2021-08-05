@@ -78,23 +78,6 @@ namespace morph {
         template <size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
         S w() const { return (*this)[3]; }
 
-        /*!
-         * \brief Unit vector threshold
-         *
-         * The threshold outside of which the vector is no longer considered to be a
-         * unit vector. Note this is hard coded as a constexpr, to avoid messing with
-         * the initialization of the Vector with curly brace initialization.
-         *
-         * Clearly, this will be the wrong threshold for some cases. Possibly, a
-         * template parameter could set this; so size_t U could indicate the threshold;
-         * 0.001 could be U=-3 (10^-3).
-         *
-         * Another idea would be to change unitThresh based on the type S. Or use
-         * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
-         * sense.
-         */
-        static constexpr S unitThresh = 0.001;
-
         //! Set data members from an std::vector
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
@@ -319,11 +302,29 @@ namespace morph {
          *
          * \return true if the length of the vector is 1.
          */
+        template <typename F=S, std::enable_if_t<!std::is_integral<std::decay_t<F>>::value, int> = 0 >
         bool checkunit() const
         {
-            auto subtract_squared = [](S a, S b) { return a - b * b; };
-            const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
-            if (std::abs(metric) > Vector<S, N>::unitThresh) {
+            /*!
+             * \brief Unit vector threshold
+             *
+             * The threshold outside of which the vector is no longer considered to be a
+             * unit vector. Note this is hard coded as a constexpr, to avoid messing with
+             * the initialization of the Vector with curly brace initialization.
+             *
+             * Clearly, this will be the wrong threshold for some cases. Possibly, a
+             * template parameter could set this; so size_t U could indicate the threshold;
+             * 0.001 could be U=-3 (10^-3).
+             *
+             * Another idea would be to change unitThresh based on the type S. Or use
+             * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
+             * sense.
+             */
+            static constexpr F unitThresh = 0.001;
+
+            auto subtract_squared = [](F a, F b) { return a - b * b; };
+            const F metric = std::accumulate (this->begin(), this->end(), F{1}, subtract_squared);
+            if (std::abs(metric) > unitThresh) {
                 return false;
             }
             return true;
