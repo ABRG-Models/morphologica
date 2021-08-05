@@ -878,6 +878,41 @@ namespace morph {
         } // end computeFlatPloy with ux/uy vectors for faces
 
         /*!
+         * Make a ring of radius r, comprised of tubes(?)
+         *
+         * \param ro position of the centre of the ring
+         * \param rc The ring colour.
+         * \param r Radius of the ring
+         * \param t Thickness of the ring
+         * \param segments Number of tube segments used to render the ring
+         */
+        void computeRing (VBOint& idx, Vector<float> ro, std::array<float, 3> rc, float r = 1.0f,
+                          float t = 0.1f, int segments = 12)
+        {
+            for (int j = 0; j < segments; j++) {
+                float segment = 2 * M_PI * (float) (j) / segments;
+                // x and y of inner point
+                float xin = (r-(t*0.5f)) * cos(segment);
+                float yin = (r-(t*0.5f)) * sin(segment);
+                float xout = (r+(t*0.5f)) * cos(segment);
+                float yout = (r+(t*0.5f)) * sin(segment);
+                int segjnext = (j+1) % segments;
+                float segnext = 2 * M_PI * (float) (segjnext) / segments;
+                float xin_n = (r-(t*0.5f)) * cos(segnext);
+                float yin_n = (r-(t*0.5f)) * sin(segnext);
+                float xout_n = (r+(t*0.5f)) * cos(segnext);
+                float yout_n = (r+(t*0.5f)) * sin(segnext);
+
+                // Now draw a quad
+                Vector<float> c1 = {xin, yin, 0};
+                Vector<float> c2 = {xout, yout, 0};
+                Vector<float> c3 = {xout_n, yout_n, 0};
+                Vector<float> c4 = {xin_n, yin_n, 0};
+                this->computeFlatQuad (idx, ro+c1, ro+c2, ro+c3, ro+c4, rc);
+            }
+        }
+
+        /*!
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
          *
          * \param idx The index into the 'vertex indices array'
