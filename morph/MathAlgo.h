@@ -8,12 +8,21 @@
 #include <array>
 #include <utility>
 #include <iostream>
+#include <algorithm>
 #include <memory>
+#include <morph/Vector.h>
 #include <morph/MathConst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
 
 namespace morph {
+
+    enum class rotation_sense
+    {
+        colinear,
+        clockwise,
+        anticlockwise
+    };
 
     /*!
      * The new MathAlgo class with its methods.
@@ -186,6 +195,36 @@ namespace morph {
             T dist_sq = xdiff*xdiff + ydiff*ydiff;
             return dist_sq;
         }
+
+        //! Compute orientation of three points which form a triangle pqr.
+        //! \return 0 if co-linear, 1 if clockwise; 2 if anticlockwise
+        //! Algorithm, which uses slopes, taken from
+        //! https://www.geeksforgeeks.org/orientation-3-ordered-points/
+        template<typename T>
+        static rotation_sense orientation (const morph::Vector<T, 2>& p,
+                                           const morph::Vector<T, 2>& q,
+                                           const morph::Vector<T, 2>& r)
+        {
+            T val = (q[1] - p[1]) * (r[0] - q[0])  -  (q[0] - p[0]) * (r[1] - q[1]);
+            if (val == T{0}) { return rotation_sense::colinear; }
+            return (val > 0) ? rotation_sense::clockwise : rotation_sense::anticlockwise;
+        }
+
+        // Given three colinear points p, q, r, the function checks if
+        // point q lies on line segment 'pr'. Copied from:
+        // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+        template<typename T>
+        static bool onsegment (const morph::Vector<T, 2>& p,
+                               const morph::Vector<T, 2>& q,
+                               const morph::Vector<T, 2>& r)
+        {
+            if (q[0] <= std::max(p[0], r[0]) && q[0] >= std::min(p[0], r[0]) &&
+                q[1] <= std::max(p[1], r[1]) && q[1] >= std::min(p[1], r[1])) {
+                return true;
+            }
+            return false;
+        }
+
 
 #ifdef USE_Q_INVSQRT
         //! Quake fast 1/sqrt(x) approximation. Error ~1%
