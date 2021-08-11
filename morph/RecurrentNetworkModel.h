@@ -20,6 +20,7 @@
 #include <morph/HexGridVisual.h>
 #include <morph/ColourMap.h>
 #include <morph/tools.h>
+#include <morph/Random.h>
 #include <morph/Config.h>
 #include <morph/Scale.h>
 #include <morph/Vector.h>
@@ -240,6 +241,7 @@ namespace morph {
             std::vector<int> outputID;
             int nContext;
             morph::ColourMapType colourMap;
+            morph::RandUniform<double> rng;
 
             /*!
              * Initialize the RecurrentNetworkModel. Logpath should be a folder
@@ -441,8 +443,8 @@ namespace morph {
             */
             std::vector<int> setRandomInput(void){
 
-                std::vector<int> sample(2,floor(morph::Tools::randDouble()*M.size()));
-                sample[1] = floor(morph::Tools::randDouble()*M[sample[0]].N);
+                std::vector<int> sample(2,floor(this->rng.get()*M.size()));
+                sample[1] = floor(this->rng.get()*M[sample[0]].N);
                 return sample;
             }
 

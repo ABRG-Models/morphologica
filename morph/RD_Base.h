@@ -1,6 +1,7 @@
 #pragma once
 
 #include <morph/tools.h>
+#include <morph/Random.h>
 #include <morph/ReadCurves.h>
 #include <morph/HexGrid.h>
 #include <morph/HdfData.h>
@@ -370,12 +371,13 @@ namespace morph {
          * drops away towards the edge of the domain.
          */
         void noiseify_vector_variable (std::vector<Flt>& v, Flt offset, Flt gain) {
+            morph::RandUniform<Flt> rng;
             for (auto h : this->hg->hexen) {
                 // boundarySigmoid. Jumps sharply (100, larger is
                 // sharper) over length scale 0.05 to 1. So if
                 // distance from boundary > 0.05, noise has normal
                 // value. Close to boundary, noise is less.
-                v[h.vi] = morph::Tools::randF<Flt>() * gain + offset;
+                v[h.vi] = rng.get() * gain + offset;
                 if (h.distToBoundary > -0.5) { // It's possible that distToBoundary is set to -1.0
                     Flt bSig = 1.0 / ( 1.0 + exp (-100.0*(h.distToBoundary-this->boundaryFalloffDist)) );
                     v[h.vi] = v[h.vi] * bSig;

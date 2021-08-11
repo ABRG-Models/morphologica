@@ -274,44 +274,6 @@ namespace morph
         }
 
         /*!
-         * Return a random double precision number in the range [0,1], sampled from a
-         * uniform distribution.
-         *
-         * Don't use this! Use c++-11 random number generators, which include a 64 bit
-         * Mersenne Twister algorithm as an option!
-         */
-        static double randDouble (void)
-        {
-            // FIXME: Have this (and randSingle) instantiate a singleton RandUniform
-            // container, and then get instances from that.
-            return static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
-        }
-
-        /*!
-         * Return a random single precision number in the range [0,1], sampled from a
-         * uniform distribution.
-         *
-         * Don't use this! Use c++-11 random number generators, which include a 64 bit
-         * Mersenne Twister algorithm as an option!
-         */
-        static float randSingle (void)
-        {
-            return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        }
-
-        /*!
-         * Return a random floating point number with type F, where F is expected to be
-         * either float or double.
-         */
-        template<typename F>
-        static F randF (void);
-
-        static double normalDistributionValue (void)
-        {
-            return sqrt(-2. * log(randDouble())) * cos(2. * M_PI * randDouble());
-        }
-
-        /*!
          * return indices of descending value in unsorted
          */
         static std::vector<int> sort (std::vector<double> unsorted)
@@ -2815,19 +2777,6 @@ namespace morph
     }; // class Tools
 
 } // morph namespace
-
-/*!
- * Templated random number function.
- *
- * Don't use this! Use c++-11 random number generators, which include a 64 bit Mersenne
- * Twister algorithm as an option!
- */
-template <typename F>
-F
-morph::Tools::randF (void)
-{
-    return static_cast<F>(rand()) / static_cast<F>(RAND_MAX);
-}
 
 /*!
  * Templated function splitStringWithEncs implementation.

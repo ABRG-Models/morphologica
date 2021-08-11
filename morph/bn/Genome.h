@@ -188,7 +188,7 @@ namespace morph {
 
                 for (unsigned int b = 0; b < bits_to_flip; ++b) {
                     unsigned int r = static_cast<unsigned int>(std::floor(Random<N,K>::i()->frng.get() * (float)lgenome));
-                    // Catch the edge case (where randDouble() returned exactly 1.0)
+                    // Catch the edge case (where the random number generator returned exactly 1.0)
                     if (r == lgenome) { --r; }
 
                     // The bit to flip is *i, after these two lines:
