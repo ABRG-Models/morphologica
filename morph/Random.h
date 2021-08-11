@@ -42,7 +42,7 @@
  * exponential).
  *
  * See tests/testRandom.cpp for a variety of usage examples. Here is a single, simple
- * example to replace morph::Tools::randDouble():
+ * example to replace the old (and now removed) morph::Tools::randDouble():
  *
  * \code
  * #include <morph/Random.h>
