@@ -6,6 +6,9 @@ add_subdirectory(Ermentrout2009)
 # The Lotka-Volterra population model. See Pau, 1992, p654.
 add_subdirectory(LotkaVolterra)
 
+# The Schnakenberg RD model.
+add_subdirectory(schnakenberg)
+
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 

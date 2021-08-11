@@ -1,0 +1,29 @@
+{
+    "about_me" : "Krause et al. - Isolating Patterns in Open Reaction-Diffusion Systems. Their SCH (Labrynthine) example (see Table 1).",
+
+    "sect_global" : "Global simulation parameters",
+    "desc_steps" : "The number of steps to simulate for",
+    "steps" :1325000,
+    "logevery": 5000,
+    "plotevery": 500,
+    "saveplots": false,
+    "overwrite_logs": true,
+    "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
+    "hextohex_d" : 0.5,
+    "hexspan" : 155,
+    "svgpath" : "./ellipse.svg",
+    "boundaryFalloffDist" : 0.01,
+    "dt" : 0.005,
+
+    "sect_ellipse" : "Ellipse parameters",
+    "ellipse_a" : 60,
+    "ellipse_b" : 20,
+
+    "sect_model_params" : "Schnakenberg model parameters",
+    "D_A" : 1,
+    "D_B" : 20,
+    "k1"  : 0.01,
+    "k2"  : 1,
+    "k3"  : 1,
+    "k4"  : 1.7
+}
