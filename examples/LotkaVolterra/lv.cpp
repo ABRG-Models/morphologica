@@ -310,6 +310,8 @@ int main (int argc, char **argv)
         // Save data every 'logevery' steps
         if ((RD.stepCount % logevery) == 0) { RD.save(); }
 
+        if ((RD.stepCount % 10000) == 0) { std::cout << "Sim steps computed: " << RD.stepCount << std::endl; }
+
         if (RD.stepCount > steps) { finished = true; }
     }
 
