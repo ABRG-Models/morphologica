@@ -11,7 +11,7 @@
 # include <GL3/gl3.h>
 #endif
 
-typedef GLuint VBOint;
+typedef GLuint VBOint; // A GLuint is an unsigned int
 #define VBO_ENUM_TYPE GL_UNSIGNED_INT
 
 namespace morph {
