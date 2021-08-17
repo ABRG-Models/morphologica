@@ -612,6 +612,131 @@ namespace morph {
             diffuse_intensity = effects_on ? 0.6f : 0.0f;
         }
 
+        //! Save all the VisualModels in this Visual out to a GLTF format file
+        void savegltf (const std::string& gltf_file)
+        {
+            std::ofstream fout;
+            fout.open (gltf_file, std::ios::out|std::ios::trunc);
+            if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
+            fout << "{\n  \"scenes\" : [ { \"nodes\" : [ 0 ] } ],\n";
+            fout << "  \"nodes\" : [\n";
+            // for loop over VisualModels "mesh" : 0, etc
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                fout << "    { \"mesh\" : " << vmi << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
+            }
+            fout << "  ],\n";
+
+            fout << "  \"meshes\" : [\n";
+            // for each VisualModel:
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : 1, \"COLOR\" : 2, \"NORMAL\" : 3 }, \"indices\" : 0 } ] }"
+                     << (vmi < this->vm.size()-1 ? ",\n" : "\n");
+            }
+            fout << "  ],\n";
+
+            fout << "  \"buffers\" : [\n";
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                // indices
+                fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->indices_base64() << "\", "
+                     << "\"byteLength\" : " << this->vm[vmi]->indices_size() << "},\n";
+                // pos
+                fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vpos_base64() << "\", "
+                     << "\"byteLength\" : " << this->vm[vmi]->vpos_size() << "},\n";
+                // col
+                fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vcol_base64() << "\", "
+                     << "\"byteLength\" : " << this->vm[vmi]->vcol_size() << "},\n";
+                // norm
+                fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vnorm_base64() << "\", "
+                     << "\"byteLength\" : " << this->vm[vmi]->vnorm_size() << "}";
+                fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
+            }
+            fout << "  ],\n";
+
+            fout << "  \"bufferViews\" : [\n";
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                // indices
+                fout << "    { ";
+                fout << "\"buffer\" : " << vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->indices_size()*4 << ", ";
+                fout << "\"target\" : 34963 ";
+                fout << " },\n";
+                // vpos
+                fout << "    { ";
+                fout << "\"buffer\" : " << 1+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vpos_size()*4 << ", ";
+                fout << "\"target\" : 34962 ";
+                fout << " },\n";
+                // vcol
+                fout << "    { ";
+                fout << "\"buffer\" : " << 2+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vcol_size()*4 << ", ";
+                fout << "\"target\" : 34962 ";
+                fout << " },\n";
+                // vnorm
+                fout << "    { ";
+                fout << "\"buffer\" : " << 3+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vnorm_size()*4 << ", ";
+                fout << "\"target\" : 34962 ";
+                fout << " }";
+                fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
+            }
+            fout << "  ],\n";
+
+            fout << "  \"accessors\" : [\n";
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                // indices
+                fout << "    { ";
+                fout << "\"bufferView\" : " << vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"componentType\" : 5125, "; // 5123 unsigned short, 5121 unsigned byte, 5125 unsigned int, 5126 float
+                fout << "\"type\" : \"SCALAR\", ";
+                fout << "\"count\" : " << this->vm[vmi]->indices_size() << ", ";
+                fout << "\"max\" : [ 2 ], "; // guess I have to figure this out
+                fout << "\"min\" : [ 0 ] ";
+                fout << "},\n";
+                // vpos
+                fout << "    { ";
+                fout << "\"bufferView\" : " << 1+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"componentType\" : 5126, ";
+                fout << "\"type\" : \"VEC3\", ";
+                fout << "\"count\" : " << this->vm[vmi]->vpos_size() << ", ";
+                fout << "\"max\" : [ 1, 1, 1 ], "; // guess I have to figure this out
+                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "},\n";
+                // vcol
+                fout << "    { ";
+                fout << "\"bufferView\" : " << 2+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"componentType\" : 5126, ";
+                fout << "\"type\" : \"VEC3\", ";
+                fout << "\"count\" : " << this->vm[vmi]->vcol_size() << ", ";
+                fout << "\"max\" : [ 1, 1, 1 ], ";
+                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "},\n";
+                // vnorm
+                fout << "    { ";
+                fout << "\"bufferView\" : " << 3+vmi*4 << ", ";
+                fout << "\"byteOffset\" : 0, ";
+                fout << "\"componentType\" : 5126, ";
+                fout << "\"type\" : \"VEC3\", ";
+                fout << "\"count\" : " << this->vm[vmi]->vnorm_size() << ", ";
+                fout << "\"max\" : [ 1, 1, 1 ], ";
+                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "}";
+                fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
+            }
+            fout << "  ],\n";
+
+            fout << "  \"asset\" : { \"version\" : \"2.0\" }\n";
+            fout << "}\n";
+            fout.close();
+        }
+
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.

@@ -67,5 +67,7 @@ int main()
         v.render();
     }
 
+    v.savegltf("./visual.gltf");
+
     return 0;
 }

@@ -22,6 +22,7 @@
 #include <morph/VisualTextModel.h>
 #include <morph/VisualFace.h>
 #include <morph/colour.h>
+#include <morph/base64.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -359,6 +360,64 @@ namespace morph {
         void setHide (const bool _h = true) { this->hide = _h; }
         void toggleHide() { this->hide = this->hide ? false : true; }
         float hidden() const { return this->hide; }
+
+        // Return the number of elements in this->indices
+        size_t indices_size() { return this->indices.size() * sizeof (VBOint); }
+        // Return base64 encoded version of indices
+        std::string indices_base64()
+        {
+            std::vector<std::uint8_t> idx_bytes (this->indices.size()<<2, 0);
+            size_t b = 0;
+            for (auto i : this->indices) {
+                idx_bytes[b++] = i & 0xff;
+                idx_bytes[b++] = i >> 8 & 0xff;
+                idx_bytes[b++] = i >> 16 & 0xff;
+                idx_bytes[b++] = i >> 24 & 0xff;
+            }
+            return base64::encode (idx_bytes);
+        }
+        size_t vpos_size() { return this->vertexPositions.size() * sizeof (float); }
+        std::string vpos_base64()
+        {
+            std::vector<std::uint8_t> _bytes (this->vertexPositions.size()<<2, 0);
+            size_t b = 0;
+            for (auto i : this->vertexPositions) {
+                unsigned int ii = static_cast<unsigned int>(i);
+                _bytes[b++] = ii & 0xff;
+                _bytes[b++] = ii >> 8 & 0xff;
+                _bytes[b++] = ii >> 16 & 0xff;
+                _bytes[b++] = ii >> 24 & 0xff;
+            }
+            return base64::encode (_bytes);
+        }
+        size_t vcol_size() { return this->vertexColors.size() * sizeof (float); }
+        std::string vcol_base64()
+        {
+            std::vector<std::uint8_t> _bytes (this->vertexColors.size()<<2, 0);
+            size_t b = 0;
+            for (auto i : this->vertexColors) {
+                unsigned int ii = static_cast<unsigned int>(i);
+                _bytes[b++] = ii & 0xff;
+                _bytes[b++] = ii >> 8 & 0xff;
+                _bytes[b++] = ii >> 16 & 0xff;
+                _bytes[b++] = ii >> 24 & 0xff;
+            }
+            return base64::encode (_bytes);
+        }
+        size_t vnorm_size() { return this->vertexNormals.size() * sizeof (float); }
+        std::string vnorm_base64()
+        {
+            std::vector<std::uint8_t> _bytes (this->vertexNormals.size()<<2, 0);
+            size_t b = 0;
+            for (auto i : this->vertexNormals) {
+                unsigned int ii = static_cast<unsigned int>(i);
+                _bytes[b++] = ii & 0xff;
+                _bytes[b++] = ii >> 8 & 0xff;
+                _bytes[b++] = ii >> 16 & 0xff;
+                _bytes[b++] = ii >> 24 & 0xff;
+            }
+            return base64::encode (_bytes);
+        }
 
         //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
         bool twodimensional = false;
