@@ -37,6 +37,12 @@
 
 namespace morph {
 
+    union float_bytes
+    {
+        float f;
+        uint8_t bytes[sizeof(float)];
+    };
+
     //! Forward declaration of a Visual class
     class Visual;
 
@@ -362,7 +368,8 @@ namespace morph {
         float hidden() const { return this->hide; }
 
         // Return the number of elements in this->indices
-        size_t indices_size() { return this->indices.size() * sizeof (VBOint); }
+        size_t indices_size() { return this->indices.size(); }
+        size_t indices_bytes() { return this->indices.size() * sizeof (VBOint); }
         // Return base64 encoded version of indices
         std::string indices_base64()
         {
@@ -376,45 +383,51 @@ namespace morph {
             }
             return base64::encode (idx_bytes);
         }
-        size_t vpos_size() { return this->vertexPositions.size() * sizeof (float); }
+        size_t vpos_size() { return this->vertexPositions.size(); }
+        size_t vpos_bytes() { return this->vertexPositions.size() * sizeof (float); }
         std::string vpos_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexPositions.size()<<2, 0);
             size_t b = 0;
+            float_bytes fb;
             for (auto i : this->vertexPositions) {
-                unsigned int ii = static_cast<unsigned int>(i);
-                _bytes[b++] = ii & 0xff;
-                _bytes[b++] = ii >> 8 & 0xff;
-                _bytes[b++] = ii >> 16 & 0xff;
-                _bytes[b++] = ii >> 24 & 0xff;
+                fb.f = i;
+                _bytes[b++] = fb.bytes[0];
+                _bytes[b++] = fb.bytes[1];
+                _bytes[b++] = fb.bytes[2];
+                _bytes[b++] = fb.bytes[3];
             }
             return base64::encode (_bytes);
         }
-        size_t vcol_size() { return this->vertexColors.size() * sizeof (float); }
+        size_t vcol_size() { return this->vertexColors.size(); }
+        size_t vcol_bytes() { return this->vertexColors.size() * sizeof (float); }
         std::string vcol_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexColors.size()<<2, 0);
             size_t b = 0;
+            float_bytes fb;
             for (auto i : this->vertexColors) {
-                unsigned int ii = static_cast<unsigned int>(i);
-                _bytes[b++] = ii & 0xff;
-                _bytes[b++] = ii >> 8 & 0xff;
-                _bytes[b++] = ii >> 16 & 0xff;
-                _bytes[b++] = ii >> 24 & 0xff;
+                fb.f = i;
+                _bytes[b++] = fb.bytes[0];
+                _bytes[b++] = fb.bytes[1];
+                _bytes[b++] = fb.bytes[2];
+                _bytes[b++] = fb.bytes[3];
             }
             return base64::encode (_bytes);
         }
-        size_t vnorm_size() { return this->vertexNormals.size() * sizeof (float); }
+        size_t vnorm_size() { return this->vertexNormals.size(); }
+        size_t vnorm_bytes() { return this->vertexNormals.size() * sizeof (float); }
         std::string vnorm_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexNormals.size()<<2, 0);
             size_t b = 0;
+            float_bytes fb;
             for (auto i : this->vertexNormals) {
-                unsigned int ii = static_cast<unsigned int>(i);
-                _bytes[b++] = ii & 0xff;
-                _bytes[b++] = ii >> 8 & 0xff;
-                _bytes[b++] = ii >> 16 & 0xff;
-                _bytes[b++] = ii >> 24 & 0xff;
+                fb.f = i;
+                _bytes[b++] = fb.bytes[0];
+                _bytes[b++] = fb.bytes[1];
+                _bytes[b++] = fb.bytes[2];
+                _bytes[b++] = fb.bytes[3];
             }
             return base64::encode (_bytes);
         }

@@ -618,7 +618,11 @@ namespace morph {
             std::ofstream fout;
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
             if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
-            fout << "{\n  \"scenes\" : [ { \"nodes\" : [ 0 ] } ],\n";
+            fout << "{\n  \"scenes\" : [ { \"nodes\" : [ ";
+            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
+            }
+            fout << " ] } ],\n";
             fout << "  \"nodes\" : [\n";
             // for loop over VisualModels "mesh" : 0, etc
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
@@ -629,7 +633,9 @@ namespace morph {
             fout << "  \"meshes\" : [\n";
             // for each VisualModel:
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
-                fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : 1, \"COLOR\" : 2, \"NORMAL\" : 3 }, \"indices\" : 0 } ] }"
+                fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : " << 1+vmi*4
+                     << ", \"COLOR_0\" : " << 2+vmi*4
+                     << ", \"NORMAL\" : " << 3+vmi*4 << " }, \"indices\" : " << vmi*4 << " } ] }"
                      << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
@@ -638,16 +644,16 @@ namespace morph {
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
                 // indices
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->indices_base64() << "\", "
-                     << "\"byteLength\" : " << this->vm[vmi]->indices_size() << "},\n";
+                     << "\"byteLength\" : " << this->vm[vmi]->indices_bytes() << "},\n";
                 // pos
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vpos_base64() << "\", "
-                     << "\"byteLength\" : " << this->vm[vmi]->vpos_size() << "},\n";
+                     << "\"byteLength\" : " << this->vm[vmi]->vpos_bytes() << "},\n";
                 // col
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vcol_base64() << "\", "
-                     << "\"byteLength\" : " << this->vm[vmi]->vcol_size() << "},\n";
+                     << "\"byteLength\" : " << this->vm[vmi]->vcol_bytes() << "},\n";
                 // norm
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->vnorm_base64() << "\", "
-                     << "\"byteLength\" : " << this->vm[vmi]->vnorm_size() << "}";
+                     << "\"byteLength\" : " << this->vm[vmi]->vnorm_bytes() << "}";
                 fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
@@ -658,28 +664,28 @@ namespace morph {
                 fout << "    { ";
                 fout << "\"buffer\" : " << vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
-                fout << "\"byteLength\" : " << this->vm[vmi]->indices_size()*4 << ", ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->indices_bytes() << ", ";
                 fout << "\"target\" : 34963 ";
                 fout << " },\n";
                 // vpos
                 fout << "    { ";
                 fout << "\"buffer\" : " << 1+vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
-                fout << "\"byteLength\" : " << this->vm[vmi]->vpos_size()*4 << ", ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vpos_bytes() << ", ";
                 fout << "\"target\" : 34962 ";
                 fout << " },\n";
                 // vcol
                 fout << "    { ";
                 fout << "\"buffer\" : " << 2+vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
-                fout << "\"byteLength\" : " << this->vm[vmi]->vcol_size()*4 << ", ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vcol_bytes() << ", ";
                 fout << "\"target\" : 34962 ";
                 fout << " },\n";
                 // vnorm
                 fout << "    { ";
                 fout << "\"buffer\" : " << 3+vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
-                fout << "\"byteLength\" : " << this->vm[vmi]->vnorm_size()*4 << ", ";
+                fout << "\"byteLength\" : " << this->vm[vmi]->vnorm_bytes() << ", ";
                 fout << "\"target\" : 34962 ";
                 fout << " }";
                 fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
@@ -704,7 +710,7 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vpos_size() << ", ";
+                fout << "\"count\" : " << this->vm[vmi]->vpos_size()/3 << ", ";
                 fout << "\"max\" : [ 1, 1, 1 ], "; // guess I have to figure this out
                 fout << "\"min\" : [ 0, 0, 0 ] ";
                 fout << "},\n";
@@ -714,7 +720,7 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vcol_size() << ", ";
+                fout << "\"count\" : " << this->vm[vmi]->vcol_size()/3 << ", ";
                 fout << "\"max\" : [ 1, 1, 1 ], ";
                 fout << "\"min\" : [ 0, 0, 0 ] ";
                 fout << "},\n";
@@ -724,7 +730,7 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vnorm_size() << ", ";
+                fout << "\"count\" : " << this->vm[vmi]->vnorm_size()/3 << ", ";
                 fout << "\"max\" : [ 1, 1, 1 ], ";
                 fout << "\"min\" : [ 0, 0, 0 ] ";
                 fout << "}";
