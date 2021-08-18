@@ -25,7 +25,7 @@ sudo apt install build-essential cmake git wget  \
                  libopencv-dev libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev
 
 ```
-This is a complete recipe for dependencies on Ubuntu 20.04! Note that for the optional softmats code, you'll also need *libglm-dev*.
+This is a complete recipe for dependencies on Ubuntu 20.04!
 
 ### Package-managed dependencies for Arch Linux
 
