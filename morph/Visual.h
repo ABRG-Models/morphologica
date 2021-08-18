@@ -738,7 +738,10 @@ namespace morph {
             }
             fout << "  ],\n";
 
-            fout << "  \"asset\" : { \"version\" : \"2.0\" }\n";
+            fout << "  \"asset\" : {\n"
+                 << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf()\",\n"
+                 << "    \"version\" : \"2.0\"\n"
+                 << "  }\n";
             fout << "}\n";
             fout.close();
         }
