@@ -72,6 +72,9 @@ target_link_libraries(twowindows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${L
 add_executable(rod rod.cpp)
 target_link_libraries(rod ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(tri tri.cpp)
+target_link_libraries(tri ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
 add_executable(quads quads.cpp)
 target_link_libraries(quads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
