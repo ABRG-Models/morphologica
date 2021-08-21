@@ -367,8 +367,14 @@ namespace morph {
         void toggleHide() { this->hide = this->hide ? false : true; }
         float hidden() const { return this->hide; }
 
+        /*
+         * Methods used by Visual::savegltf()
+         */
+
         // Return the number of elements in this->indices
         size_t indices_size() { return this->indices.size(); }
+        float indices_max() { return this->idx_max; }
+        float indices_min() { return this->idx_min; }
         size_t indices_bytes() { return this->indices.size() * sizeof (VBOint); }
         // Return base64 encoded version of indices
         std::string indices_base64()
@@ -383,7 +389,58 @@ namespace morph {
             }
             return base64::encode (idx_bytes);
         }
+
+        // Compute the max and min values of indices and vertexPositions/Colors/Normals for use when saving gltf files
+        void computeVertexMaxMins()
+        {
+            // Compute index maxmins
+            for (size_t i = 0; i < this->indices.size(); ++i) {
+                idx_max = this->indices[i] > idx_max ? this->indices[i] : idx_max;
+                idx_min = this->indices[i] < idx_min ? this->indices[i] : idx_min;
+            }
+            // Check every 0th entry in vertex Positions, every 1st, etc for max in the
+
+            if (this->vertexPositions.size() != this->vertexColors.size()
+                ||this->vertexPositions.size() != this->vertexNormals.size()) {
+                throw std::runtime_error ("Expect vertexPositions, Colors and Normals vectors all to have same size");
+            }
+
+            for (size_t i = 0; i < this->vertexPositions.size(); i+=3) {
+                vpos_maxes[0] =  (vertexPositions[i] > vpos_maxes[0]) ? vertexPositions[i] : vpos_maxes[0];
+                vpos_maxes[1] =  (vertexPositions[i+1] > vpos_maxes[1]) ? vertexPositions[i+1] : vpos_maxes[1];
+                vpos_maxes[2] =  (vertexPositions[i+2] > vpos_maxes[2]) ? vertexPositions[i+2] : vpos_maxes[2];
+                vcol_maxes[0] =  (vertexColors[i] > vcol_maxes[0]) ? vertexColors[i] : vcol_maxes[0];
+                vcol_maxes[1] =  (vertexColors[i+1] > vcol_maxes[1]) ? vertexColors[i+1] : vcol_maxes[1];
+                vcol_maxes[2] =  (vertexColors[i+2] > vcol_maxes[2]) ? vertexColors[i+2] : vcol_maxes[2];
+                vnorm_maxes[0] =  (vertexNormals[i] > vnorm_maxes[0]) ? vertexNormals[i] : vnorm_maxes[0];
+                vnorm_maxes[1] =  (vertexNormals[i+1] > vnorm_maxes[1]) ? vertexNormals[i+1] : vnorm_maxes[1];
+                vnorm_maxes[2] =  (vertexNormals[i+2] > vnorm_maxes[2]) ? vertexNormals[i+2] : vnorm_maxes[2];
+
+                vpos_mins[0] =  (vertexPositions[i] < vpos_mins[0]) ? vertexPositions[i] : vpos_mins[0];
+                vpos_mins[1] =  (vertexPositions[i+1] < vpos_mins[1]) ? vertexPositions[i+1] : vpos_mins[1];
+                vpos_mins[2] =  (vertexPositions[i+2] < vpos_mins[2]) ? vertexPositions[i+2] : vpos_mins[2];
+                vcol_mins[0] =  (vertexColors[i] < vcol_mins[0]) ? vertexColors[i] : vcol_mins[0];
+                vcol_mins[1] =  (vertexColors[i+1] < vcol_mins[1]) ? vertexColors[i+1] : vcol_mins[1];
+                vcol_mins[2] =  (vertexColors[i+2] < vcol_mins[2]) ? vertexColors[i+2] : vcol_mins[2];
+                vnorm_mins[0] =  (vertexNormals[i] < vnorm_mins[0]) ? vertexNormals[i] : vnorm_mins[0];
+                vnorm_mins[1] =  (vertexNormals[i+1] < vnorm_mins[1]) ? vertexNormals[i+1] : vnorm_mins[1];
+                vnorm_mins[2] =  (vertexNormals[i+2] < vnorm_mins[2]) ? vertexNormals[i+2] : vnorm_mins[2];
+            }
+        }
+
         size_t vpos_size() { return this->vertexPositions.size(); }
+        std::string vpos_max()
+        {
+            std::stringstream ss;
+            ss << this->vpos_maxes[0] << "," << this->vpos_maxes[1] << "," << this->vpos_maxes[2];
+            return ss.str();
+        }
+        std::string vpos_min()
+        {
+            std::stringstream ss;
+            ss << this->vpos_mins[0] << "," << this->vpos_mins[1] << "," << this->vpos_mins[2];
+            return ss.str();
+        }
         size_t vpos_bytes() { return this->vertexPositions.size() * sizeof (float); }
         std::string vpos_base64()
         {
@@ -400,6 +457,18 @@ namespace morph {
             return base64::encode (_bytes);
         }
         size_t vcol_size() { return this->vertexColors.size(); }
+        std::string vcol_max()
+        {
+            std::stringstream ss;
+            ss << this->vcol_maxes[0] << "," << this->vcol_maxes[1] << "," << this->vcol_maxes[2];
+            return ss.str();
+        }
+        std::string vcol_min()
+        {
+            std::stringstream ss;
+            ss << this->vcol_mins[0] << "," << this->vcol_mins[1] << "," << this->vcol_mins[2];
+            return ss.str();
+        }
         size_t vcol_bytes() { return this->vertexColors.size() * sizeof (float); }
         std::string vcol_base64()
         {
@@ -416,6 +485,18 @@ namespace morph {
             return base64::encode (_bytes);
         }
         size_t vnorm_size() { return this->vertexNormals.size(); }
+        std::string vnorm_max()
+        {
+            std::stringstream ss;
+            ss << this->vnorm_maxes[0] << "," << this->vnorm_maxes[1] << "," << this->vnorm_maxes[2];
+            return ss.str();
+        }
+        std::string vnorm_min()
+        {
+            std::stringstream ss;
+            ss << this->vnorm_mins[0] << "," << this->vnorm_mins[1] << "," << this->vnorm_mins[2];
+            return ss.str();
+        }
         size_t vnorm_bytes() { return this->vertexNormals.size() * sizeof (float); }
         std::string vnorm_base64()
         {
@@ -431,6 +512,7 @@ namespace morph {
             }
             return base64::encode (_bytes);
         }
+        // end Visual::savegltf() methods
 
         //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
         bool twodimensional = false;
@@ -492,6 +574,22 @@ namespace morph {
         std::vector<float> vertexNormals;
         //! CPU-side data for vertex colours
         std::vector<float> vertexColors;
+
+        // The max and min values in the next 8 attriubutes are only computed if gltf files are going to be output by Visual::safegltf()
+
+        //! Max values of 0th, 1st and 2nd coordinates in vertexPositions
+        morph::Vector<float, 3> vpos_maxes = {0,0,0};
+        //! Min values in vertexPositions
+        morph::Vector<float, 3> vpos_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::Vector<float, 3> vcol_maxes = {0,0,0};
+        morph::Vector<float, 3> vcol_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::Vector<float, 3> vnorm_maxes = {0,0,0};
+        morph::Vector<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        //! Max value in indices
+        VBOint idx_max = 0;
+        //! Min value in indices.
+        VBOint idx_min = std::numeric_limits<VBOint>::max();
+
         //! A model-wide alpha value for the shader
         float alpha = 1.0f;
         //! If true, then calls to VisualModel::render should return

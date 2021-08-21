@@ -30,7 +30,7 @@ int main (int argc, char** argv)
 
         morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
-        unsigned int visId = v.addVisualModel (new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1));
+        v.addVisualModel (new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1));
 
         v.render();
         while (v.readyToFinish == false) {

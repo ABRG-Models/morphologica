@@ -34,7 +34,7 @@
 #include <morph/Config.h>
 //#include <morph/HexGrid.h>
 //#include <morph/HexGridVisual.h>
-#include <morph/QuadsVisual.h>
+#include <morph/QuadsVisual.h> // Are all these VisualModel derived classes really includable here?
 #include <morph/PointRowsVisual.h>
 #include <morph/ScatterVisual.h>
 #include <morph/QuiverVisual.h>
@@ -694,15 +694,16 @@ namespace morph {
 
             fout << "  \"accessors\" : [\n";
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+                this->vm[vmi]->computeVertexMaxMins();
                 // indices
                 fout << "    { ";
                 fout << "\"bufferView\" : " << vmi*4 << ", ";
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5125, "; // 5123 unsigned short, 5121 unsigned byte, 5125 unsigned int, 5126 float
                 fout << "\"type\" : \"SCALAR\", ";
-                fout << "\"count\" : " << this->vm[vmi]->indices_size() << ", ";
-                fout << "\"max\" : [ 2 ], "; // guess I have to figure this out
-                fout << "\"min\" : [ 0 ] ";
+                fout << "\"count\" : " << this->vm[vmi]->indices_size();
+                //fout << ", \"max\" : [ " << this->vm[vmi]->indices_max() <<  " ], ";
+                //fout << "\"min\" : [ " << this->vm[vmi]->indices_min() << " ] ";
                 fout << "},\n";
                 // vpos
                 fout << "    { ";
@@ -710,9 +711,10 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vpos_size()/3 << ", ";
-                fout << "\"max\" : [ 1, 1, 1 ], "; // guess I have to figure this out
-                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "\"count\" : " << this->vm[vmi]->vpos_size()/3;
+                // Apparently only position requires max/min in the gltf format
+                fout << ", \"max\" : [ " << this->vm[vmi]->vpos_max() << "], ";
+                fout << "\"min\" : [ " << this->vm[vmi]->vpos_min() << "] ";
                 fout << "},\n";
                 // vcol
                 fout << "    { ";
@@ -720,9 +722,9 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vcol_size()/3 << ", ";
-                fout << "\"max\" : [ 1, 1, 1 ], ";
-                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "\"count\" : " << this->vm[vmi]->vcol_size()/3;
+                //fout << ", \"max\" : [ " << this->vm[vmi]->vcol_max() << "], ";
+                //fout << "\"min\" : [ " << this->vm[vmi]->vcol_min() << "] ";
                 fout << "},\n";
                 // vnorm
                 fout << "    { ";
@@ -730,9 +732,9 @@ namespace morph {
                 fout << "\"byteOffset\" : 0, ";
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
-                fout << "\"count\" : " << this->vm[vmi]->vnorm_size()/3 << ", ";
-                fout << "\"max\" : [ 1, 1, 1 ], ";
-                fout << "\"min\" : [ 0, 0, 0 ] ";
+                fout << "\"count\" : " << this->vm[vmi]->vnorm_size()/3;
+                //fout << ", \"max\" : [ " << this->vm[vmi]->vnorm_max() << "], ";
+                //fout << "\"min\" : [ " << this->vm[vmi]->vnorm_min() << "] ";
                 fout << "}";
                 fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
