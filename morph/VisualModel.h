@@ -432,12 +432,14 @@ namespace morph {
         std::string vpos_max()
         {
             std::stringstream ss;
+            ss.precision(10); // 8 dec places should be enough to ensure precision; 10 is safe.
             ss << this->vpos_maxes[0] << "," << this->vpos_maxes[1] << "," << this->vpos_maxes[2];
             return ss.str();
         }
         std::string vpos_min()
         {
             std::stringstream ss;
+            ss.precision(10);
             ss << this->vpos_mins[0] << "," << this->vpos_mins[1] << "," << this->vpos_mins[2];
             return ss.str();
         }
@@ -460,12 +462,14 @@ namespace morph {
         std::string vcol_max()
         {
             std::stringstream ss;
+            ss.precision(10);
             ss << this->vcol_maxes[0] << "," << this->vcol_maxes[1] << "," << this->vcol_maxes[2];
             return ss.str();
         }
         std::string vcol_min()
         {
             std::stringstream ss;
+            ss.precision(10);
             ss << this->vcol_mins[0] << "," << this->vcol_mins[1] << "," << this->vcol_mins[2];
             return ss.str();
         }
@@ -488,12 +492,14 @@ namespace morph {
         std::string vnorm_max()
         {
             std::stringstream ss;
+            ss.precision(10);
             ss << this->vnorm_maxes[0] << "," << this->vnorm_maxes[1] << "," << this->vnorm_maxes[2];
             return ss.str();
         }
         std::string vnorm_min()
         {
             std::stringstream ss;
+            ss.precision(10);
             ss << this->vnorm_mins[0] << "," << this->vnorm_mins[1] << "," << this->vnorm_mins[2];
             return ss.str();
         }
