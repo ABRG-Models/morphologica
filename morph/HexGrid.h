@@ -72,14 +72,13 @@ namespace morph {
          * The order in which these are populated is raster-style, from top left to
          * bottom right.
          */
-        //@{
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
         alignas(8) std::vector<int> d_ri;
         alignas(8) std::vector<int> d_gi;
         alignas(8) std::vector<int> d_bi;
 
-        /*!
+        /*
          * Neighbour iterators. For use when the stride to the neighbour ne or nw is
          * not constant. i.e. for use when the domain of computation is not a
          * parallelogram. Note that d_ne and d_nw ARE required, because even though
@@ -87,14 +86,12 @@ namespace morph {
          * parallelogram and rectangular domain cases, if the domain is hexagonal or
          * arbitrary boundary, then even this is not true.
          */
-        //@{
         alignas(8) std::vector<int> d_ne;
         alignas(8) std::vector<int> d_nne;
         alignas(8) std::vector<int> d_nnw;
         alignas(8) std::vector<int> d_nw;
         alignas(8) std::vector<int> d_nsw;
         alignas(8) std::vector<int> d_nse;
-        //@}
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside boundary", "has
@@ -2573,20 +2570,18 @@ namespace morph {
          */
         BezCurvePath<float> boundary;
 
-        /*!
+        /*
          * Hex references to the hexes on the vertices of the hexagonal
          * grid. Configured during init(). These will become invalid when a new
          * boundary is applied to the original hexagonal grid. When this occurs,
          * gridReduced should be set false.
          */
-        //@{
         std::list<Hex>::iterator vertexE;
         std::list<Hex>::iterator vertexNE;
         std::list<Hex>::iterator vertexNW;
         std::list<Hex>::iterator vertexW;
         std::list<Hex>::iterator vertexSW;
         std::list<Hex>::iterator vertexSE;
-        //@}
 
         /*!
          * Set true when a new boundary or domain has been applied. This means that
