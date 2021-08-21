@@ -635,7 +635,7 @@ namespace morph {
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : " << 1+vmi*4
                      << ", \"COLOR_0\" : " << 2+vmi*4
-                     << ", \"NORMAL\" : " << 3+vmi*4 << " }, \"indices\" : " << vmi*4 << " } ] }"
+                     << ", \"NORMAL\" : " << 3+vmi*4 << " }, \"indices\" : " << vmi*4 << ", \"material\": 0 } ] }"
                      << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
@@ -702,8 +702,6 @@ namespace morph {
                 fout << "\"componentType\" : 5125, "; // 5123 unsigned short, 5121 unsigned byte, 5125 unsigned int, 5126 float
                 fout << "\"type\" : \"SCALAR\", ";
                 fout << "\"count\" : " << this->vm[vmi]->indices_size();
-                //fout << ", \"max\" : [ " << this->vm[vmi]->indices_max() <<  " ], ";
-                //fout << "\"min\" : [ " << this->vm[vmi]->indices_min() << " ] ";
                 fout << "},\n";
                 // vpos
                 fout << "    { ";
@@ -712,7 +710,7 @@ namespace morph {
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
                 fout << "\"count\" : " << this->vm[vmi]->vpos_size()/3;
-                // Apparently only position requires max/min in the gltf format
+                // vertex position requires max/min to be specified in the gltf format
                 fout << ", \"max\" : [ " << this->vm[vmi]->vpos_max() << "], ";
                 fout << "\"min\" : [ " << this->vm[vmi]->vpos_min() << "] ";
                 fout << "},\n";
@@ -723,8 +721,6 @@ namespace morph {
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
                 fout << "\"count\" : " << this->vm[vmi]->vcol_size()/3;
-                //fout << ", \"max\" : [ " << this->vm[vmi]->vcol_max() << "], ";
-                //fout << "\"min\" : [ " << this->vm[vmi]->vcol_min() << "] ";
                 fout << "},\n";
                 // vnorm
                 fout << "    { ";
@@ -733,12 +729,13 @@ namespace morph {
                 fout << "\"componentType\" : 5126, ";
                 fout << "\"type\" : \"VEC3\", ";
                 fout << "\"count\" : " << this->vm[vmi]->vnorm_size()/3;
-                //fout << ", \"max\" : [ " << this->vm[vmi]->vnorm_max() << "], ";
-                //fout << "\"min\" : [ " << this->vm[vmi]->vnorm_min() << "] ";
                 fout << "}";
                 fout << (vmi < this->vm.size()-1 ? ",\n" : "\n");
             }
             fout << "  ],\n";
+
+            // Default material is single sided, so make it double sided
+            fout << "  \"materials\" : [ { \"doubleSided\" : true } ],\n";
 
             fout << "  \"asset\" : {\n"
                  << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf()\",\n"
