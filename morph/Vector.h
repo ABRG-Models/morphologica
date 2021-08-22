@@ -12,11 +12,11 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <iomanip>
 #include <stdexcept>
 #include <type_traits>
 #include <numeric>
 #include <limits>
+#include <iomanip>
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
