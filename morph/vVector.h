@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include <type_traits>
 #include <numeric>
+#include <limits>
+#include <iomanip>
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
@@ -194,6 +196,7 @@ namespace morph {
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
         {
+            ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
             for (auto i : *this) {
                 if (first) {
