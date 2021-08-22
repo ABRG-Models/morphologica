@@ -30,18 +30,8 @@
 #endif
 
 #include <morph/VisualResources.h>
-
 #include <morph/Config.h>
-//#include <morph/HexGrid.h>
-//#include <morph/HexGridVisual.h>
-#include <morph/QuadsVisual.h> // Are all these VisualModel derived classes really includable here?
-#include <morph/PointRowsVisual.h>
-#include <morph/ScatterVisual.h>
-#include <morph/QuiverVisual.h>
 #include <morph/CoordArrows.h>
-#ifdef TRIANGLE_VIS_TESTING
-# include <morph/TriangleVisual.h>
-#endif
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
 #include <morph/Vector.h>
@@ -52,7 +42,6 @@
 #include <vector>
 
 #include <morph/VisualDefaultShaders.h>
-#include <morph/VisualModel.h>
 
 // imwrite() from OpenCV is used in saveImage()
 #include <opencv2/imgcodecs.hpp>
