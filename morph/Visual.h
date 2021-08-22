@@ -124,11 +124,12 @@ namespace morph {
          * Construct a new visualiser. The rule is 1 window to one Visual object. So,
          * this creates a new window and a new OpenGL context.
          */
-        Visual (int width, int height, const std::string& title)
+        Visual (int width, int height, const std::string& _title)
             : window_w(width)
             , window_h(height)
+            , title(_title)
         {
-            this->init (title);
+            this->init();
         }
 
         /*!
@@ -136,16 +137,17 @@ namespace morph {
          * (caLength), thickness scaling factor (caThickness) and coordinate arrow 'm'
          * size, caEm.
          */
-        Visual (int width, int height, const std::string& title,
+        Visual (int width, int height, const std::string& _title,
                 const Vector<float, 2> caOffset, const Vector<float> caLength, const float caThickness, const float caEm)
             : window_w(width)
             , window_h(height)
+            , title(_title)
             , coordArrowsOffset(caOffset)
             , coordArrowsLength(caLength)
             , coordArrowsThickness(caThickness)
             , coordArrowsEm(caEm)
         {
-            this->init (title);
+            this->init();
         }
 
         //! Deconstructor deallocates CoordArrows and destroys GLFW windows
@@ -751,14 +753,14 @@ namespace morph {
         std::vector<VisualModel*> vm;
 
     private:
-        //! Private initialization, used by constructors. \a title sets the window title.
-        void init (const std::string& title)
+        //! Private initialization, used by constructors.
+        void init()
         {
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
             morph::VisualResources::register_visual();
 
-            this->window = glfwCreateWindow (this->window_w, this->window_h, title.c_str(), NULL, NULL);
+            this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
                 throw std::runtime_error("GLFW window creation failed!");
@@ -851,7 +853,7 @@ namespace morph {
             this->textModel = new VisualTextModel (this->tshaderprog,
                                                    morph::VisualFont::Vera,
                                                    0.035f, 64, {0.0f, 0.0f, 0.0f},
-                                                   title);
+                                                   this->title);
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -1037,6 +1039,9 @@ namespace morph {
         //! Current window height
         int window_h;
 
+        //! The title for the Visual. Used in window title and if saving out 3D model or png image.
+        std::string title = "morph::Visual";
+
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0;
 
@@ -1179,8 +1184,23 @@ namespace morph {
             }
 
             if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-                this->saveImage ("./picture.png");
-                std::cout << "Took a snap\n";
+                std::string fname (this->title);
+                morph::Tools::stripFileSuffix (fname);
+                fname += ".png";
+                // Make fname 'filename safe'
+                morph::Tools::conditionAsFilename (fname);
+                this->saveImage (fname);
+                std::cout << "Saved image to '" << fname << "'\n";
+            }
+
+            // Save gltf 3D file
+            if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+                std::string gltffile = this->title;
+                morph::Tools::stripFileSuffix (gltffile);
+                gltffile += ".gltf";
+                morph::Tools::conditionAsFilename (gltffile);
+                this->savegltf (gltffile);
+                std::cout << "Saved 3D file '" << gltffile << "'\n";
             }
 
             if (key == GLFW_KEY_Z && action == GLFW_PRESS) {

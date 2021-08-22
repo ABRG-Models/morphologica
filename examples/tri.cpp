@@ -38,8 +38,6 @@ int main (int argc, char** argv)
             v.render();
         }
 
-        v.savegltf("./tri.gltf");
-
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;
         rtn = -1;

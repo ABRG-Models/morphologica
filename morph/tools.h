@@ -64,10 +64,9 @@ extern "C" {
 //@}
 
 /*!
- * These are the chars which are acceptable for use in both unix, mac
- * AND windows file names. This doesn guarantee a safe Windows
- * filename, it imposes some extra conditions (no . at end of name,
- * some files such as NUL.txt AUX.txt disallowed).
+ * These are the chars which are acceptable for use in both unix, mac AND windows file
+ * names. This doesn't guarantee a safe Windows filename, as Windows imposes some extra
+ * conditions (no '.' at end of name, some files such as NUL.txt AUX.txt disallowed).
  */
 #define COMMON_FILE_SAFE_CHARS        CHARS_NUMERIC_ALPHA"_-.{}^[]`=,;"
 
@@ -738,6 +737,19 @@ namespace morph
                 if (*i++ == c) { ++count; }
             }
             return count;
+        }
+
+        /*!
+         * Remove filename-forbidden characters from str (including directory specifiers
+         * '\' and '/'.
+         */
+        static void conditionAsFilename (std::string& str)
+        {
+            std::string::size_type ptr = std::string::npos;
+            while ((ptr = str.find_last_not_of (COMMON_FILE_SAFE_CHARS, ptr)) != std::string::npos) {
+                str[ptr] = '_'; // Replacement character
+                ptr--;
+            }
         }
 
         /*!
