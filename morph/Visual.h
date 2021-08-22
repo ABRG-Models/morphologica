@@ -1159,6 +1159,7 @@ namespace morph {
                 std::cout << "t: Toggle mouse rotate mode\n";
                 std::cout << "c: Toggle coordinate arrows\n";
                 std::cout << "s: Take a snapshot\n";
+                std::cout << "m: Save 3D models in .gltf format (open in e.g. blender)\n";
                 std::cout << "a: Reset default view\n";
                 std::cout << "o: Reduce field of view\n";
                 std::cout << "p: Increase field of view\n";
