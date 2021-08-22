@@ -593,12 +593,12 @@ namespace morph {
         // The max and min values in the next 8 attriubutes are only computed if gltf files are going to be output by Visual::safegltf()
 
         //! Max values of 0th, 1st and 2nd coordinates in vertexPositions
-        morph::Vector<float, 3> vpos_maxes = {0,0,0};
+        morph::Vector<float, 3> vpos_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         //! Min values in vertexPositions
         morph::Vector<float, 3> vpos_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::Vector<float, 3> vcol_maxes = {0,0,0};
+        morph::Vector<float, 3> vcol_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         morph::Vector<float, 3> vcol_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::Vector<float, 3> vnorm_maxes = {0,0,0};
+        morph::Vector<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         morph::Vector<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         //! Max value in indices
         VBOint idx_max = 0;
