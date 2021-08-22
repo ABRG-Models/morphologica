@@ -614,10 +614,13 @@ namespace morph {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
             }
             fout << " ] } ],\n";
+
             fout << "  \"nodes\" : [\n";
             // for loop over VisualModels "mesh" : 0, etc
             for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
-                fout << "    { \"mesh\" : " << vmi << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
+                fout << "    { \"mesh\" : " << vmi
+                     << ", \"translation\" : " << this->vm[vmi]->translation_str()
+                     << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
             }
             fout << "  ],\n";
 
@@ -702,9 +705,9 @@ namespace morph {
                 fout << "\"type\" : \"VEC3\", ";
                 fout << "\"count\" : " << this->vm[vmi]->vpos_size()/3;
                 // vertex position requires max/min to be specified in the gltf format
-                fout << ", \"max\" : [ " << this->vm[vmi]->vpos_max() << "], ";
-                fout << "\"min\" : [ " << this->vm[vmi]->vpos_min() << "] ";
-                fout << "},\n";
+                fout << ", \"max\" : " << this->vm[vmi]->vpos_max() << ", ";
+                fout << "\"min\" : " << this->vm[vmi]->vpos_min();
+                fout << " },\n";
                 // vcol
                 fout << "    { ";
                 fout << "\"bufferView\" : " << 2+vmi*4 << ", ";

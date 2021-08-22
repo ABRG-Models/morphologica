@@ -371,6 +371,15 @@ namespace morph {
          * Methods used by Visual::savegltf()
          */
 
+        // Get mv_offset in a json-friendly string
+        std::string translation_str()
+        {
+            std::stringstream ss;
+            ss.precision(10);
+            ss << "[" << this->mv_offset[0] << "," << this->mv_offset[1] << "," << this->mv_offset[2] << "]";
+            return ss.str();
+        }
+
         // Return the number of elements in this->indices
         size_t indices_size() { return this->indices.size(); }
         float indices_max() { return this->idx_max; }
@@ -433,14 +442,14 @@ namespace morph {
         {
             std::stringstream ss;
             ss.precision(10); // 8 dec places should be enough to ensure precision; 10 is safe.
-            ss << this->vpos_maxes[0] << "," << this->vpos_maxes[1] << "," << this->vpos_maxes[2];
+            ss << "[" << this->vpos_maxes[0] << "," << this->vpos_maxes[1] << "," << this->vpos_maxes[2] << "]";
             return ss.str();
         }
         std::string vpos_min()
         {
             std::stringstream ss;
             ss.precision(10);
-            ss << this->vpos_mins[0] << "," << this->vpos_mins[1] << "," << this->vpos_mins[2];
+            ss << "[" << this->vpos_mins[0] << "," << this->vpos_mins[1] << "," << this->vpos_mins[2] << "]";
             return ss.str();
         }
         size_t vpos_bytes() { return this->vertexPositions.size() * sizeof (float); }
@@ -463,14 +472,14 @@ namespace morph {
         {
             std::stringstream ss;
             ss.precision(10);
-            ss << this->vcol_maxes[0] << "," << this->vcol_maxes[1] << "," << this->vcol_maxes[2];
+            ss << "[" << this->vcol_maxes[0] << "," << this->vcol_maxes[1] << "," << this->vcol_maxes[2] << "]";
             return ss.str();
         }
         std::string vcol_min()
         {
             std::stringstream ss;
             ss.precision(10);
-            ss << this->vcol_mins[0] << "," << this->vcol_mins[1] << "," << this->vcol_mins[2];
+            ss << "[" << this->vcol_mins[0] << "," << this->vcol_mins[1] << "," << this->vcol_mins[2] << "]";
             return ss.str();
         }
         size_t vcol_bytes() { return this->vertexColors.size() * sizeof (float); }
@@ -493,14 +502,14 @@ namespace morph {
         {
             std::stringstream ss;
             ss.precision(10);
-            ss << this->vnorm_maxes[0] << "," << this->vnorm_maxes[1] << "," << this->vnorm_maxes[2];
+            ss << "[" << this->vnorm_maxes[0] << "," << this->vnorm_maxes[1] << "," << this->vnorm_maxes[2] << "]";
             return ss.str();
         }
         std::string vnorm_min()
         {
             std::stringstream ss;
             ss.precision(10);
-            ss << this->vnorm_mins[0] << "," << this->vnorm_mins[1] << "," << this->vnorm_mins[2];
+            ss << "[" << this->vnorm_mins[0] << "," << this->vnorm_mins[1] << "," << this->vnorm_mins[2] << "]";
             return ss.str();
         }
         size_t vnorm_bytes() { return this->vertexNormals.size() * sizeof (float); }
