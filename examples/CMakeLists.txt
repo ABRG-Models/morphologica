@@ -94,3 +94,6 @@ target_link_libraries(jsonconfig jsoncpp_lib)
 
 add_executable(randvec randvec.cpp)
 target_link_libraries(randvec ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(rng rng.cpp)
+target_link_libraries(rng)
