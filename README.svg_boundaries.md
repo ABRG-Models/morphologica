@@ -1,6 +1,6 @@
 ## SVG defined boundaries
 
-The morph::HexGrid class can have its boundary set from a specially defined .svg drawing.
+The **morph::HexGrid** class can have its boundary set from a specially defined scalable vector graphics drawing (svg). This readme describes how to create a suitable drawing.
 
 Create an svg file. I used Inkscape, but the code has been tested with Adobe Illustrator-generated files and these should work.
 
@@ -10,10 +10,23 @@ Now draw a line to act as the scale bar with the Freehand line tool (F6 in Inksc
 
 Note that it doesn't matter if there are other objects in your drawing, the HexGrid code will simply ignore these. For example, you can have a background bitmap image that you're tracing your boundary around in the .svg file.
 
-Finally, save your svg. That should be it!
+Finally, save your svg. It should now be ready to be applied to a HexGrid boundary.
 
-The program examples/show_svg_boundary can be used to test your svg. It takes up to 3 arguments. The first is your svg file path. The second is the overall span of your boundary in mm and the third is the hex diameter, also in mm. For example:
+The program **examples/show_svg_boundary** can be used to test your svg. It takes up to 3 arguments. The first is your svg file path. The second is the overall span of your boundary in mm and the third is the hex diameter, also in mm. For example (from the root morphologica directory):
 
-```
+```bash
 ./build/examples/show_svg_boundary myboundary.svg 10 0.1
+```
+
+If that works, then you can use the file in a HexGrid. Here's an example code snippet:
+
+```c++
+// You read the SVG with a morph::ReadCurves object
+ReadCurves r("/path/to/myboundary.svg");
+// Create a HexGrid, with suitable hex diameter, hex grid initial size,
+// z value set to 0 and HexDomainShape set to HexDomainShape::Boundary
+float hexd = 0.1f; float x_span = 2.0f; float z = 0.0f;
+morph::HexGrid hg(hexd, x_span, z, morph::HexDomainShape::Boundary);
+// Apply the curves as a boundary:
+hg.setBoundary (r.getCorticalPath());
 ```
