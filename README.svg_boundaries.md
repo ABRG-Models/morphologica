@@ -1,10 +1,10 @@
-## SVG defined boundaries
+# SVG defined boundaries
 
 The **morph::HexGrid** class can have its boundary set from a specially defined scalable vector graphics drawing (svg). This readme describes how to create a suitable drawing.
 
 Create an svg file. I used Inkscape, but the code has been tested with Adobe Illustrator-generated files and these should work.
 
-In your drawing, draw a boundary using the Bezier curve tool (Shift-F6 in Inkscape - the little Rotring pen icon). Open the properties for the object (Ctrl-Shift-O in Inscape) and set its 'id' to 'cortex' (The press the 'Set' button in Inkscape).
+In your drawing, draw a boundary using the Bezier curve tool (Shift-F6 in Inkscape - the little Rotring pen icon). Open the properties for the object (Ctrl-Shift-O in Inscape) and set its 'id' to 'cortex' (The press the 'Set' button in Inkscape). The id 'cortex' was used because the code was originally developed to define boundary shapes for cortical brain regions.
 
 Now draw a line to act as the scale bar with the Freehand line tool (F6 in Inkscape - the little pencil icon). Make the line's length equal to a known distance in millimetres. Open the properties for the line object and set 'id' based on the length. For example, if the line represents 1 mm, set the 'id' to '1x0_mm'. Note that 'x' has to be used instead of '.'. If the line represents 0.25 mm, then you would set 'id' to '0x25_mm'.
 
