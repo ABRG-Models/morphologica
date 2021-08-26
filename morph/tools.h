@@ -11,7 +11,10 @@
 #include <list>
 #include <set>
 #include <map>
+#include <algorithm>
 #include <string>
+#include <cstring>
+#include <sstream>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <json/json.h>
@@ -768,8 +771,8 @@ namespace morph
 
             // 2) Check first 3 chars don't spell xml (in any case)
             std::string firstThree = str.substr (0,3);
-            transform (firstThree.begin(), firstThree.end(),
-                       firstThree.begin(), morph::to_lower());
+            std::transform (firstThree.begin(), firstThree.end(),
+                            firstThree.begin(), morph::to_lower());
             if (firstThree == "xml") {
                 // Prepend 'A'
                 std::string newStr("_");
