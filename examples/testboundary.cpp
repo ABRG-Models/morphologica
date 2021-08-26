@@ -99,6 +99,7 @@ int main(int argc, char** argv)
             }
         }
         hgv->cm.setType (morph::ColourMapType::Jet);
+        hgv->zScale.setParams(0,0); // makes the output flat in z direction, but you still get the colours
         hgv->setScalarData (&colours);
         hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
         hgv->finalize();
