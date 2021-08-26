@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <morph/tools.h>
 
 namespace morph {
 
@@ -77,6 +78,53 @@ namespace morph {
         ColourMap() {}
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->type = _t; }
+
+        //! If s is a string that matches a ColourMapType, return that colour map
+        //! type. If string doesn't match, return the default, Jet
+        static ColourMapType strToColourMapType (const std::string& s)
+        {
+            ColourMapType cmt = morph::ColourMapType::Jet;
+            std::string _s = s;
+            morph::Tools::toLowerCase (_s);
+            if (_s == "fixed") {
+                cmt = morph::ColourMapType::Fixed;
+            } else if (_s == "trichrome") {
+                cmt = morph::ColourMapType::Trichrome;
+            } else if (_s == "duochrome") {
+                cmt = morph::ColourMapType::Duochrome;
+            } else if (_s == "monochromegreen") {
+                cmt = morph::ColourMapType::MonochromeGreen;
+            } else if (_s == "monochromeblue") {
+                cmt = morph::ColourMapType::MonochromeBlue;
+            } else if (_s == "monochromered") {
+                cmt = morph::ColourMapType::MonochromeRed;
+            } else if (_s == "monochrome") {
+                cmt = morph::ColourMapType::Monochrome;
+            } else if (_s == "greyscale") {
+                cmt = morph::ColourMapType::Greyscale;
+            } else if (_s == "greyscaleinv") {
+                cmt = morph::ColourMapType::GreyscaleInv;
+            } else if (_s == "twilight") {
+                cmt = morph::ColourMapType::Twilight;
+            } else if (_s == "cividis") {
+                cmt = morph::ColourMapType::Cividis;
+            } else if (_s == "viridis") {
+                cmt = morph::ColourMapType::Viridis;
+            } else if (_s == "plasma") {
+                cmt = morph::ColourMapType::Plasma;
+            } else if (_s == "inferno") {
+                cmt = morph::ColourMapType::Inferno;
+            } else if (_s == "magma") {
+                cmt = morph::ColourMapType::Magma;
+            } else if (_s == "rainbowzerowhite") {
+                cmt = morph::ColourMapType::RainbowZeroWhite;
+            } else if (_s == "rainbowzeroblack") {
+                cmt = morph::ColourMapType::RainbowZeroBlack;
+            } else if (_s == "rainbow") {
+                cmt = morph::ColourMapType::Rainbow;
+            }
+            return cmt;
+        }
 
         //! Return the colour that represents not-a-number
         static std::array<float, 3> nanColour (ColourMapType _t)
@@ -543,16 +591,6 @@ namespace morph {
 
         //! Set the colour by hue, saturation and value (defined in an array) (ColourMapType::Fixed only)
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
-
-#if 0 // Bit pointless, setRGB, given that ColourMaps are supposed to convert from a number INTO RGB.
-        void setRGB (const float& r, const float& g, const float& b)
-        {
-            if (this->type != ColourMapType::Fixed) {
-                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of RGB");
-            }
-            // Set hue, sat, val by converting from RGB.
-        }
-#endif
 
         //! Get the hue, in its most saturated form
         std::array<float, 3> getHueRGB (void) { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
