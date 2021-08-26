@@ -1,5 +1,5 @@
 {
-    "about_me" : "Krause et al. - Isolating Patterns in Open Reaction-Diffusion Systems. Their SCH (Labrynthine) example (see Table 1).",
+    "about_me" : "Krause et al. - Isolating Patterns in Open Reaction-Diffusion Systems. Their SCH (Labrynthine) example (see Table 1) on a whisker-shaped domain.",
 
     "sect_global" : "Global simulation parameters",
     "desc_steps" : "The number of steps to simulate for",
@@ -9,15 +9,15 @@
     "saveplots": false,
     "overwrite_logs": true,
     "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
-    "hextohex_d" : 0.5,
+    "hextohex_d" : 1,
     "hexspan" : 155,
-    "boundaryFalloffDist" : 0.01,
+    "boundaryFalloffDist" : 1,
     "dt" : 0.005,
-    "colourmap" : "twilight",
+    "bgR" : 0.8, "bgG" : 0.8, "bgB" : 0.8,
+    "colourmap" : "Greyscale",
 
-    "sect_ellipse" : "Ellipse parameters",
-    "ellipse_a" : 60,
-    "ellipse_b" : 20,
+    "sect_boundary" : "Boundary parameters",
+    "svgpath" : "./boundaries/whiskers_rough_domain_big.svg",
 
     "sect_model_params" : "Schnakenberg model parameters",
     "D_A" : 1,

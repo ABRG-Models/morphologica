@@ -11,9 +11,9 @@
     "desc_hextohex_d" : "Hex to hex distance, determines num hexes",
     "hextohex_d" : 0.5,
     "hexspan" : 155,
-    "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
     "dt" : 0.00005,
+    "colourmap" : "twilight",
 
     "sect_ellipse" : "Ellipse parameters",
     "ellipse_a" : 60,
