@@ -21,8 +21,11 @@ The program **examples/show_svg_boundary** can be used to test your svg. It take
 If that works, then you can use the file in a HexGrid. Here's an example code snippet:
 
 ```c++
+// These two includes are required
+#include <morph/ReadCurves.h>
+#include <morph/HexGrid.h>
 // You read the SVG with a morph::ReadCurves object
-ReadCurves r("/path/to/myboundary.svg");
+morph::ReadCurves r("/path/to/myboundary.svg");
 // Create a HexGrid, with suitable hex diameter, hex grid initial size,
 // z value set to 0 and HexDomainShape set to HexDomainShape::Boundary
 float hexd = 0.1f; float x_span = 2.0f; float z = 0.0f;
