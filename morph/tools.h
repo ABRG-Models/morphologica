@@ -18,10 +18,6 @@
 #include <morph/Process.h>
 
 #include <math.h>
-#ifdef __ICC__
-# define ARMA_ALLOW_FAKE_GCC 1
-#endif
-#include <armadillo>
 #include <stdlib.h>
 #include <stdexcept>
 
