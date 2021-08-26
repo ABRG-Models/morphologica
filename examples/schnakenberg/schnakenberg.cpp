@@ -203,7 +203,7 @@ int main (int argc, char **argv)
      */
     RD_Schnakenberg<FLT> RD;
 
-    RD.svgpath = ""; // We'll do an elliptical boundary, so set svgpath empty
+    RD.svgpath = conf.getString ("svgpath", ""); // We'll do an elliptical boundary if svgpath is empty
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
     RD.ellipse_b = conf.getDouble ("ellipse_b", 0.6);
     RD.logpath = logpath;
