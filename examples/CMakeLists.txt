@@ -98,6 +98,6 @@ target_link_libraries(randvec ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPA
 add_executable(rng rng.cpp)
 target_link_libraries(rng)
 
-# The testboundary utility program
-add_executable(testboundary testboundary.cpp)
-target_link_libraries(testboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+# Utility prog to test your .svg boundary files
+add_executable(show_svg_boundary show_svg_boundary.cpp)
+target_link_libraries(show_svg_boundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
