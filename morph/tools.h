@@ -738,6 +738,18 @@ namespace morph
             return count;
         }
 
+        //! Convert str to lower case
+        static void toLowerCase (std::string& str)
+        {
+            std::transform (str.begin(), str.end(), str.begin(), morph::to_lower());
+        }
+
+        //! Convert str to upper case
+        static void toUpperCase (std::string& str)
+        {
+            std::transform (str.begin(), str.end(), str.begin(), morph::to_upper());
+        }
+
         /*!
          * Remove filename-forbidden characters from str (including directory specifiers
          * '\' and '/'.
