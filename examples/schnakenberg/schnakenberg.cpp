@@ -179,7 +179,7 @@ int main (int argc, char **argv)
     Visual v1 (win_width, win_height, "Schnakenberg RD");
     // Set a dark blue background (black is the default). This value has the order
     // 'RGBA', though the A(alpha) makes no difference.
-    v1.bgcolour = {0.0f, 0.0f, 0.2f, 1.0f};
+    v1.bgcolour = {conf.getFloat("bgR", 0.2f), conf.getFloat("bgG", 0.2f), conf.getFloat("bgB", 0.2f), 1.0f};
     // You can tweak the near and far clipping planes
     v1.zNear = 0.001;
     v1.zFar = 10000;
@@ -277,6 +277,7 @@ int main (int argc, char **argv)
     Scale<FLT, float> zscale; zscale.setParams (0.2f, 0.0f);
     // The second is the colour scaling. Set this to autoscale.
     Scale<FLT, float> cscale; cscale.do_autoscale = true;
+    morph::ColourMapType cmt = morph::ColourMap<FLT>::strToColourMapType (conf.getString ("colourmap", "Jet"));
     unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
                                                                     v1.tshaderprog,
                                                                     RD.hg,
@@ -284,7 +285,7 @@ int main (int argc, char **argv)
                                                                     &(RD.A),
                                                                     zscale,
                                                                     cscale,
-                                                                    morph::ColourMapType::Jet));
+                                                                    cmt));
     v1.getVisualModel(Agrid)->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                                         morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
 
@@ -298,7 +299,7 @@ int main (int argc, char **argv)
                                                                     &(RD.B),
                                                                     zscale,
                                                                     cscale,
-                                                                    morph::ColourMapType::Jet));
+                                                                    cmt));
     v1.getVisualModel(Bgrid)->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                                         morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
 #endif

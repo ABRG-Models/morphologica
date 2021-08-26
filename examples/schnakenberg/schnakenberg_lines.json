@@ -14,6 +14,7 @@
     "svgpath" : "./ellipse.svg",
     "boundaryFalloffDist" : 0.01,
     "dt" : 0.005,
+    "colourmap" : "twilight",
 
     "sect_ellipse" : "Ellipse parameters",
     "ellipse_a" : 60,
