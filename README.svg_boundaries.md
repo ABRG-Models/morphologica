@@ -18,12 +18,25 @@ The program **examples/show_svg_boundary** can be used to test your svg. It take
 ./build/examples/show_svg_boundary myboundary.svg 10 0.1
 ```
 
-If that works, then you can use the file in a HexGrid. Here's an example code snippet:
+There are some example svg files in the **boundaries** directory. Try this:
+
+```bash
+./build/examples/show_svg_boundary boundaries/whiskerbarrels.svg 3 0.01
+```
+
+or this:
+
+```bash
+./build/examples/show_svg_boundary boundaries/whiskerbarrels.svg 3 0.03
+```
+
+If opening your new svg file with show_svg_boundary works, then you can use the file in a HexGrid. Here's an example code snippet:
 
 ```c++
 // These two includes are required
 #include <morph/ReadCurves.h>
 #include <morph/HexGrid.h>
+
 // You read the SVG with a morph::ReadCurves object
 morph::ReadCurves r("/path/to/myboundary.svg");
 // Create a HexGrid, with suitable hex diameter, hex grid initial size,
