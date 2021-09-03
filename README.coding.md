@@ -51,7 +51,7 @@ that your new example will compile.
 
 ## morph::Config
 
-Reads and writes parameter configuration data in JSON format. JSON is
+[morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
 *so much easier* to work with than XML! The idea is that you will
 write out your parameteres by hand (or with a script) in a JSON file,
 then these are conveniently accessible in your program. Here's an
@@ -109,15 +109,15 @@ information about the simulation run:
 }
 ```
 
-## HdfData
+## morph::HdfData
 
-(https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)[HdfData]
+[morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)
 is a C++ wrapper around the HDF5 C API. There are other wrappers
 available, but I wanted a relatively simple one, and this is it.
 
-### Writing
+### Writing with HdfData
 
-With HdfData, you can write out individual numbers and containers of
+With ```HdfData```, you can write out individual numbers and containers of
 numbers into the HDF5 file. Mostly, that will be arrays of numbers,
 such as ```std::vector<double>```. To save some arrays like this into
 a file is very simple:
@@ -139,19 +139,19 @@ int main()
 }
 ```
 
-You just create an object of type morph::HdfData and say whether you
-want to truncate and then write to the file (as I've done here with
-the morph::FileAccess::TruncateWrite argument) or whether you want to
-read (morph::FileAccess::ReadOnly).
+You just create an object of type ```morph::HdfData``` and say whether you
+want write to the file (as I've done here with
+the ```morph::FileAccess::TruncateWrite``` argument) or whether you want to
+read it (```morph::FileAccess::ReadOnly```).
 
-Note how I've used the scope identifier brackets '{' and '}' to place the HdfData
+Note how I've used the scope identifier brackets ```{``` and ```}``` to place the ```HdfData```
 object in its own scope. When the HdfData object goes out of scope,
 the deconstructor is called and the file is closed. After than you can
 safely open the file in another program.
 
-Writing data is just a couple of call of HdfData::add_contained_vals().
+Writing data is just a couple of calls of ```HdfData::add_contained_vals```.
 
-You can use HdfData::add_contained_vals() to write quite a few
+You can use ```HdfData::add_contained_vals``` to write quite a few
 combinations of container and contained type. Here are some that will
 work just fine:
 
@@ -165,7 +165,7 @@ std::vector<cv::Point> d6; // A vector of OpenCV Points
 ```
 
 If you want to write just a single value into your h5 file, then the
-function to use is called HdfData::add_val():
+function to use is called ```HdfData::add_val```:
 
 ```c++
 double d = 5;
@@ -175,11 +175,11 @@ double d = 5;
 }
 ```
 
-### Reading
+### Reading with HdfData
 
 Reading from your HDF5 file is mostly as easy as writing to it. If you
-write with add_contained_vals, then the corresonding read function is
-read_contained_vals. Here's an example:
+write with ```add_contained_vals```, then the corresonding read function is
+```read_contained_vals```. Here's an example:
 
 ```c++
 std::vector<double> vdread;
@@ -189,23 +189,57 @@ std::vector<double> vdread;
 }
 ```
 
+To read a single value that you saved with ```HdfData::add_val```, you use ```HdfData::read_val```:
+
+```c++
+double d = 0.0;
+{
+    morph::HdfData data("test.h5", morph::FileAccess::ReadOnly);
+    data.read_val ("/a_number", d);
+}
+```
+
+### Appending with HdfData
+
+So you created an HDF5 file, filled it with data and closed it. Now you want to add some more data to the file.
+Sounds like it should be easy, but it turns out that to do this requires quite a lot more effort working with the HDF5 internals.
+You have to tell the API ahead of time that your data arrays might get larger and that there might be new arrays added in the future. 
+This is all such a headache, that I've not implemented it in HdfData. 
+Don't let the existence of the flag ```morph::FileAccess::ReadWrite``` mislead you; 
+I haven't implemented appending so if you need it, you'll either have to access the HDF5 API directly, or use one of the more comprehensive C++ wrappers.
+
+### Reading and writing strings with HdfData
+
+One other pair of HdfData functions that you might find useful are ```HdfData::add_string``` and ```HdfData::read_string```:
+```c++
+{
+    morph::HdfData data("test.h5", morph::FileAccess::TruncateWrite);
+    data.add_string ("/a_string", "Hello world");
+}
+std::string str("");
+{
+    morph::HdfData data("test.h5", morph::FileAccess::ReadOnly);
+    data.read_string ("/a_string", str);
+}
+```
+
 For more example code, you can look at examples/hdfdata.cpp and
 tests/testhdfdata1.cpp (and testhdfdata2.cpp and testhdfdata3.cpp)
 
-## Visual
+## morph::Visual
 
 Modern OpenGL visualisation code.
 
-## HexGrid
+## morph::HexGrid
 
 A class to manage simulations carried out on hexagonal grids with
 arbitrary boundaries.
 
-## Scale
+## morph::Scale
 
 A class for data scaling, with autoscaling features.
 
-## Vector
+## morph::Vector
 
 An extension of std::array to make a class for mathematical vector
 manipulation in N dimensions.
