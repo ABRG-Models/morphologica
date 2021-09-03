@@ -95,13 +95,6 @@ add_executable(${TARGETTEST31} ${SOURCETEST31})
 target_link_libraries(${TARGETTEST31} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 add_test(testreadcurves_circles ${TARGETTEST31})
 
-# Test display. Note also linking to static library here, to prove it works.
-set(TARGETTEST4 testdisplay)
-set(SOURCETEST4 testdisplay.cpp)
-add_executable(${TARGETTEST4} ${SOURCETEST4})
-target_link_libraries(${TARGETTEST4} morphdisplay0 ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
-add_test(testdisplay ${TARGETTEST4})
-
 # Test hexgrid
 set(TARGETTEST5 testhexgrid)
 set(SOURCETEST5 testhexgrid.cpp)
@@ -113,31 +106,37 @@ add_executable(testhexgrid2 testhexgrid2.cpp)
 target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 add_test(testhexgrid2 testhexgrid2)
 
+# CONVERT TO Visual (and put in examples)
 # Test hexgrid3 (hexgrid2 with visualisation)
 add_executable(testhexgrid3 testhexgrid3.cpp)
 target_link_libraries(testhexgrid3 morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testhexgrid3 testhexgrid3)
 
+# CONVERT TO Visual (and put in examples)
 # Test hexgridsave (HexGrid's save feature)
 add_executable(testhexgridsave testhexgridsave.cpp)
 target_link_libraries(testhexgridsave morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
 add_test(testhexgridsave testhexgridsave)
 
+# CONVERT TO Visual (and put in examples)
 # Test boundary pgram
 add_executable(testdom_pgram testdom_pgram.cpp)
 target_link_libraries(testdom_pgram morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testdom_pgram testdom_pgram)
 
+# CONVERT TO Visual (and put in examples)
 # Test boundary rect
 add_executable(testdom_rect testdom_rect.cpp)
 target_link_libraries(testdom_rect morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testdom_rect testdom_rect)
 
+# CONVERT TO Visual (and put in examples)
 # Test boundary hex
 add_executable(testdom_hex testdom_hex.cpp)
 target_link_libraries(testdom_hex morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testdom_hex testdom_hex)
 
+# CONVERT TO Visual (and put in examples)
 # Test boundary bound
 add_executable(testdom_bound testdom_bound.cpp)
 target_link_libraries(testdom_bound morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
@@ -256,6 +255,7 @@ add_test(testHexVertexPos testHexVertexPos)
 add_executable(testHexUserFlags testHexUserFlags.cpp)
 add_test(testHexUserFlags testHexUserFlags)
 
+# CONVERT TO Visual (and maybe put in examples)
 # Test Dirichlet code
 add_executable(testDirichlet testDirichlet.cpp)
 target_link_libraries(testDirichlet morphdisplay0 ${OpenCV_LIBS})
