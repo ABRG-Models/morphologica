@@ -4,10 +4,20 @@ These are some instructions to help a new morphologica user out.
 
 ## Build process
 
-See the end of the top-level readme for instructions on tailoring your
-build process to work with morphologica - cmake examples are given to
-show how to set up the includes, compiler flags and links that you'll
-need to use the morphologica code.
+All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
+
+* morph::Config: Link to ```libjsoncpp```
+* morph::HdfData: Link to ```libhdf5```. If using OpenCV templated methods, you may need to link to OpenCV, too
+* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype, libjsoncpp and OpenCV (I hope to remove the OpenCV link in future)
+* morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
+* morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
+
+Some morphologica classes use no third party code. ```morph::Vector```, for example is very much standalone.
+
+This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program. 
+
+I use cmake to coordinate includes and links. cmake examples are given in the [top level readme](https://github.com/ABRG-Models/morphologica/blob/main/README.md) to
+show how to set up the includes, compiler flags and links using that system.
 
 ## A simple example
 
@@ -27,7 +37,7 @@ int main()
 }
 ```
 
-This makes use of just **morph::Visual** and creates a window with the
+This makes use of ```morph::Visual``` and creates a window with the
 title "Hello World!" within which is written "Hello World!". It's an
 empty Visual scene with a text label and nothing else. However, try
 pressing 'c' in the window, and you'll see the 3D coordinate system
@@ -49,7 +59,34 @@ The easiest way to hack on a simple example is to copy one of the
 example programs, and add a new entry to examples/CMakeLists.txt so
 that your new example will compile.
 
-## morph::Config
+I *can* compile the helloworld program with a single g++ call on my Ubuntu machine...
+```bash
+cd /home/seb/morphologica/examples
+/usr/bin/g++ \
+-I/home/seb/morphologica \
+-I/opt/graphics/OpenGL/include \
+-I/home/seb/morphologica/include \
+-isystem /usr/include/opencv4 \
+-isystem /usr/include/freetype2 \
+-D__GLN__ -Wall -g -Wfatal-errors -Wno-unused-result \
+-Wno-unknown-pragmas -march=native -O3 -fopenmp \
+-DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES \
+-DMORPH_FONTS_DIR="\"/home/seb/morphologica/fonts\"" \
+-std=gnu++17 \
+-o helloworld helloworld.cpp \
+-lopenblas -lpthread -lm \
+/usr/local/lib/libglfw3.a \
+/usr/lib/x86_64-linux-gnu/libfreetype.so \
+/usr/local/lib/libjsoncpp.a \
+/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0 \
+/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0 \
+/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0 \
+/usr/lib/x86_64-linux-gnu/libGLX.so \
+/usr/lib/x86_64-linux-gnu/libOpenGL.so -lrt -ldl -lX11
+```
+...but as you can see, there are quite a few includes and links to keep track of, and so I find it easier to use cmake! (It's always nice to see the single compile command, though).
+
+## The morph::Config class
 
 [morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
 *so much easier* to work with than XML! The idea is that you will
@@ -109,7 +146,7 @@ information about the simulation run:
 }
 ```
 
-## morph::HdfData
+## The morph::HdfData class
 
 [morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)
 is a C++ wrapper around the HDF5 C API. There are other wrappers
@@ -226,7 +263,7 @@ std::string str("");
 For more example code, you can look at examples/hdfdata.cpp and
 tests/testhdfdata1.cpp (and testhdfdata2.cpp and testhdfdata3.cpp)
 
-## morph::Visual
+## The morph::Visual class for Visualising your simulations
 
 Modern OpenGL visualisation code.
 
@@ -241,7 +278,7 @@ A class for data scaling, with autoscaling features.
 
 ## morph::Vector
 
-An extension of std::array to make a class for mathematical vector
+This is an extension of std::array to make a class for mathematical vector
 manipulation in N dimensions.
 
 While you *can* just store your vectors in std::array, here are 15
@@ -293,6 +330,8 @@ using morph::Vector;
     cout << "a - b = " << f << endl;
 }
 ```
+
+There's *even more* that you can do with a morph::Vector, take a look in the [header](https://github.com/ABRG-Models/morphologica/blob/main/morph/Vector.h).
 
 ## BezCurve, BezCurvePath and BezCoord
 
