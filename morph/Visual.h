@@ -43,8 +43,10 @@
 
 #include <morph/VisualDefaultShaders.h>
 
-// imwrite() from OpenCV is used in saveImage()
-#include <opencv2/imgcodecs.hpp>
+// Use Lode Vandevenne's PNG encoder
+#define LODEPNG_NO_COMPILE_DECODER 1
+#define LODEPNG_NO_COMPILE_ANCILLARY_CHUNKS 1
+#include <morph/lodepng.h>
 
 //! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
@@ -160,28 +162,31 @@ namespace morph {
         {
             glfwMakeContextCurrent (this->window);
             GLubyte* bits; // RGB bits
+            GLubyte* rbits;
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
             int h = viewport[3];
-            bits = new GLubyte[w*h*3];
+            bits = new GLubyte[w*h*4];
+            rbits = new GLubyte[w*h*4];
             glFinish(); // finish all commands of OpenGL
-            glPixelStorei (GL_PACK_ALIGNMENT,1);
+            glPixelStorei (GL_PACK_ALIGNMENT, 1);
             glPixelStorei (GL_PACK_ROW_LENGTH, 0);
             glPixelStorei (GL_PACK_SKIP_ROWS, 0);
             glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-            glReadPixels (0, 0, w, h, GL_BGR, GL_UNSIGNED_BYTE, bits);
-            cv::Mat capImg (h, w, CV_8UC3); // 3 channels, 8 bits
-            cv::Vec3b triplet;
+            glReadPixels (0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bits);
             for (int i = 0; i < h; ++i) {
-                for (int j = 0; j < w; ++j) {
-                    triplet[0] = (unsigned char)(bits[(h-i-1)*3*w + j*3+0]);
-                    triplet[1] = (unsigned char)(bits[(h-i-1)*3*w + j*3+1]);
-                    triplet[2] = (unsigned char)(bits[(h-i-1)*3*w + j*3+2]);
-                    capImg.at<cv::Vec3b>(i,j) = triplet;
+                int rev_line = (h-i-1)*4*w;
+                int for_line = i*4*w;
+                for (int j = 0; j < 4*w; ++j) {
+                    rbits[rev_line+j] = bits[for_line+j];
                 }
             }
-            imwrite (img_filename.c_str(), capImg);
+            unsigned int error = lodepng::encode (img_filename, rbits, w, h);
+            if (error) {
+                std::cout << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
+            }
+            delete[] rbits;
             delete[] bits;
         }
 
