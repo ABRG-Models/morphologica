@@ -9,6 +9,46 @@ build process to work with morphologica - cmake examples are given to
 show how to set up the includes, compiler flags and links that you'll
 need to use the morphologica code.
 
+## A simple example
+
+Here's a "Helloworld" example.
+
+```c++
+#include <morph/Visual.h>
+int main()
+{
+    morph::Visual v(600, 400, "Hello World!");
+    v.addLabel ("Hello World!", {0,0,0});
+    while (v.readyToFinish == false) {
+        glfwWaitEventsTimeout (0.018);
+        v.render();
+    }
+    return 0;
+}
+```
+
+This makes use of just **morph::Visual** and creates a window with the
+title "Hello World!" within which is written "Hello World!". It's an
+empty Visual scene with a text label and nothing else. However, try
+pressing 'c' in the window, and you'll see the 3D coordinate system
+arrows appear. Press 'x' to exit.
+
+This program is in morphologica's examples, so you can
+compile and run it with:
+
+```bash
+cd morphologica
+mkdir build
+cd build
+cmake ..
+make helloworld
+./examples/helloworld
+```
+
+The easiest way to hack on a simple example is to copy one of the
+example programs, and add a new entry to examples/CMakeLists.txt so
+that your new example will compile.
+
 ## morph::Config
 
 Reads and writes parameter configuration data in JSON format. JSON is
@@ -71,7 +111,86 @@ information about the simulation run:
 
 ## HdfData
 
-HDF5 data saving code. Additional info to follow.
+(https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)[HdfData]
+is a C++ wrapper around the HDF5 C API. There are other wrappers
+available, but I wanted a relatively simple one, and this is it.
+
+### Writing
+
+With HdfData, you can write out individual numbers and containers of
+numbers into the HDF5 file. Mostly, that will be arrays of numbers,
+such as ```std::vector<double>```. To save some arrays like this into
+a file is very simple:
+
+```c++
+#include <morph/HdfData.h>
+#include <vector>
+int main()
+{
+    // Two vectors of doubles:
+    std::vector<double> vd1 = { 10.0, 12.0, 13.0, 14.0 };
+    std::vector<double> vd2 = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    {
+        morph::HdfData data("test.h5", morph::FileAccess::TruncateWrite);
+        data.add_contained_vals ("/vd1", vd1);
+        data.add_contained_vals ("/vd2", vd2);
+    } // data closes when out of scope
+    return 0;
+}
+```
+
+You just create an object of type morph::HdfData and say whether you
+want to truncate and then write to the file (as I've done here with
+the morph::FileAccess::TruncateWrite argument) or whether you want to
+read (morph::FileAccess::ReadOnly).
+
+Note how I've used the scope identifier brackets '{' and '}' to place the HdfData
+object in its own scope. When the HdfData object goes out of scope,
+the deconstructor is called and the file is closed. After than you can
+safely open the file in another program.
+
+Writing data is just a couple of call of HdfData::add_contained_vals().
+
+You can use HdfData::add_contained_vals() to write quite a few
+combinations of container and contained type. Here are some that will
+work just fine:
+
+```c++
+std::vector<float> d1;
+std::list<int> d2;
+std::deque<unsigned int> d3;
+std::vector<std::array<float, 3>> d4;
+morph::vVector<morph::Vector<float>> d5;
+std::vector<cv::Point> d6; // A vector of OpenCV Points
+```
+
+If you want to write just a single value into your h5 file, then the
+function to use is called HdfData::add_val():
+
+```c++
+double d = 5;
+{
+    morph::HdfData data("test.h5", morph::FileAccess::TruncateWrite);
+    data.add_val ("/a_number", d);
+}
+```
+
+### Reading
+
+Reading from your HDF5 file is mostly as easy as writing to it. If you
+write with add_contained_vals, then the corresonding read function is
+read_contained_vals. Here's an example:
+
+```c++
+std::vector<double> vdread;
+{
+    morph::HdfData data("test.h5", morph::FileAccess::ReadOnly);
+    data.read_contained_vals ("/vd1", vdread);
+}
+```
+
+For more example code, you can look at examples/hdfdata.cpp and
+tests/testhdfdata1.cpp (and testhdfdata2.cpp and testhdfdata3.cpp)
 
 ## Visual
 

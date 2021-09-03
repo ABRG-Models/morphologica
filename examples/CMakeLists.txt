@@ -19,6 +19,9 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 add_executable(visual visual.cpp)
 target_link_libraries(visual ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(helloworld helloworld.cpp)
+target_link_libraries(helloworld ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
 add_executable(convolve convolve.cpp)
 target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
@@ -91,6 +94,9 @@ target_link_libraries(rosenbrock ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${L
 
 add_executable(jsonconfig jsonconfig.cpp)
 target_link_libraries(jsonconfig jsoncpp_lib)
+
+add_executable(hdfdata hdfdata.cpp)
+target_link_libraries(hdfdata ${HDF5_C_LIBRARIES})
 
 add_executable(randvec randvec.cpp)
 target_link_libraries(randvec ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
