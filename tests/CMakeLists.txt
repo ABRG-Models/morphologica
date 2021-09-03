@@ -109,7 +109,7 @@ add_test(testhexgrid2 testhexgrid2)
 # CONVERT TO Visual (and put in examples)
 # Test hexgrid3 (hexgrid2 with visualisation)
 add_executable(testhexgrid3 testhexgrid3.cpp)
-target_link_libraries(testhexgrid3 morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testhexgrid3 testhexgrid3)
 
 # CONVERT TO Visual (and put in examples)
