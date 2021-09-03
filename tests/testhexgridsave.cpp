@@ -3,19 +3,15 @@
 #include <morph/tools.h>
 #include <morph/ColourMap.h>
 #include <iostream>
-#include <morph/display.h>
 #include <unistd.h>
+#include <morph/Visual.h>
+#include <morph/HexGridVisual.h>
 
 using namespace morph;
 using namespace std;
 
 int main()
 {
-    if (XOpenDisplay(NULL) == (Display*)0) {
-        cout << "No display, can't run test. Return 0\n";
-        return 0;
-    }
-
     int rtn = 0;
     unsigned int hexnum = 0;
 
@@ -51,36 +47,51 @@ int main()
         cout << "Read " << Tools::timeNow() << endl;
 
         // Make sure read-in grid has same number of hexes as the generated one.
-        if (hexnum != hg.num()) {
-            rtn = -1;
-        }
+        if (hexnum != hg.num()) { rtn = -1; }
 
-        vector<double> fix(3, 0.0);
-        vector<double> eye(3, 0.0);
-        vector<double> rot(3, 0.0);
-        double rhoInit = 1.7;
-        morph::Gdisplay disp(800, 600, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
-        disp.resetDisplay (fix, eye, rot);
-
-        // plot stuff here.
-        array<float,3> cl_a = morph::ColourMap<float>::jetcolour (0.78);
-        array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.58);
-        array<float,3> offset = {{0, 0, 0}};
-        for (auto h : hg.hexen) {
-            if (h.boundaryHex()) {
-                disp.drawHex (h.position(), (h.d/2.0f), cl_a);
+        // Create a HexGrid Visual
+        morph::Visual v(1600, 1000, "HexGrid");
+        v.lightingEffects();
+        morph::Vector<float, 3> offset = { 0.0f, -0.0f, 0.0f };
+        morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+        // Set up data for the HexGridVisual and colour hexes according to their state as being boundary/inside/domain, etc
+        std::vector<float> colours (hg.num(), 0.0f);
+        static constexpr float cl_boundary_and_in = 0.9f;
+        static constexpr float cl_bndryonly = 0.8f;
+        static constexpr float cl_domain = 0.5f;
+        static constexpr float cl_inside = 0.15f;
+        if (hg.d_flags.size() < hg.num()) { throw std::runtime_error ("d_flags not present"); }
+        // Note, HexGridVisual uses d_x and d_y vectors, so set colours according to d_flags vector
+        for (unsigned int i = 0; i < hg.num(); ++i) {
+            if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false
+                && hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
+                // red is boundary hex AND inside boundary
+                colours[i] = cl_boundary_and_in;
+            } else if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false) {
+                // orange is boundary ONLY
+                colours[i] = cl_bndryonly;
+            } else if (hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
+                // Inside boundary -  blue
+                colours[i] = cl_inside;
             } else {
-                disp.drawHex (h.position(), offset, (h.d/2.0f), cl_b);
+                // The domain - greenish
+                colours[i] = cl_domain;
             }
         }
+        hgv->cm.setType (morph::ColourMapType::Jet);
+        hgv->zScale.setParams (0,0); // makes the output flat in z direction, but you still get the colours
+        hgv->setScalarData (&colours);
+        hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
+        hgv->finalize();
+        v.addVisualModel (hgv);
 
-        usleep (100000);
-        disp.redrawDisplay();
+        // Would be nice to:
+        // Draw small hex at boundary centroid.
+        // red hex at zero
 
-        unsigned int sleep_seconds = 1;
-        cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
-        while (sleep_seconds--) {
-            usleep (1000000); // one second
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
 
     } catch (const exception& e) {

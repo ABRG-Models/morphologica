@@ -41,23 +41,21 @@ int main()
         static constexpr float cl_bndryonly = 0.8f;
         static constexpr float cl_domain = 0.5f;
         static constexpr float cl_inside = 0.15f;
-        for (auto h : hg.hexen) {
-            if (h.boundaryHex() && h.insideBoundary()) {
+        // Note, HexGridVisual uses d_x and d_y vectors, so set colours according to d_flags vector
+        for (unsigned int i = 0; i < hg.num(); ++i) {
+            if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false
+                && hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
                 // red is boundary hex AND inside boundary
-                std::cout << "red hex (bndry) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
-                if (colours[h.vi] == 0) colours[h.vi] = cl_boundary_and_in;
-            } else if (h.boundaryHex()) {
+                colours[i] = cl_boundary_and_in;
+            } else if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false) {
                 // orange is boundary ONLY
-                std::cout << "orange hex (bndry) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
-                if (colours[h.vi] == 0) colours[h.vi] = cl_bndryonly;
-            } else if (h.insideBoundary()) {
+                colours[i] = cl_bndryonly;
+            } else if (hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
                 // Inside boundary -  blue
-                std::cout << "blue hex (inside) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
-                if (colours[h.vi] == 0) colours[h.vi] = cl_inside;
+                colours[i] = cl_inside;
             } else {
                 // The domain - greenish
-                std::cout << "green hex (domain) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
-                if (colours[h.vi] == 0) colours[h.vi] = cl_domain;
+                colours[i] = cl_domain;
             }
         }
         hgv->cm.setType (morph::ColourMapType::Jet);
