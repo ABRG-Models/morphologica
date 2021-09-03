@@ -63,7 +63,7 @@ set(TARGETTEST1_7 testbezderiv2)
 set(SOURCETEST1_7 testbezderiv2.cpp)
 add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
 target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
-target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS}) # Maybe also ${X11_LIBRARIES} for Mac?
+target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testbezderiv2 ${TARGETTEST1_7})
 
 # Testing Bezier derivatives
@@ -71,7 +71,7 @@ set(TARGETTEST1_8 testbezderiv3)
 set(SOURCETEST1_8 testbezderiv3.cpp)
 add_executable(${TARGETTEST1_8} ${SOURCETEST1_8})
 target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
-target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS}) # Maybe also ${X11_LIBRARIES} for Mac?
+target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
 add_test(testbezderiv3 ${TARGETTEST1_8})
 
 # Test two curves connected together
@@ -120,7 +120,7 @@ add_test(testhexgrid3 testhexgrid3)
 
 # Test hexgridsave (HexGrid's save feature)
 add_executable(testhexgridsave testhexgridsave.cpp)
-target_link_libraries(testhexgridsave morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} ${HDF5_C_LIBRARIES})
+target_link_libraries(testhexgridsave morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
 add_test(testhexgridsave testhexgridsave)
 
 # Test boundary pgram
@@ -166,32 +166,32 @@ add_test(testhdfdata2 testhdfdata2)
 
 add_executable(testhdfdata3f testhdfdata3.cpp)
 target_compile_definitions(testhdfdata3f PUBLIC FLT=float)
-target_link_libraries(testhdfdata3f ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testhdfdata3f ${HDF5_C_LIBRARIES})
 add_test(testhdfdata3f testhdfdata3f)
 
 add_executable(testhdfdata3d testhdfdata3.cpp)
 target_compile_definitions(testhdfdata3d PUBLIC FLT=float)
-target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES})
 add_test(testhdfdata3d testhdfdata3d)
 
 if(${glfw3_FOUND})
   add_executable(testbighexgrid testbighexgrid.cpp)
-  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
-  target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
-  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
   add_test(test_ellipseboundary test_ellipseboundary)
 
   # Test circular HexGrid code
   add_executable(test_circleboundary test_circleboundary.cpp)
-  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
   add_test(test_circleboundary test_circleboundary)
 
 endif()
@@ -299,7 +299,7 @@ add_test(testRandom testRandom)
 
 # Test winding number code
 add_executable(testWinder testWinder.cpp)
-target_link_libraries(testWinder ${OpenCV_LIBS})
+target_link_libraries(testWinder)
 add_test(testWinder testWinder)
 
 # Test RandString generation

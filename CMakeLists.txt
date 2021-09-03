@@ -109,7 +109,7 @@ endif()
 
 # Lib finding
 find_package(jsoncpp REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED) # No longer required for morph::Visual, but still required for some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
