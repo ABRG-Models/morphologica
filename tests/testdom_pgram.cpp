@@ -5,17 +5,13 @@
 #include <unistd.h>
 #include <morph/HexGrid.h>
 #include <morph/ReadCurves.h>
-#include <morph/display.h>
+#include <morph/Visual.h>
+#include <morph/HexGridVisual.h>
 
 using namespace std;
 
 int main()
 {
-    if (XOpenDisplay(NULL) == (Display*)0) {
-        cout << "No display, can't run test. Return 0\n";
-        return 0;
-    }
-
     int rtn = 0;
     try {
         string pwd = morph::Tools::getPwd();
@@ -34,59 +30,51 @@ int main()
             rtn = -1;
         }
 
-        vector<double> fix(3, 0.0);
-        vector<double> eye(3, 0.0);
-        vector<double> rot(3, 0.0);
-        double rhoInit = 1.7;
-        morph::Gdisplay disp(960, 700, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
-        disp.resetDisplay (fix, eye, rot);
-
-        // plot stuff here.
-        array<float,3> cl_boundary_and_in = morph::ColourMap<float>::jetcolour (0.9);
-        array<float,3> cl_bndryonly = morph::ColourMap<float>::jetcolour (0.8);
-        array<float,3> cl_domain = morph::ColourMap<float>::jetcolour (0.5);
-        array<float,3> cl_inside = morph::ColourMap<float>::jetcolour (0.15);
-        array<float,3> offset = {{0, 0, 0}};
+        // Create a HexGrid Visual
+        morph::Visual v(1600, 1000, "HexGrid");
+        v.lightingEffects();
+        morph::Vector<float, 3> offset = { 0.0f, -0.0f, 0.0f };
+        morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+        // Set up data for the HexGridVisual and colour hexes according to their state as being boundary/inside/domain, etc
+        std::vector<float> colours (hg.num(), 0.0f);
+        static constexpr float cl_boundary_and_in = 0.9f;
+        static constexpr float cl_bndryonly = 0.8f;
+        static constexpr float cl_domain = 0.5f;
+        static constexpr float cl_inside = 0.15f;
         for (auto h : hg.hexen) {
             if (h.boundaryHex() && h.insideBoundary()) {
                 // red is boundary hex AND inside boundary
-                disp.drawHex (h.position(), (h.d/2.0f), cl_boundary_and_in);
+                std::cout << "red hex (bndry) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
+                if (colours[h.vi] == 0) colours[h.vi] = cl_boundary_and_in;
             } else if (h.boundaryHex()) {
                 // orange is boundary ONLY
-                disp.drawHex (h.position(), (h.d/2.0f), cl_bndryonly);
+                std::cout << "orange hex (bndry) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
+                if (colours[h.vi] == 0) colours[h.vi] = cl_bndryonly;
             } else if (h.insideBoundary()) {
                 // Inside boundary -  blue
-                disp.drawHex (h.position(), (h.d/2.0f), cl_inside);
+                std::cout << "blue hex (inside) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
+                if (colours[h.vi] == 0) colours[h.vi] = cl_inside;
             } else {
                 // The domain - greenish
-                disp.drawHex (h.position(), offset, (h.d/2.0f), cl_domain);
+                std::cout << "green hex (domain) at position " << h.ri << "," << h.gi << " with vi=" << h.vi << std::endl;
+                if (colours[h.vi] == 0) colours[h.vi] = cl_domain;
             }
         }
+        hgv->cm.setType (morph::ColourMapType::Jet);
+        hgv->zScale.setParams (0,0); // makes the output flat in z direction, but you still get the colours
+        hgv->setScalarData (&colours);
+        hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
+        hgv->finalize();
+        v.addVisualModel (hgv);
 
-        // Draw small hex at boundary centroid
-        array<float,3> cl_aa = morph::ColourMap<float>::jetcolour (0.98);
-        array<float,3> c;
-        c[2] = 0;
-        c[0] = hg.boundaryCentroid.first;
-        c[1] = hg.boundaryCentroid.second;
-        cout << "d/2: " << hg.hexen.begin()->d/4.0f << endl;
-        disp.drawHex (c, offset, (hg.hexen.begin()->d/2.0f), cl_aa);
-        cout << "boundaryCentroid x,y: " << c[0] << "," << c[1] << endl;
-
+        // Would be nice to:
+        // Draw small hex at boundary centroid.
         // red hex at zero
-        array<float,3> pos = { { 0, 0, 0} };
-        disp.drawHex (pos, 0.05, cl_aa);
 
-        usleep (100000);
-        disp.redrawDisplay();
-
-        unsigned int sleep_seconds = 1;
-        cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
-        while (sleep_seconds--) {
-            usleep (1000000); // one second
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
-
-        disp.closeDisplay();
 
     } catch (const exception& e) {
         cerr << "Caught exception reading svg: " << e.what() << endl;

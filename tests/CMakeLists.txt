@@ -121,25 +121,25 @@ add_test(testhexgridsave testhexgridsave)
 # CONVERT TO Visual (and put in examples)
 # Test boundary pgram
 add_executable(testdom_pgram testdom_pgram.cpp)
-target_link_libraries(testdom_pgram morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testdom_pgram testdom_pgram)
 
 # CONVERT TO Visual (and put in examples)
 # Test boundary rect
 add_executable(testdom_rect testdom_rect.cpp)
-target_link_libraries(testdom_rect morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testdom_rect testdom_rect)
 
 # CONVERT TO Visual (and put in examples)
 # Test boundary hex
 add_executable(testdom_hex testdom_hex.cpp)
-target_link_libraries(testdom_hex morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testdom_hex testdom_hex)
 
 # CONVERT TO Visual (and put in examples)
 # Test boundary bound
 add_executable(testdom_bound testdom_bound.cpp)
-target_link_libraries(testdom_bound morphdisplay0 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testdom_bound testdom_bound)
 
 # Test boundary sub-parallelograms
