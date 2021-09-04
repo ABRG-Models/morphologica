@@ -249,7 +249,7 @@ add_test(testHexUserFlags testHexUserFlags)
 # CONVERT TO Visual (and maybe put in examples)
 # Test Dirichlet code
 add_executable(testDirichlet testDirichlet.cpp)
-target_link_libraries(testDirichlet morphdisplay0 ${OpenCV_LIBS})
+target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_test(testDirichlet testDirichlet)
 
 add_executable(testDirichlet2 testDirichlet2.cpp)
