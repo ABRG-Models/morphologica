@@ -1,8 +1,8 @@
 /*!
  * \file
  *
- * Graphics code. A replacement for morph::Gdisplay from display.h. Uses modern OpenGL
- * and the library GLFW for window management.
+ * Awesome graphics code for high performance graphing and visualisation. Uses modern
+ * OpenGL and the library GLFW for window management.
  *
  * Created by Seb James on 2019/05/01
  *
