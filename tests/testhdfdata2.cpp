@@ -1,5 +1,4 @@
 #include "morph/HdfData.h"
-#include <opencv2/opencv.hpp>
 #include <utility>
 #include <iostream>
 #include <fstream>
@@ -105,6 +104,7 @@ int main()
         }
     }
 
+#if 0
     cout << "vector<Point>" << endl;
     vector<cv::Point> vpi = { cv::Point(1,2),
                               cv::Point(3,4),
@@ -197,7 +197,7 @@ int main()
             cout << "Coordinate: (" << vpi2dread[i].x << "," << vpi2dread[i].y << ")" << endl;
         }
     }
-
+#endif
     cout << "vector<pair<ULL,ULL>>" << endl;
     vector<std::pair<unsigned long long int, unsigned long long int>> vpi2dpair = { std::make_pair(1ULL,3ULL),
                                                                                     std::make_pair(3ULL,4ULL),
@@ -263,7 +263,7 @@ int main()
     if (!(bs == bsread)) {
         rtn -= 1;
     }
-
+#if 0
     cv::Mat mt = cv::Mat::ones(6, 7, CV_64F);
     mt.at<double>(2,3) = 2.f;
     mt.at<double>(5,5) = -7.5f;
@@ -278,7 +278,7 @@ int main()
         data.read_contained_vals ("/matfloat", mtread);
     }
     cout << "Mat retrieved: " << mtread << endl;
-
+#endif
     //if (!(bs == bsread)) {
     //   rtn -= 1;
     //}

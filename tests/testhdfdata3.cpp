@@ -1,5 +1,4 @@
 #include "morph/HdfData.h"
-#include <opencv2/opencv.hpp>
 #include <utility>
 #include <iostream>
 #include <fstream>
@@ -47,7 +46,7 @@ int main()
             cout << "Coordinate: (" << va[i][0] << "," << va[i][1] << ")" << endl;
         }
     }
-
+#if 0
     // Test the saving of cv::Points
     {
         HdfData data("test3.h5");
@@ -94,6 +93,7 @@ int main()
         data.read_contained_vals("/vecpoints_d", vpd);
         cout << "vpd[0]: " << vpd[0] << endl;
     }
+#endif
 
     // Save and retrieve a container of arrays
     {

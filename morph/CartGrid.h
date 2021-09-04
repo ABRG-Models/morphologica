@@ -23,6 +23,7 @@
 #include <sstream>
 #include <vector>
 #include <stdexcept>
+#include <limits>
 
 namespace morph {
 
@@ -2072,7 +2073,7 @@ namespace morph {
         {
             std::list<morph::Rect>::iterator nearest = this->rects.end();
             std::list<morph::Rect>::iterator ri = this->rects.begin();
-            float dist = FLT_MAX;
+            float dist = std::numeric_limits<float>::max();
             while (ri != this->rects.end()) {
                 float dx = pos.first - ri->x;
                 float dy = pos.second - ri->y;

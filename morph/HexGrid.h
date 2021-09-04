@@ -22,7 +22,7 @@
 #include <sstream>
 #include <vector>
 #include <stdexcept>
-
+#include <limits>
 
 namespace morph {
 
@@ -2512,7 +2512,7 @@ namespace morph {
         {
             std::list<morph::Hex>::iterator nearest = this->hexen.end();
             std::list<morph::Hex>::iterator hi = this->hexen.begin();
-            float dist = FLT_MAX;
+            float dist = std::numeric_limits<float>::max();
             while (hi != this->hexen.end()) {
                 float dx = pos.first - hi->x;
                 float dy = pos.second - hi->y;
