@@ -5,7 +5,7 @@ header files and font files that are required to build against
 morphologica. Some libraries may also be installed.
 
 The build process also compiles a set of test programs, which require
-OpenCV, Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
+Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
 Programs that include morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
 program and a C++ compiler which can compile c++-17 code.
@@ -50,7 +50,7 @@ command line tools, then install the Mac ports installation package.
 Finally, use Mac ports to install the rest of the dependencies:
 
 ```sh
-sudo port install cmake armadillo opencv
+sudo port install cmake armadillo
 ```
 
 *Be aware that if you have conflicting versions of any of the
@@ -64,7 +64,7 @@ compile jsoncpp and glfw3 by hand.
 
 It's much cleaner to build each of the dependencies by hand. That
 means first installing cmake, which I do with a binary package from
-https://cmake.org/download/, and then compiling hdf5, opencv and
+https://cmake.org/download/, and then compiling hdf5 and
 armadillo (all of which support a cmake build process).
 
 After downloading and installing cmake using the MacOS installer, I
@@ -90,7 +90,7 @@ tar xvf path/to/downloaded/armadillo-9.900.3.tar.xz
 cd armadillo-9.900.3
 mkdir build
 cd build
-cmake .. 
+cmake ..
 # or optionally: cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14
 # which will set the install locn and get the code compiled for targets as old as mac 10.14
 make
@@ -118,11 +118,11 @@ sudo make install
 
 #### OpenCV
 
-Computer vision. Used to save views of the OpenGL
-environment. morph::HdfData is also OpenCV-aware (and can save
-cv::Points and cv::Mats). I compiled OpenCV master from git. That
-probably corresponded to version 4.4.0. OpenCV versions as old as
-3.2.0 also work.
+Optional. Computer vision code. ONLY used in the class
+morph::HdfDataCV, which is OpenCV-aware (and can save cv::Points and
+cv::Mats). I compiled OpenCV master from git. That probably
+corresponded to version 4.4.0. OpenCV versions as old as 3.2.0 also
+work.
 
 ```sh
 mkdir -p ~/src
@@ -138,7 +138,7 @@ sudo make install
 
 ### Common manual dependency builds
 
-Whether or not you used mac ports to install hdf5, opencv and
+Whether or not you used mac ports to install hdf5 and
 armadillo, the JSON-reading library jsoncpp needs to be built
 separately, as I don't believe it is currently available as a
 port. glfw3 also needs to be built separately (I've not investigated

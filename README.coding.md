@@ -7,14 +7,14 @@ These are some instructions to help a new morphologica user out.
 All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
 
 * morph::Config: Link to ```libjsoncpp```
-* morph::HdfData: Link to ```libhdf5```. If using OpenCV templated methods, you may need to link to OpenCV, too
-* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype, libjsoncpp and OpenCV (I hope to remove the OpenCV link in future)
+* morph::HdfData: Link to ```libhdf5```. If you use OpenCV methods in morph::HdfDataCV, you may need to link to OpenCV, too
+* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype and libjsoncpp.
 * morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
 * morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
 
 Some morphologica classes use no third party code. ```morph::Vector```, for example is very much standalone.
 
-This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program. 
+This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program.
 
 I use cmake to coordinate includes and links. cmake examples are given in the [top level readme](https://github.com/ABRG-Models/morphologica/blob/main/README.md) to
 show how to set up the includes, compiler flags and links using that system.
@@ -66,7 +66,6 @@ cd /home/seb/morphologica/examples
 -I/home/seb/morphologica \
 -I/opt/graphics/OpenGL/include \
 -I/home/seb/morphologica/include \
--isystem /usr/include/opencv4 \
 -isystem /usr/include/freetype2 \
 -D__GLN__ -Wall -g -Wfatal-errors -Wno-unused-result \
 -Wno-unknown-pragmas -march=native -O3 -fopenmp \
@@ -78,9 +77,6 @@ cd /home/seb/morphologica/examples
 /usr/local/lib/libglfw3.a \
 /usr/lib/x86_64-linux-gnu/libfreetype.so \
 /usr/local/lib/libjsoncpp.a \
-/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0 \
-/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0 \
-/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0 \
 /usr/lib/x86_64-linux-gnu/libGLX.so \
 /usr/lib/x86_64-linux-gnu/libOpenGL.so -lrt -ldl -lX11
 ```
@@ -198,7 +194,6 @@ std::list<int> d2;
 std::deque<unsigned int> d3;
 std::vector<std::array<float, 3>> d4;
 morph::vVector<morph::Vector<float>> d5;
-std::vector<cv::Point> d6; // A vector of OpenCV Points
 ```
 
 If you want to write just a single value into your h5 file, then the
@@ -240,9 +235,9 @@ double d = 0.0;
 
 So you created an HDF5 file, filled it with data and closed it. Now you want to add some more data to the file.
 Sounds like it should be easy, but it turns out that to do this requires quite a lot more effort working with the HDF5 internals.
-You have to tell the API ahead of time that your data arrays might get larger and that there might be new arrays added in the future. 
-This is all such a headache, that I've not implemented it in HdfData. 
-Don't let the existence of the flag ```morph::FileAccess::ReadWrite``` mislead you; 
+You have to tell the API ahead of time that your data arrays might get larger and that there might be new arrays added in the future.
+This is all such a headache, that I've not implemented it in HdfData.
+Don't let the existence of the flag ```morph::FileAccess::ReadWrite``` mislead you;
 I haven't implemented appending so if you need it, you'll either have to access the HDF5 API directly, or use one of the more comprehensive C++ wrappers.
 
 ### Reading and writing strings with HdfData
