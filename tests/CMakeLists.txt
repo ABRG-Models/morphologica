@@ -106,38 +106,6 @@ add_executable(testhexgrid2 testhexgrid2.cpp)
 target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 add_test(testhexgrid2 testhexgrid2)
 
-# CONVERT TO Visual (and put in examples)
-# Test hexgrid3 (hexgrid2 with visualisation)
-add_executable(testhexgrid3 testhexgrid3.cpp)
-target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testhexgrid3 testhexgrid3)
-
-# CONVERT TO Visual (and put in examples)
-# Test hexgridsave (HexGrid's save feature)
-add_executable(testhexgridsave testhexgridsave.cpp)
-target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testhexgridsave testhexgridsave)
-
-# Test boundary pgram
-add_executable(testdom_pgram testdom_pgram.cpp)
-target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testdom_pgram testdom_pgram)
-
-# Test boundary rect
-add_executable(testdom_rect testdom_rect.cpp)
-target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testdom_rect testdom_rect)
-
-# Test boundary hex
-add_executable(testdom_hex testdom_hex.cpp)
-target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testdom_hex testdom_hex)
-
-# Test boundary bound
-add_executable(testdom_bound testdom_bound.cpp)
-target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testdom_bound testdom_bound)
-
 # Test distance to boundary
 add_executable(testhexbounddist testhexbounddist.cpp)
 target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
@@ -165,6 +133,30 @@ target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES})
 add_test(testhdfdata3d testhdfdata3d)
 
 if(${glfw3_FOUND})
+  # Test hexgrid3 (hexgrid2 with visualisation)
+  add_executable(testhexgrid3 testhexgrid3.cpp)
+  target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  # Test hexgridsave (HexGrid's save feature)
+  add_executable(testhexgridsave testhexgridsave.cpp)
+  target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  # Test boundary pgram
+  add_executable(testdom_pgram testdom_pgram.cpp)
+  target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  # Test boundary rect
+  add_executable(testdom_rect testdom_rect.cpp)
+  target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  # Test boundary hex
+  add_executable(testdom_hex testdom_hex.cpp)
+  target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  # Test boundary bound
+  add_executable(testdom_bound testdom_bound.cpp)
+  target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
   add_executable(testbighexgrid testbighexgrid.cpp)
   target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
@@ -177,13 +169,23 @@ if(${glfw3_FOUND})
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
   target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-  add_test(test_ellipseboundary test_ellipseboundary)
 
   # Test circular HexGrid code
   add_executable(test_circleboundary test_circleboundary.cpp)
   target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-  add_test(test_circleboundary test_circleboundary)
 
+  # Test Dirichlet code
+  add_executable(testDirichlet testDirichlet.cpp)
+  target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  add_executable(testDirichlet2 testDirichlet2.cpp)
+  target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  add_executable(testDirichlet4 testDirichlet4.cpp)
+  target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+  add_executable(testDirichlet5 testDirichlet5.cpp)
+  target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 endif()
 
 # Test morph::Process class
@@ -245,24 +247,6 @@ add_test(testHexVertexPos testHexVertexPos)
 # Test Hex user flags code
 add_executable(testHexUserFlags testHexUserFlags.cpp)
 add_test(testHexUserFlags testHexUserFlags)
-
-# CONVERT TO Visual (and maybe put in examples)
-# Test Dirichlet code
-add_executable(testDirichlet testDirichlet.cpp)
-target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-#add_test(testDirichlet testDirichlet)
-
-add_executable(testDirichlet2 testDirichlet2.cpp)
-target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-#add_test(testDirichlet2 testDirichlet2)
-
-add_executable(testDirichlet4 testDirichlet4.cpp)
-target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-#add_test(testDirichlet4 testDirichlet4)
-
-add_executable(testDirichlet5 testDirichlet5.cpp)
-target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-#add_test(testDirichlet5 testDirichlet5)
 
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)
