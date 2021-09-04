@@ -250,19 +250,19 @@ add_test(testHexUserFlags testHexUserFlags)
 # Test Dirichlet code
 add_executable(testDirichlet testDirichlet.cpp)
 target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_test(testDirichlet testDirichlet)
+#add_test(testDirichlet testDirichlet)
 
 add_executable(testDirichlet2 testDirichlet2.cpp)
-target_link_libraries(testDirichlet2 morphdisplay0 ${OpenCV_LIBS})
-add_test(testDirichlet2 testDirichlet2)
+target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+#add_test(testDirichlet2 testDirichlet2)
 
 add_executable(testDirichlet4 testDirichlet4.cpp)
-target_link_libraries(testDirichlet4 morphdisplay0 ${OpenCV_LIBS})
-add_test(testDirichlet4 testDirichlet4)
+target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+#add_test(testDirichlet4 testDirichlet4)
 
 add_executable(testDirichlet5 testDirichlet5.cpp)
-target_link_libraries(testDirichlet5 morphdisplay0 ${OpenCV_LIBS})
-add_test(testDirichlet5 testDirichlet5)
+target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+#add_test(testDirichlet5 testDirichlet5)
 
 # Test MathAlgo code
 add_executable(testMathAlgo testMathAlgo.cpp)

@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <morph/ShapeAnalysis.h>
 #include <morph/Visual.h>
-#include <morph/HexGridVisual.h>
 #include <morph/PolygonVisual.h>
 
 using namespace morph;

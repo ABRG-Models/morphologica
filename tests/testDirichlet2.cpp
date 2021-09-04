@@ -12,7 +12,6 @@
 
 #include <morph/HexGrid.h>
 #include <morph/ReadCurves.h>
-#include <morph/display.h>
 #include <morph/tools.h>
 #include <morph/ColourMap.h>
 #include <vector>
@@ -20,19 +19,15 @@
 #include <array>
 #include <stdexcept>
 #include <unistd.h>
-
 #include <morph/ShapeAnalysis.h>
+#include <morph/Visual.h>
+#include <morph/PolygonVisual.h>
 
 using namespace morph;
 using namespace std;
 
 int main()
 {
-    if (XOpenDisplay(NULL) == (Display*)0) {
-        cout << "No display, can't run test. Return 0\n";
-        return 0;
-    }
-
     int rtn = 0;
     try {
         HexGrid hg(0.2, 1, 0, HexDomainShape::Boundary);
@@ -93,81 +88,71 @@ int main()
         }
 
         // Expecting one domain
-        if (domains.size() != 1) {
-            rtn -= 1;
-        }
-
+        if (domains.size() != 1) { rtn -= 1; }
         // To be strict, I should check all the points on the domain paths are in the right places.
 
-#if 1
-        // Draw it up.
-        vector<double> fix(3, 0.0);
-        vector<double> eye(3, 0.0);
-        eye[2] = 0.12; // This also acts as a zoom. more +ve to zoom out, more -ve to zoom in.
-        vector<double> rot(3, 0.0);
-        double rhoInit = 1.7;
-        morph::Gdisplay disp(700, 700, 0, 0, "A boundary", rhoInit, 0.0, 0.0);
-        disp.resetDisplay (fix, eye, rot);
-        disp.redrawDisplay();
-
-        // plot stuff here.
-        array<float,3> offset = {{0, 0, 0}};
-        array<float,3> offset2 = {{0, 0, 0.001}};
+        morph::Visual v(1600, 1000, "Dirichlet code");
+        v.lightingEffects();
+        morph::Vector<float, 3> offset = { 0.0f, 0.0f, 0.0f };
+        morph::Vector<float, 3> offset2 = offset;
+        offset2 += {0,0,0.002f};
         array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.78);
         float sz = hg.hexen.front().d;
         for (auto h : hg.hexen) {
             array<float,3> cl_a = morph::ColourMap<float>::jetcolour (f[h.vi]);
-            disp.drawHex (h.position(), offset, (sz/2.0f), cl_a);
+            array<float,3> p = h.position();
+            Vector<float,3> pv = { p[0], p[1], p[2] };
+            Vector<float,3> vtx = pv;
+            vtx += Vector<float, 3>({1,0,0});
+            v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, pv, vtx, sz/1.8f, 0.002f, cl_a, 6));
             if (h.boundaryHex()) {
-                disp.drawHex (h.position(), offset2, (sz/12.0f), cl_b);
+                v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset2, pv, vtx, sz/12.0f, 0.002f, cl_b, 6));
             }
         }
 
         array<float,3> cl_c = morph::ColourMap<float>::jetcolour (0.98);
         for (auto verti : vertices) {
-            array<float,3> posn = {{0,0,0.002}};
+            Vector<float,3> posn = {0, 0, 0.002};
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
-            if (verti.onBoundary == true) {
-                cl_c = morph::ColourMap<float>::jetcolour (0.98);
-            } else {
-                cl_c = morph::ColourMap<float>::jetcolour (0.18);
-            }
-            disp.drawHex (posn, offset2, (sz/8.0f), cl_c);
+            Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+            v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/8.0f, 0.002f, cl_c, 60));
         }
 
-        array<float,3> offset3 = {{0, 0, 0.001}};
+        offset += { 0, 0, 0.004 };
         array<float,3> cl_d = morph::ColourMap<float>::jetcolour (0.7);
         array<float,3> cl_e = morph::ColourMap<float>::jetcolour (0.01);
         for (auto dom_outer : domains) {
             for (auto dom_inner : dom_outer.vertices) {
                 // Draw the paths
                 for (auto path : dom_inner.pathto_next) {
-                    array<float,3> posn = {{0,0,0.003}};
+                    Vector<float,3> posn = {{0,0,0}};
                     posn[0] = path.first;
                     posn[1] = path.second;
-                    disp.drawHex (posn, offset3, (sz/16.0f), cl_d);
+                    Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+                    v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_d, 6));
                 }
                 for (auto path : dom_inner.pathto_neighbour) {
-                    array<float,3> posn = {{0,0,0.003}};
+                    Vector<float,3> posn = {{0,0,0}};
                     posn[0] = path.first;
                     posn[1] = path.second;
-                    disp.drawHex (posn, offset3, (sz/16.0f), cl_e);
+                    Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+                    v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_e, 6));
                 }
             }
         }
 
-        // To avoid the annoying failure to draw, first sleep a while...
-        usleep (100000);
-        disp.redrawDisplay();
+        // Draw small hex at boundary centroid.
+        Vector<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
+        Vector<float,3> centroidv = centroid + Vector<float,3> ({ 0.0f, 1.0f, 0.0f });
+        v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0}, centroid, centroidv, sz/16.0f, 0.01f, {0,0,1}, 10));
+        // red hex at zero
+        v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0.01f}, {0,0,0}, {0,1,0}, sz/20.0f, 0.01f, {1,0,0}, 8));
 
-        unsigned int sleep_seconds = 1;
-        cout << "Sleep " << sleep_seconds << " s before closing display..." << endl;
-        while (sleep_seconds--) {
-            usleep (1000000); // one second
+        while (v.readyToFinish == false) {
+            glfwWaitEventsTimeout (0.018);
+            v.render();
         }
-        disp.closeDisplay();
-#endif
 
     } catch (const exception& e) {
         cerr << "Caught exception: " << e.what() << endl;

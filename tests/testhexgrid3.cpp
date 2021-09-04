@@ -39,19 +39,20 @@ int main()
         static constexpr float cl_bndryonly = 0.8f;
         static constexpr float cl_domain = 0.5f;
         static constexpr float cl_inside = 0.15f;
-        for (auto h : hg.hexen) {
-            if (h.boundaryHex() && h.insideBoundary()) {
+        for (unsigned int i = 0; i < hg.num(); ++i) {
+            if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false
+                && hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
                 // red is boundary hex AND inside boundary
-                colours[h.vi] = cl_boundary_and_in;
-            } else if (h.boundaryHex()) {
+                colours[i] = cl_boundary_and_in;
+            } else if (hg.d_flags[i] & HEX_IS_BOUNDARY ? true : false) {
                 // orange is boundary ONLY
-                colours[h.vi] = cl_bndryonly;
-            } else if (h.insideBoundary()) {
+                colours[i] = cl_bndryonly;
+            } else if (hg.d_flags[i] & HEX_INSIDE_BOUNDARY ? true : false) {
                 // Inside boundary -  blue
-                colours[h.vi] = cl_inside;
+                colours[i] = cl_inside;
             } else {
                 // The domain - greenish
-                colours[h.vi] = cl_domain;
+                colours[i] = cl_domain;
             }
         }
         hgv->cm.setType (morph::ColourMapType::Jet);
