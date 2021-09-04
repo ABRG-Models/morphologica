@@ -109,7 +109,7 @@ endif()
 
 # Lib finding
 find_package(jsoncpp REQUIRED)
-find_package(OpenCV REQUIRED) # No longer required for morph::Visual, but still required in HdfData and some tests
+find_package(OpenCV) # No longer required for morph::Visual, used by some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
@@ -123,7 +123,9 @@ find_package(LAPACK REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
 
-include_directories(${OpenCV_INCLUDE_DIRS})
+if(${OpenCV_FOUND})
+  include_directories(${OpenCV_INCLUDE_DIRS})
+endif()
 include_directories(${OPENGL_INCLUDE_DIR})
 #include_directories(${X11_INC_SEARCH_PATH})
 include_directories(${HDF5_INCLUDE_DIR})
