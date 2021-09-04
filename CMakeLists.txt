@@ -109,13 +109,13 @@ endif()
 
 # Lib finding
 find_package(jsoncpp REQUIRED)
-find_package(OpenCV REQUIRED) # No longer required for morph::Visual, but still required for some tests
+find_package(OpenCV REQUIRED) # No longer required for morph::Visual, but still required in HdfData and some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
 endif(USE_GLEW)
 # X11 is required only for morphdisplay0 on Apple, which uses Cocoa for glfw3/GL.
-find_package(X11 REQUIRED)
+#find_package(X11 REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(LAPACK REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
@@ -125,7 +125,7 @@ find_package(Armadillo REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${OPENGL_INCLUDE_DIR})
-include_directories(${X11_INC_SEARCH_PATH})
+#include_directories(${X11_INC_SEARCH_PATH})
 include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
