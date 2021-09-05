@@ -7,7 +7,7 @@ These are some instructions to help a new morphologica user out.
 All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
 
 * morph::Config: Link to ```libjsoncpp```
-* morph::HdfData: Link to ```libhdf5```. If you use OpenCV methods in morph::HdfDataCV, you may need to link to OpenCV, too
+* morph::HdfData: Link to ```libhdf5```. If you want to save/load OpenCV data structures then you need to link to OpenCV, too (and ```#define BUILD_HDFDATA_WITH_OPENCV``` before ```#include <morph/HdfData.h>```).
 * morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype and libjsoncpp.
 * morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
 * morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
