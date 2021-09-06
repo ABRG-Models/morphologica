@@ -1,4 +1,7 @@
-#include <opencv2/opencv.hpp>
+#if 0
+# include <opencv2/opencv.hpp>
+#endif
+#include <iostream>
 #include <vector>
 #include <list>
 #include "morph/Winder.h"
@@ -22,6 +25,7 @@ int main() {
 
     int rtn = 0;
 
+#if 0
     // Test with cv::Point which has x and y attributes
     std::vector<cv::Point> vpoints;
     vpoints.push_back (cv::Point(0,0));
@@ -35,6 +39,7 @@ int main() {
     if (wn1 != 1) {
         --rtn;
     }
+#endif
 
     // Test with morph::BezCoord, which has x() and y() methods
     std::vector<morph::BezCoord<float>> vbezc;
