@@ -174,7 +174,15 @@ namespace morph {
             glPixelStorei (GL_PACK_ROW_LENGTH, 0);
             glPixelStorei (GL_PACK_SKIP_ROWS, 0);
             glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
+            // I don't know why GL_BGRA works on Linux whereas you need GL_RGBA on
+            // Mac. Possibly the correct choices for GL_PACK_ALIGNMENT and maybe
+            // GL_UNPACK_SWAP_BYTES, above in the glPixelStorei() calls above would
+            // resolve this.
+#ifdef __OSX__
             glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+#else
+            glReadPixels (0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bits);
+#endif
             for (int i = 0; i < h; ++i) {
                 int rev_line = (h-i-1)*4*w;
                 int for_line = i*4*w;
