@@ -2,7 +2,7 @@
  * Get random numbers from the uniform random number generator convenience functions
  * morph::randSingle() and morph::randDoubple().
  */
-
+#define RANDSINGLE
 #include <morph/rng.h>
 #include <iostream>
 int main()
