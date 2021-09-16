@@ -206,9 +206,7 @@ namespace morph {
         {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xr[j] = this->x0[j] + this->alpha * (this->x0[j] - this->vertices[worst][j]);
-            }
+            this->xr = this->x0 + (this->x0 - this->vertices[worst]) * this->alpha;
             this->state = NM_Simplex_State::NeedToComputeReflection;
         }
 
@@ -259,9 +257,7 @@ namespace morph {
         void expand()
         {
             this->operation_count++;
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xe[j] = this->x0[j] + this->gamma * (this->xr[j] - this->x0[j]);
-            }
+            this->xe = this->x0 + (this->xr - this->x0) * this->gamma;
             this->state = NM_Simplex_State::NeedToComputeExpansion;
         }
 
@@ -291,9 +287,7 @@ namespace morph {
         {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xc[j] = this->x0[j] + this->rho * (this->vertices[worst][j] - this->x0[j]);
-            }
+            this->xc = this->x0 + (this->vertices[worst] - this->x0) * this->rho;
             this->state = NM_Simplex_State::NeedToComputeContraction;
         }
 
@@ -318,10 +312,7 @@ namespace morph {
         {
             this->operation_count++;
             for (unsigned int i = 1; i <= this->n; ++i) {
-                for (unsigned int j = 0; j < this->n; ++j) {
-                    this->vertices[i][j] = this->vertices[0][j]
-                        + this->sigma * (this->vertices[i][j] - this->vertices[0][j]);
-                }
+                this->vertices[i] = this->vertices[0] + (this->vertices[i] - this->vertices[0]) * this->sigma;
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
@@ -335,14 +326,9 @@ namespace morph {
 
             // For each simplex vertex except the worst vertex
             for (unsigned int i = 0; i<this->n; ++i) { // *excluding* i==n
-                for (unsigned int j = 0; j<this->n; ++j) {
-                    // The worst vertex would be vertex_order[i==n]
-                    this->x0[j] += this->vertices[this->vertex_order[i]][j];
-                }
+                this->x0 += this->vertices[this->vertex_order[i]];
             }
-            for (unsigned int j = 0; j<this->n; ++j) {
-                this->x0[j] /= static_cast<T>(this->n);
-            }
+            this->x0 /= static_cast<T>(this->n);
         }
 
         //! Resize the various vectors based on the value of n.
