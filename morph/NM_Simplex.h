@@ -321,9 +321,7 @@ namespace morph {
         //! centroid of the best side.
         void compute_x0()
         {
-            // Zero x0
-            for (T& x0i : this->x0) { x0i = 0.0; }
-
+            this->x0.zero();
             // For each simplex vertex except the worst vertex
             for (unsigned int i = 0; i<this->n; ++i) { // *excluding* i==n
                 this->x0 += this->vertices[this->vertex_order[i]];
