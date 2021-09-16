@@ -64,25 +64,13 @@ namespace morph {
         using std::vector<S, Al>::vector;
 
         //! \return the first component of the vector
-        S x() const
-        {
-            return (*this)[0];
-        }
+        S x() const { return (*this)[0]; }
         //! \return the second component of the vector
-        S y() const
-        {
-            return (*this)[1];
-        }
+        S y() const { return (*this)[1]; }
         //! \return the third component of the vector
-        S z() const
-        {
-            return (*this)[2];
-        }
+        S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
-        S w() const
-        {
-            return (*this)[3];
-        }
+        S w() const { return (*this)[3]; }
 
         //! Set data members from an std::vector (may not be necessary?)
         template <typename _S=S>
@@ -101,10 +89,7 @@ namespace morph {
 
         //! Set all elements from the value type v
         template <typename _S=S>
-        void set_from (const _S& v)
-        {
-            std::fill (this->begin(), this->end(), v);
-        }
+        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set the data members of this vVector from the passed in, larger array, \a ar,
@@ -171,10 +156,7 @@ namespace morph {
 
         //! A function to set the value of each element of the vector.
         template <typename _S=S>
-        void set (const _S& val)
-        {
-            std::fill (this->begin(), this->end(), val);
-        }
+        void set (const _S& val) { std::fill (this->begin(), this->end(), val); }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
@@ -243,10 +225,7 @@ namespace morph {
         }
 
         //! Zero the vector. Set all coordinates to 0
-        void zero()
-        {
-            std::fill (this->begin(), this->end(), S{0});
-        }
+        void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
         /*!
          * Randomize the vector
@@ -608,10 +587,7 @@ namespace morph {
          *
          * \return true if the vector length is 0, otherwise it returns false.
          */
-        bool operator!() const
-        {
-            return (this->length() == S{0}) ? true : false;
-        }
+        bool operator!() const { return (this->length() == S{0}) ? true : false; }
 
 #if 0 // Haven't figured this out yet
         //! Assignment from std::vector
