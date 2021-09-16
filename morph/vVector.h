@@ -345,7 +345,7 @@ namespace morph {
 
             auto subtract_squared = [](S a, S b) { return a - b * b; };
             const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
-            if (std::abs(metric) > vVector<S>::unitThresh) {
+            if (std::abs(metric) > unitThresh) {
                 return false;
             }
             return true;
