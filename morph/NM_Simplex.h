@@ -14,6 +14,7 @@
 #include <vector>
 #include <iostream>
 #include <morph/MathAlgo.h>
+#include <morph/vVector.h>
 
 namespace morph {
 
@@ -81,34 +82,34 @@ namespace morph {
         T termination_threshold = 0.0001;
 
         //! The centroid of all points except vertex n (the last one)
-        std::vector<T> x0;
+        morph::vVector<T> x0;
 
         //! A container to hold the reflected point xr = x0 + alpha(x0 - vertex[vertex_order.back()])
-        std::vector<T> xr;
+        morph::vVector<T> xr;
         //! The objective function value of the reflected point
         T xr_value;
 
         //! A container for the expanded point xe
-        std::vector<T> xe;
+        morph::vVector<T> xe;
         //! The objective function value of the expanded point
         T xe_value;
 
         //! A container for the contracted point xc (can probably merge with xe)
-        std::vector<T> xc;
+        morph::vVector<T> xc;
         //! The objective function value of the contracted point
         T xc_value;
 
         //! The locations of the simplex vertices. A vector of n+1 vertices, each of n coordinates.
-        std::vector<std::vector<T>> vertices;
+        morph::vVector<morph::vVector<T>> vertices;
 
         //! The objective function value for each vertex.
-        std::vector<T> values;
+        morph::vVector<T> values;
 
         //! This vector contains the size order of the vector values and can be used to index into
         //! vertices and values in the order of the metric. The first index in this vector indexes
         //! the "best" value in values/vertices. If downhill==true, then the first index indexes the
         //! lowest value in values, otherwise it indexes the highest value in values.
-        std::vector<unsigned int> vertex_order;
+        morph::vVector<unsigned int> vertex_order;
 
         //! This tells client code what it needs to do next. It either needs to order the points or
         //! compute a new objective function value for the reflected point xr;
@@ -123,14 +124,14 @@ namespace morph {
         //! should be of size n, the outer vector of size n+1. Thus, for a simplex
         //! triangle flipping on a 2D surface, you'd have 3 vertices with 2 coordinates
         //! each.
-        NM_Simplex (const std::vector<std::vector<T>>& initial_vertices)
+        NM_Simplex (const morph::vVector<morph::vVector<T>>& initial_vertices)
         {
             // dimensionality, n, is the number of simplex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
             this->allocate();
             unsigned int i = 0;
-            for (std::vector<T>& v : this->vertices) {
+            for (morph::vVector<T>& v : this->vertices) {
                 v = initial_vertices[i++];
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
@@ -162,7 +163,7 @@ namespace morph {
         NM_Simplex (const unsigned int _n): n(_n) { this->allocate(); }
 
         //! Return the location of the best approximation, given the values of the vertices.
-        std::vector<T> best_vertex() { return this->vertices[this->vertex_order[0]]; }
+        morph::vVector<T> best_vertex() { return this->vertices[this->vertex_order[0]]; }
         //! Return the value of the best approximation, given the values of the vertices.
         T best_value() { return this->values[this->vertex_order[0]]; }
 
@@ -205,9 +206,7 @@ namespace morph {
         {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xr[j] = this->x0[j] + this->alpha * (this->x0[j] - this->vertices[worst][j]);
-            }
+            this->xr = this->x0 + (this->x0 - this->vertices[worst]) * this->alpha;
             this->state = NM_Simplex_State::NeedToComputeReflection;
         }
 
@@ -258,9 +257,7 @@ namespace morph {
         void expand()
         {
             this->operation_count++;
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xe[j] = this->x0[j] + this->gamma * (this->xr[j] - this->x0[j]);
-            }
+            this->xe = this->x0 + (this->xr - this->x0) * this->gamma;
             this->state = NM_Simplex_State::NeedToComputeExpansion;
         }
 
@@ -290,9 +287,7 @@ namespace morph {
         {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xc[j] = this->x0[j] + this->rho * (this->vertices[worst][j] - this->x0[j]);
-            }
+            this->xc = this->x0 + (this->vertices[worst] - this->x0) * this->rho;
             this->state = NM_Simplex_State::NeedToComputeContraction;
         }
 
@@ -317,10 +312,7 @@ namespace morph {
         {
             this->operation_count++;
             for (unsigned int i = 1; i <= this->n; ++i) {
-                for (unsigned int j = 0; j < this->n; ++j) {
-                    this->vertices[i][j] = this->vertices[0][j]
-                        + this->sigma * (this->vertices[i][j] - this->vertices[0][j]);
-                }
+                this->vertices[i] = this->vertices[0] + (this->vertices[i] - this->vertices[0]) * this->sigma;
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
@@ -334,21 +326,16 @@ namespace morph {
 
             // For each simplex vertex except the worst vertex
             for (unsigned int i = 0; i<this->n; ++i) { // *excluding* i==n
-                for (unsigned int j = 0; j<this->n; ++j) {
-                    // The worst vertex would be vertex_order[i==n]
-                    this->x0[j] += this->vertices[this->vertex_order[i]][j];
-                }
+                this->x0 += this->vertices[this->vertex_order[i]];
             }
-            for (unsigned int j = 0; j<this->n; ++j) {
-                this->x0[j] /= static_cast<T>(this->n);
-            }
+            this->x0 /= static_cast<T>(this->n);
         }
 
         //! Resize the various vectors based on the value of n.
         void allocate()
         {
             this->vertices.resize (this->n+1);
-            for (std::vector<T>& v : this->vertices) { v.resize (this->n, 0.0); }
+            for (morph::vVector<T>& v : this->vertices) { v.resize (this->n, 0.0); }
             this->x0.resize (this->n, 0.0);
             this->xr.resize (this->n, 0.0);
             this->xe.resize (this->n, 0.0);
