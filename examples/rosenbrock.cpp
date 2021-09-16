@@ -36,10 +36,10 @@ int main()
     v.lightingEffects (true);
 
     // Initialise the vertices
-    vector<vector<FLT>> i_vertices;
-    vector<FLT> v1 = {{ 0.7, 0.0 }};
-    vector<FLT> v2 = {{ 0.0, 0.6 }};
-    vector<FLT> v3 = {{ -0.6, -1.0 }};
+    morph::vVector<morph::vVector<FLT>> i_vertices;
+    morph::vVector<FLT> v1 = {{ 0.7, 0.0 }};
+    morph::vVector<FLT> v2 = {{ 0.0, 0.6 }};
+    morph::vVector<FLT> v3 = {{ -0.6, -1.0 }};
     i_vertices.push_back(v1);
     i_vertices.push_back(v2);
     i_vertices.push_back(v3);

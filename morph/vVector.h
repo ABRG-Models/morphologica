@@ -84,23 +84,6 @@ namespace morph {
             return (*this)[3];
         }
 
-        /*!
-         * \brief Unit vector threshold
-         *
-         * The threshold outside of which the vector is no longer considered to be a
-         * unit vector. Note this is hard coded as a constexpr, to avoid messing with
-         * the initialization of the vVector with curly brace initialization.
-         *
-         * Clearly, this will be the wrong threshold for some cases. Possibly, a
-         * template parameter could set this; so size_t U could indicate the threshold;
-         * 0.001 could be U=-3 (10^-3).
-         *
-         * Another idea would be to change unitThresh based on the type S. Or use
-         * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
-         * sense.
-         */
-        static constexpr S unitThresh = 0.001;
-
         //! Set data members from an std::vector (may not be necessary?)
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
@@ -343,6 +326,23 @@ namespace morph {
          */
         bool checkunit() const
         {
+            /*!
+             * \brief Unit vector threshold
+             *
+             * The threshold outside of which the vector is no longer considered to be a
+             * unit vector. Note this is hard coded as a constexpr, to avoid messing with
+             * the initialization of the vVector with curly brace initialization.
+             *
+             * Clearly, this will be the wrong threshold for some cases. Possibly, a
+             * template parameter could set this; so size_t U could indicate the threshold;
+             * 0.001 could be U=-3 (10^-3).
+             *
+             * Another idea would be to change unitThresh based on the type S. Or use
+             * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
+             * sense.
+             */
+            static constexpr S unitThresh = 0.001;
+
             auto subtract_squared = [](S a, S b) { return a - b * b; };
             const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
             if (std::abs(metric) > vVector<S>::unitThresh) {
