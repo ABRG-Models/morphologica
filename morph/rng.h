@@ -5,6 +5,9 @@
 // (each creates a single instance of RandUniform<> in memory) and provide good quality
 // pseudo random numbers based on the mt19937 algorithm.
 //
+// Note how you can use defines to determine which of these classes to actually make use
+// of. See also rngs.h and rngd.h for including only randSingle or randDouble.
+//
 // Author: Seb James, August 2021.
 
 #pragma once
