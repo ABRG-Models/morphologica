@@ -193,6 +193,16 @@ namespace morph {
             VisualModel::render();
         }
 
+        //! Clear all the data for the graph, but leave the containers in place.
+        void clear()
+        {
+            size_t dsize = this->graphDataCoords.size();
+            for (size_t i = 0; i < dsize; ++i) {
+                this->graphDataCoords[i]->clear();
+            }
+            this->reinit();
+        }
+
         //! Update the data for the graph, recomputing the vertices when done.
         void update (const std::vector<Flt>& _abscissae,
                      const std::vector<Flt>& _data, const size_t data_idx)

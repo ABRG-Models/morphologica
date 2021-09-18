@@ -5,13 +5,41 @@
 // (each creates a single instance of RandUniform<> in memory) and provide good quality
 // pseudo random numbers based on the mt19937 algorithm.
 //
+// Note how you can use defines to determine which of these classes to actually make use
+// of. See also rngs.h and rngd.h for including only randSingle or randDouble.
+//
 // Author: Seb James, August 2021.
 
 #pragma once
 #include <morph/Random.h>
 
+// #define RANDSINGLE if you want a single precision rng
+#ifdef RANDSINGLE
 namespace morph {
+    // Uniform random number generator, singles
+    class srng
+    {
+    private:
+        srng() {};
+        ~srng() {};
+        static srng* pInstance_srng;
+    public:
+        static srng* i()
+        {
+            if (srng::pInstance_srng == 0) { srng::pInstance_srng = new srng; }
+            return srng::pInstance_srng;
+        }
+        float get() { return this->rng.get(); }
+        morph::RandUniform<float> rng;
+    };
+    srng* srng::pInstance_srng = 0;
+    static float randSingle() { return morph::srng::i()->get(); }
+}
+#endif
 
+// #define NO_RANDDOUBLE if you DON't want a double precision rng
+#ifndef NO_RANDDOUBLE
+namespace morph {
     // Uniform random number generator, doubles
     class drng
     {
@@ -31,26 +59,6 @@ namespace morph {
     };
     // Globally initialise drng instance pointer to NULL.
     drng* drng::pInstance_drng = 0;
-
-    // Uniform random number generator, singles
-    class srng
-    {
-    private:
-        srng() {};
-        ~srng() {};
-        static srng* pInstance_srng;
-    public:
-        static srng* i()
-        {
-            if (srng::pInstance_srng == 0) { srng::pInstance_srng = new srng; }
-            return srng::pInstance_srng;
-        }
-        float get() { return this->rng.get(); }
-        morph::RandUniform<float> rng;
-    };
-    srng* srng::pInstance_srng = 0;
-
-    // Wrappers
     static double randDouble() { return morph::drng::i()->get(); }
-    static float randSingle() { return morph::srng::i()->get(); }
 }
+#endif

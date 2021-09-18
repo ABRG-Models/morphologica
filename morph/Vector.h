@@ -143,10 +143,7 @@ namespace morph {
 
         //! Set all elements from the value type v
         template <typename _S=S>
-        void set_from (const _S& v)
-        {
-            std::fill (this->begin(), this->end(), v);
-        }
+        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         //! Return a vector with one less dimension - losing the last one.
         Vector<S, N-1> less_one_dim () const
@@ -448,10 +445,7 @@ namespace morph {
         }
 
         //! Return the sum of the elements
-        S sum() const
-        {
-            return std::accumulate (this->begin(), this->end(), S{0});
-        }
+        S sum() const { return std::accumulate (this->begin(), this->end(), S{0}); }
 
         //! Return the product of the elements
         S product() const

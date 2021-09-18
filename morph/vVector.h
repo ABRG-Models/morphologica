@@ -26,7 +26,7 @@ namespace morph {
     /*!
      * \brief N-D vector class deriving from std::vector
      *
-     * An N dimensional vector class template which derives from std::vector. Vector
+     * An N dimensional vector class template which derives from std::vector. Its
      * components are of scalar type S. It is anticipated that S will be set either to
      * floating point scalar types such as float or double, or to integer scalar types
      * such as int, long long int and so on. Thus, a typical (and in fact, the default)
@@ -36,7 +36,7 @@ namespace morph {
      * vVector<float> v(3);
      *\endcode
      *
-     * The class inherits std:vector's dynamnically-resizeable memory for storing the
+     * The class inherits std::vector's dynamically-resizeable memory for storing the
      * components of the vector and std::vector's constructors.. It adds numerous
      * methods which allow objects of type vVector to have arithmetic operations applied
      * to them, either scalar (add a scalar to all elements; divide all elements by a
@@ -64,42 +64,13 @@ namespace morph {
         using std::vector<S, Al>::vector;
 
         //! \return the first component of the vector
-        S x() const
-        {
-            return (*this)[0];
-        }
+        S x() const { return (*this)[0]; }
         //! \return the second component of the vector
-        S y() const
-        {
-            return (*this)[1];
-        }
+        S y() const { return (*this)[1]; }
         //! \return the third component of the vector
-        S z() const
-        {
-            return (*this)[2];
-        }
+        S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
-        S w() const
-        {
-            return (*this)[3];
-        }
-
-        /*!
-         * \brief Unit vector threshold
-         *
-         * The threshold outside of which the vector is no longer considered to be a
-         * unit vector. Note this is hard coded as a constexpr, to avoid messing with
-         * the initialization of the vVector with curly brace initialization.
-         *
-         * Clearly, this will be the wrong threshold for some cases. Possibly, a
-         * template parameter could set this; so size_t U could indicate the threshold;
-         * 0.001 could be U=-3 (10^-3).
-         *
-         * Another idea would be to change unitThresh based on the type S. Or use
-         * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
-         * sense.
-         */
-        static constexpr S unitThresh = 0.001;
+        S w() const { return (*this)[3]; }
 
         //! Set data members from an std::vector (may not be necessary?)
         template <typename _S=S>
@@ -118,10 +89,7 @@ namespace morph {
 
         //! Set all elements from the value type v
         template <typename _S=S>
-        void set_from (const _S& v)
-        {
-            std::fill (this->begin(), this->end(), v);
-        }
+        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set the data members of this vVector from the passed in, larger array, \a ar,
@@ -188,10 +156,7 @@ namespace morph {
 
         //! A function to set the value of each element of the vector.
         template <typename _S=S>
-        void set (const _S& val)
-        {
-            std::fill (this->begin(), this->end(), val);
-        }
+        void set (const _S& val) { std::fill (this->begin(), this->end(), val); }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
@@ -260,10 +225,7 @@ namespace morph {
         }
 
         //! Zero the vector. Set all coordinates to 0
-        void zero()
-        {
-            std::fill (this->begin(), this->end(), S{0});
-        }
+        void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
         /*!
          * Randomize the vector
@@ -308,7 +270,7 @@ namespace morph {
 
         /*!
          * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
-         * swapping x and y in a 2D Vector.
+         * swapping x and y in a 2D vector.
          */
         void rotate()
         {
@@ -326,7 +288,7 @@ namespace morph {
         {
             size_t N = this->size();
             if (N%2!=0) {
-                throw std::runtime_error ("vVector size must be even to call morph::Vector::rotate_pairs");
+                throw std::runtime_error ("vVector size must be even to call morph::vVector::rotate_pairs");
             }
             S tmp_el = S{0};
             for (size_t i = 0; i < N; i+=2) {
@@ -343,9 +305,26 @@ namespace morph {
          */
         bool checkunit() const
         {
+            /*!
+             * \brief Unit vector threshold
+             *
+             * The threshold outside of which the vector is no longer considered to be a
+             * unit vector. Note this is hard coded as a constexpr, to avoid messing with
+             * the initialization of the vVector with curly brace initialization.
+             *
+             * Clearly, this will be the wrong threshold for some cases. Possibly, a
+             * template parameter could set this; so size_t U could indicate the threshold;
+             * 0.001 could be U=-3 (10^-3).
+             *
+             * Another idea would be to change unitThresh based on the type S. Or use
+             * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
+             * sense.
+             */
+            static constexpr S unitThresh = 0.001;
+
             auto subtract_squared = [](S a, S b) { return a - b * b; };
             const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
-            if (std::abs(metric) > vVector<S>::unitThresh) {
+            if (std::abs(metric) > unitThresh) {
                 return false;
             }
             return true;
@@ -378,8 +357,8 @@ namespace morph {
 
         /*!
          * Return the sum of the squares of the elements. If S typed elements are
-         * Vectors then return the sum of the squares of the lengths of the elements in
-         * the zeroth element of the return S type.
+         * morph::Vectors or morph::vVectors, then return the sum of the squares of the
+         * lengths of the elements in the zeroth element of the return S type.
          */
         S sos() const
         {
@@ -387,7 +366,7 @@ namespace morph {
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 _sos = this->length_sq();
             } else {
-                // S is a Vector so i is a Vector.
+                // S is a vector so i is a vector.
                 for (auto& i : *this) { _sos[0] += i.length_sq(); }
             }
             return _sos;
@@ -434,7 +413,7 @@ namespace morph {
         size_t argshortest() const
         {
             size_t idx = 0;
-            // Check on the type S. If S is a Vector thing, then abs_compare needs to be different.
+            // Check on the type S. If S is a vector thing, then abs_compare needs to be different.
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
                 auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -608,10 +587,7 @@ namespace morph {
          *
          * \return true if the vector length is 0, otherwise it returns false.
          */
-        bool operator!() const
-        {
-            return (this->length() == S{0}) ? true : false;
-        }
+        bool operator!() const { return (this->length() == S{0}) ? true : false; }
 
 #if 0 // Haven't figured this out yet
         //! Assignment from std::vector
@@ -659,9 +635,9 @@ namespace morph {
         }
 
         /*!
-         * Vector cross product.
+         * Compute the vector cross product.
          *
-         * Cross product of this with another vector \a v (if N==3). In
+         * Cross product of this with another vVector \a v (if N==3). In
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
@@ -814,7 +790,7 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), add_v);
         }
 
-        //! Vector subtraction operator
+        //! A vVector subtraction operator
         template<typename _S=S>
         vVector<S> operator- (const vVector<_S>& v) const
         {
@@ -825,7 +801,7 @@ namespace morph {
             return vrtn;
         }
 
-        //! Vector subtraction operator
+        //! A vVector subtraction operator
         template<typename _S=S>
         void operator-= (const vVector<_S>& v)
         {

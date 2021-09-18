@@ -14,11 +14,13 @@
 #include <vector>
 #include <iostream>
 #include <morph/MathAlgo.h>
+#include <morph/vVector.h>
 
 namespace morph {
 
     //! What state is an instance of the NM_Simplex class in?
-    enum class NM_Simplex_State {
+    enum class NM_Simplex_State
+    {
         // The state is unknown
         Unknown,
         // Compute all vertices, then order them
@@ -38,22 +40,25 @@ namespace morph {
     /*!
      * A class implementing a Nelder Mead simplex of points, and the associated methods for
      * manipulating those points on the way to discovering a minimum of a function.
+     *
+     * This could be re-written with template <typename T, size_t N> where N is the
+     * dimensionality of the search, and using morph::Vector<T, N+1> as the type for
+     * vertices.
      */
-    template <typename Flt>
+    template <typename T>
     class NM_Simplex
     {
     public:
-        //! Parameters. Initialised to the standard values given on the NM Wikipedia page.
-        //@}
+        // Parameters. Initialised to the standard values given on the NM Wikipedia page.
+        //
         //! The reflection coefficient
-        Flt alpha = 1.0;
+        T alpha = 1.0;
         //! The expansion coefficient
-        Flt gamma = 2.0;
+        T gamma = 2.0;
         //! The contraction coefficient
-        Flt rho = 0.5;
+        T rho = 0.5;
         //! The shrink coefficient
-        Flt sigma = 0.5;
-        //@}
+        T sigma = 0.5;
 
         //! The number of dimensions in the search. There are n+1 vertices in the simplex.
         unsigned int n = 2;
@@ -74,64 +79,66 @@ namespace morph {
         //! Client code should set the termination threshold to be suitable for the problem. When
         //! the standard deviation of the values of the objective function at the vertices of the
         //! simplex drop below this value, the algorithm will be deemed to be finished.
-        Flt termination_threshold = 0.0001;
+        T termination_threshold = 0.0001;
 
         //! The centroid of all points except vertex n (the last one)
-        std::vector<Flt> x0;
+        morph::vVector<T> x0;
 
         //! A container to hold the reflected point xr = x0 + alpha(x0 - vertex[vertex_order.back()])
-        std::vector<Flt> xr;
+        morph::vVector<T> xr;
         //! The objective function value of the reflected point
-        Flt xr_value;
+        T xr_value;
 
         //! A container for the expanded point xe
-        std::vector<Flt> xe;
+        morph::vVector<T> xe;
         //! The objective function value of the expanded point
-        Flt xe_value;
+        T xe_value;
 
         //! A container for the contracted point xc (can probably merge with xe)
-        std::vector<Flt> xc;
+        morph::vVector<T> xc;
         //! The objective function value of the contracted point
-        Flt xc_value;
+        T xc_value;
 
         //! The locations of the simplex vertices. A vector of n+1 vertices, each of n coordinates.
-        std::vector<std::vector<Flt>> vertices;
+        morph::vVector<morph::vVector<T>> vertices;
 
         //! The objective function value for each vertex.
-        std::vector<Flt> values;
+        morph::vVector<T> values;
 
         //! This vector contains the size order of the vector values and can be used to index into
         //! vertices and values in the order of the metric. The first index in this vector indexes
         //! the "best" value in values/vertices. If downhill==true, then the first index indexes the
         //! lowest value in values, otherwise it indexes the highest value in values.
-        std::vector<unsigned int> vertex_order;
+        morph::vVector<unsigned int> vertex_order;
 
         //! This tells client code what it needs to do next. It either needs to order the points or
         //! compute a new objective function value for the reflected point xr;
         NM_Simplex_State state = NM_Simplex_State::Unknown;
 
     public:
-        //! Constructors
-        //@{
+        // Constructors
+
         //! Default constructor
-        NM_Simplex (void) { this->allocate(); }
+        NM_Simplex() { this->allocate(); }
         //! General constructor for n+1 vertices in n dimensions. The inner vector
         //! should be of size n, the outer vector of size n+1. Thus, for a simplex
         //! triangle flipping on a 2D surface, you'd have 3 vertices with 2 coordinates
         //! each.
-        NM_Simplex (const std::vector<std::vector<Flt>>& initial_vertices) {
+        NM_Simplex (const morph::vVector<morph::vVector<T>>& initial_vertices)
+        {
             // dimensionality, n, is the number of simplex vertices minus one
             // if (initial_vertices.size() < 2) { /* Error! */ }
             this->n = initial_vertices.size() - 1;
             this->allocate();
             unsigned int i = 0;
-            for (std::vector<Flt>& v : this->vertices) {
+            for (morph::vVector<T>& v : this->vertices) {
                 v = initial_vertices[i++];
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! Special constructor for 2 vertices in 1 dimension
-        NM_Simplex (const Flt& v0, const Flt& v1) {
+        NM_Simplex (const T& v0, const T& v1)
+        {
             this->n = 1;
             this->allocate();
             this->vertices[0][0] = v0;
@@ -139,8 +146,9 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! Special constructor for 3 vertices in 2 dimensions
-        NM_Simplex (const std::pair<Flt, Flt>& v0,
-                    const std::pair<Flt, Flt>& v1, const std::pair<Flt, Flt>& v2) {
+        NM_Simplex (const std::pair<T, T>& v0,
+                    const std::pair<T, T>& v1, const std::pair<T, T>& v2)
+        {
             this->n = 2;
             this->allocate();
             this->vertices[0][0] = v0.first;
@@ -152,67 +160,61 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! General constructor for n dimensional simplex
-        NM_Simplex (const unsigned int _n): n(_n) {
-            // if (this->n < 1) { /* Error! */ }
-            this->allocate();
-        }
-        //@}
+        NM_Simplex (const unsigned int _n): n(_n) { this->allocate(); }
 
         //! Return the location of the best approximation, given the values of the vertices.
-        std::vector<Flt> best_vertex (void) {
-            return this->vertices[this->vertex_order[0]];
-        }
-        Flt best_value (void) {
-            return this->values[this->vertex_order[0]];
-        }
+        morph::vVector<T> best_vertex() { return this->vertices[this->vertex_order[0]]; }
+        //! Return the value of the best approximation, given the values of the vertices.
+        T best_value() { return this->values[this->vertex_order[0]]; }
 
         //! Order the vertices.
-        void order (void) {
-
+        void order()
+        {
             // Order the vertices so that the first vertex is the best and the last one is the worst
             if (this->downhill) {
                 // Best is lowest
-                MathAlgo::bubble_sort_lo_to_hi<Flt> (this->values, this->vertex_order);
+                MathAlgo::bubble_sort_lo_to_hi<T> (this->values, this->vertex_order);
             } else {
-                MathAlgo::bubble_sort_hi_to_lo<Flt> (this->values, this->vertex_order);
+                MathAlgo::bubble_sort_hi_to_lo<T> (this->values, this->vertex_order);
             }
 
             // if ready to stop, set state and return (we order before testing if we stop, as the
             // returning of the best value relies on the vertices being ordered).
-            Flt sd = MathAlgo::compute_sd<Flt> (this->values);
+            T sd = MathAlgo::compute_sd<T> (this->values);
             if (sd < this->termination_threshold) {
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             } else if (this->too_many_operations > 0
                        && this->operation_count > this->too_many_operations) {
                 // If this is emitted, check your termination_threshold
-                std::cerr << "Warning (NM_Simplex): Reached too_many_operations. Setting state 'ReadyToStop'. Check termination_threshold, which was: " << this->termination_threshold << ". SD of simplex vertices was " << sd <<" (i.e. >=termination_threshold)." << std::endl;
+                std::cerr << "Warning (NM_Simplex): Reached too_many_operations. "
+                          << "Setting state 'ReadyToStop'. Check termination_threshold, which was: "
+                          << this->termination_threshold << ". SD of simplex vertices was "
+                          << sd <<" (i.e. >=termination_threshold)." << std::endl;
                 this->state = NM_Simplex_State::ReadyToStop;
                 return;
             }
 
             this->compute_x0();
-
             this->reflect();
         }
 
     private:
         //! Find the reflected point, xr, which is the reflection of the worst point about the
         //! centroid of the simplex.
-        void reflect (void) {
+        void reflect()
+        {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xr[j] = this->x0[j] + this->alpha * (this->x0[j] - this->vertices[worst][j]);
-            }
+            this->xr = this->x0 + (this->x0 - this->vertices[worst]) * this->alpha;
             this->state = NM_Simplex_State::NeedToComputeReflection;
         }
 
     public:
         //! With the objective function value for the reflected point xr passed in, apply the
         //! reflection and decide whether to replace, expand or contract.
-        void apply_reflection (const Flt _xr_value) {
-
+        void apply_reflection (const T _xr_value)
+        {
             this->xr_value = _xr_value;
 
             if (this->downhill
@@ -252,19 +254,18 @@ namespace morph {
     private:
         //! Compute the expanded point and then set the state to tell the client code that it needs
         //! to compute the objective function for the expanded point.
-        void expand (void) {
+        void expand()
+        {
             this->operation_count++;
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xe[j] = this->x0[j] + this->gamma * (this->xr[j] - this->x0[j]);
-            }
+            this->xe = this->x0 + (this->xr - this->x0) * this->gamma;
             this->state = NM_Simplex_State::NeedToComputeExpansion;
         }
 
     public:
         //! After computing the objective function for the expanded point, client code needs to call
         //! this function.
-        void apply_expansion (const Flt _xe_value) {
-
+        void apply_expansion (const T _xe_value)
+        {
             this->xe_value = _xe_value;
 
             if ((this->downhill && this->xe_value < this->xr_value)
@@ -282,17 +283,17 @@ namespace morph {
         }
 
     private:
-        void contract (void) {
+        void contract()
+        {
             this->operation_count++;
             unsigned int worst = this->vertex_order[this->n];
-            for (unsigned int j = 0; j < this->n; ++j) {
-                this->xc[j] = this->x0[j] + this->rho * (this->vertices[worst][j] - this->x0[j]);
-            }
+            this->xc = this->x0 + (this->vertices[worst] - this->x0) * this->rho;
             this->state = NM_Simplex_State::NeedToComputeContraction;
         }
 
     public:
-        void apply_contraction (const Flt _xc_value) {
+        void apply_contraction (const T _xc_value)
+        {
             this->xc_value = _xc_value;
             unsigned int worst = this->vertex_order[this->n];
             if ((this->downhill && this->xc_value < this->values[worst])
@@ -307,42 +308,32 @@ namespace morph {
         }
 
     private:
-        void shrink (void) {
+        void shrink()
+        {
             this->operation_count++;
             for (unsigned int i = 1; i <= this->n; ++i) {
-                for (unsigned int j = 0; j < this->n; ++j) {
-                    this->vertices[i][j] = this->vertices[0][j]
-                        + this->sigma * (this->vertices[i][j] - this->vertices[0][j]);
-                }
+                this->vertices[i] = this->vertices[0] + (this->vertices[i] - this->vertices[0]) * this->sigma;
             }
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
 
         //! Compute x0, the centroid of all points except vertex n, or, put another way, the
         //! centroid of the best side.
-        void compute_x0 (void) {
-
-            // Zero x0
-            for (Flt& x0i : this->x0) { x0i = 0.0; }
-
+        void compute_x0()
+        {
+            this->x0.zero();
             // For each simplex vertex except the worst vertex
             for (unsigned int i = 0; i<this->n; ++i) { // *excluding* i==n
-                for (unsigned int j = 0; j<this->n; ++j) {
-                    // The worst vertex would be vertex_order[i==n]
-                    this->x0[j] += this->vertices[this->vertex_order[i]][j];
-                }
+                this->x0 += this->vertices[this->vertex_order[i]];
             }
-            for (unsigned int j = 0; j<this->n; ++j) {
-                this->x0[j] /= static_cast<Flt>(this->n);
-            }
+            this->x0 /= static_cast<T>(this->n);
         }
 
         //! Resize the various vectors based on the value of n.
-        void allocate (void) {
+        void allocate()
+        {
             this->vertices.resize (this->n+1);
-            for (std::vector<Flt>& v : this->vertices) {
-                v.resize (this->n, 0.0);
-            }
+            for (morph::vVector<T>& v : this->vertices) { v.resize (this->n, 0.0); }
             this->x0.resize (this->n, 0.0);
             this->xr.resize (this->n, 0.0);
             this->xe.resize (this->n, 0.0);
@@ -350,9 +341,7 @@ namespace morph {
             this->values.resize (this->n+1, 0.0);
             this->vertex_order.resize (this->n+1, 0);
             unsigned int i = 0;
-            for (unsigned int& vo : this->vertex_order) {
-                vo = i++;
-            }
+            for (unsigned int& vo : this->vertex_order) { vo = i++; }
         }
     };
 
