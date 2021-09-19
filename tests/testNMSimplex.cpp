@@ -97,12 +97,12 @@ int main()
     morph::vVector<FLT> thebest = simp.best_vertex();
     FLT bestval = simp.best_value();
     std::cout << "FINISHED! lcount=" << lcount
-              << ". Best approximation: (" << thebest[0] << "," << thebest[1]
+              << ". Best approximation: (" << thebest
               << ") has value " << bestval << std::endl;
 
     int rtn = -1;
-    if (abs(thebest[0] - 1.0) < 1e-3 // Choose 1e-3 so that this will succeed with floats or doubles
-        && abs(thebest[1] - 1.0) < 1e-3) {
+    if (abs(thebest[0] - FLT{1}) < FLT{1e-3}
+        && abs(thebest[1] - FLT{1}) < FLT{1e-3}) {
         std::cout << "Test success" << std::endl;
         rtn = 0;
     }
