@@ -437,7 +437,7 @@ namespace morph {
             return idx;
         }
 
-        //! Return the arithmentic mean of the elements
+        //! Return the arithmetic mean of the elements
         S mean() const
         {
             const S sum = std::accumulate (this->begin(), this->end(), S{0});
