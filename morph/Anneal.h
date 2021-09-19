@@ -15,6 +15,7 @@
 #include <iostream>
 #include <morph/MathAlgo.h>
 #include <morph/vVector.h>
+#include <morph/Random.h>
 
 namespace morph {
 
@@ -24,7 +25,7 @@ namespace morph {
         // The state is unknown
         Unknown,
         // Need to do something
-        NeedToComputeCandidate,
+        NeedToCompute,
         // The algorithm has finished and found a location within tolerance
         ReadyToStop
     };
@@ -48,78 +49,68 @@ namespace morph {
         //! this NM algorithm, I increment every time the simplex changes shape.
         unsigned long long int operation_count = 0;
 
-        //! If set >0, then if operation_count exceeds too_many_operations, then
-        //! ReadyToStop is set (and a warning emitted).
-        unsigned long long int too_many_operations = 0;
-
-        // Annealing variables here
+        //! How many annealing steps to make as we go from T=1 to T=0
+        unsigned long long int num_operations = 0;
 
         //! The temperature
-        T T;
+        T temp = T{1};
 
-        //! Current paramters
-        morph::vVector<T> current;
-        //! Value of objective function for current parameters
-        T current_value;
+        //! Random number generator
+        morph::RandUniform* rng;
 
         //! Best parameters
         morph::vVector<T> best;
         //! Value of obj fn for best parameters
-        T best_value;
+        T best_value = T{0};
 
         //! Candidate parameter values
         morph::vVector<T> cand;
         //! Value of obj fn for candidate parameters
-        T cand_value;
+        T cand_value = T{0};
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
 
     public:
-        // Constructors
-
         //! Default constructor
         Anneal() { this->allocate(); }
-        //! General constructor for n dimensions with initial values
-        Anneal (const morph::vVector<T>& initial_values)
+        //! General constructor for n dimensions with initial params
+        Anneal (const morph::vVector<T>& initial_params)
         {
-            this->n = initial_values.size();
+            this->n = initial_params.size();
             this->allocate();
-            unsigned int i = 0;
-            for (morph::vVector<T>& v : this->vertices) {
-                v = initial_vertices[i++];
-            }
-            this->state = Anneal_State::StartingState;
+            this->cand = initial_params;
+            this->state = Anneal_State::NeedToCompute;
         }
 
-        //! Return the parameters of the best approximation, given the values of the vertices.
-        morph::vVector<T> best_approximation() { return this->best_param; }
-        //! Return the value of the best approximation, given the values of the vertices.
-        T best_value() { return this->best_param_value; }
-
-        void func()
+        // Advance the simulated annealing algorithm by one step
+        void step()
         {
-            T w = std::exp(-(fxcand - fxcur)/this->T);
-            T s = this->rng.get();
-            if (w>s) {
-                this->state = Anneal::accept_candidate;
+            if (this->temp == T{0}) {
+                this->state = Anneal_State::ReadyToStop;
+                return;
             }
+            // Evaluate candidate; if it's the best, then update best
+            if (this->downhill == true) {
+                this->best = this->cand_value < this->best_value ? this->cand : this->best;
+                this->best_value = this->cand_value < this->best_value ? this->cand_value : this->best_value;
+            } else {
+                this->best = this->cand_value > this->best_value ? this->cand : this->best;
+                this->best_value = this->cand_value > this->best_value ? this->cand_value : this->best_value;
+            }
+            // Decrement temperature
+            this->temp = T{1} - (++operation_count) / static_cast<T>(num_operations);
+            // WRITEME: Choose new candidate parameters
+            // Tell client code it needs to compute the objective
+            this->state = Anneal_State::NeedToCompute;
         }
 
     private:
         //! Resize the various vectors based on the value of n.
         void allocate()
         {
-            this->vertices.resize (this->n+1);
-            for (morph::vVector<T>& v : this->vertices) { v.resize (this->n, 0.0); }
-            this->x0.resize (this->n, 0.0);
-            this->xr.resize (this->n, 0.0);
-            this->xe.resize (this->n, 0.0);
-            this->xc.resize (this->n, 0.0);
-            this->values.resize (this->n+1, 0.0);
-            this->vertex_order.resize (this->n+1, 0);
-            unsigned int i = 0;
-            for (unsigned int& vo : this->vertex_order) { vo = i++; }
+            this->cand.resize (this->n, 0.0);
+            this->best.resize (this->n, 0.0);
         }
     };
 

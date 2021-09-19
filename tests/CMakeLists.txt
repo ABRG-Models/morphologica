@@ -270,6 +270,11 @@ add_executable(testNMSimplex testNMSimplex.cpp)
 target_compile_definitions(testNMSimplex PUBLIC FLT=float)
 add_test(testNMSimplex testNMSimplex)
 
+# Test simulated annealing algorithm
+add_executable(testAnneal testAnneal.cpp)
+target_compile_definitions(testAnneal PUBLIC FLT=float)
+add_test(testAnneal testAnneal)
+
 # Test Random number generation code
 add_executable(testRandom testRandom.cpp)
 add_test(testRandom testRandom)
