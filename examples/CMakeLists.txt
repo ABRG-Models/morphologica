@@ -25,6 +25,9 @@ target_link_libraries(helloworld ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${L
 add_executable(convolve convolve.cpp)
 target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(anneal anneal.cpp)
+target_link_libraries(anneal ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
 # Plots a surface, counts (and shows) the frames per second
 add_executable(fps fps.cpp)
 if(APPLE AND OpenMP_CXX_FOUND)

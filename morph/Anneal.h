@@ -15,6 +15,7 @@
 #include <iostream>
 #include <morph/MathAlgo.h>
 #include <morph/vVector.h>
+#include <morph/Vector.h>
 #include <morph/Random.h>
 
 namespace morph {
@@ -24,7 +25,9 @@ namespace morph {
     {
         // The state is unknown
         Unknown,
-        // Need to do something
+        // Need to perform a step of the annealing algo
+        NeedToStep,
+        // Need to do compute the objective of the candidate
         NeedToCompute,
         // The algorithm has finished and found a location within tolerance
         ReadyToStop
@@ -55,33 +58,56 @@ namespace morph {
         //! The temperature
         T temp = T{1};
 
-        //! Random number generator
-        morph::RandUniform* rng;
+        //! Number of candidates that are improved (descents, if downhill is true)
+        unsigned long long int num_improved = 0;
+        //! Number of candidates that are worse (if downhill is true)
+        unsigned long long int num_worse = 0;
+        //! Record statistics on the number of acceptances of worse candidates
+        unsigned long long int num_worse_accepted = 0;
 
-        //! Best parameters
-        morph::vVector<T> best;
+        //! Random number generator (uniform, range 0-1)
+        morph::RandUniform<T> rnd_u;
+
+        //! Parameter ranges - defining a part of R^n to search
+        morph::vVector<morph::Vector<T,2>> ranges;
+
+        // Multiplier on the range.
+        T range_mult = T{1};
+
+        //! A vector of random number generators.
+        morph::vVector<morph::RandNormal<T>*> generators;
+
+        //! Best parameters so far
+        morph::vVector<T> x_best;
         //! Value of obj fn for best parameters
-        T best_value = T{0};
+        T f_x_best = T{0};
 
         //! Candidate parameter values
-        morph::vVector<T> cand;
+        morph::vVector<T> x_cand;
         //! Value of obj fn for candidate parameters
-        T cand_value = T{0};
+        T f_x_cand = T{0};
+
+        //! Current parameters
+        morph::vVector<T> x;
+        //! Value of obj fn for current parameters
+        T f_x = T{0};
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
 
-    public:
-        //! Default constructor
-        Anneal() { this->allocate(); }
         //! General constructor for n dimensions with initial params
-        Anneal (const morph::vVector<T>& initial_params)
+        Anneal (const morph::vVector<T>& initial_params,
+                const morph::vVector<morph::Vector<T,2>>& param_ranges)
         {
             this->n = initial_params.size();
-            this->allocate();
-            this->cand = initial_params;
+            this->ranges = param_ranges;
+            this->init();
+            this->x_cand = initial_params;
             this->state = Anneal_State::NeedToCompute;
         }
+
+        //! Deconstructor cleans up the RandNormal generators
+        ~Anneal() { for (auto& g : this->generators) { delete g; } }
 
         // Advance the simulated annealing algorithm by one step
         void step()
@@ -90,27 +116,81 @@ namespace morph {
                 this->state = Anneal_State::ReadyToStop;
                 return;
             }
+
             // Evaluate candidate; if it's the best, then update best
             if (this->downhill == true) {
-                this->best = this->cand_value < this->best_value ? this->cand : this->best;
-                this->best_value = this->cand_value < this->best_value ? this->cand_value : this->best_value;
+                this->x_best = this->f_x_cand < this->f_x_best ? this->x_cand : this->x_best;
+                this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
             } else {
-                this->best = this->cand_value > this->best_value ? this->cand : this->best;
-                this->best_value = this->cand_value > this->best_value ? this->cand_value : this->best_value;
+                this->x_best = this->f_x_cand > this->f_x_best ? this->x_cand : this->x_best;
+                this->f_x_best = this->f_x_cand > this->f_x_best ? this->f_x_cand : this->f_x_best;
             }
+
             // Decrement temperature
             this->temp = T{1} - (++operation_count) / static_cast<T>(num_operations);
-            // WRITEME: Choose new candidate parameters
-            // Tell client code it needs to compute the objective
+
+            // Do we accept candidate?
+            if (this->accept()) {
+                this->x = this->x_cand;
+                this->f_x = this->f_x_cand;
+            }
+
+            // Choose new candidate parameters
+            this->generate_candidate();
+
+            // Tell client code it needs to compute the objective for the new candidate
             this->state = Anneal_State::NeedToCompute;
         }
 
-    private:
-        //! Resize the various vectors based on the value of n.
-        void allocate()
+        void set_f_x_cand (T f_c)
         {
-            this->cand.resize (this->n, 0.0);
-            this->best.resize (this->n, 0.0);
+            this->f_x_cand = f_c;
+            this->state = Anneal_State::NeedToStep;
+        }
+
+    protected:
+
+        //! The neighbour or candidate generating function
+        virtual void generate_candidate()
+        {
+            morph::vVector<T> delta(this->x_cand.size());
+            for (size_t i = 0; i < delta.size(); ++i) { delta[i] = (this->generators[i])->get(); }
+            this->x_cand = this->x + delta * this->range_mult;
+            // Ensure we don't exceed the ranges
+            for (size_t i = 0; i < this->x_cand.size(); ++i) {
+                x_cand[i] = x_cand[i] > this->ranges[i][1] ? this->ranges[i][1] : x_cand[i];
+                x_cand[i] = x_cand[i] < this->ranges[i][0] ? this->ranges[i][0] : x_cand[i];
+            }
+        }
+
+        //! The acceptance function (Metropolis et al style)
+        virtual bool accept()
+        {
+            bool rtn = false;
+            if (this->f_x_cand < this->f_x) {
+                ++this->num_improved;
+                rtn = true;
+            } else {
+                ++this->num_worse;
+                T p = std::exp (-(this->f_x_cand - this->f_x)/this->temp);
+                rtn = p > this->rnd_u.get() ? ++this->num_worse_accepted, true : false;
+            }
+            return rtn;
+        }
+
+        //! Resize vectors, allocate RNGs
+        void init()
+        {
+            this->x.resize (this->n, 0.0);
+            this->x_cand.resize (this->n, 0.0);
+            this->x_best.resize (this->n, 0.0);
+            this->generators.resize (this->n);
+            size_t i = 0;
+            for (auto r : this->ranges) {
+                // Range is r[0] to r[1]
+                T sd = std::sqrt(r[1]-r[0]); // Fix this
+                this->generators[i++] = new morph::RandNormal<T>(T{0}, sd);
+            }
         }
     };
 
