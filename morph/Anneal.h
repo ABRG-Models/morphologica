@@ -1,7 +1,7 @@
 /*
- * Simulated Annealing. Usage similar to NM_Simplex. Client code should create an
- * instance of the anneal class, then repeatedly call its public methods until the
- * objects state member is Anneal_State::ReadyToStop. Computation of whatever the
+ * Simulated Annealing (or quenching). Usage similar to NM_Simplex. Client code should
+ * create an instance of the anneal class, then repeatedly call its public methods until
+ * the objects state member is Anneal_State::ReadyToStop. Computation of whatever the
  * objective function is is left entirely to the client code. What the client code
  * should do next is stored in Anneal::state.
  *
@@ -55,7 +55,7 @@ namespace morph {
         //! How many annealing steps to make as we go from T=1 to T=0
         unsigned long long int num_operations = 0;
 
-        //! The temperature
+        //! The temperature or control parameter
         T temp = T{1};
 
         //! Number of candidates that are improved (descents, if downhill is true)
@@ -97,22 +97,31 @@ namespace morph {
 
         //! General constructor for n dimensions with initial params
         Anneal (const morph::vVector<T>& initial_params,
-                const morph::vVector<morph::Vector<T,2>>& param_ranges)
+                const morph::vVector<morph::Vector<T,2>>& param_ranges, const bool dh = true)
         {
             this->n = initial_params.size();
             this->ranges = param_ranges;
+            this->downhill = dh;
             this->init();
             this->x_cand = initial_params;
+            this->x_best = initial_params;
+            this->x = initial_params;
             this->state = Anneal_State::NeedToCompute;
         }
 
         //! Deconstructor cleans up the RandNormal generators
         ~Anneal() { for (auto& g : this->generators) { delete g; } }
 
+        //! Reset the statistics on the number of objective functions accepted etc
+        void reset_stats() { num_improved = 0; num_worse = 0; num_worse_accepted = 0; }
+
+        //! The cooling schedule function
+        T U() { return (T{1} - (++operation_count) / static_cast<T>(num_operations)); }
+
         // Advance the simulated annealing algorithm by one step
         void step()
         {
-            if (this->temp == T{0}) {
+            if (this->temp <= T{0}) {
                 this->state = Anneal_State::ReadyToStop;
                 return;
             }
@@ -126,8 +135,8 @@ namespace morph {
                 this->f_x_best = this->f_x_cand > this->f_x_best ? this->f_x_cand : this->f_x_best;
             }
 
-            // Decrement temperature
-            this->temp = T{1} - (++operation_count) / static_cast<T>(num_operations);
+            // set temperature
+            this->temp = this->U();
 
             // Do we accept candidate?
             if (this->accept()) {
@@ -154,10 +163,10 @@ namespace morph {
         virtual void generate_candidate()
         {
             morph::vVector<T> delta(this->x_cand.size());
-            for (size_t i = 0; i < delta.size(); ++i) { delta[i] = (this->generators[i])->get(); }
+            for (unsigned int i = 0; i < delta.size(); ++i) { delta[i] = (this->generators[i])->get(); }
             this->x_cand = this->x + delta * this->range_mult;
             // Ensure we don't exceed the ranges
-            for (size_t i = 0; i < this->x_cand.size(); ++i) {
+            for (unsigned int i = 0; i < this->x_cand.size(); ++i) {
                 x_cand[i] = x_cand[i] > this->ranges[i][1] ? this->ranges[i][1] : x_cand[i];
                 x_cand[i] = x_cand[i] < this->ranges[i][0] ? this->ranges[i][0] : x_cand[i];
             }
@@ -181,11 +190,14 @@ namespace morph {
         //! Resize vectors, allocate RNGs
         void init()
         {
+            this->f_x_best = (this->downhill == true) ? std::numeric_limits<T>::max() : std::numeric_limits<T>::lowest();
+            this->f_x = f_x_best;
+            this->f_x_cand = f_x_best;
             this->x.resize (this->n, 0.0);
             this->x_cand.resize (this->n, 0.0);
             this->x_best.resize (this->n, 0.0);
             this->generators.resize (this->n);
-            size_t i = 0;
+            unsigned int i = 0;
             for (auto r : this->ranges) {
                 // Range is r[0] to r[1]
                 T sd = std::sqrt(r[1]-r[0]); // Fix this

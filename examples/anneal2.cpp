@@ -52,6 +52,7 @@ int main()
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
 
+    // Visualise the objective function with a HexGridVisual
     morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, hg, offset);
     hgv->setScalarData (&obj_f);
@@ -59,34 +60,33 @@ int main()
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    // Here, our search space is 2D
+    // Here, our search space is 2D; set up the initial parameters of the objective and the permitted ranges of exploration
     morph::vVector<float> p = { 1.0f, 1.0f};
-    // These ranges should fall within the hexagonal domain
+    // These ranges should fall within the hexagonal domain of the HexGrid
     morph::vVector<morph::Vector<float,2>> p_rng = {{ {-1.05f, 1.05f}, {-1.05f, 1.05f} }};
 
-    morph::Vector<float, 3> polypos = { p[0], p[1], 0.0f };
-
-    // One object for the 'candidate' position
+    // A green line for the 'candidate' position
+    morph::Vector<float, 3> init_line_pos = { p[0], p[1], 0.0f };
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
-
-    // A second object for the 'best' position
-    col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
-
-    // A third object for the currently accepted position
-    col = { 1, 0, 0.7f };
-    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
-
+    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, init_line_pos, {1,0,0}, 0.005f, 0.4f, col, 20);
     v.addVisualModel (candp);
+
+    // A red line for the 'best' position
+    col = { 1, 0, 0 };
+    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, init_line_pos, {1,0,0}, 0.005f, 0.6f, col, 20);
     v.addVisualModel (bestp);
+
+    // A pink line for the current position
+    col = { 1, 0, 0.7f };
+    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, init_line_pos, {1,0,0}, 0.005f, 0.6f, col, 20);
     v.addVisualModel (currp);
+
     v.render();
 
     // Set up the morph::Anneal object
     morph::Anneal<float> anneal(p, p_rng);
-    anneal.num_operations = 2000;
-    anneal.range_mult = 0.1;
+    anneal.num_operations = 150;
+    anneal.range_mult = 0.15;
 
     // Now do the business
     while (anneal.state != morph::Anneal_State::ReadyToStop) {
