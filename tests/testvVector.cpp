@@ -213,6 +213,11 @@ int main() {
     std::cout << "one + " << ltthan << " = " << (1.0+ltthancopy) << std::endl;
     std::cout << "one - " << ltthan << " = " << (1.0-ltthancopy) << std::endl;
 
+    std::vector<int> stdvec = { 1, 2, 3 };
+    morph::vVector<int> fromstd;
+    // You can't do fromstd = stdvec; instead, do this:
+    fromstd.set_from (stdvec);
+
     // Test different vVector  types dotted:
     vVector<double> left = h1;
     vVector<int> right = { 2,2,3 };

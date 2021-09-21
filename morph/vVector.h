@@ -72,10 +72,11 @@ namespace morph {
         //! \return the fourth component of the vector
         S w() const { return (*this)[3]; }
 
-        //! Set data members from an std::vector (may not be necessary?)
+        //! Set data members from an std::vector (by copying)
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
         {
+            this->resize(vec.size());
             std::copy (vec.begin(), vec.end(), this->begin());
         }
 
@@ -87,7 +88,7 @@ namespace morph {
             std::copy (ar.begin(), ar.end(), this->begin());
         }
 
-        //! Set all elements from the value type v
+        //! Set all elements from the value type v. Same as vVector::set
         template <typename _S=S>
         void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
@@ -156,7 +157,7 @@ namespace morph {
 
         //! A function to set the value of each element of the vector.
         template <typename _S=S>
-        void set (const _S& val) { std::fill (this->begin(), this->end(), val); }
+        void set (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
@@ -712,30 +713,6 @@ namespace morph {
          * \return true if the vector length is 0, otherwise it returns false.
          */
         bool operator!() const { return (this->length() == S{0}) ? true : false; }
-
-#if 0 // Haven't figured this out yet
-        //! Assignment from std::vector
-        template <typename _S=S, typename _Al=Al>
-        vVector<S, Al>& operator= (const std::vector<_S, _Al>& v)
-        {
-            return std::vector<_S, _Al>::operator=(v);
-            // or:
-            //this->resize (v.size());
-            //std::copy (v.begin(), v.end(), this->begin());
-            //return *this;
-        }
-#endif
-
-#if 0 // Haven't figured this out yet
-        //! Assignment from std::array
-        template <typename _S=S, size_t N>
-        vVector<S>& operator= (const std::array<_S, N>& ar)
-        {
-            this->resize (N);
-            std::copy (ar.begin(), ar.end(), this->begin());
-            return *this;
-        }
-#endif
 
         /*!
          * \brief Scalar (dot) product of two vVectors
