@@ -621,19 +621,29 @@ namespace morph {
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
-            vVector<unsigned int> notlessthan(this->size());
-            auto nlt_element = [rhs](S coord) { return coord < rhs ? 0 : 1; };
-            std::transform (this->begin(), this->end(), notlessthan.begin(), nlt_element);
-            return notlessthan.sum() == 0 ? true : false;
+            auto _element_fails = [rhs](S a, S b) { return a + (b < rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! <= a scalar. Return true if every element is less than the scalar
+        bool operator<=(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Greater than a scalar. Return true if every element is gtr than the scalar
         bool operator>(const S rhs) const
         {
-            vVector<unsigned int> notgtrthan(this->size());
-            auto ngt_element = [rhs](S coord) { return coord > rhs ? 0 : 1; };
-            std::transform (this->begin(), this->end(), notgtrthan.begin(), ngt_element);
-            return notgtrthan.sum() == 0 ? true : false;
+            auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! >= a scalar. Return true if every element is gtr than the scalar
+        bool operator>=(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
@@ -644,10 +654,20 @@ namespace morph {
                 throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
             }
             auto ri = rhs.begin();
-            vVector<unsigned int> notlessthan(this->size());
-            auto nlt_element = [ri](S coord) mutable { return coord < (*ri++) ? 0 : 1; };
-            std::transform (this->begin(), this->end(), notlessthan.begin(), nlt_element);
-            return notlessthan.sum() == 0 ? true : false;
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is <= its counterpart in rhs.
+        template<typename _S=S>
+        bool operator<= (const vVector<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
+            }
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! Return true if each element of *this is greater than its counterpart in rhs.
@@ -658,10 +678,20 @@ namespace morph {
                 throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
             }
             auto ri = rhs.begin();
-            vVector<unsigned int> notgtrthan(this->size());
-            auto ngt_element = [ri](S coord) mutable { return coord > (*ri++) ? 0 : 1; };
-            std::transform (this->begin(), this->end(), notgtrthan.begin(), ngt_element);
-            return notgtrthan.sum() == 0 ? true : false;
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is >= its counterpart in rhs.
+        template<typename _S=S>
+        bool operator>= (const vVector<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
+            }
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         /*!
