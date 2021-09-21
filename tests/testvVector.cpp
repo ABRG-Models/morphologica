@@ -167,6 +167,24 @@ int main() {
         cout << e.what() << endl;
     }
 
+    // Signum function
+    vVector<float> sigtest = { -1.2, 0.001, 0.0f, 34.0f, -1808.8f };
+    std::cout << "signum of " << sigtest << " is " << sigtest.signum() << std::endl;
+    vVector<float> sigexpect = { -1.0f, 1.0f, 0.0f, 1.0f, -1.0f };
+    if (sigtest.signum() != sigexpect) { --rtn; }
+    std::cout << "signum of " << sigtest << ", computed in place, is ";
+    sigtest.signum_inplace();
+    std::cout << sigtest << std::endl;
+    if (sigtest != sigexpect) { --rtn; }
+
+    // Raising to a power
+    vVector<float> powtest = { 1.1f, 2.3f, 4.7 };
+    vVector<unsigned int> powrs = { 2, 3, 4 };
+    std::cout << "Powers: " << powtest << " raised to powers " << powrs << " is " << powtest.pow(powrs) << std::endl;
+    std::cout << "After, powtest is still " << powtest << " and after .pow_inplace() is ";
+    powtest.pow_inplace(powrs);
+    std::cout << powtest << std::endl;
+
     // Test different vVector types dotted:
     vVector<double> left = h1;
     vVector<int> right = { 2,2,3 };

@@ -485,8 +485,6 @@ namespace morph {
          */
         vVector<S> pow (const S& p) const
         {
-            // To get power in-place:
-            //for (auto& i : *this) { i = std::pow (i, p); }
             vVector<S> rtn(this->size());
             auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
@@ -494,6 +492,40 @@ namespace morph {
         }
         //! Raise each element to the power p
         void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+
+        //! Element-wise power
+        template<typename _S=S>
+        vVector<S> pow (const vVector<_S>& p) const
+        {
+            if (p.size() != this->size()) {
+                throw std::runtime_error ("element-wise power: p dims should equal vVector's dims");
+            }
+            auto pi = p.begin();
+            vVector<S> rtn(this->size());
+            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, (*pi++)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
+            return rtn;
+        }
+        //! Raise each element, i, to the power p[i]
+        template<typename _S=S>
+        void pow_inplace (const vVector<_S>& p)
+        {
+            if (p.size() != this->size()) {
+                throw std::runtime_error ("element-wise power: p dims should equal vVector's dims");
+            }
+            auto pi = p.begin();
+            for (auto& i : *this) { i = std::pow (i, (*pi++)); }
+        }
+
+        //! Return the signum of the vVector, with signum(0)==0
+        vVector<S> signum() const
+        {
+            vVector<S> rtn(this->size());
+            auto _signum = [](S coord) { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _signum);
+            return rtn;
+        }
+        void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
         /*!
          * Compute the element-wise square root of the vector
