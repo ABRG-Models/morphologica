@@ -185,7 +185,30 @@ int main() {
     powtest.pow_inplace(powrs);
     std::cout << powtest << std::endl;
 
-    // Test different vVector types dotted:
+    // Less than/gtr than operator
+    vVector<double> lttest = { 0, -1, 2, 3.4, 3.8, 6.0 };
+    std::cout << "Considering ALL elements of " << lttest << ":\n";
+    std::cout << (lttest < 3.5 ? "  ALL are less than 3.5" : "  NOT ALL are less than 3.5") << std::endl;
+    std::cout << (lttest < 6.2 ? "  ALL are less than 6.2" : "  NOT ALL are less than 6.2") << std::endl;
+    std::cout << (lttest < 6.0 ? "  ALL are less than 6.0" : "  NOT ALL are less than 6.0") << std::endl;
+    std::cout << (lttest > 3.5 ? "  ALL are greater than 3.5" : "  NOT ALL are greater than 3.5") << std::endl;
+    std::cout << (lttest > 6.2 ? "  ALL are greater than 6.2" : "  NOT ALL are greater than 6.2") << std::endl;
+    std::cout << (lttest > -1.1 ? "  ALL are greater than -1.1" : "  NOT ALL are greater than -1.1") << std::endl;
+    vVector<double> ltthan = { 1, -2, 1, 4.4, 3.8, 5.8};
+    std::cout << "Considering ALL elements of " << lttest
+              << "\ncompared with                " << ltthan << ":\n";
+    std::cout << " ALL less than? " << (lttest < ltthan ? "True" : "False") << std::endl;
+    std::cout << " ALL gtr than? " << (lttest > ltthan ? "True" : "False") << std::endl;
+
+    vVector<double> ltthanplus = ltthan + 1.0;
+    std::cout << "ltthan + 1 > lthan? " << (ltthanplus > ltthan ? "True" : "False") << std::endl;
+    std::cout << "ltthan + 1 < lthan? " << (ltthanplus < ltthan ? "True" : "False") << std::endl;
+
+    std::cout << "ltthan + 1 == lthan? " << (ltthan == ltthanplus ? "True" : "False") << std::endl;
+    vVector<double> ltthancopy = ltthan;
+    std::cout << "Is a copy of a vVector == to the vVector? " << (ltthan == ltthancopy ? "True" : "False") << std::endl;
+
+    // Test different vVector  types dotted:
     vVector<double> left = h1;
     vVector<int> right = { 2,2,3 };
     double dotprod = left.dot(right);

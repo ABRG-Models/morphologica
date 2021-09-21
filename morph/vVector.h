@@ -161,6 +161,7 @@ namespace morph {
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
         {
+            if (this->empty()) { return; }
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
             for (auto i : *this) {
@@ -573,6 +574,21 @@ namespace morph {
         void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
 
         /*!
+         * Compute the element-wise logarithm-to-base-10 of the vector
+         *
+         * \return a vVector whose elements have been log10ed
+         */
+        vVector<S> log10() const
+        {
+            vVector<S> rtn(this->size());
+            auto log_element = [](S coord) { return std::log10(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), log_element);
+            return rtn;
+        }
+        //! Replace each element with its own log
+        void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
+
+        /*!
          * Compute the element-wise natural exponential of the vector
          *
          * \return a vVector whose elements have been exponentiate
@@ -601,6 +617,52 @@ namespace morph {
         }
         //! Replace each element with its absolute value
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+
+        //! Less than a scalar. Return true if every element is less than the scalar
+        bool operator<(const S rhs) const
+        {
+            vVector<unsigned int> notlessthan(this->size());
+            auto nlt_element = [rhs](S coord) { return coord < rhs ? 0 : 1; };
+            std::transform (this->begin(), this->end(), notlessthan.begin(), nlt_element);
+            return notlessthan.sum() == 0 ? true : false;
+        }
+
+        //! Greater than a scalar. Return true if every element is gtr than the scalar
+        bool operator>(const S rhs) const
+        {
+            vVector<unsigned int> notgtrthan(this->size());
+            auto ngt_element = [rhs](S coord) { return coord > rhs ? 0 : 1; };
+            std::transform (this->begin(), this->end(), notgtrthan.begin(), ngt_element);
+            return notgtrthan.sum() == 0 ? true : false;
+        }
+
+        //! Return true if each element of *this is less than its counterpart in rhs.
+        template<typename _S=S>
+        bool operator< (const vVector<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
+            }
+            auto ri = rhs.begin();
+            vVector<unsigned int> notlessthan(this->size());
+            auto nlt_element = [ri](S coord) mutable { return coord < (*ri++) ? 0 : 1; };
+            std::transform (this->begin(), this->end(), notlessthan.begin(), nlt_element);
+            return notlessthan.sum() == 0 ? true : false;
+        }
+
+        //! Return true if each element of *this is greater than its counterpart in rhs.
+        template<typename _S=S>
+        bool operator> (const vVector<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vVector's dims");
+            }
+            auto ri = rhs.begin();
+            vVector<unsigned int> notgtrthan(this->size());
+            auto ngt_element = [ri](S coord) mutable { return coord > (*ri++) ? 0 : 1; };
+            std::transform (this->begin(), this->end(), notgtrthan.begin(), ngt_element);
+            return notgtrthan.sum() == 0 ? true : false;
+        }
 
         /*!
          * Unary negate operator
