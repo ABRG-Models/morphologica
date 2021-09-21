@@ -132,18 +132,15 @@ int main()
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual polyc (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
-    morph::PolygonVisual* candp = &polyc;
+    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual polyb (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
-    morph::PolygonVisual* bestp = &polyb;
+    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    morph::PolygonVisual polycur (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
-    morph::PolygonVisual* currp = &polycur;
+    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
 
     v.addVisualModel (candp);
     v.addVisualModel (bestp);
