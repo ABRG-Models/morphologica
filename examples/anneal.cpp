@@ -186,5 +186,6 @@ int main()
     int rtn = -1;
     // Add success test
 
+    delete hg;
     return rtn;
 }
