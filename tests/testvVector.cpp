@@ -208,6 +208,11 @@ int main() {
     vVector<double> ltthancopy = ltthan;
     std::cout << "Is a copy of a vVector == to the vVector? " << (ltthan == ltthancopy ? "True" : "False") << std::endl;
 
+    std::cout << "twice " << ltthan << " = " << (2.0*ltthancopy) << std::endl;
+    std::cout << "one over " << ltthan << " = " << (1.0/ltthancopy) << std::endl;
+    std::cout << "one + " << ltthan << " = " << (1.0+ltthancopy) << std::endl;
+    std::cout << "one - " << ltthan << " = " << (1.0-ltthancopy) << std::endl;
+
     // Test different vVector  types dotted:
     vVector<double> left = h1;
     vVector<int> right = { 2,2,3 };

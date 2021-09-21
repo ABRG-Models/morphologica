@@ -1013,4 +1013,33 @@ namespace morph {
         return os;
     }
 
+    // Operators that can do premultiply, predivide by scaler so you could do,
+    // e.g. vVector<float> result = float(1) / vVector<float>({1,2,3});
+
+    //! Scalar * vVector<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
+    template <typename S> vVector<S> operator* (S lhs, const vVector<S>& rhs) { return rhs * lhs; }
+
+    //! Scalar / vVector<>
+    template <typename S>
+    vVector<S> operator/ (S lhs, const vVector<S>& rhs)
+    {
+        vVector<S> division(rhs.size(), S{0});
+        auto lhs_div_by_vec = [lhs](S coord) { return lhs / coord; };
+        std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
+        return division;
+    }
+
+    //! Scalar + vVector<> (commutative)
+    template <typename S> vVector<S> operator+ (S lhs, const vVector<S>& rhs) { return rhs + lhs; }
+
+    //! Scalar - vVector<>
+    template <typename S>
+    vVector<S> operator- (S lhs, const vVector<S>& rhs)
+    {
+        vVector<S> subtraction(rhs.size(), S{0});
+        auto lhs_minus_vec = [lhs](S coord) { return lhs - coord; };
+        std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
+        return subtraction;
+    }
+
 } // namespace morph
