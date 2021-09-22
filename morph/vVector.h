@@ -155,9 +155,19 @@ namespace morph {
             } // else do nothing?
         }
 
-        //! A function to set the value of each element of the vector.
-        template <typename _S=S>
-        void set (const _S& v) { std::fill (this->begin(), this->end(), v); }
+        /*!
+         * Set a linear sequence into the vector from value start to value stop. If
+         * num>0 then resize the vector first, otherwise use the vVector's current
+         * size. You *can* use this with integer types, but be prepared to notice odd
+         * rounding errors.
+         */
+        template <typename _S=S, typename _S2=S>
+        void linspace (const _S start, const _S2 stop, const size_t num=0)
+        {
+            if (num > 0) { this->resize (num); }
+            S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (this->size()-1);
+            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+        }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
