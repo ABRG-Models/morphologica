@@ -25,6 +25,8 @@ namespace morph {
     {
         // The state is unknown
         Unknown,
+        // Need to call the init() function to setup paramters etc
+        NeedToInit,
         // Need to perform a step of the annealing algo
         NeedToStep,
         // Need to do compute the objective of the candidate

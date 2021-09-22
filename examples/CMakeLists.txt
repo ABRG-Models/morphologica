@@ -27,6 +27,8 @@ target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAP
 
 add_executable(anneal anneal.cpp)
 target_link_libraries(anneal ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+add_executable(anneal_asa anneal_asa.cpp)
+target_link_libraries(anneal_asa ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 add_executable(anneal2 anneal2.cpp)
 target_link_libraries(anneal2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
