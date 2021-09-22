@@ -253,5 +253,10 @@ int main() {
          << "), shortest component: " << maxlongest.shortest() << " (at index "
          << maxlongest.argshortest() << ")\n";
 
+    vVector<float> cc = { 1.0f, 2.0f };
+    float D = 2.0f;
+    std::cout << "(-cc/D).exp()=" << (-cc/D).exp() << std::endl;
+    std::cout << "(-cc)/D=" << ((-cc)/D) << std::endl;
+
     return rtn;
 }
