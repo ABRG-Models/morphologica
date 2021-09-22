@@ -34,7 +34,7 @@ namespace morph {
         //! k is the symbol Lester uses for the step count
         unsigned long long int k = 1;
 
-        //! How many annealing steps to make as a maximum?
+        //! How many annealing steps to make as a maximum? Set to exp(n)
         unsigned long long int k_f = 1000;
 
         //! The temperatures
@@ -61,8 +61,10 @@ namespace morph {
 
         //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost)
         T cost_parameter_scale_ratio = T{1};
-        //! Temperature used in the acceptance function
+        //! Temperature used in the acceptance function. k_cost is the number of
+        //! accepted points, num_accepted
         morph::vVector<T> temp_cost;
+
 
         // Statistical records
         //! Number of candidates that are improved (descents, if downhill is true)
@@ -71,6 +73,9 @@ namespace morph {
         unsigned long long int num_worse = 0;
         //! Record statistics on the number of acceptances of worse candidates
         unsigned long long int num_worse_accepted = 0;
+        //! Number of accepted parameter sets
+        unsigned long long int num_accepted = 0;
+
         //! All accepted paramters? All parameters computed?
         morph::vVector<morph::vVector<T>> param_hist;
         //! For each entry in param_hist, record also its objective function value
@@ -79,6 +84,8 @@ namespace morph {
         //! Parameter ranges - defining a part of R^n to search - [Ai, Bi]
         morph::vVector<T> range_min; // A
         morph::vVector<T> range_max; // B
+        morph::vVector<T> rdelta;    // = range_max - range_min;
+        morph::vVector<T> rmeans;    // = (range_max + range_min)/T{2};
 
         //! Initial parameters. Saved as prelim() needs to return to these.
         morph::vVector<T> x_init;
@@ -114,6 +121,9 @@ namespace morph {
                 this->range_max[i] = pr[1];
                 ++i;
             }
+            this->rdelta = this->range_max - this->range_min;
+            this->rmeans = (this->range_max + this->range_min)/T{2};
+
             this->downhill = dh;
             this->x_init = initial_params;
             this->x_cand = initial_params;
@@ -125,7 +135,7 @@ namespace morph {
             this->state = Anneal_State::NeedToInit;
         }
 
-        //! After setting paramters, the user must call init
+        //! After setting parameters, the user must call init
         void init()
         {
             // Set up the parameter/cost value members
@@ -153,6 +163,9 @@ namespace morph {
             this->temp_f = this->temp_0 * (-this->m).exp();
             std::cout << "temp_f = " << temp_f << std::endl;
 
+            this->k_f = static_cast<unsigned long long int>(std::exp (this->n.mean()));
+            std::cout << "k_f = " << k_f << std::endl;
+
             // Set the 'control parameter', c, from n and m
             this->c.resize (this->D, T{1});
             this->c = this->m * (-this->n/this->D).exp();
@@ -165,7 +178,7 @@ namespace morph {
         }
 
         //! Reset the statistics on the number of objective functions accepted etc
-        void reset_stats() { num_improved = 0; num_worse = 0; num_worse_accepted = 0; }
+        void reset_stats() { num_improved = 0; num_worse = 0; num_worse_accepted = 0; num_accepted = 0; }
 
         // Advance the simulated annealing algorithm by one step
         void step()
@@ -193,17 +206,13 @@ namespace morph {
         {
             bool generated = false;
             unsigned int num_attempts = 0;
-            morph::vVector<T> _ranges = this->range_max - this->range_min;
-            morph::vVector<T> _rmeans = (this->range_max + this->range_min)/T{2};
             while (!generated) {
                 // Generate random variables y_i
                 morph::vVector<T> u(this->x_cand.size());
                 u.randomize();
-                morph::vVector<T> y = _rmeans + (_ranges * (u-T{0.5})); // Constrains y to -A to B range
-                morph::vVector<T> u2 = (u*T{2}) - T{1};
-                u2.abs_inplace();
-                morph::vVector<T> sigy = y.signum();
-                y = sigy * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
+                morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
+                morph::vVector<T> sigu = (u-T{0.5}).signum();
+                morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
                 this->x_cand = this->x + y;
                 ++num_attempts;
                 if (this->x_cand <= this->range_max && this->x_cand >= this->range_min) {
@@ -215,11 +224,13 @@ namespace morph {
         //! The algorithm's stopping condition
         bool stop_check()
         {
-            if ((this->temp < this->temp_f) || (this->k > this->k_f)) {
+#if 0
+            if ((this->temp < this->temp_f) || (this->k > (10*this->k_f))) {
                 std::cout << "temp = " << temp << " and temp_f = " << temp_f << std::endl;
                 this->state = Anneal_State::ReadyToStop;
                 return true;
             }
+#endif
             return false;
         }
 
@@ -227,7 +238,8 @@ namespace morph {
         void cooling_schedule()
         {
             this->temp = this->temp_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
-            //std::cout << "(cooling_schedule) temp_0 = " << temp_0 << " temp = " << temp << std::endl;
+            std::cout << "(cooling_schedule) temp_0 = " << temp_0 << " temp = " << temp << std::endl;
+            this->temp_cost = this->temp_cost_0 * std::exp(-c_cost * std::pos(this->num_accepted, 1/D));
         }
 
         //! The acceptance function
@@ -262,6 +274,7 @@ namespace morph {
             if (accepted) {
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
+                this->num_accepted++;
             }
 
             return accepted;

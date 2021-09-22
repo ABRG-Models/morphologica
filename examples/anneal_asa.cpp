@@ -149,9 +149,7 @@ int main()
 
     // Set up the anneal algorithm object
     morph::AdaptiveAnneal<float> anneal(p, p_rng);
-    anneal.k_f = 200; // Final number of operations
     anneal.temperature_ratio_scale = float{1e-4}; // 1e-5 is default
-
     anneal.init();
 
     // Now do the business
