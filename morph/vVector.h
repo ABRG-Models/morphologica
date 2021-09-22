@@ -657,6 +657,11 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
+        // vVector-to-vVector comparisons. Although there's an underlying std::vector
+        // implementation of these operators, I prefer to reimplement with a requirement
+        // that the vVectors should have the same size to be compared, as this is a
+        // better defined comparison. These might be slow if your vVector is very big.
+
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
         bool operator< (const vVector<_S>& rhs) const
