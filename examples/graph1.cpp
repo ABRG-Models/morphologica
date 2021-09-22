@@ -4,7 +4,6 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/vVector.h>
-#include <iostream>
 
 int main (int argc, char** argv)
 {
