@@ -16,7 +16,8 @@ int main (int argc, char** argv)
     morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
     // Create some data (y = x^3):
-    morph::vVector<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+    morph::vVector<float> x;
+    x.linspace (-0.5, 0.8, 14);
     morph::vVector<float> y = x.pow(3);
 
     // Set the data into the graph
