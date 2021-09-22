@@ -168,7 +168,7 @@ namespace morph {
                 *(this->neurons.begin()) = theInput;
                 // Set each context layer to 0.5, initially
                 for (auto& cl : this->contextNeurons) {
-                    cl.set (T{0.5});
+                    cl.set_from (T{0.5});
                 }
                 this->desiredOutput = theOutput;
             }
