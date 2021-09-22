@@ -136,7 +136,7 @@ int main()
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };

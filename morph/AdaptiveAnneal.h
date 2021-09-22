@@ -61,10 +61,11 @@ namespace morph {
 
         //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost)
         T cost_parameter_scale_ratio = T{1};
+        morph::vVector<T> c_cost;
+        morph::vVector<T> temp_cost_0;
         //! Temperature used in the acceptance function. k_cost is the number of
         //! accepted points, num_accepted
         morph::vVector<T> temp_cost;
-
 
         // Statistical records
         //! Number of candidates that are improved (descents, if downhill is true)
@@ -104,6 +105,11 @@ namespace morph {
         morph::vVector<T> x;
         //! Value of obj fn for current parameters
         T f_x = T{0};
+
+        //! Reannealing sensitivies
+        morph::vVector<T> s;
+        morph::vVector<T> s_max;
+        morph::vVector<T> partials;
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
@@ -150,29 +156,30 @@ namespace morph {
             this->temp_0.resize (this->D, T{1});
             this->temp.resize (this->D, T{1});
 
+            // Sensitivies containers
+            this->s.resize (this->D, T{1});
+            this->s_max.resize (this->D, T{1});
+            this->partials.resize (this->D, T{1});
+
             // The m and n parameters
             this->m.resize (this->D);
             this->m.set_from (-std::log(this->temperature_ratio_scale));
-            std::cout << "m = " << m << std::endl;
 
             this->n.resize (this->D);
             this->n.set_from (std::log(this->temperature_anneal_scale));
-            std::cout << "n = " << n << std::endl;
 
             // Work out expected final temp
             this->temp_f = this->temp_0 * (-this->m).exp();
-            std::cout << "temp_f = " << temp_f << std::endl;
 
             this->k_f = static_cast<unsigned long long int>(std::exp (this->n.mean()));
-            std::cout << "k_f = " << k_f << std::endl;
 
             // Set the 'control parameter', c, from n and m
             this->c.resize (this->D, T{1});
             this->c = this->m * (-this->n/this->D).exp();
-            std::cout << "c = " << c << std::endl;
 
-            this->temp_cost = this->c * cost_parameter_scale_ratio;
-            std::cout << "temp_cost = " << temp_cost << std::endl;
+            this->c_cost = this->c * cost_parameter_scale_ratio;
+            this->temp_cost_0 = this->c_cost;
+            this->temp_cost = this->c_cost;
 
             this->state = Anneal_State::NeedToCompute; // or NeedToStep
         }
@@ -183,12 +190,12 @@ namespace morph {
         // Advance the simulated annealing algorithm by one step
         void step()
         {
-            // Check stopping condition
             if (this->stop_check()) { return; }
             this->cooling_schedule();
             this->acceptance_check();
             this->generate_next();
             ++this->k;
+            this->reanneal();
             this->state = Anneal_State::NeedToCompute;
         }
 
@@ -207,8 +214,7 @@ namespace morph {
             bool generated = false;
             unsigned int num_attempts = 0;
             while (!generated) {
-                // Generate random variables y_i
-                morph::vVector<T> u(this->x_cand.size());
+                morph::vVector<T> u(this->D);
                 u.randomize();
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
@@ -221,13 +227,23 @@ namespace morph {
             }
         }
 
+        //! Carry out a reannealing. Need to study ASA code to replicate.
+        void reanneal()
+        {
+            bool reanneal_required = false;
+            if (reanneal_required) {
+                this->s = -this->rdelta * this->partials; // (A-B) * dL/dalph
+                std::cout << "old k: " << k << std::endl;
+                this->k = static_cast<unsigned long long int>(std::pow((((temp_0/temp)*(s.max()/s)).log()/this->c).mean(), D));
+                std::cout << "new k: " << k << std::endl;
+            }
+        }
+
         //! The algorithm's stopping condition
         bool stop_check()
         {
 #if 0
-            if ((this->temp < this->temp_f) || (this->k > (10*this->k_f))) {
-                std::cout << "temp = " << temp << " and temp_f = " << temp_f << std::endl;
-                this->state = Anneal_State::ReadyToStop;
+            if ((this->temp < this->temp_f) || (this->k > this->k_f)) {
                 return true;
             }
 #endif
@@ -238,22 +254,13 @@ namespace morph {
         void cooling_schedule()
         {
             this->temp = this->temp_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
-            std::cout << "(cooling_schedule) temp_0 = " << temp_0 << " temp = " << temp << std::endl;
-            this->temp_cost = this->temp_cost_0 * std::exp(-c_cost * std::pos(this->num_accepted, 1/D));
+            this->temp_cost = this->temp_cost_0 * (-this->c_cost * std::pow(this->num_accepted, T{1}/D)).exp();
+            //std::cout << "(cooling_schedule) temp = " << temp << " temp_cost = " << temp_cost <<  std::endl;
         }
 
         //! The acceptance function
         bool acceptance_check()
         {
-            // Record statistics here
-            if (this->downhill == true) {
-                this->x_best = this->f_x_cand < this->f_x_best ? this->x_cand : this->x_best;
-                this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
-            } else {
-                this->x_best = this->f_x_cand > this->f_x_best ? this->x_cand : this->x_best;
-                this->f_x_best = this->f_x_cand > this->f_x_best ? this->f_x_cand : this->f_x_best;
-            }
-
             bool candidate_is_better = false;
             if ((this->downhill == true && this->f_x_cand < this->f_x)
                 || (this->downhill == false && this->f_x_cand > this->f_x)) {
@@ -265,18 +272,25 @@ namespace morph {
             }
 
             T p = std::exp(-(this->f_x_cand - this->f_x)/(std::numeric_limits<T>::epsilon()+this->temp_cost.mean()));
-            std::cout << "Candidate is " << (candidate_is_better ? "better": "worse/same") <<  ", p = " << p << std::endl;
             T u = this->rng_u.get();
             bool accepted = p > u ? true : false;
 
             if (candidate_is_better==false && accepted==true) { ++this->num_worse_accepted; }
 
             if (accepted) {
+                std::cout << "dfx = " << (this->f_x_cand-this->f_x) << std::endl;
+                std::cout << "dx = " << (this->x_cand-this->x) << std::endl;
+                this->partials = (this->f_x_cand-this->f_x)/(this->x_cand-this->x);
+                std::cout << "partials = " << this->partials << std::endl;
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
+                this->x_best = this->f_x_cand < this->f_x_best ? this->x_cand : this->x_best;
+                this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
                 this->num_accepted++;
             }
 
+            std::cout << "Candidate is " << (candidate_is_better ? "B  ": "W/S") <<  ", p = " << p
+                      << ", accepted? " << (accepted ? "Y":"N") << " k_cost=" << num_accepted << std::endl;
             return accepted;
         }
 
