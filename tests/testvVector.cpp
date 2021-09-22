@@ -218,6 +218,25 @@ int main() {
     // You can't do fromstd = stdvec; instead, do this:
     fromstd.set_from (stdvec);
 
+    vVector<double> lins;
+    size_t nnn = 11;
+    lins.linspace (0, 1, nnn);
+    std::cout << nnn << " linearly spaced values from 0 to 1:\n" << lins << std::endl;
+    vVector<float> linsi(12);
+    linsi.linspace (23, 45);
+    std::cout << linsi.size() << " linearly spaced float values from " << linsi[0]
+              << " to " << linsi[linsi.size()-1] << ":\n" << linsi << std::endl;
+
+    linsi.resize(34);
+    linsi.linspace (-1, 1);
+    std::cout << linsi.size() << " linearly spaced float values from " << linsi[0]
+              << " to " << linsi[linsi.size()-1] << ":\n" << linsi << std::endl;
+
+    linsi.linspace (1, -1);
+    std::cout << linsi.size() << " linearly spaced float values from " << linsi[0]
+              << " to " << linsi[linsi.size()-1] << ":\n" << linsi << std::endl;
+
+
     // Test different vVector  types dotted:
     vVector<double> left = h1;
     vVector<int> right = { 2,2,3 };

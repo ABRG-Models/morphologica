@@ -118,5 +118,9 @@ int main() {
     Vector<float, 4> totimes = { 1.0f, 2.0f, 3.0f, 4.0f };
     cout << "Cumulative product of " << totimes << " is " << totimes.product() << endl;
 
+    Vector<float, 4> fordivision = { 1.0f, 2.0f, 3.0f, 4.0f };
+    Vector<float, 4> divresult = 1.0f / fordivision;
+    std::cout << 1.0f << " / " << fordivision << " = " << divresult << std::endl;
+
     return rtn;
 }
