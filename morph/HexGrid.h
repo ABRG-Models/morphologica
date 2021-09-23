@@ -452,6 +452,14 @@ namespace morph {
             this->domainShape = shape;
 
             this->init();
+
+            if (this->domainShape == HexDomainShape::Rectangle
+                || this->domainShape == HexDomainShape::Hexagon
+                || this->domainShape == HexDomainShape::Parallelogram)
+            {
+                this->renumberVectorIndices();
+                this->setDomain();
+            }
         }
 
         /*!
@@ -484,6 +492,28 @@ namespace morph {
             centroid.first /= pHexes.size();
             centroid.second /= pHexes.size();
             return centroid;
+        }
+
+        /*!
+         * Find the Hex in the Hex grid which is closest to the x,y position given by
+         * pos.
+         */
+        std::list<Hex>::iterator findHexNearest (const std::pair<float, float>& pos)
+        {
+            std::list<morph::Hex>::iterator nearest = this->hexen.end();
+            std::list<morph::Hex>::iterator hi = this->hexen.begin();
+            float dist = std::numeric_limits<float>::max();
+            while (hi != this->hexen.end()) {
+                float dx = pos.first - hi->x;
+                float dy = pos.second - hi->y;
+                float dl = std::sqrt (dx*dx + dy*dy);
+                if (dl < dist) {
+                    dist = dl;
+                    nearest = hi;
+                }
+                ++hi;
+            }
+            return nearest;
         }
 
         /*!
@@ -2502,28 +2532,6 @@ namespace morph {
             this->computeDistanceToBoundary();
             // 4. Populate d_ vectors
             this->populate_d_vectors (extnts);
-        }
-
-        /*!
-         * Find the Hex in the Hex grid which is closest to the x,y position given by
-         * pos.
-         */
-        std::list<Hex>::iterator findHexNearest (const std::pair<float, float>& pos)
-        {
-            std::list<morph::Hex>::iterator nearest = this->hexen.end();
-            std::list<morph::Hex>::iterator hi = this->hexen.begin();
-            float dist = std::numeric_limits<float>::max();
-            while (hi != this->hexen.end()) {
-                float dx = pos.first - hi->x;
-                float dy = pos.second - hi->y;
-                float dl = std::sqrt (dx*dx + dy*dy);
-                if (dl < dist) {
-                    dist = dl;
-                    nearest = hi;
-                }
-                ++hi;
-            }
-            return nearest;
         }
 
         /*!

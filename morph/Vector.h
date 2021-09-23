@@ -145,6 +145,18 @@ namespace morph {
         template <typename _S=S>
         void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
+        /*!
+         * Set a linear sequence into the vector from value start to value stop. Uses
+         * the Vector's size to determine how many values to create. You *can* use this
+         * with integer types, but be prepared to notice strange rounding errors.
+         */
+        template <typename _S=S, typename _S2=S>
+        void linspace (const _S start, const _S2 stop)
+        {
+            S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
+            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+        }
+
         //! Return a vector with one less dimension - losing the last one.
         Vector<S, N-1> less_one_dim () const
         {
@@ -437,6 +449,71 @@ namespace morph {
             return idx;
         }
 
+        //! Return true if any element is zero
+        bool has_zero() const
+        {
+            return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
+        }
+
+        //! Return true if any element is NaN or infinity
+        bool has_nan_or_inf() const
+        {
+            bool has_nan_or_inf = false;
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
+                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::quiet_NaN();
+                    });
+            }
+            if (has_nan_or_inf) { return has_nan_or_inf; }
+
+            if constexpr (std::numeric_limits<S>::has_infinity) {
+                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::infinity();
+                    });
+            }
+            if (has_nan_or_inf) { return has_nan_or_inf; }
+
+            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
+                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::signaling_NaN();
+                    });
+            }
+
+            return has_nan_or_inf;
+        }
+
+        //! Return true if any element is NaN or infinity
+        bool has_inf() const
+        {
+            bool has_inf = false;
+            if constexpr (std::numeric_limits<S>::has_infinity) {
+                has_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::infinity();
+                    });
+            }
+            return has_inf;
+        }
+
+        //! Return true if any element is NaN or infinity
+        bool has_nan() const
+        {
+            bool has_nan = false;
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
+                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::quiet_NaN();
+                    });
+            }
+            if (has_nan) { return has_nan; }
+
+            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
+                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
+                        return i == std::numeric_limits<S>::signaling_NaN();
+                    });
+            }
+
+            return has_nan;
+        }
+
         //! Return the arithmetic mean of the elements
         S mean() const
         {
@@ -468,6 +545,33 @@ namespace morph {
         }
         //! Raise each element to the power p
         void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+
+        //! Element-wise power
+        template<typename _S=S>
+        Vector<S, N> pow (const Vector<_S, N>& p) const
+        {
+            auto pi = p.begin();
+            Vector<S, N> rtn;
+            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, (*pi++)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
+            return rtn;
+        }
+        template<typename _S=S>
+        void pow_inplace (const Vector<_S, N>& p)
+        {
+            auto pi = p.begin();
+            for (auto& i : *this) { i = std::pow (i, (*pi++)); }
+        }
+
+        //! Return the signum of the vVector, with signum(0)==0
+        Vector<S, N> signum() const
+        {
+            Vector<S, N> rtn;
+            auto _signum = [](S coord) { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _signum);
+            return rtn;
+        }
+        void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
         /*!
          * Compute the element-wise square root of the vector
@@ -515,6 +619,21 @@ namespace morph {
         void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
 
         /*!
+         * Compute the element-wise log to base 10 of the vector
+         *
+         * \return a Vector whose elements have been logged
+         */
+        Vector<S, N> log10() const
+        {
+            Vector<S, N> rtn;
+            auto log_element = [](S coord) { return std::log10(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), log_element);
+            return rtn;
+        }
+        //! Replace each element with its own log to base 10
+        void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
+
+        /*!
          * Compute the element-wise natural exponential of the vector
          *
          * \return a Vector whose elements have been exponentiated
@@ -543,6 +662,70 @@ namespace morph {
         }
         //! Replace each element with its own absolute value
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+
+        //! Less than a scalar. Return true if every element is less than the scalar
+        bool operator<(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a  (b < rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! <= a scalar. Return true if every element is less than the scalar
+        bool operator<=(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Greater than a scalar. Return true if every element is gtr than the scalar
+        bool operator>(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! >= a scalar. Return true if every element is gtr than the scalar
+        bool operator>=(const S rhs) const
+        {
+            auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is less than its counterpart in rhs.
+        template<typename _S=S>
+        bool operator< (const Vector<_S, N>& rhs) const
+        {
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is <= its counterpart in rhs.
+        template<typename _S=S>
+        bool operator<= (const Vector<_S, N>& rhs) const
+        {
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is greater than its counterpart in rhs.
+        template<typename _S=S>
+        bool operator> (const Vector<_S, N>& rhs) const
+        {
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
+
+        //! Return true if each element of *this is >= its counterpart in rhs.
+        template<typename _S=S>
+        bool operator>= (const Vector<_S, N>& rhs) const
+        {
+            auto ri = rhs.begin();
+            auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
+            return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
+        }
 
         /*!
          * Unary negate operator
@@ -812,6 +995,35 @@ namespace morph {
     {
         os << v.str();
         return os;
+    }
+
+    // Operators that can do premultiply, predivide by scaler so you could do,
+    // e.g. Vector<float> denom = {1,2,3}; Vector<float> result = float(1) / denom;
+
+    //! Scalar * Vector<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
+    template <typename S, size_t N> Vector<S, N> operator* (S lhs, const Vector<S, N>& rhs) { return rhs * lhs; }
+
+    //! Scalar / Vector<>
+    template <typename S, size_t N>
+    Vector<S, N> operator/ (S lhs, const Vector<S, N>& rhs)
+    {
+        Vector<S, N> division;
+        auto lhs_div_by_vec = [lhs](S coord) { return lhs / coord; };
+        std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
+        return division;
+    }
+
+    //! Scalar + Vector<> (commutative)
+    template <typename S, size_t N> Vector<S, N> operator+ (S lhs, const Vector<S, N>& rhs) { return rhs + lhs; }
+
+    //! Scalar - Vector<>
+    template <typename S, size_t N>
+    Vector<S, N> operator- (S lhs, const Vector<S, N>& rhs)
+    {
+        Vector<S, N> subtraction;
+        auto lhs_minus_vec = [lhs](S coord) { return lhs - coord; };
+        std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
+        return subtraction;
     }
 
 } // namespace morph
