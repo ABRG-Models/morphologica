@@ -27,10 +27,14 @@ target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAP
 
 add_executable(anneal_simple anneal_simple.cpp)
 target_link_libraries(anneal_simple ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+# Adaptive Simulated Annealing algo on a made up objective
 add_executable(anneal_asa anneal_asa.cpp)
 target_link_libraries(anneal_asa ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-add_executable(anneal2 anneal2.cpp)
-target_link_libraries(anneal2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+# Adaptive Simulated Annealing algo on objective from Bohachevsky
+add_executable(anneal_boha anneal_boha.cpp)
+target_link_libraries(anneal_boha ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
 # Plots a surface, counts (and shows) the frames per second
 add_executable(fps fps.cpp)
