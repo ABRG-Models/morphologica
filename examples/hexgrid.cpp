@@ -41,7 +41,8 @@ int main()
     // Add some text labels to the scene
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
-    // Create a HexGrid to show in the scene
+    // Create a HexGrid to show in the scene. As HexDomainShape is 'Boundary', hexes
+    // outside the circular boundary will all be discarded.
     morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
     hg.setCircularBoundary (0.6);
     std::cout << "Number of pixels in grid:" << hg.num() << std::endl;
