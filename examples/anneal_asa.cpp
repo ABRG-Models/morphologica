@@ -32,8 +32,24 @@ F objective (const morph::vVector<F>& params);
 
 int main()
 {
+    // This allocates the HexGrid, hg
     setup_objective();
 
+    // Here, our search space is 2D
+    morph::vVector<F> p = { 0.45, 0.45};
+    // These ranges should fall within the hexagonal domain
+    morph::vVector<morph::Vector<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
+
+    // Set up the anneal algorithm object
+    morph::AdaptiveAnneal<F> anneal(p, p_rng);
+    anneal.temperature_ratio_scale = F{1e-5}; // 1e-5 is default
+    anneal.temperature_anneal_scale = F{100}; // 100 default
+    anneal.cost_parameter_scale_ratio = F{1}; // 1 is default
+    anneal.acc_gen_reanneal_ratio = F{0.7};   // Don't know a good default
+    anneal.partials_samples = 5;
+    anneal.init();
+
+    // Set up the visualisation
     morph::Visual v (1920, 1080, "Simulated Annealing Example");
     v.zNear = 0.001;
     v.setSceneTransZ (-3.0f);
@@ -42,14 +58,9 @@ int main()
     morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
     morph::HexGridVisual<F>* hgv = new morph::HexGridVisual<F>(v.shaderprog, v.tshaderprog, hg, offset);
     hgv->setScalarData (&obj_f);
-    hgv->addLabel ("Objective", { -0.3f, -0.45f, 0.01f }, morph::colour::black);
+    hgv->addLabel ("Objective: 2 Gaussians and some noise", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
     hgv->finalize();
     v.addVisualModel (hgv);
-
-    // Here, our search space is 2D
-    morph::vVector<F> p = { 0.45, 0.45};
-    // These ranges should fall within the hexagonal domain
-    morph::vVector<morph::Vector<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
 
     morph::Vector<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
 
@@ -69,11 +80,6 @@ int main()
     v.addVisualModel (bestp);
     v.addVisualModel (currp);
     v.render();
-
-    // Set up the anneal algorithm object
-    morph::AdaptiveAnneal<F> anneal(p, p_rng);
-    anneal.temperature_ratio_scale = F{1e-4}; // 1e-5 is default
-    anneal.init();
 
     // Now do the business
     while (anneal.state != morph::Anneal_State::ReadyToStop) {
@@ -113,7 +119,7 @@ int main()
         anneal.step();
     }
 
-    std::cout << "FINISHED! Best approximation: (Params: " << anneal.x_best << ") has value "
+    std::cout << "FINISHED in " << anneal.steps << " steps. Best approximation: (Params: " << anneal.x_best << ") has value "
               << anneal.f_x_best << " compare with obj_f.min(): " << obj_f.min() << std::endl;
     std::cout << "Anneal stats: num_improved " << anneal.num_improved << ", num_worse: " << anneal.num_worse
               << ", num_worse_accepted: " << anneal.num_worse_accepted << " (as proportion: "
@@ -121,10 +127,8 @@ int main()
 
     v.keepOpen();
 
-    int rtn = -1;
-
     delete hg;
-    return rtn;
+    return 0;
 }
 
 // This sets up a noisy 2D objective function with multiple peaks
