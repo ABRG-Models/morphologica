@@ -25,6 +25,7 @@ morph::vVector<F> obj_f;
 void setup_objective()
 {
     hg = new morph::HexGrid(0.01, 2.5, 0, morph::HexDomainShape::Hexagon);
+    hg->leaveAsHexagon();
     obj_f.resize (hg->num());
     F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
     for (auto h : hg->hexen) {

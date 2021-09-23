@@ -440,26 +440,17 @@ namespace morph {
          * Construct the hexagonal hex grid with a hex to hex distance of @a d_
          * (centre to centre) and approximate diameter of @a x_span_. Set z to @a z_
          * which may be useful as an identifier if several HexGrids are being managed
-         * by client code, but it not otherwise made use of.
+         * by client code, but is not otherwise made use of.
          */
         HexGrid (float d_, float x_span_, float z_ = 0.0f,
-                 HexDomainShape shape = HexDomainShape::Parallelogram)
+                 HexDomainShape shape = HexDomainShape::Boundary)
         {
             this->d = d_;
             this->v = this->d * SQRT_OF_3_OVER_2_F;
             this->x_span = x_span_;
             this->z = z_;
             this->domainShape = shape;
-
             this->init();
-
-            if (this->domainShape == HexDomainShape::Rectangle
-                || this->domainShape == HexDomainShape::Hexagon
-                || this->domainShape == HexDomainShape::Parallelogram)
-            {
-                this->renumberVectorIndices();
-                this->setDomain();
-            }
         }
 
         /*!
@@ -787,6 +778,35 @@ namespace morph {
             return bhexen_concrete;
         }
 
+        /*!
+         * Compute a set of coordinates arranged as a rectangle
+         * \param x width
+         * \param y height
+         * \param c centre argument so that the rectangle centre is offset from the coordinate origin
+         * \return A vector of the coordinates of points on the generated rectangle
+         */
+        std::vector<BezCoord<float>> rectangleCompute (const float x, const float y,
+                                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+        {
+            std::vector<morph::BezCoord<float>> bpoints;
+            throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
+            return bpoints;
+        }
+
+        /*!
+         * Compute a set of coordinates arranged as a parallelogram
+         * \param r Number of hexes to the E (and to the W)
+         * \param g Number of hexes to the NE (and SW)
+         * \param c centre argument so that the parallelogram centre is offset from the coordinate origin
+         * \return A vector of the coordinates of points on the generated pgram
+         */
+        std::vector<BezCoord<float>> parallelogramCompute (const int r, const int g,
+                                                           const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+        {
+            std::vector<morph::BezCoord<float>> bpoints;
+            throw std::runtime_error ("HexGrid::parallelogramCompute: Implement me");
+            return bpoints;
+        }
 
         /*!
          * Compute a set of coordinates arranged on an ellipse
@@ -869,6 +889,37 @@ namespace morph {
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
+        }
+
+        /*!
+         * Set up a rectangular boundary of width x and height y
+         */
+        void setRectangularBoundary (const float x, const float y,
+                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+        {
+            std::vector<morph::BezCoord<float>> bpoints = rectangleCompute (x, y, c);
+            this->setBoundary (bpoints, offset);
+        }
+
+        /*!
+         * Set up a parallelogram boundary extending r hexes to the E and g hexes to the NE
+         */
+        void setParallelogramBoundary (const int r, const int g,
+                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+        {
+            std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, c);
+            this->setBoundary (bpoints, offset);
+        }
+
+        /*!
+         * To use the originally generated hexagonal domain as a simple HexGrid,k call
+         * this to ensure vector indices and the domain are all set up as they should
+         * be.
+         */
+        void leaveAsHexagon()
+        {
+            this->renumberVectorIndices();
+            this->setDomain();
         }
 
         /*!
@@ -1108,7 +1159,6 @@ namespace morph {
                        << (blh->has_nnw() == true ? "Neighbour NW ":"NO Neighbour NW ");
                     throw std::runtime_error (ee.str());
                 }
-
             } // else Hexagon or Boundary starts from 0, hi already set to hexen.begin();
 
             // Clear the d_ vectors.
@@ -2455,6 +2505,11 @@ namespace morph {
             // i.e. {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
             std::array<int, 6> rtn = {{0,0,0,0,0,0}};
 
+            // Check to see if there are any boundary hexes at all.
+            unsigned int bhcount = 0;
+            for (auto h : this->hexen) { bhcount += h.testFlags(HEX_IS_BOUNDARY) == true ? 1 : 0; }
+            if (bhcount == 0) { return rtn; }
+
             // Find the furthest left and right hexes and the further up and down hexes.
             std::array<float, 4> limits = {{0,0,0,0}};
             bool first = true;
@@ -2503,11 +2558,14 @@ namespace morph {
         /*!
          * setDomain() will define a regular domain, then discard those hexes outside
          * the regular domain and populate all the d_ vectors.
+         *
+         * setDomain() ASSUMES that a boundary has already been set.
          */
         void setDomain (void)
         {
             // 1. Find extent of boundary, both left/right and up/down, with 'buffer region' already added.
             std::array<int, 6> extnts = this->findBoundaryExtents();
+            for (auto e : extnts) { std::cout << e << std::endl; }
             // 1.5 set rowlen and numrows
             this->d_rowlen = extnts[1]-extnts[0]+1;
             this->d_numrows = extnts[3]-extnts[2]+1;

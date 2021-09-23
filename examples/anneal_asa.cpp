@@ -135,6 +135,7 @@ int main()
 void setup_objective()
 {
     hg = new morph::HexGrid(0.01, 1.5, 0, morph::HexDomainShape::Hexagon);
+    hg->leaveAsHexagon();
     obj_f.resize (hg->num());
 
     // Create 2 Gaussians and sum them as the main features
