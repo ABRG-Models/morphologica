@@ -47,6 +47,12 @@ target_link_libraries(cartgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAP
 add_executable(hexgrid hexgrid.cpp)
 target_link_libraries(hexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(hexgrid_pgram hexgrid_pgram.cpp)
+target_link_libraries(hexgrid_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
+add_executable(hexgrid_hexdom hexgrid_hexdom.cpp)
+target_link_libraries(hexgrid_hexdom ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+
 add_executable(logisticmap logisticmap.cpp)
 target_link_libraries(logisticmap ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
