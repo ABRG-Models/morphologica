@@ -2,7 +2,7 @@
  * Test simulated annealing
  */
 
-#include <morph/Anneal.h>
+#include <morph/AnnealSimple.h>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include <morph/Hex.h>

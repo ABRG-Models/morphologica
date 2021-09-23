@@ -17,9 +17,25 @@
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include <morph/Random.h>
-#include <morph/Anneal.h> // For morph::Anneal_State
 
 namespace morph {
+
+    //! What state is an instance of the Anneal class in?
+    enum class Anneal_State
+    {
+        // The state is unknown
+        Unknown,
+        // Need to call the init() function to setup paramters etc
+        NeedToInit,
+        // Need to perform a step of the annealing algo
+        NeedToStep,
+        // Need to do compute the objective of the candidate
+        NeedToCompute,
+        // Need to compute the objective of the set of parameter sets, x_set
+        NeedToComputeSet,
+        // The algorithm has finished and found a location within tolerance
+        ReadyToStop
+    };
 
     /*!
      * A class implementing Lester Ingber's Adaptive Simlulated Annealing Algorithm. The

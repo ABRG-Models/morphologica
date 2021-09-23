@@ -1,9 +1,6 @@
 /*
- * Simulated Annealing (or quenching). Usage similar to NM_Simplex. Client code should
- * create an instance of the anneal class, then repeatedly call its public methods until
- * the objects state member is Anneal_State::ReadyToStop. Computation of whatever the
- * objective function is is left entirely to the client code. What the client code
- * should do next is stored in Anneal::state.
+ * Simulated Annealing (or quenching). Usage similar to NM_Simplex. Superceded by
+ * Anneal, which implements the Adaptive Simulated Annealing algorithm.
  *
  * Author: Seb James
  * Date: September 2021
@@ -31,8 +28,6 @@ namespace morph {
         NeedToStep,
         // Need to do compute the objective of the candidate
         NeedToCompute,
-        // Need to compute the objective of the set of parameter sets, x_set
-        NeedToComputeSet,
         // The algorithm has finished and found a location within tolerance
         ReadyToStop
     };
