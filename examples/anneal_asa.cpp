@@ -83,10 +83,10 @@ int main()
 
     // The Optimization:
     //
-    // Your job is to loop, calling anneal.step() until anneal.state tells you to stop...
+    // Your job is to loop, calling anneal.step(), until anneal.state tells you to stop...
     while (anneal.state != morph::Anneal_State::ReadyToStop) {
 
-        // ...and on each loop, compute the objectives that anneal asks to to:
+        // ...and on each loop, compute the objectives that anneal asks you to:
         if (anneal.state == morph::Anneal_State::NeedToCompute) {
             // Compute the candidate objective value
             anneal.f_x_cand = objective (anneal.x_cand);
