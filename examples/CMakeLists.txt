@@ -25,9 +25,6 @@ target_link_libraries(helloworld ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${L
 add_executable(convolve convolve.cpp)
 target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
-add_executable(anneal_simple anneal_simple.cpp)
-target_link_libraries(anneal_simple ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
-
 # Adaptive Simulated Annealing algo on a made up objective
 add_executable(anneal_asa anneal_asa.cpp)
 target_link_libraries(anneal_asa ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
