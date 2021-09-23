@@ -2,7 +2,7 @@
  * Test simulated annealing
  */
 
-#include <morph/AdaptiveAnneal.h>
+#include <morph/Anneal.h>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include <morph/Hex.h>
@@ -53,7 +53,7 @@ int main()
     morph::vVector<morph::Vector<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
 
     // Set up the anneal algorithm object
-    morph::AdaptiveAnneal<F> anneal(p, p_rng);
+    morph::Anneal<F> anneal(p, p_rng);
     anneal.temperature_ratio_scale = F{1e-5}; // 1e-5 is default
     anneal.temperature_anneal_scale = F{100}; // 100 default
     anneal.cost_parameter_scale_ratio = F{1}; // 1 is default
