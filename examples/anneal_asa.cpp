@@ -81,9 +81,12 @@ int main()
     v.addVisualModel (currp);
     v.render();
 
-    // Now do the business
+    // The Optimization:
+    //
+    // Your job is to loop, calling anneal.step() until anneal.state tells you to stop...
     while (anneal.state != morph::Anneal_State::ReadyToStop) {
 
+        // ...and on each loop, compute the objectives that anneal asks to to:
         if (anneal.state == morph::Anneal_State::NeedToCompute) {
             // Compute the candidate objective value
             anneal.f_x_cand = objective (anneal.x_cand);
@@ -98,7 +101,7 @@ int main()
             throw std::runtime_error ("Unexpected state for anneal object.");
         }
 
-        // Update the visualisation
+        // You can update the visualisation within this loop if you like:
         candp->position = { static_cast<float>(anneal.x_cand[0]),
                             static_cast<float>(anneal.x_cand[1]),
                             static_cast<float>(anneal.f_x_cand - F{0.15}) };
@@ -111,11 +114,10 @@ int main()
                             static_cast<float>(anneal.x[1]),
                             static_cast<float>(anneal.f_x - F{0.15}) };
         currp->reinit();
-        // Render the graphics - timeout can slow down the example
-        glfwWaitEventsTimeout (0.05); // 0.01667 16.67 ms ~ 60 Hz
+        glfwWaitEventsTimeout (0.0166);
         v.render();
 
-        // Ask the algorithm to do its stuff for one step
+        // Finally, you need to ask the algorithm to do its stuff for one step
         anneal.step();
     }
 
