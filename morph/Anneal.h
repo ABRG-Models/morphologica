@@ -31,6 +31,8 @@ namespace morph {
         NeedToStep,
         // Need to do compute the objective of the candidate
         NeedToCompute,
+        // Need to compute the objective of the set of parameter sets, x_set
+        NeedToComputeSet,
         // The algorithm has finished and found a location within tolerance
         ReadyToStop
     };

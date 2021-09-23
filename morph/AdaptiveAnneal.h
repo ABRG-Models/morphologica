@@ -50,21 +50,26 @@ namespace morph {
         T cost_parameter_scale_ratio = T{1};
         //! If accepted_vs_generated is less than this, reanneal
         T acc_gen_reanneal_ratio = T{0.7};
+        //! Number of samples that should be used to estimate the partials dL/dx in ::reanneal()
+        unsigned int partials_samples = 2;
 
     public: // Parameter vectors and objective fn results need to be client-accessible
 
+        //! Candidate parameter values. In the Ingber papers, these are 'alphas'
+        morph::vVector<T> x_cand;
+        //! Value of obj fn for candidate parameters
+        T f_x_cand = T{0};
+        //! Currently accepted parameters
+        morph::vVector<T> x;
+        //! Value of obj fn for current parameters
+        T f_x = T{0};
         //! Best parameters so far
         morph::vVector<T> x_best;
         //! Value of obj fn for best parameters
         T f_x_best = T{0};
-        //! Candidate parameter values
-        morph::vVector<T> x_cand;
-        //! Value of obj fn for candidate parameters
-        T f_x_cand = T{0};
-        //! Current parameters
-        morph::vVector<T> x;
-        //! Value of obj fn for current parameters
-        T f_x = T{0};
+        //! A special set of parameters to ask the user to compute (when computing reanneal)
+        morph::vVector<morph::vVector<T>> x_set;
+        morph::vVector<T> f_x_set;
 
     public: // Statistical records and state. (May want AnnealStats class)
 
@@ -197,35 +202,45 @@ namespace morph {
         // Advance the simulated annealing algorithm by one step
         void step()
         {
+            if (this->state == Anneal_State::NeedToComputeSet) {
+                // Continue reanneal
+                this->reanneal2();
+            }
             if (this->stop_check()) { return; }
             this->cooling_schedule();
             this->acceptance_check();
             this->generate_next();
             ++this->k;
-            this->reanneal();
-            this->state = Anneal_State::NeedToCompute;
+            if (this->reanneal1()) {
+                this->state = Anneal_State::NeedToComputeSet;
+            } else {
+                this->state = Anneal_State::NeedToCompute;
+            }
         }
 
     protected: // Internal algorithm methods
 
-        //! A function to generate a new set of parameters
-        void generate_next()
+        //! Generate a parameter set starting from _x_start
+        morph::vVector<T> generate_parameter (const morph::vVector<T>& _x_start) const
         {
+            morph::vVector<T> _x;
             bool generated = false;
-            unsigned int num_attempts = 0;
             while (!generated) {
                 morph::vVector<T> u(this->D);
                 u.randomize();
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
                 morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
-                this->x_cand = this->x + y;
-                ++num_attempts;
-                if (this->x_cand <= this->range_max && this->x_cand >= this->range_min) {
+                _x = _x_start + y;
+                if (_x <= this->range_max && _x >= this->range_min) {
                     generated = true;
                 } // else we'll re-generate u and y
             }
+            return _x;
         }
+
+        //! A function to generate a new set of parameters
+        void generate_next() { this->x_cand = this->generate_parameter (this->x); }
 
         //! The cooling schedule function
         void cooling_schedule()
@@ -259,12 +274,6 @@ namespace morph {
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
 
-                if (!this->f_param_hist.empty()) {
-                    this->partials = (this->f_x-this->f_param_hist.back())/(this->x - this->param_hist.back());
-                    this->partials.abs_inplace();
-                    std::cout << "partials = " << this->partials << std::endl;
-                }
-
                 this->param_hist.push_back (this->x);
                 this->f_param_hist.push_back (this->f_x);
 
@@ -278,19 +287,44 @@ namespace morph {
             return accepted;
         }
 
-        //! Carry out a reannealing. Need to study ASA code to replicate.
-        void reanneal()
+        //! Test for a reannealing. If reannealing is required, sample some parameters
+        //! that will need to be computed by the client's objective function
+        bool reanneal1()
         {
-            if (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio) { return; }
-            // If this function didn't already return then it's reanneal time
+            // Return if it's not yet time to reanneal
+            if (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio) { return false; }
+            std::cout << "Reannealing...\n";
+            // Get ready to compute partials. From current location in parameter space
+            // (this->x), generate some new parameter sets and get ready to
+            this->x_set.resize (this->partials_samples);
+            this->f_x_set.resize (this->partials_samples);
+            for (unsigned int ps = 0; ps < this->partials_samples; ++ps) {
+                this->x_set[ps] = this->generate_parameter (this->x);
+            }
+            return true;
+        }
 
-            // Compute partials - from this location in parameter space, generate some
-            // new parameter sets and use these to create this->partials (which could
-            // thus be local).
+        //! Complete the reannealing process. Based on the objectives in f_x_set,
+        //! compute partials and modify k and temp.
+        void reanneal2()
+        {
+            // Compute the average dL/dx and place in partials
+            this->partials.zero();
+            for (unsigned int i = 0; i < this->partials_samples; ++i) {
+                this->partials += (f_x_set[i] - f_x) / (x_set[i] - x);
+            }
+            this->partials /= this->partials_samples;
+            // Check what we got.
+            if (partials.has_nan_or_inf()) {
+                throw std::runtime_error ("NaN or inf in partials");
+            }
+            if (partials.has_zero()) {
+                // Objectives of the samples are all equal. Make no changes to k/T & return
+                this->reset_stats();
+                return;
+            }
 
-            // See near line 3294 in asa.c. By line 3486, I think that that code has
-            // collected some samples of the nearby paramters and computed them.
-            this->s = -this->rdelta * this->partials; // (A-B) * dL/dalph
+            this->s = -this->rdelta * this->partials; // (A-B) * dL/dx
 
             morph::vVector<T> temp_re = this->temp * (this->s.max()/this->s);
             std::cout << "Reanneal. Temp changes from " << temp << " to " << temp_re << std::endl;
@@ -300,6 +334,7 @@ namespace morph {
                 k_re = static_cast<unsigned long long int>(((this->temp_0/temp_re).log() / this->c).pow(D).mean());
                 std::cout << "Reanneal. k changes from " << k << " to " << k_re << std::endl;
                 this->k = k_re;
+                this->temp = temp_re;
             } else {
                 std::cout << "Can't update k based on new temp, as it is <=0\n";
             }
@@ -308,7 +343,7 @@ namespace morph {
         }
 
         //! The algorithm's stopping condition
-        bool stop_check()
+        bool stop_check() const
         {
 #if 0
             if ((this->temp < this->temp_f) || (this->k > this->k_f)) {
@@ -319,7 +354,7 @@ namespace morph {
         }
 
         //! Compute number accepted vs. number generated based on currently stored stats
-        T accepted_vs_generated()
+        T accepted_vs_generated() const
         {
             return static_cast<T>(this->num_accepted) / (this->num_improved+this->num_worse);
         }
