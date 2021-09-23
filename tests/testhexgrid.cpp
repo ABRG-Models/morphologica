@@ -1,15 +1,9 @@
 #include "morph/HexGrid.h"
 #include <iostream>
 
-using namespace morph;
-using namespace std;
-
 int main()
 {
-    HexGrid hg(2.309401, 4000);
-    cout << "Set up " << hg.num() << " hexes in a grid." << endl;
-    if (hg.num() == 2257669) {
-        return 0;
-    }
-    return -1;
+    morph::HexGrid hg(2.309401, 400, .0f, morph::HexDomainShape::Hexagon);
+    std::cout << "Set up " << hg.num() << " hexes in a grid.\n";
+    return hg.num() == 22969 ? 0 : -1;
 }
