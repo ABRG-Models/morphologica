@@ -213,6 +213,13 @@ int main() {
     std::cout << "one + " << ltthan << " = " << (1.0+ltthancopy) << std::endl;
     std::cout << "one - " << ltthan << " = " << (1.0-ltthancopy) << std::endl;
 
+    vVector<double> ltt2 = { 1, 2 };
+    vVector<double> ltt3 = { 1.1, 2.9 };
+    std::cout << (ltt3 < ltt2 ? "Y" : "N") << std::endl;
+    std::vector<double> ltt2v = { 1, 2 };
+    std::vector<double> ltt3v = { 0.9, 1.9 };
+    std::cout << (ltt3v < ltt2v ? "Y" : "N") << std::endl;
+
     std::vector<int> stdvec = { 1, 2, 3 };
     morph::vVector<int> fromstd;
     // You can't do fromstd = stdvec; instead, do this:

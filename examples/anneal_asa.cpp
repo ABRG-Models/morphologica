@@ -154,28 +154,30 @@ int main()
 
     // Now do the business
     while (anneal.state != morph::Anneal_State::ReadyToStop) {
+
         if (anneal.state == morph::Anneal_State::NeedToCompute) {
             // Take the candidate parameters from the Anneal object and compute the candidate objective value
-            anneal.set_f_x_cand (objective (anneal.x_cand));
-            // Update the visualisation
-            candp->position = { anneal.x_cand[0], anneal.x_cand[1], anneal.f_x_cand - 0.15f };
-            candp->reinit();
-            bestp->position = { anneal.x_best[0], anneal.x_best[1], anneal.f_x_best - 0.15f };
-            bestp->reinit();
-            currp->position = { anneal.x[0], anneal.x[1], anneal.f_x - 0.15f };
-            currp->reinit();
+            anneal.f_x_cand = objective (anneal.x_cand);
         } else {
             throw std::runtime_error ("Unexpected state for anneal object.");
         }
 
+        // Update the visualisation
+        candp->position = { anneal.x_cand[0], anneal.x_cand[1], anneal.f_x_cand - 0.15f };
+        candp->reinit();
+        bestp->position = { anneal.x_best[0], anneal.x_best[1], anneal.f_x_best - 0.15f };
+        bestp->reinit();
+        currp->position = { anneal.x[0], anneal.x[1], anneal.f_x - 0.15f };
+        currp->reinit();
+        // Render the graphics - timeout can slow down the example
         glfwWaitEventsTimeout (0.05); // 0.01667 16.67 ms ~ 60 Hz
         v.render();
 
-        // A step of the Anneal algoirhtm involves reducing the temperature and stochastically selecting new candidate parameters
+        // Ask the algorithm to do its stuff for one step
         anneal.step();
     }
 
-    std::cout << "FINISHED at k=" << anneal.k << "! Best approximation: (Params: " << anneal.x_best << ") has value "
+    std::cout << "FINISHED! Best approximation: (Params: " << anneal.x_best << ") has value "
               << anneal.f_x_best << " compare with obj_f.min(): " << obj_f.min() << std::endl;
     std::cout << "Anneal stats: num_improved " << anneal.num_improved << ", num_worse: " << anneal.num_worse
               << ", num_worse_accepted: " << anneal.num_worse_accepted << " (as proportion: "
