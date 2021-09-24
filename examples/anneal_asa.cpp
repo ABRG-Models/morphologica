@@ -1,10 +1,12 @@
 /*
- * Test simulated annealing
+ * Test Adaptive Simulated Annealing on a 2D objective function, visualizing the
+ * progress of the algorithm.
  */
 
 #include <morph/Anneal.h>
 #include <morph/vVector.h>
 #include <morph/Vector.h>
+#include <morph/Config.h>
 #include <morph/Hex.h>
 #include <morph/HexGrid.h>
 #include <morph/Visual.h>
@@ -12,9 +14,10 @@
 #include <morph/HexGridVisual.h>
 #include <morph/PolygonVisual.h>
 #include <iostream>
+#include <string>
 #include <unistd.h>
 
-// double or float
+// Choose double or float for the precision used in the Anneal algorithm
 typedef double F;
 
 // A global hexgrid for the locations of the objective function
@@ -30,7 +33,7 @@ void setup_objective();
 // HexGrid. Values from obj_f are returned.
 F objective (const morph::vVector<F>& params);
 
-int main()
+int main (int argc, char** argv)
 {
     // This allocates the HexGrid, hg
     setup_objective();
@@ -42,15 +45,34 @@ int main()
 
     // Set up the anneal algorithm object
     morph::Anneal<F> anneal(p, p_rng);
+    // Defaults are hardcoded in Anneal.h, but can be changed here:
     anneal.temperature_ratio_scale = F{1e-5}; // 1e-5 is default
     anneal.temperature_anneal_scale = F{100}; // 100 default
     anneal.cost_parameter_scale_ratio = F{1}; // 1 is default
-    anneal.acc_gen_reanneal_ratio = F{0.7};   // Don't know a good default
+    anneal.acc_gen_reanneal_ratio = F{0.7};   // There may well be a better default
     anneal.partials_samples = 5;
+    anneal.f_x_best_repeat_max = 10;
+    anneal.reanneal_after_steps = 100;
+    // Optionally, modify ASA parameters from a JSON config specified on the command line.
+    if (argc > 1) {
+        morph::Config conf(argv[1]);
+        if (conf.ready) {
+            anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-5);
+            anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 100.0);
+            anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.0);
+            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.7);
+            anneal.partials_samples = conf.getUInt ("partials_samples", 5);
+            anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 10);
+            anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
+        } else {
+            std::cerr << "Failed to open JSON config in '" << argv[1]
+                      << "', continuing with default ASA parameters.\n";
+        }
+    }
     anneal.init();
 
     // Set up the visualisation
-    morph::Visual v (1920, 1080, "Simulated Annealing Example");
+    morph::Visual v (1920, 1080, "Adaptive Simulated Annealing Example");
     v.zNear = 0.001;
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
@@ -121,11 +143,17 @@ int main()
         anneal.step();
     }
 
-    std::cout << "FINISHED in " << anneal.steps << " steps. Best approximation: (Params: " << anneal.x_best << ") has value "
-              << anneal.f_x_best << " compare with obj_f.min(): " << obj_f.min() << std::endl;
-    std::cout << "Anneal stats: num_improved " << anneal.num_improved << ", num_worse: " << anneal.num_worse
+    std::cout << "Last anneal stats: num_improved " << anneal.num_improved << ", num_worse: " << anneal.num_worse
               << ", num_worse_accepted: " << anneal.num_worse_accepted << " (as proportion: "
-              << ((double)anneal.num_worse_accepted/(double)anneal.num_worse) << ")" << std::endl;
+              << ((double)anneal.num_worse_accepted/(double)anneal.num_worse) << ")\n\n";
+
+    std::cout << "FINISHED in " << anneal.steps << " calls to Anneal::step().\n"
+              << "Best parameters: " << anneal.x_best << "\n"
+              << "Best params obj: " << anneal.f_x_best
+              << " vs. " << obj_f.min() << ", the true obj_f.min().\n"
+              << "Final error: " <<  anneal.f_x_best - obj_f.min() << "\n";
+
+    std::cout << "(You can close the window with 'x' or take a snapshot with 's'. 'h' for other help).\n";
 
     v.keepOpen();
 
