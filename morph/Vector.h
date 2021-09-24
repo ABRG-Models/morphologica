@@ -691,6 +691,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
+#if 0
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
         bool operator< (const Vector<_S, N>& rhs) const
@@ -726,7 +727,7 @@ namespace morph {
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
-
+#endif
         /*!
          * Unary negate operator
          *
