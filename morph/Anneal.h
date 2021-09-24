@@ -54,7 +54,7 @@ namespace morph {
     public: // Algorithm parameters to be adjusted by user
 
         // Set false to hide text output
-        static constexpr bool debug = true;
+        static constexpr bool debug = false;
         //! By default we *descend* to the *minimum* metric value of the user's
         //! objective function. Set this to false (before calling init()) to instead
         //! ascend to the maximum metric value.
@@ -263,10 +263,11 @@ namespace morph {
 
     protected: // Internal algorithm methods.
 
-        //! Generate a parameter set starting from _x_start.
-        morph::vVector<T> generate_parameter (const morph::vVector<T>& _x_start) const
+        //! Generate a parameter set starting from _x_start. If force_change is true,
+        //! require that all elements of the parameter vector do actually change.
+        morph::vVector<T> generate_parameter (const morph::vVector<T>& x_start, const bool force_change=false) const
         {
-            morph::vVector<T> _x;
+            morph::vVector<T> x_new;
             bool generated = false;
             while (!generated) {
                 morph::vVector<T> u(this->D);
@@ -274,12 +275,13 @@ namespace morph {
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
                 morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
-                _x = _x_start + y;
-                if (_x <= this->range_max && _x >= this->range_min) {
-                    generated = true;
-                } // else we'll re-generate u and y
+                x_new = x_start + y;
+                // Check that x_new is within the specified bounds
+                if (x_new <= this->range_max && x_new >= this->range_min) { generated = true;  }
+                // If we have to ensure that all parameters change, then check here:
+                if (force_change == true && (x_new - x_start).has_zero()) { generated = false; }
             }
-            return _x;
+            return x_new;
         }
 
         //! A function to generate a new set of parameters for x_cand.
@@ -347,7 +349,8 @@ namespace morph {
             this->x_set.resize (this->partials_samples);
             this->f_x_set.resize (this->partials_samples);
             for (unsigned int ps = 0; ps < this->partials_samples; ++ps) {
-                this->x_set[ps] = this->generate_parameter (this->x);
+                static constexpr bool force_change = true;
+                this->x_set[ps] = this->generate_parameter (this->x, force_change);
             }
             if constexpr (debug) { std::cout << "Reannealing...\n"; }
             return true;
