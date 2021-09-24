@@ -2565,7 +2565,6 @@ namespace morph {
         {
             // 1. Find extent of boundary, both left/right and up/down, with 'buffer region' already added.
             std::array<int, 6> extnts = this->findBoundaryExtents();
-            for (auto e : extnts) { std::cout << e << std::endl; }
             // 1.5 set rowlen and numrows
             this->d_rowlen = extnts[1]-extnts[0]+1;
             this->d_numrows = extnts[3]-extnts[2]+1;
