@@ -1,4 +1,6 @@
 #include "morph/Vector.h"
+#include <set>
+#include <algorithm>
 using morph::Vector;
 using std::cout;
 using std::endl;
@@ -121,6 +123,18 @@ int main() {
     Vector<float, 4> fordivision = { 1.0f, 2.0f, 3.0f, 4.0f };
     Vector<float, 4> divresult = 1.0f / fordivision;
     std::cout << 1.0f << " / " << fordivision << " = " << divresult << std::endl;
+
+    Vector<float, 3> compare1 = { 1, 2, 3 };
+    Vector<float, 3> compare2 = { 2, 1, 3 };
+
+    std::cout << "compare1 < compare2: " << (compare1 < compare2) << std::endl;
+    std::cout << "compare2 < compare1: " << (compare2 < compare1) << std::endl;
+
+    auto _cmp = [](Vector<float, 3> a, Vector<float, 3> b) { return a.lexical_lessthan(b); };
+    std::set<Vector<float, 3>, decltype(_cmp)> aset(_cmp);
+    aset.insert (compare1);
+    aset.insert (compare2);
+    std::cout << "aset size " << aset.size() << std::endl;
 
     return rtn;
 }
