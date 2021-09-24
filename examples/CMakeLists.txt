@@ -29,6 +29,9 @@ target_link_libraries(convolve ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAP
 add_executable(anneal_asa anneal_asa.cpp)
 target_link_libraries(anneal_asa ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
+add_executable(anneal_asa_novis anneal_asa_novis.cpp)
+target_link_libraries(anneal_asa_novis ${LAPACK_LIBRARIES} jsoncpp_lib)
+
 # Adaptive Simulated Annealing algo on objective from Bohachevsky
 add_executable(anneal_boha anneal_boha.cpp)
 target_link_libraries(anneal_boha ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
