@@ -53,13 +53,6 @@ namespace morph {
             std::stringstream ess;
             // Test for existence of the JSON file.
             std::ifstream jsonfile_test;
-            int srtn = system ("pwd");
-            if (srtn) {
-                ess << "system call returned " << srtn;
-                this->emsg = ess.str();
-                this->ready = false;
-                return;
-            }
             jsonfile_test.open (configfile, std::ios::in);
             if (jsonfile_test.is_open()) {
                 // Good, file exists.
