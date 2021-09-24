@@ -272,5 +272,12 @@ int main() {
     std::cout << "(" << rv[0] << "," << rv[1] << ")" << std::endl;
     for (auto rvi : rv2) { std::cout << rvi << std::endl; }
 
+    // Convert precision
+    cc = {1.234523452345, 5.23452345345};
+    vVector<double> ddcc = cc.as_double();
+    std::cout << "cc: " << cc << " cc.as_double(): " << ddcc << " and back to single " << ddcc.as_float() << std::endl;
+    ddcc = {1.2345234755654907,5.2345232963562812};
+    std::cout << "double prec: " << ddcc << " to single: " << ddcc.as_float() << "\n   and back: " << ddcc.as_float().as_double() << std::endl;
+
     return rtn;
 }

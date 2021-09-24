@@ -141,6 +141,22 @@ namespace morph {
             return rtn;
         }
 
+        //! Return this vVector in single precision, float format
+        vVector<float> as_float() const
+        {
+            vVector<float> vv(this->size(), 0.0f);
+            vv += *this;
+            return vv;
+        }
+
+        //! Return this vVector in double precision format
+        vVector<double> as_double() const
+        {
+            vVector<double> vv(this->size(), 0.0);
+            vv += *this;
+            return vv;
+        }
+
         /*!
          * Set an N-D vVector from an N+1 D vVector. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
