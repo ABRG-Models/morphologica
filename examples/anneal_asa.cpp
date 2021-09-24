@@ -63,12 +63,12 @@ int main (int argc, char** argv)
     if (argc > 1) {
         morph::Config conf(argv[1]);
         if (conf.ready) {
-            anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-5);
-            anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 100.0);
-            anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.0);
-            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.7);
-            anneal.partials_samples = conf.getUInt ("partials_samples", 5);
-            anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 10);
+            anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-4);
+            anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 200.0);
+            anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.5);
+            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.3);
+            anneal.partials_samples = conf.getUInt ("partials_samples", 4);
+            anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 15);
             anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
         } else {
             std::cerr << "Failed to open JSON config in '" << argv[1]
