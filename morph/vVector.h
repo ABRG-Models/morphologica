@@ -742,6 +742,34 @@ namespace morph {
         // implementation of these operators, I prefer to reimplement with a requirement
         // that the vVectors should have the same size to be compared, as this is a
         // better defined comparison. These might be slow if your vVector is very big.
+        //
+        // More importantly, I *completely redefine the meaning of the comparison
+        // operators between vVectors*. This messes up the use of containers that make
+        // use of comparison operators like std::set.
+        //
+        // Use something like this as a compare function when storing morph::Vectors in
+        // a std::set:
+        //
+        //    auto _cmp = [](Vector<float, 3> a, Vector<float, 3> b) { return a.lexical_lessthan(b); };
+        //    std::set<Vector<float, 3>, decltype(_cmp)> aset(_cmp); // C++-11/C++-17
+        //
+        // If the std::set is a class member, then define a compare struct with an operator().
+        //
+        // The default comparison for std::set is the operator<. The definition here
+        // applied to !comp(a,b) && !comp(b,a) will suggest that two different vVectors
+        // are equal even when they're not and so your std::sets will fail to insert
+        // unique vVectors
+
+        //! Lexical less-than similar to the operator< implemented for std::vector
+        template<typename _S=S>
+        bool lexical_lessthan (const Vector<_S, N>& rhs) const
+        {
+            return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
+        }
+
+        //! Another way to compare vectors would be by length.
+        template<typename _S=S>
+        bool length_lessthan (const Vector<_S, N>& rhs) const { return this->length() < rhs.length(); }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>

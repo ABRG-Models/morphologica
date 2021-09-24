@@ -691,7 +691,28 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-#if 0
+        /*!
+         * Use something like this as a compare function when storing morph::Vectors in
+         * a std::set:
+         *
+         *    auto _cmp = [](Vector<float, 3> a, Vector<float, 3> b) { return a.lexical_lessthan(b); };
+         *    std::set<Vector<float, 3>, decltype(_cmp)> aset(_cmp);
+         *
+         * The default comparison for std::set is the operator<. The definition here
+         * applied to !comp(a,b) && !comp(b,a) will suggest that two different Vectors
+         * are equal even when they're not and so your std::sets will fail to insert
+         * unique Vectors
+         */
+        template<typename _S=S>
+        bool lexical_lessthan (const Vector<_S, N>& rhs) const
+        {
+            return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
+        }
+
+        //! Another way to compare vectors would be by length.
+        template<typename _S=S>
+        bool length_lessthan (const Vector<_S, N>& rhs) const { return this->length() < rhs.length(); }
+
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
         bool operator< (const Vector<_S, N>& rhs) const
@@ -727,7 +748,7 @@ namespace morph {
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
-#endif
+
         /*!
          * Unary negate operator
          *
