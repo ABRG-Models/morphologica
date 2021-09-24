@@ -21,7 +21,7 @@
 typedef double F;
 
 // A global hexgrid for the locations of the objective function
-morph::HexGrid* hg;
+morph::HexGrid* hg = (morph::HexGrid*)0;
 // And a vVector to be the data
 morph::vVector<F> obj_f;
 
@@ -29,14 +29,20 @@ morph::vVector<F> obj_f;
 // discrete values.
 void setup_objective();
 
+// Alternative objective function
+void setup_objective_boha();
+
 // Return values of the objective function. Params contains coordinates into the
 // HexGrid. Values from obj_f are returned.
 F objective (const morph::vVector<F>& params);
 
 int main (int argc, char** argv)
 {
-    // This allocates the HexGrid, hg
+#ifdef USE_BOHACHEVSKY_FUNCTION
+    setup_objective_boha();
+#else
     setup_objective();
+#endif
 
     // Here, our search space is 2D
     morph::vVector<F> p = { 0.45, 0.45};
@@ -45,13 +51,13 @@ int main (int argc, char** argv)
 
     // Set up the anneal algorithm object
     morph::Anneal<F> anneal(p, p_rng);
-    // Defaults are hardcoded in Anneal.h, but can be changed here:
-    anneal.temperature_ratio_scale = F{1e-5}; // 1e-5 is default
-    anneal.temperature_anneal_scale = F{100}; // 100 default
-    anneal.cost_parameter_scale_ratio = F{1}; // 1 is default
-    anneal.acc_gen_reanneal_ratio = F{0.7};   // There may well be a better default
-    anneal.partials_samples = 5;
-    anneal.f_x_best_repeat_max = 10;
+    // There are defaults hardcoded in Anneal.h, but these work for the cost function here:
+    anneal.temperature_ratio_scale = F{1e-4};
+    anneal.temperature_anneal_scale = F{200};
+    anneal.cost_parameter_scale_ratio = F{1.5};
+    anneal.acc_gen_reanneal_ratio = F{0.3};
+    anneal.partials_samples = 4;
+    anneal.f_x_best_repeat_max = 15;
     anneal.reanneal_after_steps = 100;
     // Optionally, modify ASA parameters from a JSON config specified on the command line.
     if (argc > 1) {
@@ -71,6 +77,7 @@ int main (int argc, char** argv)
     }
     anneal.init();
 
+#ifdef VISUALISE
     // Set up the visualisation
     morph::Visual v (1920, 1080, "Adaptive Simulated Annealing Example");
     v.zNear = 0.001;
@@ -102,6 +109,7 @@ int main (int argc, char** argv)
     v.addVisualModel (bestp);
     v.addVisualModel (currp);
     v.render();
+#endif
 
     // The Optimization:
     //
@@ -123,6 +131,7 @@ int main (int argc, char** argv)
             throw std::runtime_error ("Unexpected state for anneal object.");
         }
 
+#ifdef VISUALISE
         // You can update the visualisation within this loop if you like:
         candp->position = { static_cast<float>(anneal.x_cand[0]),
                             static_cast<float>(anneal.x_cand[1]),
@@ -138,11 +147,12 @@ int main (int argc, char** argv)
         currp->reinit();
         glfwWaitEventsTimeout (0.0166);
         v.render();
-
+#endif
         // Finally, you need to ask the algorithm to do its stuff for one step
         anneal.step();
     }
 
+#ifdef VISUALISE
     std::cout << "Last anneal stats: num_improved " << anneal.num_improved << ", num_worse: " << anneal.num_worse
               << ", num_worse_accepted: " << anneal.num_worse_accepted << " (as proportion: "
               << ((double)anneal.num_worse_accepted/(double)anneal.num_worse) << ")\n\n";
@@ -156,8 +166,12 @@ int main (int argc, char** argv)
     std::cout << "(You can close the window with 'x' or take a snapshot with 's'. 'h' for other help).\n";
 
     v.keepOpen();
+#else
+    std::cout << anneal.steps << "," << anneal.f_x_best - obj_f.min() << ","
+              << anneal.f_x_best << "," << obj_f.min() << "\n";
+#endif
 
-    delete hg;
+    if (hg != (morph::HexGrid*)0) { delete hg; }
     return 0;
 }
 
@@ -238,6 +252,18 @@ void setup_objective()
 
     // And finally, invert (so we go downhill to the valleys)
     obj_f = -obj_f;
+}
+
+// Alternative objective function from Bohachevsky
+void setup_objective_boha()
+{
+    hg = new morph::HexGrid(0.01, 2.5, 0, morph::HexDomainShape::Hexagon);
+    hg->leaveAsHexagon();
+    obj_f.resize (hg->num());
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    for (auto h : hg->hexen) {
+        obj_f[h.vi] = a*h.x*h.x + b*h.y*h.y - c * std::cos(alpha*h.x) - d * std::cos (gamma * h.y) + c + d;
+    }
 }
 
 F objective (const morph::vVector<F>& params)
