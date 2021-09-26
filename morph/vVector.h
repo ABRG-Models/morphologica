@@ -762,14 +762,20 @@ namespace morph {
 
         //! Lexical less-than similar to the operator< implemented for std::vector
         template<typename _S=S>
-        bool lexical_lessthan (const Vector<_S, N>& rhs) const
+        bool lexical_lessthan (const vVector<_S>& rhs) const
         {
             return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
         }
 
         //! Another way to compare vectors would be by length.
         template<typename _S=S>
-        bool length_lessthan (const Vector<_S, N>& rhs) const { return this->length() < rhs.length(); }
+        bool length_lessthan (const vVector<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("length based comparison: rhs dims should equal vVector's dims");
+            }
+            return this->length() < rhs.length();
+        }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
