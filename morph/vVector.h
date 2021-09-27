@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
+#include <morph/aligned_allocator.h>
+#include <immintrin.h>
 
 namespace morph {
 
@@ -57,7 +59,9 @@ namespace morph {
      */
     template <typename S, typename Al> std::ostream& operator<< (std::ostream&, const vVector<S, Al>&);
 
-    template <typename S=float, typename Al=std::allocator<S>>
+    //template <typename S=float, typename Al=std::allocator<S>>
+    // It costs more time to allocate with sizeof(__m256 or __m512)
+    template <typename S=float, typename Al=aligned_allocator<S, sizeof(__m128)>>
     struct vVector : public std::vector<S, Al>
     {
         //! We inherit std::vector's constructors like this:
@@ -964,9 +968,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator* (const _S& s) const
         {
-            vVector<S> rtn(this->size());
-#pragma omp parallel for
-            for (size_t i = 0; i < this->size(); ++i) { rtn[i] = s * (*this)[i]; }
+            vVector<S> rtn(this->size()); // Costs a memory allocation. Now I need a vector which has additional storage.
+//#pragma omp parallel for
+            for (size_t i = 0; i < this->size(); ++i) { rtn[i] = (*this)[i] * s; }
             return rtn;
         }
 
