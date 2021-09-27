@@ -17,6 +17,7 @@
 #include <morph/vVector.h>
 #include <morph/Vector.h>
 #include <morph/Random.h>
+#include <morph/HdfData.h>
 
 namespace morph {
 
@@ -111,10 +112,13 @@ namespace morph {
         unsigned int num_accepted = 0;
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
-        //! A history of parameters evaluated (currently holds the accepted params only).
-        morph::vVector<morph::vVector<T>> param_hist;
+        //! A history of accepted parameters evaluated
+        morph::vVector<morph::vVector<T>> param_hist_accepted;
         //! For each entry in param_hist, record also its objective function value.
-        morph::vVector<T> f_param_hist;
+        morph::vVector<T> f_param_hist_accepted;
+        //! History of rejected parameters
+        morph::vVector<morph::vVector<T>> param_hist_rejected;
+        morph::vVector<T> f_param_hist_rejected;
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
@@ -261,6 +265,31 @@ namespace morph {
             }
         }
 
+        // Avoid throwing away useful info such as the objectives computed; instead save into HDF5 file.
+        void save (const std::string& path)
+        {
+            morph::HdfData data(path, morph::FileAccess::TruncateWrite);
+            int idx = 0;
+#if 1
+            for (auto ph : this->param_hist_accepted) {
+                std::string tag = "/param_hist_accepted/" + std::to_string(idx++);
+                data.add_contained_vals (tag.c_str(), ph);
+            }
+#else
+            // Really, I want this to save as 2D array, which would be convenient.
+            data.add_contained_vals ("/param_hist_accepted", this->param_hist_accepted);
+#endif
+            data.add_contained_vals ("/f_param_hist_accepted", this->f_param_hist_accepted);
+            idx = 0;
+            for (auto ph : this->param_hist_rejected) {
+                std::string tag = "/param_hist_rejected/" + std::to_string(idx++);
+                data.add_contained_vals (tag.c_str(), ph);
+            }
+            data.add_contained_vals ("/f_param_hist_rejected", this->f_param_hist_rejected);
+            data.add_contained_vals ("/x_best", this->x_best);
+            data.add_val ("/f_x_best", this->f_x_best);
+        }
+
     protected: // Internal algorithm methods.
 
         //! Generate a parameter set starting from _x_start. If force_change is true,
@@ -273,6 +302,15 @@ namespace morph {
                 morph::vVector<T> u(this->D);
                 u.randomize();
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
+#if 0 // faster would be (because fewer mallocs) but speed of algo itself is of no concern:
+                morph::vVector<T> u2 = u;
+                u2 *= T{2};
+                u2 -= T{1};
+                u2.abs_inplace();
+                morph::vVector<T> sigu = u;
+                sigu -= T{0.5};
+                sigu.signum_inplace();
+#endif
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
                 morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
                 x_new = x_start + y;
@@ -319,13 +357,16 @@ namespace morph {
             if (accepted) {
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
-                this->param_hist.push_back (this->x);
-                this->f_param_hist.push_back (this->f_x);
+                this->param_hist_accepted.push_back (this->x);
+                this->f_param_hist_accepted.push_back (this->f_x);
                 this->f_x_best_repeats += this->f_x_cand == this->f_x_best ? 1 : 0;
                 // Note the reset of f_x_best_repeats if f_x_cand is better than f_x_best:
                 this->x_best = this->f_x_cand < this->f_x_best ? this->f_x_best_repeats=0, this->x_cand : this->x_best;
                 this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
                 this->num_accepted++;
+            } else {
+                this->param_hist_rejected.push_back (this->x);
+                this->f_param_hist_rejected.push_back (this->f_x);
             }
 
             if constexpr (debug) {
@@ -379,9 +420,9 @@ namespace morph {
             this->s = -this->rdelta * this->partials; // (A-B) * dL/dx
 
             morph::vVector<T> temp_re = this->temp * (this->s.max()/this->s);
-            if constexpr (debug) {
-                std::cout << "Reanneal. Ti(k) changes from " << temp << " to " << temp_re << std::endl;
-            }
+            //if constexpr (debug) {
+            std::cout << "Reanneal. Ti(k) changes from " << temp << " to " << temp_re << std::endl;
+            //}
             if (temp_re > T{0}) {
                 unsigned int k_re = k;
                 k_re = static_cast<unsigned int>(((this->temp_0/temp_re).log() / this->c).pow(D).mean());
@@ -391,9 +432,9 @@ namespace morph {
                 this->k = k_re;
                 this->temp = temp_re;
             } else { // catch temp being <=0
-                if constexpr (debug) {
-                    std::cout << "Can't update k based on new temp, as it is <=0\n";
-                }
+                //if constexpr (debug) {
+                std::cout << "Can't update k based on new temp, as it is <=0\n";
+                //}
             }
 
             this->reset_stats();

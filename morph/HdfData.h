@@ -21,6 +21,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <morph/Vector.h>
+#include <morph/vVector.h>
 #include <morph/tools.h>
 
 namespace morph {
@@ -821,6 +822,14 @@ namespace morph {
                 dim_vec2dcoords[1] = 2; // 2 ints in each cv::Point
                 // Note 2 dims (1st arg, which is rank = 2)
                 dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
+            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<float>>::value == true
+                                 || std::is_same<std::decay_t<T>, morph::vVector<double>>::value == true) {
+                hsize_t dim_vec2dcoords[2]; // 2 Dims
+                dim_vec2dcoords[0] = vals.size();
+                dim_vec2dcoords[1] = vals[0].size(); // assume every encoded vVector is of same size
+                // Note 2 dims (1st arg, which is rank = 2)
+                dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
+
             } else {
                 hsize_t dim_singleparam[1];
                 dim_singleparam[0] = vals.size();
@@ -888,6 +897,16 @@ namespace morph {
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<float>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                //this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<double>>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                //this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
