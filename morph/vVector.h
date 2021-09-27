@@ -965,8 +965,8 @@ namespace morph {
         vVector<S> operator* (const _S& s) const
         {
             vVector<S> rtn(this->size());
-            auto mult_by_s = [s](S coord) { return coord * s; };
-            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
+#pragma omp parallel for
+            for (size_t i = 0; i < this->size(); ++i) { rtn[i] = s * (*this)[i]; }
             return rtn;
         }
 
