@@ -20,8 +20,10 @@
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
-#include <morph/aligned_allocator.h>
-#include <immintrin.h>
+#ifdef USE_ALIGNED_ALLOCATOR
+# include <morph/aligned_allocator.h>
+# include <immintrin.h>
+#endif
 
 namespace morph {
 
@@ -59,9 +61,12 @@ namespace morph {
      */
     template <typename S, typename Al> std::ostream& operator<< (std::ostream&, const vVector<S, Al>&);
 
-    //template <typename S=float, typename Al=std::allocator<S>>
-    // It costs more time to allocate with sizeof(__m256 or __m512)
+#ifdef USE_ALIGNED_ALLOCATOR
+    // An aligned allocator. Note that it costs more time to allocate with sizeof(__m256 or __m512)
     template <typename S=float, typename Al=aligned_allocator<S, sizeof(__m128)>>
+#else
+    template <typename S=float, typename Al=std::allocator<S>>
+#endif
     struct vVector : public std::vector<S, Al>
     {
         //! We inherit std::vector's constructors like this:
@@ -964,14 +969,27 @@ namespace morph {
          *
          * This function will only be defined if typename _S is a
          * scalar type. Multiplies this vVector<S> by s, element-wise.
+         *
+         * Take care as this allocates the return vVector which costs time. See mult() as a faster alternative.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator* (const _S& s) const
         {
-            vVector<S> rtn(this->size()); // Costs a memory allocation. Now I need a vector which has additional storage.
-//#pragma omp parallel for
+            vVector<S> rtn(this->size()); // Costs a memory allocation, which is as costly as the computation
+#pragma omp parallel for
             for (size_t i = 0; i < this->size(); ++i) { rtn[i] = (*this)[i] * s; }
             return rtn;
+        }
+
+        //! Multiply this by the scalar s and place the result in the reference result.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        void mult (const _S& s, vVector<S>& result) const
+        {
+            result.resize(this->size()); // This resize() is necessary, but how does it
+                                         // make it faster cf. passing in a correctly
+                                         // sized result vVector??
+#pragma omp parallel for
+            for (size_t i = 0; i < this->size(); ++i) { result[i] = (*this)[i] * s; }
         }
 
         /*!
@@ -983,8 +1001,8 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
-            auto mult_by_s = [s](S coord) { return coord * s; };
-            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+#pragma omp parallel for
+            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] *= s; }
         }
 
         //! Scalar divide by s
