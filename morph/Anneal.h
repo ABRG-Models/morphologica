@@ -1,3 +1,4 @@
+
 /*
  * Simulated Annealing - An implementation of the Adaptive Annealing Algorithm described
  * in:
@@ -269,22 +270,9 @@ namespace morph {
         void save (const std::string& path)
         {
             morph::HdfData data(path, morph::FileAccess::TruncateWrite);
-            int idx = 0;
-#if 1
-            for (auto ph : this->param_hist_accepted) {
-                std::string tag = "/param_hist_accepted/" + std::to_string(idx++);
-                data.add_contained_vals (tag.c_str(), ph);
-            }
-#else
-            // Really, I want this to save as 2D array, which would be convenient.
             data.add_contained_vals ("/param_hist_accepted", this->param_hist_accepted);
-#endif
             data.add_contained_vals ("/f_param_hist_accepted", this->f_param_hist_accepted);
-            idx = 0;
-            for (auto ph : this->param_hist_rejected) {
-                std::string tag = "/param_hist_rejected/" + std::to_string(idx++);
-                data.add_contained_vals (tag.c_str(), ph);
-            }
+            data.add_contained_vals ("/param_hist_rejected", this->param_hist_rejected);
             data.add_contained_vals ("/f_param_hist_rejected", this->f_param_hist_rejected);
             data.add_contained_vals ("/x_best", this->x_best);
             data.add_val ("/f_x_best", this->f_x_best);
@@ -302,15 +290,6 @@ namespace morph {
                 morph::vVector<T> u(this->D);
                 u.randomize();
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
-#if 0 // faster would be (because fewer mallocs) but speed of algo itself is of no concern:
-                morph::vVector<T> u2 = u;
-                u2 *= T{2};
-                u2 -= T{1};
-                u2.abs_inplace();
-                morph::vVector<T> sigu = u;
-                sigu -= T{0.5};
-                sigu.signum_inplace();
-#endif
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
                 morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
                 x_new = x_start + y;
