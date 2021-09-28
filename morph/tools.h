@@ -89,8 +89,8 @@ namespace morph
         void startedSignal (std::string msg) {}
         void errorSignal (int err) { this->parent->setErrorNum (err); }
         void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
-        void readyReadStandardOutputSignal (void) { this->parent->setStdOutReady (true); }
-        void readyReadStandardErrorSignal (void) { this->parent->setStdErrReady (true); }
+        void readyReadStandardOutputSignal() { this->parent->setStdOutReady (true); }
+        void readyReadStandardErrorSignal() { this->parent->setStdErrReady (true); }
     private:
         ProcessData* parent;
     };
@@ -265,7 +265,7 @@ namespace morph
          * Using clock(), time() and getpid() along with the mix utility function,
          * generate a decently random seed for seeding your RNG.
          */
-        static unsigned int randomSeed (void)
+        static unsigned int randomSeed()
         {
             unsigned int rsd = morph::Tools::mix(clock(), time(NULL), getpid());
             return rsd;
@@ -324,7 +324,7 @@ namespace morph
         /*!
          * Get the working directory
          */
-        static std::string getPwd (void)
+        static std::string getPwd()
         {
             char b[FILENAME_MAX];
             GetCurrentDir (b, FILENAME_MAX);
@@ -2301,10 +2301,10 @@ namespace morph
         /*!
          * Return the current year.
          */
-        static unsigned int yearNow (void)
+        static unsigned int yearNow()
         {
             time_t curtime; // Current time
-            struct tm * t;
+            struct tm* t;
             curtime = time(NULL);
             t = localtime (&curtime);
             unsigned int theYear = static_cast<unsigned int>(t->tm_year+1900);
@@ -2314,10 +2314,10 @@ namespace morph
         /*!
          * Return the current month (1==Jan, 12==Dec).
          */
-        static unsigned int monthNow (void)
+        static unsigned int monthNow()
         {
             time_t curtime; // Current time
-            struct tm * t;
+            struct tm* t;
             curtime = time(NULL);
             t = localtime (&curtime);
             unsigned int theMonth = static_cast<unsigned int>(t->tm_mon+1);
@@ -2327,10 +2327,10 @@ namespace morph
         /*!
          * Return the current 'day of month' (the tm_mday field of a struct tm).
          */
-        static unsigned int dateNow (void)
+        static unsigned int dateNow()
         {
             time_t curtime; // Current time
-            struct tm * t;
+            struct tm* t;
             curtime = time(NULL);
             t = localtime (&curtime);
             unsigned int theDate = static_cast<unsigned int>(t->tm_mday);
@@ -2539,7 +2539,7 @@ namespace morph
             dayss.fill ('0');
             dayss >> dayN;
 
-            struct tm * t;
+            struct tm* t;
             t = (struct tm*) malloc (sizeof (struct tm));
             t->tm_year = yearN-1900;
             t->tm_mon = monthN-1;
@@ -2649,7 +2649,7 @@ namespace morph
                 secss >> secN;
             }
 
-            struct tm * t;
+            struct tm* t;
             t = (struct tm*) malloc (sizeof (struct tm));
             t->tm_year = yearN-1900;
             t->tm_mon = monthN-1;
@@ -2672,13 +2672,12 @@ namespace morph
          */
         static std::string numToDateTime (const time_t epochSeconds,
                                           const char dateSeparator = '\0',
-                                          const char timeSeparator = '\0')
+                                          const char timeSeparator = '\0',
+                                          const char midSeparator = ' ')
         {
-            if (epochSeconds == 0) {
-                return "unknown";
-            }
+            if (epochSeconds == 0) { return "unknown"; }
 
-            struct tm * t;
+            struct tm* t;
             time_t es = epochSeconds;
             t = (struct tm*) malloc (sizeof (struct tm));
             t = localtime_r (&es, t);
@@ -2705,7 +2704,7 @@ namespace morph
             rtn.fill('0');
             rtn << theDay;
 
-            rtn << " ";
+            rtn << midSeparator;
 
             // Time part
             rtn.width(2);
@@ -2729,7 +2728,7 @@ namespace morph
          */
         static std::string numToDate (const time_t epochSeconds, const char separator = '\0')
         {
-            struct tm * t;
+            struct tm* t;
             time_t es = epochSeconds;
             t = (struct tm*) malloc (sizeof (struct tm));
             t = localtime_r (&es, t);
@@ -2767,13 +2766,22 @@ namespace morph
         /*!
          * Return the current time in neat string format.
          */
-        static std::string timeNow (void)
+        static std::string timeNow()
         {
             time_t curtime;
-            struct tm *loctime;
+            struct tm* loctime;
             curtime = time (NULL);
             loctime = localtime (&curtime);
             return asctime(loctime);
+        }
+
+        /*!
+         * Return a string representing the date and time in a format suitable to form
+         * part of a filename.
+         */
+        static std::string filenameTimestamp()
+        {
+            return morph::Tools::numToDateTime (time(NULL), '\0', '\0', '_');
         }
 
         /*!
