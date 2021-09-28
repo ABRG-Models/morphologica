@@ -587,13 +587,18 @@ namespace morph {
          */
         vVector<S> pow (const S& p) const
         {
-            vVector<S> rtn(this->size());
-            auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
-            std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
+            const size_t sz = this->size();
+            vVector<S> rtn(sz);
+#pragma omp parallel for
+            for (size_t i = 0; i < sz; ++i) { rtn[i] = std::pow ((*this)[i], p); }
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+        void pow_inplace (const S& p)
+        {
+#pragma omp parallel for
+            for (auto& i : *this) { i = std::pow (i, p); }
+        }
 
         //! Element-wise power
         template<typename _S=S>
@@ -907,11 +912,20 @@ namespace morph {
         template<typename _S=S>
         vVector<S, Al> operator* (const vVector<_S>& v) const
         {
-            if (v.size() != this->size()) {
+            const size_t sz = this->size();
+            if (v.size() != sz) {
                 throw std::runtime_error ("vVector::operator*: Hadamard product is defined here for vectors of same dimensionality only");
             }
-            vVector<S, Al> rtn(this->size(), S{0});
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>());
+            vVector<S, Al> rtn(sz);
+// MUST switch omp off for small vVectors. What's the cutoff?  4 is def. small, 1000000
+// def. big. Eigen factor of 10 faster at the small scale, even *without* omp parallel for.
+#if 0
+            // The C++ approach still slower than the plan loop.
+            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>()); // 6879 ns small vec
+#else
+#pragma omp parallel for
+            for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] * v[i]; } // 3815 ns small vec no omp. 587050 ns (!) WITH omp!!
+#endif
             return rtn;
         }
 
@@ -922,12 +936,14 @@ namespace morph {
          * different number of elements to *this, then an exception is thrown.
          */
         template <typename _S=S>
-        void operator*= (const vVector<_S>& v) {
-            if (v.size() == this->size()) {
-                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::multiplies<S>());
-            } else {
+        void operator*= (const vVector<_S>& v)
+        {
+            const size_t sz = this->size();
+            if (v.size() != sz) {
                 throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
             }
+#pragma omp parallel for
+            for (size_t i = 0; i < sz; ++i) { (*this)[i] *= v[i]; }
         }
 
         /*!
@@ -941,11 +957,13 @@ namespace morph {
         template<typename _S=S>
         vVector<S, Al> operator/ (const vVector<_S>& v) const
         {
-            if (v.size() != this->size()) {
-                throw std::runtime_error ("vVector::operator*: Hadamard division is defined here for vectors of same dimensionality only");
+            const size_t sz = this->size();
+            if (v.size() != sz) {
+                throw std::runtime_error ("vVector::operator/: Hadamard division is defined here for vectors of same dimensionality only");
             }
-            vVector<S, Al> rtn(this->size(), S{0});
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
+            vVector<S, Al> rtn(sz);
+#pragma omp parallel for
+            for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] / v[i]; } // 145 ms no omp; 67 WITH omp.
             return rtn;
         }
 
@@ -956,12 +974,14 @@ namespace morph {
          * different number of elements to *this, then an exception is thrown.
          */
         template <typename _S=S>
-        void operator/= (const vVector<_S>& v) {
-            if (v.size() == this->size()) {
-                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
-            } else {
-                throw std::runtime_error ("vVector::operator*=: Hadamard division is defined here for vectors of same dimensionality only");
+        void operator/= (const vVector<_S>& v)
+        {
+            const size_t sz = this->size();
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vVector::operator/=: Hadamard division is defined here for vectors of same dimensionality only");
             }
+#pragma omp parallel for
+            for (size_t i = 0; i < sz; ++i) { (*this)[i] /= v[i]; }
         }
 
         /*!
@@ -975,9 +995,10 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vVector<S> operator* (const _S& s) const
         {
-            vVector<S> rtn(this->size()); // Costs a memory allocation, which is as costly as the computation
+            const size_t sz = this->size();
+            vVector<S> rtn(sz); // Costs a memory allocation
 #pragma omp parallel for
-            for (size_t i = 0; i < this->size(); ++i) { rtn[i] = (*this)[i] * s; }
+            for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] * s; }
             return rtn;
         }
 
@@ -985,11 +1006,12 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void mult (const _S& s, vVector<S>& result) const
         {
-            result.resize(this->size()); // This resize() is necessary, but how does it
-                                         // make it faster cf. passing in a correctly
-                                         // sized result vVector??
+            const size_t sz = this->size();
+            result.resize(sz); // This resize() is necessary, but how does it make it
+                               // faster cf. passing in a correctly sized result
+                               // vVector??
 #pragma omp parallel for
-            for (size_t i = 0; i < this->size(); ++i) { result[i] = (*this)[i] * s; }
+            for (size_t i = 0; i < sz; ++i) { result[i] = (*this)[i] * s; }
         }
 
         /*!
@@ -1001,8 +1023,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
+            const size_t sz = this->size();
 #pragma omp parallel for
-            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] *= s; }
+            for (size_t i = 0; i < sz; ++i) { (*this)[i] *= s; }
         }
 
         //! Scalar divide by s
