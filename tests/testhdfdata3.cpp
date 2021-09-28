@@ -46,6 +46,37 @@ int main()
             cout << "Coordinate: (" << va[i][0] << "," << va[i][1] << ")" << endl;
         }
     }
+
+    cout << "vector<array<FLT, 3>>" << endl;
+    vector<array<FLT, 3>> va3 = { { 1.0, 1.0, 1.0 },
+                                 { 3.0, 2.0, 2.0 },
+                                 { 5.0, 9.7, 2.0 },
+                                 { 7.0, 8.1, 2.0 },
+                                 { 9.0, 0.3, 0.3 } };
+    {
+        HdfData data("test3.h5");
+        data.add_contained_vals ("/testvecarrayf3", va3);
+    } // data closes when out of scope
+
+    vector<array<FLT, 3>> varead3;
+    {
+        HdfData data("test3.h5", true); // true for read data
+        data.read_contained_vals ("/testvecarrayf3", varead3);
+    }
+
+    if (va3.size() == varead3.size()) {
+        for (unsigned int i = 0; i < va.size(); ++i) {
+            if (va3[i][0] != varead3[i][0]) {
+                rtn -= 1;
+                break;
+            }
+            if (va3[i][1] != varead3[i][1]) {
+                rtn -= 1;
+                break;
+            }
+            cout << "Coordinate: (" << va3[i][0] << "," << va3[i][1] << "," << va3[i][2] << ")" << endl;
+        }
+    }
 #if 0
     // Test the saving of cv::Points
     {

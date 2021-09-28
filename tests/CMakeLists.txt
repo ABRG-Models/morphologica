@@ -134,6 +134,11 @@ target_compile_definitions(testhdfdata3d PUBLIC FLT=float)
 target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES})
 add_test(testhdfdata3d testhdfdata3d)
 
+add_executable(testhdfdata4f testhdfdata4.cpp)
+target_compile_definitions(testhdfdata4f PUBLIC FLT=float)
+target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
+add_test(testhdfdata4f testhdfdata4f)
+
 if(${glfw3_FOUND})
   # Test hexgrid3 (hexgrid2 with visualisation)
   add_executable(testhexgrid3 testhexgrid3.cpp)

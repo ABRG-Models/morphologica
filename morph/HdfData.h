@@ -432,8 +432,9 @@ namespace morph {
             vals.second = vvals[1];
         }
 
-        //! Read a vector of 3D coordinates
-        void read_contained_vals (const char* path, std::vector<std::array<float, 3>>& vals)
+        //! read_contained_vals for a vector of array<T,N>
+        template<typename T, size_t N>
+        void read_contained_vals (const char* path, std::vector<std::array<T, N>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
             if (this->check_dataset_id (dataset_id, path) == -1) { return; }
@@ -445,20 +446,42 @@ namespace morph {
                 ee << "Error. Expected 2D data to be stored in " << path;
                 throw std::runtime_error (ee.str());
             }
-            if (dims[1] != 3) {
+            if (dims[1] != N) {
                 std::stringstream ee;
-                ee << "Error. Expected 3D coordinates to be stored in each element of " << path;
+                ee << "Error. Expecting to read arrays of size N=" << N << " but HDF5 says dims[1] is " << dims[1];
                 throw std::runtime_error (ee.str());
             }
-            vals.resize (dims[0]);
-            herr_t status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+            vals.resize(dims[0]);
+
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+            } else {
+                throw std::runtime_error ("HdfData::read_contained_vals<vector<array<T,N>>: Don't know how to read that type T");
+            }
             this->handle_error (status, "Error. status after H5Dread: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-        //! 3D coordinates collected into groups of 4 (each specifying a quad)
-        void read_contained_vals (const char* path, std::vector<std::array<float, 12>>& vals)
+        //! read_contained_vals for vVector of identically sized vVectors of scalar types T
+        template<typename T>
+        void read_contained_vals (const char* path, morph::vVector<morph::vVector<T>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
             if (this->check_dataset_id (dataset_id, path) == -1) { return; }
@@ -470,16 +493,44 @@ namespace morph {
                 ee << "Error. Expected 2D data to be stored in " << path;
                 throw std::runtime_error (ee.str());
             }
-            if (dims[1] != 12) {
-                std::stringstream ee;
-                ee << "Error. Expected 12 floats to be stored in each element of " << path;
-                throw std::runtime_error (ee.str());
+
+            // Read into a 1D section of memory
+            morph::vVector<T> invals;
+            invals.resize(dims[0] * dims[1]);
+
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+            } else {
+                throw std::runtime_error ("HdfData::read_contained_vals<T>: Don't know how to read that type");
             }
-            vals.resize (dims[0]);
-            herr_t status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
             this->handle_error (status, "Error. status after H5Dread: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
+
+            // Now copy the data from invals into vals
+            vals.resize (dims[0]);
+            for (auto& v : vals) { v.resize(dims[1]); }
+            for (size_t i = 0; i < dims[0]; ++i) {
+                for (size_t j = 0; j < dims[1]; ++j) {
+                    vals[i][j] = invals[i*dims[1]+j];
+                }
+            }
         }
 
         //! Read a simple value of type T
@@ -782,16 +833,9 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
+
         /*!
-         * Makes necessary calls to add a container of values to an HDF5 file store,
-         * using path as the name of the variable. This might be a candidate for
-         * templating, where it wasn't worth it for add_val(), because of the
-         * possibility of vectors, lists, sets, deques etc, of floats, doubles,
-         * integers, unsigned integers, etc. However, I can't see the solution to the
-         * problem of the specialisation required in just one line of each function, so
-         * it may be that may overloaded copies of these functions is still the best
-         * solution. It also compiles to linkable, unchanging code in libmorphologica,
-         * rather than being header-only,
+         * Add a container of things that are pairs/coordinates and not dynamically sized.
          */
         template < template <typename, typename> typename Container,
                    typename T,
@@ -822,14 +866,6 @@ namespace morph {
                 dim_vec2dcoords[1] = 2; // 2 ints in each cv::Point
                 // Note 2 dims (1st arg, which is rank = 2)
                 dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
-            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<float>>::value == true
-                                 || std::is_same<std::decay_t<T>, morph::vVector<double>>::value == true) {
-                hsize_t dim_vec2dcoords[2]; // 2 Dims
-                dim_vec2dcoords[0] = vals.size();
-                dim_vec2dcoords[1] = vals[0].size(); // assume every encoded vVector is of same size
-                // Note 2 dims (1st arg, which is rank = 2)
-                dataspace_id = H5Screate_simple (2, dim_vec2dcoords, NULL);
-
             } else {
                 hsize_t dim_singleparam[1];
                 dim_singleparam[0] = vals.size();
@@ -899,16 +935,6 @@ namespace morph {
                 this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
-            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<float>>::value == true) {
-                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
-                //this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
-
-            } else if constexpr (std::is_same<std::decay_t<T>, morph::vVector<double>>::value == true) {
-                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
-                //this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
-                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
-
             } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
                 this->check_dataset_space_2_dims (dataset_id, vals.size(), 2);
@@ -949,44 +975,78 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
-        //! 3D coordinates (array of floats)
-        void add_contained_vals (const char* path, const std::vector<std::array<float, 3>>& vals)
+        //! add_contained_values for vVectors of vVectors. All vVectors must be same
+        //! size. Useful to create data in 'matrix' format, once it is loaded in,
+        //! e.g. Octave.
+        // FIXME: Outer container could be templated to be vector, list etc.
+        template<typename T>
+        void add_contained_vals (const char* path, const morph::vVector<morph::vVector<T>>& vals)
         {
+            if (vals.empty()) { return; }
             this->process_groups (path);
-            hsize_t dim_vec3dcoords[2]; // 2 Dims
-            dim_vec3dcoords[0] = vals.size();
-            dim_vec3dcoords[1] = 3; // 3 floats in each array<float,3>
-            // Note 2 dims (1st arg, which is rank = 2)
-            hid_t dataspace_id = H5Screate_simple (2, dim_vec3dcoords, NULL);
-            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
-            this->check_dataset_space_2_dims (dataset_id, vals.size(), 3);
-            herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-            this->handle_error (status, "Error. status after H5Dwrite 5: ");
+            const size_t sz = vals.size();
+            const size_t N = vals[0].size();
+            for (auto v : vals) {
+                if (v.size() != N) {
+                    throw std::runtime_error ("HdfData::add_contained_vals<Container<vVector<T>, Allocator>>: all contained vVectors must be of same size");
+                }
+            }
+            hsize_t dim_vecNdcoords[2];
+            dim_vecNdcoords[0] = sz;
+            dim_vecNdcoords[1] = N; // N values in each enclosed vVector
+            hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
+            // Now determine width of T and select the most suitable data type to pass to open_dataset()
+            hid_t dataset_id = 0;
+            herr_t status = 0;
+
+            // To output, put all the values in a single vVector.
+            morph::vVector<T> outvals;
+            outvals.reserve (sz*N);
+            for (auto v : vals) { outvals.insert (outvals.end(), v.begin(), v.end()); }
+
+            // Now could just sub-call another templated fn, BUT would lost the shape info.
+
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else {
+                throw std::runtime_error ("HdfData::add_contained_vals<vVector<vVector<T>>: Don't know how to store that type");
+            }
+            this->handle_error (status, "Error. status after H5Dwrite 7.1: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
-        //! Sets of 4 3D coordinates (if you like, or anything else that requires arrays of 12 floats)
-        void add_contained_vals (const char* path, const std::vector<std::array<float, 12>>& vals)
-        {
-            this->process_groups (path);
-            hsize_t dim_vec12f[2];
-            dim_vec12f[0] = vals.size();
-            dim_vec12f[1] = 12;
-            hid_t dataspace_id = H5Screate_simple (2, dim_vec12f, NULL);
-            hid_t dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
-            this->check_dataset_space_2_dims (dataset_id, vals.size(), 12);
-            herr_t status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
-            this->handle_error (status, "Error. status after H5Dwrite 6: ");
-            status = H5Dclose (dataset_id);
-            this->handle_error (status, "Error. status after H5Dclose: ");
-            status = H5Sclose (dataspace_id);
-            this->handle_error (status, "Error. status after H5Sclose: ");
-        }
-
-        //! add_contained_vals for morph::Vector<T, N>
+        //! add_contained_vals for vector<morph::Vector<T, N>>
         template<typename T, size_t N>
         void add_contained_vals (const char* path, const std::vector<morph::Vector<T, N>>& vals)
         {
@@ -1033,7 +1093,61 @@ namespace morph {
             } else {
                 throw std::runtime_error ("HdfData::add_contained_vals<T,N>: Don't know how to store that type");
             }
-            this->handle_error (status, "Error. status after H5Dwrite 7: ");
+            this->handle_error (status, "Error. status after H5Dwrite 7.2: ");
+            status = H5Dclose (dataset_id);
+            this->handle_error (status, "Error. status after H5Dclose: ");
+            status = H5Sclose (dataspace_id);
+            this->handle_error (status, "Error. status after H5Sclose: ");
+        }
+
+        //! add_contained_vals for vector<std::array<T, N>>
+        template<typename T, size_t N>
+        void add_contained_vals (const char* path, const std::vector<std::array<T, N>>& vals)
+        {
+            if (vals.empty()) { return; }
+            this->process_groups (path);
+            hsize_t dim_vecNdcoords[2];
+            dim_vecNdcoords[0] = vals.size();
+            dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
+            // Note 2 dims (1st arg, which is rank = 2)
+            hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
+            // Now determine width of T and select the most suitable data type to pass to open_dataset()
+            hid_t dataset_id = 0;
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_IEEE_F64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, vals.size(), N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else {
+                throw std::runtime_error ("HdfData::add_contained_vals<T,N>: Don't know how to store that type");
+            }
+            this->handle_error (status, "Error. status after H5Dwrite 7.3: ");
             status = H5Dclose (dataset_id);
             this->handle_error (status, "Error. status after H5Dclose: ");
             status = H5Sclose (dataspace_id);
