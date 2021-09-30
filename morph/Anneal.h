@@ -76,6 +76,8 @@ namespace morph {
         //! How many times to find the same f_x_best objective before considering that
         //! the algorithm has finished.
         unsigned int f_x_best_repeat_max = 10;
+        //! If false, don't reanneal
+        bool enable_reanneal = true;
         //! If it has been this many steps since the last reanneal, reanneal again, even
         //! if the test of the accepted vs. generated ratio does not yet indicate a reanneal.
         unsigned int reanneal_after_steps = 100;
@@ -246,7 +248,7 @@ namespace morph {
             ++this->k;
             ++this->k_r;
 
-            if (this->reanneal_test()) {
+            if (this->enable_reanneal && this->reanneal_test()) {
                 // If reanneal_test returns true, then we need to reanneal so set state
                 // flag so that client code will compute a set of objective functions to
                 // allow Anneal::complete_reanneal() to complete the reannealing.

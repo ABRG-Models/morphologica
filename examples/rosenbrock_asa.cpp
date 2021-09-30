@@ -90,6 +90,7 @@ int main()
     anneal.acc_gen_reanneal_ratio = FLT{0.3};
     anneal.delta_param = FLT{0.01};
     anneal.f_x_best_repeat_max = 15;
+    anneal.enable_reanneal = false;
     anneal.reanneal_after_steps = 100;
 
     anneal.init();
