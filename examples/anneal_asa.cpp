@@ -56,7 +56,7 @@ int main (int argc, char** argv)
     anneal.temperature_anneal_scale = F{200};
     anneal.cost_parameter_scale_ratio = F{1.5};
     anneal.acc_gen_reanneal_ratio = F{0.3};
-    anneal.partials_samples = 4;
+    anneal.delta_param = F{0.01};
     anneal.f_x_best_repeat_max = 15;
     anneal.reanneal_after_steps = 100;
     // Optionally, modify ASA parameters from a JSON config specified on the command line.
@@ -67,7 +67,7 @@ int main (int argc, char** argv)
             anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 200.0);
             anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.5);
             anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.3);
-            anneal.partials_samples = conf.getUInt ("partials_samples", 4);
+            anneal.delta_param = conf.getUInt ("delta_param", 0.01);
             anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 15);
             anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
         } else {
@@ -122,10 +122,9 @@ int main (int argc, char** argv)
             anneal.f_x_cand = objective (anneal.x_cand);
 
         } else if (anneal.state == morph::Anneal_State::NeedToComputeSet) {
-            // Compute a set of objective values for reannealing
-            for (unsigned int i = 0; i < anneal.partials_samples; ++i) {
-                anneal.f_x_set[i] = objective (anneal.x_set[i]);
-            }
+            // Compute objective values for reannealing
+            anneal.f_x_plusdelta = objective (anneal.x_plusdelta);
+            // anneal.f_x is already computed. BUT could jump to the x_best on reanneal.
 
         } else {
             throw std::runtime_error ("Unexpected state for anneal object.");

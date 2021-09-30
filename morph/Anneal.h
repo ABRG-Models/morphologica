@@ -53,10 +53,11 @@ namespace morph {
     template <typename T>
     class Anneal
     {
-    public: // Algorithm parameters to be adjusted by user
+    public: // Algorithm parameters to be adjusted by user before calling Anneal::init()
 
         // Set false to hide text output
-        static constexpr bool debug = false;
+        static constexpr bool debug = true;
+        static constexpr bool debug2 = false;
         //! By default we *descend* to the *minimum* metric value of the user's
         //! objective function. Set this to false (before calling init()) to instead
         //! ascend to the maximum metric value.
@@ -69,10 +70,9 @@ namespace morph {
         //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost).
         T cost_parameter_scale_ratio = T{1};
         //! If accepted_vs_generated is less than this, reanneal.
-        T acc_gen_reanneal_ratio = T{0.7};
-        //! Number of samples that should be used to estimate the partials (dL/dalpha in
-        //! the papers) in ::reanneal().
-        unsigned int partials_samples = 2;
+        T acc_gen_reanneal_ratio = T{0.3};
+        //! To compute tangents of cost fn near a point x, find cost at (1+/-delta_param)*x
+        T delta_param = T{0.01};
         //! How many times to find the same f_x_best objective before considering that
         //! the algorithm has finished.
         unsigned int f_x_best_repeat_max = 10;
@@ -97,9 +97,9 @@ namespace morph {
         //! How many times has this best objective repeated? Reset on reanneal.
         unsigned int f_x_best_repeats = 0;
         //! A special set of parameters to ask the user to compute (when computing reanneal).
-        morph::vVector<morph::vVector<T>> x_set;
+        morph::vVector<T> x_plusdelta;
         //! The set of objective function values for x_set.
-        morph::vVector<T> f_x_set;
+        T f_x_plusdelta = T{0};
 
     public: // Statistical records and state.
 
@@ -113,6 +113,8 @@ namespace morph {
         unsigned int num_accepted = 0;
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
+        //! Value of steps at last reanneal
+        unsigned int last_reanneal_steps = 0;
         //! A history of accepted parameters evaluated
         morph::vVector<morph::vVector<T>> param_hist_accepted;
         //! For each entry in param_hist, record also its objective function value.
@@ -134,14 +136,10 @@ namespace morph {
         //! A count of the number of steps since the last reanneal. Allows reannealing
         //! to be forced every reanneal_after_steps steps.
         unsigned int k_r = 0;
-        //! The expected number of steps that will be taken. Computed.
-        unsigned int k_f = 1;
         //! The temperatures, Tik. Note that there is a temperature for each of D dimensions.
         morph::vVector<T> temp;
         //! Initial temperatures Ti0. Set to 1.
         morph::vVector<T> temp_0;
-        //! Final temperatures Tif. Computed.
-        morph::vVector<T> temp_f;
         //! Internal ASA parameter, m=-log(temperature_ratio_scale). Note that there is
         //! an mi for each of D dimensions, though these are usually all set to the same
         //! value.
@@ -160,12 +158,9 @@ namespace morph {
         morph::vVector<T> range_max; // B
         morph::vVector<T> rdelta;    // = range_max - range_min;
         morph::vVector<T> rmeans;    // = (range_max + range_min)/T{2};
-        //! Reannealing sensitivies.
-        morph::vVector<T> s;
-        morph::vVector<T> s_max;
         //! Holds the estimated rates of change of the objective vs. parameter changes
         //! for the current location, x, in parameter space.
-        morph::vVector<T> partials;
+        morph::vVector<T> tangents;
         //! The random number generator used in the acceptance_check function.
         morph::RandUniform<T> rng_u;
 
@@ -191,7 +186,7 @@ namespace morph {
             this->x_best = initial_params;
             this->x = initial_params;
 
-            // Before ::init() is called, user may need to manually change some
+            // Before ::init() is called, user may wish to manually change some
             // parameters, like temperature_ratio_scale.
             this->state = Anneal_State::NeedToInit;
         }
@@ -211,11 +206,6 @@ namespace morph {
             this->temp_0.resize (this->D, T{1});
             this->temp.resize (this->D, T{1});
 
-            // Sensitivies containers
-            this->s.resize (this->D, T{1});
-            this->s_max.resize (this->D, T{1});
-            this->partials.resize (this->D, T{1});
-
             // The m and n parameters
             this->m.resize (this->D);
             this->m.set_from (-std::log(this->temperature_ratio_scale));
@@ -223,51 +213,52 @@ namespace morph {
             this->n.resize (this->D);
             this->n.set_from (std::log(this->temperature_anneal_scale));
 
-            // Work out expected final temp and k_f and report. Not otherwise used.
-            this->temp_f = this->temp_0 * (-this->m).exp();
-            this->k_f = static_cast<unsigned int>(std::exp (this->n.mean()));
-            if constexpr (debug) {
-                std::cout << "Expected final k, k_f is " << k_f
-                          << " and final temp, T_f is " << temp_f << std::endl;
-            }
-
             // Set the 'control parameter', c, from n and m
             this->c.resize (this->D, T{1});
             this->c = this->m * (-this->n/this->D).exp();
 
+            this->tangents.resize (this->D, T{1});
             this->c_cost = this->c * cost_parameter_scale_ratio;
             this->temp_cost_0 = this->c_cost;
             this->temp_cost = this->c_cost;
 
-            this->state = Anneal_State::NeedToCompute; // or NeedToStep
+            this->state = Anneal_State::NeedToCompute;
         }
 
         //! Advance the simulated annealing algorithm by one step.
         void step()
         {
             ++this->steps;
-            if (this->state == Anneal_State::NeedToComputeSet) {
-                this->complete_reanneal();
-                this->state = Anneal_State::NeedToStep;
-            }
+
             if (this->stop_check()) {
                 this->state = Anneal_State::ReadyToStop;
                 return;
             }
+
+            if (this->state == Anneal_State::NeedToComputeSet) {
+                this->complete_reanneal();
+                this->state = Anneal_State::NeedToStep;
+            }
+
             this->cooling_schedule();
             this->acceptance_check();
             this->generate_next();
             ++this->k;
             ++this->k_r;
+
             if (this->reanneal_test()) {
+                // If reanneal_test returns true, then we need to reanneal so set state
+                // flag so that client code will compute a set of objective functions to
+                // allow Anneal::complete_reanneal() to complete the reannealing.
                 this->state = Anneal_State::NeedToComputeSet;
             } else {
                 this->state = Anneal_State::NeedToCompute;
             }
         }
 
-        // Avoid throwing away useful info such as the objectives computed; instead save into HDF5 file.
-        void save (const std::string& path)
+        //! Avoid throwing away useful info such as the objectives computed; instead save
+        //! into an HDF5 file.
+        void save (const std::string& path) const
         {
             morph::HdfData data(path, morph::FileAccess::TruncateWrite);
             data.add_contained_vals ("/param_hist_accepted", this->param_hist_accepted);
@@ -280,9 +271,25 @@ namespace morph {
 
     protected: // Internal algorithm methods.
 
-        //! Generate a parameter set starting from _x_start. If force_change is true,
-        //! require that all elements of the parameter vector do actually change.
-        morph::vVector<T> generate_parameter (const morph::vVector<T>& x_start, const bool force_change=false) const
+        //! Generate delta parameter near to x_start, for cost tangent estimation
+        morph::vVector<T> generate_delta_parameter (const morph::vVector<T>& x_start) const
+        {
+            // we do x_start*(1 + delta_param) or x_start*(1-delta_param). First try former.
+            morph::vVector<T> plusminus (this->D, T{1});
+            morph::vVector<T> x_new = x_start * (T{1} + plusminus * this->delta_param);
+            // Check that each element of x_new is within the specified bounds.
+            for (size_t i = 0; i < this->D; ++i) {
+                if (x_new[i] > this->range_max[i] || x_new[i] < this->range_min[i]) {
+                    plusminus[i] = T{-1};
+                }
+            }
+            // Now re-compute x_new
+            x_new = x_start * (T{1} + plusminus * this->delta_param);
+            return x_new;
+        }
+
+        //! A function to generate a new set of parameters for x_cand.
+        void generate_next()
         {
             morph::vVector<T> x_new;
             bool generated = false;
@@ -292,17 +299,12 @@ namespace morph {
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
                 morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
-                x_new = x_start + y;
+                x_new = this->x + y;
                 // Check that x_new is within the specified bounds
                 if (x_new <= this->range_max && x_new >= this->range_min) { generated = true;  }
-                // If we have to ensure that all parameters change, then check here:
-                if (force_change == true && (x_new - x_start).has_zero()) { generated = false; }
             }
-            return x_new;
+            this->x_cand = x_new;
         }
-
-        //! A function to generate a new set of parameters for x_cand.
-        void generate_next() { this->x_cand = this->generate_parameter (this->x); }
 
         //! The cooling schedule function updates temperatures on each step.
         void cooling_schedule()
@@ -350,6 +352,7 @@ namespace morph {
 
             if constexpr (debug) {
                 std::cout << "Candidate is " << (candidate_is_better ? "B  ": "W/S") <<  ", p = " << p
+                          << ", this->f_x_cand - this->f_x = " << (this->f_x_cand - this->f_x)
                           << ", accepted? " << (accepted ? "Y":"N") << " k_cost(num_accepted)=" << num_accepted << std::endl;
             }
         }
@@ -359,61 +362,69 @@ namespace morph {
         bool reanneal_test()
         {
             // Return if it's not yet time to reanneal
+            if constexpr (debug2) { std::cout << "k_r = " << k_r << "\nthis->accepted_vs_generated() = " << this->accepted_vs_generated() << "\n"; }
+            if constexpr (debug2) { std::cout << "this->acc_gen_reanneal_ratio = " << this->acc_gen_reanneal_ratio << "\n"; }
+
+            // Don't reanneal too soon since the last reanneal
+            if (this->steps - this->last_reanneal_steps < 10) { return false; }
+
             if ((this->k_r < this->reanneal_after_steps)
                 && (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio)) {
                 return false;
             }
-            // Get ready to compute partials. From current location in parameter space
-            // (this->x), generate some new parameter sets for which client code will
-            // compute objectives.
-            this->x_set.resize (this->partials_samples);
-            this->f_x_set.resize (this->partials_samples);
-            for (unsigned int ps = 0; ps < this->partials_samples; ++ps) {
-                static constexpr bool force_change = true;
-                this->x_set[ps] = this->generate_parameter (this->x, force_change);
-            }
-            if constexpr (debug) { std::cout << "Reannealing...\n"; }
+
+            // Set x back to x_best when reannealing.
+            this->x = this->x_best;
+            this->f_x = this->f_x_best;
+
+            // add a delta to the current parameters and then ask client to compute f_x and f_x_plusdelta (instead of f_x_cand)
+            this->x_plusdelta = this->generate_delta_parameter (this->x);
+
+            if constexpr (debug2) { std::cout << "Reannealing...\n"; }
             return true;
         }
 
-        //! Complete the reannealing process. Based on the objectives in f_x_set,
-        //! compute partials and modify k and temp.
+        //! Complete the reannealing process. Based on the objectives in f_x and f_x_plusdelta,
+        //! compute tangents and modify k and temp.
         void complete_reanneal()
         {
-            // Compute the average dL/dx and place in partials
-            this->partials.zero();
-            for (unsigned int i = 0; i < this->partials_samples; ++i) {
-                this->partials += (f_x_set[i] - f_x) / (x_set[i] - x);
-            }
-            this->partials /= this->partials_samples;
-            // Check what we got.
-            if (partials.has_nan_or_inf()) {
-                throw std::runtime_error ("NaN or inf in partials");
-            }
-            if (partials.has_zero()) {
-                // Objectives of the samples are all equal. Make no changes to k/T & return.
-                this->reset_stats();
+            this->last_reanneal_steps = this->steps;
+
+            // Compute dCost/dx and place in tangents
+            this->tangents = (f_x_plusdelta - f_x) / (x_plusdelta - x + std::numeric_limits<T>::epsilon());
+
+            if (tangents.has_nan_or_inf()) { throw std::runtime_error ("NaN or inf in tangents"); }
+
+            if (tangents.has_zero()) {
+                // The delta_param factor wasn't sufficient to bring about any change in
+                // the objective function, so double it and return.
+                if constexpr (debug) {
+                    std::cout << "Tangents had a zero, so double delta_param from "
+                              << this->delta_param << " to " << this->delta_param * T{2} << std::endl;
+;
+                }
+                this->delta_param *= T{2};
                 return;
             }
 
-            this->s = -this->rdelta * this->partials; // (A-B) * dL/dx
+            morph::vVector<T> abs_tangents = tangents.abs();
+            T max_tangent = abs_tangents.max();
+            for (auto& t : abs_tangents) {
+                if (t < std::numeric_limits<T>::epsilon()) { t = max_tangent; } // Will ensure temp_re won't update for this one
+            }
 
-            morph::vVector<T> temp_re = this->temp * (this->s.max()/this->s);
-            //if constexpr (debug) {
-            std::cout << "Reanneal. Ti(k) changes from " << temp << " to " << temp_re << std::endl;
-            //}
+            morph::vVector<T> temp_re = (this->temp * (max_tangent / tangents)).abs();
+
             if (temp_re > T{0}) {
-                unsigned int k_re = k;
-                k_re = static_cast<unsigned int>(((this->temp_0/temp_re).log() / this->c).pow(D).mean());
+                unsigned int k_re = static_cast<unsigned int>(((this->temp_0/temp_re).log() / this->c).pow(D).mean());
                 if constexpr (debug) {
-                    std::cout << "Reanneal. k changes from " << k << " to " << k_re << std::endl;
+                    std::cout << "Reannealed. Ti(k) changed from " << temp << " to " << temp_re
+                              << " and k changed from " << k << " to " << k_re << std::endl;
                 }
                 this->k = k_re;
                 this->temp = temp_re;
-            } else { // catch temp being <=0
-                //if constexpr (debug) {
-                std::cout << "Can't update k based on new temp, as it is <=0\n";
-                //}
+            } else { // temp should not be <=0
+                throw std::runtime_error ("Can't update k based on new temp, as it is <=0\n");
             }
 
             this->reset_stats();
@@ -422,20 +433,13 @@ namespace morph {
         //! The algorithm's stopping condition.
         bool stop_check() const
         {
-            if constexpr (debug) {
-                std::cout << "f_x_best_repeats = " << f_x_best_repeats << std::endl;
-            }
             return this->f_x_best_repeats >= this->f_x_best_repeat_max ? true : false;
         }
 
         //! Compute & return number accepted vs. number generated based on currently stored stats.
         T accepted_vs_generated() const
         {
-            T avg = static_cast<T>(this->num_accepted) / (this->num_improved+this->num_worse);
-            if constexpr (debug) {
-                std::cout << "k=" << k << "; accepted vs generated ratio = " << avg << std::endl;
-            }
-            return avg;
+            return static_cast<T>(this->num_accepted) / (this->num_improved+this->num_worse);
         }
 
         //! Reset the statistics on the number of objective functions accepted
