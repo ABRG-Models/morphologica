@@ -53,11 +53,16 @@ namespace morph {
     template <typename T>
     class Anneal
     {
+        // Set false to hide text output
+        static constexpr bool debug = false;
+        static constexpr bool debug2 = false;
+        // Show a line of the current temperatures?
+        static constexpr bool display_temperatures = true;
+        // Display info on reannealing?
+        static constexpr bool display_reanneal = true;
+
     public: // Algorithm parameters to be adjusted by user before calling Anneal::init()
 
-        // Set false to hide text output
-        static constexpr bool debug = true;
-        static constexpr bool debug2 = false;
         //! By default we *descend* to the *minimum* metric value of the user's
         //! objective function. Set this to false (before calling init()) to instead
         //! ascend to the maximum metric value.
@@ -81,6 +86,8 @@ namespace morph {
         //! If it has been this many steps since the last reanneal, reanneal again, even
         //! if the test of the accepted vs. generated ratio does not yet indicate a reanneal.
         unsigned int reanneal_after_steps = 100;
+        //! Exit when T_i(k) reaches T_f
+        bool exit_at_T_f = false;
 
     public: // Parameter vectors and objective fn results need to be client-accessible.
 
@@ -111,7 +118,7 @@ namespace morph {
         unsigned int num_worse = 0;
         //! The number of acceptances of worse candidates.
         unsigned int num_worse_accepted = 0;
-        //! Number of accepted parameter sets.
+        //! Number of accepted parameter sets. k_cost in the paper.
         unsigned int num_accepted = 0;
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
@@ -135,13 +142,17 @@ namespace morph {
         unsigned int D = 0;
         //! k is the symbol Lester uses for the step count.
         unsigned int k = 1;
+        //! The expected final 'step count'. Computed.
+        unsigned int k_f = 0;
         //! A count of the number of steps since the last reanneal. Allows reannealing
         //! to be forced every reanneal_after_steps steps.
         unsigned int k_r = 0;
-        //! The temperatures, Tik. Note that there is a temperature for each of D dimensions.
-        morph::vVector<T> temp;
-        //! Initial temperatures Ti0. Set to 1.
-        morph::vVector<T> temp_0;
+        //! The temperatures, T_i(k). Note that there is a temperature for each of D dimensions.
+        morph::vVector<T> T_k;
+        //! Initial temperatures T_i(0). Set to 1.
+        morph::vVector<T> T_0;
+        //! Expected final T_i(k_f). Computed.
+        morph::vVector<T> T_f;
         //! Internal ASA parameter, m=-log(temperature_ratio_scale). Note that there is
         //! an mi for each of D dimensions, though these are usually all set to the same
         //! value.
@@ -151,10 +162,10 @@ namespace morph {
         //! Internal control parameter, c = m exp(-n/D).
         morph::vVector<T> c;
         morph::vVector<T> c_cost;
-        morph::vVector<T> temp_cost_0;
+        morph::vVector<T> T_cost_0;
         //! Temperature used in the acceptance function. k_cost is the number of
         //! accepted points (num_accepted).
-        morph::vVector<T> temp_cost;
+        morph::vVector<T> T_cost;
         //! Parameter ranges defining the portion of parameter space to search - [Ai, Bi].
         morph::vVector<T> range_min; // A
         morph::vVector<T> range_max; // B
@@ -205,8 +216,8 @@ namespace morph {
             this->x_best.resize (this->D, T{0});
 
             // Initial and current temperatures
-            this->temp_0.resize (this->D, T{1});
-            this->temp.resize (this->D, T{1});
+            this->T_0.resize (this->D, T{1});
+            this->T_k.resize (this->D, T{1});
 
             // The m and n parameters
             this->m.resize (this->D);
@@ -219,10 +230,13 @@ namespace morph {
             this->c.resize (this->D, T{1});
             this->c = this->m * (-this->n/this->D).exp();
 
+            this->T_f = this->T_0 * (-m).exp();
+            this->k_f = static_cast<unsigned int>(this->n.exp().mean());
+
             this->tangents.resize (this->D, T{1});
             this->c_cost = this->c * cost_parameter_scale_ratio;
-            this->temp_cost_0 = this->c_cost;
-            this->temp_cost = this->c_cost;
+            this->T_cost_0 = this->c_cost;
+            this->T_cost = this->c_cost;
 
             this->state = Anneal_State::NeedToCompute;
         }
@@ -300,7 +314,7 @@ namespace morph {
                 u.randomize();
                 morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
                 morph::vVector<T> sigu = (u-T{0.5}).signum();
-                morph::vVector<T> y = sigu * this->temp * ( ((T{1}/this->temp)+T{1}).pow(u2) - T{1} );
+                morph::vVector<T> y = sigu * this->T_k * ( ((T{1}/this->T_k)+T{1}).pow(u2) - T{1} );
                 x_new = this->x + y;
                 // Check that x_new is within the specified bounds
                 if (x_new <= this->range_max && x_new >= this->range_min) { generated = true;  }
@@ -311,10 +325,14 @@ namespace morph {
         //! The cooling schedule function updates temperatures on each step.
         void cooling_schedule()
         {
-            // temp (T_i(k) in the papers) affects parameter generation and drops as k increases.
-            this->temp = this->temp_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
-            // temp_cost (T_cost or 'acceptance temperature' in the papers) is used in the acceptance function.
-            this->temp_cost = this->temp_cost_0 * (-this->c_cost * std::pow(this->num_accepted, T{1}/D)).exp();
+            // T_k (T_i(k) in the papers) affects parameter generation and drops as k increases.
+            this->T_k = this->T_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
+            // T_cost (T(k_cost) or 'acceptance temperature' in the papers) is used in the acceptance function.
+            this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->num_accepted, T{1}/D)).exp();
+            if constexpr (display_temperatures == true) {
+                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k << " [T_f="<<this->T_f<<"]; T_cost(n_acc="
+                          << this->num_accepted<<") = " << this->T_cost << std::endl;
+            }
         }
 
         //! The acceptance function determines if x_cand is accepted, copies x_cand to x
@@ -331,7 +349,7 @@ namespace morph {
                 ++this->num_worse;
             }
 
-            T p = std::exp(-(this->f_x_cand - this->f_x)/(std::numeric_limits<T>::epsilon()+this->temp_cost.mean()));
+            T p = std::exp(-(this->f_x_cand - this->f_x)/(std::numeric_limits<T>::epsilon()+this->T_cost.mean()));
             T u = this->rng_u.get();
             bool accepted = p > u ? true : false;
 
@@ -363,13 +381,9 @@ namespace morph {
         //! that will need to be computed by the client's objective function.
         bool reanneal_test()
         {
-            // Return if it's not yet time to reanneal
-            if constexpr (debug2) { std::cout << "k_r = " << k_r << "\nthis->accepted_vs_generated() = " << this->accepted_vs_generated() << "\n"; }
-            if constexpr (debug2) { std::cout << "this->acc_gen_reanneal_ratio = " << this->acc_gen_reanneal_ratio << "\n"; }
-
             // Don't reanneal too soon since the last reanneal
             if (this->steps - this->last_reanneal_steps < 10) { return false; }
-
+            // Don't reanneal if the accepted:generated ratio is >= the threshold
             if ((this->k_r < this->reanneal_after_steps)
                 && (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio)) {
                 return false;
@@ -382,7 +396,7 @@ namespace morph {
             // add a delta to the current parameters and then ask client to compute f_x and f_x_plusdelta (instead of f_x_cand)
             this->x_plusdelta = this->generate_delta_parameter (this->x);
 
-            if constexpr (debug2) { std::cout << "Reannealing...\n"; }
+            if constexpr (display_reanneal) { std::cout << "Reannealing... "; }
             return true;
         }
 
@@ -400,7 +414,7 @@ namespace morph {
             if (tangents.has_zero()) {
                 // The delta_param factor wasn't sufficient to bring about any change in
                 // the objective function, so double it and return.
-                if constexpr (debug) {
+                if constexpr (display_reanneal) {
                     std::cout << "Tangents had a zero, so double delta_param from "
                               << this->delta_param << " to " << this->delta_param * T{2} << std::endl;
 ;
@@ -412,19 +426,19 @@ namespace morph {
             morph::vVector<T> abs_tangents = tangents.abs();
             T max_tangent = abs_tangents.max();
             for (auto& t : abs_tangents) {
-                if (t < std::numeric_limits<T>::epsilon()) { t = max_tangent; } // Will ensure temp_re won't update for this one
+                if (t < std::numeric_limits<T>::epsilon()) { t = max_tangent; } // Will ensure T_re won't update for this one
             }
 
-            morph::vVector<T> temp_re = (this->temp * (max_tangent / tangents)).abs();
+            morph::vVector<T> T_re = (this->T_k * (max_tangent / tangents)).abs();
 
-            if (temp_re > T{0}) {
-                unsigned int k_re = static_cast<unsigned int>(((this->temp_0/temp_re).log() / this->c).pow(D).mean());
-                if constexpr (debug) {
-                    std::cout << "Reannealed. Ti(k) changed from " << temp << " to " << temp_re
-                              << " and k changed from " << k << " to " << k_re << std::endl;
+            if (T_re > T{0}) {
+                unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
+                if constexpr (display_reanneal) {
+                    std::cout << "Done. T_i(k): " << T_k << " --> " << T_re
+                              << " and k: " << k << " --> " << k_re << std::endl;
                 }
                 this->k = k_re;
-                this->temp = temp_re;
+                this->T_k = T_re;
             } else { // temp should not be <=0
                 throw std::runtime_error ("Can't update k based on new temp, as it is <=0\n");
             }
@@ -432,10 +446,14 @@ namespace morph {
             this->reset_stats();
         }
 
-        //! The algorithm's stopping condition.
+        //! The algorithm's stopping conditions.
         bool stop_check() const
         {
+            if (this->exit_at_T_f == true && this->T_k < this->T_f) { return true; }
+            if (this->T_k[0] <= std::numeric_limits<T>::epsilon()) { return true; }
+            if (this->T_cost[0] <= std::numeric_limits<T>::epsilon()) { return true; }
             return this->f_x_best_repeats >= this->f_x_best_repeat_max ? true : false;
+            // Also: optional number_accepted limit and number_generated limit
         }
 
         //! Compute & return number accepted vs. number generated based on currently stored stats.

@@ -59,6 +59,7 @@ int main (int argc, char** argv)
     anneal.delta_param = F{0.01};
     anneal.f_x_best_repeat_max = 15;
     anneal.reanneal_after_steps = 100;
+    anneal.exit_at_T_f = false; // If true, algo will run faster, but error will likely be non-zero
     // Optionally, modify ASA parameters from a JSON config specified on the command line.
     if (argc > 1) {
         morph::Config conf(argv[1]);
