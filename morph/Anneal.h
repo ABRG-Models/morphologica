@@ -13,6 +13,7 @@
 
 #include <utility>
 #include <vector>
+#include <string>
 #include <iostream>
 #include <morph/MathAlgo.h>
 #include <morph/vVector.h>
@@ -75,7 +76,7 @@ namespace morph {
         //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost).
         T cost_parameter_scale_ratio = T{1};
         //! If accepted_vs_generated is less than this, reanneal.
-        T acc_gen_reanneal_ratio = T{0.3};
+        T acc_gen_reanneal_ratio = T{1e-6};
         //! To compute tangents of cost fn near a point x, find cost at (1+/-delta_param)*x
         T delta_param = T{0.01};
         //! How many times to find the same f_x_best objective before considering that
@@ -91,6 +92,8 @@ namespace morph {
 
     public: // Parameter vectors and objective fn results need to be client-accessible.
 
+        //! Allow user to set parameter names, so that these can be saved out
+        std::vector<std::string> param_names;
         //! Candidate parameter values. In the Ingber papers, these are 'alphas'.
         morph::vVector<T> x_cand;
         //! Value of the objective function for the candidate parameters.
@@ -282,6 +285,11 @@ namespace morph {
             data.add_contained_vals ("/param_hist_rejected", this->param_hist_rejected);
             data.add_contained_vals ("/f_param_hist_rejected", this->f_param_hist_rejected);
             data.add_contained_vals ("/x_best", this->x_best);
+            int i = 1;
+            for (auto pn : this->param_names) {
+                std::string s_name = "/param_name_" + std::to_string(i++);
+                data.add_string (s_name.c_str(), pn);
+            }
             data.add_val ("/f_x_best", this->f_x_best);
         }
 
@@ -330,8 +338,8 @@ namespace morph {
             // T_cost (T(k_cost) or 'acceptance temperature' in the papers) is used in the acceptance function.
             this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->num_accepted, T{1}/D)).exp();
             if constexpr (display_temperatures == true) {
-                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k << " [T_f="<<this->T_f<<"]; T_cost(n_acc="
-                          << this->num_accepted<<") = " << this->T_cost << std::endl;
+                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k[0] << " [T_f="<<this->T_f[0]<<"]; T_cost(n_acc="
+                          << this->num_accepted<<") = " << this->T_cost[0] << std::endl;
             }
         }
 
@@ -434,7 +442,8 @@ namespace morph {
             if (T_re > T{0}) {
                 unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
                 if constexpr (display_reanneal) {
-                    std::cout << "Done. T_i(k): " << T_k << " --> " << T_re
+                    std::cout.precision(5);
+                    std::cout << "Done. T_i(k): " << T_k.mean() << " --> " << T_re.mean()
                               << " and k: " << k << " --> " << k_re << std::endl;
                 }
                 this->k = k_re;
