@@ -35,6 +35,8 @@ void setup_objective_boha();
 // Return values of the objective function. Params contains coordinates into the
 // HexGrid. Values from obj_f are returned.
 F objective (const morph::vVector<F>& params);
+F objective_boha (const morph::vVector<F>& params);
+F objective_hg (const morph::vVector<F>& params);
 
 int main (int argc, char** argv)
 {
@@ -55,10 +57,10 @@ int main (int argc, char** argv)
     anneal.temperature_ratio_scale = F{1e-4};
     anneal.temperature_anneal_scale = F{200};
     anneal.cost_parameter_scale_ratio = F{1.5};
-    anneal.acc_gen_reanneal_ratio = F{0.3};
+    anneal.acc_gen_reanneal_ratio = F{1e-3};
     anneal.delta_param = F{0.01};
     anneal.f_x_best_repeat_max = 15;
-    anneal.reanneal_after_steps = 100;
+    anneal.reanneal_after_steps = 300;
     anneal.exit_at_T_f = false; // If true, algo will run faster, but error will likely be non-zero
     // Optionally, modify ASA parameters from a JSON config specified on the command line.
     if (argc > 1) {
@@ -67,7 +69,7 @@ int main (int argc, char** argv)
             anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-4);
             anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 200.0);
             anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.5);
-            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.3);
+            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 1e-6);
             anneal.delta_param = conf.getUInt ("delta_param", 0.01);
             anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 15);
             anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
@@ -88,7 +90,11 @@ int main (int argc, char** argv)
     morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
     morph::HexGridVisual<F>* hgv = new morph::HexGridVisual<F>(v.shaderprog, v.tshaderprog, hg, offset);
     hgv->setScalarData (&obj_f);
+#ifdef USE_BOHACHEVSKY_FUNCTION
+    hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
+#else
     hgv->addLabel ("Objective: 2 Gaussians and some noise", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
+#endif
     hgv->finalize();
     v.addVisualModel (hgv);
 
@@ -106,9 +112,15 @@ int main (int argc, char** argv)
     col = { 1, 0, 0.7f };
     morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
 
+    // Fourth object marks the starting place
+    col = { .5f, .5f, .5f };
+    polypos[2] = objective(p);
+    morph::PolygonVisual* sp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+
     v.addVisualModel (candp);
     v.addVisualModel (bestp);
     v.addVisualModel (currp);
+    v.addVisualModel (sp);
     v.render();
 #endif
 
@@ -254,7 +266,8 @@ void setup_objective()
     obj_f = -obj_f;
 }
 
-// Alternative objective function from Bohachevsky
+// Alternative objective function from Bohachevsky. This *visualises* the function, but
+// during the anneal, we'll use the actual function values
 void setup_objective_boha()
 {
     hg = new morph::HexGrid(0.01, 2.5, 0, morph::HexDomainShape::Hexagon);
@@ -267,6 +280,24 @@ void setup_objective_boha()
 }
 
 F objective (const morph::vVector<F>& params)
+{
+#ifdef USE_BOHACHEVSKY_FUNCTION
+    return objective_boha (params);
+#else
+    return objective_hg (params);
+#endif
+}
+
+F objective_boha (const morph::vVector<F>& params)
+{
+    F x = params[0];
+    F y = params[1];
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    F fn = a*x*x + b*y*y - c * std::cos(alpha*x) - d * std::cos (gamma * y) + c + d;
+    return fn;
+}
+
+F objective_hg (const morph::vVector<F>& params)
 {
     // Find the hex nearest the coordinate defined by params and return its value
     std::pair<F, F> coord;

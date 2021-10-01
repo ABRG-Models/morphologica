@@ -87,7 +87,7 @@ int main()
     anneal.temperature_ratio_scale = FLT{1e-3};
     anneal.temperature_anneal_scale = FLT{200};
     anneal.cost_parameter_scale_ratio = FLT{1.5};
-    anneal.acc_gen_reanneal_ratio = FLT{0.3};
+    anneal.acc_gen_reanneal_ratio = FLT{1e-3};
     anneal.delta_param = FLT{0.01};
     anneal.f_x_best_repeat_max = 15;
     anneal.enable_reanneal = false;
