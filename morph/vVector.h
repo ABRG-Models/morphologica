@@ -240,14 +240,14 @@ namespace morph {
         }
 
         //! Renormalize the vector to length 1.0. Only for S types that are floating point.
-        template <typename F=S, std::enable_if_t<!std::is_integral<std::decay_t<F>>::value, int> = 0 >
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void renormalize()
         {
-            auto add_squared = [](F a, F b) { return a + b * b; };
-            const F denom = std::sqrt (std::accumulate (this->begin(), this->end(), F{0}, add_squared));
-            if (denom != F{0}) {
-                F oneovermag = F{1} / denom;
-                auto x_oneovermag = [oneovermag](F f) { return f * oneovermag; };
+            auto add_squared = [](_S a, _S b) { return a + b * b; };
+            const _S denom = std::sqrt (std::accumulate (this->begin(), this->end(), _S{0}, add_squared));
+            if (denom != _S{0}) {
+                _S oneovermag = _S{1} / denom;
+                auto x_oneovermag = [oneovermag](_S f) { return f * oneovermag; };
                 std::transform (this->begin(), this->end(), this->begin(), x_oneovermag);
             }
         }
