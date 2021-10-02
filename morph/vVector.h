@@ -63,7 +63,7 @@ namespace morph {
 
 #ifdef USE_ALIGNED_ALLOCATOR
     // An aligned allocator. Note that it costs more time to allocate with sizeof(__m256 or __m512)
-    template <typename S=float, typename Al=aligned_allocator<S, sizeof(__m128)>>
+    template <typename S=float, typename Al=aligned_allocator<S, sizeof(__m256)>>
 #else
     template <typename S=float, typename Al=std::allocator<S>>
 #endif
@@ -920,11 +920,16 @@ namespace morph {
 // MUST switch omp off for small vVectors. What's the cutoff?  4 is def. small, 1000000
 // def. big. Eigen factor of 10 faster at the small scale, even *without* omp parallel for.
 #if 0
-            // The C++ approach still slower than the plan loop.
+            // The C++ approach is slower than the plain loop.
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>()); // 6879 ns small vec
 #else
+            if (sz < 16) {
+                // Ideally use simd or intrinsics
+                for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] * v[i]; }
+            } else {
 #pragma omp parallel for
-            for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] * v[i]; } // 3815 ns small vec no omp. 587050 ns (!) WITH omp!!
+                for (size_t i = 0; i < sz; ++i) { rtn[i] = (*this)[i] * v[i]; } // 3815 ns small vec no omp. 587050 ns (!) WITH omp!!
+            }
 #endif
             return rtn;
         }

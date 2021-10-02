@@ -8,6 +8,8 @@
 #else
 # include <stdlib.h> // for aligned_alloc()
 #endif
+#include <cstddef>
+#include <stdexcept>
 
 #ifdef __DEBUG_AA
 # include <iostream>
@@ -33,7 +35,7 @@ namespace morph {
         typedef const T& const_reference;
         typedef T value_type;
         typedef std::size_t size_type;
-        typedef ptrdiff_t difference_type;
+        typedef std::ptrdiff_t difference_type;
 
         T* address(T& r) const { return &r; }
         const T* address(const T& s) const { return &s; }
