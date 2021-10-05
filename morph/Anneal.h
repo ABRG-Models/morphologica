@@ -331,6 +331,8 @@ namespace morph {
                 // Check that x_new is within the specified bounds
                 if (x_new <= this->range_max && x_new >= this->range_min) { generated = true;  }
             }
+            ++this->num_generated;
+            ++this->num_generated_recently;
             this->x_cand = x_new;
         }
 
@@ -380,7 +382,7 @@ namespace morph {
                 // Note the reset of f_x_best_repeats if f_x_cand is better than f_x_best:
                 this->x_best = this->f_x_cand < this->f_x_best ? this->f_x_best_repeats=0, this->x_cand : this->x_best;
                 this->num_accepted_best = this->f_x_cand < this->f_x_best ? this->num_accepted : this->num_accepted_best;
-                this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
+                this->num_generated_best = this->f_x_cand < this->f_x_best ? this->num_generated : this->num_generated_best;                  this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
             } else {
                 this->param_hist_rejected.push_back (this->x);
                 this->f_param_hist_rejected.push_back (this->f_x);
@@ -455,6 +457,7 @@ namespace morph {
                 }
                 this->k = k_re;
                 this->T_k = T_re;
+                // FIXME: Also update k_cost
             } else { // temp should not be <=0
                 throw std::runtime_error ("Can't update k based on new temp, as it is <=0\n");
             }
