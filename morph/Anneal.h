@@ -1,4 +1,3 @@
-
 /*
  * Simulated Annealing - An implementation of the Adaptive Annealing Algorithm described
  * in:
@@ -113,13 +112,24 @@ namespace morph {
     public: // Statistical records and state.
 
         //! Number of candidates (x_cand) that are improved vs x (descents, if downhill is true).
-        unsigned int num_improved = 0;
+        unsigned int num_improved = 0; // since start/reanneal
         //! Number of candidates that are worse.
-        unsigned int num_worse = 0;
+        unsigned int num_worse = 0; // since start/reanneal
         //! The number of acceptances of worse candidates.
-        unsigned int num_worse_accepted = 0;
-        //! Number of accepted parameter sets. k_cost in the paper.
+        unsigned int num_worse_accepted = 0; // since start/reanneal
+
+        //! A count of ALL the accepted parameter sets; this one never gets reset. Same as in asa.c.
         unsigned int num_accepted = 0;
+        //! Holds the value of num_accepted when the last best parameter set was found.
+        unsigned int num_accepted_best = 0; // in asa.c: best_number_accepted_saved
+        //! The number of accepted parameter sets 'recently' which is reset on reanneal or when a new best set is found.
+        unsigned int num_accepted_recently = 0;
+
+        //! Count of all generated
+        unsigned int num_generated = 0;
+        unsigned int num_generated_best = 0;
+        unsigned int num_generated_recently = 0;
+
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
         //! Value of steps at last reanneal
@@ -162,10 +172,12 @@ namespace morph {
         //! Internal control parameter, c = m exp(-n/D).
         morph::vVector<T> c;
         morph::vVector<T> c_cost;
+        //! Initial value for T_cost
         morph::vVector<T> T_cost_0;
-        //! Temperature used in the acceptance function. k_cost is the number of
-        //! accepted points (num_accepted).
+        //! Temperature used in the acceptance function.
         morph::vVector<T> T_cost;
+        //! Number of accepted parameter sets. index_cost_acceptances in asa.c
+        unsigned int k_cost = 0;
         //! Parameter ranges defining the portion of parameter space to search - [Ai, Bi].
         morph::vVector<T> range_min; // A
         morph::vVector<T> range_max; // B
@@ -328,10 +340,10 @@ namespace morph {
             // T_k (T_i(k) in the papers) affects parameter generation and drops as k increases.
             this->T_k = this->T_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
             // T_cost (T(k_cost) or 'acceptance temperature' in the papers) is used in the acceptance function.
-            this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->num_accepted, T{1}/D)).exp();
+            this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->k_cost, T{1}/D)).exp();
             if constexpr (display_temperatures == true) {
                 std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k << " [T_f="<<this->T_f<<"]; T_cost(n_acc="
-                          << this->num_accepted<<") = " << this->T_cost << std::endl;
+                          << this->k_cost<<") = " << this->T_cost << std::endl;
             }
         }
 
@@ -356,15 +368,19 @@ namespace morph {
             if (candidate_is_better==false && accepted==true) { ++this->num_worse_accepted; }
 
             if (accepted) {
+                ++this->k_cost;
+                ++this->num_accepted;
+                ++this->num_accepted_recently;
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
                 this->param_hist_accepted.push_back (this->x);
                 this->f_param_hist_accepted.push_back (this->f_x);
+                // Add a precision test here (so test if f_x_cand ~ f_x_best within a range)
                 this->f_x_best_repeats += this->f_x_cand == this->f_x_best ? 1 : 0;
                 // Note the reset of f_x_best_repeats if f_x_cand is better than f_x_best:
                 this->x_best = this->f_x_cand < this->f_x_best ? this->f_x_best_repeats=0, this->x_cand : this->x_best;
+                this->num_accepted_best = this->f_x_cand < this->f_x_best ? this->num_accepted : this->num_accepted_best;
                 this->f_x_best = this->f_x_cand < this->f_x_best ? this->f_x_cand : this->f_x_best;
-                this->num_accepted++;
             } else {
                 this->param_hist_rejected.push_back (this->x);
                 this->f_param_hist_rejected.push_back (this->f_x);
@@ -373,7 +389,7 @@ namespace morph {
             if constexpr (debug) {
                 std::cout << "Candidate is " << (candidate_is_better ? "B  ": "W/S") <<  ", p = " << p
                           << ", this->f_x_cand - this->f_x = " << (this->f_x_cand - this->f_x)
-                          << ", accepted? " << (accepted ? "Y":"N") << " k_cost(num_accepted)=" << num_accepted << std::endl;
+                          << ", accepted? " << (accepted ? "Y":"N") << " k_cost(k_cost)=" << k_cost << std::endl;
             }
         }
 
@@ -459,7 +475,7 @@ namespace morph {
         //! Compute & return number accepted vs. number generated based on currently stored stats.
         T accepted_vs_generated() const
         {
-            return static_cast<T>(this->num_accepted) / (this->num_improved+this->num_worse);
+            return static_cast<T>(this->k_cost) / (this->num_improved+this->num_worse);
         }
 
         //! Reset the statistics on the number of objective functions accepted
@@ -469,7 +485,7 @@ namespace morph {
             this->num_improved = 0;
             this->num_worse = 0;
             this->num_worse_accepted = 0;
-            this->num_accepted = 0;
+            this->k_cost = 0;
             this->k_r = 0;
         }
     };
