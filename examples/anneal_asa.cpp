@@ -13,6 +13,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
 #include <morph/PolygonVisual.h>
+#include <morph/GraphVisual.h>
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -127,6 +128,32 @@ int main (int argc, char** argv)
     v.addVisualModel (bestp);
     v.addVisualModel (currp);
     v.addVisualModel (sp);
+
+    // Add a graph to track T_i and T_cost
+    morph::Vector<float> spatOff = {1.2f, -0.5f, 0.0f};
+    morph::GraphVisual<F>* graph1 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    graph1->twodimensional = true;
+    graph1->setlimits (0, 1000, 0, 1.0f);
+    graph1->policy = morph::stylepolicy::lines;
+    graph1->ylabel = "T";
+    graph1->xlabel = "Anneal time";
+    graph1->prepdata ("Tparam");
+    graph1->prepdata ("Tcost");
+    graph1->finalize();
+    v.addVisualModel (graph1);
+
+    spatOff[0] += 1.1f;
+    morph::GraphVisual<F>* graph2 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    graph2->twodimensional = true;
+    graph2->setlimits (0, 1000, -1.0f, 1.0f);
+    graph2->policy = morph::stylepolicy::lines;
+    graph2->ylabel = "obj value";
+    graph2->xlabel = "Anneal time";
+    graph2->prepdata ("f_x");
+    graph2->prepdata ("f_x_best + .5");
+    graph2->finalize();
+    v.addVisualModel (graph2);
+
     v.render();
 #endif
 
@@ -163,6 +190,14 @@ int main (int argc, char** argv)
                             static_cast<float>(anneal.x[1]),
                             static_cast<float>(anneal.f_x - F{0.15}) };
         currp->reinit();
+
+        // Append to the 2D graph of sums:
+        graph1->append ((float)anneal.steps, anneal.T_k.mean(), 0);
+        graph1->append ((float)anneal.steps, anneal.T_cost.mean(), 1);
+        graph2->append ((float)anneal.steps, anneal.f_x, 0);
+        graph2->append ((float)anneal.steps, anneal.f_x_best+0.5, 1);
+
+
         glfwWaitEventsTimeout (0.0166);
         v.render();
 #endif

@@ -167,7 +167,7 @@ namespace morph {
         //! The stopping condition is recorded
         Anneal_StopCondition reason_for_exit = Anneal_StopCondition::Unknown;
 
-    protected: // Internal algorithm parameters.
+    public: // Internal algorithm parameters, but public so it's easy to make graphs
 
         //! The number of dimensions in the parameter search space. Set by constructor
         //! to the number of dimensions in the initial parameters.
