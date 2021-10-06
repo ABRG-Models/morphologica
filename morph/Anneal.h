@@ -62,6 +62,8 @@ namespace morph {
         static constexpr bool display_reanneal = true;
         // Use a short version of the numeric_limits epsilon
         static constexpr T eps = std::numeric_limits<T>::epsilon();
+        // Used in reanneal_test(). A reanneal won't occur within 10 steps of the last reanneal.
+        static constexpr unsigned int min_steps_to_reanneal = 10;
 
     public: // Algorithm parameters to be adjusted by user before calling Anneal::init()
 
@@ -141,6 +143,8 @@ namespace morph {
 
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
+        //! Value of steps at last reanneal
+        unsigned int last_reanneal_steps = 0;
         //! A history of all accepted parameters evaluated
         morph::vVector<morph::vVector<T>> param_hist_accepted;
         //! For each entry in param_hist, record also its objective function value.
@@ -436,9 +440,10 @@ namespace morph {
 
         //! Test for a reannealing. If reannealing is required, sample some parameters
         //! that will need to be computed by the client's objective function.
-        static constexpr unsigned int min_steps_to_reanneal = 10;
         bool reanneal_test()
         {
+            // Don't reanneal too soon since the last reanneal
+            if (this->steps - this->last_reanneal_steps < min_steps_to_reanneal) { return false; }
             // Don't reanneal if the accepted:generated ratio is >= the threshold
             if ((this->k_r < this->reanneal_after_steps)
                 && (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio)) {
@@ -465,6 +470,8 @@ namespace morph {
         //! compute tangents and modify k and temp.
         void complete_reanneal()
         {
+            this->last_reanneal_steps = this->steps;
+
             // Compute dCost/dx and place in tangents
             this->tangents = (f_x_plusdelta - f_x) / (x_plusdelta - x + eps);
 
