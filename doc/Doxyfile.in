@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = morphologica
-PROJECT_NUMBER         = git master
+PROJECT_NUMBER         = git main
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/doc_doxygen/
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
