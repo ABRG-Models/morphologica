@@ -486,6 +486,14 @@ namespace morph {
             return idx;
         }
 
+        //! Perform element-wise max. For each element, if val is the maximum, the element becomes val.
+        template <typename _S=S>
+        void max_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::max (i, val); } }
+
+        //! Perform element-wise min. For each element, if val is the minimum, the element becomes val.
+        template <typename _S=S>
+        void min_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::min (i, val); } }
+
         //! Return true if any element is zero
         bool has_zero() const
         {
