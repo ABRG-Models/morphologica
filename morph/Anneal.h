@@ -370,14 +370,9 @@ namespace morph {
             this->T_cost.max_elementwise_inplace (eps);
 
             if constexpr (display_temperatures == true) {
-<<<<<<< HEAD
-                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k[0] << " [T_f="<<this->T_f[0]<<"]; T_cost(n_acc="
-                          << this->num_accepted<<") = " << this->T_cost[0] << std::endl;
-=======
                 std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k.mean()
                           << " [T_f="<<this->T_f.mean() << "]; T_cost(n_acc="
                           << this->k_cost<<") = " << this->T_cost.mean() << std::endl;
->>>>>>> cffbc0f0bc1f348e7a24c29438697bf25771c69b
             }
         }
 
