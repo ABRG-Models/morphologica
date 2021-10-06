@@ -1,11 +1,12 @@
 {
     "desc" : "Algorithm parameters for the program anneal_asa.",
 
-    "temperature_ratio_scale" : 1e-4,
+    "temperature_ratio_scale" : 1e-2,
     "temperature_anneal_scale" : 200,
-    "cost_parameter_scale_ratio" : 1.5,
-    "acc_gen_reanneal_ratio" : 1e-3,
-    "partials_samples" : 4,
+    "cost_parameter_scale_ratio" : 3,
+    "acc_gen_reanneal_ratio" : 1e-6,
+    "objective_repeat_precision" : 1e-5,
+    "delta_param" : 0.03,
     "f_x_best_repeat_max" : 15,
     "reanneal_after_steps" : 100
 }

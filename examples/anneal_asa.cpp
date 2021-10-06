@@ -54,23 +54,29 @@ int main (int argc, char** argv)
     // Set up the anneal algorithm object
     morph::Anneal<F> anneal(p, p_rng);
     // There are defaults hardcoded in Anneal.h, but these work for the cost function here:
-    anneal.temperature_ratio_scale = F{1e-4};
+    anneal.temperature_ratio_scale = F{1e-2};
     anneal.temperature_anneal_scale = F{200};
-    anneal.cost_parameter_scale_ratio = F{1.5};
+    anneal.cost_parameter_scale_ratio = F{3};
     anneal.acc_gen_reanneal_ratio = F{1e-6};
     anneal.delta_param = F{0.01};
+    anneal.objective_repeat_precision = F{1e-6};
     anneal.f_x_best_repeat_max = 15;
-    anneal.reanneal_after_steps = 300;
+    anneal.reanneal_after_steps = 100;
     anneal.exit_at_T_f = false; // If true, algo will run faster, but error will likely be non-zero
+#ifndef VISUALISE
+    anneal.display_temperatures = false;
+    anneal.display_reanneal = false;
+#endif
     // Optionally, modify ASA parameters from a JSON config specified on the command line.
     if (argc > 1) {
         morph::Config conf(argv[1]);
         if (conf.ready) {
-            anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-4);
+            anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-2);
             anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 200.0);
-            anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.5);
+            anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 3.0);
             anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 1e-6);
-            anneal.delta_param = conf.getUInt ("delta_param", 0.01);
+            anneal.delta_param = (F)conf.getDouble ("delta_param", 0.01);
+            anneal.objective_repeat_precision = (F)conf.getDouble ("objective_repeat_precision", 1e-6);
             anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 15);
             anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
         } else {

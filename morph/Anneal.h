@@ -39,6 +39,16 @@ namespace morph {
         ReadyToStop
     };
 
+    //! Which stopping condition caused exit?
+    enum class Anneal_StopCondition
+    {
+        Unknown,
+        T_k_less_than_T_f,
+        T_k_less_than_epsilon,
+        T_cost_less_than_epsilon,
+        f_x_best_repeated
+    };
+
     /*!
      * A class implementing Lester Ingber's Adaptive Simlulated Annealing Algorithm. The
      * design is similar to that in NM_Simplex.h; the client code creates an Anneal
@@ -56,10 +66,6 @@ namespace morph {
         // Set false to hide text output
         static constexpr bool debug = false;
         static constexpr bool debug2 = false;
-        // Show a line of the current temperatures?
-        static constexpr bool display_temperatures = true;
-        // Display info on reannealing?
-        static constexpr bool display_reanneal = true;
         // Use a short version of the numeric_limits epsilon
         static constexpr T eps = std::numeric_limits<T>::epsilon();
         // Used in reanneal_test(). A reanneal won't occur within 10 steps of the last reanneal.
@@ -76,7 +82,7 @@ namespace morph {
         T temperature_ratio_scale = T{1e-5};
         //! Lester's Temperature_Anneal_Scale in ASA C code. n=log(temperature_anneal_scale).
         T temperature_anneal_scale = T{100};
-        //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost).
+        //! Lester's Cost_Parameter_Scale_Ratio (used to compute T_cost).
         T cost_parameter_scale_ratio = T{1};
         //! If accepted_vs_generated is less than this, reanneal.
         T acc_gen_reanneal_ratio = T{1e-6};
@@ -94,6 +100,10 @@ namespace morph {
         unsigned int reanneal_after_steps = 100;
         //! Exit when T_i(k) reaches T_f
         bool exit_at_T_f = false;
+        // Show a line of the current temperatures?
+        bool display_temperatures = true;
+        // Display info on reannealing?
+        bool display_reanneal = true;
 
     public: // Parameter vectors and objective fn results need to be client-accessible.
 
@@ -143,8 +153,6 @@ namespace morph {
 
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
-        //! Value of steps at last reanneal
-        unsigned int last_reanneal_steps = 0;
         //! A history of all accepted parameters evaluated
         morph::vVector<morph::vVector<T>> param_hist_accepted;
         //! For each entry in param_hist, record also its objective function value.
@@ -156,6 +164,8 @@ namespace morph {
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
+        //! The stopping condition is recorded
+        Anneal_StopCondition reason_for_exit = Anneal_StopCondition::Unknown;
 
     protected: // Internal algorithm parameters.
 
@@ -372,10 +382,11 @@ namespace morph {
             this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->k_cost, T{1}/D)).exp();
             this->T_cost.max_elementwise_inplace (eps);
 
-            if constexpr (display_temperatures == true) {
+            if (display_temperatures == true) {
                 std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k.mean()
                           << " [T_f="<<this->T_f.mean() << "]; T_cost(n_acc="
-                          << this->k_cost<<") = " << this->T_cost.mean() << std::endl;
+                          << this->k_cost<<") = " << this->T_cost.mean()
+                          << ", f_x_best = " << this->f_x_best << std::endl;
             }
         }
 
@@ -443,7 +454,7 @@ namespace morph {
         bool reanneal_test()
         {
             // Don't reanneal too soon since the last reanneal
-            if (this->steps - this->last_reanneal_steps < min_steps_to_reanneal) { return false; }
+            if (this->k_r < min_steps_to_reanneal) { return false; }
             // Don't reanneal if the accepted:generated ratio is >= the threshold
             if ((this->k_r < this->reanneal_after_steps)
                 && (this->accepted_vs_generated() >= this->acc_gen_reanneal_ratio)) {
@@ -462,7 +473,7 @@ namespace morph {
             // add a delta to the current parameters and then ask client to compute f_x and f_x_plusdelta (instead of f_x_cand)
             this->x_plusdelta = this->generate_delta_parameter (this->x);
 
-            if constexpr (display_reanneal) { std::cout << "Reannealing... "; }
+            if (display_reanneal) { std::cout << "Reannealing... "; }
             return true;
         }
 
@@ -470,8 +481,6 @@ namespace morph {
         //! compute tangents and modify k and temp.
         void complete_reanneal()
         {
-            this->last_reanneal_steps = this->steps;
-
             // Compute dCost/dx and place in tangents
             this->tangents = (f_x_plusdelta - f_x) / (x_plusdelta - x + eps);
 
@@ -480,10 +489,9 @@ namespace morph {
             if (tangents.has_zero()) {
                 // The delta_param factor wasn't sufficient to bring about any change in
                 // the objective function, so double it and return.
-                if constexpr (display_reanneal) {
+                if (display_reanneal) {
                     std::cout << "Tangents had a zero, so double delta_param from "
-                              << this->delta_param << " to " << this->delta_param * T{2} << std::endl;
-;
+                              << this->delta_param << " to " << (this->delta_param * T{2}) << std::endl;
                 }
                 this->delta_param *= T{2};
                 return;
@@ -500,7 +508,7 @@ namespace morph {
 
             if (T_re > T{0}) {
                 unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
-                if constexpr (display_reanneal) {
+                if (display_reanneal) {
                     std::cout.precision(5);
                     std::cout << "Done. T_i(k): " << T_k.mean() << " --> " << T_re.mean()
                               << " and k: " << k << " --> " << k_re << std::endl;
@@ -534,13 +542,32 @@ namespace morph {
         }
 
         //! The algorithm's stopping conditions.
-        bool stop_check() const
+        bool stop_check()
         {
-            if (this->exit_at_T_f == true && this->T_k < this->T_f) { return true; }
-            if (this->T_k[0] <= eps) { return true; }
-            if (this->T_cost[0] <= eps) { return true; }
-            return this->f_x_best_repeats >= this->f_x_best_repeat_max ? true : false;
+            if (this->exit_at_T_f == true && this->T_k < this->T_f) {
+                this->reason_for_exit = Anneal_StopCondition::T_k_less_than_T_f;
+                std::cout << "T_k < T_f; stopping.\n";
+                return true;
+            }
+            if (this->T_k[0] <= eps) {
+                this->reason_for_exit = Anneal_StopCondition::T_k_less_than_epsilon;
+                std::cout << "T_k < eps; stopping.\n";
+                return true;
+            }
+            if (this->T_cost[0] <= eps) {
+                this->reason_for_exit = Anneal_StopCondition::T_cost_less_than_epsilon;
+                std::cout << "T_cost < eps; stopping.\n";
+                return true;
+            }
+            if (this->f_x_best_repeats >= this->f_x_best_repeat_max) {
+                this->reason_for_exit = Anneal_StopCondition::f_x_best_repeated;
+                if (this->display_temperatures == true) {
+                    std::cout << "f_x_best repeated " << this->f_x_best_repeat_max << " times; stopping.\n";
+                }
+                return true;
+            }
             // Also: optional number_accepted limit and number_generated limit
+            return false;
         }
 
         //! Compute & return number accepted vs. number generated based on currently stored stats.
