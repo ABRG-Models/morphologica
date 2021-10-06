@@ -77,11 +77,7 @@ namespace morph {
         //! Lester's Cost_Parameter_Scale_Ratio (used to compute temp_cost).
         T cost_parameter_scale_ratio = T{1};
         //! If accepted_vs_generated is less than this, reanneal.
-<<<<<<< HEAD
         T acc_gen_reanneal_ratio = T{1e-6};
-=======
-        T acc_gen_reanneal_ratio = T{1e-4};
->>>>>>> cffbc0f0bc1f348e7a24c29438697bf25771c69b
         //! To compute tangents of cost fn near a point x, find cost at (1+/-delta_param)*x
         T delta_param = T{0.01};
         //! If the f_x_cand and within this precision of f_x_best, then f_x_best is deemed to have been repeated.
@@ -504,10 +500,7 @@ namespace morph {
             if (T_re > T{0}) {
                 unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
                 if constexpr (display_reanneal) {
-<<<<<<< HEAD
                     std::cout.precision(5);
-=======
->>>>>>> cffbc0f0bc1f348e7a24c29438697bf25771c69b
                     std::cout << "Done. T_i(k): " << T_k.mean() << " --> " << T_re.mean()
                               << " and k: " << k << " --> " << k_re << std::endl;
                 }
