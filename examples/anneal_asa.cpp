@@ -55,7 +55,7 @@ int main (int argc, char** argv)
     anneal.temperature_ratio_scale = F{1e-4};
     anneal.temperature_anneal_scale = F{200};
     anneal.cost_parameter_scale_ratio = F{1.5};
-    anneal.acc_gen_reanneal_ratio = F{0.3};
+    anneal.acc_gen_reanneal_ratio = F{1e-4};
     anneal.delta_param = F{0.01};
     anneal.f_x_best_repeat_max = 15;
     anneal.reanneal_after_steps = 100;
@@ -67,7 +67,7 @@ int main (int argc, char** argv)
             anneal.temperature_ratio_scale = (F)conf.getDouble ("temperature_ratio_scale", 1e-4);
             anneal.temperature_anneal_scale = (F)conf.getDouble ("temperature_anneal_scale", 200.0);
             anneal.cost_parameter_scale_ratio = (F)conf.getDouble ("cost_parameter_scale_ratio", 1.5);
-            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 0.3);
+            anneal.acc_gen_reanneal_ratio = (F)conf.getDouble ("acc_gen_reanneal_ratio", 1e-4);
             anneal.delta_param = conf.getUInt ("delta_param", 0.01);
             anneal.f_x_best_repeat_max = conf.getUInt ("f_x_best_repeat_max", 15);
             anneal.reanneal_after_steps = conf.getUInt ("reanneal_after_steps", 100);
