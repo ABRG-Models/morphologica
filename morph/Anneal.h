@@ -292,8 +292,7 @@ namespace morph {
             }
         }
 
-        //! Avoid throwing away useful info such as the objectives computed; instead save
-        //! into an HDF5 file.
+        //! Save optimization info/history into an HDF5 file.
         void save (const std::string& path) const
         {
             morph::HdfData data(path, morph::FileAccess::TruncateWrite);
