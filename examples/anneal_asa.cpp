@@ -157,7 +157,7 @@ int main (int argc, char** argv)
               << ", num_worse_accepted: " << anneal.num_worse_accepted << " (as proportion: "
               << ((double)anneal.num_worse_accepted/(double)anneal.num_worse) << ")\n\n";
 
-    std::cout << "FINISHED in " << anneal.steps << " calls to Anneal::step().\n"
+    std::cout << "FINISHED in " << anneal.steps << " calls to Anneal::step() (HexGrid has " << hg->num() << " hexes).\n"
               << "Best parameters: " << anneal.x_best << "\n"
               << "Best params obj: " << anneal.f_x_best
               << " vs. " << obj_f.min() << ", the true obj_f.min().\n"

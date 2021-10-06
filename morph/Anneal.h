@@ -111,6 +111,11 @@ namespace morph {
 
     public: // Statistical records and state.
 
+        //! Count of all generated
+        unsigned int num_generated = 0;
+        unsigned int num_generated_best = 0;
+        unsigned int num_generated_recently = 0;
+
         //! Number of candidates (x_cand) that are improved vs x (descents, if downhill is true).
         unsigned int num_improved = 0; // since start/reanneal
         //! Number of candidates that are worse.
@@ -124,11 +129,6 @@ namespace morph {
         unsigned int num_accepted_best = 0; // in asa.c: best_number_accepted_saved
         //! The number of accepted parameter sets 'recently' which is reset on reanneal or when a new best set is found.
         unsigned int num_accepted_recently = 0;
-
-        //! Count of all generated
-        unsigned int num_generated = 0;
-        unsigned int num_generated_best = 0;
-        unsigned int num_generated_recently = 0;
 
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
@@ -344,8 +344,9 @@ namespace morph {
             // T_cost (T(k_cost) or 'acceptance temperature' in the papers) is used in the acceptance function.
             this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->k_cost, T{1}/D)).exp();
             if constexpr (display_temperatures == true) {
-                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k << " [T_f="<<this->T_f<<"]; T_cost(n_acc="
-                          << this->k_cost<<") = " << this->T_cost << std::endl;
+                std::cout << "T_i(k="<<k<<"["<<k_f<<"]) = " << this->T_k.mean()
+                          << " [T_f="<<this->T_f.mean() << "]; T_cost(n_acc="
+                          << this->k_cost<<") = " << this->T_cost.mean() << std::endl;
             }
         }
 
@@ -452,7 +453,7 @@ namespace morph {
             if (T_re > T{0}) {
                 unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
                 if constexpr (display_reanneal) {
-                    std::cout << "Done. T_i(k): " << T_k << " --> " << T_re
+                    std::cout << "Done. T_i(k): " << T_k.mean() << " --> " << T_re.mean()
                               << " and k: " << k << " --> " << k_re << std::endl;
                 }
                 this->k = k_re;
@@ -478,7 +479,7 @@ namespace morph {
         //! Compute & return number accepted vs. number generated based on currently stored stats.
         T accepted_vs_generated() const
         {
-            return static_cast<T>(this->k_cost) / (this->num_improved+this->num_worse);
+            return static_cast<T>(this->k_cost) + T{1} / (this->num_improved + this->num_worse + T{1});
         }
 
         //! Reset the statistics on the number of objective functions accepted
