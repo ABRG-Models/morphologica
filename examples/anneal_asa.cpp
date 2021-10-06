@@ -133,9 +133,9 @@ int main (int argc, char** argv)
     morph::Vector<float> spatOff = {1.2f, -0.5f, 0.0f};
     morph::GraphVisual<F>* graph1 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
     graph1->twodimensional = true;
-    graph1->setlimits (0, 1000, 0, 1.0f);
+    graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
-    graph1->ylabel = "T";
+    graph1->ylabel = "log(T)";
     graph1->xlabel = "Anneal time";
     graph1->prepdata ("Tparam");
     graph1->prepdata ("Tcost");
@@ -151,6 +151,7 @@ int main (int argc, char** argv)
     graph2->xlabel = "Anneal time";
     graph2->prepdata ("f_x");
     graph2->prepdata ("f_x_best + .5");
+    graph2->prepdata ("f_x_cand");
     graph2->finalize();
     v.addVisualModel (graph2);
 
@@ -192,10 +193,11 @@ int main (int argc, char** argv)
         currp->reinit();
 
         // Append to the 2D graph of sums:
-        graph1->append ((float)anneal.steps, anneal.T_k.mean(), 0);
-        graph1->append ((float)anneal.steps, anneal.T_cost.mean(), 1);
-        graph2->append ((float)anneal.steps, anneal.f_x, 0);
-        graph2->append ((float)anneal.steps, anneal.f_x_best+0.5, 1);
+        graph1->append ((float)anneal.steps, std::log(anneal.T_k.mean()), 0);
+        graph1->append ((float)anneal.steps, std::log(anneal.T_cost.mean()), 1);
+        graph2->append ((float)anneal.steps, anneal.f_x-0.2, 0);
+        graph2->append ((float)anneal.steps, anneal.f_x_best, 1);
+        graph2->append ((float)anneal.steps, anneal.f_x_cand+0.2, 2);
 
 
         glfwWaitEventsTimeout (0.0166);
