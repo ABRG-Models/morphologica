@@ -37,17 +37,21 @@ using namespace cv;
 #define M_WHITE Scalar(255,255,255)
 #define M_C1 Scalar(238,121,159) // mediumpurple2
 #define M_C2 Scalar(238,58,178) // darkorchid2
+#define M_GREY Scalar(220,220,220)
+
 
 // Colours for two separate Bezier curves
 #define M_CURVE1 M_BLUE
-#define M_CURVE2 M_C2
+#define M_CURVE2 M_RED
 // User control points colour
 #define M_CTRL M_BLACK
 // Fit colour
-#define M_FIT M_RED
+#define M_FIT M_C2
 
-void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<pair<FLT,FLT>>& w, Scalar linecolfit, int sz) {
-
+void draw (Mat& pImg, BezCurvePath<FLT>& bcp,
+           vector<pair<FLT,FLT>>& v,
+           Scalar linecolfit, int sz, bool drawuserctrl = true)
+{
     unsigned int nFit = 200;
     vector<Point> fitted (nFit);
     vector<Point2d> tangents (nFit);
@@ -72,9 +76,9 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
 
     // Add the control points in similar colours
     list<BezCurve<FLT>> theCurves = bcp.curves;
-    size_t j = 0;
+    size_t j = 1;
     for (auto curv : theCurves) {
-        Scalar linecol = linecolfit; //j%2 ? linecolour1 : linecolour2;
+        Scalar linecol = linecolfit; //j%2 ? linecolfit1 : linecolfit2;
         vector<pair<FLT,FLT>> ctrls = curv.getControls();
         // Draw the control points
         for (size_t cc = 0; cc<ctrls.size(); ++cc) {
@@ -97,16 +101,12 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
         line (pImg, ps2, pe2, linecol, lw/2);
         j++;
     }
-
-    // The user control points
-    for (unsigned int i = 0; i < v.size(); ++i) {
-        Point p1(v[i].first, v[i].second);
-        circle (pImg, p1, sz/2, M_CTRL, -1);
-    }
-
-    for (unsigned int i = 0; i < w.size(); ++i) {
-        Point p1(w[i].first, w[i].second);
-        circle (pImg, p1, sz/2, M_CTRL, -1);
+    if (drawuserctrl) {
+        // The user control points
+        for (unsigned int i = 0; i < v.size(); ++i) {
+            Point p1(v[i].first, v[i].second);
+            circle (pImg, p1, sz/2, linecolfit, -1);
+        }
     }
 }
 
@@ -147,12 +147,18 @@ int main (int argc, char** argv)
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
+    BezCurvePath<FLT> bcp1;
+    bcp1.addCurve (cv1);
+    BezCurvePath<FLT> bcp2;
+    bcp2.addCurve (cv2);
+
     // Create a frame as the background for our drawing.
     Mat frame = Mat (1800, 1800, CV_8UC3, M_WHITE);
 
     // Draw
     cout << "Draw the two analytical best-fit curves..." << endl;
-    draw (frame, bcp, v, w, M_BLUE, 24);
+    draw (frame, bcp1, v, M_CURVE1, 24);
+    draw (frame, bcp2, w, M_CURVE2, 24);
 
     cout << "Do the control point-equalizing 0th order optimization..."<< endl;
     bool withopt = false;
@@ -163,7 +169,9 @@ int main (int argc, char** argv)
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    draw (frame, bcp, v, w, M_RED, 16);
+    vector<pair<FLT,FLT>> vw (v);
+    vw.insert (vw.end(), w.begin(), w.end());
+    draw (frame, bcp, vw, M_FIT, 16, false);
 
 #if 0
     // Reset and fit with optimzation
