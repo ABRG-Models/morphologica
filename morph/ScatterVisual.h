@@ -88,6 +88,14 @@ namespace morph {
         }
 #endif
 
+        //! Quick hack to add an additional point
+        void add (morph::Vector<float> coord, Flt value)
+        {
+            std::array<float, 3> clr = this->cm.convert (value);
+            this->computeSphere (this->curr_idx, coord, clr, this->radiusFixed, 16, 20);
+            this->reinit_buffers();
+        }
+
         //! Compute spheres for a scatter plot
         void initializeVertices (void)
         {
@@ -166,6 +174,8 @@ namespace morph {
                 }
                 this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
             }
+
+            this->curr_idx = idx;
         }
 
         //! Set this->radiusFixed, then re-compute vertices.
@@ -182,6 +192,9 @@ namespace morph {
         float hue1 = 0.1f;
         float hue2 = 0.5f;
         float hue3 = -1.0f;
+
+        // Save the index so that additional points can be added
+        VBOint curr_idx = 0;
     };
 
 } // namespace morph
