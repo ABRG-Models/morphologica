@@ -165,6 +165,10 @@ namespace morph {
         morph::vVector<T> T_k_hist;
         //! History of T_cost means
         morph::vVector<T> T_cost_hist;
+        //! History of f_x
+        morph::vVector<T> f_x_hist;
+        //! History of f_x_best
+        morph::vVector<T> f_x_best_hist;
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
@@ -321,6 +325,8 @@ namespace morph {
             data.add_contained_vals ("/f_param_hist_rejected", this->f_param_hist_rejected);
             data.add_contained_vals ("/T_k_hist", this->T_k_hist);
             data.add_contained_vals ("/T_cost_hist", this->T_cost_hist);
+            data.add_contained_vals ("/f_x_hist", this->f_x_hist);
+            data.add_contained_vals ("/f_x_best_hist", this->f_x_best_hist);
             data.add_contained_vals ("/x_best", this->x_best);
             int i = 1;
             for (auto pn : this->param_names) {
@@ -424,6 +430,9 @@ namespace morph {
         //! and x_best as necessary, and updates statistical variables.
         void acceptance_check()
         {
+            this->f_x_hist.push_back (this->f_x);
+            this->f_x_best_hist.push_back (this->f_x_best);
+
             bool candidate_is_better = false;
             if ((this->downhill == true && this->f_x_cand < this->f_x)
                 || (this->downhill == false && this->f_x_cand > this->f_x)) {
