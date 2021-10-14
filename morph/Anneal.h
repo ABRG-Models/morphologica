@@ -430,16 +430,17 @@ namespace morph {
                     this->num_generated_recently = 0;
                     this->f_x_best = this->f_x_cand;
                 }
+                // Store x_cand onto the accepted history
+                this->param_hist_accepted.push_back (this->x_cand);
+                this->f_param_hist_accepted.push_back (this->f_x_cand);
                 // x_cand becomes x
                 this->x = this->x_cand;
                 this->f_x = this->f_x_cand;
-                // Store x onto the history
-                this->param_hist_accepted.push_back (this->x);
-                this->f_param_hist_accepted.push_back (this->f_x);
 
             } else {
-                this->param_hist_rejected.push_back (this->x);
-                this->f_param_hist_rejected.push_back (this->f_x);
+                // Store x_cand onto the rejected history
+                this->param_hist_rejected.push_back (this->x_cand);
+                this->f_param_hist_rejected.push_back (this->f_x_cand);
             }
 
             if constexpr (debug) {
