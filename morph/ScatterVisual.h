@@ -91,15 +91,23 @@ namespace morph {
         //! Quick hack to add an additional point
         void add (morph::Vector<float> coord, Flt value)
         {
-            std::array<float, 3> clr = this->cm.convert (value);
+            std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
             this->computeSphere (this->curr_idx, coord, clr, this->radiusFixed, 16, 20);
+            this->reinit_buffers();
+        }
+        //! Additional point with variable size
+        void add (morph::Vector<float> coord, Flt value, Flt size)
+        {
+            std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
+            this->computeSphere (this->curr_idx, coord, clr, size, 16, 20);
             this->reinit_buffers();
         }
 
         //! Compute spheres for a scatter plot
-        void initializeVertices (void)
+        void initializeVertices()
         {
-            unsigned int ncoords = this->dataCoords->size();
+            unsigned int ncoords = this->dataCoords == (std::vector<Vector<float>>*)0 ? 0 : this->dataCoords->size();
+            if (ncoords == 0) { return; }
             unsigned int ndata = this->scalarData == (const std::vector<Flt>*)0 ? 0 : this->scalarData->size();
             // If we have vector data, then manipulate colour accordingly.
             unsigned int nvdata = this->vectorData == (const std::vector<Vector<Flt>>*)0 ? 0 : this->vectorData->size();
