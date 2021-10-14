@@ -161,6 +161,10 @@ namespace morph {
         morph::vVector<morph::vVector<T>> param_hist_rejected;
         //! Objective function values of rejected parameters.
         morph::vVector<T> f_param_hist_rejected;
+        //! History of T_k means
+        morph::vVector<T> T_k_hist;
+        //! History of T_cost means
+        morph::vVector<T> T_cost_hist;
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
@@ -306,7 +310,8 @@ namespace morph {
             }
         }
 
-        //! Save optimization info/history into an HDF5 file.
+        //! Save optimization info/history into an HDF5 file. Save the optimization
+        //! parameters too, along with the temperature histories.
         void save (const std::string& path) const
         {
             morph::HdfData data(path, morph::FileAccess::TruncateWrite);
@@ -314,6 +319,8 @@ namespace morph {
             data.add_contained_vals ("/f_param_hist_accepted", this->f_param_hist_accepted);
             data.add_contained_vals ("/param_hist_rejected", this->param_hist_rejected);
             data.add_contained_vals ("/f_param_hist_rejected", this->f_param_hist_rejected);
+            data.add_contained_vals ("/T_k_hist", this->T_k_hist);
+            data.add_contained_vals ("/T_cost_hist", this->T_cost_hist);
             data.add_contained_vals ("/x_best", this->x_best);
             int i = 1;
             for (auto pn : this->param_names) {
@@ -328,6 +335,25 @@ namespace morph {
             data.add_val ("/num_generated_best", this->num_generated_best);
             data.add_val ("/num_accepted", this->num_accepted);
             data.add_val ("/num_accepted_best", this->num_accepted_best);
+
+            data.add_val ("/D", this->D);
+            data.add_contained_vals ("/T_0", this->T_0);
+            data.add_contained_vals ("/T_f", this->T_f);
+            data.add_contained_vals ("/m", this->m);
+            data.add_contained_vals ("/n", this->n);
+            data.add_contained_vals ("/c", this->c);
+
+            data.add_val ("/temperature_ratio_scale", this->temperature_ratio_scale);
+            data.add_val ("/temperature_anneal_scale", this->temperature_anneal_scale);
+            data.add_val ("/cost_parameter_scale_ratio", this->cost_parameter_scale_ratio);
+            data.add_val ("/acc_gen_reanneal_ratio", this->acc_gen_reanneal_ratio);
+            data.add_val ("/delta_param", this->delta_param);
+            data.add_val ("/objective_repeat_precision", this->objective_repeat_precision);
+            data.add_val ("/f_x_best_repeat_max", this->f_x_best_repeat_max);
+            data.add_val ("/enable_reanneal", this->enable_reanneal);
+            data.add_val ("/downhill", this->downhill);
+            data.add_val ("/reanneal_after_steps", this->reanneal_after_steps);
+            data.add_val ("/exit_at_T_f", this->exit_at_T_f);
         }
 
     protected: // Internal algorithm methods.
@@ -372,6 +398,10 @@ namespace morph {
         //! The cooling schedule function updates temperatures on each step.
         void cooling_schedule()
         {
+            // Store current temperatures
+            this->T_k_hist.push_back (this->T_k.mean());
+            this->T_cost_hist.push_back (this->T_cost.mean());
+
             // T_k (T_i(k) in the papers) affects parameter generation and drops as k
             // increases. 'current_user_parameter_temp' in asa.c.
             this->T_k = this->T_0 * (-this->c * std::pow(this->k, T{1}/D)).exp();
@@ -533,7 +563,7 @@ namespace morph {
 
             morph::vVector<T> tvdb3 = ((T_cost_0+eps)/tmp_dbl1).log().abs();
             this->k_cost = static_cast<unsigned int>(eps + (tvdb3/this->c_cost).pow(this->D).mean());
-            // Note: asa.c code has opion to reduce this down if its too high.
+            // Note: asa.c code has opion to reduce this down if it's too high.
 
             // From cooling_schedule:
             this->T_cost = this->T_cost_0 * (-this->c_cost * std::pow(this->k_cost, T{1}/D)).exp();
