@@ -27,7 +27,6 @@ namespace morph {
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:
-        //! Simplest constructor. Use this in all new code!
         ScatterVisual(GLuint sp, const Vector<float> _offset)
         {
             this->shaderprog = sp;
@@ -36,57 +35,6 @@ namespace morph {
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
         }
-
-#define USE_DEPRECATED_CONSTRUCTORS 1
-#ifdef USE_DEPRECATED_CONSTRUCTORS
-        ScatterVisual(GLuint sp,
-                      std::vector<Vector<float,3>>* _coords,
-                      const Vector<float, 3> _offset,
-                      const std::vector<Flt>* _data,
-                      const Scale<Flt>& _scale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f) {
-            // Set up...
-            this->shaderprog = sp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-            this->colourScale = _scale;
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! This constructor allows for setting the fixed radius,
-        //! ScatterVisual::radiusFixed.
-        ScatterVisual(GLuint sp,
-                      std::vector<Vector<float,3>>* _coords,
-                      const Vector<float, 3> _offset,
-                      const std::vector<Flt>* _data,
-                      const float fr,
-                      const Scale<Flt>& _scale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f) {
-            // Set up...
-            this->shaderprog = sp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-            this->colourScale = _scale;
-            this->dataCoords = _coords;
-            this->scalarData = _data;
-            this->radiusFixed = fr;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-#endif
 
         //! Quick hack to add an additional point
         void add (morph::Vector<float> coord, Flt value)
@@ -180,7 +128,11 @@ namespace morph {
                     //std::cout << "Convert colour from vdcopy1[i]: " << vdcopy1[i] << ", vdcopy2[i]: " << vdcopy2[i] << std::endl;
                     clr = this->cm.convert (vdcopy1[i], vdcopy2[i]);
                 }
-                this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
+                if (this->sizeFactor == Flt{0}) {
+                    this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
+                } else {
+                    this->computeSphere (idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
+                }
             }
 
             this->curr_idx = idx;
@@ -194,7 +146,8 @@ namespace morph {
         }
 
         //! Change this to get larger or smaller spheres.
-        Flt radiusFixed = 0.05;
+        Flt radiusFixed = Flt{0.05};
+        Flt sizeFactor = Flt{0};
 
         // Hues for colour control with vectorData
         float hue1 = 0.1f;
