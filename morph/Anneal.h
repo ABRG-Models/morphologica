@@ -349,6 +349,9 @@ namespace morph {
             data.add_contained_vals ("/n", this->n);
             data.add_contained_vals ("/c", this->c);
 
+            data.add_contained_vals ("/range_min", this->range_min);
+            data.add_contained_vals ("/range_max", this->range_max);
+
             data.add_val ("/temperature_ratio_scale", this->temperature_ratio_scale);
             data.add_val ("/temperature_anneal_scale", this->temperature_anneal_scale);
             data.add_val ("/cost_parameter_scale_ratio", this->cost_parameter_scale_ratio);
