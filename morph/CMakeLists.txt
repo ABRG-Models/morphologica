@@ -1,13 +1,5 @@
 #
-# This file controls the compilation and linking of the older
-# visualisation code, called libmorphdisplay0, and the installation of
-# the header files.
-#
-# It also controls the compilation of the executable testboundary,
-# which is a utility program which reads an svg file, then creates a
-# HexGrid and shows the boundary. It's useful to demonstrate that the
-# morphologica ReadCurves code can read an Adobe Illustrator or
-# Inkscape file.
+# This file controls the installation of the header files.
 #
 
 # Link to the special armadillo libpath, if requested
