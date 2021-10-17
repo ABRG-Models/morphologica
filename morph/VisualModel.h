@@ -68,7 +68,7 @@ namespace morph {
     class VisualModel
     {
     public:
-        VisualModel () { this->mv_offset = {0.0, 0.0, 0.0}; }
+        VisualModel() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         VisualModel (GLuint sp, const Vector<float> _mv_offset)
         {
@@ -100,7 +100,7 @@ namespace morph {
         }
 
         //! Common code to call after the vertices have been set up.
-        void postVertexInit (void)
+        void postVertexInit()
         {
             // Do gl memory allocation of vertex array once only
             if (this->vbos == (GLuint*)0) {
@@ -151,7 +151,7 @@ namespace morph {
         }
 
         //! Initialize vertex buffer objects and vertex array object.
-        virtual void initializeVertices (void) = 0;
+        virtual void initializeVertices() = 0;
 
         //! Re-initialize the buffers. Client code might have appended to
         //! vertexPositions/Colors/Normals and indices before calling this method.
@@ -197,7 +197,7 @@ namespace morph {
         }
 
         //! Render the VisualModel
-        virtual void render (void)
+        virtual void render()
         {
             if (this->hide == true) { return; }
 
