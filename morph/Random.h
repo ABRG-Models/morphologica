@@ -125,7 +125,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandUniform& operator= (const RandUniform<T>& rng)
         {
-            if (&rng == this) { return *this; }
+            if (&rng == (const RandUniform<T>*)this) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -207,7 +207,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandUniform& operator= (const RandUniform<T>& rng)
         {
-            if (&rng == this) { return *this; }
+            if (&rng == (const RandUniform<T>*)this) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -294,7 +294,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandNormal& operator= (const RandNormal<T>& rng)
         {
-            if (&rng == this) { return *this; }
+            if (&rng == (const RandNormal<T>*)this) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -376,7 +376,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandLogNormal& operator= (const RandLogNormal<T>& rng)
         {
-            if (&rng == this) { return *this; }
+            if (&rng == (const RandLogNormal<T>*)this) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -457,7 +457,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandPoisson& operator= (const RandPoisson<T>& rng)
         {
-            if (&rng == this) { return *this; }
+            if (&rng == (const RandPoisson<T>*)this) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -518,7 +518,7 @@ namespace morph {
         //! Deconstructor cleans up memory
         ~RandString()
         {
-            if (this->rng != (RandUniform<unsigned char>*)0) {
+            if (this->rng != (RandUniform<unsigned short>*)0) {
                 delete this->rng;
             }
         }
@@ -533,7 +533,7 @@ namespace morph {
             for (size_t i = 0; i < this->length; ++i) {
 
                 // Get a random number
-                unsigned char rn = this->rng->get();
+                unsigned short rn = this->rng->get();
 
                 // Turn the random number into a character, depending on the CharGroup
                 switch (this->cg) {
@@ -627,17 +627,17 @@ namespace morph {
         void setupRNG()
         {
             // Set rng to generate random numbers in correct range
-            if (this->rng != (RandUniform<unsigned char>*)0) {
+            if (this->rng != (RandUniform<unsigned short>*)0) {
                 delete this->rng;
-                this->rng = (RandUniform<unsigned char>*)0;
+                this->rng = (RandUniform<unsigned short>*)0;
             }
-            this->rng = new RandUniform<unsigned char>(0, this->numChars()-1);
+            this->rng = new RandUniform<unsigned short>(0, this->numChars()-1);
         }
 
         //! Return the number of characters total in each CharGroup
-        unsigned char numChars() const
+        unsigned short numChars() const
         {
-            unsigned char n = 0;
+            unsigned short n = 0;
             switch (this->cg) {
             case CharGroup::AlphaNumeric: { n = 62; break; }
             case CharGroup::Alpha: { n = 52; break; }
@@ -656,7 +656,7 @@ namespace morph {
         }
 
         //! The number generator
-        RandUniform<unsigned char>* rng = (RandUniform<unsigned char>*)0;
+        RandUniform<unsigned short>* rng = (RandUniform<unsigned short>*)0;
 
         //! The number of characters to generate
         size_t length;
