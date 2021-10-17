@@ -594,6 +594,67 @@ namespace morph {
             this->axiscolour = {0.8f, 0.8f, 0.8f};
         }
 
+        //! Graph-specific number formatting for tick labels.
+        static std::string graphNumberFormat (Flt num)
+        {
+            std::stringstream ss;
+            ss << num;
+            std::string s = ss.str();
+
+            if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
+                // It's a 0.something number. Get rid of any 0 preceding a '.'
+                std::string::size_type p = s.find ('.');
+                if (p != std::string::npos && p>0) {
+                    if (s[--p] == '0') { s.erase(p, 1); }
+                }
+            }
+
+            return s;
+        }
+
+        /*!
+         * Auto-computes the tick marker locations (in data space) for the data range
+         * rmin to rmax. realmin and realmax gives the data range actually displayed on
+         * the graph - it's the data range, plus any padding introduced by
+         * GraphVisual::dataaxisdist
+         */
+        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
+        {
+            std::deque<Flt> ticks;
+
+            Flt range = rmax - rmin;
+            // How big should the range be? log the range, find the floor, raise it to get candidate
+            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
+            Flt numticks = floor(range/trytick);
+            if (numticks > 10) {
+                while (numticks > 10) {
+                    trytick = trytick * 2;
+                    numticks = floor(range/trytick);
+                }
+            } else {
+                while (numticks < 3) {
+                    trytick = trytick * 0.5;
+                    numticks = floor(range/trytick);
+                }
+            }
+#ifdef __DEBUG__
+            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
+#endif
+            // Realmax and realmin come from the full range of abscissa_scale/zScale
+            Flt atick = trytick;
+            while (atick <= realmax) {
+                ticks.push_back (atick);
+                atick += trytick;
+            }
+            atick = trytick - trytick;
+            while (atick >= realmin) {
+                ticks.push_back (atick);
+                atick -= trytick;
+            }
+
+            return ticks;
+        }
+
     protected:
 
         //! The OpenGL indices index
@@ -848,24 +909,6 @@ namespace morph {
                 lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
             }
             this->texts.push_back (lbl);
-        }
-
-        //! Graph-specific number formatting for tick labels. Someone might want to override this
-        virtual std::string graphNumberFormat (Flt num)
-        {
-            std::stringstream ss;
-            ss << num;
-            std::string s = ss.str();
-
-            if (num > Flt{-1} && num < Flt{1} && num != Flt{0}) {
-                // It's a 0.something number. Get rid of any 0 preceding a '.'
-                std::string::size_type p = s.find ('.');
-                if (p != std::string::npos && p>0) {
-                    if (s[--p] == '0') { s.erase(p, 1); }
-                }
-            }
-
-            return s;
         }
 
         //! Add the tick labels: 0, 1, 2 etc
@@ -1234,49 +1277,6 @@ namespace morph {
                 this->ytick_posns.resize (this->yticks.size());
                 this->zScale.transform (yticks, ytick_posns);
             }
-        }
-
-        /*!
-         * Auto-computes the tick marker locations (in data space) for the data range
-         * rmin to rmax. realmin nd realmax gives the data range actually displayed on
-         * the graph - it's the data range, plus any padding introduced by
-         * GraphVisual::dataaxisdist
-         */
-        std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
-        {
-            std::deque<Flt> ticks;
-
-            Flt range = rmax - rmin;
-            // How big should the range be? log the range, find the floor, raise it to get candidate
-            Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
-            Flt numticks = floor(range/trytick);
-            if (numticks > 10) {
-                while (numticks > 10) {
-                    trytick = trytick * 2;
-                    numticks = floor(range/trytick);
-                }
-            } else {
-                while (numticks < 3) {
-                    trytick = trytick * 0.5;
-                    numticks = floor(range/trytick);
-                }
-            }
-#ifdef __DEBUG__
-            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
-#endif
-            // Realmax and realmin come from the full range of abscissa_scale/zScale
-            Flt atick = trytick;
-            while (atick <= realmax) {
-                ticks.push_back (atick);
-                atick += trytick;
-            }
-            atick = trytick - trytick;
-            while (atick >= realmin) {
-                ticks.push_back (atick);
-                atick -= trytick;
-            }
-
-            return ticks;
         }
 
     public:
