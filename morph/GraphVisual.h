@@ -618,7 +618,8 @@ namespace morph {
          * the graph - it's the data range, plus any padding introduced by
          * GraphVisual::dataaxisdist
          */
-        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax)
+        static std::deque<Flt> maketicks (Flt rmin, Flt rmax, float realmin, float realmax,
+                                          const Flt max_num_ticks = 10, const Flt min_num_ticks = 3)
         {
             std::deque<Flt> ticks;
 
@@ -626,13 +627,13 @@ namespace morph {
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
-            if (numticks > 10) {
-                while (numticks > 10) {
+            if (numticks > max_num_ticks) {
+                while (numticks > max_num_ticks) {
                     trytick = trytick * 2;
                     numticks = floor(range/trytick);
                 }
             } else {
-                while (numticks < 3) {
+                while (numticks < min_num_ticks) {
                     trytick = trytick * 0.5;
                     numticks = floor(range/trytick);
                 }
