@@ -60,9 +60,10 @@ namespace morph {
     //! Different axis styles
     enum class axisstyle
     {
-        L,          // just left and bottom axis bars
+        L,          // just left and bottom axis bars (3D: exactly 3 x/y/z axis bars)
         box,        // left, right, top and bottom bars, ticks only on left and bottom bars
         boxfullticks, // left, right, top and bottom bars, with ticks all round
+        panels,     // For 3D: like a 2D 'box' making a floor, and 2 side 'walls'
         cross,      // a cross of bars at the zero axes
         boxcross,   // A box AND the zero axes
         numstyles
