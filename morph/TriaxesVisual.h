@@ -138,7 +138,7 @@ namespace morph {
             }
             this->texts.push_back (lbl);
 
-            // z axis (add me)
+            // z axis
             lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->zlabel);
             lblpos = {{ -(this->axislabelgap+this->ticklabelgap+geom.width()+this->ztick_width),
