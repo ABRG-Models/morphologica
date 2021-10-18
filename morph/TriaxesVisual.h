@@ -79,27 +79,37 @@ namespace morph {
                                4, morph::mathconst<float>::pi_over_4);
 
             // Then draw ticks
-
-            // Draw left and bottom ticks
-            float tl = -this->ticklength;
-            if (this->tickstyle == tickstyle::ticksin) { tl = this->ticklength; }
-
-            // Start just with x ticks
-            for (auto xt : this->xtick_posns) {
-                // Want to place lines in screen units. So transform the data units
-                this->computeFlatLine (this->idx,
-                                       {(float)xt, 0.0f, 0},
-                                       {(float)xt, tl,   0}, uz,
-                                       this->axiscolour, this->axislinewidth*0.5f);
-                this->computeFlatLine (this->idx,
-                                       {(float)xt, 0.0f, 0},
-                                       {(float)xt, 0,   tl}, uz,
-                                       this->axiscolour, this->axislinewidth*0.5f);
-            }
-
+            this->drawTicks();
             // Add tick labels and axis labes
             this->drawTickLabels();
             this->drawAxisLabels();
+        }
+
+        void drawTicks()
+        {
+            float tl = -this->ticklength;
+            if (this->tickstyle == tickstyle::ticksin) { tl = this->ticklength; }
+            // x ticks
+            for (auto xt : this->xtick_posns) {
+                this->computeFlatLine (this->idx,
+                                       {(float)xt, 0.0f, 0.0f},
+                                       {(float)xt, tl,   0.0f}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
+            }
+            // y ticks
+            for (auto yt : this->ytick_posns) {
+                this->computeFlatLine (this->idx,
+                                       {tl, (float)yt, 0.0f},
+                                       {0.0f, (float)yt, 0.0f}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
+            }
+            // z ticks
+            for (auto zt : this->ztick_posns) {
+                this->computeFlatLine (this->idx,
+                                       {tl, 0.0f, (float)zt},
+                                       {0.0f, 0.0f, (float)zt}, uy,
+                                       this->axiscolour, this->axislinewidth*0.5f);
+            }
         }
 
         //! Add the axis labels
