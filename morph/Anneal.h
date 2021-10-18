@@ -429,6 +429,7 @@ namespace morph {
             }
         }
 
+        static constexpr bool best_better_than_by_precision = false;
         //! The acceptance function determines if x_cand is accepted, copies x_cand to x
         //! and x_best as necessary, and updates statistical variables.
         void acceptance_check()
@@ -451,7 +452,10 @@ namespace morph {
             T u = this->rng_u.get();
             bool accepted = p >= u ? true : false;
 
-            if (candidate_is_better==false && accepted==true) { ++this->num_worse_accepted; }
+            if (candidate_is_better==false && accepted==true) {
+                std::cout << "Accepted worse candidate\n";
+                ++this->num_worse_accepted;
+            }
 
             if (accepted) {
                 // Increment k_cost etc
@@ -460,17 +464,32 @@ namespace morph {
                 ++this->num_accepted_recently;
                 // Increment f_x_best_repeats if f_x_cand is within a short distance of f_x_best:
                 this->f_x_best_repeats += (std::abs(this->f_x_cand - this->f_x_best) <= this->objective_repeat_precision) ? 1 : 0;
-                // Update x_best, etc if x_cand is better than x; if the candidate is
-                // more than objective_repeat_precision better than f_x_best
-                if ((this->downhill == true && (this->f_x_cand - this->f_x_best + this->objective_repeat_precision) < T{0})
-                    || (this->downhill == false && (this->f_x_cand - this->f_x_best - this->objective_repeat_precision) > T{0})) {
+
+                bool really_better = false;
+                if constexpr (best_better_than_by_precision == true) {
+                    // Update x_best, etc if x_cand is better than x; if the candidate
+                    // is more than objective_repeat_precision better than f_x_best.
+                    // This means f_x could be better than f_x_best.
+                    if ((this->downhill == true && (this->f_x_cand - this->f_x_best + this->objective_repeat_precision) < T{0})
+                        || (this->downhill == false && (this->f_x_cand - this->f_x_best - this->objective_repeat_precision) > T{0})) {
+                        really_better = true;
+                    }
+                } else {
+                    // f_x_cand is better simply if it is lower/higher than f_x_best, regardless of the size of objective_repeat_precision
+                    if ((this->downhill == true && (this->f_x_cand - this->f_x_best) < T{0})
+                        || (this->downhill == false && (this->f_x_cand - this->f_x_best) > T{0})) {
+                        really_better = true;
+                    }
+                }
+
+                if (really_better) {
                     this->f_x_best_repeats = 0;
                     this->x_best = this->x_cand;
+                    this->f_x_best = this->f_x_cand;
                     this->num_accepted_best = this->num_accepted;
                     this->num_generated_best = this->num_generated;
                     this->num_accepted_recently = 0;
                     this->num_generated_recently = 0;
-                    this->f_x_best = this->f_x_cand;
                 }
                 // Store x_cand onto the accepted history
                 this->param_hist_accepted.push_back (this->x_cand);
