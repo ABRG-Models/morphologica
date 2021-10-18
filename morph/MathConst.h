@@ -35,8 +35,13 @@ namespace morph {
     template <typename T=double>
     struct mathconst
     {
+        static constexpr T sqrt_of_2 = T{1.414213562373095048801688724209698078569671875376948};
+        static constexpr T one_over_root_2 = T{1}/sqrt_of_2;
+
         static constexpr T sqrt_of_3 = T{1.732050807568877293527446341505872366942805253810381};
-        static constexpr T sqrt_of_3_over_2 = T{0.86602540378443864676372317075293618347140262690519};
+        static constexpr T one_over_root_3 = T{1}/sqrt_of_3;
+        static constexpr T root_3_over_2 = sqrt_of_3/T{2};
+
         static constexpr T pi = T{3.141592653589793238462643383279502884197169399375106};
         static constexpr T pi_over_2 = pi/T{2};
         static constexpr T pi_over_3 = pi/T{3};
