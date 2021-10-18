@@ -39,38 +39,169 @@ namespace morph {
 
         void initializeVertices()
         {
-            // First compute the x/y/z scales
-            this->x_scale.compute_autoscale (0, this->axis_ends[0]);
-            this->y_scale.compute_autoscale (0, this->axis_ends[1]);
-            this->z_scale.compute_autoscale (0, this->axis_ends[2]);
+            // First compute the x/y/z scales. Set the range_max of each to the ends of
+            // the axes leaving range_mins at 0.
+            this->x_scale.range_max = this->axis_ends[0];
+            this->y_scale.range_max = this->axis_ends[1];
+            this->z_scale.range_max = this->axis_ends[2];
+
+            this->x_scale.compute_autoscale (this->input_min[0], this->input_max[0]);
+            this->y_scale.compute_autoscale (this->input_min[1], this->input_max[1]);
+            this->z_scale.compute_autoscale (this->input_min[2], this->input_max[2]);
 
             // Now ensure that this->[x/y/z]tick_posns/[x/y/z]ticks are populated
             this->computeTickPositions();
 
-            // Draw the main axes
-            // x
+            // Draw the main axes x. Draw a rectangular tube of side axislinewidth
+            // (Specifying radius = axislinewidth/root(2) and 45 degree rotation)
             this->computeTube (this->idx,
-                               {0, 0, 0}, // start
-                               {this->axis_ends[0], 0, 0},
-                               uy, uz,
+                               {-0.5f*axislinewidth, 0, 0}, // start
+                               {this->axis_ends[0]+0.5f*axislinewidth, 0, 0}, // end
+                               -uy, uz,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
+                               morph::mathconst<float>::one_over_root_2*this->axislinewidth,
+                               4, morph::mathconst<float>::pi_over_4);
             // y
             this->computeTube (this->idx,
-                               {0, 0, 0}, // start
-                               {0, this->axis_ends[1], 0},
+                               {0, -0.5f*axislinewidth, 0},
+                               {0, this->axis_ends[1]+0.5f*axislinewidth, 0},
                                ux, uz,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
+                               morph::mathconst<float>::one_over_root_2*this->axislinewidth,
+                               4, morph::mathconst<float>::pi_over_4);
             // z
             this->computeTube (this->idx,
-                               {0, 0, 0}, // start
-                               {0, 0, this->axis_ends[2]},
+                               {0, 0, -0.5f*axislinewidth},
+                               {0, 0, this->axis_ends[2]+0.5f*axislinewidth},
                                ux, uy,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
+                               morph::mathconst<float>::one_over_root_2*this->axislinewidth,
+                               4, morph::mathconst<float>::pi_over_4);
 
             // Then draw ticks
+
+            // Draw left and bottom ticks
+            float tl = -this->ticklength;
+            if (this->tickstyle == tickstyle::ticksin) { tl = this->ticklength; }
+
+            // Start just with x ticks
+            for (auto xt : this->xtick_posns) {
+                // Want to place lines in screen units. So transform the data units
+                this->computeFlatLine (this->idx,
+                                       {(float)xt, 0.0f, 0},
+                                       {(float)xt, tl,   0}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
+                this->computeFlatLine (this->idx,
+                                       {(float)xt, 0.0f, 0},
+                                       {(float)xt, 0,   tl}, uz,
+                                       this->axiscolour, this->axislinewidth*0.5f);
+            }
+
+            // Add tick labels and axis labes
+            this->drawTickLabels();
+            this->drawAxisLabels();
+        }
+
+        //! Add the axis labels
+        void drawAxisLabels()
+        {
+            // x axis label (easy)
+            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
+            morph::Vector<float> lblpos;
+            lblpos = {{0.5f * this->axis_ends[0] - geom.half_width(),
+                       -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0}};
+            lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
+            this->texts.push_back (lbl);
+
+            // y axis label (have to rotate)
+            lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            geom = lbl->getTextGeometry (this->ylabel);
+
+            // Rotate label if it's long
+            float leftshift = geom.width();
+            float downshift = geom.height();
+            if (geom.width() > 2*this->fontsize) { // rotate so shift by text height
+                leftshift = geom.height();
+                downshift = geom.half_width();
+            }
+
+            lblpos = {{ -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                        0.5f*this->axis_ends[1] - downshift, 0 }};
+
+            if (geom.width() > 2*this->fontsize) {
+                morph::Quaternion<float> leftrot;
+                leftrot.initFromAxisAngle (this->uz, -90.0f);
+                lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
+            } else {
+                lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
+            }
+            this->texts.push_back (lbl);
+
+            // z axis (add me)
+            lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            geom = lbl->getTextGeometry (this->zlabel);
+            lblpos = {{ -(this->axislabelgap+this->ticklabelgap+geom.width()+this->ztick_width),
+                        0,
+                        0.5f * this->axis_ends[1] - geom.half_height() }};
+            lbl->setupText (this->zlabel, lblpos+this->mv_offset, this->axiscolour);
+            this->texts.push_back (lbl);
+        }
+
+        //! xtick label height
+        float xtick_height = 0.0f;
+        float ytick_height = 0.0f;
+        float ztick_height = 0.0f;
+        //! xtick label width
+        float xtick_width = 0.0f;
+        float ytick_width = 0.0f;
+        float ztick_width = 0.0f;
+        void drawTickLabels()
+        {
+            // Reset these members
+            this->xtick_height = 0.0f;
+            this->ytick_width = 0.0f;
+            this->ztick_height = 0.0f;
+            this->ztick_width = 0.0f;
+
+            float x_for_yticks = 0.0f;
+            float y_for_xticks = 0.0f;
+            float y_for_zticks = 0.0f;
+
+            for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->xticks[i]);
+                // Issue: I need the width of the text ss.str() before I can create the
+                // VisualTextModel, so need a static method like this:
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::TextGeometry geom = lbl->getTextGeometry (s);
+                this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
+                this->xtick_width = geom.width() > this->xtick_width ? geom.width() : this->xtick_width;
+                morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
+                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                this->texts.push_back (lbl);
+            }
+
+            for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
+                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->yticks[i]);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::TextGeometry geom = lbl->getTextGeometry (s);
+                this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
+                this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
+                morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
+                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                this->texts.push_back (lbl);
+            }
+
+            for (unsigned int i = 0; i < this->ztick_posns.size(); ++i) {
+                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->zticks[i]);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::TextGeometry geom = lbl->getTextGeometry (s);
+                this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;
+                this->ztick_width = geom.width() > this->ztick_width ? geom.width() : this->ztick_width;
+                morph::Vector<float> lblpos = {y_for_zticks-this->ticklabelgap-geom.width(), 0, (float)this->ztick_posns[i]-geom.half_height()};
+                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                this->texts.push_back (lbl);
+            }
         }
 
         void computeTickPositions()
@@ -88,15 +219,15 @@ namespace morph {
 
                 float realmin = this->x_scale.inverse_one (0);
                 float realmax = this->x_scale.inverse_one (this->axis_ends[0]);
-                this->xticks = morph::GraphVisual<Flt>::maketicks (_xmin, _xmax, realmin, realmax);
+                this->xticks = morph::GraphVisual<Flt>::maketicks (_xmin, _xmax, realmin, realmax, 8);
 
                 realmin = this->y_scale.inverse_one (0);
                 realmax = this->y_scale.inverse_one (this->axis_ends[1]);
-                this->yticks = morph::GraphVisual<Flt>::maketicks (_ymin, _ymax, realmin, realmax);
+                this->yticks = morph::GraphVisual<Flt>::maketicks (_ymin, _ymax, realmin, realmax, 8);
 
                 realmin = this->z_scale.inverse_one (0);
                 realmax = this->z_scale.inverse_one (this->axis_ends[2]);
-                this->zticks = morph::GraphVisual<Flt>::maketicks (_zmin, _zmax, realmin, realmax);
+                this->zticks = morph::GraphVisual<Flt>::maketicks (_zmin, _zmax, realmin, realmax, 8);
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->x_scale.transform (xticks, xtick_posns);
@@ -112,6 +243,11 @@ namespace morph {
         // OpenGL indices index
         VBOint idx = 0;
 
+        //! Set the input_min to be the values at the zero points of the graph axes
+        morph::Vector<Flt, 3> input_min = {0,0,0};
+        //! Set the input_min to be the values at the maxes of the graph axes
+        morph::Vector<Flt, 3> input_max = {1,1,1};
+
         // Axes parameters
 
         //! x axis max location in model space. Default behaviour is a 1x1x1 cube
@@ -121,7 +257,7 @@ namespace morph {
         //! Set axis and text colours for a dark or black background
         bool darkbg = false;
         //! The line width of the main axis bars
-        float axislinewidth = 0.01f;
+        float axislinewidth = 0.006f;
         //! How long should the ticks be?
         float ticklength = 0.02f;
         //! Ticks in or ticks out? Or something else?
