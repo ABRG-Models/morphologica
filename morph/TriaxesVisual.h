@@ -11,6 +11,7 @@
 # include <GL3/gl3.h>
 #endif
 
+#include <morph/MathConst.h>
 #include <morph/Scale.h>
 #include <morph/Vector.h>
 #include <morph/GraphVisual.h> // Share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
@@ -53,21 +54,21 @@ namespace morph {
                                {this->axis_ends[0], 0, 0},
                                uy, uz,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, 0.785398163f); // pi/4 rotation
+                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
             // y
             this->computeTube (this->idx,
                                {0, 0, 0}, // start
                                {0, this->axis_ends[1], 0},
                                ux, uz,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, 0.785398163f);
+                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
             // z
             this->computeTube (this->idx,
                                {0, 0, 0}, // start
                                {0, 0, this->axis_ends[2]},
                                ux, uy,
                                this->axiscolour, this->axiscolour,
-                               this->axislinewidth, 4, 0.785398163f);
+                               this->axislinewidth, 4, morph::mathconst<float>::pi_over_4);
 
             // Then draw ticks
         }
