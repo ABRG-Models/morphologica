@@ -1,0 +1,15 @@
+﻿{
+  "configurations": [
+    {
+      "buildCommandArgs": "",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_PREFIX_PATH=C:/Users/seb/source/repos/jsoncpp/out/install/x64-Debug/lib/cmake/jsoncpp;C:/Users/seb/Source/Repos/glfw/out/install/x64-Debug/lib/cmake/glfw3/;C:/Users/seb/source/repos/opencv/out/install/x64-Debug/x64/vc16/lib;C:/Users/seb/source/repos/armadillo-10.7.1/out/install/x64-Debug;C:/Users/seb/source/repos/CMake-hdf5-1.10.7/hdf5-1.10.7/out/install/x64-Debug/cmake/hdf5/;C:/Users/seb/source/repos/freetype/out/install/x64-Debug",
+      "configurationType": "Debug",
+      "ctestCommandArgs": "",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "name": "x64-Debug"
+    }
+  ]
+}
