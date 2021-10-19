@@ -18,7 +18,9 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <json/json.h>
-#include <morph/Process.h>
+#ifndef __WIN__
+# include <morph/Process.h>
+#endif
 
 #include <math.h>
 #include <stdlib.h>
@@ -39,10 +41,12 @@ extern "C" {
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
-#include <sys/file.h>
-#include <sys/ioctl.h>
-#include <dirent.h>
+#ifndef __WIN__ // I'll need some windowey equivalent for these
+# include <sys/statvfs.h>
+# include <sys/file.h>
+# include <sys/ioctl.h>
+# include <dirent.h>
+#endif
 #include <string.h>
 #include <time.h>
 }
@@ -81,6 +85,7 @@ extern "C" {
 
 namespace morph
 {
+#ifndef __WIN__
     //! Callbacks class extends ProcessCallbacks
     class ToolsProcessCallbacks : public ProcessCallbacks
     {
@@ -94,6 +99,7 @@ namespace morph
     private:
         ProcessData* parent;
     };
+#endif // __WIN__
 
     //! Allows use of transform and tolower() on strings with GNU compiler
     struct to_lower { char operator() (const char c) const { return tolower(c); } };
@@ -104,6 +110,7 @@ namespace morph
     class Tools
     {
     public:
+#ifndef __WIN__
         /*!
          * Launch git sub-processes to determine info about the current
          * repository. Intended for use with code that will save a Json formatted log of
@@ -242,7 +249,8 @@ namespace morph
                 root["git_branch"] = "unknown";
             }
         }
-
+#endif // __WIN__
+      
         /*!
          * For mixing up bits of three args; used to generate a good random seed using
          * time() getpid() and clock().
@@ -261,6 +269,7 @@ namespace morph
             return c;
         }
 
+#ifndef __WIN__
         /*!
          * Using clock(), time() and getpid() along with the mix utility function,
          * generate a decently random seed for seeding your RNG.
@@ -270,7 +279,7 @@ namespace morph
             unsigned int rsd = morph::Tools::mix(clock(), time(NULL), getpid());
             return rsd;
         }
-
+#endif
         /*!
          * return indices of descending value in unsorted
          */
@@ -882,6 +891,7 @@ namespace morph
             return theVec;
         }
 
+#ifndef __WIN__
         /*
          * File and directory access methods
          */
@@ -1448,6 +1458,7 @@ namespace morph
                 throw std::runtime_error (emsg.str());
             }
         }
+#endif // __WIN__
 
         /*!
          * Touch the file.
@@ -1481,6 +1492,7 @@ namespace morph
 #define COPYFILE_BUFFERSIZE    32768
 #define COPYFILE_BUFFERSIZE_MM 32767 // MM: Minus Minus
         //@{
+#ifndef __WIN__
         static void copyFile (const std::string& from, const std::string& to)
         {
             std::ofstream out;
@@ -1531,6 +1543,7 @@ namespace morph
             // Finally, close the input.
             in.close();
         }
+#endif // __WIN__
         static void copyFile (FILE* from, const std::string& to)
         {
             FILE * ofp = NULL;
@@ -1570,12 +1583,14 @@ namespace morph
                 f.write (buf, from.gcount());
             }
         }
+#ifndef __WIN__
         static void copyFile (const std::string& from, FILE* to)
         {
             FILE* ifp = fopen (from.c_str(), "r");
             Tools::copyFile (ifp, to);
             fclose (ifp);
         }
+#endif
         //@}
 
         /*!
@@ -1712,6 +1727,7 @@ namespace morph
             }
         }
 
+#ifndef __WIN__
         /*!
          * Make a copy of \param bytes bytes of the file at \param original to the file
          * \param truncated.
@@ -1787,7 +1803,7 @@ namespace morph
             Tools::copyFile (from, to);
             Tools::unlinkFile (from);
         }
-
+#endif
         /*!
          * Call unlink() on the given file path fpath. If unlinking fails, throw a
          * descriptive error based on the errno which was set on unlink's return.
@@ -1842,6 +1858,7 @@ namespace morph
             }
         }
 
+#ifndef __WIN__
         /*!
          * Unlink files in dirPath which are older than olerThanSeconds and which
          * contain filePart.
@@ -2243,7 +2260,8 @@ namespace morph
             // diff returns zero if files are identical, non-zero if files differ.
             return (system (diffcmd.c_str()) != 0);
         }
-
+#endif // __WIN__
+      
         /*!
          * Given a path like /path/to/file in str, remove all the preceding /path/to/
          * stuff to leave just the filename.
@@ -2294,6 +2312,7 @@ namespace morph
             }
         }
 
+#ifndef __WIN__
         /*
          * Date and time utility functions
          */
@@ -2336,7 +2355,7 @@ namespace morph
             unsigned int theDate = static_cast<unsigned int>(t->tm_mday);
             return theDate;
         }
-
+#endif
         /*!
          * Given the month as an int, where 1==Jan, 12==Dec,
          * return the month as a string. If shortFormat is true,
@@ -2665,6 +2684,7 @@ namespace morph
             return rtnTime;
         }
 
+#ifndef __WIN__
         /*!
          * Convert a unix epoch number to a date/time of form
          * 2009-02-16 02:03:01, using dateSeparator to delimit
@@ -2762,7 +2782,7 @@ namespace morph
 
             return rtn.str();
         }
-
+#endif
         /*!
          * Return the current time in neat string format.
          */
@@ -2779,11 +2799,12 @@ namespace morph
          * Return a string representing the date and time in a format suitable to form
          * part of a filename.
          */
+#ifndef __WIN__
         static std::string filenameTimestamp()
         {
             return morph::Tools::numToDateTime (time(NULL), '\0', '\0', '_');
         }
-
+#endif
         /*!
          * This splits up a "search style" string into tokens.
          *
