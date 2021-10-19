@@ -1,5 +1,5 @@
 # AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 project(morphologica)
 set(VERSION 0.1)
 set(SOVERSION 1.0)
@@ -33,20 +33,25 @@ set (CMAKE_CXX_STANDARD 17)
 if (APPLE)
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
 else()
-  # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
-  else () # GCC or Clang
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-      # Add compiler version check, to ensure gcc is version 7 or later.
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
-        message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
-      else()
-        message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
+  if(NOT CMAKE_SYSTEM MATCHES Win.*)
+    # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
+    if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
+    else () # GCC or Clang
+      if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+        # Add compiler version check, to ensure gcc is version 7 or later.
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
+          message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
+        else()
+          message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
+        endif()
       endif()
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
     endif()
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
-  endif()
+  else() # Windows
+    # Set flags for Windows.
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION}")
+  endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
 # Tell clang to be quiet about brace initialisers
