@@ -10,10 +10,12 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include <morph/Process.h>
+#ifndef __WIN__
+# include <morph/Process.h>
+#endif
 
 namespace morph {
-
+#ifndef __WIN__
     //! Callbacks class extends ProcessCallbacks
     class ConfigProcessCallbacks : public ProcessCallbacks
     {
@@ -27,7 +29,7 @@ namespace morph {
     private:
         ProcessData* parent;
     };
-
+#endif
     /*!
      * A configuration file class to help read simulation parameters from a JSON file.
      *
@@ -81,6 +83,7 @@ namespace morph {
             this->ready = true;
         }
 
+#ifndef __WIN__
         /*!
          * Launch git sub-processes to determine info about the current
          * repository. Intended for use with code that will save a Json formatted log of
@@ -221,6 +224,7 @@ namespace morph {
                 this->root["git_branch"] = "unknown";
             }
         }
+#endif // __WIN__
 
         //! Write out the JSON to file.
         void write (const std::string& outfile)
