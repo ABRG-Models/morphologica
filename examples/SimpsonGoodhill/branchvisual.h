@@ -27,10 +27,13 @@ template <typename Flt>
 class BranchVisual : public morph::VisualModel
 {
 public:
-    BranchVisual(GLuint sp, const morph::Vector<float, 3> _offset, std::vector<branch<Flt>>* _branches)
+    BranchVisual(GLuint sp, GLuint tsp,
+                 const morph::Vector<float, 3> _offset,
+                 std::vector<branch<Flt>>* _branches)
     {
         this->branches = _branches;
         this->shaderprog = sp;
+        this->tshaderprog = tsp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
@@ -73,8 +76,8 @@ public:
     std::vector<branch<Flt>>* branches = (std::vector<branch<Flt>>*)0;
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
-    Flt radiusFixed = 0.01;
-    Flt linewidth = 0.008;
+    Flt radiusFixed = Flt{0.01};
+    Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
 };

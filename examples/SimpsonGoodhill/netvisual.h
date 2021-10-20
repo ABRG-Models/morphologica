@@ -18,7 +18,6 @@
 #include <morph/VisualModel.h>
 #include <morph/Vector.h>
 #include <morph/Scale.h>
-#include <vector>
 #include <array>
 
 #include "net.h"
@@ -27,10 +26,11 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, const morph::Vector<float, 3> _offset, net<Flt>* _locations)
+    NetVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
         this->shaderprog = sp;
+        this->tshaderprog = tsp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
@@ -48,7 +48,7 @@ public:
             morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, 0.01f);
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/Flt{4});
         }
     }
 
@@ -61,8 +61,8 @@ public:
 
     //! Pointer to a vector of locations to visualise
     net<Flt>* locations = (net<Flt>*)0;
-    Flt radiusFixed = 0.01;
-    Flt linewidth = 0.008;
+    Flt radiusFixed = Flt{0.01};
+    Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
     morph::Vector<float, 3> uz = {0,0,1};
 };

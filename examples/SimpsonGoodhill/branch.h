@@ -87,16 +87,9 @@ struct branch
             B[1] = -(b[1] + r - T{1})/r; // B[1] prop (b+r-1)/r
         }
 
-#ifdef _DEBUG
-        morph::Vector<T, 2> thestep = (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-        if (thestep.length() > 0.1f) {
-            std::cout << "Step size is " << thestep.length() << std::endl;
-        }
-        b += thestep; // * v where v=1
-#else
         // Paper equation 1
         b += (G * m[0] + C * m[1] + I * m[2] + B * m[3]);
-#endif
+
         this->next = b;
     }
     // The location and all previous locations of this branch.

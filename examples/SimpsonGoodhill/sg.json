@@ -1,6 +1,6 @@
 {
     "desc_movie" : "If true, then save images to make a movie",
-    "movie" : false,
+    "movie" : true,
     "win_width" : 1920,
     "desc_goslow" : "If true, then slow down the visualisation to make it watchable",
     "goslow" : false,

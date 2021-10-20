@@ -4,8 +4,19 @@
 
 #pragma once
 
+#include <set>
+#include <array>
 #include <vector>
 #include <morph/Vector.h>
+
+// Comparison for std::set of Vectors
+struct ncmp
+{
+    bool operator() (morph::Vector<size_t, 2> a, morph::Vector<size_t, 2> b) const
+    {
+        return a.lexical_lessthan(b);
+    }
+};
 
 template<typename T>
 struct net
@@ -43,5 +54,5 @@ struct net
     //! Colours of the vertices of the net
     std::vector<std::array<float, 3>> clr;
     //! Connections of the net. The indices into p that are the ends of line segments
-    std::set<morph::Vector<size_t, 2>> c;
+    std::set<morph::Vector<size_t, 2>, ncmp> c;
 };

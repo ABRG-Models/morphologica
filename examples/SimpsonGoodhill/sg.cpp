@@ -65,16 +65,10 @@ struct SimpsonGoodhill
     void step()
     {
         // Compute the next position for each branch:
-#ifdef __OSX__
-        // Mac compiler didn't like omp parallel for in front of a for(auto...
 #pragma omp parallel for
         for (unsigned int i = 0; i < this->branches.size(); ++i) {
             this->branches[i].compute_next (this->branches, this->m);
         }
-#else
-#pragma omp parallel for
-        for (auto& b : this->branches) { b.compute_next (this->branches, this->m); }
-#endif
         // Update centroids
         for (unsigned int i = 0; i < this->retina->num(); ++i) { this->ax_centroids.p[i] = {T{0}, T{0}, T{0}}; }
         for (auto& b : this->branches) {
@@ -84,11 +78,8 @@ struct SimpsonGoodhill
         }
         // Once 'next' has been updated, add next to path:
         for (auto& b : this->branches) {
-            //if (b.id%1000 == 0) {
-            //if (b.id == 1000) {
             b.path.push_back (b.next);
             if (b.path.size() > this->history) { b.path.pop_front(); }
-            //}
         }
     }
 
@@ -157,14 +148,16 @@ struct SimpsonGoodhill
         morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T> (v->shaderprog, offset, &this->branches);
+        this->bv = new BranchVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->branches);
         this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         this->bv->finalize();
         v->addVisualModel (this->bv);
 
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, offset, &this->ax_centroids);
+        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
         this->cv->finalize();
         v->addVisualModel (this->cv);
 
@@ -176,6 +169,7 @@ struct SimpsonGoodhill
         cgv->setVectorData (&points);
         cgv->cm.setType (morph::ColourMapType::Duochrome);
         cgv->cm.setHueRG();
+        cgv->addLabel ("Retina", {0.0f, 1.1f, 0.0f});
         cgv->finalize();
         v->addVisualModel (cgv);
     }
