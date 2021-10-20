@@ -1,4 +1,6 @@
 ﻿{
+  "note" : "This is the settings file that allowed me to run CMake within Visual Studio to attempt to compile morphologica code on Windows.",
+
   "configurations": [
     {
       "buildCommandArgs": "",
