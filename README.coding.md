@@ -107,12 +107,12 @@ should be updated.
 Here's an example of the code used to create a Visual instance.
 
 ```c++
-    // Create a 1024 pixel by 768 pixel morph::Visual window titled "Example"
-    morph::Visual v(1024, 768, "Example");
-    // Choose a black background
-    v.backgroundBlack();
-    // Switch on a mix of diffuse/ambient lighting
-    v.lightingEffects(true);
+// Create a 1024 pixel by 768 pixel morph::Visual window titled "Example"
+morph::Visual v(1024, 768, "Example");
+// Choose a black background
+v.backgroundBlack();
+// Switch on a mix of diffuse/ambient lighting
+v.lightingEffects(true);
 ```
 
 Now that the Visual instance exists, you can add VisualModels. You'll
@@ -120,30 +120,30 @@ see a lot of morph::Vector<float, 3> objects. These are very much like
 (and in fact are derived from) std::array<> from the standard library.
 
 ```c++
-    // Each VisualModel is given an 'offset within the Visual
-    // environment'. Use this offset to control the relative locations of
-    // all your VisualModel objects.
-    morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+// Each VisualModel is given an 'offset within the Visual
+// environment'. Use this offset to control the relative locations of
+// all your VisualModel objects.
+morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-    // Here, I'm using a very simple morph::TriangleVisual to draw a
-    // triangle on the screen. I have to specify three corners. These
-    // coordinates are in 'VisualModel space'
-    morph::Vector<float, 3> c1 = { 0, 0, 0 };
-    morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
-    morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
+// Here, I'm using a very simple morph::TriangleVisual to draw a
+// triangle on the screen. I have to specify three corners. These
+// coordinates are in 'VisualModel space'
+morph::Vector<float, 3> c1 = { 0, 0, 0 };
+morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
+morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
 
-    // The last piece of infomration that the TriangleVisual will
-    // require is a colour. This is an RGB triplet, so this triangle will
-    // be red.
-    morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
+// The last piece of infomration that the TriangleVisual will
+// require is a colour. This is an RGB triplet, so this triangle will
+// be red.
+morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
-    // Now create the TriangleVisual. You allocate memory for the
-    // model here; morph::Visual will be responsible for deallocating the
-    // memory, as long as you add the VisualModel-derived object to the Visual...
-    morph::TriangleVisual* tv = new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1)
+// Now create the TriangleVisual. You allocate memory for the
+// model here; morph::Visual will be responsible for deallocating the
+// memory, as long as you add the VisualModel-derived object to the Visual...
+morph::TriangleVisual* tv = new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1)
 
-    // ...like this:
-    v.addVisualModel (tv);
+// ...like this:
+v.addVisualModel (tv);
 ```
 
 Now your ```morph::Visual``` contains one ```VisualModel```, which has all
@@ -151,7 +151,7 @@ the information required to specify how it should look. To actually
 render it on the screen, you call ```morph::Visual::render()```:
 
 ```c++
-    v.render();
+v.render();
 ```
 
 This draws the scene once. In order to have a responsive scene that
@@ -159,10 +159,10 @@ you can drag and move with the mouse, you have to process window
 events and update the scene with ```v.render()``` at a suitable frequency. That happens like this:
 
 ```c++
-    while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
-        v.render();
-    }
+while (v.readyToFinish == false) {
+    glfwWaitEventsTimeout (0.018);
+    v.render();
+}
 ```
 
 ```glfwWaitEventsTimeout (0.018);``` waits for mouse and keyboard events for
@@ -191,18 +191,18 @@ Let's look at a simple one first; the
 [morph::TriangleVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/TriangleVisual.h) class that we just encountered:
 
 ```c++
-    class TriangleVisual : public VisualModel
-    {
-    public:
-        TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
+class TriangleVisual : public VisualModel
+{
+public:
+    TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
-        //! Initialise with offset, three coordinates and a single colour.
-        TriangleVisual(GLuint sp, const Vector<float, 3> _offset,
-                       const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
-                       const std::array<float, 3> _col)
-        {
-            this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
-        }
+    //! Initialise with offset, three coordinates and a single colour.
+    TriangleVisual(GLuint sp, const Vector<float, 3> _offset,
+                   const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+                   const std::array<float, 3> _col)
+    {
+        this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
+    }
 ...
 ```
 
@@ -214,29 +214,29 @@ program id) is a handle that has to be passed down from the
 morph::Visual (which manages the OpenGL context) to all VisualModels. I've collected all the initialisation into a method called init():
 
 ```c++
-        void init (GLuint sp, const Vector<float, 3> _offset,
-                   const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
-                   const std::array<float, 3> _col)
-        {
-            // Keep a copy of the shader program handle/id - common to all VisualModels
-            this->shaderprog = sp;
-            // Keep a copy of the offset of this Visual model within the scene - common to all VisualModels
-            this->mv_offset = _offset;
-            // Set this offset into the VisualModel's viewmatrix - common to all VisualModels
-            this->viewmatrix.translate (this->mv_offset);
+void init (GLuint sp, const Vector<float, 3> _offset,
+           const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+           const std::array<float, 3> _col)
+{
+    // Keep a copy of the shader program handle/id - common to all VisualModels
+    this->shaderprog = sp;
+    // Keep a copy of the offset of this Visual model within the scene - common to all VisualModels
+    this->mv_offset = _offset;
+    // Set this offset into the VisualModel's viewmatrix - common to all VisualModels
+    this->viewmatrix.translate (this->mv_offset);
 
-            // Copy the three triangle vertex coordinates and the colour. This is TriangleVisual-specific code
-            this->coord1 = _coord1;
-            this->coord2 = _coord2;
-            this->coord3 = _coord3;
-            this->col = _col;
+    // Copy the three triangle vertex coordinates and the colour. This is TriangleVisual-specific code
+    this->coord1 = _coord1;
+    this->coord2 = _coord2;
+    this->coord3 = _coord3;
+    this->col = _col;
 
-            // Initialize the vertices that will represent the object. All VisualModels have initializeVertices().
-            this->initializeVertices();
+    // Initialize the vertices that will represent the object. All VisualModels have initializeVertices().
+    this->initializeVertices();
 
-            // postVertexInit() is VisualModel code that sets up the OpenGL buffers from the vertices that were just initialized.
-            this->postVertexInit();
-        }
+    // postVertexInit() is VisualModel code that sets up the OpenGL buffers from the vertices that were just initialized.
+    this->postVertexInit();
+}
 ```
 
 ```initializeVertices``` is where most of the code that you have to
@@ -271,58 +271,59 @@ vertexPositions and friends.
 In TriangleVisual, initializeVertices looks like this:
 
 ```c++
-    //! Initialize vertex buffer objects and vertex array object.
-    void initializeVertices (void)
-    {
-        // First empty out vertexPositions, etc:
-        this->vertexPositions.clear();
-        this->vertexNormals.clear();
-        this->vertexColors.clear();
-        this->indices.clear();
+//! Initialize vertex buffer objects and vertex array object.
+void initializeVertices (void)
+{
+    // First empty out vertexPositions, etc:
+    this->vertexPositions.clear();
+    this->vertexNormals.clear();
+    this->vertexColors.clear();
+    this->indices.clear();
 
-        // The indices index. Passed by reference to 'drawing' functions like computeTriangle here.
-        VBOint idx = 0;
-        // Draw a triangle. That's it.
-        this->computeTriangle (idx, this->coord1, this->coord2, this->coord3, this->col);
+    // The indices index. Passed by reference to 'drawing' functions like computeTriangle here.
+    VBOint idx = 0;
+    // Draw a triangle. That's it.
+    this->computeTriangle (idx, this->coord1, this->coord2, this->coord3, this->col);
 
-        std::cout << "idx now has value: " << idx << std::endl;
-        std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
-    }
+    std::cout << "idx now has value: " << idx << std::endl;
+    std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
+}
 ```
 
-The 'drawing primitive' here is ```computeTriangle```, which takes as
+The 'drawing primitive' here is ```computeTriangle()```, which takes as
 arguments the 'indices index', the corners of the triangle and its
 colour.
 
 ```c++
-    //! Compute a triangle from 3 arbitrary corners
-    void computeTriangle (VBOint& idx,
-                          Vector<float> c1, Vector<float> c2, Vector<float> c3,
-                          std::array<float, 3> colr)
-    {
-        // is the face normal
-        Vector<float> u1 = c1-c2;
-        Vector<float> u2 = c2-c3;
-        Vector<float> v = u1.cross(u2);
-        v.renormalize();
-        // Push corner vertices
-        this->vertex_push (c1, this->vertexPositions);
-        this->vertex_push (c2, this->vertexPositions);
-        this->vertex_push (c3, this->vertexPositions);
-        // Colours/normals
-        for (size_t i = 0; i < 3; ++i) {
-            this->vertex_push (colr, this->vertexColors);
-            this->vertex_push (v, this->vertexNormals);
-        }
-        this->indices.push_back (idx++);
-        this->indices.push_back (idx++);
-        this->indices.push_back (idx++);
+//! Compute a triangle from 3 arbitrary corners
+void computeTriangle (VBOint& idx,
+                      Vector<float> c1, Vector<float> c2, Vector<float> c3,
+                      std::array<float, 3> colr)
+{
+    // v is the face normal
+    Vector<float> u1 = c1-c2;
+    Vector<float> u2 = c2-c3;
+    Vector<float> v = u1.cross(u2);
+    v.renormalize();
+    // Push corner vertices
+    this->vertex_push (c1, this->vertexPositions);
+    this->vertex_push (c2, this->vertexPositions);
+    this->vertex_push (c3, this->vertexPositions);
+    // Push colours/normals
+    for (size_t i = 0; i < 3; ++i) {
+        this->vertex_push (colr, this->vertexColors);
+        this->vertex_push (v, this->vertexNormals);
     }
+    // Push indices
+    this->indices.push_back (idx++);
+    this->indices.push_back (idx++);
+    this->indices.push_back (idx++);
+}
 ```
 
-Note that in that code, I'm ```using morph::Vector``` and that I can
+Here, ```Vector<float>``` is a ```morph::Vector<float,3>``` and note that I can
 do vector arithmetic with Vectors. The code adds each corner to
-vertexPositions, using the convenience function ```vertex_push```
+vertexPositions, using the convenience function ```VisualModel::vertex_push()```
 (which adds all 3 elements of one coordinate to
 vertexPositions/Colors/Normals in one call). It computes the
 triangle's face normal vector ```v``` and places this in vertexNormals
