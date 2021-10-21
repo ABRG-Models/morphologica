@@ -82,7 +82,9 @@ cd /home/seb/morphologica/examples
 ```
 ...but as you can see, there are quite a few includes and links to keep track of, and so I find it easier to use cmake! (It's always nice to see the single compile command, though).
 
-## The morph::Visual class for Visualising your simulations
+## OpenGL graphics with morph::Visual
+
+### Introduction to morph::Visual
 
 Let's get straight into using the modern OpenGL visualisation
 code. The class that makes all this possible is
@@ -144,7 +146,7 @@ see a lot of morph::Vector<float, 3> objects. These are very much like
     v.addVisualModel (tv);
 ```
 
-Now your ```morph::Visual``` contains one ```VisualModel```, which contains all
+Now your ```morph::Visual``` contains one ```VisualModel```, which has all
 the information required to specify how it should look. To actually
 render it on the screen, you call ```morph::Visual::render()```:
 
@@ -169,7 +171,9 @@ as the window should remain open. When the user presses the 'x' key,
 the attribute ```Visual::readyToFinish``` is set to true and this loop will
 be exited.
 
-The example code above is adapted from
+### A VisualModel example: morph::TriangleVisual
+
+The example code in the introduction is adapted from
 [examples/tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/tri.cpp). The
 program window looks like this:
 
@@ -255,12 +259,82 @@ are coordinates in ```vertexPositions``` because adjacent triangles in
 a model will share vertex positions. By populating these four vectors,
 you define a model which can be rendered in 3D by OpenGL.
 
-Finally, ```postVertexInit`` is called, which does the magic of
+Finally, ```postVertexInit``` is called, which does the magic of
 'binding' the four vectors of indices, vertex positions, normals and
 colours to OpenGL buffers. Now, when VisualModel::render() is called,
 a call to ```glDrawElements``` triggers a render of the data in the
-OpenGL buffers via the shader program.
+OpenGL buffers via the shader program. However, the idea behind
+morph::Visual is that you shouldn't have to know about the OpenGL
+internals. All you should have to learn about is how to populate
+vertexPositions and friends.
 
+In TriangleVisual, initializeVertices looks like this:
+
+```c++
+    //! Initialize vertex buffer objects and vertex array object.
+    void initializeVertices (void)
+    {
+        // First empty out vertexPositions, etc:
+        this->vertexPositions.clear();
+        this->vertexNormals.clear();
+        this->vertexColors.clear();
+        this->indices.clear();
+
+        // The indices index. Passed by reference to 'drawing' functions like computeTriangle here.
+        VBOint idx = 0;
+        // Draw a triangle. That's it.
+        this->computeTriangle (idx, this->coord1, this->coord2, this->coord3, this->col);
+
+        std::cout << "idx now has value: " << idx << std::endl;
+        std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
+    }
+```
+
+The 'drawing primitive' here is ```computeTriangle```, which takes as
+arguments the 'indices index', the corners of the triangle and its
+colour.
+
+```c++
+    //! Compute a triangle from 3 arbitrary corners
+    void computeTriangle (VBOint& idx,
+                          Vector<float> c1, Vector<float> c2, Vector<float> c3,
+                          std::array<float, 3> colr)
+    {
+        // is the face normal
+        Vector<float> u1 = c1-c2;
+        Vector<float> u2 = c2-c3;
+        Vector<float> v = u1.cross(u2);
+        v.renormalize();
+        // Push corner vertices
+        this->vertex_push (c1, this->vertexPositions);
+        this->vertex_push (c2, this->vertexPositions);
+        this->vertex_push (c3, this->vertexPositions);
+        // Colours/normals
+        for (size_t i = 0; i < 3; ++i) {
+            this->vertex_push (colr, this->vertexColors);
+            this->vertex_push (v, this->vertexNormals);
+        }
+        this->indices.push_back (idx++);
+        this->indices.push_back (idx++);
+        this->indices.push_back (idx++);
+    }
+```
+
+Note that in that code, I'm ```using morph::Vector``` and that I can
+do vector arithmetic with Vectors. The code adds each corner to
+vertexPositions, using the convenience function ```vertex_push```
+(which adds all 3 elements of one coordinate to
+vertexPositions/Colors/Normals in one call). It computes the
+triangle's face normal vector ```v``` and places this in vertexNormals
+three times. It also places the single colour for the triangle into
+vertexColors three times. Lastly, it adds three indices to
+```indices```. At the end of the function, the argument ```idx``` will
+have been incremented by 3. This would be important were
+computeTriangle to be called a second time to draw another triangle
+within this VisualModel.
+
+That completes the code to draw a triangle within the
+framework of ```morph::Visual``` and ```morph::VisualModel```.
 
 ## The morph::Config class
 
