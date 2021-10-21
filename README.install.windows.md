@@ -1,3 +1,11 @@
+# Building with Visual Studio
+
+Recently, I tried compiling the morphologica tests and examples on 
+Windows with Visual Studio 2019. There are a *lot* of changes that
+will be necessary to make the morphologica code Windows-compatible. 
+It may happen someday. Checkout the branch ```compile_vs2019``` if 
+you would like to help.
+
 # Installation on Windows
 
 While it is possible to compile and build morphologica on Windows (by
