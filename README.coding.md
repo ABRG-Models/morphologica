@@ -1,27 +1,17 @@
 # Coding with morphologica
 
-These are some instructions to help a new morphologica user out.
+These are some instructions to help a new morphologica user out. As a
+header-only library, morphologica is not difficult to incorporate into
+your own code. This document describes some of the main classes in
+morphologica and also includes sections describing what libraries you
+will need to link to (for example, if you use ```morph::Config``` you
+will need the [Jsoncpp](https://github.com/open-source-parsers/jsoncpp) library).
 
-## Build process
-
-All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
-
-* morph::Config: Link to ```libjsoncpp```
-* morph::HdfData: Link to ```libhdf5```. If you want to save/load OpenCV data structures then you need to link to OpenCV, too (and ```#define BUILD_HDFDATA_WITH_OPENCV``` before ```#include <morph/HdfData.h>```).
-* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype and libjsoncpp.
-* morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
-* morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
-
-Some morphologica classes use no third party code. ```morph::Vector```, for example is very much standalone.
-
-This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program.
-
-I use cmake to coordinate includes and links. cmake examples are given in the [top level readme](https://github.com/ABRG-Models/morphologica/blob/main/README.md) to
-show how to set up the includes, compiler flags and links using that system.
+First off is a Helloworld example.
 
 ## A simple example
 
-Here's a "Helloworld" example.
+Here's a "Helloworld" example that writes some text on a window.
 
 ```c++
 #include <morph/Visual.h>
@@ -80,29 +70,42 @@ cd /home/seb/morphologica/examples
 /usr/lib/x86_64-linux-gnu/libGLX.so \
 /usr/lib/x86_64-linux-gnu/libOpenGL.so -lrt -ldl -lX11
 ```
-...but as you can see, there are quite a few includes and links to keep track of, and so I find it easier to use cmake! (It's always nice to see the single compile command, though).
+...but as you can see, there are quite a few includes and links to
+keep track of, and so I find it easier to use cmake! (It's always nice
+to see the single compile command, though).
 
 ## OpenGL graphics with morph::Visual
 
 ### Introduction to morph::Visual
 
-Let's get straight into using the modern OpenGL visualisation
-code. The class that makes all this possible is
-[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h). The
-idea is that we create a 'game engine for visualisation' called
-morph::Visual and within that environment, we place 'visual model
-objects', each one based on the class
-[morph::VisualModel](https://github.com/ABRG-Models/morphologica/blob/main/morph/VisualModel.h). Each
-morph::Visual is related to one window within your desktop environment
-and the VisualModels are the objects that appear in the
-window. morph::Visual contains the code required to allow us to pan
-and zoom the environment, so that we can look at 3D visualisations
-from any angle. It also provides the facilities to save an image of
-the scene, or save the graphical portions of the scene into a
-[glTF](https://github.com/KhronosGroup/glTF) file. A basic program
-will create a morph::Visual instance, set some of its parameters, add
-some VisualModels and then call its render method each time the screen
-should be updated.
+Let's get straight into using the modern OpenGL visualisation code
+that's probably the reason you're reading this document. The class
+that makes all this possible is
+[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h). morph::Visual
+was designed to be a 'game engine for visualisation' that would
+provide an environment into which you can place 'VisualModel
+objects'. Each morph::Visual is related to one window within your
+desktop environment and the VisualModels are the objects that appear
+in the window (each object has to derive from
+[morph::VisualModel](https://github.com/ABRG-Models/morphologica/blob/main/morph/VisualModel.h).
+
+morph::Visual contains all the difficult-to-write OpenGL code. It
+allows the user to pan and zoom the environment to view 3D
+visualisations from any angle. It bundles fonts and text-handling code
+to allow you to render anti-aliased text in your models. It provides
+shaders that give you lighting and alpha-blend effects. It also
+provides the facilities to save an image of the scene, or save the
+graphical portions of the scene into a
+[glTF](https://github.com/KhronosGroup/glTF) file (so that you could
+open them in Blender). If you want to make a custom visualisation for
+a simulation, the only job you have to do is to describe what shapes
+will make up the graphical model. And because it's *modern* OpenGL,
+the graphics rendering is really fast, so you can visualise your
+simulations in realtime.
+
+A basic program will create a ```morph::Visual``` instance, set some
+of its parameters, add some VisualModels and then call the
+```Visual::render()``` method each time the screen should be updated.
 
 Here's an example of the code used to create a Visual instance.
 
@@ -116,8 +119,8 @@ v.lightingEffects(true);
 ```
 
 Now that the Visual instance exists, you can add VisualModels. You'll
-see a lot of morph::Vector<float, 3> objects. These are very much like
-(and in fact are derived from) std::array<> from the standard library.
+see a lot of ```morph::Vector<float, 3>``` objects. These are very much like
+(and in fact are derived from) ```std::array<>``` from the standard library.
 
 ```c++
 // Each VisualModel is given an 'offset within the Visual
@@ -180,12 +183,12 @@ program window looks like this:
 ### A VisualModel example: morph::TriangleVisual
 
 There are a number of ready-made VisualModel-derived classes that you
-can use to create your visualisations. It expected that you will use
+can use to create your visualisations. It is expected that you will use
 existing VisualModels like
 [GraphVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/GraphVisual.h)
 and also create your own specialised classes that derive from
 VisualModel
-(e.g. [netvisual](https://github.com/ABRG-Models/morphologica/blob/main/examples/SimpsonGoodhill/netvisual.h)).
+(see for example, [netvisual](https://github.com/ABRG-Models/morphologica/blob/main/examples/SimpsonGoodhill/netvisual.h)).
 
 Let's look at a simple one first; the
 [morph::TriangleVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/TriangleVisual.h) class that we just encountered:
@@ -206,12 +209,17 @@ public:
 ...
 ```
 
-As you can see, TriangleVisual derives simply from VisualModel. It has
+```TriangleVisual``` derives from ```VisualModel``` and has
 two constructors. The second constructor takes an argument ```GLuint
 sp``` which is the 'shader program' id. You'll see this in all
 VisualModels; this shader program (and a corresponding text shader
 program id) is a handle that has to be passed down from the
-morph::Visual (which manages the OpenGL context) to all VisualModels. I've collected all the initialisation into a method called init():
+morph::Visual (which manages the OpenGL context) to all VisualModels.
+
+I've collected all the initialisation into a method called
+```init()```. Although this isn't strictly necessary, it follows a
+convention in other VisualModel-based classes in which I attempt to
+minimise the number of arguments passed to the constructor.
 
 ```c++
 void init (GLuint sp, const Vector<float, 3> _offset,
@@ -239,34 +247,36 @@ void init (GLuint sp, const Vector<float, 3> _offset,
 }
 ```
 
-```initializeVertices``` is where most of the code that you have to
-create will be found. Its task is to populate four vectors of values:
-```vertexPositions```, ```vertexNormals```, ```vertexColors``` and
-```indices```. These have meanings that will be familiar to you if you
-have already done some OpenGL programming. In general, everything in
-an OpenGL scene is built from triangles. vertexPositions holds the
-vertices of all the triangles that form the model. In the case of this
-TriangleVisual, there will be exactly 3 coordinates in
-vertexPositions; each coordinate has 3 dimensions, and so
-vertexPositions (which is a vector of floats) will contain 9
-floats. ```vertexNormals``` holds the normal vectors for each vertex
-in the model (these determine how light is scattered, for one thing)
-and ```vertexColors``` is a colour value for each vertex. In this
-class, all the 3 vertices have the same colour. ```indices``` gives
-the sequence in which the vertices should be turned into triangles. In
-general, there will likely be more entries in ```indices``` than there
-are coordinates in ```vertexPositions``` because adjacent triangles in
-a model will share vertex positions. By populating these four vectors,
-you define a model which can be rendered in 3D by OpenGL.
+To make your own VisualModel-based classes, you'll write most of your
+code for the ```initializeVertices``` method. Its task is to populate
+four vectors: ```vertexPositions```, ```vertexNormals```,
+```vertexColors``` and ```indices```. In OpenGL, graphical models are
+built up by specifying a mesh of triangles. ```vertexPositions```
+holds the vertices of all the triangles that form the model. In the
+case of this TriangleVisual, there will be exactly 3 coordinates in
+```vertexPositions```; each coordinate has 3 dimensions, and so
+```vertexPositions``` (which is of type ```std::vector<float>```) will
+contain 9 floats. ```vertexNormals``` holds the normal vectors for
+each vertex in the model (these determine how light is scattered, for
+one thing) and ```vertexColors``` contains an RGB colour value for
+each vertex. In this class, all the 3 vertices have the same
+colour. ```indices``` gives the sequence in which the vertices should
+be turned into triangles. In general, there will likely be more
+entries in ```indices``` than there are coordinates in
+```vertexPositions``` because adjacent triangles in a model will share
+vertex positions. However, in this simple VisualModel, there is only a
+single triangle and so there are exactly three entries in
+```indices```. By populating these four vectors, you define a model
+which can be rendered in 3D by OpenGL.
 
-Finally, ```postVertexInit``` is called, which does the magic of
+At the end of ```init()```, ```postVertexInit``` is called. This does the magic of
 'binding' the four vectors of indices, vertex positions, normals and
-colours to OpenGL buffers. Now, when VisualModel::render() is called,
+colours to OpenGL buffers. Now, when ```VisualModel::render()``` is called,
 a call to ```glDrawElements``` triggers a render of the data in the
 OpenGL buffers via the shader program. However, the idea behind
 morph::Visual is that you shouldn't have to know about the OpenGL
 internals. All you should have to learn about is how to populate
-vertexPositions and friends.
+```vertexPositions``` and friends.
 
 In TriangleVisual, initializeVertices looks like this:
 
@@ -323,19 +333,73 @@ void computeTriangle (VBOint& idx,
 
 Here, ```Vector<float>``` is a ```morph::Vector<float,3>``` and note that I can
 do vector arithmetic with Vectors. The code adds each corner to
-vertexPositions, using the convenience function ```VisualModel::vertex_push()```
+```vertexPositions```, using the convenience function ```VisualModel::vertex_push()```
 (which adds all 3 elements of one coordinate to
 vertexPositions/Colors/Normals in one call). It computes the
-triangle's face normal vector ```v``` and places this in vertexNormals
+normal vector of the triangle's face, ```v```, and places this in vertexNormals
 three times. It also places the single colour for the triangle into
-vertexColors three times. Lastly, it adds three indices to
+```vertexColors``` three times. Lastly, it adds three indices to
 ```indices```. At the end of the function, the argument ```idx``` will
 have been incremented by 3. This would be important were
-computeTriangle to be called a second time to draw another triangle
+```computeTriangle()``` to be called a second time to draw another triangle
 within this VisualModel.
 
 That completes the code to draw a triangle within the
 framework of ```morph::Visual``` and ```morph::VisualModel```.
+
+### Drawing primitives
+
+To create a VisualModel, you have to decide what triangle mesh will
+represent the model and then painstakingly work out the location of
+each vertex. This is quite an involved job. However, if you want to
+build a VisualModel containing simple objects such as spheres, discs,
+tubes, cones and lines, then most of the hard work might have already
+been done. VisualModel provides a number of 'drawing primitive'
+functions that can be used in the ```initializeVertices``` function of
+your newly derived class. The ```netvisual``` class from the
+'SimpsonGoodhill' example does this:
+
+```c++
+template <typename Flt>
+class NetVisual : public morph::VisualModel
+{
+public:
+    void initializeVertices()
+    {
+        VBOint idx = 0;
+        // Spheres at the net vertices
+        for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
+            // This is VisualModel::computeSphere()
+            this->computeSphere (idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
+        }
+        // Connections
+        for (auto c : this->locations->c) {
+            morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
+            morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+            std::array<float, 3> clr1 = this->locations->clr[c[0]];
+            std::array<float, 3> clr2 = this->locations->clr[c[1]];
+            // This is VisualModel::computeLine()
+            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/Flt{4});
+        }
+    }
+...
+```
+
+This is a visualisation of a fishnet plot, which consists of a number
+of spheres, joined up by lines to make a mesh. The two drawing
+primitive functions ```computeSphere()``` and ```computeLine()``` are
+found in ```morph::VisualModel```. Other drawing primitives include
+```computeTube()```, ```computeFlatPoly()```, ```computeRing()``` and
+```computeCone()```.
+
+### Text
+
+To describe how to add text to your VisualModel.
+
+### Graphs
+
+How to draw 2D graphs with the ```morph::GraphVisual``` class and 3D
+graphs with the aid of ```morph::TriaxesVisual```.
 
 ## The morph::Config class
 
@@ -582,6 +646,23 @@ There's *even more* that you can do with a morph::Vector, take a look in the [he
 ## BezCurve, BezCurvePath and BezCoord
 
 Classes to create Bezier curves.
+
+## Linking a morphologica program
+
+All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
+
+* morph::Config: Link to ```libjsoncpp```
+* morph::HdfData: Link to ```libhdf5```. If you want to save/load OpenCV data structures then you need to link to OpenCV, too (and ```#define BUILD_HDFDATA_WITH_OPENCV``` before ```#include <morph/HdfData.h>```).
+* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype and libjsoncpp.
+* morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
+* morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
+
+Some morphologica classes use no third party code. ```morph::Vector```, for example is very much standalone.
+
+This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program.
+
+I use cmake to coordinate includes and links. cmake examples are given in the [top level readme](https://github.com/ABRG-Models/morphologica/blob/main/README.md) to
+show how to set up the includes, compiler flags and links using that system.
 
 ## CMakeLists.txt for your project
 

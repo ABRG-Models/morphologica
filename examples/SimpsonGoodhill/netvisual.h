@@ -35,7 +35,7 @@ public:
         this->viewmatrix.translate (this->mv_offset);
     }
 
-    void initializeVertices (void)
+    void initializeVertices()
     {
         VBOint idx = 0;
         // Spheres at the net vertices

@@ -40,7 +40,7 @@ public:
 
     morph::Scale<Flt, Flt> EphA_scale;
 
-    void initializeVertices (void)
+    void initializeVertices()
     {
         VBOint idx = 0;
         // For each branch, draw lines for the path history and a sphere for teh current

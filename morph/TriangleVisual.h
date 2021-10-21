@@ -11,7 +11,7 @@ namespace morph {
     class TriangleVisual : public VisualModel
     {
     public:
-        TriangleVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
+        TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, three coordinates and a single colour.
         TriangleVisual(GLuint sp, const Vector<float, 3> _offset,
@@ -47,7 +47,7 @@ namespace morph {
                               Vector<float> c1, Vector<float> c2, Vector<float> c3,
                               std::array<float, 3> colr)
         {
-            // is the face normal
+            // v is the face normal
             Vector<float> u1 = c1-c2;
             Vector<float> u2 = c2-c3;
             Vector<float> v = u1.cross(u2);
