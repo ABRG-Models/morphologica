@@ -175,10 +175,92 @@ program window looks like this:
 
 ![A triangle rendered in a window by tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/tri.png?raw=true)
 
-There
-are a number of VisualModel-derived classes that you can use to create
-visualisations. Let's look at a simple one;
-[morph::TriangleVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/TriangleVisual.h).
+There are a number of ready-made VisualModel-derived classes that you
+can use to create your visualisations. It expected that you will use
+existing VisualModels like
+[GraphVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/GraphVisual.h)
+and also create your own specialised classes that derive from
+VisualModel
+(e.g. [netvisual](https://github.com/ABRG-Models/morphologica/blob/main/examples/SimpsonGoodhill/netvisual.h)).
+
+Let's look at a simple one first; the
+[morph::TriangleVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/TriangleVisual.h) class that we just encountered:
+
+```c++
+    class TriangleVisual : public VisualModel
+    {
+    public:
+        TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
+
+        //! Initialise with offset, three coordinates and a single colour.
+        TriangleVisual(GLuint sp, const Vector<float, 3> _offset,
+                       const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+                       const std::array<float, 3> _col)
+        {
+            this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
+        }
+...
+```
+
+As you can see, TriangleVisual derives simply from VisualModel. It has
+two constructors. The second constructor takes an argument ```GLuint
+sp``` which is the 'shader program' id. You'll see this in all
+VisualModels; this shader program (and a corresponding text shader
+program id) is a handle that has to be passed down from the
+morph::Visual (which manages the OpenGL context) to all VisualModels. I've collected all the initialisation into a method called init():
+
+```c++
+        void init (GLuint sp, const Vector<float, 3> _offset,
+                   const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+                   const std::array<float, 3> _col)
+        {
+            // Keep a copy of the shader program handle/id - common to all VisualModels
+            this->shaderprog = sp;
+            // Keep a copy of the offset of this Visual model within the scene - common to all VisualModels
+            this->mv_offset = _offset;
+            // Set this offset into the VisualModel's viewmatrix - common to all VisualModels
+            this->viewmatrix.translate (this->mv_offset);
+
+            // Copy the three triangle vertex coordinates and the colour. This is TriangleVisual-specific code
+            this->coord1 = _coord1;
+            this->coord2 = _coord2;
+            this->coord3 = _coord3;
+            this->col = _col;
+
+            // Initialize the vertices that will represent the object. All VisualModels have initializeVertices().
+            this->initializeVertices();
+
+            // postVertexInit() is VisualModel code that sets up the OpenGL buffers from the vertices that were just initialized.
+            this->postVertexInit();
+        }
+```
+
+```initializeVertices``` is where most of the code that you have to
+create will be found. Its task is to populate four vectors of values:
+```vertexPositions```, ```vertexNormals```, ```vertexColors``` and
+```indices```. These have meanings that will be familiar to you if you
+have already done some OpenGL programming. In general, everything in
+an OpenGL scene is built from triangles. vertexPositions holds the
+vertices of all the triangles that form the model. In the case of this
+TriangleVisual, there will be exactly 3 coordinates in
+vertexPositions; each coordinate has 3 dimensions, and so
+vertexPositions (which is a vector of floats) will contain 9
+floats. ```vertexNormals``` holds the normal vectors for each vertex
+in the model (these determine how light is scattered, for one thing)
+and ```vertexColors``` is a colour value for each vertex. In this
+class, all the 3 vertices have the same colour. ```indices``` gives
+the sequence in which the vertices should be turned into triangles. In
+general, there will likely be more entries in ```indices``` than there
+are coordinates in ```vertexPositions``` because adjacent triangles in
+a model will share vertex positions. By populating these four vectors,
+you define a model which can be rendered in 3D by OpenGL.
+
+Finally, ```postVertexInit`` is called, which does the magic of
+'binding' the four vectors of indices, vertex positions, normals and
+colours to OpenGL buffers. Now, when VisualModel::render() is called,
+a call to ```glDrawElements``` triggers a render of the data in the
+OpenGL buffers via the shader program.
+
 
 ## The morph::Config class
 
