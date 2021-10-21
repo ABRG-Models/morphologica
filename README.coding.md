@@ -401,6 +401,11 @@ To describe how to add text to your VisualModel.
 How to draw 2D graphs with the ```morph::GraphVisual``` class and 3D
 graphs with the aid of ```morph::TriaxesVisual```.
 
+### Dynamic graphs and VisualModels
+
+How to go about updating a model to reflect new data computed by your
+simulation.
+
 ## The morph::Config class
 
 [morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
