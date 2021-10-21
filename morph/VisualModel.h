@@ -67,6 +67,9 @@ namespace morph {
      */
     class VisualModel
     {
+        //! Debug rendering process with cout messages
+        static constexpr bool debug_render = false;
+
     public:
         VisualModel() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
@@ -88,6 +91,14 @@ namespace morph {
             // glBindVertexArray(0);
         }
 
+        VisualModel (GLuint sp, GLuint tsp, const Vector<float> _mv_offset)
+        {
+            this->shaderprog = sp;
+            this->tshaderprog = tsp;
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.translate (this->mv_offset);
+        }
+
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModel()
         {
@@ -105,11 +116,7 @@ namespace morph {
             // Do gl memory allocation of vertex array once only
             if (this->vbos == (GLuint*)0) {
                 // Create vertex array object
-#ifdef __MACS_HAD_OPENGL_450__
-                glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
-#else
                 glGenVertexArrays (1, &this->vao); // Safe for OpenGL 4.4-
-#endif
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
@@ -119,11 +126,7 @@ namespace morph {
             // Create the vertex buffer objects (once only)
             if (this->vbos == (GLuint*)0) {
                 this->vbos = new GLuint[numVBO];
-#ifdef __MACS_HAD_OPENGL_450__
-                glCreateBuffers (numVBO, this->vbos); // OpenGL 4.5 only
-#else
                 glGenBuffers (numVBO, this->vbos); // OpenGL 4.4- safe
-#endif
             }
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
@@ -150,8 +153,8 @@ namespace morph {
 #endif
         }
 
-        //! Initialize vertex buffer objects and vertex array object.
-        virtual void initializeVertices() = 0;
+        //! Initialize vertex buffer objects and vertex array object. Empty for 'text only' VisualModels.
+        virtual void initializeVertices() {};
 
         //! Re-initialize the buffers. Client code might have appended to
         //! vertexPositions/Colors/Normals and indices before calling this method.
@@ -220,12 +223,16 @@ namespace morph {
 
             GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-#ifdef __DEBUG__
-            std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
-            std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
-#endif
+
+            if constexpr (debug_render) {
+                std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
+                std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
+            }
+
             // Draw the triangles
-            glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+            if (!this->indices.empty()) {
+                glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+            }
 
             // Unbind the VAO
             glBindVertexArray(0);
