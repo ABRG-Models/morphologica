@@ -210,32 +210,32 @@ namespace morph {
             // Ensure the correct program is in play for this VisualModel
             glUseProgram (this->shaderprog);
 
-            // It is only necessary to bind the vertex array object before rendering
-            // (not the vertex buffer objects)
-            glBindVertexArray (this->vao);
-
-            // Pass this->float to GLSL so the model can have an alpha value.
-            GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
-            if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-
-            GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
-            if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
-
-            GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
-            if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-
-            if constexpr (debug_render) {
-                std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
-                std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
-            }
-
-            // Draw the triangles
             if (!this->indices.empty()) {
-                glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
-            }
+                // It is only necessary to bind the vertex array object before rendering
+                // (not the vertex buffer objects)
+                glBindVertexArray (this->vao);
 
-            // Unbind the VAO
-            glBindVertexArray(0);
+                // Pass this->float to GLSL so the model can have an alpha value.
+                GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
+                if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
+
+                GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
+                if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
+
+                GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
+                if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
+
+                if constexpr (debug_render) {
+                    std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
+                    std::cout << "VisualModel::render: model viewmatrix:\n" << viewmatrix << std::endl;
+                }
+
+                // Draw the triangles
+                glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+
+                // Unbind the VAO
+                glBindVertexArray(0);
+            }
 
             // Now render any VisualTextModels
             for (auto t : this->texts) { t->render(); }
