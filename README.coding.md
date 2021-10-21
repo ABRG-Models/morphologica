@@ -171,13 +171,13 @@ as the window should remain open. When the user presses the 'x' key,
 the attribute ```Visual::readyToFinish``` is set to true and this loop will
 be exited.
 
-### A VisualModel example: morph::TriangleVisual
-
 The example code in the introduction is adapted from
 [examples/tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/tri.cpp). The
 program window looks like this:
 
 ![A triangle rendered in a window by tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/tri.png?raw=true)
+
+### A VisualModel example: morph::TriangleVisual
 
 There are a number of ready-made VisualModel-derived classes that you
 can use to create your visualisations. It expected that you will use
