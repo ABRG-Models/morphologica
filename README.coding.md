@@ -82,6 +82,104 @@ cd /home/seb/morphologica/examples
 ```
 ...but as you can see, there are quite a few includes and links to keep track of, and so I find it easier to use cmake! (It's always nice to see the single compile command, though).
 
+## The morph::Visual class for Visualising your simulations
+
+Let's get straight into using the modern OpenGL visualisation
+code. The class that makes all this possible is
+[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h). The
+idea is that we create a 'game engine for visualisation' called
+morph::Visual and within that environment, we place 'visual model
+objects', each one based on the class
+[morph::VisualModel](https://github.com/ABRG-Models/morphologica/blob/main/morph/VisualModel.h). Each
+morph::Visual is related to one window within your desktop environment
+and the VisualModels are the objects that appear in the
+window. morph::Visual contains the code required to allow us to pan
+and zoom the environment, so that we can look at 3D visualisations
+from any angle. It also provides the facilities to save an image of
+the scene, or save the graphical portions of the scene into a
+[glTF](https://github.com/KhronosGroup/glTF) file. A basic program
+will create a morph::Visual instance, set some of its parameters, add
+some VisualModels and then call its render method each time the screen
+should be updated.
+
+Here's an example of the code used to create a Visual instance.
+
+```c++
+    // Create a 1024 pixel by 768 pixel morph::Visual window titled "Example"
+    morph::Visual v(1024, 768, "Example");
+    // Choose a black background
+    v.backgroundBlack();
+    // Switch on a mix of diffuse/ambient lighting
+    v.lightingEffects(true);
+```
+
+Now that the Visual instance exists, you can add VisualModels. You'll
+see a lot of morph::Vector<float, 3> objects. These are very much like
+(and in fact are derived from) std::array<> from the standard library.
+
+```c++
+    // Each VisualModel is given an 'offset within the Visual
+    // environment'. Use this offset to control the relative locations of
+    // all your VisualModel objects.
+    morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+
+    // Here, I'm using a very simple morph::TriangleVisual to draw a
+    // triangle on the screen. I have to specify three corners. These
+    // coordinates are in 'VisualModel space'
+    morph::Vector<float, 3> c1 = { 0, 0, 0 };
+    morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
+    morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
+
+    // The last piece of infomration that the TriangleVisual will
+    // require is a colour. This is an RGB triplet, so this triangle will
+    // be red.
+    morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
+
+    // Now create the TriangleVisual. You allocate memory for the
+    // model here; morph::Visual will be responsible for deallocating the
+    // memory, as long as you add the VisualModel-derived object to the Visual...
+    morph::TriangleVisual* tv = new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1)
+
+    // ...like this:
+    v.addVisualModel (tv);
+```
+
+Now your ```morph::Visual``` contains one ```VisualModel```, which contains all
+the information required to specify how it should look. To actually
+render it on the screen, you call ```morph::Visual::render()```:
+
+```c++
+    v.render();
+```
+
+This draws the scene once. In order to have a responsive scene that
+you can drag and move with the mouse, you have to process window
+events and update the scene with ```v.render()``` at a suitable frequency. That happens like this:
+
+```c++
+    while (v.readyToFinish == false) {
+        glfwWaitEventsTimeout (0.018);
+        v.render();
+    }
+```
+
+```glfwWaitEventsTimeout (0.018);``` waits for mouse and keyboard events for
+0.018 seconds, then ```v.render()``` is called. This continues for as long
+as the window should remain open. When the user presses the 'x' key,
+the attribute ```Visual::readyToFinish``` is set to true and this loop will
+be exited.
+
+The example code above is adapted from
+[examples/tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/tri.cpp). The
+program window looks like this:
+
+![A triangle rendered in a window by tri.cpp](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/tri.png?raw=true)
+
+There
+are a number of VisualModel-derived classes that you can use to create
+visualisations. Let's look at a simple one;
+[morph::TriangleVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/TriangleVisual.h).
+
 ## The morph::Config class
 
 [morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
@@ -257,10 +355,6 @@ std::string str("");
 
 For more example code, you can look at examples/hdfdata.cpp and
 tests/testhdfdata1.cpp (and testhdfdata2.cpp and testhdfdata3.cpp)
-
-## The morph::Visual class for Visualising your simulations
-
-Modern OpenGL visualisation code.
 
 ## morph::HexGrid
 
