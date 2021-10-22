@@ -47,23 +47,25 @@ asm("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/
 asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 
 #elif defined __WIN__
-// This needs figuring out...
-__asm {
-  .pushsection vera_ttf, "a", @progbits
-  .incbin MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf"
-  .popsection
-}
-#if 0
-__asm ("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
-__asm ("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
-__asm ("\n.pushsection verabi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
-__asm ("\n.pushsection veramono_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
-__asm ("\n.pushsection veramoit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
-__asm ("\n.pushsection veramobd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
-__asm ("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
-__asm ("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
-__asm ("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
-#endif
+
+// Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
+#define INCBIN_PREFIX vf_
+#include <incbin.h>
+INCBIN(vera, MORPH_FONTS_DIR"/ttf-bitstream-vera/Vera.ttf");
+INCBIN(verait, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraIt.ttf");
+INCBIN(verabd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraBd.ttf");
+INCBIN(verabi, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraBI.ttf");
+INCBIN(veramono, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMono.ttf");
+INCBIN(veramoit, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoIt.ttf");
+INCBIN(veramobd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoBd.ttf");
+INCBIN(veramobi, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoBI.ttf");
+INCBIN(verase, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraSe.ttf");
+INCBIN(verasebd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraSeBd.ttf");
+// These translation units now habe three symbols, eg:
+// const unsigned char vf_veraData[];
+// const unsigned char *const vf_veraEnd;
+// const unsigned int vf_veraSize;
+
 #elif defined __OSX__
 
 // On Mac, we need a different incantation to use .incbin
@@ -83,6 +85,7 @@ asm("\t.global ___start_verasebd_ttf\n\t.global ___stop_verasebd_ttf\n___start_v
 #endif
 
 // These external pointers are set up by the inline assembly above
+#ifndef __WIN__
 extern const char __start_verabd_ttf[];
 extern const char __stop_verabd_ttf[];
 extern const char __start_verabi_ttf[];
@@ -103,6 +106,7 @@ extern const char __start_verase_ttf[];
 extern const char __stop_verase_ttf[];
 extern const char __start_vera_ttf[];
 extern const char __stop_vera_ttf[];
+#endif
 
 namespace morph {
 
@@ -138,10 +142,78 @@ namespace morph {
              * copies of font textures for separate VisualTextModel instances which have
              * the same pixel size specified for them.
              */
-            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
+	  VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 std::string fontpath = "";
-
+#ifdef __WIN__
+                switch (_font) {
+                case VisualFont::Vera:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\Vera.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veraData, vf_veraEnd);
+                    break;
+                }
+                case VisualFont::VeraItalic:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraIt.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veraitData, vf_veraitEnd);
+                    break;
+                }
+                case VisualFont::VeraBold:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraBd.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_verabdData, vf_verabdEnd);
+                    break;
+                }
+                case VisualFont::VeraBoldItalic:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraBI.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_verabiData, vf_verabiEnd);
+                    break;
+                }
+                case VisualFont::VeraMono:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMono.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veramonoData, vf_veramonoEnd);
+                    break;
+                }
+                case VisualFont::VeraMonoBold:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoBd.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veramobdData, vf_veramobdEnd);
+                    break;
+                }
+                case VisualFont::VeraMonoItalic:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoIt.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veramoitData, vf_veramoitEnd);
+                    break;
+                }
+                case VisualFont::VeraMonoBoldItalic:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoBI.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veramobiData, vf_veramobiEnd);
+                    break;
+                }
+                case VisualFont::VeraSerif:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraSe.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_veraseData, vf_veraseEnd);
+                    break;
+                }
+                case VisualFont::VeraSerifBold:
+                {
+                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraSeBd.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_verasebdData, vf_verasebdEnd);
+                    break;
+                }
+                default:
+                {
+                    std::cout << "ERROR::Unsupported morph font\n";
+                    break;
+                }
+                }
+#else	 // Non-windows:
                 switch (_font) {
                 case VisualFont::Vera:
                 {
@@ -209,6 +281,7 @@ namespace morph {
                     break;
                 }
                 }
+#endif // Windows/Non-windows
 
                 // Keep the face as a morph::Visual owned resource, shared by VisTextModels?
                 if (FT_New_Face (ft_freetype, fontpath.c_str(), 0, &this->face)) {
@@ -275,9 +348,10 @@ namespace morph {
 
             //! Create a temporary font file at fontpath, using the embedded data
             //! starting from filestart and extending to filenend
-            void makeTempFontFile (const std::string& fontpath, const char* file_start, const char* file_stop)
+	  template <typename T = const char>
+	  void makeTempFontFile (const std::string& fontpath, T* file_start, T* file_stop)
             {
-                const char* p;
+                T* p;
                 if (!morph::Tools::fileExists (fontpath)) {
                     std::ofstream fout;
                     fout.open (fontpath.c_str(), std::ios::out | std::ios::trunc);

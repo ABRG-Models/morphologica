@@ -859,7 +859,7 @@ namespace morph {
             + (25.0/16384.0) * h * h * h * h
             + (49.0/65536.0) * h * h * h * h * h
             + (441.0/1048576.0) * h * h * h * h * h * h;
-            double p = M_PI * apb * sum;
+            double p = morph::mathconst<double>::pi * apb * sum;
 
             return (float)p;
         }
