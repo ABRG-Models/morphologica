@@ -975,7 +975,7 @@ namespace morph {
         void computeFlatPoly (VBOint& idx, Vector<float> vstart,
                               Vector<float> ux, Vector<float> uy,
                               std::array<float, 3> col,
-                              float r = 1.0f, int segments = 12, float rotation = 0.0f)
+                              float r=1.0f, int segments=12, float rotation=0.0f)
         {
             // v is a face normal
             Vector<float> v = uy.cross(ux);
@@ -1033,14 +1033,14 @@ namespace morph {
                           float t = 0.1f, int segments = 12)
         {
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * M_PI * (float) (j) / segments;
+                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
                 // x and y of inner point
                 float xin = (r-(t*0.5f)) * cos(segment);
                 float yin = (r-(t*0.5f)) * sin(segment);
                 float xout = (r+(t*0.5f)) * cos(segment);
                 float yout = (r+(t*0.5f)) * sin(segment);
                 int segjnext = (j+1) % segments;
-                float segnext = 2 * M_PI * (float) (segjnext) / segments;
+                float segnext = 2 * morph::mathconst<float>::pi * (float) (segjnext) / segments;
                 float xin_n = (r-(t*0.5f)) * cos(segnext);
                 float yin_n = (r-(t*0.5f)) * sin(segnext);
                 float xout_n = (r+(t*0.5f)) * cos(segnext);
@@ -1070,11 +1070,11 @@ namespace morph {
         {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
-            float rings0 = M_PI * -0.5;
+            float rings0 = morph::mathconst<float>::pi * -0.5;
             float _z0  = sin(rings0);
             float z0  = r * _z0;
             float r0 =  cos(rings0);
-            float rings1 = M_PI * (-0.5 + 1.0f / rings);
+            float rings1 = morph::mathconst<float>::pi * (-0.5 + 1.0f / rings);
             float _z1 = sin(rings1);
             float z1 = r * _z1;
             float r1 = cos(rings1);
@@ -1089,7 +1089,7 @@ namespace morph {
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * M_PI * (float) (j) / segments;
+                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
                 float x = cos(segment);
                 float y = sin(segment);
 
@@ -1118,7 +1118,7 @@ namespace morph {
             // Now add the triangles around the rings
             for (int i = 2; i < rings; i++) {
 
-                rings0 = M_PI * (-0.5 + (float) (i) / rings);
+                rings0 = morph::mathconst<float>::pi * (-0.5 + (float) (i) / rings);
                 _z0  = sin(rings0);
                 z0  = r * _z0;
                 r0 =  cos(rings0);
@@ -1126,7 +1126,7 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
-                    float segment = 2 * M_PI * (float)j / segments;
+                    float segment = 2 * morph::mathconst<float>::pi * (float)j / segments;
                     float x = cos(segment);
                     float y = sin(segment);
 
@@ -1164,7 +1164,7 @@ namespace morph {
             }
 
             // bottom cap
-            rings0 = M_PI * 0.5;
+            rings0 = morph::mathconst<float>::pi * 0.5;
             _z0  = sin(rings0);
             z0  = r * _z0;
             r0 =  cos(rings0);
@@ -1208,11 +1208,11 @@ namespace morph {
         {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
-            float rings0 = M_PI * -0.5;
+            float rings0 = morph::mathconst<float>::pi * -0.5;
             float _z0  = sin(rings0);
             float z0  = r * _z0;
             float r0 =  cos(rings0);
-            float rings1 = M_PI * (-0.5 + 1.0f / rings);
+            float rings1 = morph::mathconst<float>::pi * (-0.5 + 1.0f / rings);
             float _z1 = sin(rings1);
             float z1 = r * _z1;
             float r1 = cos(rings1);
@@ -1227,7 +1227,7 @@ namespace morph {
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * M_PI * (float) (j) / segments;
+                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
                 float x = cos(segment);
                 float y = sin(segment);
 
@@ -1256,7 +1256,7 @@ namespace morph {
             // Now add the triangles around the rings
             for (int i = 2; i < rings; i++) {
 
-                rings0 = M_PI * (-0.5 + (float) (i) / rings);
+                rings0 = morph::mathconst<float>::pi * (-0.5 + (float) (i) / rings);
                 _z0  = sin(rings0);
                 z0  = r * _z0;
                 r0 =  cos(rings0);
@@ -1264,7 +1264,7 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
-                    float segment = 2 * M_PI * (float)j / segments;
+                    float segment = 2 * morph::mathconst<float>::pi * (float)j / segments;
                     float x = cos(segment);
                     float y = sin(segment);
 
@@ -1305,7 +1305,7 @@ namespace morph {
             }
 
             // bottom cap
-            rings0 = M_PI * 0.5;
+            rings0 = morph::mathconst<float>::pi * 0.5;
             _z0  = sin(rings0);
             z0  = r * _z0;
             r0 =  cos(rings0);
