@@ -15,6 +15,7 @@
 #include <string>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <json/json.h>
@@ -891,10 +892,38 @@ namespace morph
             return theVec;
         }
 
-#ifndef __WIN__
         /*
          * File and directory access methods
          */
+
+#ifdef __WIN__
+        /*!
+         * Stat a file Windows style, return true if the file exists
+         * and is any kind of file except a directory.
+         */
+        static bool fileExists (const std::string& path)
+        {
+            struct _stat* buf = NULL;
+
+            buf = static_cast<struct _stat*> (malloc (sizeof (struct _stat)));
+            if (buf == NULL) { return false; }
+            memset (buf, 0, sizeof (struct _stat));
+
+            if (_stat (path.c_str(), buf)) {
+                free (buf);
+                return false;
+            }
+
+            if ((buf->st_mode & _S_IFREG) || (buf->st_mode & _S_IFCHR)) {
+                free (buf);
+                return true;
+            }
+
+            free (buf);
+            return false;
+        }
+
+#else // NOT Windows :)
 
         /*!
          * Stat a file, return true if the file exists and is any kind of file except a
