@@ -49,8 +49,8 @@ else()
       set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
     endif()
   else() # Windows
-    # Set flags for Windows.
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION}")
+    # Set flags for Windows. /EHsc required for use of exceptions
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc")
   endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
