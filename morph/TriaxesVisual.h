@@ -249,7 +249,7 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;
                 this->ztick_width = geom.width() > this->ztick_width ? geom.width() : this->ztick_width;
-                morph::Vector<float> lblpos = {y_for_zticks-this->ticklabelgap-geom.width(), 0, (float)this->ztick_posns[i]-geom.half_height()};
+                morph::Vector<float> lblpos = {y_for_zticks-this->ticklabelgap-geom.width(), 0, (float)this->ztick_posns[i]};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
