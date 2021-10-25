@@ -68,7 +68,7 @@ allowing you to specific various boundary shapes for your domain)
 
 * **morph::Scale** A class for simple scaling/transformation of numbers.
 
-* **morph::NM_Simplex** An optimization algorithm.
+* **morph::NM_Simplex** and **morph::Anneal** Optimization algorithms.
 
 * **morph::RandUniform** and friends. Nice wrapper classes around
     C++'s high quality random number generation code.
@@ -80,7 +80,7 @@ morphologica is a way of storing our 'group knowledge' for posterity.
 
 Some existing projects which use morphologica are:
 * **BarrelEmerge** A reaction-diffusion style model: https://github.com/ABRG-Models/BarrelEmerge
-* **RetinoTectal** Also reaction-diffusion: https://github.com/sebjameswml/RetinoTectal
+* **RetinoTectal** Reaction-diffusion and agent-based modelling: https://github.com/sebjameswml/RetinoTectal
 * **ArtificialGeneNets** Neural networks: https://github.com/stuartwilson/ArtificialGeneNets
 
 ## Code documentation
