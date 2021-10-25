@@ -118,6 +118,7 @@ find_package(OpenCV) # No longer required for morph::Visual, used by some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
+  include_directories(${GLEW_INCLUDE_DIRS})
 endif(USE_GLEW)
 find_package(glfw3 3.3 REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
@@ -158,6 +159,11 @@ add_subdirectory(include)
 # Unit testing using the ctest framework
 enable_testing()
 add_subdirectory(tests)
+
+# incbin for Visual Studio
+if(WIN32)
+add_subdirectory(buildtools)
+endif()
 
 # Install the font files, for the examples, which seek to work with an
 # *installed* morphologica, as opposed to an in-tree morphologica.
