@@ -46,26 +46,6 @@ asm("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR 
 asm("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
 asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 
-#elif defined __WIN__
-
-// Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
-#define INCBIN_PREFIX vf_
-#include <incbin.h>
-INCBIN(vera, MORPH_FONTS_DIR"/ttf-bitstream-vera/Vera.ttf");
-INCBIN(verait, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraIt.ttf");
-INCBIN(verabd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraBd.ttf");
-INCBIN(verabi, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraBI.ttf");
-INCBIN(veramono, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMono.ttf");
-INCBIN(veramoit, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoIt.ttf");
-INCBIN(veramobd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoBd.ttf");
-INCBIN(veramobi, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraMoBI.ttf");
-INCBIN(verase, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraSe.ttf");
-INCBIN(verasebd, MORPH_FONTS_DIR"/ttf-bitstream-vera/VeraSeBd.ttf");
-// These translation units now habe three symbols, eg:
-// const unsigned char vf_veraData[];
-// const unsigned char *const vf_veraEnd;
-// const unsigned int vf_veraSize;
-
 #elif defined __OSX__
 
 // On Mac, we need a different incantation to use .incbin
@@ -79,6 +59,31 @@ asm("\t.global ___start_veramobd_ttf\n\t.global ___stop_veramobd_ttf\n___start_v
 asm("\t.global ___start_veramobi_ttf\n\t.global ___stop_veramobi_ttf\n___start_veramobi_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n___stop_veramobi_ttf:\n");
 asm("\t.global ___start_verase_ttf\n\t.global ___stop_verase_ttf\n___start_verase_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n___stop_verase_ttf:\n");
 asm("\t.global ___start_verasebd_ttf\n\t.global ___stop_verasebd_ttf\n___start_verasebd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n___stop_verasebd_ttf:\n");
+
+#elif defined __WIN__
+
+# include "verafonts.h"
+# include <cstdlib>
+
+#elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
+
+// Visual Studio doesn't allow __asm{} calls in C__ code anymore, so try Dale Weiler's incbin.h
+#define INCBIN_PREFIX vf_
+#include <incbin.h>
+INCBIN(vera, "./fonts/ttf-bitstream-vera/Vera.ttf");
+INCBIN(verait, "./fonts/ttf-bitstream-vera/VeraIt.ttf");
+INCBIN(verabd, "./fonts/ttf-bitstream-vera/VeraBd.ttf");
+INCBIN(verabi, "./fonts/ttf-bitstream-vera/VeraBI.ttf");
+INCBIN(veramono, "./fonts/ttf-bitstream-vera/VeraMono.ttf");
+INCBIN(veramoit, "./fonts/ttf-bitstream-vera/VeraMoIt.ttf");
+INCBIN(veramobd, "./fonts/ttf-bitstream-vera/VeraMoBd.ttf");
+INCBIN(veramobi, "./fonts/ttf-bitstream-vera/VeraMoBI.ttf");
+INCBIN(verase, "./fonts/ttf-bitstream-vera/VeraSe.ttf");
+INCBIN(verasebd, "./fonts/ttf-bitstream-vera/VeraSeBd.ttf");
+// These translation units now have three symbols, eg:
+// extern const unsigned char vf_veraData[];
+// extern const unsigned char *const vf_veraEnd;
+// extern const unsigned int vf_veraSize;
 
 #else
 # error "Inline assembly code for including truetype fonts in the binary only work on Linux/MacOS (and then, probably only on Intel compatible compilers. Sorry about that!"
@@ -146,64 +151,70 @@ namespace morph {
             {
                 std::string fontpath = "";
 #ifdef __WIN__
+		char* userprofile = getenv ("USERPROFILE");
+		std::string uppath("");
+		if (userprofile != (char*)0) {
+		    uppath = std::string (userprofile);
+		}
+
                 switch (_font) {
                 case VisualFont::Vera:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\Vera.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\Vera.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veraData, vf_veraEnd);
                     break;
                 }
                 case VisualFont::VeraItalic:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraIt.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraIt.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veraitData, vf_veraitEnd);
                     break;
                 }
                 case VisualFont::VeraBold:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraBd.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraBd.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_verabdData, vf_verabdEnd);
                     break;
                 }
                 case VisualFont::VeraBoldItalic:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraBI.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraBI.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_verabiData, vf_verabiEnd);
                     break;
                 }
                 case VisualFont::VeraMono:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMono.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraMono.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veramonoData, vf_veramonoEnd);
                     break;
                 }
                 case VisualFont::VeraMonoBold:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoBd.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraMoBd.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veramobdData, vf_veramobdEnd);
                     break;
                 }
                 case VisualFont::VeraMonoItalic:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoIt.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraMoIt.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veramoitData, vf_veramoitEnd);
                     break;
                 }
                 case VisualFont::VeraMonoBoldItalic:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraMoBI.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraMoBI.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veramobiData, vf_veramobiEnd);
                     break;
                 }
                 case VisualFont::VeraSerif:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraSe.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraSe.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_veraseData, vf_veraseEnd);
                     break;
                 }
                 case VisualFont::VeraSerifBold:
                 {
-                    fontpath = "%USERPROFILE%\\AppData\\Local\\Temp\\VeraSeBd.ttf";
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\VeraSeBd.ttf";
                     this->makeTempFontFile<const unsigned char> (fontpath, vf_verasebdData, vf_verasebdEnd);
                     break;
                 }
@@ -284,8 +295,9 @@ namespace morph {
 #endif // Windows/Non-windows
 
                 // Keep the face as a morph::Visual owned resource, shared by VisTextModels?
+		std::cout << "FT_New_Face (ft_freetype, " << fontpath << ", 0, &this->face);\n";
                 if (FT_New_Face (ft_freetype, fontpath.c_str(), 0, &this->face)) {
-                    std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+                    std::cout << "ERROR::FREETYPE: Failed to load font (font file may be invalid)" << std::endl;
                 }
 
                 FT_Set_Pixel_Sizes (this->face, 0, fontpixels);
