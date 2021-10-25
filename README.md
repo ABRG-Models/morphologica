@@ -14,6 +14,11 @@ dynamical systems.
 
 It helps with:
 
+* **Visualizing your model while it runs**. A modern OpenGL visualization
+  scheme called **morph::Visual** provides the ability to visualise hex
+  grids, surfaces, scatter plots and quiver plots with minimal
+  processing overhead.
+
 * **Configuration**: morphologica allows you to easily set up a simulation
   parameter configuration system, using the JSON reading and writing
   abilities of **morph::Config**.
@@ -22,11 +27,6 @@ It helps with:
   easy-to-use convenience wrappers (**morph::HdfData**) around the HDF5 C
   API. By saving data in a standard format, it is easy to access
   simulation data in python, MATLAB or Octave for analysis and graphing.
-
-* **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called **morph::Visual** provides the ability to visualise hex
-  grids, surfaces, scatter plots and quiver plots with minimal
-  processing overhead.
 
 It keeps *out of the way* of what kind of simulation you write. Our
 programs typically start with some kind of preamble, in which we use
