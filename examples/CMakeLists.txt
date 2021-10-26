@@ -50,7 +50,10 @@ add_executable(cartgrid cartgrid.cpp)
 target_link_libraries(cartgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
 add_executable(hexgrid hexgrid.cpp)
-target_link_libraries(hexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL GLEW::GLEW glfw Freetype::Freetype jsoncpp_lib)
+target_link_libraries(hexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+if(USE_GLEW)
+  target_link_libraries(hexgrid GLEW::GLEW)
+endif()
 
 add_executable(hexgrid_pgram hexgrid_pgram.cpp)
 target_link_libraries(hexgrid_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
@@ -95,7 +98,10 @@ add_executable(rod rod.cpp)
 target_link_libraries(rod ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
 add_executable(tri tri.cpp)
-target_link_libraries(tri ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL GLEW::GLEW glfw Freetype::Freetype jsoncpp_lib)
+target_link_libraries(tri ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+if(USE_GLEW)
+  target_link_libraries(tri GLEW::GLEW)
+endif()
 
 add_executable(quads quads.cpp)
 target_link_libraries(quads ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
