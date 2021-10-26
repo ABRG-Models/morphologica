@@ -14,8 +14,8 @@ dynamical systems.
 It helps with:
 
 * **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called **morph::Visual** provides the ability to visualise hex
-  grids, surfaces, scatter plots and quiver plots with minimal
+  scheme called **morph::Visual** provides the ability to visualise 2D and 3D graphs 
+  of surfaces, lines, bars, scatter plots and quiver plots with minimal
   processing overhead.
 
 * **Configuration**: morphologica allows you to easily set up a simulation
