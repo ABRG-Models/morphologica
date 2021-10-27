@@ -264,6 +264,23 @@ namespace morph {
             this->texts.push_back (tm);
         }
 
+        //! Add a text label with a passed-in pointer to a VisualTextModel
+        void addLabel (const std::string& _text,
+                       const morph::Vector<float, 3>& _toffset,
+                       morph::VisualTextModel*& tm,
+                       const std::array<float, 3>& _tcolour = morph::colour::black,
+                       const morph::VisualFont _font = morph::VisualFont::Vera,
+                       const float _fontsize = 0.05,
+                       const int _fontres = 24)
+        {
+            if (this->tshaderprog == 0) {
+                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
+            }
+            tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
+            tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
+            this->texts.push_back (tm);
+        }
+
         //! Setter for the viewmatrix
         void setViewMatrix (const TransformMatrix<float>& mv) { this->viewmatrix = mv; }
 
