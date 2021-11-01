@@ -197,8 +197,7 @@ namespace morph {
         bool compare (const std::pair<Flt, Flt>& other) {
             // Equality too strong a test. Use this->threshold Is distance from v to other smaller
             // than threshold? If so return true.
-            Flt distance = std::sqrt ( (other.first-v.first)*(other.first-v.first)
-                                       + (other.second-v.second)*(other.second-v.second) );
+            Flt distance = std::hypot (other.first-v.first, other.second-v.second);
             if (distance < this->threshold) {
                 return true;
             }
@@ -219,9 +218,7 @@ namespace morph {
          */
         static Flt line_length (const std::pair<Flt, Flt>& coord0,
                                 const std::pair<Flt, Flt>& coord1) {
-            Flt c01 = std::sqrt ((coord0.first - coord1.first) * (coord0.first - coord1.first)
-                                 + (coord0.second - coord1.second) * (coord0.second - coord1.second));
-            return c01;
+            return std::hypot (coord0.first - coord1.first, coord0.second - coord1.second);
         }
 
         /*!

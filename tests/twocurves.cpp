@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <cmath>
 
 using namespace std;
 using morph::BezCoord;
@@ -85,7 +86,7 @@ int main()
     float dx = first_of_cc2.first - last_of_cc1.first;
     float dy = first_of_cc2.second - last_of_cc1.second;
 
-    float d = sqrt (dx*dx + dy* dy);
+    float d = std::hypot (dx, dy);
 
     cout << "Distance between adjoining curves: " << d << endl;
 

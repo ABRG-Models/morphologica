@@ -39,7 +39,7 @@ int main()
     float k = 1.0f;
     for (unsigned int hi=0; hi<hg.num(); ++hi) {
         // x/y: hg.d_x[hi] hg.d_y[hi]
-        r[hi] = std::sqrt (hg.d_x[hi]*hg.d_x[hi] + hg.d_y[hi]*hg.d_y[hi]);
+        r[hi] = std::hypot (hg.d_x[hi], hg.d_y[hi]);
         data[hi] = std::sin(k*r[hi])/k*r[hi];
     }
 

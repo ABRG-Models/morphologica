@@ -162,7 +162,7 @@ namespace morph
             std::pair<Flt,Flt> cend = this->curves.back().getFinalPointScaled();
             Flt dx = cend.first - initialCoordinate.first;
             Flt dy = cend.second - initialCoordinate.second;
-            return std::sqrt (dx * dx + dy * dy);
+            return std::hypot (dx, dy);
         }
 
         //! Compute & return the centroid of the passed in set of positions.

@@ -951,7 +951,7 @@ namespace morph {
          * The distance from the centre of the Rect to any of the vertices. This is the
          * "long radius".
          */
-        float getLR() const { return 0.5f * std::sqrt (this->d*this->d + this->v*this->v); }
+        float getLR() const { return 0.5f * std::hypot (this->d, this->v); }
 
         /*!
          * The vertical distance from the centre of the rect to the "north east" vertex
@@ -2077,7 +2077,7 @@ namespace morph {
             while (ri != this->rects.end()) {
                 float dx = pos.first - ri->x;
                 float dy = pos.second - ri->y;
-                float dl = std::sqrt (dx*dx + dy*dy);
+                float dl = std::hypot (dx, dy);
                 if (dl < dist) {
                     dist = dl;
                     nearest = ri;

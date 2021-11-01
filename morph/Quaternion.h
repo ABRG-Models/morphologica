@@ -64,7 +64,7 @@ namespace morph {
          */
         void renormalize (void)
         {
-            Flt oneovermag = 1.0 / std::sqrt (w*w + x*x + y*y + z*z);
+            Flt oneovermag = Flt{1} / std::hypot (w, std::hypot (x, std::hypot (y, z)));
             this->w *= oneovermag;
             this->x *= oneovermag;
             this->y *= oneovermag;
