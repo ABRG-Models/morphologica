@@ -497,7 +497,7 @@ namespace morph {
             while (hi != this->hexen.end()) {
                 float dx = pos.first - hi->x;
                 float dy = pos.second - hi->y;
-                float dl = std::hypot (dx, dy);
+                float dl = std::sqrt (dx*dx + dy*dy);
                 if (dl < dist) {
                     dist = dl;
                     nearest = hi;

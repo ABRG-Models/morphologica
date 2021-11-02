@@ -348,7 +348,7 @@ namespace morph {
             this->x = this->dx*this->xi;
             this->y = this->dy*this->yi;
             // And location in the Polar coordinate system
-            this->r = std::hypot (x, y);
+            this->r = std::sqrt (x*x + y*y);
             this->phi = atan2 (y, x);
         }
 
@@ -361,7 +361,7 @@ namespace morph {
         {
             float deltax = cartesianPoint.first - x;
             float deltay = cartesianPoint.second - y;
-            return std::hypot (deltax, deltay);
+            return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
         /*!
@@ -372,7 +372,7 @@ namespace morph {
         {
             float deltax = cartesianPoint.x() - x;
             float deltay = cartesianPoint.y() - y;
-            return std::hypot (deltax, deltay);
+            return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
         //! Compute the distance from another rect to this one.
@@ -380,7 +380,7 @@ namespace morph {
         {
             float deltax = otherRect.x - x;
             float deltay = otherRect.y - y;
-            return std::hypot (deltax, deltay);
+            return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
         /*!
@@ -439,7 +439,7 @@ namespace morph {
         float getSR() const { return ((this->dx < this->dy ? this->dx : this->dy) * 0.5f); }
 
         //! The distance from the centre of the Rect to any of the vertices. This is the "long radius".
-        float getLR() const { return (std::hypot (this->dx, this->dy) * 0.5f); }
+        float getLR() const { return (std::sqrt (this->dx * this->dx + this->dy * this->dy) * 0.5f); }
 
         //! Compute and return the area of the Rect
         float getArea() const { return (this->dx * this->dy); }
@@ -448,7 +448,7 @@ namespace morph {
         float getV() const { return this->dy; }
 
         //! The vertical distance from the centre of the Rect to the "north east" vertex of the Rect
-        float getVtoNE() const { return std::hypot (this->dx, this->dy); }
+        float getVtoNE() const { return std::sqrt (this->dx * this->dx + this->dy * this->dy); }
 
         /*!
          * Return twice the vertical distance between Rect centres on adjacent

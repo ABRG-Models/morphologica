@@ -1559,7 +1559,7 @@ namespace morph {
             std::array<float, 8> angles;
             float w_ = w * 0.5f;
             float d_ = thickness * 0.5f;
-            float r = std::hypot (w_,  d_);
+            float r = std::sqrt (w_ * w_ + d_ * d_);
             angles[0] = std::acos (w_ / r);
             angles[1] = angles[0];
             angles[2] = morph::PI_F - angles[0];

@@ -183,7 +183,7 @@ namespace morph {
         static T distance (const std::pair<T, T> p1, const std::pair<T, T> p2) {
             T xdiff = p2.first-p1.first;
             T ydiff = p2.second-p1.second;
-            T dist = std::hypot (xdiff, ydiff);
+            T dist = std::sqrt (xdiff*xdiff + ydiff*ydiff);
             return dist;
         }
 

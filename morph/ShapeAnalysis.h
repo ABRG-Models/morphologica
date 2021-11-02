@@ -501,7 +501,7 @@ namespace morph {
                         // from v.v. Only two will fulfil this criterion.
                         Flt x_ = hexit_first->get_neighbour(i)->x - v_init.first;
                         Flt y_ = hexit_first->get_neighbour(i)->y - v_init.second;
-                        Flt distance = std::hypot (x_, y_);
+                        Flt distance = sqrt (x_*x_ + y_*y_);
                         DBG2 ("vertex to hex-centre distance: " << distance);
                         DBG2 ("HexGrid long radius distance: " << hexit_first->getLR());
                         bool correct_distance = distance-hexit_first->getLR() < 0.001 ? true : false;

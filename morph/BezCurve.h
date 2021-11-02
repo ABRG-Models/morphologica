@@ -513,14 +513,6 @@ namespace morph
          *ccc
          * 2) Can I do a version of the fitting which then finds the optimum position
          * on the line segment by a gradient descent to minimise the objective error? Possibly.
-         *
-         * Note: on 01/11/2021 I noticed an error:
-         *
-         * Flt control0to1 = std::sqrt (xdiff*xdiff + ydiff+ydiff);
-         *
-         * should have been: std::sqrt (xdiff*xdiff + ydiff*ydiff);
-         *
-         * Maybe that's why this didn't work an is commented out? Now changed to std::hypot.
          */
         void fit (std::vector<std::pair<Flt, Flt>> points, const std::pair<Flt, Flt> c)
         {
@@ -537,12 +529,12 @@ namespace morph
             // Compute distance from control point 0 to control point 1.
             Flt xdiff = C(0,0) - C(1,0);
             Flt ydiff = C(0,1) - C(1,1);
-            Flt control0to1 = std::hypot (xdiff, ydiff);
+            Flt control0to1 = std::sqrt (xdiff*xdiff + ydiff+ydiff);
 
             // Compute vector from c to control point 0
             Flt v_x = C(0,0) - c.first;
             Flt v_y = C(0,1) - c.second;
-            Flt v_len = std::hypot (v_x, v_y);
+            Flt v_len = std::sqrt (v_x*v_x + v_y*v_y);
             v_x /= v_len;
             v_y /= v_len;
 
@@ -601,7 +593,7 @@ namespace morph
             for (i = 1; i < n; ++i) {
                 double xdiff = P(i,0) - P(i-1,0);
                 double ydiff = P(i,1) - P(i-1,1);
-                double len = std::hypot (xdiff, ydiff);
+                double len = std::sqrt (xdiff*xdiff + ydiff*ydiff);
                 total_len += len;
                 D(i,0) = total_len;
             }
@@ -956,7 +948,8 @@ namespace morph
         void init (void)
         {
             this->order = this->C.n_rows-1;
-            this->linlength = std::hypot ((C(order,0)-C(0,0)), (C(order,1) - C(0,1)));
+            this->linlength = std::sqrt ((C(order,0)-C(0,0)) * (C(order,0) - C(0,0))
+                                         + (C(order,1)-C(0,1)) * (C(order,1) - C(0,1)));
             this->linlengthscaled = this->scale * this->linlength;
             this->matrixSetup();
         }

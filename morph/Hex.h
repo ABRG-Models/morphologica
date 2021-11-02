@@ -355,7 +355,7 @@ namespace morph {
             float v = this->getV();
             this->y = v*this->gi + v*this->bi;
             // And location in the Polar coordinate system
-            this->r = std::hypot (x, y);
+            this->r = std::sqrt (x*x + y*y);
             this->phi = atan2 (y, x);
         }
 
@@ -368,7 +368,7 @@ namespace morph {
         {
             float dx = cartesianPoint.first - x;
             float dy = cartesianPoint.second - y;
-            return std::hypot (dx, dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         /*!
@@ -379,7 +379,7 @@ namespace morph {
         {
             float dx = cartesianPoint.x() - x;
             float dy = cartesianPoint.y() - y;
-            return std::hypot (dx, dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         //! Compute the distance from another hex to this one.
@@ -387,7 +387,7 @@ namespace morph {
         {
             float dx = otherHex.x - x;
             float dy = otherHex.y - y;
-            return std::hypot (dx, dy);
+            return std::sqrt (dx*dx + dy*dy);
         }
 
         /*!

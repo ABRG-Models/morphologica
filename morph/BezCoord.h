@@ -95,7 +95,7 @@ namespace morph
             std::pair<Flt,Flt> se;
             se.first = this->x() - other.x();
             se.second = this->y() - other.y();
-            return std::hypot (se.first, se.second);
+            return (std::sqrt (se.first*se.first + se.second*se.second));
         }
 
         //! Horizontal distance between two BezCoords.
