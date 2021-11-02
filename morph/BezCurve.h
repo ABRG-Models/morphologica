@@ -513,6 +513,15 @@ namespace morph
          *ccc
          * 2) Can I do a version of the fitting which then finds the optimum position
          * on the line segment by a gradient descent to minimise the objective error? Possibly.
+         *
+         * Note: on 01/11/2021 I noticed an error:
+         *
+         * Flt control0to1 = std::sqrt (xdiff*xdiff + ydiff+ydiff);
+         *
+         * should have been: std::sqrt (xdiff*xdiff + ydiff*ydiff);
+         *
+         * Maybe that's why this function didn't work and is commented out? Now fixed,
+         * but not tested.
          */
         void fit (std::vector<std::pair<Flt, Flt>> points, const std::pair<Flt, Flt> c)
         {
@@ -529,7 +538,7 @@ namespace morph
             // Compute distance from control point 0 to control point 1.
             Flt xdiff = C(0,0) - C(1,0);
             Flt ydiff = C(0,1) - C(1,1);
-            Flt control0to1 = std::sqrt (xdiff*xdiff + ydiff+ydiff);
+            Flt control0to1 = std::sqrt (xdiff*xdiff + ydiff*ydiff);
 
             // Compute vector from c to control point 0
             Flt v_x = C(0,0) - c.first;
