@@ -21,7 +21,7 @@ namespace morph
     public: // methods
 
         //! Construct empty BezCoord. Defaults to non-null.
-        BezCoord ()
+        BezCoord()
         {
             this->param = -1.0f; this->remaining = -1.0f; this->nullCoordinate = false;
             this->coord.first = 0.0f; this->coord.second = 0.0f;
@@ -53,32 +53,29 @@ namespace morph
             { this->nullCoordinate = false; }
 
         // Accessors
-        std::pair<Flt,Flt> getCoord (void) const { return this->coord; }
-        Flt getParam (void) const { return this->param; }
-        Flt getRemaining (void) const { return this->remaining; }
-        bool getNullCoordinate (void) const { return this->nullCoordinate; }
-        bool isNull (void) const { return this->nullCoordinate; }
+        std::pair<Flt,Flt> getCoord() const { return this->coord; }
+        Flt getParam() const { return this->param; }
+        Flt getRemaining() const { return this->remaining; }
+        bool getNullCoordinate() const { return this->nullCoordinate; }
+        bool isNull() const { return this->nullCoordinate; }
         void setCoord (std::pair<Flt,Flt> c) { this->coord = c; }
         void setParam (Flt p) { this->param = p; }
         void setRemaining (Flt r) { this->remaining = r; }
         void setNullCoordinate (bool b) { this->nullCoordinate = b; }
 
         // Single character accessors, for easy-to-read client code.
-        Flt x (void) const { return this->coord.first; }
-        Flt y (void) const { return this->coord.second; }
-        Flt t (void) const { return this->param; }
+        Flt x() const { return this->coord.first; }
+        Flt y() const { return this->coord.second; }
+        Flt t() const { return this->param; }
 
         //! Use this if you need to invert the y axis
-        void invertY (void)
-        {
-            this->coord.second = -this->coord.second;
-        }
+        void invertY() { this->coord.second = -this->coord.second; }
 
         /*!
          * Normalize the length that is made by drawing a vector from the origin to this
          * coordinate.
          */
-        void normalize (void)
+        void normalize()
         {
             BezCoord origin(std::make_pair(0.0f,0.0f));
             Flt len = origin.distanceTo (*this);
@@ -99,16 +96,10 @@ namespace morph
         }
 
         //! Horizontal distance between two BezCoords.
-        Flt horzDistanceTo (BezCoord& other) const
-        {
-            return (std::abs(this->x() - other.x()));
-        }
+        Flt horzDistanceTo (BezCoord& other) const { return (std::abs(this->x() - other.x())); }
 
         //! Vertical distance between two BezCoords.
-        Flt vertDistanceTo (BezCoord& other) const
-        {
-            return (std::abs(this->y() - other.y()));
-        }
+        Flt vertDistanceTo (BezCoord& other) const { return (std::abs(this->y() - other.y())); }
 
         //! Subtract the coordinate c from this BezCoord.
         void subtract (const std::pair<Flt,Flt>& c)
