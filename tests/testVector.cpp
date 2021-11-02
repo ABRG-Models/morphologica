@@ -136,5 +136,11 @@ int main() {
     aset.insert (compare2);
     std::cout << "aset size " << aset.size() << std::endl;
 
+    Vector<double,2> VV1 = {1.0, 2.0};
+    Vector<double,2> VV2 = {2.0, 3.0};
+    Vector<double,2> VV3 = {1.0, 30.0};
+    Vector<Vector<double, 2>, 3> VdV = { VV1, VV2, VV3 };
+    std::cout<< "VdV.mean() = " << VdV.mean() << std::endl;
+
     return rtn;
 }
