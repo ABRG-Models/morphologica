@@ -70,10 +70,12 @@ namespace morph
     template <typename Flt>
     class BezCurve
     {
+        static constexpr bool debug_bezcurve = false;
+
     public: // methods
 
         //! Do-nothing constructor
-        BezCurve (void) { this->order = 0; }
+        BezCurve() { this->order = 0; }
 
         /*!
          * Construct a Bezier curve of order cp.size()-1 with the initial and final
@@ -210,23 +212,23 @@ namespace morph
             Flt ang_b = std::atan2 (vb_y, vb_x);
             // theta is the angle between vector a and vector b
             Flt theta = ang_a - ang_b;
-#ifdef DEBUG__
-            std::cout << "ang_a = " << ang_a << " rads "
-                      << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
-            std::cout << "ang_b = " << ang_b << " rads "
-                      << (ang_b * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
-            std::cout << "theta = " << theta << " rads "
-                      << (theta * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
-#endif
+            if constexpr (debug_bezcurve == true) {
+                std::cout << "ang_a = " << ang_a << " rads "
+                          << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                std::cout << "ang_b = " << ang_b << " rads "
+                          << (ang_b * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                std::cout << "theta = " << theta << " rads "
+                          << (theta * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+            }
             // phi is the angle that conforms to: theta + 2 phi = pi radians
             // thus 2 phi = pi - theta
             // thus   phi = 1/2(pi - theta)
             Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - std::abs(theta));
-#ifdef DEBUG__
-            std::cout << "phi = " << phi << " rads "
-                 << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
-#endif
-#undef DEBUG__
+            if constexpr (debug_bezcurve == true) {
+                std::cout << "phi = " << phi << " rads "
+                          << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+            }
+
             // Construct rotn matrix (one for positive rotation, one for negative)
             arma::Mat<Flt> rotmat_pos (2,2);
             rotmat_pos(0,0) = std::cos (phi);
@@ -260,33 +262,33 @@ namespace morph
             arma::Mat<Flt> pm2_r_after;
             if (ang_b < Flt{0}) {
                 if (ang_a > Flt{0}) {
-#ifdef DEBUG__
-                    std::cout << "BezCurve::fit(): Type I join" << std::endl;
-                    std::cout << "                 Rotate va +phi, vb -phi." << std::endl;
-#endif
+                    if constexpr (debug_bezcurve == true) {
+                        std::cout << "BezCurve::fit(): Type I join" << std::endl;
+                        std::cout << "                 Rotate va +phi, vb -phi." << std::endl;
+                    }
                     pm1_r_after = pm1_r * rotmat_pos;
                     pm2_r_after = pm2_r * rotmat_neg;
                 } else {
-#ifdef DEBUG__
-                    std::cout << "BezCurve::fit(): Type II join" << std::endl;
-                    std::cout << "                 Rotate va +phi, vb +phi." << std::endl;
-#endif
+                    if constexpr (debug_bezcurve == true) {
+                        std::cout << "BezCurve::fit(): Type II join" << std::endl;
+                        std::cout << "                 Rotate va +phi, vb +phi." << std::endl;
+                    }
                     pm1_r_after = pm1_r * rotmat_pos;
                     pm2_r_after = pm2_r * rotmat_pos;
                 }
             } else {
                 if (ang_a > Flt{0}) {
-#ifdef DEBUG__
-                    std::cout << "BezCurve::fit(): Type III join" << std::endl;
-                    std::cout << "                 Rotate va -phi, vb -phi." << std::endl;
-#endif
+                    if constexpr (debug_bezcurve == true) {
+                        std::cout << "BezCurve::fit(): Type III join" << std::endl;
+                        std::cout << "                 Rotate va -phi, vb -phi." << std::endl;
+                    }
                     pm1_r_after = pm1_r * rotmat_neg;
                     pm2_r_after = pm2_r * rotmat_neg;
                 } else {
-#ifdef DEBUG__
-                    std::cout << "BezCurve::fit(): Type IV join" << std::endl;
-                    std::cout << "                 Rotate va -phi, vb +phi." << std::endl;
-#endif
+                    if constexpr (debug_bezcurve == true) {
+                        std::cout << "BezCurve::fit(): Type IV join" << std::endl;
+                        std::cout << "                 Rotate va -phi, vb +phi." << std::endl;
+                    }
                     pm1_r_after = pm1_r * rotmat_neg;
                     pm2_r_after = pm2_r * rotmat_pos;
                 }
@@ -305,11 +307,12 @@ namespace morph
             prec_ctrl[len-2].second = pm1_r_final(0,1);
             preceding.updateControls (prec_ctrl);
 
-#ifdef DEBUG__
-            std::cout << "Preceding controls: " << preceding.outputControl();
-            std::cout << "C (after line-up):\n" << this->C;
+            if constexpr (debug_bezcurve == true) {
+                std::cout << "Preceding controls: " << preceding.outputControl();
+                std::cout << "C (after line-up):\n" << this->C;
+            }
+
             // First, need a cost function:
-#endif
             // If client code requests NOT to optimize, then return
             if (!optimize) { return; }
 
@@ -320,14 +323,14 @@ namespace morph
             // Optimization stage. Move control points other than those we just fixed to
             // be in line with each other, to minimize the deviation of this curve and
             // @c from the user-points provided.
-#ifdef DEBUG__
-            std::cout << "Optimization..." << std::endl;
-#endif
+            if constexpr (debug_bezcurve == true) {
+                std::cout << "Optimization..." << std::endl;
+            }
 
             Flt startsos = this->computeObjective (points);
-#ifdef DEBUG__
-            std::cout << "Objective with no optimization: " << startsos << std::endl;
-#endif
+            if constexpr (debug_bezcurve == true) {
+                std::cout << "Objective with no optimization: " << startsos << std::endl;
+            }
             arma::Mat<Flt> Copy = this->C;
 
             // Convert the middle rows of C to vector<Flt> to be the first NM vertex
@@ -365,23 +368,21 @@ namespace morph
                     Flt v_j = v0[j];
                     Flt v_1 = (v0[j]*propchange);
                     Flt rn = dis(gen);
-                    //std::cout << "rn: " << dis(gen) << std::endl;
                     v_j += (v_1 * rn);
                     v_j -= (v0[j]*propchangeov2);
-                    //std::cout << "Pushing back " << v_j << std::endl;
                     v.push_back (v_j);
                 }
-#ifdef DEBUG__
-                std::cout << "v has size " << v.size();
-                std::cout << ", is ";
-                for (auto vv : v) {
-                    std::cout << vv << ",";
+                if constexpr (debug_bezcurve == true) {
+                    std::cout << "v has size " << v.size();
+                    std::cout << ", is ";
+                    for (auto vv : v) {
+                        std::cout << vv << ",";
+                    }
                 }
-#endif
                 nm_vertices.push_back (v);
-#ifdef DEBUG__
-                std::cout << " nm_vertices has size " << nm_vertices.size() << std::endl;
-#endif
+                if constexpr (debug_bezcurve == true) {
+                    std::cout << " nm_vertices has size " << nm_vertices.size() << std::endl;
+                }
             }
 
             // Start out with a simplex with a vertex at the centroid of the domain vertices, and
@@ -459,6 +460,7 @@ namespace morph
             }
         }
 
+        static constexpr bool penalise_curve_length = false;
         Flt computeObjective (const std::vector<std::pair<Flt, Flt>>& points) const
         {
             // Compute relative positions of pairs in @points
@@ -487,16 +489,16 @@ namespace morph
                 sos += MathAlgo::distance_sq<Flt> (points[i], curvePoints[i]);
             }
 
-#if 0
-            // Add a penalty for the length of the curve, also, which should be as close
-            // to the linear length from point to point.
-            Flt clen = this->computeLength(50);
-            Flt distpart = (clen-totaldist)*(clen-totaldist);
-            std::cout << "sos part: " << sos << ", distance part: " << distpart << std::endl;
-            return sos + distpart;
-#else
-            return sos;
-#endif
+            if constexpr (penalise_curve_length == true) {
+                // Add a penalty for the length of the curve, also, which should be as close
+                // to the linear length from point to point.
+                Flt clen = this->computeLength(50);
+                Flt distpart = (clen-totaldist)*(clen-totaldist);
+                std::cout << "sos part: " << sos << ", distance part: " << distpart << std::endl;
+                return sos + distpart;
+            } else {
+                return sos;
+            }
         }
 
 #if 0
@@ -641,7 +643,7 @@ namespace morph
         }
 
         //! Obtain and return the derivative of this Bezier curve
-        BezCurve<Flt> derivative (void) const
+        BezCurve<Flt> derivative() const
         {
             arma::Mat<Flt> deriv_cp(this->order, 2);
             for (unsigned int i = 0; i < this->order; ++i) {
@@ -886,7 +888,7 @@ namespace morph
         }
 
         //! Output the control points.
-        std::string outputControl (void) const
+        std::string outputControl() const
         {
             std::stringstream ss;
             ss << this->C;
@@ -904,7 +906,7 @@ namespace morph
         void setLthresh (const Flt l) { this->lthresh = l; }
 
         //! Gets the initial control point, unscaled
-        std::pair<Flt,Flt> getInitialPointUnscaled (void) const
+        std::pair<Flt,Flt> getInitialPointUnscaled() const
         {
             std::pair<Flt,Flt> ip_unscaled;
             ip_unscaled.first = this->C(0,0);
@@ -913,7 +915,7 @@ namespace morph
         }
 
         //! Gets the final control point, unscaled
-        std::pair<Flt,Flt> getFinalPointUnscaled (void) const
+        std::pair<Flt,Flt> getFinalPointUnscaled() const
         {
             std::pair<Flt,Flt> fp_unscaled;
             fp_unscaled.first = this->C(this->order,0);
@@ -922,7 +924,7 @@ namespace morph
         }
 
         //! Gets the initial control point, scaled by the factor BezCurve::scale
-        std::pair<Flt,Flt> getInitialPointScaled (void) const
+        std::pair<Flt,Flt> getInitialPointScaled() const
         {
             std::pair<Flt,Flt> ip_scaled;
             ip_scaled.first = this->scale * this->C(0,0);
@@ -931,7 +933,7 @@ namespace morph
         }
 
         //! Gets the final control point, scaled by the factor BezCurve::scale
-        std::pair<Flt,Flt> getFinalPointScaled (void) const
+        std::pair<Flt,Flt> getFinalPointScaled() const
         {
             std::pair<Flt,Flt> fp_scaled;
             fp_scaled.first = this->scale * this->C(this->order,0);
@@ -940,7 +942,7 @@ namespace morph
         }
 
         //! Getter for the control points in vector pair format
-        std::vector<std::pair<Flt,Flt>> getControls (void) const {
+        std::vector<std::pair<Flt,Flt>> getControls() const {
             std::vector<std::pair<Flt,Flt>> rtn;
             for (unsigned int r = 0; r<this->C.n_rows; ++r) {
                 rtn.push_back (std::make_pair (this->C(r,0), this->C(r,1)));
@@ -949,12 +951,12 @@ namespace morph
         }
 
         //! Get the order of the curve
-        unsigned int getOrder (void) const { return this->order; }
+        unsigned int getOrder() const { return this->order; }
 
     private: // methods
 
         //! Perform common initialization tasks.
-        void init (void)
+        void init()
         {
             this->order = this->C.n_rows-1;
             this->linlength = std::sqrt ((C(order,0)-C(0,0)) * (C(order,0) - C(0,0))
@@ -1271,7 +1273,7 @@ namespace morph
          * out the matrix comes from Cohen & Riesenfeld (1982) General Matrix
          * Representations.
          */
-        void matrixSetup (void)
+        void matrixSetup()
         {
             // Check order here
             if (this->order >= PascalRows) {
