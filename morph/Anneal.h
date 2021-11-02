@@ -463,7 +463,19 @@ namespace morph {
                 ++this->num_accepted;
                 ++this->num_accepted_recently;
                 // Increment f_x_best_repeats if f_x_cand is within a short distance of f_x_best:
+#if 0
                 this->f_x_best_repeats += (std::abs(this->f_x_cand - this->f_x_best) <= this->objective_repeat_precision) ? 1 : 0;
+#else // DEBUG
+                // This ONLY happens if f_x_cand WAS accepted...
+                T fdiff = std::abs(this->f_x_cand - this->f_x_best);
+                if (fdiff <= this->objective_repeat_precision) {
+                    std::cout << "fdiff = " << fdiff << " <=  objective_repeat_precision = " << this->objective_repeat_precision << std::endl;
+                    this->f_x_best_repeats += 1;
+                } else {
+                    std::cout << "fdiff = " << fdiff << " >  objective_repeat_precision = " << this->objective_repeat_precision << std::endl;
+                }
+                std::cout << "f_x_best_repeats: " << this->f_x_best_repeats << std::endl;
+#endif
 
                 bool really_better = false;
                 if constexpr (best_better_than_by_precision == true) {
