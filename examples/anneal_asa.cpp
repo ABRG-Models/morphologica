@@ -22,7 +22,7 @@
 typedef double F;
 
 // A global hexgrid for the locations of the objective function
-morph::HexGrid* hg = (morph::HexGrid*)0;
+morph::HexGrid* hg = nullptr;
 // And a vVector to be the data
 morph::vVector<F> obj_f;
 
@@ -226,7 +226,7 @@ int main (int argc, char** argv)
               << anneal.f_x_best << "," << obj_f.min() << "\n";
 #endif
 
-    if (hg != (morph::HexGrid*)0) { delete hg; }
+    if (hg != nullptr) { delete hg; }
     return 0;
 }
 

@@ -27,29 +27,20 @@ namespace morph
         /*!
          * Construct an empty AllocAndRead object.
          */
-        AllocAndRead ()
-            : filepath ("")
-            , data_((char*)0)
-        {
-        }
+        AllocAndRead () : filepath (""), data_(nullptr) {}
+
         /*!
          * Construct an AllocAndRead object and read the content of
          * the file at @param path
          */
-        AllocAndRead (const std::string& path)
-            : filepath (path)
-            , data_((char*)0)
-        {
-            this->read();
-        }
+        AllocAndRead (const std::string& path) : filepath (path), data_(nullptr) { this->read(); }
+
         /*!
          * Destructor needs to free up @see data_.
          */
         ~AllocAndRead ()
         {
-            if (this->data_) {
-                free (this->data_);
-            }
+            if (this->data_) { free (this->data_); }
         }
 
         /*!
@@ -84,20 +75,14 @@ namespace morph
          * Get a pointer to @see data_.
          * @return @see data_
          */
-        char* data (void)
-        {
-            return this->data_;
-        }
+        char* data() { return this->data_; }
 
         /*!
          * Get the size of @see data_. This is stored in the member
          * @see sz.
          * @return @see sz.
          */
-        size_t getsize (void) const
-        {
-            return this->sz;
-        }
+        size_t getsize() const { return this->sz; }
 
         /*!
          * Reads the file at @param path into @see data_. Allocates
@@ -113,7 +98,7 @@ namespace morph
         /*!
          * Read the file, allocating memory as required.
          */
-        void read (void)
+        void read()
         {
             std::ifstream f;
             f.open (this->filepath.c_str(), std::ios::in);

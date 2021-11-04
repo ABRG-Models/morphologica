@@ -516,12 +516,7 @@ namespace morph {
         //! Construct with given length \a l and character group \a _cg.
         RandString(const size_t l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
         //! Deconstructor cleans up memory
-        ~RandString()
-        {
-            if (this->rng != (RandUniform<unsigned short>*)0) {
-                delete this->rng;
-            }
-        }
+        ~RandString() { if (this->rng != nullptr) { delete this->rng; } }
 
         //! Get a random string of RandString::length characters chosen from the given
         //! CharGroup RandString::cg
@@ -627,9 +622,9 @@ namespace morph {
         void setupRNG()
         {
             // Set rng to generate random numbers in correct range
-            if (this->rng != (RandUniform<unsigned short>*)0) {
+            if (this->rng != nullptr) {
                 delete this->rng;
-                this->rng = (RandUniform<unsigned short>*)0;
+                this->rng = nullptr;
             }
             this->rng = new RandUniform<unsigned short>(0, this->numChars()-1);
         }
@@ -656,7 +651,7 @@ namespace morph {
         }
 
         //! The number generator
-        RandUniform<unsigned short>* rng = (RandUniform<unsigned short>*)0;
+        RandUniform<unsigned short>* rng = nullptr;
 
         //! The number of characters to generate
         size_t length;

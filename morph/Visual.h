@@ -148,7 +148,7 @@ namespace morph {
             for (unsigned int i = 0; i < this->vm.size(); ++i) {
                 delete this->vm[i];
             }
-            if (this->textModel != (VisualTextModel*)0) {
+            if (this->textModel != nullptr) {
                 delete this->textModel;
             }
             for (auto t : this->texts) { delete t; }

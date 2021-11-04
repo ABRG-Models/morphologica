@@ -116,7 +116,7 @@ namespace morph {
 
         virtual ~VisualTextModel()
         {
-            if (this->vbos != (GLuint*)0) {
+            if (this->vbos != nullptr) {
                 glDeleteBuffers (numVBO, this->vbos);
                 delete[] this->vbos;
             }
@@ -421,7 +421,7 @@ namespace morph {
         //! Common code to call after the vertices have been set up.
         void postVertexInit()
         {
-            if (this->vbos == (GLuint*)0) {
+            if (this->vbos == nullptr) {
                 // Create vertex array object
 #ifdef __MACS_HAD_OPENGL_450__
                 glCreateVertexArrays (1, &this->vao); // OpenGL 4.5 only
@@ -434,7 +434,7 @@ namespace morph {
             glBindVertexArray (this->vao);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            if (this->vbos == (GLuint*)0) {
+            if (this->vbos == nullptr) {
                 // Create the vertex buffer objects
                 this->vbos = new GLuint[numVBO];
 #ifdef __MACS_HAD_OPENGL_450__
@@ -477,7 +477,7 @@ namespace morph {
         float line_spacing = 1.4f;
     protected:
         //! A face for this text
-        morph::gl::VisualFace* face = (morph::gl::VisualFace*)0;
+        morph::gl::VisualFace* face = nullptr;
         //! The colour of the backing quad's vertices. Doesn't have any effect.
         std::array<float, 3> clr_backing = {1.0f, 1.0f, 0.0f};
         //! the desired width of an 'm'.
@@ -534,7 +534,7 @@ namespace morph {
         //! Single vbo to use as in example
         GLuint vbo;
         //! Vertex Buffer Objects stored in an array
-        GLuint* vbos = (GLuint*)0;
+        GLuint* vbos = nullptr;
         //! CPU-side data for indices
         std::vector<VBOint> indices;
         //! CPU-side data for quad vertex positions

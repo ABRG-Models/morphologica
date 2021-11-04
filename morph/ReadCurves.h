@@ -33,7 +33,7 @@ namespace morph
         /*!
          * Default constructor does nothing, but client code then has to call init(const string&).
          */
-        ReadCurves () {}
+        ReadCurves() {}
 
         /*!
          * Construct using the SVG file at svgpath. The text of the file is read into memory and the
@@ -73,7 +73,7 @@ namespace morph
         /*!
          * Get the cortical path as a list of BezCurves
          */
-        BezCurvePath<float> getCorticalPath (void) const { return this->corticalPath; }
+        BezCurvePath<float> getCorticalPath() const { return this->corticalPath; }
 
         /*!
          * Get the path of an enclosed structure by name, as a list of BezCurves.
@@ -95,7 +95,7 @@ namespace morph
          * Get all the paths of enclosed structures. This is a list of pairs, in which the name and
          * the structure path are the two parts of the pair.
          */
-        std::list<BezCurvePath<float>> getEnclosedRegions (void) const { return this->enclosedRegions; }
+        std::list<BezCurvePath<float>> getEnclosedRegions() const { return this->enclosedRegions; }
 
         /*!
          * Save the paths to named files, with the step size being approximately step in Cartesian
@@ -114,12 +114,12 @@ namespace morph
         /*!
          * Get the scaling in mm per SVG unit.
          */
-        float getScale_mmpersvg (void) const { return (lineToMillimetres.second/lineToMillimetres.first); }
+        float getScale_mmpersvg() const { return (lineToMillimetres.second/lineToMillimetres.first); }
 
         /*!
          * Get the scaling in SVG units per mm.
          */
-        float getScale_svgpermm (void) const { return (lineToMillimetres.first/lineToMillimetres.second); }
+        float getScale_svgpermm() const { return (lineToMillimetres.first/lineToMillimetres.second); }
 
         /*!
          * A key-value list of coordinates, obtained from reading any circles in the SVG. The ID of
@@ -134,7 +134,7 @@ namespace morph
         /*!
          * Some initialisation - parse the doc and find the root node.
          */
-        void init (void)
+        void init()
         {
             if (!this->root_node) {
                 // we are choosing to parse the XML declaration parse_no_data_nodes
@@ -158,7 +158,7 @@ namespace morph
          * Do the work of reading the file and populating corticalPath, enclosedRegions and
          * lineToMillimetres.
          */
-        void read (void)
+        void read()
         {
             // Search each layer - these are called <g> elements in the SVG.
             for (rapidxml::xml_node<>* g_node = this->root_node->first_node("g");
@@ -216,7 +216,7 @@ namespace morph
             do {
                 path_node = this->findNodeRecursive (path_node, "path");
 
-                if (path_node != (rapidxml::xml_node<>*)0) {
+                if (path_node != nullptr) {
                     // See if path has an id that isn't the generic "path0000"
                     // format. If so, use this to override the id from the <g>
                     // element
@@ -236,7 +236,7 @@ namespace morph
 
                     path_node = path_node->next_sibling();
 
-                    if (path_node != (rapidxml::xml_node<>*)0) {
+                    if (path_node != nullptr) {
                         // Check path_node, itself before passing to findNodeRecursive...
                         if ((path_id_attr = path_node->first_attribute ("id"))) {
                             p_id = path_id_attr->value();
@@ -251,11 +251,11 @@ namespace morph
                     }
                 }
 
-            } while (path_node != (rapidxml::xml_node<>*)0);
+            } while (path_node != nullptr);
 
             // Search for a line element
             rapidxml::xml_node<>* line_node = this->findNodeRecursive (g_node, "line");
-            if (line_node != (rapidxml::xml_node<>*)0) {
+            if (line_node != nullptr) {
                 if (this->foundLine == true) {
                     std::cerr << "WARNING: Found a second <line> element in this SVG, was only expecting one (as a single scale bar)\n";
                 }
@@ -310,12 +310,12 @@ namespace morph
                 }
 
                 rapidxml::xml_node<>* rtn_node = findNodeRecursive (path_node, tagname);
-                if (rtn_node != (rapidxml::xml_node<>*)0 && strncmp (rtn_node->name(), tagname.c_str(), tagname.size()) == 0) {
+                if (rtn_node != nullptr && strncmp (rtn_node->name(), tagname.c_str(), tagname.size()) == 0) {
                     return rtn_node;
                 }
             }
 
-            return (rapidxml::xml_node<>*)0;
+            return nullptr;
         }
 
         /*!
@@ -805,7 +805,7 @@ namespace morph
          * Set up the scaling in all BezCurvePaths based on lineToMillimetres. Do this after file
          * has been read.
          */
-        void setScale (void)
+        void setScale()
         {
             if (this->lineToMillimetres.second == 0.0f) {
                 throw std::runtime_error ("Failed to obtain scaling from the scale bar.");

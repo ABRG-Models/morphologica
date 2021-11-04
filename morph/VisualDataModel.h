@@ -161,15 +161,15 @@ namespace morph {
 
         //! The data to visualize. T may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
-        const std::vector<T>* scalarData = (const std::vector<T>*)0;
+        const std::vector<T>* scalarData = nullptr;
 
         //! A container for vector data to visualize.
-        const std::vector<Vector<T>>* vectorData = (const std::vector<Vector<T>>*)0;
+        const std::vector<Vector<T>>* vectorData = nullptr;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates. Not const as child code may resize or update content.
-        std::vector<Vector<float>>* dataCoords = (std::vector<Vector<float>>*)0;
+        std::vector<Vector<float>>* dataCoords = nullptr;
 
         //! Graph data coordinates. Different from dataCoords, because it's a vector of
         //! vectors of pointers to data, with one pointer for each graph in the

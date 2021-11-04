@@ -54,11 +54,11 @@ namespace morph {
         //! Compute spheres for a scatter plot
         void initializeVertices()
         {
-            unsigned int ncoords = this->dataCoords == (std::vector<Vector<float>>*)0 ? 0 : this->dataCoords->size();
+            unsigned int ncoords = this->dataCoords == nullptr ? 0 : this->dataCoords->size();
             if (ncoords == 0) { return; }
-            unsigned int ndata = this->scalarData == (const std::vector<Flt>*)0 ? 0 : this->scalarData->size();
+            unsigned int ndata = this->scalarData == nullptr ? 0 : this->scalarData->size();
             // If we have vector data, then manipulate colour accordingly.
-            unsigned int nvdata = this->vectorData == (const std::vector<Vector<Flt>>*)0 ? 0 : this->vectorData->size();
+            unsigned int nvdata = this->vectorData == nullptr ? 0 : this->vectorData->size();
 
             if (ndata > 0 && ncoords != ndata) {
                 std::cout << "ScatterVisual Error: ncoords ("<<ncoords<<") != ndata ("<<ndata<<"), return (no model)." << std::endl;

@@ -93,7 +93,7 @@ namespace morph {
             this->p = static_cast<struct pollfd*>(malloc (2*sizeof (struct pollfd)));
 
             // Initialise the callbacks to 0
-            this->callbacks = (ProcessCallbacks*)0;
+            this->callbacks = nullptr;
 
             // Initialise pipes to 0
             this->parentToChild[PROCESS_WRITING_END] = 0;
@@ -184,9 +184,9 @@ namespace morph {
         bool reset (bool keepCallbacks = false)
         {
             if (this->running()) { return false; }
-            if (!keepCallbacks && this->callbacks != (ProcessCallbacks*)0) {
+            if (!keepCallbacks && this->callbacks != nullptr) {
                 DBG ("Resetting callbacks pointer");
-                this->callbacks = (ProcessCallbacks*)0;
+                this->callbacks = nullptr;
             }
             this->signalledStart = false;
             this->pauseBeforeStart = 0;
@@ -345,7 +345,7 @@ namespace morph {
             // Has the process started?
             if (!this->signalledStart) {
                 if (this->pid > 0) {
-                    if (this->callbacks != (ProcessCallbacks*)0) {
+                    if (this->callbacks != nullptr) {
                         this->callbacks->startedSignal (this->progName);
                     }
                     this->signalledStart = true;
@@ -355,7 +355,7 @@ namespace morph {
 
             // Check for error condition
             if (this->error > 0) {
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->errorSignal (this->error);
                 }
                 DBG ("have error in probeProcess, returning");
@@ -388,19 +388,19 @@ namespace morph {
             if (this->p[0].revents & POLLNVAL || this->p[1].revents & POLLNVAL) {
                 DBG ("Process::probeProcess: pipes closed, process must have crashed");
                 this->error = PROCESSCRASHED;
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->errorSignal (this->error);
                 }
                 return;
             }
 
             if (this->p[0].revents & POLLIN || this->p[0].revents & POLLPRI) {
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->readyReadStandardOutputSignal();
                 }
             }
             if (this->p[1].revents & POLLIN || this->p[1].revents & POLLPRI) {
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->readyReadStandardErrorSignal();
                 }
             }
@@ -411,8 +411,8 @@ namespace morph {
             int theError;
             if (this->signalledStart == true) {
                 int rtn = 0;
-                if ((rtn = waitpid (this->pid, (int *)0, WNOHANG)) == this->pid) {
-                    if (this->callbacks != (ProcessCallbacks*)0) {
+                if ((rtn = waitpid (this->pid, nullptr, WNOHANG)) == this->pid) {
+                    if (this->callbacks != nullptr) {
                         this->callbacks->processFinishedSignal (this->progName);
                     }
                     this->pid = 0;
@@ -504,14 +504,14 @@ namespace morph {
             }
             if (this->pid>0) {
                 DBG ("The process started!");
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->startedSignal (this->progName);
                 }
                 this->signalledStart = true;
                 return true;
             } else {
                 this->error = PROCESSFAILEDTOSTART;
-                if (this->callbacks != (ProcessCallbacks*)0) {
+                if (this->callbacks != nullptr) {
                     this->callbacks->errorSignal (this->error);
                 }
             }

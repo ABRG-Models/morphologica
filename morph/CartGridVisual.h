@@ -94,12 +94,12 @@ namespace morph {
         {
             unsigned int nrect = this->cg->num();
 
-            if (this->scalarData != (const std::vector<T>*)0) {
+            if (this->scalarData != nullptr) {
                 this->dcopy.resize (this->scalarData->size());
                 this->zScale.transform (*(this->scalarData), dcopy);
                 this->dcolour.resize (this->scalarData->size());
                 this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != (const std::vector<Vector<T>>*)0) {
+            } else if (this->vectorData != nullptr) {
                 this->dcopy.resize (this->vectorData->size());
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
@@ -156,12 +156,12 @@ namespace morph {
             unsigned int nrect = this->cg->num();
             unsigned int idx = 0;
 
-            if (this->scalarData != (const std::vector<T>*)0) {
+            if (this->scalarData != nullptr) {
                 this->dcopy.resize (this->scalarData->size());
                 this->zScale.transform (*(this->scalarData), dcopy);
                 this->dcolour.resize (this->scalarData->size());
                 this->colourScale.transform (*(this->scalarData), dcolour);
-            } else if (this->vectorData != (const std::vector<Vector<T>>*)0) {
+            } else if (this->vectorData != nullptr) {
                 this->dcopy.resize (this->vectorData->size());
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
