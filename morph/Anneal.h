@@ -121,6 +121,8 @@ namespace morph {
         morph::vVector<T> x_best;
         //! The value of the objective function for the best parameters.
         T f_x_best = T{0};
+        //! The value of the objective function for the best parameters the last time it changed by more than objective_repeat_precision
+        T f_x_best_first = T{0};
         //! How many times has this best objective repeated? Reset on reanneal.
         unsigned int f_x_best_repeats = 0;
         //! A special set of parameters to ask the user to compute (when computing reanneal).
@@ -251,6 +253,7 @@ namespace morph {
         {
             // Set up the parameter/cost value members
             this->f_x_best = (this->downhill == true) ? std::numeric_limits<T>::max() : std::numeric_limits<T>::lowest();
+            this->f_x_best_first = f_x_best;
             this->f_x = f_x_best;
             this->f_x_cand = f_x_best;
             this->x.resize (this->D, T{0});
@@ -429,7 +432,6 @@ namespace morph {
             }
         }
 
-        static constexpr bool best_better_than_by_precision = false;
         //! The acceptance function determines if x_cand is accepted, copies x_cand to x
         //! and x_best as necessary, and updates statistical variables.
         void acceptance_check()
@@ -463,46 +465,31 @@ namespace morph {
                 ++this->num_accepted;
                 ++this->num_accepted_recently;
                 // Increment f_x_best_repeats if f_x_cand is within a short distance of f_x_best:
-#if 0
                 this->f_x_best_repeats += (std::abs(this->f_x_cand - this->f_x_best) <= this->objective_repeat_precision) ? 1 : 0;
-#else // DEBUG
-                // This ONLY happens if f_x_cand WAS accepted...
-                T fdiff = std::abs(this->f_x_cand - this->f_x_best);
-                if (fdiff <= this->objective_repeat_precision) {
-                    std::cout << "fdiff = " << fdiff << " <=  objective_repeat_precision = " << this->objective_repeat_precision << std::endl;
-                    this->f_x_best_repeats += 1;
-                } else {
-                    std::cout << "fdiff = " << fdiff << " >  objective_repeat_precision = " << this->objective_repeat_precision << std::endl;
-                }
-                std::cout << "f_x_best_repeats: " << this->f_x_best_repeats << std::endl;
-#endif
 
-                bool really_better = false;
-                if constexpr (best_better_than_by_precision == true) {
-                    // Update x_best, etc if x_cand is better than x; if the candidate
-                    // is more than objective_repeat_precision better than f_x_best.
-                    // This means f_x could be better than f_x_best.
-                    if ((this->downhill == true && (this->f_x_cand - this->f_x_best + this->objective_repeat_precision) < T{0})
-                        || (this->downhill == false && (this->f_x_cand - this->f_x_best - this->objective_repeat_precision) > T{0})) {
-                        really_better = true;
-                    }
-                } else {
-                    // f_x_cand is better simply if it is lower/higher than f_x_best, regardless of the size of objective_repeat_precision
-                    if ((this->downhill == true && (this->f_x_cand - this->f_x_best) < T{0})
-                        || (this->downhill == false && (this->f_x_cand - this->f_x_best) > T{0})) {
-                        really_better = true;
-                    }
-                }
+                // Was f_x_cand better  than f_x_best_first?
+                if ((this->downhill == true && (this->f_x_cand - this->f_x_best_first) < T{0})
+                    || (this->downhill == false && (this->f_x_cand - this->f_x_best_first) > T{0})) {
+                    // Then f_x_cand WAS better than f_x_best_first
 
-                if (really_better) {
-                    this->f_x_best_repeats = 0;
+                    // If f_x_cand was better than f_x_best by a MARGIN then reset
+                    // f_x_best_repeats to 0 Trouble with this is that it could
+                    // drift. To avoid drifiting, need to store f_x_first_best, updated
+                    // only when f_x_best_repeats is reset to 0.
+                    if ((this->downhill == true && (this->f_x_cand - this->f_x_best_first + this->objective_repeat_precision) < T{0})
+                        || (this->downhill == false && (this->f_x_cand - this->f_x_best_first - this->objective_repeat_precision) > T{0})) {
+                        this->f_x_best_repeats = 0;
+                        this->f_x_best_first = this->f_x_cand;
+                    }
+
                     this->x_best = this->x_cand;
                     this->f_x_best = this->f_x_cand;
                     this->num_accepted_best = this->num_accepted;
                     this->num_generated_best = this->num_generated;
                     this->num_accepted_recently = 0;
                     this->num_generated_recently = 0;
-                }
+                } // else accepted, but not better than f_x_best
+
                 // Store x_cand onto the accepted history
                 this->param_hist_accepted.push_back (this->x_cand);
                 this->f_param_hist_accepted.push_back (this->f_x_cand);
@@ -514,6 +501,11 @@ namespace morph {
                 // Store x_cand onto the rejected history
                 this->param_hist_rejected.push_back (this->x_cand);
                 this->f_param_hist_rejected.push_back (this->f_x_cand);
+
+                // If f_x_cand was not accepted, but IS within objective_repeat_precision of f_x_best, increment f_x_best_repeats.
+                if (std::abs(this->f_x_cand - this->f_x_best_first) <= this->objective_repeat_precision) {
+                    ++this->f_x_best_repeats;
+                }
             }
 
             if constexpr (debug) {
