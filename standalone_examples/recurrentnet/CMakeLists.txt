@@ -85,8 +85,6 @@ include_directories(BEFORE ${MORPH_INCLUDE_PATH})
 # All the library finding is now done. It's time to compile the program.
 #
 
-
-
 # Define which code makes up the recurrent net program
 add_executable(recurrentnet recurrentnet.cpp)
 
@@ -94,7 +92,7 @@ add_executable(recurrentnet recurrentnet.cpp)
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
 
 # Morphologica code requires a number of libraries, collected into 'CORE' and 'GL'.
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} jsoncpp_lib)
 set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 
 target_link_libraries(recurrentnet ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
