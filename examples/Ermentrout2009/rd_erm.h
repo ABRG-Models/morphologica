@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <cmath>
 #include <hdf5.h>
-#include <unistd.h>
 
 /*
  * Macros for testing neighbours. The step along for neighbours on the
