@@ -7,21 +7,21 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 set(TARGETTEST1 testbez)
 set(SOURCETEST1 testbez.cpp)
 add_executable(${TARGETTEST1} ${SOURCETEST1})
-target_link_libraries(${TARGETTEST1} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbez ${TARGETTEST1})
 
 # BezCurve class
 set(TARGETTEST1_1 testbez2)
 set(SOURCETEST1_1 testbez2.cpp)
 add_executable(${TARGETTEST1_1} ${SOURCETEST1_1})
-target_link_libraries(${TARGETTEST1_1} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1_1} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbez2 ${TARGETTEST1_1})
 
 # BezCurvePath class
 set(TARGETTEST1_2 testbezcurves)
 set(SOURCETEST1_2 testbezcurves.cpp)
 add_executable(${TARGETTEST1_2} ${SOURCETEST1_2})
-target_link_libraries(${TARGETTEST1_2} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1_2} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbezcurves ${TARGETTEST1_2})
 
 # Testing matrix representation of Bezier curves
@@ -31,7 +31,7 @@ add_executable(${TARGETTEST1_3} ${SOURCETEST1_3})
 # Disable warning -Wunused-but-set-variable:
 #target_compile_options(${TARGETTEST1_3} PRIVATE -Wno-unused-but-set-variable)
 target_compile_definitions(${TARGETTEST1_3} PUBLIC FLT=float)
-target_link_libraries(${TARGETTEST1_3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1_3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbezmatrix ${TARGETTEST1_3})
 
 # Testing auto-fitting a Bezier curve
@@ -39,7 +39,7 @@ set(TARGETTEST1_4 testbezfit)
 set(SOURCETEST1_4 testbezfit.cpp)
 add_executable(${TARGETTEST1_4} ${SOURCETEST1_4})
 target_compile_definitions(${TARGETTEST1_4} PUBLIC FLT=float)
-target_link_libraries(${TARGETTEST1_4} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1_4} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbezfit ${TARGETTEST1_4})
 
 # Testing splitting of Bezier curves
@@ -47,7 +47,7 @@ set(TARGETTEST1_5 testbezsplit)
 set(SOURCETEST1_5 testbezsplit.cpp)
 add_executable(${TARGETTEST1_5} ${SOURCETEST1_5})
 target_compile_definitions(${TARGETTEST1_5} PUBLIC FLT=float)
-target_link_libraries(${TARGETTEST1_5} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST1_5} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testbezsplit ${TARGETTEST1_5})
 
 if(${OpenCV_FOUND})
@@ -56,7 +56,7 @@ if(${OpenCV_FOUND})
   set(SOURCETEST1_6 testbezderiv.cpp)
   add_executable(${TARGETTEST1_6} ${SOURCETEST1_6})
   target_compile_definitions(${TARGETTEST1_6} PUBLIC FLT=double)
-  target_link_libraries(${TARGETTEST1_6} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+  target_link_libraries(${TARGETTEST1_6} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
   add_test(testbezderiv ${TARGETTEST1_6})
 
   # Testing Bezier derivatives
@@ -64,7 +64,7 @@ if(${OpenCV_FOUND})
   set(SOURCETEST1_7 testbezderiv2.cpp)
   add_executable(${TARGETTEST1_7} ${SOURCETEST1_7})
   target_compile_definitions(${TARGETTEST1_7} PUBLIC FLT=double)
-  target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+  target_link_libraries(${TARGETTEST1_7} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
   add_test(testbezderiv2 ${TARGETTEST1_7})
 
   # Testing Bezier derivatives
@@ -72,7 +72,7 @@ if(${OpenCV_FOUND})
   set(SOURCETEST1_8 testbezderiv3.cpp)
   add_executable(${TARGETTEST1_8} ${SOURCETEST1_8})
   target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
-  target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} ${OpenCV_LIBS})
+  target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
   add_test(testbezderiv3 ${TARGETTEST1_8})
 endif()
 
@@ -80,21 +80,21 @@ endif()
 set(TARGETTEST2 twocurves)
 set(SOURCETEST2 twocurves.cpp)
 add_executable(${TARGETTEST2} ${SOURCETEST2})
-target_link_libraries(${TARGETTEST2} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST2} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(twocurves ${TARGETTEST2})
 
 # Test reading trial.svg
 set(TARGETTEST3 testreadcurves)
 set(SOURCETEST3 testreadcurves.cpp)
 add_executable(${TARGETTEST3} ${SOURCETEST3})
-target_link_libraries(${TARGETTEST3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testreadcurves ${TARGETTEST3})
 
 # Test reading whiskerbarrels_withcentres.svg
 set(TARGETTEST31 testreadcurves_circles)
 set(SOURCETEST31 testreadcurves_circles.cpp)
 add_executable(${TARGETTEST31} ${SOURCETEST31})
-target_link_libraries(${TARGETTEST31} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${TARGETTEST31} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testreadcurves_circles ${TARGETTEST31})
 
 # Test hexgrid
@@ -105,12 +105,12 @@ add_test(testhexgrid ${TARGETTEST5})
 
 # Test hexgrid2
 add_executable(testhexgrid2 testhexgrid2.cpp)
-target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testhexgrid2 testhexgrid2)
 
 # Test distance to boundary
 add_executable(testhexbounddist testhexbounddist.cpp)
-target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
 add_test(testhexbounddist testhexbounddist)
 
 # Test HDF file access
@@ -142,57 +142,57 @@ add_test(testhdfdata4f testhdfdata4f)
 if(${glfw3_FOUND})
   # Test hexgrid3 (hexgrid2 with visualisation)
   add_executable(testhexgrid3 testhexgrid3.cpp)
-  target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test hexgridsave (HexGrid's save feature)
   add_executable(testhexgridsave testhexgridsave.cpp)
-  target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test boundary pgram
   add_executable(testdom_pgram testdom_pgram.cpp)
-  target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test boundary rect
   add_executable(testdom_rect testdom_rect.cpp)
-  target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test boundary hex
   add_executable(testdom_hex testdom_hex.cpp)
-  target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test boundary bound
   add_executable(testdom_bound testdom_bound.cpp)
-  target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testbighexgrid testbighexgrid.cpp)
-  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
-  target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
-  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test circular HexGrid code
   add_executable(test_circleboundary test_circleboundary.cpp)
-  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   # Test Dirichlet code
   add_executable(testDirichlet testDirichlet.cpp)
-  target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testDirichlet2 testDirichlet2.cpp)
-  target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testDirichlet4 testDirichlet4.cpp)
-  target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 
   add_executable(testDirichlet5 testDirichlet5.cpp)
-  target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
 endif()
 
 # Test morph::Process class
