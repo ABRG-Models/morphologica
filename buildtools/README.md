@@ -1,0 +1,1 @@
+Run incbin binary to create verafonts.h for visual studio and a windows build.
