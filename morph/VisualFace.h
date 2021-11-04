@@ -18,10 +18,12 @@
 #include <morph/tools.h>
 #include <morph/VisualCommon.h>
 
+#ifndef USE_GLEW
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
 # include <GL3/gl3.h>
+#endif
 #endif
 
 // FreeType for text rendering

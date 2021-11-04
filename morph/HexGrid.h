@@ -614,7 +614,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 
@@ -671,7 +671,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 
@@ -872,7 +872,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setEllipticalBoundary (const float a, const float b,
-                                    const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                    const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, b, c);
             this->setBoundary (bpoints, offset);
@@ -885,7 +885,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setCircularBoundary (const float a,
-                                  const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                  const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
@@ -895,7 +895,7 @@ namespace morph {
          * Set up a rectangular boundary of width x and height y
          */
         void setRectangularBoundary (const float x, const float y,
-                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = rectangleCompute (x, y, c);
             this->setBoundary (bpoints, offset);
@@ -905,7 +905,7 @@ namespace morph {
          * Set up a parallelogram boundary extending r hexes to the E and g hexes to the NE
          */
         void setParallelogramBoundary (const int r, const int g,
-                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, c);
             this->setBoundary (bpoints, offset);

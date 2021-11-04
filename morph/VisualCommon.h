@@ -5,10 +5,12 @@
 #include <iostream>
 
 // For GLuint and GLenum
+#ifndef USE_GLEW
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
 # include <GL3/gl3.h>
+#endif
 #endif
 
 typedef GLuint VBOint; // A GLuint is an unsigned int
