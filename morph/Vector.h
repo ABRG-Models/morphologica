@@ -332,9 +332,9 @@ namespace morph {
              * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
              * sense.
              */
-            static constexpr _S unitThresh = 0.001;
+            static constexpr _S unitThresh = _S{0.001};
 
-            auto subtract_squared = [](_S a, _S b) { return a - b * b; };
+            auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
             const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
             if (std::abs(metric) > unitThresh) {
                 return false;
@@ -350,8 +350,14 @@ namespace morph {
         S length() const
         {
             auto add_squared = [](S a, S b) { return a + b * b; };
-            const S len = std::sqrt (std::accumulate (this->begin(), this->end(), S{0}, add_squared));
-            return len;
+            // Add check on whether S is integral or float. If integral, then std::round then cast the result of std::sqrt()
+            if constexpr (std::is_integral<std::decay_t<S>>::value == true) {
+                const S len = static_cast<S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared))));
+                return len;
+            } else {
+                const S len = std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared));
+                return len;
+            }
         }
 
         /*!
