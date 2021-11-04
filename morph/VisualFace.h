@@ -360,13 +360,13 @@ namespace morph {
 
             //! Create a temporary font file at fontpath, using the embedded data
             //! starting from filestart and extending to filenend
-	  template <typename T = const char>
-	  void makeTempFontFile (const std::string& fontpath, T* file_start, T* file_stop)
+            template <typename T = const char>
+            void makeTempFontFile (const std::string& fontpath, T* file_start, T* file_stop)
             {
                 T* p;
                 if (!morph::Tools::fileExists (fontpath)) {
                     std::ofstream fout;
-                    fout.open (fontpath.c_str(), std::ios::out | std::ios::trunc);
+                    fout.open (fontpath.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
                     if (fout.is_open()) {
                         for (p = file_start; p < file_stop; p++) { fout << *p; }
                         fout.close();
