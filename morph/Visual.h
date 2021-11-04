@@ -233,7 +233,7 @@ namespace morph {
                                            const float _fontsize = 0.01,
                                            const int _fontres = 24)
         {
-            morph::VisualTextModel* tm = (morph::VisualTextModel*)0;
+            morph::VisualTextModel* tm = nullptr;
             return this->addLabel (_text, _toffset, tm, _tcolour, _font, _fontsize, _fontres);
         }
 
@@ -1029,7 +1029,7 @@ namespace morph {
         GLFWwindow* window;
 
         //! Pointer to the singleton GLFW and Freetype resources object
-        morph::VisualResources* resources = (morph::VisualResources*)0;
+        morph::VisualResources* resources = nullptr;
 
         //! Current window width
         int window_w;
@@ -1055,7 +1055,7 @@ namespace morph {
         float coordArrowsEm = 0.01f;
 
         //! A VisualTextModel for a title text.
-        VisualTextModel* textModel = (VisualTextModel*)0;
+        VisualTextModel* textModel = nullptr;
         //! Text models for labels
         std::vector<morph::VisualTextModel*> texts;
 
