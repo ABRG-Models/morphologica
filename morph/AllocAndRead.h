@@ -14,7 +14,6 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
-#include "rapidxml.hpp"
 
 namespace morph
 {
