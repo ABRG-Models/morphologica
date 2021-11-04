@@ -110,7 +110,7 @@ namespace morph {
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
         static VisualResources* i()
         {
-            if (VisualResources::pInstance == (VisualResources*)0) {
+            if (VisualResources::pInstance == nullptr) {
                 VisualResources::pInstance = new VisualResources;
                 VisualResources::i()->init();
             }
@@ -129,7 +129,7 @@ namespace morph {
                 VisualResources::pInstance->deconstruct();
                 // Delete self
                 delete VisualResources::pInstance;
-                VisualResources::pInstance = (VisualResources*)0;
+                VisualResources::pInstance = nullptr;
             }
         }
 
@@ -158,7 +158,7 @@ namespace morph {
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
         morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, GLFWwindow* _win)
         {
-            morph::gl::VisualFace* rtn = (morph::gl::VisualFace*)0;
+            morph::gl::VisualFace* rtn = nullptr;
             std::tuple<morph::VisualFont, unsigned int, GLFWwindow*> key = std::make_tuple(font, fontpixels, _win);
             try {
                 rtn = this->faces.at (key);
@@ -170,8 +170,8 @@ namespace morph {
         }
     };
 
-    //! Globally initialise instance pointer to NULL
-    VisualResources* VisualResources::pInstance = 0;
+    //! Globally initialise instance pointer to nullptr
+    VisualResources* VisualResources::pInstance = nullptr;
     //! The number of morph::Visuals to which this singleston class provides resources.
     int VisualResources::numVisuals = 0;
 } // namespace morph
