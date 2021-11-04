@@ -14,7 +14,7 @@ dynamical systems.
 It helps with:
 
 * **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called **morph::Visual** provides the ability to visualise 2D and 3D graphs 
+  scheme called **morph::Visual** provides the ability to visualise 2D and 3D graphs
   of surfaces, lines, bars, scatter plots and quiver plots with minimal
   processing overhead.
 
@@ -102,7 +102,7 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
-First, ensure you have the necessary dependencies installed (Armadillo, OpenGL, Freetype, glfw3, HDF5 and LAPACK). Platform-specific instructions can be found in the files **README.install.linux.md** and **README.install.mac.md**.
+First, ensure you have the necessary dependencies installed (Armadillo, OpenGL, Freetype, glfw3 and HDF5). Platform-specific instructions can be found in the files **README.install.linux.md** and **README.install.mac.md**.
 
 To build a program against morphologica, you need to tell your build process: **1**) What compiler
 flags to add to the compiler command line, including a directive to
@@ -193,7 +193,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 find_package(jsoncpp REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(Armadillo REQUIRED)
-find_package(LAPACK REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
@@ -224,7 +223,7 @@ classes you use from morphologica, you'll need to link to some or all
 of these:
 
 ```cmake
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} ${LAPACK_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} jsoncpp_lib)
 set(MORPH_LIBS_GL OpenGL::GL Freetype::Freetype glfw)
 target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 ```

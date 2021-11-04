@@ -13,7 +13,7 @@ program and a C++ compiler which can compile c++-17 code.
 
 ## *Required*: Install dependencies
 
-morphologica code depends on Armadillo, OpenGL, Freetype, glfw3, HDF5 and LAPACK.
+morphologica code depends on Armadillo, OpenGL, Freetype, glfw3 and HDF5.
 
 ### Package-managed dependencies for Ubuntu/Debian
 
@@ -21,7 +21,7 @@ To install the necessary dependencies on Ubuntu or Debian Linux:
 
 ```sh
 sudo apt install build-essential cmake git wget  \
-                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev liblapack-dev \
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
                  libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev
 
 ```

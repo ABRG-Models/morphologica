@@ -5,7 +5,7 @@ header files and font files that are required to build against
 morphologica. Some libraries may also be installed.
 
 The build process also compiles a set of test programs, which require
-Armadillo, OpenGL, Freetype, glfw, HDF5 and LAPACK to compile.
+Armadillo, OpenGL, Freetype, glfw and HDF5 to compile.
 Programs that include morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
 program and a C++ compiler which can compile c++-17 code.
