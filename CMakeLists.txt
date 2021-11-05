@@ -59,8 +59,16 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
-find_package(OpenMP)
+# Note that we require OpenMP version 3 or above for ability to use
+# unsigned integral types in parallel for loops. At time of writing,
+# Visual Studio 2019 offers OpenMP 2 by default and 3 with the special
+# switch -openmp:llvm. I don't know how to get cmake to use the
+# special version, so OpenMP will not work at present on
+# Windows/VS2019. But then, you wouldn't use Windows for serious
+# numerical work anyway.
+find_package(OpenMP 3)
 if(OpenMP_CXX_FOUND)
+  message(STATUS "Found OpenMP version ${OpenMP_C_VERSION}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
