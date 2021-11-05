@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #ifdef __WIN__
+# include <filesystem>
 # include <direct.h>
 # define GetCurrentDir _getcwd
 # define SetCurrentDir _chdir // perhaps
@@ -251,7 +252,7 @@ namespace morph
             }
         }
 #endif // __WIN__
-      
+
         /*!
          * For mixing up bits of three args; used to generate a good random seed using
          * time() getpid() and clock().
@@ -921,6 +922,19 @@ namespace morph
 
             free (buf);
             return false;
+        }
+
+        // Check if a directory exists, windows style
+        static bool dirExists (const std::string& path)
+        {
+            struct stat buffer;
+            return (stat (path.c_str(), &buffer) == 0);
+        }
+
+        // Create a directory, C++17 style. Hardly needs a wrapper. Could replace unix createDir with this.
+        static void createDir (const std::string& path)
+        {
+            std::filesystem::create_directories (path);
         }
 
 #else // NOT Windows :)
@@ -2290,7 +2304,7 @@ namespace morph
             return (system (diffcmd.c_str()) != 0);
         }
 #endif // __WIN__
-      
+
         /*!
          * Given a path like /path/to/file in str, remove all the preceding /path/to/
          * stuff to leave just the filename.

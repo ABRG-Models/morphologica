@@ -344,6 +344,9 @@ add_test(test_elman test_elman)
 add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
 
+add_executable(testdirs testdirs.cpp)
+add_test(testdirs testdirs)
+
 #
 # Boolean gene nets. Fixme: These are not unit tests, but I've thrown
 # them in here for now. Perhaps need a 'bn' directory to build these
