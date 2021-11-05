@@ -102,7 +102,7 @@ See README.coding.md for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
-First, ensure you have the necessary dependencies installed (Armadillo, OpenGL, Freetype, glfw3 and HDF5). Platform-specific instructions can be found in the files **README.install.linux.md** and **README.install.mac.md**.
+First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3, jsoncpp and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype, glfw3 and jsoncpp. Platform-specific instructions can be found in the files [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.linux.md), [README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.mac.md) and [README.install.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.windows.md).
 
 To build a program against morphologica, you need to tell your build process: **1**) What compiler
 flags to add to the compiler command line, including a directive to
