@@ -243,6 +243,8 @@ endif()
 # Test morph::Process class
 if(APPLE)
   message("-- NB: Omitting testProcess.cpp on Mac for now, as it doesn't work.")
+elseif(WIN32)
+  message("-- NB: Omitting testProcess.cpp on Windows for now, as it tests the very Unixy Process class.")  
 else(APPLE)
   add_executable(testProcess testProcess.cpp)
   add_test(testProcess testProcess)
@@ -384,11 +386,15 @@ if (APPLE)
 endif()
 target_link_libraries(testEvolve jsoncpp_lib)
 
-add_executable(testGradGenome testGradGenome.cpp)
-if (APPLE)
-  target_compile_options(testGradGenome PUBLIC "-mavx")
+if(NOT WIN32)
+  # testGradGenome tries to create random num generator with width <
+  # 16 bits, not strictly allowed and enforced by VS2019
+  add_executable(testGradGenome testGradGenome.cpp)
+  if (APPLE)
+    target_compile_options(testGradGenome PUBLIC "-mavx")
+  endif()
+  #add_test(testGradGenome testGradGenome )
 endif()
-#add_test(testGradGenome testGradGenome )
 
 # Test Cartesian (rectangular) grid
 add_executable(testcartgrid testcartgrid.cpp)
