@@ -62,9 +62,9 @@ public:
     }
 
     //! Pointer to a vector of locations to visualise
-    net<Flt>* locations = (net<Flt>*)0;
+    net<Flt>* locations = nullptr;
     Flt radiusFixed = Flt{0.01};
     Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0,0,1};
+    morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
 };

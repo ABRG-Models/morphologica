@@ -1448,7 +1448,7 @@ namespace morph {
          * While determining if boundary is continuous, fill this maps container of
          * hexes.
          */
-        std::list<Hex*> bhexen; // Not better as a separate list<Hex>?
+        std::list<const Hex*> bhexen; // Not better as a separate list<Hex>?
 
         /*!
          * Store the centroid of the boundary path. The centroid of a read-in
@@ -1883,7 +1883,7 @@ namespace morph {
             std::list<morph::Hex>::const_iterator hi_next;
             seen.insert (hi->vi);
             // Insert into the std::list of Hex pointers, too
-            this->bhexen.push_back ((morph::Hex*)&(*hi));
+            this->bhexen.push_back (&(*hi));
 
             if (rtn == false && hi->has_ne() && hi->ne->testFlags(HEX_IS_BOUNDARY) == true && seen.find(hi->ne->vi) == seen.end()) {
                 hi_next = hi->ne;
@@ -1945,7 +1945,7 @@ namespace morph {
             std::list<morph::Hex>::const_iterator hi_next;
             seen.insert (hi->vi);
             // Insert into the list of Hex pointers, too
-            this->bhexen.push_back ((morph::Hex*)&(*hi));
+            this->bhexen.push_back (&(*hi));
 
             if (rtn == false && hi->has_ne() && hi->ne->testFlags(HEX_IS_REGION_BOUNDARY) == true && seen.find(hi->ne->vi) == seen.end()) {
                 hi_next = hi->ne;

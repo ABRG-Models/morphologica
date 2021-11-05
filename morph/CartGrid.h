@@ -1355,7 +1355,7 @@ namespace morph {
          * While determining if boundary is continuous, fill this maps container of
          * rects.
          */
-        std::list<Rect*> brects; // Not better as a separate list<Rect>?
+        std::list<const Rect*> brects; // Not better as a separate list<Rect>?
 
         /*!
          * Store the centroid of the boundary path. The centroid of a read-in
@@ -1546,7 +1546,7 @@ namespace morph {
             std::list<morph::Rect>::const_iterator ri_next;
             seen.insert (ri->vi);
             // Insert into the std::list of Rect pointers, too
-            this->brects.push_back ((morph::Rect*)&(*ri));
+            this->brects.push_back (&(*ri));
 
             // increasing direction is an anticlockwise sense
             for (int i = 0; i < 8; ++i) {
@@ -1595,7 +1595,7 @@ namespace morph {
             std::list<morph::Rect>::const_iterator hi_next;
             seen.insert (hi->vi);
             // Insert into the list of Rect pointers, too
-            this->brects.push_back ((morph::Rect*)&(*hi));
+            this->brects.push_back (&(*hi));
 
             if (rtn == false && hi->has_ne() && hi->ne->testFlags(RECT_IS_REGION_BOUNDARY) == true && seen.find(hi->ne->vi) == seen.end()) {
                 hi_next = hi->ne;

@@ -75,11 +75,11 @@ public:
     }
 
     //! Pointer to a vector of branches to visualise
-    std::vector<branch<Flt>>* branches = (std::vector<branch<Flt>>*)0;
+    std::vector<branch<Flt>>* branches = nullptr;
     //! Container for axon centroids. Compute here or only vis here?
     //! Change this to get larger or smaller spheres.
     Flt radiusFixed = Flt{0.01};
     Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0,0,1};
+    morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
 };

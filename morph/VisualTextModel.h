@@ -136,13 +136,13 @@ namespace morph {
             glUseProgram (this->tshaderprog);
 
             // Set uniforms
-            GLint loc_tc = glGetUniformLocation(this->tshaderprog, "textColor");
+            GLint loc_tc = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("textColor"));
             if (loc_tc != -1) { glUniform3f (loc_tc, this->clr_text[0], this->clr_text[1], this->clr_text[2]); }
-            GLint loc_a = glGetUniformLocation (this->tshaderprog, (const GLchar*)"alpha");
+            GLint loc_a = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("alpha"));
             if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
-            GLint loc_v = glGetUniformLocation (this->tshaderprog, (const GLchar*)"v_matrix");
+            GLint loc_v = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("v_matrix"));
             if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
-            GLint loc_m = glGetUniformLocation (this->tshaderprog, (const GLchar*)"m_matrix");
+            GLint loc_m = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("m_matrix"));
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
 #ifdef __DEBUG__
             std::cout << "VisualTextModel::render: ("<<txt<<") scenematrix:\n" << scenematrix << std::endl;

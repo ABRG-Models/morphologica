@@ -314,11 +314,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            VisualDataModel<FLT>* avm = (VisualDataModel<FLT>*)v1.getVisualModel (Agrid);
+            VisualDataModel<FLT>* avm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Agrid));
             avm->updateData (&(RD.A));
             avm->clearAutoscaleColour();
 
-            VisualDataModel<FLT>* bvm = (VisualDataModel<FLT>*)v1.getVisualModel (Bgrid);
+            VisualDataModel<FLT>* bvm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Bgrid));
             bvm->updateData (&(RD.B));
             bvm->clearAutoscaleColour();
 

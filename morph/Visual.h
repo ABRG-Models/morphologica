@@ -320,22 +320,22 @@ namespace morph {
             // Lighting shader variables
             //
             // Ambient light colour
-            GLint loc_lightcol = glGetUniformLocation (this->shaderprog, (const GLchar*)"light_colour");
+            GLint loc_lightcol = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("light_colour"));
             if (loc_lightcol != -1) {
                 glUniform3fv (loc_lightcol, 1, this->light_colour.data());
             }
             // Ambient light intensity
-            GLint loc_ai = glGetUniformLocation (this->shaderprog, (const GLchar*)"ambient_intensity");
+            GLint loc_ai = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("ambient_intensity"));
             if (loc_ai != -1) {
                 glUniform1f (loc_ai, this->ambient_intensity);
             }
             // Diffuse light position
-            GLint loc_dp = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_position");
+            GLint loc_dp = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_position"));
             if (loc_dp != -1) {
                 glUniform3fv (loc_dp, 1, this->diffuse_position.data());
             }
             // Diffuse light intensity
-            GLint loc_di = glGetUniformLocation (this->shaderprog, (const GLchar*)"diffuse_intensity");
+            GLint loc_di = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_intensity"));
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
@@ -352,7 +352,7 @@ namespace morph {
             TransformMatrix<float> lv_matrix;
             lv_matrix.translate (l_v0);
             lv_matrix.rotate (this->rotation);
-            GLint loc_lv = glGetUniformLocation (this->shaderprog, (const GLchar*)"lv_matrix");
+            GLint loc_lv = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("lv_matrix"));
             if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
             std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
             std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
@@ -360,14 +360,14 @@ namespace morph {
 #endif
             // Switch to text shader program and set the projection matrix
             glUseProgram (this->tshaderprog);
-            GLint loc_p = glGetUniformLocation (this->tshaderprog, (const GLchar*)"p_matrix");
+            GLint loc_p = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             // Switch back to the regular shader prog and render the VisualModels.
             glUseProgram (this->shaderprog);
 
             // Set the projection matrix just once
-            loc_p = glGetUniformLocation (this->shaderprog, (const GLchar*)"p_matrix");
+            loc_p = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if (this->showCoordArrows == true) {
@@ -883,16 +883,15 @@ namespace morph {
         }
 
         /*!
-         * Read a default shader, stored as a const char* like ReadShader reads a file:
-         * allocate some memory, copy the text into the new memory and then return a
-         * (GLchar*) pointer to the memory.
+         * Read a default shader, stored as a const char*. ReadDefaultShader reads a
+         * file: allocates some memory, copies the text into the new memory and then
+         * returns a GLchar* pointer to the memory.
          */
         const GLchar* ReadDefaultShader (const char* shadercontent)
         {
             int len = strlen (shadercontent);
             GLchar* source = new GLchar[len+1];
-
-            memcpy ((void*)source, (void*)shadercontent, len);
+            memcpy (static_cast<void*>(source), static_cast<const void*>(shadercontent), len);
             source[len] = 0;
             return const_cast<const GLchar*>(source);
         }
@@ -1114,27 +1113,27 @@ namespace morph {
 
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
-            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->key_callback (_window, key, scancode, action, mods);
         }
         static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
         {
-            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->mouse_button_callback (_window, button, action, mods);
         }
         static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
         {
-            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->cursor_position_callback (_window, x, y);
         }
         static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
         {
-            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->window_size_callback (_window, width, height);
         }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
-            Visual* self = (Visual*)glfwGetWindowUserPointer (_window);
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->scroll_callback (_window, xoffset, yoffset);
         }
 

@@ -155,7 +155,7 @@ namespace morph {
 #ifdef __WIN__
 		char* userprofile = getenv ("USERPROFILE");
 		std::string uppath("");
-		if (userprofile != (char*)0) {
+		if (userprofile != nullptr) {
 		    uppath = std::string (userprofile);
 		}
 

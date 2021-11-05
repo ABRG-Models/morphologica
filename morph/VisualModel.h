@@ -218,13 +218,13 @@ namespace morph {
                 glBindVertexArray (this->vao);
 
                 // Pass this->float to GLSL so the model can have an alpha value.
-                GLint loc_a = glGetUniformLocation (this->shaderprog, (const GLchar*)"alpha");
+                GLint loc_a = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("alpha"));
                 if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
-                GLint loc_v = glGetUniformLocation (this->shaderprog, (const GLchar*)"v_matrix");
+                GLint loc_v = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("v_matrix"));
                 if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
 
-                GLint loc_m = glGetUniformLocation (this->shaderprog, (const GLchar*)"m_matrix");
+                GLint loc_m = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("m_matrix"));
                 if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
 
                 if constexpr (debug_render) {

@@ -125,7 +125,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandUniform& operator= (const RandUniform<T>& rng)
         {
-            if (&rng == (const RandUniform<T>*)this) { return *this; }
+            if (&rng == static_cast<const RandUniform<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -207,7 +207,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandUniform& operator= (const RandUniform<T>& rng)
         {
-            if (&rng == (const RandUniform<T>*)this) { return *this; }
+            if (&rng == static_cast<const RandUniform<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -294,7 +294,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandNormal& operator= (const RandNormal<T>& rng)
         {
-            if (&rng == (const RandNormal<T>*)this) { return *this; }
+            if (&rng == static_cast<const RandNormal<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -376,7 +376,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandLogNormal& operator= (const RandLogNormal<T>& rng)
         {
-            if (&rng == (const RandLogNormal<T>*)this) { return *this; }
+            if (&rng == static_cast<const RandLogNormal<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }
@@ -457,7 +457,7 @@ namespace morph {
         //! Copy assignment operator needs to be explicitly defined
         RandPoisson& operator= (const RandPoisson<T>& rng)
         {
-            if (&rng == (const RandPoisson<T>*)this) { return *this; }
+            if (&rng == static_cast<const RandPoisson<T>*>(this)) { return *this; }
             this->param (rng.param());
             return *this;
         }

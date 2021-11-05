@@ -1990,7 +1990,7 @@ namespace morph
                 if (ep->d_type == DT_LNK) {
                     // Is it a link to a directory or a file?
                     struct stat * buf = NULL;
-                    buf = (struct stat*) malloc (sizeof (struct stat));
+                    buf = static_cast<struct stat*>(malloc (sizeof (struct stat)));
                     if (!buf) { // Malloc error.
                         throw std::runtime_error ("Failed to malloc buf; "
                                                   "could not stat link " + fileName);
@@ -2164,9 +2164,9 @@ namespace morph
                     // directory in the subDir path:
                     std::string newSubDir;
                     if (subDir.empty()) {
-                        newSubDir = (const char*)ep->d_name;
+                        newSubDir = static_cast<const char*>(ep->d_name);
                     } else {
-                        newSubDir = subDir + "/" + (const char*)ep->d_name;
+                        newSubDir = subDir + "/" + static_cast<const char*>(ep->d_name);
                     }
                     Tools::readDirectoryEmptyDirs (dset, baseDirPath, newSubDir);
                 }
@@ -2243,9 +2243,9 @@ namespace morph
                     // directory in the subDir path:
                     std::string newSubDir;
                     if (subDir.empty()) {
-                        newSubDir = (const char*)ep->d_name;
+                        newSubDir = static_cast<const char*>(ep->d_name);
                     } else {
-                        newSubDir = subDir + "/" + (const char*)ep->d_name;
+                        newSubDir = subDir + "/" + static_cast<const char*>(ep->d_name);
                     }
                     Tools::removeEmptySubDirs (dset, baseDirPath, newSubDir);
                 }
@@ -2275,7 +2275,7 @@ namespace morph
             struct stat * buf = NULL;
             std::stringstream datestamp;
 
-            buf = (struct stat*) malloc (sizeof (struct stat));
+            buf = static_cast<struct stat*>(malloc (sizeof (struct stat)));
             if (!buf) { // Malloc error.
                 std::cout << "malloc error\n";
             }
@@ -2601,8 +2601,7 @@ namespace morph
             dayss.fill ('0');
             dayss >> dayN;
 
-            struct tm* t;
-            t = (struct tm*) malloc (sizeof (struct tm));
+            struct tm* t = static_cast<struct tm*>(malloc (sizeof (struct tm)));
             t->tm_year = yearN-1900;
             t->tm_mon = monthN-1;
             t->tm_mday = dayN;
@@ -2711,8 +2710,7 @@ namespace morph
                 secss >> secN;
             }
 
-            struct tm* t;
-            t = (struct tm*) malloc (sizeof (struct tm));
+            struct tm* t = static_cast<struct tm*>(malloc (sizeof (struct tm)));
             t->tm_year = yearN-1900;
             t->tm_mon = monthN-1;
             t->tm_mday = dayN;
@@ -2740,9 +2738,8 @@ namespace morph
         {
             if (epochSeconds == 0) { return "unknown"; }
 
-            struct tm* t;
             time_t es = epochSeconds;
-            t = (struct tm*) malloc (sizeof (struct tm));
+            struct tm* t = static_cast<struct tm*>(malloc (sizeof (struct tm)));
             t = localtime_r (&es, t);
             int theDay = t->tm_mday;
             int theMonth = t->tm_mon+1;
@@ -2791,9 +2788,8 @@ namespace morph
          */
         static std::string numToDate (const time_t epochSeconds, const char separator = '\0')
         {
-            struct tm* t;
             time_t es = epochSeconds;
-            t = (struct tm*) malloc (sizeof (struct tm));
+            struct tm* t = static_cast<struct tm*>(malloc (sizeof (struct tm)));
             t = localtime_r (&es, t);
             int theDay = t->tm_mday;
             int theMonth = t->tm_mon+1;
