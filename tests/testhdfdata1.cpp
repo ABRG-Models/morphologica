@@ -87,7 +87,7 @@ int main()
         rtn -= 1;
     }
 
-    pair<float, float> pr = { 3.0, 6.0 };
+    pair<float, float> pr = { 3.0f, 6.0f };
     {
         HdfData data("test.h5");
         data.add_contained_vals ("/pair", pr);

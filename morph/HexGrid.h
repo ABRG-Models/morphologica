@@ -786,7 +786,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated rectangle
          */
         std::vector<BezCoord<float>> rectangleCompute (const float x, const float y,
-                                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
             throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
@@ -801,7 +801,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated pgram
          */
         std::vector<BezCoord<float>> parallelogramCompute (const int r, const int g,
-                                                           const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                           const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
             throw std::runtime_error ("HexGrid::parallelogramCompute: Implement me");
@@ -816,7 +816,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated ellipse
          */
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
-                                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             // Compute the points on the boundary using the parametric elliptical formula and
             // half of the hex to hex spacing as the angular step size. Return as bpoints.
