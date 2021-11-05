@@ -2,7 +2,6 @@
 #include <morph/ColourMap.h>
 #include <utility>
 #include <iostream>
-#include <unistd.h>
 
 #include "morph/HexGrid.h"
 #include "morph/ReadCurves.h"

@@ -17,7 +17,6 @@
 #include <list>
 #include <array>
 #include <stdexcept>
-#include <unistd.h>
 #include <morph/ShapeAnalysis.h>
 #include <morph/Visual.h>
 #include <morph/PolygonVisual.h>

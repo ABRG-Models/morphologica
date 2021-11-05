@@ -3,7 +3,6 @@
 #include <morph/tools.h>
 #include <morph/ColourMap.h>
 #include <iostream>
-#include <unistd.h>
 #include <morph/Visual.h>
 #include <morph/HexGridVisual.h>
 
