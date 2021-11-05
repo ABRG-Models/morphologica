@@ -132,6 +132,10 @@ find_package(glfw3 3.3 REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
 #set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5 REQUIRED)
+if(HDF5_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${HDF5_DEFINITIONS}")
+endif()
+
 find_package(Armadillo REQUIRED)
 
 if(${OpenCV_FOUND})
