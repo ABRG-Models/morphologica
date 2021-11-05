@@ -23,13 +23,13 @@ static int fline(char **line, size_t *n, FILE *fp) {
     if (!*line)
         if (!(*line = (char *)malloc((*n=64))))
             return -1;
-    chr = *n;
+    chr = (int)*n;
     pos = *line;
     for (;;) {
         int c = fgetc(fp);
         if (chr < 2) {
             *n += (*n > 16) ? *n : 64;
-            chr = *n + *line - pos;
+            chr = (int)(*n + *line - pos);
             if (!(*line = (char *)realloc(*line,*n)))
                 return -1;
             pos = *n - chr + *line;
@@ -48,7 +48,7 @@ static int fline(char **line, size_t *n, FILE *fp) {
             break;
     }
     *pos = '\0';
-    return pos - *line;
+    return (int)(pos - *line);
 }
 
 static FILE *open_file(const char *name, const char *mode, const char (*searches)[PATH_MAX], int count) {
