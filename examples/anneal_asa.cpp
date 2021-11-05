@@ -9,14 +9,15 @@
 #include <morph/Config.h>
 #include <morph/Hex.h>
 #include <morph/HexGrid.h>
-#include <morph/Visual.h>
-#include <morph/VisualDataModel.h>
-#include <morph/HexGridVisual.h>
-#include <morph/PolygonVisual.h>
-#include <morph/GraphVisual.h>
+#ifdef VISUALISE
+# include <morph/Visual.h>
+# include <morph/VisualDataModel.h>
+# include <morph/HexGridVisual.h>
+# include <morph/PolygonVisual.h>
+# include <morph/GraphVisual.h>
+#endif
 #include <iostream>
 #include <string>
-#include <unistd.h>
 
 // Choose double or float for the precision used in the Anneal algorithm
 typedef double F;
@@ -343,9 +344,9 @@ F objective_boha (const morph::vVector<F>& params)
 F objective_hg (const morph::vVector<F>& params)
 {
     // Find the hex nearest the coordinate defined by params and return its value
-    std::pair<F, F> coord;
-    coord.first = params[0];
-    coord.second = params[1];
+    std::pair<float, float> coord;
+    coord.first = static_cast<float>(params[0]);
+    coord.second = static_cast<float>(params[1]);
     std::list<morph::Hex>::iterator hn = hg->findHexNearest (coord);
     return obj_f[hn->vi];
 }

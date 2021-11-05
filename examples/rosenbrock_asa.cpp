@@ -11,7 +11,6 @@
 #include <morph/PolygonVisual.h>
 #include <morph/MathAlgo.h>
 #include <iostream>
-#include <unistd.h>
 #include <chrono>
 
 // Here's the Rosenbrock banana function

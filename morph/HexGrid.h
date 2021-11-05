@@ -146,7 +146,7 @@ namespace morph {
         }
 
         //! Once Hex::di attributes have been set, populate d_nne and friends.
-        void populate_d_neighbours (void)
+        void populate_d_neighbours()
         {
             // Resize d_nne and friends
             this->d_nne.resize (this->d_x.size(), 0);
@@ -200,7 +200,7 @@ namespace morph {
         }
 
         //! Clear out all the d_ vectors
-        void d_clear (void)
+        void d_clear()
         {
             this->d_x.clear();
             this->d_y.clear();
@@ -614,7 +614,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 
@@ -671,7 +671,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 
@@ -703,7 +703,7 @@ namespace morph {
          *
          * Works only on the initial hexagonal layout of hexes.
          */
-        void setBoundaryOnOuterEdge (void)
+        void setBoundaryOnOuterEdge()
         {
             // From centre head to boundary, then mark boundary and walk
             // around the edge.
@@ -767,7 +767,7 @@ namespace morph {
          *
          * Now a getter for this->bhexen.
          */
-        std::list<Hex> getBoundary (void) const
+        std::list<Hex> getBoundary() const
         {
             std::list<morph::Hex> bhexen_concrete;
             auto hh = this->bhexen.begin();
@@ -786,7 +786,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated rectangle
          */
         std::vector<BezCoord<float>> rectangleCompute (const float x, const float y,
-                                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
             throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
@@ -801,7 +801,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated pgram
          */
         std::vector<BezCoord<float>> parallelogramCompute (const int r, const int g,
-                                                           const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                           const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
             throw std::runtime_error ("HexGrid::parallelogramCompute: Implement me");
@@ -816,7 +816,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated ellipse
          */
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
-                                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             // Compute the points on the boundary using the parametric elliptical formula and
             // half of the hex to hex spacing as the angular step size. Return as bpoints.
@@ -859,7 +859,7 @@ namespace morph {
             + (25.0/16384.0) * h * h * h * h
             + (49.0/65536.0) * h * h * h * h * h
             + (441.0/1048576.0) * h * h * h * h * h * h;
-            double p = M_PI * apb * sum;
+            double p = morph::mathconst<double>::pi * apb * sum;
 
             return (float)p;
         }
@@ -872,7 +872,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setEllipticalBoundary (const float a, const float b,
-                                    const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                    const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, b, c);
             this->setBoundary (bpoints, offset);
@@ -885,7 +885,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setCircularBoundary (const float a,
-                                  const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                  const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
@@ -895,7 +895,7 @@ namespace morph {
          * Set up a rectangular boundary of width x and height y
          */
         void setRectangularBoundary (const float x, const float y,
-                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = rectangleCompute (x, y, c);
             this->setBoundary (bpoints, offset);
@@ -905,7 +905,7 @@ namespace morph {
          * Set up a parallelogram boundary extending r hexes to the E and g hexes to the NE
          */
         void setParallelogramBoundary (const int r, const int g,
-                                       const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, c);
             this->setBoundary (bpoints, offset);
@@ -927,19 +927,19 @@ namespace morph {
          *
          * return The number of hexes in the grid.
          */
-        unsigned int num (void) const { return this->hexen.size(); }
+        unsigned int num() const { return this->hexen.size(); }
 
         /*!
          * \brief Obtain the vector index of the last Hex in hexen.
          *
          * return Hex::vi from the last Hex in the grid.
          */
-        unsigned int lastVectorIndex (void) const { return this->hexen.rbegin()->vi; }
+        unsigned int lastVectorIndex() const { return this->hexen.rbegin()->vi; }
 
         /*!
          * Output some text information about the hexgrid.
          */
-        std::string output (void) const
+        std::string output() const
         {
             std::stringstream ss;
             ss << "Hex grid with " << this->hexen.size() << " hexes.\n";
@@ -961,7 +961,7 @@ namespace morph {
         /*!
          * Show the coordinates of the vertices of the overall hex grid generated.
          */
-        std::string extent (void) const
+        std::string extent() const
         {
             std::stringstream ss;
             if (gridReduced == false) {
@@ -981,7 +981,7 @@ namespace morph {
         /*!
          * Returns the width of the HexGrid (from -x to +x)
          */
-        float width (void) const
+        float width() const
         {
             // {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
             std::array<int, 6> extents = this->findBoundaryExtents();
@@ -993,7 +993,7 @@ namespace morph {
         /*!
          * Returns the 'depth' of the HexGrid (from -y to +y)
          */
-        float depth (void) const
+        float depth() const
         {
             std::array<int, 6> extents = this->findBoundaryExtents();
             float ymin = this->v * float(extents[2]);
@@ -1004,36 +1004,36 @@ namespace morph {
         /*!
          * Getter for d.
          */
-        float getd (void) const { return this->d; }
+        float getd() const { return this->d; }
 
         /*!
          * Getter for v - vertical hex spacing.
          */
-        float getv (void) const { return this->v; }
+        float getv() const { return this->v; }
 
         /*!
          * Get the shortest distance from the centre to the perimeter. This is the
          * "short radius".
          */
-        float getSR (void) const { return this->d/2; }
+        float getSR() const { return this->d/2; }
 
         /*!
          * The distance from the centre of the Hex to any of the vertices. This is the
          * "long radius".
          */
-        float getLR (void) const { return (this->d/morph::SQRT_OF_3_F); }
+        float getLR() const { return (this->d/morph::SQRT_OF_3_F); }
 
         /*!
          * The vertical distance from the centre of the hex to the "north east" vertex
          * of the hex.
          */
-        float getVtoNE (void) const { return (this->d/(2.0f*morph::SQRT_OF_3_F)); }
+        float getVtoNE() const { return (this->d/(2.0f*morph::SQRT_OF_3_F)); }
 
         /*!
          * Compute and return the area of one hex in the grid. The area is that of 6
          * triangles: (1/2 LR * d/2) * 6 // or (d*d*3)/(2*sqrt(3)) = d * d * sqrt(3)/2
          */
-        float getHexArea (void) const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
+        float getHexArea() const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
 
         /*!
          * Find the minimum value of x' on the HexGrid, where x' is the x axis rotated
@@ -1083,7 +1083,7 @@ namespace morph {
          * Run through all the hexes and compute the distance to the nearest boundary
          * hex.
          */
-        void computeDistanceToBoundary (void)
+        void computeDistanceToBoundary()
         {
             std::list<morph::Hex>::iterator h = this->hexen.begin();
             while (h != this->hexen.end()) {
@@ -1115,7 +1115,7 @@ namespace morph {
          * Populate d_ vectors. simple version. (Finds extents, then calls
          * populate_d_vectors(const array<int, 6>&)
          */
-        void populate_d_vectors (void)
+        void populate_d_vectors()
         {
             std::array<int, 6> extnts = this->findBoundaryExtents();
             this->populate_d_vectors (extnts);
@@ -1324,7 +1324,7 @@ namespace morph {
          * For every hex in hexen, unset the flags HEX_IS_REGION_BOUNDARY and
          * HEX_INSIDE_REGION
          */
-        void clearRegionBoundaryFlags (void)
+        void clearRegionBoundaryFlags()
         {
             for (auto& hh : this->hexen) {
                 hh.unsetFlag (HEX_IS_REGION_BOUNDARY | HEX_INSIDE_REGION);
@@ -1471,7 +1471,7 @@ namespace morph {
          * spirals out. This method populates hexen based on the grid parameters set
          * in d and x_span.
          */
-        void init (void)
+        void init()
         {
             // Use span_x to determine how many rings out to traverse.
             float halfX = this->x_span/2.0f;
@@ -1856,7 +1856,7 @@ namespace morph {
          * Determine whether the boundary is contiguous. Whilst doing so, populate a
          * list<Hex> containing just the boundary Hexes.
          */
-        bool boundaryContiguous (void)
+        bool boundaryContiguous()
         {
             this->bhexen.clear();
             std::list<morph::Hex>::const_iterator bhi = this->hexen.begin();
@@ -2429,7 +2429,7 @@ namespace morph {
         /*!
          * Mark ALL hexes as inside the domain
          */
-        void markAllHexesInsideDomain (void)
+        void markAllHexesInsideDomain()
         {
             std::list<morph::Hex>::iterator hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
@@ -2441,7 +2441,7 @@ namespace morph {
         /*!
          * Discard hexes in this->hexen that are outside the boundary #boundary.
          */
-        void discardOutsideBoundary (void)
+        void discardOutsideBoundary()
         {
             // Mark those hexes inside the boundary
             std::list<morph::Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
@@ -2450,8 +2450,7 @@ namespace morph {
             auto hi = this->hexen.begin();
             while (hi != this->hexen.end()) {
                 if (hi->testFlags(HEX_INSIDE_BOUNDARY) == false) {
-                    // When erasing a Hex, I need to update the neighbours of its
-                    // neighbours.
+                    // When erasing a Hex, I need to update the neighbours of its neighbours.
                     hi->disconnectNeighbours();
                     // Having disconnected the neighbours, erase the Hex.
                     hi = this->hexen.erase (hi);
@@ -2469,7 +2468,7 @@ namespace morph {
         /*!
          * Discard hexes in this->hexen that are outside the rectangular hex domain.
          */
-        void discardOutsideDomain (void)
+        void discardOutsideDomain()
         {
             // Similar to discardOutsideBoundary:
             auto hi = this->hexen.begin();
@@ -2499,7 +2498,7 @@ namespace morph {
          * the bottom line is parity-matched with the line on which the left and right
          * most boundary hexes are found.
          */
-        std::array<int, 6> findBoundaryExtents (void) const
+        std::array<int, 6> findBoundaryExtents() const
         {
             // Return object contains {ri-left, ri-right, gi-bottom, gi-top, gi at ri-left, gi at ri-right}
             // i.e. {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
@@ -2561,7 +2560,7 @@ namespace morph {
          *
          * setDomain() ASSUMES that a boundary has already been set.
          */
-        void setDomain (void)
+        void setDomain()
         {
             // 1. Find extent of boundary, both left/right and up/down, with 'buffer region' already added.
             std::array<int, 6> extnts = this->findBoundaryExtents();
@@ -2595,7 +2594,7 @@ namespace morph {
          * Does what it says on the tin. Re-number the Hex::vi vector index in each
          * Hex in the HexGrid, from the start of the list<Hex> hexen until the end.
          */
-        void renumberVectorIndices (void)
+        void renumberVectorIndices()
         {
             unsigned int vi = 0;
             this->vhexen.clear();

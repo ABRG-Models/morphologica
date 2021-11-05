@@ -4,7 +4,6 @@
 
 #include "morph/NM_Simplex.h"
 #include <iostream>
-#include <unistd.h>
 
 // Here's the Rosenbrock banana function
 FLT banana (FLT x, FLT y) {

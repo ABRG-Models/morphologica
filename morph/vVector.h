@@ -603,7 +603,7 @@ namespace morph {
             }
             auto pi = p.begin();
             vVector<S> rtn(this->size());
-            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, (*pi++)); };
+            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, static_cast<S>(*pi++)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
@@ -615,7 +615,7 @@ namespace morph {
                 throw std::runtime_error ("element-wise power: p dims should equal vVector's dims");
             }
             auto pi = p.begin();
-            for (auto& i : *this) { i = std::pow (i, (*pi++)); }
+            for (auto& i : *this) { i = std::pow (i, static_cast<S>(*pi++)); }
         }
 
         //! Return the signum of the vVector, with signum(0)==0
@@ -636,12 +636,12 @@ namespace morph {
         vVector<S> sqrt() const
         {
             vVector<S> rtn(this->size());
-            auto sqrt_element = [](S coord) { return std::sqrt(coord); };
+            auto sqrt_element = [](S coord) { return static_cast<S>(std::sqrt(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace() { for (auto& i : *this) { i = std::sqrt (i); } }
+        void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
@@ -868,7 +868,7 @@ namespace morph {
                 throw std::runtime_error ("vVector::dot(): vectors must have equal size");
             }
             auto vi = v.begin();
-            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
+            auto dot_product = [vi](S a, _S b) mutable -> S { return a + static_cast<S>(b) * static_cast<S>(*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
             return rtn;
         }
@@ -910,7 +910,9 @@ namespace morph {
                 throw std::runtime_error ("vVector::operator*: Hadamard product is defined here for vectors of same dimensionality only");
             }
             vVector<S, Al> rtn(this->size(), S{0});
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>());
+            auto vi = v.begin();
+            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
 
@@ -923,7 +925,9 @@ namespace morph {
         template <typename _S=S>
         void operator*= (const vVector<_S>& v) {
             if (v.size() == this->size()) {
-                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::multiplies<S>());
+                auto vi = v.begin();
+                auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
             } else {
                 throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
             }
@@ -944,6 +948,7 @@ namespace morph {
                 throw std::runtime_error ("vVector::operator*: Hadamard division is defined here for vectors of same dimensionality only");
             }
             vVector<S, Al> rtn(this->size(), S{0});
+            // Fixme: Copy implementation for operator* to explicitly cast and avoid warnings in Vis Studio.
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
             return rtn;
         }
@@ -973,7 +978,7 @@ namespace morph {
         vVector<S> operator* (const _S& s) const
         {
             vVector<S> rtn(this->size());
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) -> S { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -987,7 +992,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) -> S { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
@@ -996,7 +1001,7 @@ namespace morph {
         vVector<S> operator/ (const _S& s) const
         {
             vVector<S> rtn(this->size());
-            auto div_by_s = [s](S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) -> S { return coord / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -1005,7 +1010,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
-            auto div_by_s = [s](S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) -> S { return coord / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
@@ -1015,7 +1020,7 @@ namespace morph {
         {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable { return a + (*vi++); };
+            auto add_v = [vi](S a) mutable -> S { return a + static_cast<S>(*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), add_v);
             return vrtn;
         }
@@ -1025,7 +1030,7 @@ namespace morph {
         void operator+= (const vVector<_S>& v)
         {
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable { return a + (*vi++); };
+            auto add_v = [vi](S a) mutable -> S { return a + static_cast<S>(*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
         }
 
@@ -1035,7 +1040,7 @@ namespace morph {
         {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - static_cast<S>(*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
             return vrtn;
         }
@@ -1045,7 +1050,7 @@ namespace morph {
         void operator-= (const vVector<_S>& v)
         {
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - static_cast<S>(*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 
@@ -1054,7 +1059,7 @@ namespace morph {
         vVector<S> operator+ (const _S& s) const
         {
             vVector<S> rtn(this->size());
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -1063,7 +1068,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -1072,7 +1077,7 @@ namespace morph {
         vVector<S> operator- (const _S& s) const
         {
             vVector<S> rtn(this->size());
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -1081,7 +1086,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
@@ -1089,7 +1094,7 @@ namespace morph {
         vVector<S> operator+ (const S& s) const
         {
             vVector<S> rtn(this->size());
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -1097,7 +1102,7 @@ namespace morph {
         //! Addition += operator for any time same as the enclosed type that implements + op
         void operator+= (const S& s) const
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -1105,7 +1110,7 @@ namespace morph {
         vVector<S> operator- (const S& s) const
         {
             vVector<S> rtn(this->size());
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }

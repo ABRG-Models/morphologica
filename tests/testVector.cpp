@@ -106,10 +106,13 @@ int main() {
     // Test operator *= with different types. Ok if lhs is same type as result.
     Vector<int, 3> h4 = {2, 2, 2};
     //Vector<int, 3> h5 = h2 * h4; // Not ok
-    Vector<int, 3> h6 = h4 * h2;
+    Vector<int, 3> h6 = h4 * h2; // Vector<int, N> * Vector<double, N> implies expected loss of precision.
     Vector<double, 3> h7 = h2 * h4;
     //Vector<double, 3> h8 = h4 * h2; // Not ok
     cout << h2 << "(o)" << h4 << " = " << h6 << " or " << h7 << endl;
+
+    // Will VS be happy?
+    h4 *= h2;
 
     Vector<float, 4> maxlongest = {-1.1f, -7.0f, 3.0f, 6.0f };
     cout << "For vector " << maxlongest

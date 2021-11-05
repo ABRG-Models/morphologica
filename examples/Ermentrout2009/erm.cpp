@@ -230,7 +230,7 @@ int main (int argc, char **argv)
     conf.set ("final_step", RD.stepCount);
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("dt", RD.get_dt());
-#ifndef __OSX__ // Currently Config::insertGitInfo fails on Macs
+#ifdef __GLN__ // Currently Config::insertGitInfo fails on Macs and Windows
     conf.insertGitInfo ("sim/");
 #endif
     // Store the binary name and command argument into root, too.

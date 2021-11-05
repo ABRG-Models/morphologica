@@ -160,7 +160,6 @@ int main (int argc, char** argv)
                 lastgen = gen;
                 if (b>=fitness_threshold) {
                     lastf1 = gen;
-                    DBG ("F=1 at generation " << gen);
                     ++f1count;
                 }
                 // Copy new fitness to ref

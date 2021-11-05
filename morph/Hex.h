@@ -123,8 +123,7 @@ namespace morph {
          * Constructor taking index, dimension and integer position indices. Computes Cartesian
          * location from these.
          */
-        Hex (const unsigned int& idx, const float& d_,
-             const int& r_, const int& g_)
+        Hex (const unsigned int& idx, const float& d_, const int& r_, const int& g_)
         {
             this->vi = idx;
             this->d = d_;
@@ -134,10 +133,7 @@ namespace morph {
         }
 
         //! Construct using the passed in HDF5 file and path.
-        Hex (HdfData& h5data, const std::string& h5path)
-        {
-            this->load (h5data, h5path);
-        }
+        Hex (HdfData& h5data, const std::string& h5path) { this->load (h5data, h5path); }
 
         //! Comparison operation to enable use of set<Hex>
         bool operator< (const Hex& rhs) const
@@ -238,7 +234,7 @@ namespace morph {
          * Produce a string containing information about this hex, showing grid location in
          * dimensionless r,g (but not b) units. Also show nearest neighbours.
          */
-        std::string output (void) const
+        std::string output() const
         {
             std::string s("Hex ");
             s += std::to_string(this->vi) + " (";
@@ -275,7 +271,7 @@ namespace morph {
          * Produce a string containing information about this hex, focussing on Cartesian position
          * information.
          */
-        std::string outputCart (void) const
+        std::string outputCart() const
         {
             std::string s("Hex ");
             s += std::to_string(this->vi).substr(0,2) + " (";
@@ -286,7 +282,7 @@ namespace morph {
         }
 
         //! Output "(x,y)" coordinate string
-        std::string outputXY (void) const
+        std::string outputXY() const
         {
             std::string s("(");
             s += std::to_string(this->x).substr(0,4) + "," + std::to_string(this->y).substr(0,4) + ")";
@@ -294,7 +290,7 @@ namespace morph {
         }
 
         //! Output a string containing just "RG(ri, gi)"
-        std::string outputRG (void) const
+        std::string outputRG() const
         {
             std::string s("RG(");
             s += std::to_string(this->ri).substr(0,4) + ",";
@@ -348,7 +344,7 @@ namespace morph {
          * Convert ri, gi and bi indices into x and y coordinates and also r and phi coordinates,
          * based on the hex-to-hex distance d.
          */
-        void computeLocation (void)
+        void computeLocation()
         {
             // Compute Cartesian location
             this->x = this->d*this->ri + (d/2.0f)*this->gi - (d/2.0f)*this->bi;
@@ -425,7 +421,7 @@ namespace morph {
         float z = 0.0f;
 
         //! Get the Cartesian position of this Hex as a fixed size array.
-        std::array<float, 3> position (void) const
+        std::array<float, 3> position() const
         {
             std::array<float,3> rtn = { { this->x, this->y, this->z } };
             return rtn;
@@ -435,43 +431,37 @@ namespace morph {
         float d = 1.0f;
 
         //! A getter for d, for completeness. d is the centre-to-centre distance between adjacent hexes.
-        float getD (void) const
-        {
-            return this->d;
-        }
+        float getD() const { return this->d; }
 
         //! Get the shortest distance from the centre to the perimeter. This is the "short radius".
-        float getSR (void) const
-        {
-            return this->d/2;
-        }
+        float getSR() const { return this->d/2; }
 
         //! The distance from the centre of the Hex to any of the vertices. This is the "long radius".
-        float getLR (void) const
+        float getLR() const
         {
             float lr = this->d/morph::SQRT_OF_3_F;
             return lr;
         }
 
         //! Compute and return the area of the hex
-        float getArea (void) const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
+        float getArea() const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
 
         //! The vertical distance between hex centres on adjacent rows.
-        float getV (void) const
+        float getV() const
         {
             float v = (this->d*morph::SQRT_OF_3_F)/2.0f;
             return v;
         }
 
         //! The vertical distance from the centre of the hex to the "north east" vertex of the hex.
-        float getVtoNE (void) const
+        float getVtoNE() const
         {
             float v = this->d/(2.0f*morph::SQRT_OF_3_F);
             return v;
         }
 
         //! Return twice the vertical distance between hex centres on adjacent rows.
-        float getTwoV (void) const
+        float getTwoV() const
         {
             float tv = (this->d*morph::SQRT_OF_3_F);
             return tv;
@@ -498,7 +488,7 @@ namespace morph {
         int bi = 0;
 
         //! Getter for this->flags
-        unsigned int getFlags (void) const { return this->flags; }
+        unsigned int getFlags() const { return this->flags; }
 
         //! Set one or more flags, defined by flg, true
         void setFlag (unsigned int flg) { this->flags |= flg; }
@@ -520,27 +510,27 @@ namespace morph {
          * client code will then re-set the neighbour relations so that onBoundary() would return
          * true.
          */
-        bool boundaryHex (void) const { return this->flags & HEX_IS_BOUNDARY ? true : false; }
+        bool boundaryHex() const { return this->flags & HEX_IS_BOUNDARY ? true : false; }
         /*!
          * Mark the hex as a boundary hex. Boundary hexes are also, by definition, inside the
          * boundary.
          */
-        void setBoundaryHex (void) { this->flags |= (HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY); }
-        void unsetBoundaryHex (void) { this->flags &= ~(HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY); }
+        void setBoundaryHex() { this->flags |= (HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY); }
+        void unsetBoundaryHex() { this->flags &= ~(HEX_IS_BOUNDARY | HEX_INSIDE_BOUNDARY); }
 
         //! Returns true if this Hex is known to be inside the boundary.
-        bool insideBoundary (void) const { return this->flags & HEX_INSIDE_BOUNDARY ? true : false; }
+        bool insideBoundary() const { return this->flags & HEX_INSIDE_BOUNDARY ? true : false; }
         //! Set the flag that says this Hex is known to be inside the boundary.
-        void setInsideBoundary (void) { this->flags |= HEX_INSIDE_BOUNDARY; }
+        void setInsideBoundary() { this->flags |= HEX_INSIDE_BOUNDARY; }
         //! Unset the flag that says this Hex is inside the boundary.
-        void unsetInsideBoundary (void) { this->flags &= ~HEX_INSIDE_BOUNDARY; }
+        void unsetInsideBoundary() { this->flags &= ~HEX_INSIDE_BOUNDARY; }
 
         //! Returns true if this Hex is known to be inside a rectangular, parallelogram or hexagonal 'domain'.
-        bool insideDomain (void) const { return this->flags & HEX_INSIDE_DOMAIN ? true : false; }
+        bool insideDomain() const { return this->flags & HEX_INSIDE_DOMAIN ? true : false; }
         //! Set flag that says this Hex is known to be inside a rectangular, parallelogram or hexagonal 'domain'.
-        void setInsideDomain (void) { this->flags |= HEX_INSIDE_DOMAIN; }
+        void setInsideDomain() { this->flags |= HEX_INSIDE_DOMAIN; }
         //! Unset flag that says this Hex is known to be inside domain.
-        void unsetInsideDomain (void) { this->flags &= ~HEX_INSIDE_DOMAIN; }
+        void unsetInsideDomain() { this->flags &= ~HEX_INSIDE_DOMAIN; }
 
         /*!
          * Set the HEX_USER_FLAG_0/1/2/3 from the passed in unsigned int.
@@ -567,7 +557,7 @@ namespace morph {
         }
 
         //! Set all user flags to the unset state
-        void resetUserFlags (void) { this->flags &= HEX_NON_USER; }
+        void resetUserFlags() { this->flags &= HEX_NON_USER; }
 
         //! Getter for each user flag
         bool getUserFlag (unsigned int uflg_num) const
@@ -630,30 +620,30 @@ namespace morph {
         }
 
         //! Return true if this Hex has a Neighbour to the East
-        bool has_ne (void) const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); }
+        bool has_ne() const { return ((this->flags & HEX_HAS_NE) == HEX_HAS_NE); }
         //! Return true if this Hex has a Neighbour to the North East
-        bool has_nne (void) const { return ((this->flags & HEX_HAS_NNE) == HEX_HAS_NNE); }
+        bool has_nne() const { return ((this->flags & HEX_HAS_NNE) == HEX_HAS_NNE); }
         //! Return true if this Hex has a Neighbour to the North West
-        bool has_nnw (void) const { return ((this->flags & HEX_HAS_NNW) == HEX_HAS_NNW); }
+        bool has_nnw() const { return ((this->flags & HEX_HAS_NNW) == HEX_HAS_NNW); }
         //! Return true if this Hex has a Neighbour to the West
-        bool has_nw (void) const { return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW); }
+        bool has_nw() const { return ((this->flags & HEX_HAS_NW) == HEX_HAS_NW); }
         //! Return true if this Hex has a Neighbour to the South West
-        bool has_nsw (void) const { return ((this->flags & HEX_HAS_NSW) == HEX_HAS_NSW); }
+        bool has_nsw() const { return ((this->flags & HEX_HAS_NSW) == HEX_HAS_NSW); }
         //! Return true if this Hex has a Neighbour to the South East
-        bool has_nse (void) const { return ((this->flags & HEX_HAS_NSE) == HEX_HAS_NSE); }
+        bool has_nse() const { return ((this->flags & HEX_HAS_NSE) == HEX_HAS_NSE); }
 
         //! Set flags to say that this Hex has NO neighbour to East
-        void unset_ne (void) { this->flags ^= HEX_HAS_NE; }
+        void unset_ne() { this->flags ^= HEX_HAS_NE; }
         //! Set flags to say that this Hex has NO neighbour to North East
-        void unset_nne (void) { this->flags ^= HEX_HAS_NNE; }
+        void unset_nne() { this->flags ^= HEX_HAS_NNE; }
         //! Set flags to say that this Hex has NO neighbour to North West
-        void unset_nnw (void) { this->flags ^= HEX_HAS_NNW; }
+        void unset_nnw() { this->flags ^= HEX_HAS_NNW; }
         //! Set flags to say that this Hex has NO neighbour to West
-        void unset_nw (void) { this->flags ^= HEX_HAS_NW; }
+        void unset_nw() { this->flags ^= HEX_HAS_NW; }
         //! Set flags to say that this Hex has NO neighbour to South West
-        void unset_nsw (void) { this->flags ^= HEX_HAS_NSW; }
+        void unset_nsw() { this->flags ^= HEX_HAS_NSW; }
         //! Set flags to say that this Hex has NO neighbour to South East
-        void unset_nse (void) { this->flags ^= HEX_HAS_NSE; }
+        void unset_nse() { this->flags ^= HEX_HAS_NSE; }
 
         /*!
          * Test if have neighbour at position \a ni.
@@ -797,7 +787,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (unsigned short ni) const
         {
-            std::pair<float, float> rtn = {0.0, 0.0};
+            std::pair<float, float> rtn = {0.0f, 0.0f};
             switch (ni) {
             case HEX_VERTEX_POS_NE:
             {
@@ -852,7 +842,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (unsigned int ni) const
         {
-            std::pair<float, float> rtn = {-2.0, -2.0};
+            std::pair<float, float> rtn = {-2.0f, -2.0f};
             if (ni > 5) {
                 return rtn;
             }
@@ -867,7 +857,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (int ni) const
         {
-            std::pair<float, float> rtn = {-3.0, -3.0};
+            std::pair<float, float> rtn = {-3.0f, -3.0f};
             if (ni > 5) {
                 rtn.first = -4.0f;
                 return rtn;
@@ -927,7 +917,7 @@ namespace morph {
         }
 
         //! Un-set the pointers on all my neighbours so that THEY no longer point to ME.
-        void disconnectNeighbours (void)
+        void disconnectNeighbours()
         {
 #if 0
             // FIXME Could be 6 stanzas like this to avoid the nested ifs

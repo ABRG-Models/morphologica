@@ -1,5 +1,5 @@
 # AUTOMOC requires 2.8.6. The CMAKE_CXX_STANDARD variable requires 3.1.
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 project(morphologica)
 set(VERSION 0.1)
 set(SOVERSION 1.0)
@@ -33,20 +33,25 @@ set (CMAKE_CXX_STANDARD 17)
 if (APPLE)
     set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
 else()
-  # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
-  if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
-  else () # GCC or Clang
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-      # Add compiler version check, to ensure gcc is version 7 or later.
-      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
-        message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
-      else()
-        message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
+  if(NOT CMAKE_SYSTEM MATCHES Win.*)
+    # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`
+    if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -std=c++17 -xHOST -O3 -D__ICC__")
+    else () # GCC or Clang
+      if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+        # Add compiler version check, to ensure gcc is version 7 or later.
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.1)
+          message(FATAL_ERROR "GCC version must be at least 7.1! Use CXX=g++-7 cmake (options) and don't forget to clean out your build directory first!")
+        else()
+          message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
+        endif()
       endif()
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
     endif()
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -march=native -O3")
-  endif()
+  else() # Windows
+    # Set flags for Windows. /EHsc required for use of exceptions
+    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -DNOMINMAX /EHsc")
+  endif() # CMAKE_SYSTEM MATCHES Win.*
 endif()
 
 # Tell clang to be quiet about brace initialisers
@@ -54,8 +59,16 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-braces")
 endif()
 
-find_package(OpenMP)
+# Note that we require OpenMP version 3 or above for ability to use
+# unsigned integral types in parallel for loops. At time of writing,
+# Visual Studio 2019 offers OpenMP 2 by default and 3 with the special
+# switch -openmp:llvm. I don't know how to get cmake to use the
+# special version, so OpenMP will not work at present on
+# Windows/VS2019. But then, you wouldn't use Windows for serious
+# numerical work anyway.
+find_package(OpenMP 3)
 if(OpenMP_CXX_FOUND)
+  message(STATUS "Found OpenMP version ${OpenMP_C_VERSION}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
@@ -113,11 +126,16 @@ find_package(OpenCV) # No longer required for morph::Visual, used by some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
+  include_directories(${GLEW_INCLUDE_DIRS})
 endif(USE_GLEW)
 find_package(glfw3 3.3 REQUIRED)
 # Find the HDF5 library. To prefer the use of static linking of HDF5, set HDF5_USE_STATIC_LIBRARIES first
 #set(HDF5_USE_STATIC_LIBRARIES ON)
 find_package(HDF5 REQUIRED)
+if(HDF5_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${HDF5_DEFINITIONS}")
+endif()
+
 find_package(Armadillo REQUIRED)
 
 if(${OpenCV_FOUND})
@@ -153,6 +171,11 @@ add_subdirectory(include)
 # Unit testing using the ctest framework
 enable_testing()
 add_subdirectory(tests)
+
+# incbin for Visual Studio
+if(WIN32)
+add_subdirectory(buildtools)
+endif()
 
 # Install the font files, for the examples, which seek to work with an
 # *installed* morphologica, as opposed to an in-tree morphologica.

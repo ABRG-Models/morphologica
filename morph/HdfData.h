@@ -24,6 +24,10 @@
 #include <morph/vVector.h>
 #include <morph/tools.h>
 
+#ifdef __WIN__
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
+
 namespace morph {
 
     /*!

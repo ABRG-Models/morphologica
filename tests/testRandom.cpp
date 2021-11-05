@@ -7,12 +7,20 @@ int main()
 {
     int rtn = 0;
 
+#ifdef __WIN__
+    // VS enforces the strict minimum size for the std::random code in Random.h, so
+    // smallest you can get away with is unsigned short.
+    typedef unsigned short SMALL_T;
+#else
+    // Other compilers are less fussy and will accept this
+    typedef unsigned char SMALL_T;
+#endif
     // A random uniform generator returning integer types
-    morph::RandUniform<unsigned char, std::mt19937> rui;
-    cout << "Random number is " << (unsigned int)rui.get() << endl;
+    morph::RandUniform<SMALL_T, std::mt19937> rui;
+    cout << "Random number is " << static_cast<unsigned int>(rui.get()) << endl;
     // You can find the min and max:
-    cout << "That integer RNG has min and max: " << (unsigned int)rui.min()
-         << "/" << (unsigned int)rui.max() << endl;
+    cout << "That integer RNG has min and max: " << static_cast<unsigned int>(rui.min())
+         << "/" << static_cast<unsigned int>(rui.max()) << endl;
 
     // A random uniform generator returning real/floating point types
     morph::RandUniform<float, std::mt19937> ruf;

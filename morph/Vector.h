@@ -332,9 +332,9 @@ namespace morph {
              * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
              * sense.
              */
-            static constexpr _S unitThresh = 0.001;
+            static constexpr _S unitThresh = _S{0.001};
 
-            auto subtract_squared = [](_S a, _S b) { return a - b * b; };
+            auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
             const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
             if (std::abs(metric) > unitThresh) {
                 return false;
@@ -350,8 +350,14 @@ namespace morph {
         S length() const
         {
             auto add_squared = [](S a, S b) { return a + b * b; };
-            const S len = std::sqrt (std::accumulate (this->begin(), this->end(), S{0}, add_squared));
-            return len;
+            // Add check on whether S is integral or float. If integral, then std::round then cast the result of std::sqrt()
+            if constexpr (std::is_integral<std::decay_t<S>>::value == true) {
+                const S len = static_cast<S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared))));
+                return len;
+            } else {
+                const S len = std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared));
+                return len;
+            }
         }
 
         /*!
@@ -527,7 +533,7 @@ namespace morph {
         //! Return the product of the elements
         S product() const
         {
-            auto _product = [](S a, S b) mutable { return a ? a * b : b; };
+            auto _product = [](S a, S b) mutable -> S { return a ? a * b : b; };
             return std::accumulate (this->begin(), this->end(), S{0}, _product);
         }
 
@@ -539,12 +545,12 @@ namespace morph {
         Vector<S, N> pow (const S& p) const
         {
             Vector<S, N> rtn;
-            auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
+            auto raise_to_p = [p](S coord) -> S { return static_cast<S>(std::pow(coord, p)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
+        void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
 
         //! Element-wise power
         template<typename _S=S>
@@ -552,7 +558,7 @@ namespace morph {
         {
             auto pi = p.begin();
             Vector<S, N> rtn;
-            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, (*pi++)); };
+            auto raise_to_p = [pi](S coord) mutable -> S { return static_cast<S>(std::pow(coord, (*pi++))); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
@@ -560,14 +566,14 @@ namespace morph {
         void pow_inplace (const Vector<_S, N>& p)
         {
             auto pi = p.begin();
-            for (auto& i : *this) { i = std::pow (i, (*pi++)); }
+            for (auto& i : *this) { i = static_cast<S>(std::pow (i, (*pi++))); }
         }
 
         //! Return the signum of the vVector, with signum(0)==0
         Vector<S, N> signum() const
         {
             Vector<S, N> rtn;
-            auto _signum = [](S coord) { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
+            auto _signum = [](S coord) -> S { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
@@ -581,12 +587,12 @@ namespace morph {
         Vector<S, N> sqrt() const
         {
             Vector<S, N> rtn;
-            auto sqrt_element = [](S coord) { return std::sqrt(coord); };
+            auto sqrt_element = [](S coord) -> S { return static_cast<S>(std::sqrt(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
         //! Replace each element with its own square root
-        void sqrt_inplace() { for (auto& i : *this) { i = std::sqrt (i); } }
+        void sqrt_inplace() { for (auto& i : *this) { i = static_cast<S>(std::sqrt (i)); } }
 
         /*!
          * Compute the element-wise square of the vector
@@ -596,7 +602,7 @@ namespace morph {
         Vector<S, N> sq() const
         {
             Vector<S, N> rtn;
-            auto sq_element = [](S coord) { return std::pow(coord, 2); };
+            auto sq_element = [](S coord) -> S { return (coord * coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
         }
@@ -611,12 +617,12 @@ namespace morph {
         Vector<S, N> log() const
         {
             Vector<S, N> rtn;
-            auto log_element = [](S coord) { return std::log(coord); };
+            auto log_element = [](S coord) -> S { return static_cast<S>(std::log(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
         //! Replace each element with its own natural log
-        void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
+        void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
 
         /*!
          * Compute the element-wise log to base 10 of the vector
@@ -626,12 +632,12 @@ namespace morph {
         Vector<S, N> log10() const
         {
             Vector<S, N> rtn;
-            auto log_element = [](S coord) { return std::log10(coord); };
+            auto log_element = [](S coord) -> S { return static_cast<S>(std::log10(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
         //! Replace each element with its own log to base 10
-        void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
+        void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
@@ -641,12 +647,12 @@ namespace morph {
         Vector<S, N> exp() const
         {
             Vector<S, N> rtn;
-            auto exp_element = [](S coord) { return std::exp(coord); };
+            auto exp_element = [](S coord) -> S { return static_cast<S>(std::exp(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
             return rtn;
         }
         //! Replace each element with its own natural exponential
-        void exp_inplace() { for (auto& i : *this) { i = std::exp(i); } }
+        void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
 
         /*!
          * Compute the element-wise absolute values of the vector
@@ -656,24 +662,24 @@ namespace morph {
         Vector<S, N> abs() const
         {
             Vector<S, N> rtn;
-            auto abs_element = [](S coord) { return std::abs(coord); };
+            auto abs_element = [](S coord) -> S { return static_cast<S>(std::abs(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
         //! Replace each element with its own absolute value
-        void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+        void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
-            auto _element_fails = [rhs](S a, S b) { return a  (b < rhs ? S{0} : S{1}); };
+            auto _element_fails = [rhs](S a, S b) -> S { return a  (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! <= a scalar. Return true if every element is less than the scalar
         bool operator<=(const S rhs) const
         {
-            auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
+            auto _element_fails = [rhs](S a, S b) -> S { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
@@ -813,7 +819,9 @@ namespace morph {
         Vector<S, N> operator* (const Vector<_S, N>& v) const
         {
             Vector<S, N> rtn;
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::multiplies<S>());
+            auto vi = v.begin();
+            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+            std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
 
@@ -825,7 +833,9 @@ namespace morph {
         template <typename _S=S>
         void operator*= (const Vector<_S, N>& v)
         {
-            std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::multiplies<S>());
+            auto vi = v.begin();
+            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
         /*!

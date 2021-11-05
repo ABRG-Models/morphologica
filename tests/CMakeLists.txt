@@ -143,61 +143,108 @@ if(${glfw3_FOUND})
   # Test hexgrid3 (hexgrid2 with visualisation)
   add_executable(testhexgrid3 testhexgrid3.cpp)
   target_link_libraries(testhexgrid3 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testhexgrid3 GLEW::GLEW)
+  endif()
 
   # Test hexgridsave (HexGrid's save feature)
   add_executable(testhexgridsave testhexgridsave.cpp)
   target_link_libraries(testhexgridsave ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testhexgridsave GLEW::GLEW)
+  endif()
 
   # Test boundary pgram
   add_executable(testdom_pgram testdom_pgram.cpp)
   target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testdom_pgram GLEW::GLEW)
+  endif()
 
   # Test boundary rect
   add_executable(testdom_rect testdom_rect.cpp)
   target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testdom_rect GLEW::GLEW)
+  endif()
 
   # Test boundary hex
   add_executable(testdom_hex testdom_hex.cpp)
   target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testdom_hex GLEW::GLEW)
+  endif()
 
   # Test boundary bound
   add_executable(testdom_bound testdom_bound.cpp)
   target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testdom_bound GLEW::GLEW)
+  endif()
 
   add_executable(testbighexgrid testbighexgrid.cpp)
   target_link_libraries(testbighexgrid ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testbighexgrid GLEW::GLEW)
+  endif()
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
   target_link_libraries(testVisCoordArrows ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testVisCoordArrows GLEW::GLEW)
+  endif()
 
   add_executable(testVisRemoveModel testVisRemoveModel.cpp)
   target_link_libraries(testVisRemoveModel ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testVisRemoveModel GLEW::GLEW)
+  endif()
 
   # Test elliptical HexGrid code (visualized with morph::Visual)
   add_executable(test_ellipseboundary test_ellipseboundary.cpp)
   target_link_libraries(test_ellipseboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(test_ellipseboundary GLEW::GLEW)
+  endif()
 
   # Test circular HexGrid code
   add_executable(test_circleboundary test_circleboundary.cpp)
   target_link_libraries(test_circleboundary ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(test_circleboundary GLEW::GLEW)
+  endif()
 
   # Test Dirichlet code
   add_executable(testDirichlet testDirichlet.cpp)
   target_link_libraries(testDirichlet ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testDirichlet GLEW::GLEW)
+  endif()
 
   add_executable(testDirichlet2 testDirichlet2.cpp)
   target_link_libraries(testDirichlet2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testDirichlet2 GLEW::GLEW)
+  endif()
 
   add_executable(testDirichlet4 testDirichlet4.cpp)
   target_link_libraries(testDirichlet4 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testDirichlet4 GLEW::GLEW)
+  endif()
 
   add_executable(testDirichlet5 testDirichlet5.cpp)
   target_link_libraries(testDirichlet5 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype jsoncpp_lib)
+  if(USE_GLEW)
+    target_link_libraries(testDirichlet5 GLEW::GLEW)
+  endif()
 endif()
 
 # Test morph::Process class
 if(APPLE)
   message("-- NB: Omitting testProcess.cpp on Mac for now, as it doesn't work.")
+elseif(WIN32)
+  message("-- NB: Omitting testProcess.cpp on Windows for now, as it tests the very Unixy Process class.")  
 else(APPLE)
   add_executable(testProcess testProcess.cpp)
   add_test(testProcess testProcess)
@@ -297,6 +344,9 @@ add_test(test_elman test_elman)
 add_executable(ff_debug ff_debug.cpp)
 add_test(ff_debug ff_debug)
 
+add_executable(testdirs testdirs.cpp)
+add_test(testdirs testdirs)
+
 #
 # Boolean gene nets. Fixme: These are not unit tests, but I've thrown
 # them in here for now. Perhaps need a 'bn' directory to build these
@@ -339,11 +389,15 @@ if (APPLE)
 endif()
 target_link_libraries(testEvolve jsoncpp_lib)
 
-add_executable(testGradGenome testGradGenome.cpp)
-if (APPLE)
-  target_compile_options(testGradGenome PUBLIC "-mavx")
+if(NOT WIN32)
+  # testGradGenome tries to create random num generator with width <
+  # 16 bits, not strictly allowed and enforced by VS2019
+  add_executable(testGradGenome testGradGenome.cpp)
+  if (APPLE)
+    target_compile_options(testGradGenome PUBLIC "-mavx")
+  endif()
+  #add_test(testGradGenome testGradGenome )
 endif()
-#add_test(testGradGenome testGradGenome )
 
 # Test Cartesian (rectangular) grid
 add_executable(testcartgrid testcartgrid.cpp)

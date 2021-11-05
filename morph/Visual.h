@@ -23,10 +23,12 @@
 // Include glfw3 AFTER VisualModel
 #include <GLFW/glfw3.h>
 // For GLuint and GLenum (though redundant, as already included in VisualModel
+#ifndef USE_GLEW
 #ifdef __OSX__
 # include <OpenGL/gl3.h>
 #else
 # include <GL3/gl3.h>
+#endif
 #endif
 
 #include <morph/VisualResources.h>
