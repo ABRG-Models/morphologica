@@ -612,7 +612,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 
@@ -663,7 +663,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0, 0.0);
+                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
                 bpi = bpoints.begin();
             }
 

@@ -795,8 +795,12 @@ namespace morph
 
             // Now do something with x1,y1,x2,y2: Create a BezCurve object then add this
             // to this->linePath
-            std::pair<float,float> p1 = std::make_pair (std::atof (x1.c_str()), std::atof (y1.c_str()));
-            std::pair<float,float> p2 = std::make_pair (std::atof (x2.c_str()), std::atof (y2.c_str()));
+            std::pair<float,float> p1;
+            p1.first = static_cast<float>(std::atof (x1.c_str()));
+            p1.second = static_cast<float>(std::atof (y1.c_str()));
+            std::pair<float,float> p2;
+            p2.first = static_cast<float>(std::atof (x2.c_str()));
+            p2.second = static_cast<float>(std::atof (y2.c_str()));
             morph::BezCurve<float> linecurve (p1, p2);
             this->linePath.reset();
             this->linePath.initialCoordinate = p1;

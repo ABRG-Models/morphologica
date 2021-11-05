@@ -797,7 +797,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (unsigned short ni) const
         {
-            std::pair<float, float> rtn = {0.0, 0.0};
+            std::pair<float, float> rtn = {0.0f, 0.0f};
             switch (ni) {
             case RECT_VERTEX_POS_NE:
             {
@@ -840,7 +840,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (unsigned int ni) const
         {
-            std::pair<float, float> rtn = {-2.0, -2.0};
+            std::pair<float, float> rtn = {-2.0f, -2.0f};
             if (ni > 3) {
                 return rtn;
             }
@@ -855,7 +855,7 @@ namespace morph {
          */
         std::pair<float, float> get_vertex_coord (int ni) const
         {
-            std::pair<float, float> rtn = {-3.0, -3.0};
+            std::pair<float, float> rtn = {-3.0f, -3.0f};
             if (ni > 3) {
                 rtn.first = -4.0f;
                 return rtn;
