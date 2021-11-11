@@ -2,12 +2,6 @@
 # This file controls the installation of the header files.
 #
 
-# Link to the special armadillo libpath, if requested
-if (NOT "${MORPH_ARMADILLO_LIBPATH}" STREQUAL "")
-  message ("-- Adding MORPH_ARMADILLO_LIBPATH: ${MORPH_ARMADILLO_LIBPATH} to link directories")
-  link_directories(${MORPH_ARMADILLO_LIBPATH})
-endif()
-
 # Header installation
 install(
   FILES Quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h MathConst.h MathAlgo.h MathImpl.h number_type.h Hex.h HexGrid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Anneal.h AdaptiveAnneal.h Config.h Vector.h vVector.h TransformMatrix.h colour.h ColourMap.h ColourMap_Lists.h Scale.h Random.h RecurrentNetworkTools.h RecurrentNetwork.h Winder.h expression_sfinae.h

@@ -93,12 +93,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # example, if you're compiling with morphologica in a subdirectory, you may need:
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
-# The package managed version of armadillo8 on Ubuntu 18.04 LTS didn't
-# work, but was required for OpenCV, so it's useful to be able to
-# install a from-source build of Armadillo in /usr/local and link to
-# this.
-set(MORPH_ARMADILLO_LIBPATH "" CACHE PATH "The path to the armadillo library (e.g. /usr/local/lib)")
-
 # A section to ensure library linking works on Apple. No longer necessary? Doesn't seem to be.
 if(0)#APPLE
   set(CMAKE_MACOSX_RPATH ON)
