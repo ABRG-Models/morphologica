@@ -566,6 +566,26 @@ namespace morph {
             return sum / this->size();
         }
 
+        //! Return the variance of the elements
+        S variance() const
+        {
+            if (this->empty()) { return S{0}; }
+            S _mean = this->mean();
+            S sos_deviations = S{0};
+            for (S val : *this) {
+                sos_deviations += ((val-_mean)*(val-_mean));
+            }
+            S variance = sos_deviations / (this->size()-1);
+            return variance;
+        }
+
+        //! Return the standard deviation of the elements
+        S std() const
+        {
+            if (this->empty()) { return S{0}; }
+            return std::sqrt (this->variance());
+        }
+
         //! Return the sum of the elements
         S sum() const
         {
