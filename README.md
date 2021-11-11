@@ -3,7 +3,7 @@
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
 
 Library code used in models developed by Stuart P. Wilson, Seb James
-and co-workers in the Wilson Lab.
+and co-workers in the Wilson Lab. Want to see the code? It's all in the [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory.
 
 **New:** morphologica has a YouTube channel with some demo/tutorial content: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
