@@ -77,20 +77,9 @@ namespace morph {
 
         VisualModel (GLuint sp, const Vector<float> _mv_offset)
         {
-            // Set up...
             this->shaderprog = sp;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
-
-            // In derived constructor: Do the computations to initialize the vertices
-            // that will represent the model
-            // this->initializeVertices();
-
-            // Then common code for postVertexInit:
-            // this->postVertexInit();
-
-            // Here's how to unbind the VAO. Is that necessary? Seems not
-            // glBindVertexArray(0);
         }
 
         VisualModel (GLuint sp, GLuint tsp, const Vector<float> _mv_offset)
@@ -180,6 +169,18 @@ namespace morph {
 #endif
         }
 
+        //! Clear out the model
+        void clear()
+        {
+            this->vertexPositions.clear();
+            this->vertexNormals.clear();
+            this->vertexColors.clear();
+            this->indices.clear();
+            this->texts.clear();
+            this->idx = 0;
+            this->reinit_buffers();
+        }
+
         //! Re-create the model - called after updating data
         void reinit()
         {
@@ -188,6 +189,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
+            this->idx = 0;
             this->initializeVertices();
             this->reinit_buffers();
         }
@@ -516,6 +518,9 @@ namespace morph {
         //! If true, then this VisualModel should always be viewed in a plane - it's a 2D model
         bool twodimensional = false;
 
+        //! The current indices index
+        VBOint idx = 0;
+
     protected:
 
         //! The model-specific view matrix.
@@ -545,10 +550,7 @@ namespace morph {
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
-#if 0
-        //! The parent Visual object - provides access to the shader prog
-        const Visual* parent;
-#endif
+
         //! A copy of the reference to the shader program
         GLuint shaderprog;
 

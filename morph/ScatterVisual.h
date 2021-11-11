@@ -42,14 +42,14 @@ namespace morph {
         void add (morph::Vector<float> coord, Flt value)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
-            this->computeSphere (this->curr_idx, coord, clr, this->radiusFixed, 16, 20);
+            this->computeSphere (this->idx, coord, clr, this->radiusFixed, 16, 20);
             this->reinit_buffers();
         }
         //! Additional point with variable size
         void add (morph::Vector<float> coord, Flt value, Flt size)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
-            this->computeSphere (this->curr_idx, coord, clr, size, 16, 20);
+            this->computeSphere (this->idx, coord, clr, size, 16, 20);
             this->reinit_buffers();
         }
 
@@ -106,18 +106,7 @@ namespace morph {
                 this->colourScale2.transform (dcopy2, vdcopy2);
                 this->colourScale3.transform (dcopy3, vdcopy3);
 
-#if 0
-                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
-                    std::cout << "i=" << i
-                              << " R: " << vdcopy1[i]
-                              << ", G: " << vdcopy2[i]
-                              << ", B: " << vdcopy3[i] << std::endl;
-                }
-#endif
             } // else no scaling required - spheres will be one colour
-
-            // The indices index
-            VBOint idx = 0;
 
             for (unsigned int i = 0; i < ncoords; ++i) {
                 // Scale colour (or use single colour)
@@ -131,13 +120,11 @@ namespace morph {
                     clr = this->cm.convert (vdcopy1[i], vdcopy2[i]);
                 }
                 if (this->sizeFactor == Flt{0}) {
-                    this->computeSphere (idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
+                    this->computeSphere (this->idx, (*this->dataCoords)[i], clr, this->radiusFixed, 16, 20);
                 } else {
-                    this->computeSphere (idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
+                    this->computeSphere (this->idx, (*this->dataCoords)[i], clr, dcopy[i]*this->sizeFactor, 16, 20);
                 }
             }
-
-            this->curr_idx = idx;
         }
 
         //! Set this->radiusFixed, then re-compute vertices.
@@ -155,9 +142,6 @@ namespace morph {
         float hue1 = 0.1f;
         float hue2 = 0.5f;
         float hue3 = -1.0f;
-
-        // Save the index so that additional points can be added
-        VBOint curr_idx = 0;
     };
 
 } // namespace morph

@@ -302,9 +302,6 @@ namespace morph {
             this->texts.push_back (lbl);
         }
 
-        // OpenGL indices index
-        VBOint idx = 0;
-
         //! Set the input_min to be the values at the zero points of the graph axes
         morph::Vector<Flt, 3> input_min = {0,0,0};
         //! Set the input_min to be the values at the maxes of the graph axes
