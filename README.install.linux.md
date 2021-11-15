@@ -3,9 +3,9 @@
 You don't *need* to build and install morphologica to use the headers, but
 you *will* need to install the dependencies. The cmake-driven morphologica
 build & install process installs the header files and font files that are
-required to build against morphologica. Some libraries may also be installed.
+required to build against morphologica.
 
-The build process also compiles a set of test programs, which require
+The build process also compiles a set of test and example programs, which require
 the dependencies to compile.
 Programs that include morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
