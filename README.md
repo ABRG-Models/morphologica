@@ -5,8 +5,7 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab. Want to see the code? It's all in the [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory.
 
-**New:** morphologica has a YouTube channel with some demo/tutorial content: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
-
+morphologica has some demo/tutorial content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
 This header-only C++ code provides **simulation support facilities** for our simulations of
 dynamical systems.
