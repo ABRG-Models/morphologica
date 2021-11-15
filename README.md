@@ -5,9 +5,9 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
-You'll find all in the code in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For example code, see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
+You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For **example code** and **screenshots**, see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
-morphologica has some demo/tutorial content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
+morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
 This header-only C++ code provides **simulation support facilities** for our simulations of
 dynamical systems.
@@ -245,14 +245,14 @@ placed a copy of the morphologica source  tree *inside* *standalone_examples/sch
 
 ### Legacy code and tests
 
-morphologica has a library of legacy code and some test programs which
-are built with cmake. The process to build and install morphologica's
-test programs is given in README.install.linux.md for GNU/Linux and
-README.install.mac.md for Apple Mac.
+To use morphologica, you don't need to 'build the library', because it is header-only. However, it has some test and example programs which
+can be built with cmake. The process to build and install morphologica's
+test/example programs is given in [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.linux.md) for **GNU/Linux**,
+[README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.mac.md) for **Apple Mac** and [README.install.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.windows.md) for **Windows/Visual Studio**.
 
 ## Credits
 
 Authorship of morphologica code is given in each file. Copyright in
 the software is owned by the authors. morphologica is distributed
 under the terms of the GNU General Public License, version 3 (see
-LICENSE.txt).
+[LICENSE.txt](https://github.com/ABRG-Models/morphologica/blob/main/LICENSE.txt)).
