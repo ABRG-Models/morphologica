@@ -3,7 +3,9 @@
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
 
 Library code used in models developed by Stuart P. Wilson, Seb James
-and co-workers in the Wilson Lab. Want to see the code? It's all in the [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory.
+and co-workers in the Wilson Lab.
+
+You'll find all in the code in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For example code, see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
 morphologica has some demo/tutorial content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
@@ -230,15 +232,15 @@ target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 
 ### Example build files
 
-Each of the examples in **morphologica/standalone_examples** has a CMakeLists.txt, written as if each
+Each of the examples in [**morphologica/standalone_examples**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) has a CMakeLists.txt, written as if each
 example was a standalone project in its own right.
 
-The best example CMakeLists.txt file is the one in **standalone_examples/schnakenberg**,
+The best example CMakeLists.txt file is the one in [**standalone_examples/schnakenberg**](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples/schnakenberg),
 because it uses a broad range of morphologica's features.
 
-In **standalone_examples/schnakenberg**, the default cmake build file, **CMakeLists.txt** assumes you did a
+In **standalone_examples/schnakenberg**, the default cmake build file, [**CMakeLists.txt**](https://github.com/ABRG-Models/morphologica/blob/main/standalone_examples/schnakenberg/CMakeLists.txt) assumes you did a
 'morphologica install' into **/usr/local**, whereas
-**CMakeLists_intree.txt** will (if renamed to CMakeLists.txt) build the code assuming that you
+[**CMakeLists_intree.txt**](https://github.com/ABRG-Models/morphologica/blob/main/standalone_examples/schnakenberg/CMakeLists_intree.txt) will (if renamed to CMakeLists.txt) build the code assuming that you
 placed a copy of the morphologica source  tree *inside* *standalone_examples/schnakenberg*.
 
 ### Legacy code and tests
