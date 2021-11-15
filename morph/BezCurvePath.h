@@ -62,13 +62,13 @@ namespace morph
          * A null BezCurvePath is one which has no curves. If curves
          * is empty then the BezCurvePath is null.
          */
-        bool isNull (void) const
+        bool isNull() const
         {
             return this->curves.empty();
         }
 
         //! Reset this BezCurvePath
-        void reset (void)
+        void reset()
         {
             this->curves.clear();
             this->initialCoordinate = std::make_pair (Flt{0}, Flt{0});
@@ -103,15 +103,13 @@ namespace morph
         }
 
         //! Remove a curve from this->curves.
-        void removeCurve (void)
+        void removeCurve()
         {
-            if (!this->curves.empty()) {
-                this->curves.pop_back();
-            }
+            if (!this->curves.empty()) { this->curves.pop_back(); }
         }
 
         //! Output for debugging.
-        void output (void) const
+        void output() const
         {
             std::cout << "------ BezCurvePath ------" << std::endl;
             std::cout << "Name: " << this->name << std::endl;
@@ -153,7 +151,7 @@ namespace morph
          * coordinate of this BezCurvePath to the final
          * coordinate. Uses the scale factor.
          */
-        Flt getEndToEnd (void) const
+        Flt getEndToEnd() const
         {
             // Distance from this->initialCoordinate to:
             if (this->curves.empty()) {
@@ -240,9 +238,9 @@ namespace morph
         }
 
         // Getters
-        std::vector<BezCoord<Flt>> getPoints (void) const { return this->points; }
-        std::vector<BezCoord<Flt>> getTangents (void) const { return this->tangents; }
-        std::vector<BezCoord<Flt>> getNormals (void) const { return this->normals; }
+        std::vector<BezCoord<Flt>> getPoints() const { return this->points; }
+        std::vector<BezCoord<Flt>> getTangents() const { return this->tangents; }
+        std::vector<BezCoord<Flt>> getNormals() const { return this->normals; }
 
         /*!
          * Similar to the above, but ensure that there are @nPoints evenly spaced
