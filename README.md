@@ -87,9 +87,7 @@ Some existing projects which use morphologica are:
 
 ## Code documentation
 
-morphologica code is enclosed in the **morph** namespace. You can see
-the doxygen-generated code documentation at
-https://codedocs.xyz/ABRG-Models/morphologica/
+morphologica code is enclosed in the **morph** namespace. See the header files (They're all in [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph)) for the code documentation.
 
 You can find example programs which are compiled when you do the standard
 cmake-driven build of morphologica in both the tests/ subdirectory
