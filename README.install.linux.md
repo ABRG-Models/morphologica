@@ -50,12 +50,12 @@ cd morphologica
 mkdir build
 cd build
 # If you have doxygen, you can build the docs with -DBUILD_DOC=1.
-# If you have OpenMP, you can remove the COMPILE_WITH_OPENMP option or set it to 1
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_DOC=0 -DCOMPILE_WITH_OPENMP=0
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j$(nproc)
+# I usually place the morphologica directory inside the code repository I'm working 
+# on, I call this 'in-tree morphologica', but you can also have the headers in 
+# /usr/local/include if you install:
 sudo make install
-# ldconfig is only necessary for the legacy library libmorphdisplay0.so
-sudo ldconfig
 ```
 
 If you need to build the test programs with a specific compiler, such
