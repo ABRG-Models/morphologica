@@ -17,16 +17,16 @@ It helps with:
   scheme called **[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h)** 
   provides the ability to visualise 2D and 3D graphs
   of surfaces, lines, bars, scatter plots and quiver plots with minimal
-  processing overhead.
+  processing overhead. (Here's a [morph::Visual helloworld](https://github.com/ABRG-Models/morphologica/blob/main/examples/helloworld.cpp) and [a more complete example](https://github.com/ABRG-Models/morphologica/blob/main/examples/visual.cpp))
 
 * **Configuration**: morphologica allows you to easily set up a simulation
   parameter configuration system, using the JSON reading and writing
-  abilities of **[morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h)**.
+  abilities of **[morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h)**. ([morph::Config Example](https://github.com/ABRG-Models/morphologica/blob/main/examples/jsonconfig.cpp))
 
 * **Saving data from your simulation**. morphologica provides a set of
   easy-to-use convenience wrappers (**[morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)**) around the HDF5 C
   API. By saving data in a standard format, it is easy to access
-  simulation data in python, MATLAB or Octave for analysis and graphing.
+  simulation data in python, MATLAB or Octave for analysis and graphing. ([HdfData Example](https://github.com/ABRG-Models/morphologica/blob/main/examples/hdfdata.cpp))
 
 It keeps *out of the way* of what kind of simulation you write. Our
 programs typically start with some kind of preamble, in which we use
@@ -58,7 +58,7 @@ useful. Examples include:
 grids (managing all the neighbour relationships between elements and
 allowing you to specific various boundary shapes for your domain)
 
-* **[morph::Vector](https://github.com/ABRG-Models/morphologica/blob/main/morph/Vector.h)** and **[morph::vVector](https://github.com/ABRG-Models/morphologica/blob/main/morph/vVector.h)**: Cool mathematical vector classes - these are like std::vector and std::array but they also sport maths methods.
+* **[morph::Vector](https://github.com/ABRG-Models/morphologica/blob/main/morph/Vector.h)** and **[morph::vVector](https://github.com/ABRG-Models/morphologica/blob/main/morph/vVector.h)**: Cool mathematical vector classes - these are like std::vector and std::array but they also sport maths methods. [vVector usage example](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvVector.cpp).
 
 * **[morph::MathAlgo](https://github.com/ABRG-Models/morphologica/blob/main/morph/MathAlgo.h)** a class containing mathematical algorithms.
 
@@ -69,10 +69,10 @@ allowing you to specific various boundary shapes for your domain)
 
 * **[morph::Scale](https://github.com/ABRG-Models/morphologica/blob/main/morph/Scale.h)** A class for simple scaling/transformation of numbers.
 
-* **[morph::NM_Simplex](https://github.com/ABRG-Models/morphologica/blob/main/morph/NM_Simplex.h)** and **[morph::Anneal](https://github.com/ABRG-Models/morphologica/blob/main/morph/Anneal.h)** Optimization algorithms.
+* **[morph::NM_Simplex](https://github.com/ABRG-Models/morphologica/blob/main/morph/NM_Simplex.h)** and **[morph::Anneal](https://github.com/ABRG-Models/morphologica/blob/main/morph/Anneal.h)** Optimization algorithms. Example [simulated annealing usage](https://github.com/ABRG-Models/morphologica/blob/main/examples/anneal_asa.cpp#L162) and the [Nelder-Mead simplex method](https://github.com/ABRG-Models/morphologica/blob/main/examples/rosenbrock.cpp#L97)
 
 * **[morph::RandUniform](https://github.com/ABRG-Models/morphologica/blob/main/morph/Random.h)** and friends. Wrapper classes around
-    C++'s high quality random number generation code.
+    C++'s high quality random number generation code ([Usage example](https://github.com/ABRG-Models/morphologica/blob/main/examples/randvec.cpp#L22)).
 
 * **[morph::ReadCurves](https://github.com/ABRG-Models/morphologica/blob/main/morph/ReadCurves.h)** Code to read SVG drawings to turn Bezier-curve
     based lines into paths containing evenly spaced coordinates.
