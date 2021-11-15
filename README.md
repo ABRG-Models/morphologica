@@ -95,7 +95,7 @@ and the [examples/](https://github.com/ABRG-Models/morphologica/tree/main/exampl
 screenshots.
 
 For full, compilable, standalone examples of the code, see the
-standalone_examples/ subdirectory. Use these as templates for creating
+[standalone_examples/](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) subdirectory. Use these as templates for creating
 your own projects which use morphologica library code.
 
 See [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a quick-start guide to the main classes.
