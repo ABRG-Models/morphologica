@@ -2,7 +2,7 @@
 
 The cmake-driven morphologica build & install process installs the
 header files and font files that are required to build against
-morphologica. Some libraries may also be installed.
+morphologica.
 
 The build process also compiles a set of test programs, which require
 Armadillo, OpenGL, Freetype, glfw and HDF5 to compile.
@@ -102,7 +102,6 @@ sudo make install
 Hierarchical data format is a standard format for saving binary
 data. morph::HdfData wraps the HDF5 API and hence HDF5 is a required
 dependency to build morphologica. Build version 1.10.x.
-
 
 ```sh
 mkdir -p ~/src
