@@ -14,16 +14,17 @@ dynamical systems.
 It helps with:
 
 * **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called **morph::Visual** provides the ability to visualise 2D and 3D graphs
+  scheme called **[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h)** 
+  provides the ability to visualise 2D and 3D graphs
   of surfaces, lines, bars, scatter plots and quiver plots with minimal
   processing overhead.
 
 * **Configuration**: morphologica allows you to easily set up a simulation
   parameter configuration system, using the JSON reading and writing
-  abilities of **morph::Config**.
+  abilities of **[morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h)**.
 
 * **Saving data from your simulation**. morphologica provides a set of
-  easy-to-use convenience wrappers (**morph::HdfData**) around the HDF5 C
+  easy-to-use convenience wrappers (**[morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)**) around the HDF5 C
   API. By saving data in a standard format, it is easy to access
   simulation data in python, MATLAB or Octave for analysis and graphing.
 
@@ -53,27 +54,27 @@ Although it need not be incorporated into your actual simulation,
 morphologica does also provide classes that you might find
 useful. Examples include:
 
-* **morph::HexGrid** and **morph::CartGrid**: classes for running simulations on hexagonal or Cartesian
+* **[morph::HexGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/HexGrid.h)** and **[morph::CartGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/CartGrid.h)**: classes for running simulations on hexagonal or Cartesian
 grids (managing all the neighbour relationships between elements and
 allowing you to specific various boundary shapes for your domain)
 
-* **morph::Vector** and **morph::vVector**: Cool vector classes.
+* **[morph::Vector](https://github.com/ABRG-Models/morphologica/blob/main/morph/Vector.h)** and **[morph::vVector](https://github.com/ABRG-Models/morphologica/blob/main/morph/vVector.h)**: Cool mathematical vector classes - these are like std::vector and std::array but they also sport maths methods.
 
-* **morph::MathAlgo** a class containing mathematical algorithms.
+* **[morph::MathAlgo](https://github.com/ABRG-Models/morphologica/blob/main/morph/MathAlgo.h)** a class containing mathematical algorithms.
 
-* **morph::BezCurve** and friends: classes for working with Bezier
+* **[morph::BezCurve](https://github.com/ABRG-Models/morphologica/blob/main/morph/BezCurve.h)** and friends: classes for working with Bezier
     curves.
 
-* **morph::Winder** A class to compute the winding number of a path.
+* **[morph::Winder](https://github.com/ABRG-Models/morphologica/blob/main/morph/Winder.h)** A class to compute the winding number of a path.
 
-* **morph::Scale** A class for simple scaling/transformation of numbers.
+* **[morph::Scale](https://github.com/ABRG-Models/morphologica/blob/main/morph/Scale.h)** A class for simple scaling/transformation of numbers.
 
-* **morph::NM_Simplex** and **morph::Anneal** Optimization algorithms.
+* **[morph::NM_Simplex](https://github.com/ABRG-Models/morphologica/blob/main/morph/NM_Simplex.h)** and **[morph::Anneal](https://github.com/ABRG-Models/morphologica/blob/main/morph/Anneal.h)** Optimization algorithms.
 
-* **morph::RandUniform** and friends. Nice wrapper classes around
+* **[morph::RandUniform](https://github.com/ABRG-Models/morphologica/blob/main/morph/Random.h)** and friends. Wrapper classes around
     C++'s high quality random number generation code.
 
-* **morph::ReadCurves** Code to read SVG drawings to turn Bezier-curve
+* **[morph::ReadCurves](https://github.com/ABRG-Models/morphologica/blob/main/morph/ReadCurves.h)** Code to read SVG drawings to turn Bezier-curve
     based lines into paths containing evenly spaced coordinates.
 
 morphologica is a way of storing our 'group knowledge' for posterity.
@@ -98,7 +99,7 @@ For full, compilable, standalone examples of the code, see the
 standalone_examples/ subdirectory. Use these as templates for creating
 your own projects which use morphologica library code.
 
-See README.coding.md for a quick-start guide to the main classes.
+See [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a quick-start guide to the main classes.
 
 ## Building code against morphologica
 
@@ -190,10 +191,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 
 ```cmake
 # Find the libraries which will be needed
-find_package(jsoncpp REQUIRED)
-find_package(HDF5 REQUIRED)
-find_package(Armadillo REQUIRED)
-find_package(OpenGL REQUIRED)
+find_package(jsoncpp REQUIRED)     # Required for morph::Config and morph::Visual
+find_package(HDF5 REQUIRED)        # Only required if you used morph::HdfData
+find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve classes
+find_package(OpenGL REQUIRED)      # This, glfw3 and Freetype are required for morph::Visual
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
 
