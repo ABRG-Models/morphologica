@@ -90,8 +90,8 @@ Some existing projects which use morphologica are:
 morphologica code is enclosed in the **morph** namespace. See the header files (They're all in [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph)) for the code documentation.
 
 You can find example programs which are compiled when you do the standard
-cmake-driven build of morphologica in both the tests/ subdirectory
-and the examples/ subdirectory. The readme in examples/ has some nice
+cmake-driven build of morphologica in both the [tests/](https://github.com/ABRG-Models/morphologica/tree/main/tests) subdirectory
+and the [examples/](https://github.com/ABRG-Models/morphologica/tree/main/examples) subdirectory. The readme in examples/ has some nice
 screenshots.
 
 For full, compilable, standalone examples of the code, see the
