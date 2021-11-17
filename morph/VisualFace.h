@@ -149,7 +149,7 @@ namespace morph {
              * copies of font textures for separate VisualTextModel instances which have
              * the same pixel size specified for them.
              */
-	  VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
+            VisualFace (const morph::VisualFont _font, unsigned int fontpixels, FT_Library& ft_freetype)
             {
                 std::string fontpath = "";
 #ifdef __WIN__

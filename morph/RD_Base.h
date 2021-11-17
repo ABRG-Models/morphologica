@@ -13,7 +13,7 @@
 #include <hdf5.h>
 #include <morph/MorphDbg.h>
 
-/*!
+/*
  * Macros for testing neighbours. The step along for neighbours on the
  * rows above/below is given by:
  *
@@ -24,7 +24,6 @@
  * NSW   | -rowlen
  * NSE   | -rowlen + 1
  */
-//@{
 #define NE(hi) (this->hg->d_ne[hi])
 #define HAS_NE(hi) (this->hg->d_ne[hi] == -1 ? false : true)
 
@@ -42,7 +41,6 @@
 
 #define NSW(hi) (this->hg->d_nsw[hi])
 #define HAS_NSW(hi) (this->hg->d_nsw[hi] == -1 ? false : true)
-//@}
 
 #define IF_HAS_NE(hi, yesval, noval)  (HAS_NE(hi)  ? yesval : noval)
 #define IF_HAS_NNE(hi, yesval, noval) (HAS_NNE(hi) ? yesval : noval)
@@ -61,10 +59,9 @@ namespace morph {
     {
     public:
 
-        /*!
+        /*
          * Constants
          */
-        //@{
         //! Square root of 3 over 2
         const Flt R3_OVER_2 = 0.866025403784439;
         //! Square root of 3
@@ -73,7 +70,6 @@ namespace morph {
         const Flt TWOPI_OVER_360 = 0.01745329251994;
         //! Passed to HdfData constructor to say we want to read the data
         const bool READ_DATA = true;
-        //@}
 
         /*!
          * Hex to hex d for the grid. Make smaller to increase the number
@@ -106,10 +102,8 @@ namespace morph {
         /*!
          * Compute half and sixth dt in constructor.
          */
-        //@{
         alignas(Flt) Flt halfdt = Flt{0};
         alignas(Flt) Flt sixthdt = Flt{0};
-        //@}
 
         /*!
          * Hex to hex distance. Populate this from hg.d after hg has been
@@ -121,7 +115,6 @@ namespace morph {
         /*!
          * Parameters that depend on d and v:
          */
-        //@{
         alignas(Flt) Flt oneoverd = Flt{1}/this->d;
         alignas(Flt) Flt oneover2d = Flt{1}/(this->d+this->d);
         alignas(Flt) Flt oneover3d = Flt{1}/(Flt{3}*this->d);
@@ -132,7 +125,6 @@ namespace morph {
         alignas(Flt) Flt twov = this->v+this->v;
         alignas(Flt) Flt oneover2v = Flt{1}/this->twov;
         alignas(Flt) Flt oneover4v = Flt{1}/(this->twov+this->twov);
-        //@}
 
     public:
 
@@ -182,10 +174,8 @@ namespace morph {
         /*!
          * Ellipse a and b values. Used to specify a boundary only if svgpath is empty.
          */
-        //@{
         float ellipse_a = 1.0f;
         float ellipse_b = 1.0f;
-        //@}
 
         /*!
          * Simple constructor; no arguments.
@@ -417,7 +407,6 @@ namespace morph {
          * Require private setters for d and v as there are several other
          * members that have to be updated at the same time.
          */
-        //@{
         virtual void set_d (Flt d_)
         {
             this->d = d_;
@@ -436,7 +425,6 @@ namespace morph {
             this->oneover2v = 1.0/this->twov;
             this->oneover4v = 1.0/(this->twov+this->twov);
         }
-        //@}
 
     public:
         /*!
@@ -569,12 +557,10 @@ namespace morph {
             // And hex to hex distance:
             dat.add_val ("/d", this->d);
         }
-        //@} // HDF5
 
-        /*!
+        /*
          * Computation methods
          */
-        //@{
 
         /*!
          * Normalise the vector of Flts f.

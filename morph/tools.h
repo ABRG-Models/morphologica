@@ -58,7 +58,6 @@ extern "C" {
  *
  * These are ordered so that the most common chars appear earliest.
  */
-//@{
 #define CHARS_NUMERIC            "0123456789"
 #define CHARS_ALPHA              "etaoinshrdlcumwfgypbvkjxqzETAOINSHRDLCUMWFGYPBVKJXQZ"
 #define CHARS_ALPHALOWER         "etaoinshrdlcumwfgypbvkjxqz"
@@ -66,7 +65,6 @@ extern "C" {
 #define CHARS_NUMERIC_ALPHA      "etaoinshrdlcumwfgypbvkjxqz0123456789ETAOINSHRDLCUMWFGYPBVKJXQZ"
 #define CHARS_NUMERIC_ALPHALOWER "etaoinshrdlcumwfgypbvkjxqz0123456789"
 #define CHARS_NUMERIC_ALPHAUPPER "0123456789ETAOINSHRDLCUMWFGYPBVKJXQZ"
-//@}
 
 /*!
  * These are the chars which are acceptable for use in both unix, mac AND windows file
@@ -343,7 +341,9 @@ namespace morph
         }
 
         /*!
-         * Set the working directory. Returns 0 on success, -1 & sets errno otherwise
+         * Set the working directory.
+         *
+         * \return 0 on success, -1 & sets errno otherwise
          */
         static int setPwd (const std::string& directory)
         {
@@ -1534,7 +1534,6 @@ namespace morph
          */
 #define COPYFILE_BUFFERSIZE    32768
 #define COPYFILE_BUFFERSIZE_MM 32767 // MM: Minus Minus
-        //@{
 #ifndef __WIN__
         static void copyFile (const std::string& from, const std::string& to)
         {
@@ -1634,7 +1633,6 @@ namespace morph
             fclose (ifp);
         }
 #endif
-        //@}
 
         /*!
          * Copy from one file pointer to another. Both are

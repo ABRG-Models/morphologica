@@ -100,9 +100,6 @@ namespace morph {
          */
         bool onBoundary = false;
 
-        //! Constructors
-        //@{
-
         //! Default constructor
         DirichVtx (void) {
             v.first = std::numeric_limits<Flt>::max();
@@ -152,7 +149,6 @@ namespace morph {
             : v(p), f(id), neighb(oth), hi(hex) {
             this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
         }
-        //@}
 
         //! Comparison operation. Note: Ignores this->vn!
         bool operator< (const DirichVtx<Flt>& rhs) const {

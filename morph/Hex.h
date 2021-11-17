@@ -87,28 +87,28 @@ namespace morph {
     /*!
      * Describes a regular hexagon arranged with vertices pointing vertically and two flat sides
      * perpendicular to the horizontal axis:
-     *
+     *\code{.unparsed}
      *            *
      *         *     *
      *         *     *
      *            *
-     *
+     *\endcode
      * The centre of the hex in a Cartesian right hand coordinate system is represented with x, y
      * and z:
-     *
+     *\code{.unparsed}
      *  y
      *  ^
      *  |
      *  |
      *  0-----> x     z out of screen/page
-     *
+     *\endcode
      * Directions are "r" "g" and "b" and their negatives:
-     *
+     *\code{.unparsed}
      *         b  * g
      * -r <--  *     * ---> r
      *         *     *
      *         -g * -b
-     *
+     *\endcode
      *
      * I've defined numbering for the Hex's vertices and for its edges.
      *
