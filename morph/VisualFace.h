@@ -297,7 +297,9 @@ namespace morph {
 #endif // Windows/Non-windows
 
                 // Keep the face as a morph::Visual owned resource, shared by VisTextModels?
-		std::cout << "FT_New_Face (ft_freetype, " << fontpath << ", 0, &this->face);\n";
+                if constexpr (debug_visualface == true) {
+                    std::cout << "FT_New_Face (ft_freetype, " << fontpath << ", 0, &this->face);\n";
+                }
                 if (FT_New_Face (ft_freetype, fontpath.c_str(), 0, &this->face)) {
                     std::cout << "ERROR::FREETYPE: Failed to load font (font file may be invalid)" << std::endl;
                 }
@@ -338,11 +340,12 @@ namespace morph {
                         {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top}, // bearing
                         static_cast<unsigned int>(this->face->glyph->advance.x)          // advance
                     };
-#ifdef __DEBUG__
-                    std::cout << "Inserting character into this->glchars with info: ID:" << glchar.textureID
-                              << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
-                              << ", Advance:" << glchar.advance << std::endl;
-#endif
+
+                    if constexpr (debug_visualface == true) {
+                        std::cout << "Inserting character into this->glchars with info: ID:" << glchar.textureID
+                                  << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
+                                  << ", Advance:" << glchar.advance << std::endl;
+                    }
                     this->glchars.insert (std::pair<char, morph::gl::CharInfo>(c, glchar));
                 }
                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -351,6 +354,9 @@ namespace morph {
             }
 
             ~VisualFace() { /* GL deconstruction? */ }
+
+            //! Set true for informational/debug messages
+            static constexpr bool debug_visualface = false;
 
             //! The FT_Face that we're managing
             FT_Face face;
@@ -376,7 +382,9 @@ namespace morph {
                         std::cout << "WARNING: Failed to open " << fontpath << "!!\n";
                     }
                 } else {
-                    std::cout << "INFO: " << fontpath << " already exists, no need to re-create it\n";
+                    if constexpr (debug_visualface == true) {
+                        std::cout << "INFO: " << fontpath << " already exists, no need to re-create it\n";
+                    }
                 }
             }
         };
