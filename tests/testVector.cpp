@@ -1,6 +1,7 @@
 #include "morph/Vector.h"
 #include <set>
 #include <algorithm>
+#include <complex>
 using morph::Vector;
 using std::cout;
 using std::endl;
@@ -8,6 +9,12 @@ using std::array;
 
 int main() {
     int rtn = 0;
+
+    using namespace std::complex_literals;
+    Vector<std::complex<double>, 4> cplx;
+    cplx.set_from (std::pow(1i, 2));
+    std::cout << "Complex*2: " << cplx*2.0 << std::endl;
+
     Vector<float, 4> v = {1,2,3};
     // Test x(), y() etc members
     cout << "x: " << v.x() << endl;
