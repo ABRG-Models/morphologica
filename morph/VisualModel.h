@@ -2060,6 +2060,88 @@ namespace morph {
             idx += 4;
         } // end computeFlatLine that joins perfectly with next line
 
+        // Like computeLine, but this line has no thickness and it's dashed.
+        // dashlen: the length of dashes
+        // gap prop: The proportion of dash length used for the gap
+        void computeFlatDashedLine (VBOint& idx, Vector<float> start, Vector<float> end,
+                                    Vector<float> uz,
+                                    std::array<float, 3> col,
+                                    float w = 0.1f, float shorten = 0.0f,
+                                    float dashlen = 0.1f, float gapprop = 0.3f)
+        {
+            if (dashlen == 0.0f) { return; }
+
+            // The vector from start to end defines direction of the line
+            Vector<float> vstart = start;
+            Vector<float> vend = end;
+
+            Vector<float> v = vend - vstart;
+            float linelen = v.length();
+            v.renormalize();
+
+            // If shorten is not 0, then modify vstart and vend
+            if (shorten > 0.0f) {
+                vstart = start + v * shorten;
+                vend = end - v * shorten;
+                linelen = v.length() - shorten*2.0f;
+            }
+
+            // vv is normal to v and uz
+            Vector<float> vv = v.cross(uz);
+            vv.renormalize();
+
+            // Loop, creating the dashes
+            Vector<float> dash_s = vstart;
+            Vector<float> dash_e = dash_s + v * dashlen;
+            Vector<float> dashes = dash_e - vstart;
+
+            while (dashes.length() < linelen) {
+
+                // corners of the line, and the start angle is determined from vv and w
+                Vector<float> ww = (vv*w*0.5f);
+                Vector<float> c1 = dash_s + ww;
+                Vector<float> c2 = dash_s - ww;
+                Vector<float> c3 = dash_e - ww;
+                Vector<float> c4 = dash_e + ww;
+
+                this->vertex_push (c1, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                this->vertex_push (c2, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                this->vertex_push (c3, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                this->vertex_push (c4, this->vertexPositions);
+                this->vertex_push (uz, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+
+                // Number of vertices = segments * 4 + 2.
+                int nverts = 4;
+
+                // After creating vertices, push all the indices.
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+1);
+                this->indices.push_back (idx+2);
+
+                this->indices.push_back (idx);
+                this->indices.push_back (idx+2);
+                this->indices.push_back (idx+3);
+
+                // Update idx
+                idx += nverts;
+
+                // Next dash
+                dash_s = dash_e + v * dashlen * gapprop;
+                dash_e = dash_s + v * dashlen;
+                dashes = dash_e - vstart;
+            }
+
+        } // end computeFlatDashedLine
     };
 
 } // namespace morph
