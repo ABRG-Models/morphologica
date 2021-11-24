@@ -931,7 +931,8 @@ namespace morph {
             }
             vVector<S, Al> rtn(this->size(), S{0});
             auto vi = v.begin();
-            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+            // Visual Studio may complain about there being no static_cast<S> of (*vi++), here
+            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * (*vi++); };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -946,7 +947,7 @@ namespace morph {
         void operator*= (const vVector<_S>& v) {
             if (v.size() == this->size()) {
                 auto vi = v.begin();
-                auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+                auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * (*vi++); };
                 std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
             } else {
                 throw std::runtime_error ("vVector::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
@@ -968,8 +969,9 @@ namespace morph {
                 throw std::runtime_error ("vVector::operator*: Hadamard division is defined here for vectors of same dimensionality only");
             }
             vVector<S, Al> rtn(this->size(), S{0});
-            // Fixme: Copy implementation for operator* to explicitly cast and avoid warnings in Vis Studio.
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
+            auto vi = v.begin();
+            auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
+            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
 
@@ -982,7 +984,9 @@ namespace morph {
         template <typename _S=S>
         void operator/= (const vVector<_S>& v) {
             if (v.size() == this->size()) {
-                std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
+                auto vi = v.begin();
+                auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), div_by_s);
             } else {
                 throw std::runtime_error ("vVector::operator*=: Hadamard division is defined here for vectors of same dimensionality only");
             }
@@ -1040,7 +1044,8 @@ namespace morph {
         {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable -> S { return a + static_cast<S>(*vi++); };
+            // Static cast is encouraged by Visual Studio, but it prevents addition of vVector of Vectors and vVector of scalars
+            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), add_v);
             return vrtn;
         }
@@ -1050,7 +1055,7 @@ namespace morph {
         void operator+= (const vVector<_S>& v)
         {
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable -> S { return a + static_cast<S>(*vi++); };
+            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
         }
 
@@ -1060,7 +1065,7 @@ namespace morph {
         {
             vVector<S> vrtn(this->size());
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable -> S { return a - static_cast<S>(*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
             return vrtn;
         }
@@ -1070,7 +1075,7 @@ namespace morph {
         void operator-= (const vVector<_S>& v)
         {
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable -> S { return a - static_cast<S>(*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 

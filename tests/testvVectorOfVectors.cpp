@@ -42,6 +42,31 @@ int main()
     vV2 = vV - 10UL;
     if (vV2[2][0] != -6.0f) { --rtn; }
 
+    // How about dividing a vVector of Vectors by a vVector of scalars?
+    morph::vVector<float> vf(vV.size());
+    vf.linspace (0.0f, 3.0f);
+    vV2 = vV * vf;
+    std::cout << "  (vVector of Vectors) * (vVector of scalars): " << vV2 << std::endl;
+    if (vV2[2][0] != 8.0f) { --rtn; }
+
+    vV2 = vV + vf;
+    std::cout << "  (vVector of Vectors) + (vVector of scalars): " << vV2 << std::endl;
+    if (vV2[2][0] != 6.0f) { --rtn; }
+
+    vV2 = vV - vf;
+    std::cout << "  (vVector of Vectors) - (vVector of scalars): " << vV2 << std::endl;
+    if (vV2[2][0] != 2.0f) { --rtn; }
+
+    // Division is ok like this:
+    vV2 = vV * (float{1}/vf);
+    std::cout << "  (vVector of Vectors) * (1/(vVector of scalars)): " << vV2 << std::endl;
+    if (vV2[2][0] != 2.0f) { --rtn; }
+
+    // or like this:
+    vV2 = vV / vf;
+    std::cout << "  (vVector of Vectors) / (vVector of scalars): " << vV2 << std::endl;
+    if (vV2[2][0] != 2.0f) { --rtn; }
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
