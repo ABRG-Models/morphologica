@@ -271,34 +271,30 @@ int main (int argc, char **argv)
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    // Z position scaling - how hilly/bumpy the visual will be.
-    Scale<FLT, float> zscale; zscale.setParams (0.2f, 0.0f);
-    // The second is the colour scaling. Set this to autoscale.
-    Scale<FLT, float> cscale; cscale.do_autoscale = true;
-    unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
-                                                                    v1.tshaderprog,
-                                                                    RD.hg,
-                                                                    spatOff,
-                                                                    &(RD.A),
-                                                                    zscale,
-                                                                    cscale,
-                                                                    morph::ColourMapType::Greyscale)); // or GreyscaleInv
-    v1.getVisualModel(Agrid)->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+
+    // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.)
+    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    hgv1->setScalarData (&RD.A);
+    hgv1->zScale.setParams (0.2f, 0.0f);
+    hgv1->colourScale.do_autoscale = true;
+    hgv1->cm.setType (morph::ColourMapType::Greyscale); // or GreyscaleInv
+    hgv1->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv1->finalize();
+    v1.addVisualModel (hgv1);
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
-                                                                    v1.tshaderprog,
-                                                                    RD.hg,
-                                                                    spatOff,
-                                                                    &(RD.B),
-                                                                    zscale,
-                                                                    cscale,
-                                                                    morph::ColourMapType::Greyscale));
-    v1.getVisualModel(Bgrid)->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    hgv2->setScalarData (&RD.B);
+    hgv2->zScale.setParams (0.2f, 0.0f);
+    hgv2->colourScale.do_autoscale = true;
+    hgv2->cm.setType (morph::ColourMapType::Greyscale);
+    hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv2->finalize();
+    v1.addVisualModel (hgv2);
 #endif
 
     // Start the loop
@@ -311,13 +307,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            VisualDataModel<FLT>* avm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Agrid));
-            avm->updateData (&(RD.A));
-            avm->clearAutoscaleColour();
+            hgv1->updateData (&(RD.A));
+            hgv1->clearAutoscaleColour();
 
-            VisualDataModel<FLT>* bvm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Bgrid));
-            bvm->updateData (&(RD.B));
-            bvm->clearAutoscaleColour();
+            hgv2->updateData (&(RD.B));
+            hgv2->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {

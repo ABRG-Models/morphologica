@@ -15,38 +15,25 @@
 #include "morph/Scale.h"
 #include "morph/Vector.h"
 
-using namespace std;
-using morph::Visual;
-using morph::VisualDataModel;
-using morph::HexGrid;
-using morph::HexGridVisual;
-using morph::Tools;
-using morph::HexDomainShape;
-using morph::ReadCurves;
-using morph::Scale;
-using morph::Vector;
-
 int main()
 {
     int rtn = -1;
 
-    Visual v(800,600,"Test window");
+    morph::Visual v(800,600,"Test window");
     v.zNear = 0.001;
 
     try {
-        HexGrid hg(0.002, 8, 0, HexDomainShape::Boundary);
+        morph::HexGrid hg(0.002, 8, 0, morph::HexDomainShape::Boundary);
         hg.setEllipticalBoundary (1.6,2);
 
-        cout << hg.extent() << endl;
+        std::cout << hg.extent() << std::endl;
 
-        cout << "Number of hexes in grid:" << hg.num() << endl;
-        cout << "Last vector index:" << hg.lastVectorIndex() << endl;
+        std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
+        std::cout << "Last vector index:" << hg.lastVectorIndex() << std::endl;
 
-        if (hg.num() != 1604) {
-            rtn = -1;
-        }
+        if (hg.num() != 1604) { rtn = -1; }
 
-        vector<float> data;
+        std::vector<float> data;
         unsigned int nhex = hg.num();
         data.resize(nhex, 0.0);
 
@@ -54,30 +41,23 @@ int main()
         for (unsigned int hi=0; hi<nhex; ++hi) {
             data[hi] = 0.5 + 0.5*std::sin(10*hg.d_x[hi]); // Range 0->1
         }
-        cout << "Created " << data.size() << " floats in data" << endl;
+        std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
-        Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        unsigned int gridId = v.addVisualModel (new HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset, &data));
-        cout << "Added HexGridVisual with gridId " << gridId << endl;
-
-        // Divide existing scale by 10:
-        float newGrad = static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
-        // Set this in a new zscale object:
-        Scale<float> zscale;
-        zscale.setParams (newGrad, 0);
-        // And set it back into the visual model:
-        static_cast<VisualDataModel<float>*>(v.getVisualModel(gridId))->setZScale (zscale);
+        morph::Vector<float, 3> offset = { 0.0f, 0.0f, 0.0f };
+        morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float> (v.shaderprog, v.tshaderprog, &hg, offset);
+        hgv->hexVisMode = morph::HexVisMode::Triangles; // Triangles faster to render than the default hexes
+        hgv->setScalarData (&data);
+        hgv->zScale.setParams (0.1f, 0.0f);
+        hgv->finalize();
+        v.addVisualModel (hgv);
 
         v.render();
 
-        while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
-            v.render();
-        }
+        while (v.readyToFinish == false) { v.keepOpen(); }
 
-    } catch (const exception& e) {
-        cerr << "Caught exception reading trial.svg: " << e.what() << endl;
-        cerr << "Current working directory: " << Tools::getPwd() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Caught exception reading trial.svg: " << e.what() << std::endl;
+        std::cerr << "Current working directory: " << morph::Tools::getPwd() << std::endl;
         rtn = -1;
     }
 
