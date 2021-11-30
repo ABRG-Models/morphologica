@@ -22,10 +22,6 @@ FLT banana (FLT x, FLT y) {
 
 int main()
 {
-    using std::vector;
-    using std::cout;
-    using std::endl;
-
     // Set up a visual environment
     morph::Visual v(2600, 1800, "Rosenbrock bananas", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.01f);
     v.zNear = 0.001;
@@ -48,8 +44,8 @@ int main()
     morph::TriFrameVisual<FLT>* tfv = new morph::TriFrameVisual<FLT>(v.shaderprog, _offset);
     tfv->radius = 0.01f;
     tfv->sradius = 0.01f;
-    vector<FLT> tri_values(3, 0);
-    vector<morph::Vector<float>> tri_coords(3);
+    std::vector<FLT> tri_values(3, 0);
+    std::vector<morph::Vector<float>> tri_coords(3);
     tri_coords[0] = { v1[0], v1[1], 0.0 };
     tri_coords[1] = { v2[0], v2[1], 0.0 };
     tri_coords[2] = { v3[0], v3[1], 0.0 };
@@ -66,7 +62,7 @@ int main()
     // Evaluate banana function and plot
     morph::HexGrid hg (0.01, 10, 0, morph::HexDomainShape::Boundary);
     hg.setCircularBoundary (2.5);
-    vector<FLT> banana_vals(hg.num(), 0.0f);
+    std::vector<FLT> banana_vals(hg.num(), 0.0f);
     for (size_t i = 0; i < hg.num(); ++i) {
         banana_vals[i] = banana (hg.d_x[i], hg.d_y[i]);
     }
@@ -125,18 +121,7 @@ int main()
                 simp.apply_contraction (val);
             }
 
-#if 0
-            // Output in matlab/octave format to plot3() the simplex.
-            cout << "simp=[";
-            for (unsigned int i = 0; i <= simp.n; ++i) {
-                cout << simp.vertices[i][0] << "," << simp.vertices[i][1] << ",val" << simp.values[i] << ";";
-            }
-            cout << simp.vertices[0][0] << "," << simp.vertices[0][1] << ",val" << simp.values[0] << "];" << endl;
-            //cout << "order:" << simp.vertex_order[0] << ","<< simp.vertex_order[1] << ","<< simp.vertex_order[2] << endl;
-#endif
-
             // Visualise the triangle defined by simp.vertices
-
             // Copy data out from NM_Simplex
             for (unsigned int i = 0; i <= simp.n; ++i) {
                 tri_coords[i] = { simp.vertices[i][0], simp.vertices[i][1], 0.0 };
@@ -154,16 +139,16 @@ int main()
             lastrender = std::chrono::steady_clock::now();
         }
     }
-    vector<FLT> thebest = simp.best_vertex();
+    std::vector<FLT> thebest = simp.best_vertex();
     FLT bestval = simp.best_value();
-    cout << "FINISHED! lcount=" << lcount
-         << ". Best approximation: (" << thebest[0] << "," << thebest[1]
-         << ") has value " << bestval << endl;
+    std::cout << "FINISHED! lcount=" << lcount
+              << ". Best approximation: (" << thebest[0] << "," << thebest[1]
+              << ") has value " << bestval << std::endl;
 
     int rtn = -1;
     if (abs(thebest[0] - 1.0) < 1e-3 // Choose 1e-3 so that this will succeed with floats or doubles
         && abs(thebest[1] - 1.0) < 1e-3) {
-        cout << "Test success" << endl;
+        std::cout << "Test success" << std::endl;
         rtn = 0;
     }
 
