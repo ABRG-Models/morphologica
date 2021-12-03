@@ -10,7 +10,7 @@ morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.
 
 ## Quick Start
 
-This quick start is for Linux, because dependency installation is a single call to apt (or your favourite package manager).
+This quick start shows dependency installation for Linux, because on this platform, it's a single call to apt (or your favourite package manager). If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users.
 
 ```bash
 # Install dependencies for building graph1.cpp (assuming Debian-like OS)
@@ -155,7 +155,9 @@ Some existing projects which use morphologica are:
 
 ## Code documentation
 
-morphologica code is enclosed in the **morph** namespace. See the header files (They're all in [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph)) for the code documentation.
+See [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a guide to the main classes.
+
+morphologica code is enclosed in the **morph** namespace. If [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) doesn't coverit, then the header files (They're all in [morph/](https://github.com/ABRG-Models/morphologica/tree/main/morph)) contain code documentation.
 
 You can find example programs which are compiled when you do the standard
 cmake-driven build of morphologica in both the [tests/](https://github.com/ABRG-Models/morphologica/tree/main/tests) subdirectory
@@ -163,12 +165,10 @@ and the [examples/](https://github.com/ABRG-Models/morphologica/tree/main/exampl
 screenshots.
 
 For full, compilable, standalone examples of the code, see the
-[standalone_examples/](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) subdirectory. Use these as templates for creating
-your own projects which use morphologica library code.
+[standalone_examples/](https://github.com/ABRG-Models/morphologica/tree/main/standalone_examples) subdirectory. You can use these as templates for creating
+your own projects that use morphologica library code.
 
-See [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a quick-start guide to the main classes.
-
-For more info on how to set up CMake files to build a program using morphologica, see [README.cmake.md](https://github.com/ABRG-Models/morphologica/blob/main/README.cmake.md).
+For more info on how to set up CMake files to build a program using morphologica (and some hints as to what you'll need to do with an alternative directed build system), see [README.cmake.md](https://github.com/ABRG-Models/morphologica/blob/main/README.cmake.md).
 
 ## Credits
 
