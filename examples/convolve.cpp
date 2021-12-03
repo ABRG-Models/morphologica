@@ -21,6 +21,7 @@ int main()
 
     morph::Visual v(800,600,"Convolution window");
     v.zNear = 0.001;
+    v.backgroundBlack();
     v.setSceneTransZ (-3.0f);
 
     // Create an elliptical hexgrid for the input/output domains
@@ -73,6 +74,7 @@ int main()
     morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
+    hgv->cm.setType(morph::ColourMapType::Viridis);
     hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
     hgv->finalize();
     unsigned int gridId = v.addVisualModel (hgv);
@@ -80,6 +82,7 @@ int main()
     offset[1] += 0.6f;
     morph::HexGridVisual<float>* kgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &kernel, offset);
     kgv->setScalarData (&kerneldata);
+    kgv->cm.setType(morph::ColourMapType::Viridis);
     kgv->finalize();
     unsigned int gridId1 = v.addVisualModel (kgv);
     std::cout << "gridId1 is " << gridId1 << std::endl;
@@ -91,6 +94,7 @@ int main()
     offset[0] += 1.0f;
     morph::HexGridVisual<float>* rgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     rgv->setScalarData (&convolved);
+    rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();
     rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
     v.addVisualModel (rgv);
