@@ -9,7 +9,7 @@ int main (int argc, char** argv)
     morph::Visual v(1024, 768, "Made with morph::GraphVisual");
     // Create a new GraphVisual with offset within the scene of 0,0,0
     auto gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
-    // Create some data for the x axis:
+    // Data for the x axis. A vVector is like std::vector, but with built-in maths methods
     morph::vVector<float> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
     x.linspace (-0.5, 0.8, 14);
