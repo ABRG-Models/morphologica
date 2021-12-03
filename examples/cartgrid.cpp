@@ -62,6 +62,7 @@ int main()
     morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v.shaderprog, v.tshaderprog, &cg, offset);
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
+    cgv->cm.setType (morph::ColourMapType::Twilight);
     cgv->finalize();
     unsigned int gridId = v.addVisualModel (cgv);
     std::cout << "Added CartGridVisual with gridId " << gridId << std::endl;
