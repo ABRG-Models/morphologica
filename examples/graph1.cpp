@@ -3,7 +3,7 @@
 #include <morph/GraphVisual.h>
 #include <morph/vVector.h>
 
-int main (int argc, char** argv)
+int main()
 {
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual");
