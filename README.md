@@ -5,7 +5,7 @@
 Library code used in models developed by Stuart P. Wilson, Seb James
 and co-workers in the Wilson Lab.
 
-You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For **example code** and **screenshots**, see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
+You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For [**example code**](https://github.com/ABRG-Models/morphologica/tree/main/examples) and [**screenshots**](https://github.com/ABRG-Models/morphologica/tree/main/examples), see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
 morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
