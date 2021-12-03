@@ -8,11 +8,11 @@ directed build process. I managed to install the dependencies and
 compile all the examples and tests (bar one or two that are turned off
 for Windows). The OpenGL code works well.
 
-Installing the dependencies is left as an exercise for the Windows-savvy reader. I managed to do this 
-on my test system, but I don't have a good sense of what best practice should be. In common with Mac 
-and Linux, you will need Armadillo (I used version 10.7.1), OpenGL (this was present on my machine already), 
-Freetype (I git cloned this at commit 38b349c), glfw3 (git cloned at 56a4cb0a), HDF5 (I used the 
-hdf5-1.10.7-Std-win10_64-vs16 installer), jsoncpp (git cloned at 94a6220f) and OpenCV (git cloned at b5a9a679). 
+Installing the dependencies is left as an exercise for the Windows-savvy reader. I managed to do this
+on my test system, but I don't have a good sense of what best practice should be. In common with Mac
+and Linux, you will need Armadillo (I used version 10.7.1; Armadillo is only required to compile the Bezier curve test programs, you don't need it for the visualization code), OpenGL (this was present on my machine already),
+Freetype (I git cloned this at commit 38b349c), glfw3 (git cloned at 56a4cb0a), HDF5 (I used the
+hdf5-1.10.7-Std-win10_64-vs16 installer), jsoncpp (git cloned at 94a6220f) and OpenCV (git cloned at b5a9a679).
 I also found it necessary to install the GL extension wrangler library, glew, on Windows (I used version 2.2.0).
 
 I used a cmake build process like this:

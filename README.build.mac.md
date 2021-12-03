@@ -1,21 +1,19 @@
-# Build and Install morphologica on Apple Mac
+# Build morphologica on Apple Mac
 
-The cmake-driven morphologica build & install process installs the
-header files and font files that are required to build against
-morphologica.
+You don't need to *build* morphologica to use the headers, but
+you *will* need to install the dependencies.
 
-The build process also compiles a set of test programs, which require
-Armadillo, OpenGL, Freetype, glfw and HDF5 to compile.
-Programs that include morphologica headers will also need to link to
+The cmake-driven morphologica build process compiles a set of test and
+example programs which require all of the dependencies to be met.
+
+Programs that ```#include``` morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
 program and a C++ compiler which can compile c++-17 code.
 
 ## Installation dependencies for Mac
 
-For some legacy code, you will need XQuartz, XCode and Mac
-Ports. Install XQuartz from http://xquartz.org/ and XCode from the App
-Store. If you just installed XCode, then you'll need to agree to its
-licence terms. To do this, run
+You will need XCode from the App Store. If you just installed XCode,
+then you'll need to agree to its licence terms. To do this, run
 
 ```
 sudo xcodebuild -license
@@ -33,11 +31,13 @@ xcode-select --install
 ```
 
 Installation of most of the other dependencies can be achieved using Mac
-ports. This does lead to the installation of a great deal of
+ports (Option 1, below). This does lead to the installation of a great deal of
 additional software, some of which can conflict with Mac system
 software (that's libiconv, in particular). However, a clean install of
 Mac ports will successfully install the dependencies for
-morphologica. I'd advise you to use Option 1: Mac Ports only if you
+morphologica.
+
+I'd advise you to use Option 1: Mac Ports only if you
 *already* use Mac Ports, other wise, prefer Option 2: Manual
 dependency builds.
 
@@ -77,9 +77,11 @@ export PATH="/Applications/CMake.app/Contents/bin:${PATH}"
 
 #### Armadillo
 
-Armadillo is a library for matrix manipulation. One place it's used in
+Armadillo is a library for matrix manipulation. The only place it's used in
 morphologica is within the Bezier curve code,
-morph::BezCurve. Download a package - I downloaded
+morph::BezCurve. If your programs won't use that class, then you don't need Armadillo. It *is* required to compile all of morphologica's test programs.
+
+Download a package - I downloaded
 armadillo-9.900.3.tar.xz, though older versions back to 8.400.0 should
 work.
 
@@ -101,7 +103,8 @@ sudo make install
 
 Hierarchical data format is a standard format for saving binary
 data. morph::HdfData wraps the HDF5 API and hence HDF5 is a required
-dependency to build morphologica. Build version 1.10.x.
+dependency to build all of the morphologica tests and is required if
+you are going to use HdfData. Build version 1.10.x.
 
 ```sh
 mkdir -p ~/src

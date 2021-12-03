@@ -1,31 +1,33 @@
-# Build and Install morphologica on GNU/Linux
+# Building with morphologica on GNU/Linux
 
-You don't *need* to build and install morphologica to use the headers, but
-you *will* need to install the dependencies. The cmake-driven morphologica
-build & install process installs the header files and font files that are
-required to build against morphologica.
+You don't need to *build* morphologica to use the headers, but
+you *will* need to install the dependencies.
 
-The build process also compiles a set of test and example programs, which require
-the dependencies to compile.
-Programs that include morphologica headers will also need to link to
+The cmake-driven morphologica build process compiles a set of test and
+example programs which require all of the dependencies to be met.
+
+Programs that ```#include``` morphologica headers will also need to link to
 some or all of those dependencies. Finally, you'll need the cmake
 program and a C++ compiler which can compile c++-17 code.
 
 ## *Required*: Install dependencies
 
-morphologica code depends on Armadillo, OpenGL, Freetype, glfw3 and HDF5.
+morphologica code depends on OpenGL, Freetype and glfw3. Armadillo and HDF5 are optional dependencies if you use the Bezier curve classes (Armadillo) or the HdfData wrapper class (HDF5).
 
 ### Package-managed dependencies for Ubuntu/Debian
 
-To install the necessary dependencies on Ubuntu or Debian Linux:
+To install the visualization dependencies on Ubuntu or Debian Linux:
 
 ```sh
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libarmadillo-dev libjsoncpp-dev libglfw3-dev libhdf5-dev libfreetype-dev
+                 libjsoncpp-dev libglfw3-dev libfreetype-dev
 
 ```
-This is a complete recipe for dependencies on Ubuntu 20.04!
+For the optional dependencies it's:
+```sh
+sudo apt install libarmadillo-dev libhdf5-dev
+```
 
 ### Package-managed dependencies for Arch Linux
 
@@ -52,8 +54,8 @@ cd build
 # If you have doxygen, you can build the docs with -DBUILD_DOC=1.
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j$(nproc)
-# I usually place the morphologica directory inside the code repository I'm working 
-# on, I call this 'in-tree morphologica', but you can also have the headers in 
+# I usually place the morphologica directory inside the code repository I'm working
+# on, I call this 'in-tree morphologica', but you can also have the headers in
 # /usr/local/include if you install:
 sudo make install
 ```

@@ -17,7 +17,7 @@ This quick start is for Linux, because dependency installation is a single call 
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
                  libjsoncpp-dev libglfw3-dev libfreetype-dev
-                 
+
 git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
 cd morphologica
 mkdir build         # Create a build directory
@@ -83,7 +83,7 @@ This header-only C++ code provides **simulation support facilities** for simulat
 It helps with:
 
 * **Visualizing your model while it runs**. A modern OpenGL visualization
-  scheme called **[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h)** 
+  scheme called **[morph::Visual](https://github.com/ABRG-Models/morphologica/blob/main/morph/Visual.h)**
   provides the ability to visualise 2D and 3D graphs
   of surfaces, lines, bars, scatter plots and quiver plots with minimal
   processing overhead. Here's a [morph::Visual helloworld](https://github.com/ABRG-Models/morphologica/blob/main/examples/helloworld.cpp) and [a more complete example](https://github.com/ABRG-Models/morphologica/blob/main/examples/visual.cpp). It's almost as easy to [draw a graph in C++ with morphologica](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph1.cpp) as it is to do so [in Python](https://github.com/ABRG-Models/morphologica/blob/main/examples/graph1.py).
@@ -170,7 +170,7 @@ See [README.coding.md](https://github.com/ABRG-Models/morphologica/blob/main/REA
 
 ## Building code against morphologica
 
-First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3, jsoncpp and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype, glfw3 and jsoncpp. Platform-specific instructions can be found in the files [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.linux.md), [README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.mac.md) and [README.install.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.windows.md).
+First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3, jsoncpp and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype, glfw3 and jsoncpp. Platform-specific instructions can be found in the files [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md), [README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md).
 
 To build a program against morphologica, you need to tell your build process: **1**) What compiler
 flags to add to the compiler command line, including a directive to
@@ -313,8 +313,8 @@ placed a copy of the morphologica source  tree *inside* *standalone_examples/sch
 
 To use morphologica, you don't need to 'build the library', because it is header-only. However, it has some test and example programs which
 can be built with cmake. The process to build and install morphologica's
-test/example programs is given in [README.install.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.linux.md) for **GNU/Linux**,
-[README.install.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.mac.md) for **Apple Mac** and [README.install.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.install.windows.md) for **Windows/Visual Studio**.
+test/example programs is given in [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md) for **GNU/Linux**,
+[README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) for **Apple Mac** and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md) for **Windows/Visual Studio**.
 
 ## Credits
 
