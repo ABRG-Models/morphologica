@@ -15,9 +15,9 @@ int main (int argc, char** argv)
     x.linspace (-0.5, 0.8, 14);
     // Set a graph up of y = x^3
     gv->setdata (x, x.pow(3));
-    // Complete the setup
+    // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
-    // Add the GraphVisual to the Visual scene
+    // Add the GraphVisual OpenGL model to the Visual scene
     v.addVisualModel (gv);
     // Render the scene on the screen until user quits with 'x'
     v.keepOpen();
