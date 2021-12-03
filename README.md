@@ -2,15 +2,83 @@
 
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
 
-Library code used in models developed by Stuart P. Wilson, Seb James
-and co-workers in the Wilson Lab.
+**Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
-You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For **example code** and **screenshots**, see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
+You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For [**example code**](https://github.com/ABRG-Models/morphologica/tree/main/examples) and [**screenshots**](https://github.com/ABRG-Models/morphologica/tree/main/examples), see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
 morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
 
-This header-only C++ code provides **simulation support facilities** for our simulations of
-dynamical systems.
+## Quick Start
+
+This quick start is for Linux, because dependency installation is a single call to apt (or your favourite package manager).
+
+```bash
+# Install dependencies for building graph1.cpp (assuming Debian-like OS)
+sudo apt install build-essential cmake git wget  \
+                 freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
+                 libjsoncpp-dev libglfw3-dev libfreetype-dev
+                 
+git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
+cd morphologica
+mkdir build         # Create a build directory
+cd build
+cmake ..            # Call cmake to generate the makefiles
+make graph1         # Compile a single one of the examples. Add VERBOSE=1 to see the compiler commands.
+./examples/graph1   # Run the program. You should see a graph of a cubic function.
+# After closing the graph1 program, open its source code and modify something (see examples/graph2.cpp for ideas)
+gedit ../examples/graph1.cpp
+```
+The program graph1.cpp is:
+```c++
+// Visualize a graph. Minimal example showing how a default graph appears
+#include <morph/Visual.h>
+#include <morph/GraphVisual.h>
+#include <morph/vVector.h>
+
+int main (int argc, char** argv)
+{
+    // Set up a morph::Visual 'scene environment'.
+    morph::Visual v(1024, 768, "Made with morph::GraphVisual");
+    // Create a new GraphVisual with offset within the scene of 0,0,0
+    auto gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
+    // Create some data for the x axis:
+    morph::vVector<float> x;
+    // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
+    x.linspace (-0.5, 0.8, 14);
+    // Set a graph up of y = x^3
+    gv->setdata (x, x.pow(3));
+    // Complete the setup
+    gv->finalize();
+    // Add the GraphVisual to the Visual scene
+    v.addVisualModel (gv);
+    // Render the scene on the screen until user quits with 'x'
+    v.keepOpen();
+    // When v goes out of scope, gv will be deallocated
+    return 0;
+}
+```
+The compares favourably (in terms of amount of boilerplate code) with the equivalent Python, graph1.py:
+```Python
+# Visualize the graph from graph1.cpp in Python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Create some data for the x axis
+x = np.linspace(-0.5, 0.8, 14)
+# Set a graph up of y = x^3
+plt.plot (x, np.power(x,3), '-o')
+# Add labels
+plt.title('Made with Python/numpy/matplotlib')
+plt.xlabel('x')
+plt.ylabel('y')
+# Render the graph on the screen until user quits with 'q'
+plt.show()
+```
+See the [coding README](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md) for a description of some of the main classes that morphologica provides.
+
+## What is morphologica?
+
+This header-only C++ code provides **simulation support facilities** for simulations of dynamical systems, agent-based models or, in fact, any program that needs dynamic, runtime visualization.
 
 It helps with:
 
