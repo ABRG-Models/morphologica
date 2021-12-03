@@ -55,7 +55,7 @@ namespace morph {
     {
     private:
         //! Type of map
-        ColourMapType type = ColourMapType::Jet;
+        ColourMapType type = ColourMapType::Plasma;
         //! The hue (range 0 to 1.0f) as used in HSV colour values for Monochrome maps.
         float hue = 0.0f;
         //! The saturation, used for ColourMapType::Fixed only
@@ -83,7 +83,7 @@ namespace morph {
         //! type. If string doesn't match, return the default, Jet
         static ColourMapType strToColourMapType (const std::string& s)
         {
-            ColourMapType cmt = morph::ColourMapType::Jet;
+            ColourMapType cmt = morph::ColourMapType::Plasma;
             std::string _s = s;
             morph::Tools::toLowerCase (_s);
             if (_s == "fixed") {
