@@ -10,7 +10,7 @@ morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.
 
 ## Quick Start
 
-This quick start is for Linux, because dependency installation is a single call to apt (or your favourite package manager).
+This quick start shows dependency installation for Linux, because on this platform, it's a single call to apt (or your favourite package manager). If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users.
 
 ```bash
 # Install dependencies for building graph1.cpp (assuming Debian-like OS)
