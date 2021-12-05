@@ -51,24 +51,22 @@ that your new example will compile.
 
 I *can* compile the helloworld program with a single g++ call on my Ubuntu machine...
 ```bash
-cd /home/seb/morphologica/examples
+cd /home/seb/models/morphologica/examples
 /usr/bin/g++ \
--I/home/seb/morphologica \
--I/opt/graphics/OpenGL/include \
--I/home/seb/morphologica/include \
--isystem /usr/include/freetype2 \
--D__GLN__ -Wall -g -Wfatal-errors -Wno-unused-result \
--Wno-unknown-pragmas -march=native -O3 -fopenmp \
--DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES \
--DMORPH_FONTS_DIR="\"/home/seb/morphologica/fonts\"" \
--std=gnu++17 \
--o helloworld helloworld.cpp \
--lopenblas -lpthread -lm \
-/usr/local/lib/libglfw3.a \
-/usr/lib/x86_64-linux-gnu/libfreetype.so \
-/usr/local/lib/libjsoncpp.a \
-/usr/lib/x86_64-linux-gnu/libGLX.so \
-/usr/lib/x86_64-linux-gnu/libOpenGL.so -lrt -ldl -lX11
+    -I/home/seb/models/morphologica \                                  # Include dirs
+    -I/home/seb/models/morphologica/include \
+    -isystem /usr/include/jsoncpp \
+    -isystem /usr/include/freetype2  \
+    -D__GLN__ -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES \                 # Important flags to set
+    -DMORPH_FONTS_DIR="\"/home/seb/models/morphologica/fonts\"" \
+    -Wall -g -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas \  # Almost all warnings
+    -march=native -O3 -fopenmp -std=gnu++17 \                          # More compiler flags
+    -o helloworld helloworld.cpp  \                                    # Input code file and name for output
+    /usr/lib/x86_64-linux-gnu/libglfw.so.3.3 \                         # Links to shared libraries
+    /usr/lib/x86_64-linux-gnu/libfreetype.so \
+    /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.7.4 \
+    /usr/lib/x86_64-linux-gnu/libGLX.so \
+    /usr/lib/x86_64-linux-gnu/libOpenGL.so
 ```
 ...but as you can see, there are quite a few includes and links to
 keep track of, and so I find it easier to use cmake! (It's always nice
