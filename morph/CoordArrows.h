@@ -21,7 +21,7 @@ namespace morph {
     class CoordArrows : public VisualModel
     {
     public:
-        CoordArrows (void)
+        CoordArrows()
         {
             this->lengths = {1.0, 1.0, 1.0};
             this->mv_offset = {0.2, 0.2, 0.0};
@@ -48,33 +48,9 @@ namespace morph {
             this->mv_offset = {0.0, 0.0, 0.0};
             this->lengths = _lengths;
             this->thickness = _thickness;
+            this->em = _em;
 
-            if (_em > 0.0f) {
-                morph::Vector<float> toffset = this->mv_offset;
-                toffset[0] += this->lengths[0] + _em;
-                std::cout << "X text offset: " << toffset << std::endl;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
-                                                            _em, 48, toffset,
-                                                            "X"));
-                toffset = this->mv_offset;
-                toffset[1] += this->lengths[1];
-                toffset[0] += _em;
-                //std::cout << "Y text offset: " << toffset << std::endl;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
-                                                            _em, 48, toffset,
-                                                            "Y"));
-                toffset = this->mv_offset;
-                toffset[2] += this->lengths[2];
-                toffset[0] += _em;
-                //std::cout << "Z text offset: " << toffset << std::endl;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
-                                                            _em, 48, toffset,
-                                                            "Z"));
-            }
-
+            this->initAxisLabels();
             // Initialize the vertices that will represent the object
             this->initializeVertices();
 
@@ -98,8 +74,35 @@ namespace morph {
             for (auto& t : this->texts) { t->setVisibleOn (bgcolour); }
         }
 
+        void initAxisLabels()
+        {
+            if (this->em > 0.0f) {
+                morph::Vector<float> toffset = this->mv_offset;
+                toffset[0] += this->lengths[0] + this->em;
+                std::cout << "X text offset: " << toffset << std::endl;
+                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                            morph::VisualFont::VeraBoldItalic,
+                                                            this->em, 48, toffset,
+                                                            this->x_label));
+                toffset = this->mv_offset;
+                toffset[1] += this->lengths[1];
+                toffset[0] += this->em;
+                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                            morph::VisualFont::VeraBoldItalic,
+                                                            this->em, 48, toffset,
+                                                            this->y_label));
+                toffset = this->mv_offset;
+                toffset[2] += this->lengths[2];
+                toffset[0] += this->em;
+                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                                                            morph::VisualFont::VeraBoldItalic,
+                                                            this->em, 48, toffset,
+                                                            this->z_label));
+            }
+        }
+
         //! Initialize vertex buffer objects and vertex array object.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -137,12 +140,18 @@ namespace morph {
         Vector<float, 3> lengths;
         //! A thickness scaling factor, to apply to the arrows.
         float thickness = 1.0f;
+        //! m size for text labels
+        float em = 0.0f;
 
         //! The colours of the arrows, and of the centre sphere
         std::array<float, 3> centresphere_col = {1.0f, 1.0f, 1.0f};
         std::array<float, 3> x_axis_col = {1.0f, 0.0f, 0.0f}; // Red
         std::array<float, 3> y_axis_col = {0.0f, 1.0f, 0.0f}; // Green
         std::array<float, 3> z_axis_col = {0.0f, 0.0f, 1.0f}; // Blue
+
+        std::string x_label = "X";
+        std::string y_label = "Y";
+        std::string z_label = "Z";
     };
 
 } // namespace morph

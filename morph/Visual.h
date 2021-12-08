@@ -841,11 +841,12 @@ namespace morph {
             } // else no problem
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
-            this->coordArrows = new CoordArrows(this->shaderprog,
-                                                this->tshaderprog,
-                                                this->coordArrowsLength,
-                                                this->coordArrowsThickness,
-                                                this->coordArrowsEm);
+            this->coordArrows = new CoordArrows();
+            this->coordArrows->init (this->shaderprog,
+                                     this->tshaderprog,
+                                     this->coordArrowsLength,
+                                     this->coordArrowsThickness,
+                                     this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
@@ -1026,6 +1027,7 @@ namespace morph {
             return program;
         }
 
+    private:
         //! The window (and OpenGL context) for this Visual
         GLFWwindow* window;
 
@@ -1043,6 +1045,7 @@ namespace morph {
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
         unsigned int selectedVisualModel = 0;
 
+    protected:
         //! A little model of the coordinate axes.
         CoordArrows* coordArrows;
 
@@ -1055,6 +1058,7 @@ namespace morph {
         //! Text size for x,y,z.
         float coordArrowsEm = 0.01f;
 
+    private:
         //! A VisualTextModel for a title text.
         VisualTextModel* textModel = nullptr;
         //! Text models for labels

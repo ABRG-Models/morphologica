@@ -169,6 +169,12 @@ namespace morph {
 #endif
         }
 
+        void clearTexts()
+        {
+            for (auto& tm : this->texts) { delete (tm); }
+            this->texts.clear();
+        }
+
         //! Clear out the model
         void clear()
         {
@@ -176,7 +182,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
-            this->texts.clear();
+            this->clearTexts();
             this->idx = 0;
             this->reinit_buffers();
         }
