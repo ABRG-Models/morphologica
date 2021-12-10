@@ -318,6 +318,16 @@ namespace morph {
 #endif
                           std::is_same<std::decay_t<T>, std::array<float, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::array<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<long long int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<unsigned int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, std::array<unsigned long long int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<float, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<long long int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<unsigned int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::Vector<unsigned long long int, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<float, float>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<double, double>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<int, int>>::value == true
@@ -357,23 +367,42 @@ namespace morph {
             }
 
             herr_t status = 0;
-            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
-            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+            if constexpr (std::is_same<std::decay_t<T>, float>::value == true
+                          || std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true
+                          || std::is_same<typename std::decay<T>::type, morph::Vector<float,2>>::value == true
+                          || std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
-            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+            } else if constexpr (std::is_same<std::decay_t<T>, double>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::Vector<double,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::Vector<int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
-            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<unsigned int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::Vector<unsigned int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
-            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned long long int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<unsigned long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::Vector<unsigned long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::array<long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::Vector<long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
 #ifdef BUILD_HDFDATA_WITH_OPENCV
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2i>::value == true) {
@@ -385,30 +414,6 @@ namespace morph {
             } else if constexpr (std::is_same<typename std::decay<T>::type, cv::Point2f>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 #endif
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
-            } else if constexpr (std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
-                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
-
             } else {
                 throw std::runtime_error ("HdfData::read_contained_vals<T>: Don't know how to read that type");
             }
