@@ -244,7 +244,7 @@ endif()
 if(APPLE)
   message("-- NB: Omitting testProcess.cpp on Mac for now, as it doesn't work.")
 elseif(WIN32)
-  message("-- NB: Omitting testProcess.cpp on Windows for now, as it tests the very Unixy Process class.")  
+  message("-- NB: Omitting testProcess.cpp on Windows for now, as it tests the very Unixy Process class.")
 else(APPLE)
   add_executable(testProcess testProcess.cpp)
   add_test(testProcess testProcess)
@@ -254,6 +254,9 @@ endif(APPLE)
 add_executable(testConfig testConfig.cpp)
 target_link_libraries(testConfig jsoncpp_lib)
 add_test(testConfig testConfig)
+
+add_executable(testConfigNL testConfigNL.cpp)
+add_test(testConfigNL testConfigNL)
 
 # Test morph::Quaternion
 add_executable(testQuaternion testQuaternion.cpp)
