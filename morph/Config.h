@@ -1,9 +1,12 @@
 /*
- * A wrapper around JSON code for saving and retrieving parameters
+ * A wrapper around nlohmann JSON code for saving and retrieving parameters
+ *
+ * Fixme: All I want in addition to what json offers is ability to open a file, e.g. nlohmann::json j(file_path);
+ * Could get this by extending?
  */
 #pragma once
 
-#include <json/json.h>
+#include <morph/nlohmann/json.hpp>
 #include <list>
 #include <fstream>
 #include <sstream>
@@ -44,7 +47,7 @@ namespace morph {
     {
     public:
         //! Default constructor, when config should be a class member. Call init() before use.
-        Config() : ready(false) {}
+        Config(){}
 
         //! Constructor which takes the path to the file that contains the JSON.
         Config (const std::string& configfile) { this->init (configfile); }
@@ -52,35 +55,20 @@ namespace morph {
         //! Perform config file initialization.
         void init (const std::string& configfile)
         {
+            this->thefile = configfile;
             std::stringstream ess;
             // Test for existence of the JSON file.
             std::ifstream jsonfile_test;
             jsonfile_test.open (configfile, std::ios::in);
             if (jsonfile_test.is_open()) {
-                // Good, file exists.
+                // File exists, should parse it
                 jsonfile_test.close();
-            } else {
-                ess << "json config file " << configfile << " not found.";
-                this->emsg = ess.str();
-                this->ready = false;
-                return;
-            }
-
-            // Parse the JSON
-            std::ifstream jsonfile (configfile, std::ifstream::binary);
-            std::string errs;
-            Json::CharReaderBuilder rbuilder;
-            rbuilder["collectComments"] = false;
-            bool parsingSuccessful = Json::parseFromStream (rbuilder, jsonfile, &this->root, &errs);
-            if (!parsingSuccessful) {
-                // report to the user the failure and their locations in the document.
-                ess << "Failed to parse JSON: " << errs;
-                this->emsg = ess.str();
-                this->ready = false;
-                return;
-            }
-            // JSON is open and parsed
-            this->ready = true;
+                // Parse the JSON
+                std::ifstream jsonfile (configfile, std::ifstream::binary);
+                jsonfile >> this->root;
+                // JSON is open and parsed
+                this->ready = true;
+            } // else We are creating a new Config, with no pre-existing content
         }
 
 #ifndef __WIN__
@@ -95,8 +83,6 @@ namespace morph {
          */
         void insertGitInfo (const std::string& codedir)
         {
-            this->checkready (__FUNCTION__);
-
             ProcessData pD;
             ConfigProcessCallbacks cb(&pD);
             Process p;
@@ -226,122 +212,82 @@ namespace morph {
         }
 #endif // __WIN__
 
-        //! Write out the JSON to file.
+        void write() { this->write (this->thefile); }
+
+        //! Write out the JSON to a different file.
         void write (const std::string& outfile)
         {
-            this->checkready (__FUNCTION__);
             std::ofstream configout;
             configout.open (outfile.c_str(), std::ios::out|std::ios::trunc);
             if (configout.is_open()) {
-                configout << this->root;
+                configout << std::setw(4) << this->root << std::endl;
                 configout.close();
             } else {
                 this->emsg = "Failed to open file '" + outfile + "' for writing";
-                this->ready = false;
             }
         }
 
         //! Output the config as a string of text
         std::string str() const
         {
-            this->checkready (__FUNCTION__);
             std::stringstream ss;
             ss << this->root;
             return ss.str();
         }
 
         // Wrappers around gets
+        template <typename T>
+        T get (const std::string& thing, T defaultval) const
+        {
+            return this->root.contains(thing) ? this->root[thing].get<T>() : defaultval;
+        }
+
         bool getBool (const std::string& thing, bool defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asBool();
+            return this->get<bool> (thing, defaultval);
         }
         int getInt (const std::string& thing, int defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asInt();
+            return this->get<int> (thing, defaultval);
         }
         unsigned int getUInt (const std::string& thing, unsigned int defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asUInt();
+            return this->get<unsigned int> (thing, defaultval);
         }
         float getFloat (const std::string& thing, float defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asFloat();
+            return this->get<float> (thing, defaultval);
         }
         double getDouble (const std::string& thing, double defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asDouble();
+            return this->get<double> (thing, defaultval);
         }
         std::string getString (const std::string& thing, const std::string& defaultval) const
         {
-            this->checkready (__FUNCTION__);
-            return this->root.get (thing, defaultval).asString();
+            return this->get<std::string> (thing, defaultval);
         }
-        Json::Value getArray (const std::string& arrayname) const
+        auto getArray (const std::string& arrayname) const
         {
-            this->checkready (__FUNCTION__);
             return this->root[arrayname];
         }
-        Json::Value getValue (const std::string& thing) const
-        {
-            this->checkready (__FUNCTION__);
-            return this->root[thing];
-        }
+        // getValue - just use templated get
 
         // Setters
-        void set (const std::string& thing, bool value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
-        void set (const std::string& thing, int value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
-        void set (const std::string& thing, unsigned int value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
-        void set (const std::string& thing, float value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
-        void set (const std::string& thing, double value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
-        void set (const std::string& thing, const std::string& value)
-        {
-            this->checkready (__FUNCTION__);
-            this->root[thing] = value;
-        }
+        template <typename T>
+        void set (const std::string& thing, T value) { this->root[thing] = value; }
+        template <typename T>
+        void setArray (const std::string& thing, const std::vector<T>& values) { this->root[thing] = values; }
 
-        //! Set true when config object ready to be used
+        //! Set true when json has been initialised (i.e. thefile has been read)
         bool ready = false;
 
-        //! If !ready, error message is here.
+        //! Any error message is here.
         std::string emsg = "";
 
         // The root object which is set up in the constructor
-        Json::Value root;
+        nlohmann::json root;
 
-    private:
-        //! Private, only intended for getters/setters use. Client code can directly test Config::ready.
-        void checkready (const std::string& caller) const
-        {
-            if (!this->ready) {
-                std::stringstream ee;
-                ee << "Config not ready. Error was: " << this->emsg << ". Can't " << caller << ". Check your JSON.";
-                throw std::runtime_error (ee.str());
-            }
-        }
+        // The file that holds the JSON
+        std::string thefile = "";
     };
 } // namespace

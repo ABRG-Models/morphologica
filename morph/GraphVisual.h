@@ -24,6 +24,7 @@
 #include <morph/histo.h>
 #include <iostream>
 #include <vector>
+#include <deque>
 #include <array>
 #include <cmath>
 #include <sstream>

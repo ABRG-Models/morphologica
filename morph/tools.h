@@ -18,7 +18,6 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <json/json.h>
 #ifndef __WIN__
 # include <morph/Process.h>
 #endif
@@ -85,22 +84,6 @@ extern "C" {
 
 namespace morph
 {
-#ifndef __WIN__
-    //! Callbacks class extends ProcessCallbacks
-    class ToolsProcessCallbacks : public ProcessCallbacks
-    {
-    public:
-        ToolsProcessCallbacks (ProcessData* p) { this->parent = p; }
-        void startedSignal (std::string msg) {}
-        void errorSignal (int err) { this->parent->setErrorNum (err); }
-        void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
-        void readyReadStandardOutputSignal() { this->parent->setStdOutReady (true); }
-        void readyReadStandardErrorSignal() { this->parent->setStdErrReady (true); }
-    private:
-        ProcessData* parent;
-    };
-#endif // __WIN__
-
     //! Allows use of transform and tolower() on strings with GNU compiler
     struct to_lower { char operator() (const char c) const { return tolower(c); } };
 
@@ -110,147 +93,6 @@ namespace morph
     class Tools
     {
     public:
-#ifndef __WIN__
-        /*!
-         * Launch git sub-processes to determine info about the current
-         * repository. Intended for use with code that will save a Json formatted log of
-         * a simulation run.
-         *
-         * \param root Insert the git tags into this Json object.
-         *
-         * \param codedir The name of the directory in which significant code is
-         * located. If git status detects changes in this directory, then information to
-         * this effect will be inserted into \a root.
-         *
-         * Superceded by morph::Config::insertGitInfo.
-         */
-        static void insertGitInfo (Json::Value& root, const std::string& codedir)
-        {
-            ProcessData pD;
-            ToolsProcessCallbacks cb(&pD);
-            Process p;
-            std::string command ("/usr/bin/git");
-
-            std::list<std::string> args1;
-            args1.push_back ("git");
-            args1.push_back ("rev-parse");
-            args1.push_back ("HEAD");
-
-            try {
-                p.setCallbacks (&cb);
-                p.start (command, args1);
-                p.probeProcess ();
-                if (!p.waitForStarted()) {
-                    throw std::runtime_error ("Process failed to start");
-                }
-                while (p.running() == true) {
-                    p.probeProcess();
-                }
-
-                std::stringstream theOutput;
-                theOutput << p.readAllStandardOutput();
-                std::string line = "";
-                int nlines = 0;
-                while (getline (theOutput, line, '\n')) {
-                    std::cout << "Current git HEAD: " << line << std::endl;
-                    if (nlines++ > 0) {
-                        break;
-                    }
-                    root["git_head"] = line; // Should be one line only
-                }
-
-            } catch (const std::exception& e) {
-                std::cerr << "Exception: " << e.what() << std::endl;
-                root["git_head"] = "unknown";
-            }
-
-            // Reset Process with arg true to keep callbacks
-            p.reset (true);
-
-            std::list<std::string> args2;
-            args2.push_back ("git");
-            args2.push_back ("status");
-
-            try {
-                p.start (command, args2);
-                p.probeProcess ();
-                if (!p.waitForStarted()) {
-                    throw std::runtime_error ("Process failed to start");
-                }
-                while (p.running() == true) {
-                    p.probeProcess();
-                }
-
-                std::stringstream theOutput;
-                theOutput << p.readAllStandardOutput();
-                std::string line = "";
-                bool lm = false;
-                bool ut = false;
-                while (getline (theOutput, line, '\n')) {
-                    if (line.find("modified:") != std::string::npos) {
-                        if (line.find(codedir) != std::string::npos) {
-                            if (!lm) {
-                                root["git_modified_sim"] = true;
-                                std::cout << "Repository has local modifications in " << codedir << " dir\n";
-                            }
-                            lm = true;
-                        }
-                    }
-                    if (line.find("Untracked files:") != std::string::npos) {
-                        if (line.find(codedir) != std::string::npos) {
-                            if (!ut) {
-                                root["git_untracked_sim"] = true;
-                                std::cout << "Repository has untracked files present in " << codedir << " dir\n";
-                            }
-                            ut = true;
-                        }
-                    }
-                }
-
-            } catch (const std::exception& e) {
-                std::cerr << "Exception: " << e.what() << std::endl;
-                root["git_status"] = "unknown";
-            }
-
-            // Reset for third call
-            p.reset (true);
-
-            // This gets the git branch name
-            std::list<std::string> args3;
-            args3.push_back ("git");
-            args3.push_back ("rev-parse");
-            args3.push_back ("--abbrev-ref");
-            args3.push_back ("HEAD");
-
-            try {
-                p.start (command, args3);
-                p.probeProcess ();
-                if (!p.waitForStarted()) {
-                    throw std::runtime_error ("Process failed to start");
-                }
-                while (p.running() == true) {
-                    p.probeProcess();
-                }
-
-                std::stringstream theOutput;
-                theOutput << p.readAllStandardOutput();
-                std::string line = "";
-                int nlines = 0;
-                while (getline (theOutput, line, '\n')) {
-                    std::cout << "Current git branch: " << line << std::endl;
-                    if (nlines++ > 0) {
-                        break;
-                    }
-                    root["git_branch"] = line; // Should be one line only
-                }
-
-            } catch (const std::exception& e) {
-                std::cerr << "Exception: " << e.what() << std::endl;
-                root["git_branch"] = "unknown";
-            }
-        }
-#endif // __WIN__
-
         /*!
          * For mixing up bits of three args; used to generate a good random seed using
          * time() getpid() and clock().
