@@ -86,8 +86,11 @@ int main (int argc, char **argv)
     RD.a = conf.getDouble ("a", 1.0);
     RD.b = conf.getDouble ("b", 1.0);
     RD.mu = conf.getDouble ("mu", 1.0);
-    // Set chi to Dn, as in the paper (see linear analysis)
-    RD.chi = RD.Dn; // or: conf.getDouble ("chi", 0.3);
+    RD.chi = conf.getDouble ("chi", -1.0);
+    if (RD.chi < 0.0) {
+        // Set chi to Dn, as in the paper (see linear analysis)
+        RD.chi = RD.Dn; // or: conf.getDouble ("chi", 0.3);
+    }
 
     // Allocate and initialise the model
     RD.allocate();
