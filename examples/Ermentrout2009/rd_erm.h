@@ -109,8 +109,8 @@ public:
 
         // Initialise with noise
         for (unsigned int i  = 0; i < this->N; ++i) {
-            this->noiseify_vector_variable (this->n[i], 1., 0.01);
-            this->noiseify_vector_variable (this->c[i], beta*0.5, 0.01);
+            this->noiseify_vector_variable (this->n[i], 1., 0.1);
+            this->noiseify_vector_variable (this->c[i], beta*0.5, 0.1);
         }
     }
 
