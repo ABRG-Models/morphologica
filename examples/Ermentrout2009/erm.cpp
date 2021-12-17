@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <utility>
 
 // Morphologica headers: visualization and JSON config
 #include <morph/tools.h>
@@ -24,6 +25,7 @@ typedef morph::VisualDataModel<FLT>* VdmPtr;
 #include <morph/HexGridVisual.h>
 #include <morph/GraphVisual.h>
 #include <morph/Vector.h>
+#include <morph/MathAlgo.h>
 
 // Simulation code header
 #include "rd_erm.h"
@@ -74,14 +76,16 @@ int main (int argc, char **argv)
 
     // Instantiate the model object
     RD_Erm<FLT> RD;
-    RD.svgpath = conf.getString ("svgpath", "./ellipse.svg");
+    RD.svgpath = conf.getString ("svgpath", ""); // We'll do an elliptical boundary if svgpath is empty
+    RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
+    RD.ellipse_b = conf.getDouble ("ellipse_b", 0.6);
     RD.logpath = logpath;
     RD.set_dt(static_cast<FLT>(conf.getDouble ("dt", 0.00001)));
     RD.hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
     RD.boundaryFalloffDist = conf.getFloat ("boundaryFalloffDist", 0.01f);
     RD.N = 1;
     RD.Dn = conf.getDouble ("Dn", 0.3);
-    RD.Dc = conf.getDouble ("Dc", 0.3*0.3); // 0.3 * Dn
+    RD.Dc = conf.getDouble ("Dc", 0.3*RD.Dn); // 0.3 * Dn
     RD.beta = conf.getDouble ("beta", 5.0);
     RD.a = conf.getDouble ("a", 1.0);
     RD.b = conf.getDouble ("b", 1.0);
@@ -95,6 +99,9 @@ int main (int argc, char **argv)
     // Allocate and initialise the model
     RD.allocate();
     RD.init();
+
+    // Autoscale the colour map on each step?
+    bool do_autoscale = conf.getBool ("autoscale", false);
 
     // Now create a log directory if necessary, and exit on any failures.
     if (morph::Tools::dirExists (logpath) == false) {
@@ -142,7 +149,8 @@ int main (int argc, char **argv)
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
-    morph::Scale<FLT, float> cscale; cscale.setParams (_m, _c);
+    morph::Scale<FLT, float> cscale;
+    cscale.setParams (_m, _c);
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * RD.hg->width();
@@ -152,12 +160,12 @@ int main (int argc, char **argv)
     hgv1->zScale.setParams (_m/10.0f, _c/10.0f);
     // ...or use setters to copy one in:
     hgv1->setCScale (cscale);
-    hgv1->cm.setType (morph::ColourMapType::Inferno);
+    hgv1->cm.setType (morph::ColourMapType::Jet);
     hgv1->hexVisMode = morph::HexVisMode::Triangles;
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv1->finalize();
-    unsigned int n_idx = v.addVisualModel (hgv1);
+    v.addVisualModel (hgv1);
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
@@ -165,13 +173,12 @@ int main (int argc, char **argv)
     hgv2->setScalarData (&RD.c[0]);
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
-    hgv2->cm.setType (morph::ColourMapType::Inferno);
+    hgv2->cm.setType (morph::ColourMapType::Jet);
     hgv2->hexVisMode = morph::HexVisMode::Triangles;
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
-    hgv2->hexVisMode = morph::HexVisMode::Triangles;
     hgv2->finalize();
-    unsigned int c_idx = v.addVisualModel (hgv2);
+    v.addVisualModel (hgv2);
 
     // Set up a 2D graph with morph::GraphVisual
     spatOff = {0.5f, -2.0f, 0.0f};
@@ -192,14 +199,21 @@ int main (int argc, char **argv)
 
     // Start the loop
     bool doing = true;
+    std::pair<FLT, FLT> mm; // maxmin
     while (doing) {
         // Step the model:
         RD.step();
 
         if ((RD.stepCount % plotevery) == 0) {
             // Plot n and c
-            static_cast<VdmPtr>(v.getVisualModel(n_idx))->updateData (&RD.n[0]);
-            static_cast<VdmPtr>(v.getVisualModel(c_idx))->updateData (&RD.c[0]);
+            if (do_autoscale == true) {
+                mm = morph::MathAlgo::maxmin (RD.n[0]);
+                hgv1->colourScale.compute_autoscale (mm.second, mm.first);
+                mm = morph::MathAlgo::maxmin (RD.c[0]);
+                hgv2->colourScale.compute_autoscale (mm.second, mm.first);
+            }
+            hgv1->updateData (&RD.n[0]);
+            hgv2->updateData (&RD.c[0]);
             // Append to the 2D graph of sums:
             graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_n[0], 0);
             graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_c[0], 1);
