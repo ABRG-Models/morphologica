@@ -16,7 +16,7 @@ This quick start shows dependency installation for Linux, because on this platfo
 # Install dependencies for building graph1.cpp (assuming Debian-like OS)
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libjsoncpp-dev libglfw3-dev libfreetype-dev
+                 libglfw3-dev libfreetype-dev
 
 git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
 cd morphologica
