@@ -64,7 +64,6 @@ cd /home/seb/models/morphologica/examples
     -o helloworld helloworld.cpp  \                                    # Input code file and name for output
     /usr/lib/x86_64-linux-gnu/libglfw.so.3.3 \                         # Links to shared libraries
     /usr/lib/x86_64-linux-gnu/libfreetype.so \
-    /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.7.4 \
     /usr/lib/x86_64-linux-gnu/libGLX.so \
     /usr/lib/x86_64-linux-gnu/libOpenGL.so
 ```
@@ -133,7 +132,7 @@ morph::Vector<float, 3> c1 = { 0, 0, 0 };
 morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
 morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
 
-// The last piece of infomration that the TriangleVisual will
+// The last piece of information that the TriangleVisual will
 // require is a colour. This is an RGB triplet, so this triangle will
 // be red.
 morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
@@ -408,7 +407,7 @@ simulation.
 
 [morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
 *so much easier* to work with than XML! The idea is that you will
-write out your parameteres by hand (or with a script) in a JSON file,
+write your parameters by hand (or with a script) into a JSON file,
 then these are conveniently accessible in your program. Here's an
 example from our Schnakenberg reaction-diffusion example,
 schanakenberg.json:
