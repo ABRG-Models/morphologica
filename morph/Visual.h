@@ -32,7 +32,7 @@
 #endif
 
 #include <morph/VisualResources.h>
-#include <morph/Config.h>
+#include <morph/nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
@@ -824,21 +824,25 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // If possible, read in scenetrans and rotation state from a special config file
-            morph::Config vconf ("/tmp/Visual.json");
-            if (vconf.ready == true) {
-                std::cout << "Reading Visual.json for initial scene rotations.\n";
-                this->scenetrans[0] = vconf.getFloat ("scenetrans_x", this->scenetrans[0]);
-                this->scenetrans[1] = vconf.getFloat ("scenetrans_y", this->scenetrans[1]);
-                this->scenetrans[2] = vconf.getFloat ("scenetrans_z", this->scenetrans[2]);
+            try {
+                nlohmann::json vconf;
+                std::ifstream fi;
+                fi.open ("/tmp/Visual.json", std::ios::in);
+                fi >> vconf;
+                this->scenetrans[0] = vconf.contains("scenetrans_x") ? vconf["scenetrans_x"].get<float>() : this->scenetrans[0];
+                this->scenetrans[1] = vconf.contains("scenetrans_y") ? vconf["scenetrans_y"].get<float>() : this->scenetrans[1];
+                this->scenetrans[2] = vconf.contains("scenetrans_z") ? vconf["scenetrans_z"].get<float>() : this->scenetrans[2];
                 // Place the same numbers into scenetrans_default, too.
-                this->scenetrans_default[0] = vconf.getFloat ("scenetrans_x", this->scenetrans[0]);
-                this->scenetrans_default[1] = vconf.getFloat ("scenetrans_y", this->scenetrans[1]);
-                this->scenetrans_default[2] = vconf.getFloat ("scenetrans_z", this->scenetrans[2]);
-                this->rotation.w = vconf.getFloat ("scenerotn_w", this->rotation.w);
-                this->rotation.x = vconf.getFloat ("scenerotn_x", this->rotation.x);
-                this->rotation.y = vconf.getFloat ("scenerotn_y", this->rotation.y);
-                this->rotation.z = vconf.getFloat ("scenerotn_z", this->rotation.z);
-            } // else no problem
+                this->scenetrans_default[0] = this->scenetrans[0];
+                this->scenetrans_default[1] = this->scenetrans[1];
+                this->scenetrans_default[2] = this->scenetrans[2];
+                this->rotation.w = vconf.contains("scenerotn_w") ? vconf["scenerotn_w"].get<float>() : this->rotation.w;
+                this->rotation.x = vconf.contains("scenerotn_x") ? vconf["scenerotn_x"].get<float>() : this->rotation.x;
+                this->rotation.y = vconf.contains("scenerotn_y") ? vconf["scenerotn_y"].get<float>() : this->rotation.y;
+                this->rotation.z = vconf.contains("scenerotn_z") ? vconf["scenerotn_z"].get<float>() : this->rotation.z;
+            } catch (...) {
+                // No problem if we couldn't read /tmp/Visual.json
+            }
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = new CoordArrows();

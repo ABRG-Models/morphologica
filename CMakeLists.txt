@@ -115,7 +115,6 @@ if(0)#APPLE
 endif()
 
 # Lib finding
-find_package(jsoncpp REQUIRED)
 find_package(OpenCV) # No longer required for morph::Visual, used by some tests
 find_package(OpenGL REQUIRED)
 if(USE_GLEW)
@@ -141,8 +140,6 @@ include_directories(${HDF5_INCLUDE_DIR})
 # Two possible values for the armadillo include dirs
 include_directories(${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIR})
-get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
-include_directories(${JSON_INC_PATH})
 
 # New, text rendering dependencies
 find_package(Freetype REQUIRED)

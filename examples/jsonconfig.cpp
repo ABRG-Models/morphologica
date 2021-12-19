@@ -44,7 +44,7 @@ int main()
         std::cout << "\ntestfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
         // A simple array
-        const Json::Value testarray = config.getArray("testarray");
+        const auto testarray = config.getArray("testarray");
         std::cout << "\nValues of the simple array \"testarray\":\n   [   ";
         for (unsigned int j = 0; j < testarray.size(); ++j) {
             std::cout << testarray[j] << "   ";
@@ -52,15 +52,21 @@ int main()
         std::cout << "]\n";
 
         // A more complicated array in which each array element is itself a JSON object
-        const Json::Value testarray_of_objects = config.getArray("testarray_of_objects");
+        const auto testarray_of_objects = config.getArray("testarray_of_objects");
         std::cout << "\nValues of the array of objects \"testarray_of_objects\":\n";
         for (unsigned int j = 0; j < testarray_of_objects.size(); ++j) {
-            Json::Value v = testarray_of_objects[j];
+            auto v = testarray_of_objects[j]; // v.type is nlohmann::basic_json<>::value_t
             // Each object has a "desc", an "x" and a "y" item:
-            std::string desc = v.get ("desc", "unknown").asString();
-            float x = v.get ("x", -1.0f).asFloat();
-            double y = v.get ("y", -1.0f).asDouble();
-            std::cout << "   " << desc << ": (x=" << x << ", y=" << y << ")\n";
+            std::string desc = v["desc"];
+            float x = v["x"];
+            double y = v["y"];
+            std::cout << "Array index " << j << ":  " << desc << ": (x=" << x << ", y=" << y << ")\n";
+        }
+
+        // Another way to iterate:
+        for (auto& [key, obj] : testarray_of_objects.items()) {
+            // Each obj is a json of objects
+            std::cout << "Array index " << key << ":  " << std::string(obj["desc"]) << ": (x=" << obj["x"] << ", y=" << obj["y"] << ")\n";
         }
 
     } else {
