@@ -79,7 +79,7 @@ export PATH="/Applications/CMake.app/Contents/bin:${PATH}"
 
 Armadillo is a library for matrix manipulation. The only place it's used in
 morphologica is within the Bezier curve code,
-morph::BezCurve. If your programs won't use that class, then you don't need Armadillo. It *is* required to compile all of morphologica's test programs.
+morph::BezCurve. This code is used in the morph::HexGrid classes. If your programs won't use Bezier curve code, then you don't need Armadillo. It *is* required to compile many of morphologica's test programs though.
 
 Download a package - I downloaded
 armadillo-9.900.3.tar.xz, though older versions back to 8.400.0 should
@@ -145,23 +145,6 @@ armadillo, the JSON-reading library jsoncpp needs to be built
 separately, as I don't believe it is currently available as a
 port. glfw3 also needs to be built separately (I've not investigated
 whether there is a mac ports version of glfw).
-
-#### jsoncpp
-
-jsoncpp allows morph::Config to read from and write to JSON text
-files. Compile and install jsoncpp in /usr/local like this:
-
-```sh
-mkdir -p ~/src
-cd ~/src
-git clone https://github.com/open-source-parsers/jsoncpp.git
-cd jsoncpp
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
-```
 
 #### glfw3
 
