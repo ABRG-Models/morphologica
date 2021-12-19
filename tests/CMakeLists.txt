@@ -84,66 +84,63 @@ if(ARMADILLO_FOUND)
   target_link_libraries(${TARGETTEST2} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
   add_test(twocurves ${TARGETTEST2})
 
-# Test reading trial.svg
-set(TARGETTEST3 testreadcurves)
-set(SOURCETEST3 testreadcurves.cpp)
-add_executable(${TARGETTEST3} ${SOURCETEST3})
-target_link_libraries(${TARGETTEST3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
-add_test(testreadcurves ${TARGETTEST3})
+  # Test reading trial.svg
+  set(TARGETTEST3 testreadcurves)
+  set(SOURCETEST3 testreadcurves.cpp)
+  add_executable(${TARGETTEST3} ${SOURCETEST3})
+  target_link_libraries(${TARGETTEST3} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
+  add_test(testreadcurves ${TARGETTEST3})
 
-# Test reading whiskerbarrels_withcentres.svg
-set(TARGETTEST31 testreadcurves_circles)
-set(SOURCETEST31 testreadcurves_circles.cpp)
-add_executable(${TARGETTEST31} ${SOURCETEST31})
-target_link_libraries(${TARGETTEST31} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
-add_test(testreadcurves_circles ${TARGETTEST31})
+  # Test reading whiskerbarrels_withcentres.svg
+  set(TARGETTEST31 testreadcurves_circles)
+  set(SOURCETEST31 testreadcurves_circles.cpp)
+  add_executable(${TARGETTEST31} ${SOURCETEST31})
+  target_link_libraries(${TARGETTEST31} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
+  add_test(testreadcurves_circles ${TARGETTEST31})
 
-endif(ARMADILLO_FOUND)
+  # Test hexgrid
+  set(TARGETTEST5 testhexgrid)
+  set(SOURCETEST5 testhexgrid.cpp)
+  add_executable(${TARGETTEST5} ${SOURCETEST5})
+  add_test(testhexgrid ${TARGETTEST5})
 
-# Test hexgrid
-set(TARGETTEST5 testhexgrid)
-set(SOURCETEST5 testhexgrid.cpp)
-add_executable(${TARGETTEST5} ${SOURCETEST5})
-add_test(testhexgrid ${TARGETTEST5})
+  # Test hexgrid2
+  add_executable(testhexgrid2 testhexgrid2.cpp)
+  target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
+  add_test(testhexgrid2 testhexgrid2)
 
-if(ARMADILLO_FOUND)
-# Test hexgrid2
-add_executable(testhexgrid2 testhexgrid2.cpp)
-target_link_libraries(testhexgrid2 ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
-add_test(testhexgrid2 testhexgrid2)
-
-# Test distance to boundary
-add_executable(testhexbounddist testhexbounddist.cpp)
-target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
-add_test(testhexbounddist testhexbounddist)
+  # Test distance to boundary
+  add_executable(testhexbounddist testhexbounddist.cpp)
+  target_link_libraries(testhexbounddist ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES})
+  add_test(testhexbounddist testhexbounddist)
 endif()
 
 if(HDF5_FOUND)
-# Test HDF file access
-add_executable(testhdfdata1 testhdfdata1.cpp)
-# Note how if you only use HDF, you only have to link to libhdf
-target_link_libraries(testhdfdata1 ${HDF5_C_LIBRARIES})
-add_test(testhdfdata1 testhdfdata1)
+  # Test HDF file access
+  add_executable(testhdfdata1 testhdfdata1.cpp)
+  # Note how if you only use HDF, you only have to link to libhdf
+  target_link_libraries(testhdfdata1 ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata1 testhdfdata1)
 
-# More HDF data tests
-add_executable(testhdfdata2 testhdfdata2.cpp)
-target_link_libraries(testhdfdata2 ${HDF5_C_LIBRARIES})
-add_test(testhdfdata2 testhdfdata2)
+  # More HDF data tests
+  add_executable(testhdfdata2 testhdfdata2.cpp)
+  target_link_libraries(testhdfdata2 ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata2 testhdfdata2)
 
-add_executable(testhdfdata3f testhdfdata3.cpp)
-target_compile_definitions(testhdfdata3f PUBLIC FLT=float)
-target_link_libraries(testhdfdata3f ${HDF5_C_LIBRARIES})
-add_test(testhdfdata3f testhdfdata3f)
+  add_executable(testhdfdata3f testhdfdata3.cpp)
+  target_compile_definitions(testhdfdata3f PUBLIC FLT=float)
+  target_link_libraries(testhdfdata3f ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata3f testhdfdata3f)
 
-add_executable(testhdfdata3d testhdfdata3.cpp)
-target_compile_definitions(testhdfdata3d PUBLIC FLT=float)
-target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES})
-add_test(testhdfdata3d testhdfdata3d)
+  add_executable(testhdfdata3d testhdfdata3.cpp)
+  target_compile_definitions(testhdfdata3d PUBLIC FLT=float)
+  target_link_libraries(testhdfdata3d ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata3d testhdfdata3d)
 
-add_executable(testhdfdata4f testhdfdata4.cpp)
-target_compile_definitions(testhdfdata4f PUBLIC FLT=float)
-target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
-add_test(testhdfdata4f testhdfdata4f)
+  add_executable(testhdfdata4f testhdfdata4.cpp)
+  target_compile_definitions(testhdfdata4f PUBLIC FLT=float)
+  target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
+  add_test(testhdfdata4f testhdfdata4f)
 endif(HDF5_FOUND)
 
 if(${glfw3_FOUND})
@@ -192,13 +189,12 @@ if(${glfw3_FOUND})
       target_link_libraries(testdom_bound GLEW::GLEW)
     endif()
 
+    add_executable(testbighexgrid testbighexgrid.cpp)
+    target_link_libraries(testbighexgrid OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(testbighexgrid GLEW::GLEW)
+    endif()
   endif(ARMADILLO_FOUND)
-
-  add_executable(testbighexgrid testbighexgrid.cpp)
-  target_link_libraries(testbighexgrid OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testbighexgrid GLEW::GLEW)
-  endif()
 
   add_executable(testVisCoordArrows testVisCoordArrows.cpp)
   target_link_libraries(testVisCoordArrows OpenGL::GL glfw Freetype::Freetype)
@@ -212,44 +208,47 @@ if(${glfw3_FOUND})
     target_link_libraries(testVisRemoveModel GLEW::GLEW)
   endif()
 
-  # Test elliptical HexGrid code (visualized with morph::Visual)
-  add_executable(test_ellipseboundary test_ellipseboundary.cpp)
-  target_link_libraries(test_ellipseboundary OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(test_ellipseboundary GLEW::GLEW)
-  endif()
+  if(ARMADILLO_FOUND)
+    # Test elliptical HexGrid code (visualized with morph::Visual)
+    add_executable(test_ellipseboundary test_ellipseboundary.cpp)
+    target_link_libraries(test_ellipseboundary OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(test_ellipseboundary GLEW::GLEW)
+    endif()
 
-  # Test circular HexGrid code
-  add_executable(test_circleboundary test_circleboundary.cpp)
-  target_link_libraries(test_circleboundary OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(test_circleboundary GLEW::GLEW)
-  endif()
+    # Test circular HexGrid code
+    add_executable(test_circleboundary test_circleboundary.cpp)
+    target_link_libraries(test_circleboundary OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(test_circleboundary GLEW::GLEW)
+    endif()
 
-  # Test Dirichlet code
-  add_executable(testDirichlet testDirichlet.cpp)
-  target_link_libraries(testDirichlet OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testDirichlet GLEW::GLEW)
-  endif()
+    # Test Dirichlet code
+    add_executable(testDirichlet testDirichlet.cpp)
+    target_link_libraries(testDirichlet OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(testDirichlet GLEW::GLEW)
+    endif()
 
-  add_executable(testDirichlet2 testDirichlet2.cpp)
-  target_link_libraries(testDirichlet2 OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testDirichlet2 GLEW::GLEW)
-  endif()
+    add_executable(testDirichlet2 testDirichlet2.cpp)
+    target_link_libraries(testDirichlet2 OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(testDirichlet2 GLEW::GLEW)
+    endif()
 
-  add_executable(testDirichlet4 testDirichlet4.cpp)
-  target_link_libraries(testDirichlet4 OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testDirichlet4 GLEW::GLEW)
-  endif()
+    add_executable(testDirichlet4 testDirichlet4.cpp)
+    target_link_libraries(testDirichlet4 OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(testDirichlet4 GLEW::GLEW)
+    endif()
 
-  add_executable(testDirichlet5 testDirichlet5.cpp)
-  target_link_libraries(testDirichlet5 OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(testDirichlet5 GLEW::GLEW)
-  endif()
+    add_executable(testDirichlet5 testDirichlet5.cpp)
+    target_link_libraries(testDirichlet5 OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(testDirichlet5 GLEW::GLEW)
+    endif()
+  endif(ARMADILLO_FOUND)
+
 endif()
 
 # Test morph::Process class
@@ -409,6 +408,8 @@ if(NOT WIN32)
   #add_test(testGradGenome testGradGenome )
 endif()
 
-# Test Cartesian (rectangular) grid
-add_executable(testcartgrid testcartgrid.cpp)
-add_test(testcartgrid testcartgrid)
+if(ARMADILLO_FOUND)
+  # Test Cartesian (rectangular) grid
+  add_executable(testcartgrid testcartgrid.cpp)
+  add_test(testcartgrid testcartgrid)
+endif()
