@@ -19,9 +19,9 @@ morphologica code depends on OpenGL, Freetype and glfw3. Armadillo and HDF5 are 
 To install the visualization dependencies on Ubuntu or Debian Linux:
 
 ```sh
-sudo apt install build-essential cmake git wget  \
+sudo apt install build-essential cmake git \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libjsoncpp-dev libglfw3-dev libfreetype-dev
+                 libglfw3-dev libfreetype-dev
 
 ```
 For the optional dependencies it's:
@@ -34,12 +34,14 @@ sudo apt install libarmadillo-dev libhdf5-dev
 On Arch Linux, all required dependencies except Armadillo are available in the official repository. They can be installed as follows:
 
 ```shell
-sudo pacman -S vtk hdf5 lapack blas freeglut jsoncpp glfw-wayland
+sudo pacman -S vtk lapack blas freeglut glfw-wayland
+# Optional:
+sudo pacman -S hdf5
 ```
 
 **Note:** Specify `glfw-x11` instead of `glfw-wayland` if you use X.org.
 
-Then, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
+Then, optionally, install [Armadillo](https://aur.archlinux.org/packages/armadillo/) from AUR.
 
 ## *Optional*: Build morphologica
 
