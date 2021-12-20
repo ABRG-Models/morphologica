@@ -184,7 +184,7 @@ int main (int argc, char **argv)
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
     hgv2->cm.setType (morph::ColourMapType::Jet);
-    hgv2->hexVisMode = morph::HexVisMode::Triangles;
+    hgv2->hexVisMode = morph::HexVisMode::HexInterp;
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->finalize();
