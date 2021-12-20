@@ -1,0 +1,19 @@
+{
+    "desc_simulation" : "This is an Ermentrout Keller-Segel based sub-barrel system",
+    "steps" : 600000,
+    "win_width" : 800,
+    "logevery": 100000,
+    "plotevery": 100,
+    "overwrite_logs": true,
+    "logpath" : "./logs/erm",
+    "hextohex_d" : 4, // um
+    "__svgpath" : "../morphologica/boundaries/whiskerbarrels.svg",
+    "ellipse_a" : 100, // ellipse radius
+    "ellipse_b" : 100,
+    "dt" : 0.01,
+    "autoscale" : false,
+    "boundaryFalloffDist" : 1,
+    "Dn" : 300
+    //"Dc" : 0.02
+    //"chi" : 0.2
+}
