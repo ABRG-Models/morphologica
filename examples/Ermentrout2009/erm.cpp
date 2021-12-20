@@ -97,8 +97,8 @@ int main (int argc, char **argv)
     }
 
     // Allocate and initialise the model
-    RD.hexspan = 3.0f * (RD.ellipse_a > RD.ellipse_b ? RD.ellipse_a : RD.ellipse_b);
-    std::cout << "RD.hexspan: " << RD.hexspan << std::endl;
+    RD.hexspan = 3.0f  * (RD.ellipse_a > RD.ellipse_b ? RD.ellipse_a : RD.ellipse_b);
+    std::cout << "RD.hexspan: " << RD.hexspan << ", Dn=" << RD.Dn << ", Dc=" << RD.Dc << ", chi=" << RD.chi << std::endl;
     RD.allocate();
     RD.init();
 
@@ -170,7 +170,7 @@ int main (int argc, char **argv)
     // ...or use setters to copy one in:
     hgv1->setCScale (cscale);
     hgv1->cm.setType (morph::ColourMapType::Jet);
-    hgv1->hexVisMode = morph::HexVisMode::HexInterp;
+    hgv1->hexVisMode = morph::HexVisMode::Triangles;
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv1->finalize();
@@ -184,7 +184,7 @@ int main (int argc, char **argv)
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
     hgv2->cm.setType (morph::ColourMapType::Jet);
-    hgv2->hexVisMode = morph::HexVisMode::HexInterp;
+    hgv2->hexVisMode = morph::HexVisMode::Triangles;
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->finalize();
