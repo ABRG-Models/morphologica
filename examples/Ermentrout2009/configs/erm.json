@@ -3,17 +3,17 @@
     "steps" : 300000,
     "win_width" : 800,
     "logevery": 100000,
-    "plotevery": 100,
+    "plotevery": 1000,
     "overwrite_logs": true,
     "logpath" : "./logs/erm",
-    "hextohex_d" : 0.02,
+    "hextohex_d" : 0.015,
     "__svgpath" : "../morphologica/boundaries/whiskerbarrels.svg",
     "ellipse_a" : 0.5,
     "ellipse_b" : 0.5,
-    "dt" : 0.0001,
-    "autoscale" : false,
+    "dt" : 0.00001,
+    "autoscale" : true,
     "boundaryFalloffDist" : 0.01,
-    "Dn" : 0.2,
-    "Dc" : 0.02,
-    "chi" : 0.2
+    "Dn" : 0.01
+    //"Dc" : 0.02
+    //"chi" : 0.2
 }

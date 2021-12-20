@@ -97,6 +97,8 @@ int main (int argc, char **argv)
     }
 
     // Allocate and initialise the model
+    RD.hexspan = 3.0f * (RD.ellipse_a > RD.ellipse_b ? RD.ellipse_a : RD.ellipse_b);
+    std::cout << "RD.hexspan: " << RD.hexspan << std::endl;
     RD.allocate();
     RD.init();
 
@@ -131,7 +133,7 @@ int main (int argc, char **argv)
     // Set up the morph::Visual object
     morph::Visual v (win_width, win_height, "Ermentrout (Keller-Segel)");
     v.zNear = 0.001;
-    v.zFar = 50;
+    v.zFar = 500;
     v.fov = 45;
     v.showCoordArrows = true;
     v.showTitle = false;
@@ -145,7 +147,8 @@ int main (int argc, char **argv)
 
     // Add two morph::HexGridVisuals to the morph::Visual.
 
-    morph::Vector<float, 3> spatOff = {0,0,0}; // spatial offset
+    float _Z = 0.0f; // -100.0f
+    morph::Vector<float, 3> spatOff = {0,0,_Z}; // spatial offset
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
@@ -161,7 +164,7 @@ int main (int argc, char **argv)
     // ...or use setters to copy one in:
     hgv1->setCScale (cscale);
     hgv1->cm.setType (morph::ColourMapType::Jet);
-    hgv1->hexVisMode = morph::HexVisMode::Triangles;
+    hgv1->hexVisMode = morph::HexVisMode::HexInterp;
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv1->finalize();
@@ -174,7 +177,7 @@ int main (int argc, char **argv)
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
     hgv2->cm.setType (morph::ColourMapType::Jet);
-    hgv2->hexVisMode = morph::HexVisMode::Triangles;
+    hgv2->hexVisMode = morph::HexVisMode::HexInterp;
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->finalize();
@@ -212,6 +215,12 @@ int main (int argc, char **argv)
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
                 hgv2->colourScale.compute_autoscale (mm.second, mm.first);
             }
+
+            mm = morph::MathAlgo::maxmin (RD.n[0]);
+            std::cout << "n range: " << std::abs(mm.second - mm.first) << std::endl;
+            mm = morph::MathAlgo::maxmin (RD.c[0]);
+            std::cout << "c range: " << std::abs(mm.second - mm.first) << std::endl;
+
             hgv1->updateData (&RD.n[0]);
             hgv2->updateData (&RD.c[0]);
             // Append to the 2D graph of sums:
