@@ -1,0 +1,19 @@
+{
+    "desc_simulation" : "This is an Ermentrout Keller-Segel based sub-barrel system. Fig 4Aii. Doesn't work like paper result. Due to RK solver vs. Forw. Euler?",
+    "steps" : 1000000,
+    "win_width" : 800,
+    "logevery": 100000,
+    "plotevery": 100,
+    "overwrite_logs": true,
+    "logpath" : "./logs/erm",
+    "hextohex_d" : 1,
+    "size_scale" : 0.03,
+    "desc_ellipse" : "In the paper, in materials and methods at end, it states that circle radius is 25 for sims",
+    "ellipse_a" : 25,
+    "ellipse_b" : 25,
+    "dt" : 0.0001,
+    "autoscale" : true,
+    "boundaryFalloffDist" : 0.75,
+    "Dn" : 100,
+    "Dc" : 18
+}
