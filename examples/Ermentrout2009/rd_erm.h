@@ -108,9 +108,10 @@ public:
         this->sum_c.resize (this->N, Flt{0});
 
         // Initialise with noise
+        Flt noiseamp = Flt{0.1};
         for (unsigned int i  = 0; i < this->N; ++i) {
-            this->noiseify_vector_variable (this->n[i], 1., 0.1);
-            this->noiseify_vector_variable (this->c[i], beta*0.5, 0.1);
+            this->noiseify_vector_variable (this->n[i], 1., noiseamp);
+            this->noiseify_vector_variable (this->c[i], beta*0.5, noiseamp);
         }
     }
 
@@ -139,7 +140,7 @@ public:
             Flt n2;
             for (unsigned int h=0; h<this->nhex; ++h) {
                 n2 = n[i][h]*n[i][h];
-                c[i][h] += (beta*n2/(1.+n2) - mu*c[i][h] +Dc*lapl[i][h])*this->dt;
+                c[i][h] += (beta*n2/(Flt{1}+n2) - mu*c[i][h] +Dc*lapl[i][h])*this->dt;
                 sum_c[i] += c[i][h];
             }
         }
@@ -154,7 +155,7 @@ public:
             // 1. The D Del^2 term
 
             // Compute the sum around the neighbours
-            Flt thesum = -6 * fa[hi];
+            Flt thesum = Flt{-6} * fa[hi];
             if (HAS_NE(hi)) {
                 thesum += fa[NE(hi)];
             } else {

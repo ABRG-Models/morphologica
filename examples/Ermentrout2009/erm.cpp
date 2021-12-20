@@ -97,6 +97,8 @@ int main (int argc, char **argv)
     }
 
     // Allocate and initialise the model
+    RD.hexspan = 3.0f  * (RD.ellipse_a > RD.ellipse_b ? RD.ellipse_a : RD.ellipse_b);
+    std::cout << "RD.hexspan: " << RD.hexspan << ", Dn=" << RD.Dn << ", Dc=" << RD.Dc << ", chi=" << RD.chi << std::endl;
     RD.allocate();
     RD.init();
 
@@ -131,7 +133,7 @@ int main (int argc, char **argv)
     // Set up the morph::Visual object
     morph::Visual v (win_width, win_height, "Ermentrout (Keller-Segel)");
     v.zNear = 0.001;
-    v.zFar = 50;
+    v.zFar = 500;
     v.fov = 45;
     v.showCoordArrows = true;
     v.showTitle = false;
@@ -145,7 +147,13 @@ int main (int argc, char **argv)
 
     // Add two morph::HexGridVisuals to the morph::Visual.
 
-    morph::Vector<float, 3> spatOff = {0,0,0}; // spatial offset
+    // A 2D scaling to apply to the visuals
+    float myscale = conf.getFloat ("size_scale", 1.0f);
+
+    // A z position to place the hexgrid visuals
+    float _Z = 0.0f;
+
+    morph::Vector<float, 3> spatOff = {0,0,_Z}; // spatial offset
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
@@ -153,8 +161,9 @@ int main (int argc, char **argv)
     cscale.setParams (_m, _c);
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
-    spatOff[0] -= 0.6 * RD.hg->width();
+    spatOff[0] -= 0.6 * (RD.hg->width());
     morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    hgv1->setSizeScale (myscale, myscale);
     hgv1->setScalarData (&RD.n[0]);
     // You can directly set VisualDataModel::zScale and ::colourScale:
     hgv1->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -170,6 +179,7 @@ int main (int argc, char **argv)
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
     morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    hgv2->setSizeScale (myscale, myscale);
     hgv2->setScalarData (&RD.c[0]);
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
     hgv2->setCScale (cscale);
@@ -199,6 +209,7 @@ int main (int argc, char **argv)
 
     // Start the loop
     bool doing = true;
+    static constexpr bool debug_ranges = false;
     std::pair<FLT, FLT> mm; // maxmin
     while (doing) {
         // Step the model:
@@ -212,6 +223,14 @@ int main (int argc, char **argv)
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
                 hgv2->colourScale.compute_autoscale (mm.second, mm.first);
             }
+
+            if constexpr (debug_ranges) {
+                mm = morph::MathAlgo::maxmin (RD.n[0]);
+                std::cout << "n range: " << std::abs(mm.second - mm.first) << std::endl;
+                mm = morph::MathAlgo::maxmin (RD.c[0]);
+                std::cout << "c range: " << std::abs(mm.second - mm.first) << std::endl;
+            }
+
             hgv1->updateData (&RD.n[0]);
             hgv2->updateData (&RD.c[0]);
             // Append to the 2D graph of sums:

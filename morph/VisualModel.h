@@ -73,13 +73,17 @@ namespace morph {
         static constexpr bool debug_render = false;
 
     public:
-        VisualModel() { this->mv_offset = {0.0, 0.0, 0.0}; }
+        VisualModel() {
+            this->mv_offset = {0.0, 0.0, 0.0};
+            this->model_scaling.setToIdentity();
+        }
 
         VisualModel (GLuint sp, const Vector<float> _mv_offset)
         {
             this->shaderprog = sp;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
+            this->model_scaling.setToIdentity();
         }
 
         VisualModel (GLuint sp, GLuint tsp, const Vector<float> _mv_offset)
@@ -88,6 +92,7 @@ namespace morph {
             this->tshaderprog = tsp;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
+            this->model_scaling.setToIdentity();
         }
 
         //! destroy gl buffers in the deconstructor
@@ -232,8 +237,9 @@ namespace morph {
                 GLint loc_v = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("v_matrix"));
                 if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
 
+                // Should be able to apply scaling to the model matrix
                 GLint loc_m = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("m_matrix"));
-                if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
+                if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
 
                 if constexpr (debug_render) {
                     std::cout << "VisualModel::render: scenematrix:\n" << scenematrix << std::endl;
@@ -527,12 +533,30 @@ namespace morph {
         //! The current indices index
         VBOint idx = 0;
 
+        //! Set scaling in all dimensions
+        void setSizeScale (const float scl)
+        {
+            this->model_scaling.setToIdentity();
+            this->model_scaling[0] = scl;
+            this->model_scaling[5] = scl;
+            this->model_scaling[10] = scl;
+        }
+        //! Set scaling in xy only
+        void setSizeScale (const float xscl, const float yscl)
+        {
+            this->model_scaling.setToIdentity();
+            this->model_scaling[0] = xscl;
+            this->model_scaling[5] = yscl;
+        }
+
     protected:
 
         //! The model-specific view matrix.
         TransformMatrix<float> viewmatrix;
         //! The model-specific scene view matrix.
         TransformMatrix<float> scenematrix;
+        //! An additional scaling applied to viewmatrix to scale the size of the model [see render()]
+        TransformMatrix<float> model_scaling;
 
         /*!
          * The spatial offset of this VisualModel within the morph::Visual 'model
