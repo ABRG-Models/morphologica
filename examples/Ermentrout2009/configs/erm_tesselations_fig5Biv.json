@@ -1,0 +1,18 @@
+{
+    "desc_simulation" : "Reproduce John's results for a sim in a single 'region'",
+    "steps" : 500000,
+    "win_width" : 800,
+    "logevery": 100000,
+    "plotevery": 1000,
+    "overwrite_logs": true,
+    "logpath" : "./logs/erm",
+    "hextohex_d" : 0.0078125,
+    "size_scale" : 4,
+    "svgpath" : "../morphologica/boundaries/polygon.svg",
+    "dt" : 0.0000001,
+    "autoscale" : true,
+    "boundaryFalloffDist" : 0.007,
+    "Dn" : 37,
+    "Dc" : 11.1,
+    "chi" : 72
+}
