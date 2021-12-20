@@ -14,6 +14,4 @@
     "autoscale" : true,
     "boundaryFalloffDist" : 0.01,
     "Dn" : 0.01
-    //"Dc" : 0.02
-    //"chi" : 0.2
 }
