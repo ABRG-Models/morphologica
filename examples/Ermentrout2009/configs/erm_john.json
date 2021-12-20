@@ -1,0 +1,18 @@
+{
+    "desc_simulation" : "Reproduce John's results for a sim in a single 'region'",
+    "steps" : 300000,
+    "win_width" : 800,
+    "logevery": 100000,
+    "plotevery": 1000,
+    "overwrite_logs": true,
+    "logpath" : "./logs/erm",
+    "hextohex_d" : 0.001,
+    "size_scale" : 10,
+    "__svgpath" : "../morphologica/boundaries/whiskerbarrels.svg",
+    "ellipse_a" : 0.05,
+    "ellipse_b" : 0.03,
+    "dt" : 0.00000001,
+    "autoscale" : true,
+    "boundaryFalloffDist" : 0.0005,
+    "Dn" : 7
+}
