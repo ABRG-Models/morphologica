@@ -4,8 +4,8 @@ These are some instructions to help a new morphologica user out. As a
 header-only library, morphologica is not difficult to incorporate into
 your own code. This document describes some of the main classes in
 morphologica and also includes sections describing what libraries you
-will need to link to (for example, if you use ```morph::Config``` you
-will need the [Jsoncpp](https://github.com/open-source-parsers/jsoncpp) library).
+will need to link to (for example, if you use ```morph::HdfData``` you
+will need the [HDF5](https://www.hdfgroup.org/solutions/hdf5) library).
 
 First off is a Helloworld example.
 
@@ -406,7 +406,7 @@ simulation.
 ## The morph::Config class
 
 [morph::Config](https://github.com/ABRG-Models/morphologica/blob/main/morph/Config.h) reads and writes parameter configuration data in JSON format. JSON is
-*so much easier* to work with than XML! The idea is that you will
+very easy to work with (certainly compared with XML files). The idea is that you will
 write your parameters by hand (or with a script) into a JSON file,
 then these are conveniently accessible in your program. Here's an
 example from our Schnakenberg reaction-diffusion example,
@@ -653,9 +653,8 @@ Classes to create Bezier curves.
 
 All of the morphologica classes are *header-only*, which means there is no 'libmorphologica' to link to your program. However, some of the classes need to link to 3rd party dependencies. Some of the main dependencies are:
 
-* morph::Config: Link to ```libjsoncpp```
 * morph::HdfData: Link to ```libhdf5```. If you want to save/load OpenCV data structures then you need to link to OpenCV, too (and ```#define BUILD_HDFDATA_WITH_OPENCV``` before ```#include <morph/HdfData.h>```).
-* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3, Freetype and libjsoncpp.
+* morph::Visual: This uses 3D graphics, so it needs to link to OpenGL, GLFW3 and Freetype.
 * morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
 * morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
 
