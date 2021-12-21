@@ -80,7 +80,7 @@ namespace morph {
         ColourMap (ColourMapType _t) { this->type = _t; }
 
         //! If s is a string that matches a ColourMapType, return that colour map
-        //! type. If string doesn't match, return the default, Jet
+        //! type. If string doesn't match, return the default.
         static ColourMapType strToColourMapType (const std::string& s)
         {
             ColourMapType cmt = morph::ColourMapType::Plasma;
