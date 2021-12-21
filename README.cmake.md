@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3, jsoncpp and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype, glfw3 and jsoncpp. Platform-specific instructions can be found in the files [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md), [README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md).
+First, ensure you have the necessary dependencies installed. Classes in morphologica use Armadillo, OpenGL, Freetype, glfw3 and HDF5. You won't necessarily need all of these; it depends on which classes you will use (see [here](https://github.com/ABRG-Models/morphologica/blob/main/README.coding.md#linking-a-morphologica-program) for details). For visualisation, you only need OpenGL, Freetype and glfw3. Platform-specific instructions can be found in the files [README.build.linux.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.linux.md), [README.build.mac.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.mac.md) and [README.build.windows.md](https://github.com/ABRG-Models/morphologica/blob/main/README.build.windows.md).
 
 ## Three necessities to build
 
@@ -87,16 +87,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"/usr/local/share
 
 ```cmake
 # Find the libraries which will be needed
-find_package(jsoncpp REQUIRED)     # Required for morph::Config and morph::Visual
 find_package(HDF5 REQUIRED)        # Only required if you used morph::HdfData
-find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve classes
+find_package(Armadillo REQUIRED)   # Only required if you use the Bezier curve classes or HexGrid/CartGrid
 find_package(OpenGL REQUIRED)      # This, glfw3 and Freetype are required for morph::Visual
 find_package(glfw3 3.3 REQUIRED)
 find_package(Freetype REQUIRED)
 
 # Define collections of includes for the dependencies
-get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
-set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
 set(MORPH_INC_GL ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
@@ -120,7 +118,7 @@ classes you use from morphologica, you'll need to link to some or all
 of these:
 
 ```cmake
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES})
 set(MORPH_LIBS_GL OpenGL::GL Freetype::Freetype glfw)
 target_link_libraries(myprogtarget ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
 ```
