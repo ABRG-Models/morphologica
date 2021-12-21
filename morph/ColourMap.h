@@ -122,6 +122,8 @@ namespace morph {
                 cmt = morph::ColourMapType::RainbowZeroBlack;
             } else if (_s == "rainbow") {
                 cmt = morph::ColourMapType::Rainbow;
+            } else if (_s == "jet") {
+                cmt = morph::ColourMapType::Jet;
             }
             return cmt;
         }
