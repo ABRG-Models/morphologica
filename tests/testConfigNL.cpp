@@ -41,11 +41,11 @@ int main()
         const float testfloat = config.getFloat ("testfloat", 9.8f);
         std::cout << "testfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
-        auto ar = config.getArray ("testlist");
+        auto ar = config.get("testlist");
         for (auto a : ar) {
             std::cout << "array: " << a << std::endl;
         }
-        auto ar2 = config.getArray ("testlist2");
+        auto ar2 = config.get("testlist2");
         for (auto a : ar2) {
             std::cout << "array: " << a << std::endl;
         }

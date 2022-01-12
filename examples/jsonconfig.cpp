@@ -44,7 +44,7 @@ int main()
         std::cout << "\ntestfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
         // A simple array
-        const auto testarray = config.getArray("testarray");
+        const auto testarray = config.get("testarray");
         std::cout << "\nValues of the simple array \"testarray\":\n   [   ";
         for (unsigned int j = 0; j < testarray.size(); ++j) {
             std::cout << testarray[j] << "   ";
@@ -52,7 +52,7 @@ int main()
         std::cout << "]\n";
 
         // A more complicated array in which each array element is itself a JSON object
-        const auto testarray_of_objects = config.getArray("testarray_of_objects");
+        const auto testarray_of_objects = config.get("testarray_of_objects");
         std::cout << "\nValues of the array of objects \"testarray_of_objects\":\n";
         for (unsigned int j = 0; j < testarray_of_objects.size(); ++j) {
             auto v = testarray_of_objects[j]; // v.type is nlohmann::basic_json<>::value_t

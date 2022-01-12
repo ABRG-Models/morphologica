@@ -278,21 +278,20 @@ namespace morph {
                 float scaleDomain = conf.getFloat("scaleDomain",1.5);
 
                 // Read in contexts info
-                const Json::Value ctx = conf.getArray ("contexts");
+                const nlohmann::json ctx = conf.get("contexts");
                 nContext = static_cast<unsigned int>(ctx.size());
                 for (unsigned int i = 0; i < ctx.size(); ++i) {
-                    Json::Value ctxi = ctx[i];
-                    Json::Value ctxname = ctxi["name"];
-                    std::string name = ctxname.asString();
-                    Json::Value cid = ctxi["ID"];
+                    nlohmann::json ctxi = ctx[i];
+                    std::string name = ctxi["name"].get<std::string>();
+                    nlohmann::json cid = ctxi["ID"];
                     std::vector<int> cID;
                     for (unsigned int j = 0; j < cid.size(); ++j) {
-                        cID.push_back(cid[j].asInt());
+                        cID.push_back(cid[j].get<int>());
                     }
-                    Json::Value cval = ctxi["Val"];
+                    nlohmann::json cval = ctxi["Val"];
                     std::vector<double> cVal;
                     for (unsigned int j = 0; j < cval.size(); ++j) {
-                        cVal.push_back(cval[j].asDouble());
+                        cVal.push_back(cval[j].get<double>());
                     }
                     C.push_back(Context(name, cID, cVal));
                 }
@@ -301,13 +300,13 @@ namespace morph {
                 }
 
                 // Read in maps info
-                const Json::Value maps = conf.getArray("maps");
+                const nlohmann::json maps = conf.get("maps");
                 for(int i=0;i<maps.size();i++){
-                    std::string fn = maps[i].get("filename", "unknown map").asString();
+                    std::string fn = maps[i].contains("filename") ? maps[i]["filename"].get<std::string>() : std::string("unknown_map");
                     std::stringstream ss; ss << logpath <<"/"<<fn;
                     logfile<<"Map["<<i<<"]:"<<ss.str()<<std::endl;
-                    int oID = maps[i].get("outputID",-1).asInt();
-                    int cID = maps[i].get("contextID",0).asInt();
+                    int oID = maps[i].contains("outputID") ? maps[i]["outputID"].get<int>() : -1;
+                    int cID = maps[i].contains("contextID") ? maps[i]["contextID"].get<int>() : 0;
                     M.push_back(Map(ss.str(),oID,cID));
                 }
 
@@ -320,9 +319,9 @@ namespace morph {
 
                 inputID.resize(2,0);
                 inputID[1] = 1;
-                const Json::Value inp = conf.getArray("inputID");
+                const nlohmann::json inp = conf.get("inputID");
                 for(int i=0;i<inp.size();i++){
-                    inputID.push_back(inp[i].asInt());
+                    inputID.push_back(inp[i].get<int>());
                 }
                 inputID = tools::getUnique(inputID);
 

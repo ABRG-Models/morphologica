@@ -241,6 +241,15 @@ namespace morph {
         {
             return this->root.contains(thing) ? this->root[thing].get<T>() : defaultval;
         }
+        // get as a json object
+        nlohmann::json get (const std::string& thingname) const
+        {
+            nlohmann::json rtn;
+            if (this->root.contains(thingname)) {
+                rtn = this->root[thingname];
+            }
+            return rtn;
+        }
 
         bool getBool (const std::string& thing, bool defaultval) const
         {
@@ -266,11 +275,15 @@ namespace morph {
         {
             return this->get<std::string> (thing, defaultval);
         }
-        auto getArray (const std::string& arrayname) const
+        // getArray is the same as get()
+        nlohmann::json getArray (const std::string& arrayname) const
         {
-            return this->root[arrayname];
+            nlohmann::json rtn;
+            if (this->root.contains(arrayname)) {
+                rtn = this->root[arrayname];
+            }
+            return rtn;
         }
-        // getValue - just use templated get
 
         // Setters
         template <typename T>
