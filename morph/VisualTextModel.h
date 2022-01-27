@@ -292,8 +292,66 @@ namespace morph {
             this->setupText (_txt);
         }
 
-        //! With the given text and font size information, create the quads for the text.
         void setupText (const std::string& _txt)
+        {
+            // Convert std::string txt to std::basic_string<uchar32_t> text and re-call
+            std::basic_string<char32_t> utxt;
+            // Fix this so that it *interprets* _txt as unicode and builds up utxt
+            // accordingly. Then I only have to have char32_t here.
+            char32_t uc = 0;
+            int pos = 0; // byte position in uc
+            for (size_t i = 0; i < _txt.size(); ++i) {
+                // Decode UTF-8
+                char c = _txt[i];
+                if (c & 0x80) {
+                    //std::cout << "UTF-8 code. char c is " << static_cast<unsigned long int>(c) << "\n";
+                    // Top bit is 1, so interpret and add to c.
+                    if ((c & 0xc0) == 0xc0) {
+                        // Two top bits are 1 so that means start a new unicode character
+                        uc = 0;
+                        if ((c & 0xf0) == 0xf0) {
+                            // 21 bits of data
+                            // Place 3 lowest bits of c into uc in the right place
+                            uc |= ((c & 0x7) << 18);
+                            pos = 2;
+
+                        } else if ((c & 0xe0) == 0xe0) {
+                            // 16 bits of data
+                            uc = 0;
+                            // Place 4 lowest bits of c into uc in the right place
+                            uc |= ((c & 0xf) << 12);
+                            pos = 1;
+
+                        } else {
+                            // 11 bits of data
+                            uc = 0;
+                            // Place 5 lowest bits of c into uc in the right place
+                            uc |= ((c & 0x1f) << 6);
+                            pos = 0;
+                        }
+                    } else {
+                        // leading code is 10b. Place 6 lowest bits of c into uc in the right place
+                        if (pos >= 0) {
+                            char32_t code = ( (c & 0x3f) << (pos * 6) );
+                            uc |= code;
+                            if (pos == 0) {
+                                // uc is finished!
+                                utxt.push_back (uc);
+                            }
+                            pos -= 1;
+                        } // else error in UTF-8
+                    }
+                } else {
+                    //std::cout << "1 ASCII char\n";
+                    pos = 0;
+                    utxt.push_back (static_cast<char32_t>(_txt[i]));
+                }
+            }
+            this->setupText (utxt);
+        }
+
+        //! With the given text and font size information, create the quads for the text.
+        void setupText (const std::basic_string<char32_t>& _txt)
         {
             this->txt = _txt;
             // With glyph information from txt, set up this->quads.
@@ -303,7 +361,7 @@ namespace morph {
             float letter_pos = 0.0f; /*this->mv_offset[0]; THERE*/
             float letter_y = 0.0f;
             float text_epsilon = 0.0f;
-            for (std::string::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
+            for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
 
                 if (*c == '\n') {
                     // Skip newline, but add a y offset and reset letter_pos
@@ -518,7 +576,7 @@ namespace morph {
         TransformMatrix<float> scenematrix;
 
         //! The text string stored for debugging
-        std::string txt;
+        std::basic_string<char32_t> txt;
         //! The Quads that form the 'medium' for the text textures. 12 float = 4 corners
         std::vector<std::array<float,12>> quads;
         //! left, right, top and bottom extents of the text for this

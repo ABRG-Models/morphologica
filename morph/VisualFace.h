@@ -48,6 +48,12 @@ asm("\n.pushsection veramobi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR 
 asm("\n.pushsection verase_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
 asm("\n.pushsection verasebd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 
+// DejaVu Sans allows for Greek symbols and will be the default
+asm("\n.pushsection dvsans_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansit_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Oblique.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansbd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Bold.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansbi_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-BoldOblique.ttf\"\n.popsection\n");
+
 #elif defined __OSX__
 
 // On Mac, we need a different incantation to use .incbin
@@ -62,9 +68,14 @@ asm("\t.global ___start_veramobi_ttf\n\t.global ___stop_veramobi_ttf\n___start_v
 asm("\t.global ___start_verase_ttf\n\t.global ___stop_verase_ttf\n___start_verase_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n___stop_verase_ttf:\n");
 asm("\t.global ___start_verasebd_ttf\n\t.global ___stop_verasebd_ttf\n___start_verasebd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n___stop_verasebd_ttf:\n");
 
+asm("\t.global ___start_dvsans_ttf\n\t.global ___stop_dvsans_ttf\n___start_dvsans_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans.ttf\"\n___stop_dvsans_ttf:\n");
+asm("\t.global ___start_dvsansit_ttf\n\t.global ___stop_dvsansit_ttf\n___start_dvsansit_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Oblique.ttf\"\n___stop_dvsansit_ttf:\n");
+asm("\t.global ___start_dvsansbd_ttf\n\t.global ___stop_dvsansbd_ttf\n___start_dvsansbd_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Bold.ttf\"\n___stop_dvsansbd_ttf:\n");
+asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_dvsansbi_ttf:\n\t.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-BoldOblique.ttf\"\n___stop_dvsansbi_ttf:\n");
+
 #elif defined __WIN__
 
-# include "verafonts.h"
+# include "verafonts.h" // To be renamed or add dvsansfonts.h.
 # include <cstdlib>
 
 #elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
@@ -86,6 +97,11 @@ INCBIN(verasebd, "./fonts/ttf-bitstream-vera/VeraSeBd.ttf");
 // extern const unsigned char vf_veraData[];
 // extern const unsigned char *const vf_veraEnd;
 // extern const unsigned int vf_veraSize;
+
+INCBIN(dvsans, "./fonts/dejavu/DejaVuSans.ttf");
+INCBIN(dvsansit, "./fonts/dejavu/DejaVuSans-Oblique.ttf");
+INCBIN(dvsansbd, "./fonts/dejavu/DejaVuSans-Bold.ttf");
+INCBIN(dvsansbi, "./fonts/dejavu/DejaVuSans-BoldOblique.ttf");
 
 #else
 # error "Inline assembly code for including truetype fonts in the binary only work on Linux/MacOS (and then, probably only on Intel compatible compilers. Sorry about that!"
@@ -113,12 +129,25 @@ extern const char __start_verase_ttf[];
 extern const char __stop_verase_ttf[];
 extern const char __start_vera_ttf[];
 extern const char __stop_vera_ttf[];
+
+extern const char __start_dvsans_ttf[];
+extern const char __stop_dvsans_ttf[];
+extern const char __start_dvsansit_ttf[];
+extern const char __stop_dvsansit_ttf[];
+extern const char __start_dvsansbd_ttf[];
+extern const char __stop_dvsansbd_ttf[];
+extern const char __start_dvsansbi_ttf[];
+extern const char __stop_dvsansbi_ttf[];
 #endif
 
 namespace morph {
 
     //! The fonts supported (i.e. compiled in) to morph::Visual
     enum class VisualFont {
+        DVSans,             // fonts/dejavu/DejaVuSans.ttf
+        DVSansItalic,       // fonts/dejavu/DejaVuSans-Oblique.ttf
+        DVSansBold,         // fonts/dejavu/DejaVuSans-Bold.ttf
+        DVSansBoldItalic,   // fonts/dejavu/DejaVuSans-BoldOblique.ttf
         Vera,               // fonts/ttf-bitstream-vera/Vera.ttf
         VeraItalic,         // fonts/ttf-bitstream-vera/VeraIt.ttf
         VeraBold,           // fonts/ttf-bitstream-vera/VeraBd.ttf
@@ -160,6 +189,30 @@ namespace morph {
 		}
 
                 switch (_font) {
+                case VisualFont::DVSans:
+                {
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\DejaVuSans.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_dvsansData, vf_dvsansEnd);
+                    break;
+                }
+                case VisualFont::DVSansItalic:
+                {
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\DejaVuSans-Oblique.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_dvsansitData, vf_dvsansitEnd);
+                    break;
+                }
+                case VisualFont::DVSansBold:
+                {
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\DejaVuSans-Bold.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_dvsansbdData, vf_dvsansbdEnd);
+                    break;
+                }
+                case VisualFont::DVSansBoldItalic:
+                {
+                    fontpath = uppath + "\\AppData\\Local\\Temp\\DejaVuSans-BoldOblique.ttf";
+                    this->makeTempFontFile<const unsigned char> (fontpath, vf_dvsansbiData, vf_dvsansbiEnd);
+                    break;
+                }
                 case VisualFont::Vera:
                 {
                     fontpath = uppath + "\\AppData\\Local\\Temp\\Vera.ttf";
@@ -228,6 +281,30 @@ namespace morph {
                 }
 #else	 // Non-windows:
                 switch (_font) {
+                case VisualFont::DVSans:
+                {
+                    fontpath = "/tmp/DejaVuSans.ttf";
+                    this->makeTempFontFile (fontpath, __start_dvsans_ttf, __stop_dvsans_ttf);
+                    break;
+                }
+                case VisualFont::DVSansItalic:
+                {
+                    fontpath = "/tmp/DejaVuSans-Oblique.ttf";
+                    this->makeTempFontFile (fontpath, __start_dvsansit_ttf, __stop_dvsansit_ttf);
+                    break;
+                }
+                case VisualFont::DVSansBold:
+                {
+                    fontpath = "/tmp/DejaVuSans-Bold.ttf";
+                    this->makeTempFontFile (fontpath, __start_dvsansbd_ttf, __stop_dvsansbd_ttf);
+                    break;
+                }
+                case VisualFont::DVSansBoldItalic:
+                {
+                    fontpath = "/tmp/DejaVuSans-BoldOblique.ttf";
+                    this->makeTempFontFile (fontpath, __start_dvsansbi_ttf, __stop_dvsansbi_ttf);
+                    break;
+                }
                 case VisualFont::Vera:
                 {
                     fontpath = "/tmp/Vera.ttf";
@@ -306,13 +383,21 @@ namespace morph {
 
                 FT_Set_Pixel_Sizes (this->face, 0, fontpixels);
 
-                // Set up just ASCII chars for now, following the example prog
-                for (unsigned char c = 0; c < 128; c++) {
+                // Can I check this->face for how many glyphs it has? Yes:
+                // std::cout << "This face has " << this->face->num_glyphs << " glyphs.\n";
+
+                // How far to loop. In principle, up to 21 bits worth - that's 2097151 possible characters!
+                for (char32_t c = 0; c < 2097151; c++) {
+                    // Check glyph index first, if it's 0 it's a blank so skip.
+                    if (FT_Get_Char_Index (this->face, c) == 0) { continue; }
+
                     // load character glyph
                     if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
                         std::cout << "ERROR::FREETYTPE: Failed to load Glyph " << c << std::endl;
                         continue;
                     }
+                    //std::cout << "INFO::FREETYTPE: Loaded Glyph " << c << std::endl;
+
                     // generate texture
                     unsigned int texture;
                     glGenTextures (1, &texture);
@@ -346,7 +431,7 @@ namespace morph {
                                   << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
                                   << ", Advance:" << glchar.advance << std::endl;
                     }
-                    this->glchars.insert (std::pair<char, morph::gl::CharInfo>(c, glchar));
+                    this->glchars.insert (std::pair<char32_t, morph::gl::CharInfo>(c, glchar));
                 }
                 glBindTexture(GL_TEXTURE_2D, 0);
                 // At this point could FT_Done_Face() etc, I think. as we no longer do anything Freetypey with it.
@@ -355,6 +440,40 @@ namespace morph {
 
             ~VisualFace() { /* GL deconstruction? */ }
 
+            //! Convert the Unicode char32_t c into a std::string containing the
+            //! corrresponding UTF-8 character code sequence.
+            static std::string unicodeToUtf8 (const char32_t c)
+            {
+                std::string rtn("");
+                if (c < 0x80) {
+                    rtn.resize (1);
+                    rtn[0] = (c>>0 & 0x7f)  | 0x00;
+                } else if (c < 0x800) {
+                    rtn.resize (2);
+                    rtn[0] = (c>>6 & 0x1f)  | 0xc0;
+                    rtn[1] = (c>>0 & 0x3f)  | 0x80;
+                } else if (c < 0x10000) {
+                    rtn.resize (3);
+                    rtn[0] = (c>>12 & 0x0f) | 0xe0;
+                    rtn[1] = (c>>6  & 0x3f) | 0x80;
+                    rtn[2] = (c>>0  & 0x3f) | 0x80;
+                } else if (c < 0x110000) {
+                    rtn.resize (4);
+                    rtn[0] = (c>>18 & 0x07) | 0xf0;
+                    rtn[1] = (c>>12 & 0x3f) | 0x80;
+                    rtn[2] = (c>>6  & 0x3f) | 0x80;
+                    rtn[3] = (c>>0  & 0x3f) | 0x80;
+                }
+                return rtn;
+            }
+
+            //! Add char32_t c to the end of std::string s as UTF-8 codes.
+            static void unicodeToUtf8 (std::string& s, const char32_t c)
+            {
+                std::string s1 = morph::gl::VisualFace::unicodeToUtf8(c);
+                s += s1;
+            }
+
             //! Set true for informational/debug messages
             static constexpr bool debug_visualface = false;
 
@@ -362,7 +481,7 @@ namespace morph {
             FT_Face face;
 
             //! The OpenGL character info stuff
-            std::map<char, morph::gl::CharInfo> glchars;
+            std::map<char32_t, morph::gl::CharInfo> glchars;
 
         private:
 

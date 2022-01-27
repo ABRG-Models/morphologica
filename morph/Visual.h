@@ -231,7 +231,7 @@ namespace morph {
         morph::Vector<float, 2>  addLabel (const std::string& _text,
                                            const morph::Vector<float, 3>& _toffset,
                                            const std::array<float, 3>& _tcolour = morph::colour::black,
-                                           const morph::VisualFont _font = morph::VisualFont::Vera,
+                                           const morph::VisualFont _font = morph::VisualFont::DVSans,
                                            const float _fontsize = 0.01,
                                            const int _fontres = 24)
         {
@@ -244,7 +244,7 @@ namespace morph {
                                            const morph::Vector<float, 3>& _toffset,
                                            morph::VisualTextModel*& tm,
                                            const std::array<float, 3>& _tcolour = morph::colour::black,
-                                           const morph::VisualFont _font = morph::VisualFont::Vera,
+                                           const morph::VisualFont _font = morph::VisualFont::DVSans,
                                            const float _fontsize = 0.01,
                                            const int _fontres = 24)
         {
@@ -855,7 +855,7 @@ namespace morph {
 
             // Set up the title, which may or may not be rendered
             this->textModel = new VisualTextModel (this->tshaderprog,
-                                                   morph::VisualFont::Vera,
+                                                   morph::VisualFont::DVSans,
                                                    0.035f, 64, {0.0f, 0.0f, 0.0f},
                                                    this->title);
         }
