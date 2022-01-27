@@ -41,12 +41,13 @@ int main (int argc, char** argv)
 
         gv->axisstyle = morph::axisstyle::L;
 
-        gv->xlabel = morph::unicode::toUtf8 (0x03b1); // Set xlabel to the greek character alpha
-        morph::unicode::append (gv->xlabel, 0x03b2); // append beta to the std::string xlabel (in UTF-8 encoding)
-        morph::unicode::append (gv->xlabel, 'a'); // append an 'a'
+        using morph::unicode;
+        gv->xlabel = unicode::toUtf8 (unicode::alpha); // Set xlabel to the greek character alpha
+        unicode::append (gv->xlabel, unicode::beta); // append beta to the std::string xlabel (in UTF-8 encoding)
+        unicode::append (gv->xlabel, 'a'); // append an 'a'
         gv->xlabel += 'b'; // append a 'b'
 
-        gv->ylabel = morph::unicode::toUtf8 (0x03b3); // gamma
+        gv->ylabel = morph::unicode::toUtf8 (0x03b3); // gamma - using raw code here instead of unicode::gamma
 
         gv->setthickness (0.001f);
         gv->finalize();
