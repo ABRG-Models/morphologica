@@ -40,7 +40,14 @@ int main (int argc, char** argv)
         gv->setdata (absc, data, ds);
 
         gv->axisstyle = morph::axisstyle::L;
-        gv->xlabel = "The x axis";
+
+        gv->xlabel = morph::unicode::toUtf8 (0x03b1); // Set xlabel to the greek character alpha
+        morph::unicode::append (gv->xlabel, 0x03b2); // append beta to the std::string xlabel (in UTF-8 encoding)
+        morph::unicode::append (gv->xlabel, 'a'); // append an 'a'
+        gv->xlabel += 'b'; // append a 'b'
+
+        gv->ylabel = morph::unicode::toUtf8 (0x03b3); // gamma
+
         gv->setthickness (0.001f);
         gv->finalize();
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));

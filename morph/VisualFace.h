@@ -440,40 +440,6 @@ namespace morph {
 
             ~VisualFace() { /* GL deconstruction? */ }
 
-            //! Convert the Unicode char32_t c into a std::string containing the
-            //! corrresponding UTF-8 character code sequence.
-            static std::string unicodeToUtf8 (const char32_t c)
-            {
-                std::string rtn("");
-                if (c < 0x80) {
-                    rtn.resize (1);
-                    rtn[0] = (c>>0 & 0x7f)  | 0x00;
-                } else if (c < 0x800) {
-                    rtn.resize (2);
-                    rtn[0] = (c>>6 & 0x1f)  | 0xc0;
-                    rtn[1] = (c>>0 & 0x3f)  | 0x80;
-                } else if (c < 0x10000) {
-                    rtn.resize (3);
-                    rtn[0] = (c>>12 & 0x0f) | 0xe0;
-                    rtn[1] = (c>>6  & 0x3f) | 0x80;
-                    rtn[2] = (c>>0  & 0x3f) | 0x80;
-                } else if (c < 0x110000) {
-                    rtn.resize (4);
-                    rtn[0] = (c>>18 & 0x07) | 0xf0;
-                    rtn[1] = (c>>12 & 0x3f) | 0x80;
-                    rtn[2] = (c>>6  & 0x3f) | 0x80;
-                    rtn[3] = (c>>0  & 0x3f) | 0x80;
-                }
-                return rtn;
-            }
-
-            //! Add char32_t c to the end of std::string s as UTF-8 codes.
-            static void unicodeToUtf8 (std::string& s, const char32_t c)
-            {
-                std::string s1 = morph::gl::VisualFace::unicodeToUtf8(c);
-                s += s1;
-            }
-
             //! Set true for informational/debug messages
             static constexpr bool debug_visualface = false;
 
