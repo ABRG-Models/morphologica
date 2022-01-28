@@ -92,6 +92,24 @@ namespace morph {
         static constexpr char32_t perpendicular = 0x27c2;
         static constexpr char32_t parrallelto = 0x2225;
         static constexpr char32_t proportionalto = 0x221d;
+        static constexpr char32_t integral = 0x222b;
+        static constexpr char32_t doubleintegral = 0x222c;
+        static constexpr char32_t tripleintegral = 0x222d;
+        static constexpr char32_t contourintegral = 0x222e;
+        static constexpr char32_t surfaceintegral = 0x222f;
+        static constexpr char32_t volumeintegral = 0x2230;
+
+        // Arrers
+        static constexpr char32_t leftarrow = 0x2190;
+        static constexpr char32_t uparrow = 0x2191;
+        static constexpr char32_t rightarrow = 0x2192;
+        static constexpr char32_t downarrow = 0x2193;
+        static constexpr char32_t rightarrow2 = 0x1f812;
+        static constexpr char32_t longrightarrow = 0x27f6;
+        static constexpr char32_t longleftarrow = 0x27f5;
+        static constexpr char32_t longleftrightarrow = 0x27f7;
+        static constexpr char32_t line_emdash = 0x2014;
+        static constexpr char32_t line_horzbar = 0x2015;
 
         // Superscripts
         static constexpr char32_t ss0 = 0x2070;
