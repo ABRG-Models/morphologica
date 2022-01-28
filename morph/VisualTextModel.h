@@ -258,8 +258,10 @@ namespace morph {
         //! Compute the geometry for a sample text.
         morph::TextGeometry getTextGeometry (const std::string& _txt)
         {
+            // First convert string from ASCII/UTF-8 into Unicode.
+            std::basic_string<char32_t> utxt = morph::unicode::fromUtf8(_txt);
             morph::TextGeometry geom;
-            for (std::string::const_iterator c = _txt.begin(); c != _txt.end(); c++) {
+            for (std::basic_string<char32_t>::const_iterator c = utxt.begin(); c != utxt.end(); c++) {
                 morph::gl::CharInfo ci = this->face->glchars[*c];
                 float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
