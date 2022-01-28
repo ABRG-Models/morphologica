@@ -83,6 +83,8 @@ namespace morph {
         static constexpr char32_t nabla = 0x2207;
         static constexpr char32_t piproduct = 0x220f;
         static constexpr char32_t sigmasum = 0x2211;
+        static constexpr char32_t sqrt = 0x221a;
+        static constexpr char32_t cubert = 0x221b;
         static constexpr char32_t infinity = 0x221e;
         static constexpr char32_t notequal = 0x2260;
         static constexpr char32_t almostequal = 0x2248;
