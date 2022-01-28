@@ -97,6 +97,14 @@ namespace morph {
         numstyles
     };
 
+    //! Which side of the (twin) axes should the dataset relate to?
+    enum class axisside
+    {
+        left,
+        right,
+        numstyles
+    };
+
     //! The attributes for graphing a single dataset
     struct DatasetStyle
     {
@@ -132,8 +140,8 @@ namespace morph {
         float linewidth = 0.007f;
         //! Label for the dataset's legend
         std::string datalabel = "";
-        //! If false, then this dataset relates to the right hand axis of a twinax graph
-        bool leftaxis = true;
+        //! Which y axis of a twinax graph should these data relate to?
+        morph::axisside axisside = morph::axisside::left;
 
         //! A setter to set both colours to the same value
         void setcolour (const std::array<float, 3>& c)
@@ -344,6 +352,116 @@ namespace morph {
             this->setdata (emptyabsc, emptyord, name);
         }
 
+        //! Set a dataset into the graph using default styles, incrementing colour and
+        //! marker shape as more datasets are included in the graph.
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
+        {
+            this->setdata (_abscissae, _data, name, morph::axisside::left);
+        }
+
+        void setdata_leftaxis (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
+        {
+            if (this->axisstyle != axisstyle::twinax) {
+                throw std::runtime_error ("Ensure axistyle is twinax to call this function");
+            }
+            this->setdata (_abscissae, _data, name, morph::axisside::left);
+        }
+
+        void setdata_rightaxis (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
+        {
+            if (this->axisstyle != axisstyle::twinax) {
+                throw std::runtime_error ("Ensure axistyle is twinax to call this function");
+            }
+            this->setdata (_abscissae, _data, name, morph::axisside::right);
+        }
+
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name, const morph::axisside axisside)
+        {
+            DatasetStyle ds(this->policy);
+            ds.axisside = axisside;
+            if (!name.empty()) { ds.datalabel = name; }
+
+            size_t data_index = this->graphDataCoords.size();
+            switch (data_index) {
+            case 0:
+            {
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::square);
+                break;
+            }
+            case 1:
+            {
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::triangle);
+                break;
+            }
+            case 2:
+            {
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::circle);
+                break;
+            }
+            case 3:
+            {
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::diamond);
+                break;
+            }
+            default:
+            {
+                // Everything else gets this:
+                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::hexagon);
+                break;
+            }
+            }
+            this->setdata (_abscissae, _data, ds);
+        }
+
+        //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
+        //! style. The locations of the markers for each dataset are computed and stored
+        //! in this->graohDataCoords, one vector for each dataset.
+        void setdata (const std::vector<Flt>& _abscissae,
+                      const std::vector<Flt>& _data, const DatasetStyle& ds)
+        {
+            if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
+
+            size_t dsize = _data.size();
+            size_t didx = this->graphDataCoords.size();
+
+            // Allocate memory for the new data coords, add the data style info and the
+            // starting index for dataCoords
+#ifdef __ICC__
+            morph::Vector<float> dummyzero = {{0.0f, 0.0f, 0.0f}};
+            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, dummyzero));
+#else
+            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, {0,0,0}));
+#endif
+            this->datastyles.push_back (ds);
+
+            // Compute the ord1_scale and asbcissa_scale for the first added dataset only
+            if (ds.axisside == morph::axisside::left) {
+                if (this->ord1_scale.autoscaled == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+            } else {
+                if (this->ord2_scale.autoscaled == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+            }
+
+            if (dsize > 0) {
+                // Transform the data into temporary containers sd and ad
+                std::vector<Flt> sd (dsize, Flt{0});
+                std::vector<Flt> ad (dsize, Flt{0});
+                if (ds.axisside == morph::axisside::left) {
+                    this->ord1_scale.transform (_data, sd);
+                } else {
+                    this->ord2_scale.transform (_data, sd);
+                }
+                this->abscissa_scale.transform (_abscissae, ad);
+
+                // Now sd and ad can be used to construct dataCoords x/y. They are used to
+                // set the position of each datum into dataCoords
+                for (size_t i = 0; i < dsize; ++i) {
+                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
+                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
+                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                }
+            }
+        }
+
         //! Special setdata for a morph::histo object
         void setdata (const morph::histo<Flt>& h, const std::string name = "")
         {
@@ -379,52 +497,15 @@ namespace morph {
             this->setdata (h.bins, h.proportions, ds);
         }
 
-        //! Set a dataset into the graph using default styles, incrementing colour and
-        //! marker shape as more datasets are included in the graph.
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
-        {
-            DatasetStyle ds(this->policy);
-            if (!name.empty()) { ds.datalabel = name; }
-
-            size_t data_index = this->graphDataCoords.size();
-            switch (data_index) {
-            case 0:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::square);
-                break;
-            }
-            case 1:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::triangle);
-                break;
-            }
-            case 2:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::circle);
-                break;
-            }
-            case 3:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::diamond);
-                break;
-            }
-            default:
-            {
-                // Everything else gets this:
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::hexagon);
-                break;
-            }
-            }
-            this->setdata (_abscissae, _data, ds);
-        }
-
     protected:
         //! Compute the scaling of ord1_scale and abscissa_scale according to the scalingpolicies
-        void compute_scaling (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data)
+        void compute_scaling (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const morph::axisside axisside)
         {
             std::pair<Flt, Flt> data_maxmin = morph::MathAlgo::maxmin (_data);
             std::pair<Flt, Flt> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);
-            this->setsize (this->width, this->height);
+            if (axisside == morph::axisside::left) {
+                this->setsize (this->width, this->height);
+            }
 
             // x axis - the abscissa
             switch (this->scalingpolicy_x) {
@@ -455,70 +536,45 @@ namespace morph {
             switch (this->scalingpolicy_y) {
             case morph::scalingpolicy::manual:
             {
-                this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+                if (axisside == morph::axisside::left) {
+                    this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+                } else {
+                    this->ord2_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+                }
                 break;
             }
             case morph::scalingpolicy::manual_min:
             {
-                this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                if (axisside == morph::axisside::left) {
+                    this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                } else {
+                    this->ord2_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                }
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
-                this->ord1_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                if (axisside == morph::axisside::left) {
+                    this->ord1_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                } else {
+                    this->ord2_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                }
                 break;
             }
             case morph::scalingpolicy::autoscale:
             default:
             {
-                this->ord1_scale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                if (axisside == morph::axisside::left) {
+                    this->ord1_scale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                } else {
+                    this->ord2_scale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                }
                 break;
             }
             }
         }
 
     public:
-
-        //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
-        //! style. The locations of the markers for each dataset are computed and stored
-        //! in this->graohDataCoords, one vector for each dataset.
-        void setdata (const std::vector<Flt>& _abscissae,
-                      const std::vector<Flt>& _data, const DatasetStyle& ds)
-        {
-            if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
-
-            size_t dsize = _data.size();
-            size_t didx = this->graphDataCoords.size();
-
-            // Allocate memory for the new data coords, add the data style info and the
-            // starting index for dataCoords
-#ifdef __ICC__
-            morph::Vector<float> dummyzero = {{0.0f, 0.0f, 0.0f}};
-            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, dummyzero));
-#else
-            this->graphDataCoords.push_back (new std::vector<morph::Vector<float>>(dsize, {0,0,0}));
-#endif
-            this->datastyles.push_back (ds);
-
-            // Compute the ord1_scale and asbcissa_scale for the first added dataset only
-            if (this->ord1_scale.autoscaled == false) { this->compute_scaling (_abscissae, _data); }
-
-            if (dsize > 0) {
-                // Transform the data into temporary containers sd and ad
-                std::vector<Flt> sd (dsize, Flt{0});
-                std::vector<Flt> ad (dsize, Flt{0});
-                this->ord1_scale.transform (_data, sd);
-                this->abscissa_scale.transform (_abscissae, ad);
-
-                // Now sd and ad can be used to construct dataCoords x/y. They are used to
-                // set the position of each datum into dataCoords
-                for (size_t i = 0; i < dsize; ++i) {
-                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
-                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
-                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
-                }
-            }
-        }
 
         //! Setter for the dataaxisdist attribute
         void setdataaxisdist (float proportion)
@@ -1309,9 +1365,12 @@ namespace morph {
         Flt datamax_x = Flt{1};
         //! What's the scaling policy for the ordinate?
         morph::scalingpolicy scalingpolicy_y = morph::scalingpolicy::autoscale;
-        //! If required, the abscissa's minimum/max data values
+        //! If required, the ordinate's minimum/max data values
         Flt datamin_y = Flt{0};
         Flt datamax_y = Flt{1};
+        //! If required, the second ordinate's minimum/max data values (twinax)
+        Flt data2min_y = Flt{0};
+        Flt data2max_y = Flt{1};
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
@@ -1341,6 +1400,10 @@ namespace morph {
         std::deque<Flt> yticks;
         //! The positions, along the y axis (in model space) for the yticks
         std::deque<Flt> ytick_posns;
+        //! The ytick values that should be displayed on the right hand axis for a twinax graph
+        std::deque<Flt> yticks2;
+        //! The positions, along the right hand y axis (in model space) for the yticks2
+        std::deque<Flt> ytick_posns2;
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your
@@ -1349,6 +1412,8 @@ namespace morph {
         int fontres = 24;
         //! The font size is the width of an m in the chosen font, in model units
         float fontsize = 0.05;
+        //! A separate fontsize for the axis labels, incase these should be different from the tick labels
+        float axislabelfontsize = fontsize;
         // might need tickfontsize and axisfontsize
         //! Gap to x axis tick labels
         float ticklabelgap = 0.05;
