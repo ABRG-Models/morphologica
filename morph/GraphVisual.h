@@ -69,6 +69,7 @@ namespace morph {
         panels,     // For 3D: like a 2D 'box' making a floor, and 2 side 'walls'
         cross,      // a cross of bars at the zero axes
         boxcross,   // A box AND the zero axes
+        twinax,     // A box which has two y axes, the first on the left and the second on the right
         numstyles
     };
 
@@ -131,6 +132,8 @@ namespace morph {
         float linewidth = 0.007f;
         //! Label for the dataset's legend
         std::string datalabel = "";
+        //! If false, then this dataset relates to the right hand axis of a twinax graph
+        bool leftaxis = true;
 
         //! A setter to set both colours to the same value
         void setcolour (const std::array<float, 3>& c)
@@ -154,15 +157,17 @@ namespace morph {
             this->tshaderprog = tsp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
-            // In GraphVisual, colourscale is used to set colour for lines when we have multiple graphs.
-            //this->colourScale.do_autoscale = true;
             this->ord1_scale.do_autoscale = true;
+            this->ord2_scale.do_autoscale = true;
             this->abscissa_scale.do_autoscale = true;
             // Graphs don't rotate by default. If you want yours to, set this false in your client code.
             this->twodimensional = true;
         }
 
         ~GraphVisual() { for (auto& gdc : this->graphDataCoords) { delete gdc; } }
+
+        //! Set true for any optional debugging
+        static constexpr bool gv_debug = false;
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
@@ -642,9 +647,9 @@ namespace morph {
                     numticks = floor(range/trytick);
                 }
             }
-#ifdef __DEBUG__
-            std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
-#endif
+            if constexpr (gv_debug) {
+                std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
+            }
             // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
             Flt atick = trytick;
             while (atick <= realmax) {
@@ -684,6 +689,7 @@ namespace morph {
             this->drawAxisLabels();
         }
 
+        static constexpr bool three_d_lines = false;
         //! dsi: data set iterator
         void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
         {
@@ -708,49 +714,49 @@ namespace morph {
 
                 for (size_t i = coords_start+1; i < coords_end; ++i) {
                     // Draw tube from location -1 to location 0.
-#ifdef TRUE_THREE_D_LINES
-                    this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                       this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
-                                       this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
-#else
-                    if (this->datastyles[dsi].markergap > 0.0f) {
-                        this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                               this->datastyles[dsi].linecolour,
-                                               this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
-                    } else if (appending == true) {
-                        this->computeFlatLineRnd (this->idx,
-                                                  (*this->graphDataCoords[dsi])[i-1], // start
-                                                  (*this->graphDataCoords[dsi])[i],   // end
-                                                  uz,
-                                                  this->datastyles[dsi].linecolour,
-                                                  this->datastyles[dsi].linewidth, 0.0f, true, false);
+                    if constexpr (three_d_lines) {
+                        this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
+                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
                     } else {
-                        // No gaps, so draw a perfect set of joined up lines
-                        if (i == 1+coords_start) {
-                            // First line
-                            this->computeFlatLineN (this->idx,
-                                                    (*this->graphDataCoords[dsi])[i-1], // start
-                                                    (*this->graphDataCoords[dsi])[i],   // end
-                                                    (*this->graphDataCoords[dsi])[i+1], // next
-                                                    uz,
-                                                    this->datastyles[dsi].linecolour,
-                                                    this->datastyles[dsi].linewidth);
-                        } else if (i == (coords_end-1)) {
-                            // last line
-                            this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                    (*this->graphDataCoords[dsi])[i-2],
-                                                    uz,
-                                                    this->datastyles[dsi].linecolour,
-                                                    this->datastyles[dsi].linewidth);
-                        } else {
-                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                   (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
-                                                   uz,
+                        if (this->datastyles[dsi].markergap > 0.0f) {
+                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                                    this->datastyles[dsi].linecolour,
-                                                   this->datastyles[dsi].linewidth);
+                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                        } else if (appending == true) {
+                            this->computeFlatLineRnd (this->idx,
+                                                      (*this->graphDataCoords[dsi])[i-1], // start
+                                                      (*this->graphDataCoords[dsi])[i],   // end
+                                                      uz,
+                                                      this->datastyles[dsi].linecolour,
+                                                      this->datastyles[dsi].linewidth, 0.0f, true, false);
+                        } else {
+                            // No gaps, so draw a perfect set of joined up lines
+                            if (i == 1+coords_start) {
+                                // First line
+                                this->computeFlatLineN (this->idx,
+                                                        (*this->graphDataCoords[dsi])[i-1], // start
+                                                        (*this->graphDataCoords[dsi])[i],   // end
+                                                        (*this->graphDataCoords[dsi])[i+1], // next
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else if (i == (coords_end-1)) {
+                                // last line
+                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i-2],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else {
+                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
+                            }
                         }
                     }
-#endif
                 }
             }
         }
@@ -1218,40 +1224,41 @@ namespace morph {
             }
         }
 
+        static constexpr bool three_d_pucks = false;
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
-#ifdef TRUE_THREE_D_PUCKS
-            morph::Vector<float> pend = p;
-            p[2] += this->thickness*Flt{0.5};
-            pend[2] -= this->thickness*Flt{0.5};
-            this->computeTube (this->idx, p, pend, ux, uy,
-                               style.markercolour, style.markercolour,
-                               style.markersize*Flt{0.5}, n);
-#else
-            p[2] += this->thickness;
-            this->computeFlatPoly (this->idx, p, ux, uy,
-                                   style.markercolour,
+            if constexpr (three_d_pucks) {
+                morph::Vector<float> pend = p;
+                p[2] += this->thickness*Flt{0.5};
+                pend[2] -= this->thickness*Flt{0.5};
+                this->computeTube (this->idx, p, pend, ux, uy,
+                                   style.markercolour, style.markercolour,
                                    style.markersize*Flt{0.5}, n);
-#endif
+            } else {
+                p[2] += this->thickness;
+                this->computeFlatPoly (this->idx, p, ux, uy,
+                                       style.markercolour,
+                                       style.markersize*Flt{0.5}, n);
+            }
         }
 
         // Create an n sided polygon with a flat edge 'pointing up'
         void polygonFlattop (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
-#ifdef TRUE_THREE_D_PUCKS
-            morph::Vector<float> pend = p;
-            p[2] += this->thickness*Flt{0.5};
-            pend[2] -= this->thickness*Flt{0.5};
-            this->computeTube (this->idx, p, pend, ux, uy,
-                               style.markercolour, style.markercolour,
-                               style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
-#else
-            p[2] += this->thickness;
-            this->computeFlatPoly (this->idx, p, ux, uy,
-                                   style.markercolour,
+            if constexpr (three_d_pucks) {
+                morph::Vector<float> pend = p;
+                p[2] += this->thickness*Flt{0.5};
+                pend[2] -= this->thickness*Flt{0.5};
+                this->computeTube (this->idx, p, pend, ux, uy,
+                                   style.markercolour, style.markercolour,
                                    style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
-#endif
+            } else {
+                p[2] += this->thickness;
+                this->computeFlatPoly (this->idx, p, ux, uy,
+                                       style.markercolour,
+                                       style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+            }
         }
 
         // Given the data, compute the ticks (or use the ones that client code gave us)
@@ -1265,10 +1272,11 @@ namespace morph {
                 Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
                 Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.range_min);
                 Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.range_max);
-#ifdef __DEBUG__
-                std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
-                std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
-#endif
+
+                if constexpr (gv_debug) {
+                    std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
+                    std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
+                }
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
                 this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
