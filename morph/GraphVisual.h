@@ -976,6 +976,32 @@ namespace morph {
                 lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
             }
             this->texts.push_back (lbl);
+
+            if (this->axisstyle == axisstyle::twinax) {
+                // y2 axis label (have to rotate)
+                lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                geom = lbl->getTextGeometry (this->ylabel2);
+
+                // Rotate label if it's long
+                float leftshift = geom.width();
+                float downshift = geom.height();
+                if (geom.width() > 2*this->fontsize) { // rotate so shift by text height
+                    leftshift = geom.height();
+                    downshift = geom.half_width();
+                }
+
+                lblpos = {{ this->width+(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width2),
+                            0.5f*this->height - downshift, 0 }};
+
+                if (geom.width() > 2*this->fontsize) {
+                    morph::Quaternion<float> leftrot;
+                    leftrot.initFromAxisAngle (this->uz, -90.0f);
+                    lbl->setupText (this->ylabel2, leftrot, lblpos+this->mv_offset, this->axiscolour);
+                } else {
+                    lbl->setupText (this->ylabel2, lblpos+this->mv_offset, this->axiscolour);
+                }
+                this->texts.push_back (lbl);
+            }
         }
 
         //! Add the tick labels: 0, 1, 2 etc
@@ -984,6 +1010,7 @@ namespace morph {
             // Reset these members
             this->xtick_height = 0.0f;
             this->ytick_width = 0.0f;
+            this->ytick_width2 = 0.0f;
 
             float x_for_yticks = 0.0f;
             float y_for_xticks = 0.0f;
@@ -1022,6 +1049,19 @@ namespace morph {
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
+            }
+            if (this->axisstyle == axisstyle::twinax) {
+                x_for_yticks = 1.0f;
+                this->ytick_width2 = 0.0f;
+                for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
+                    std::string s = this->graphNumberFormat (this->yticks2[i]);
+                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl->getTextGeometry (s);
+                    this->ytick_width2 = geom.width() > this->ytick_width2 ? geom.width() : this->ytick_width2;
+                    morph::Vector<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0}; // tune
+                    lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour); // use colour of first data on axis here
+                    this->texts.push_back (lbl);
+                }
             }
         }
 
@@ -1066,6 +1106,7 @@ namespace morph {
             }
 
             if (this->axisstyle == axisstyle::box
+                || this->axisstyle == axisstyle::twinax
                 || this->axisstyle == axisstyle::boxfullticks
                 || this->axisstyle == axisstyle::boxcross
                 || this->axisstyle == axisstyle::L) {
@@ -1102,6 +1143,7 @@ namespace morph {
             }
 
             if (this->axisstyle == axisstyle::box
+                || this->axisstyle == axisstyle::twinax
                 || this->axisstyle == axisstyle::boxfullticks
                 || this->axisstyle == axisstyle::boxcross) {
                 // right axis
@@ -1115,14 +1157,13 @@ namespace morph {
                                        {this->width, this->height, -this->thickness},
                                        uz, this->axiscolour, this->axislinewidth);
 
+                float tl = this->ticklength;
+                if (this->tickstyle == tickstyle::ticksin) {
+                    tl = -this->ticklength;
+                }
                 // Draw top and right ticks if necessary
                 if (this->axisstyle == axisstyle::boxfullticks) {
                     // Tick positions
-                    float tl = this->ticklength;
-                    if (this->tickstyle == tickstyle::ticksin) {
-                        tl = -this->ticklength;
-                    }
-
                     for (auto xt : this->xtick_posns) {
                         // Want to place lines in screen units. So transform the data units
                         this->computeFlatLine (this->idx,
@@ -1131,6 +1172,14 @@ namespace morph {
                                                this->axiscolour, this->axislinewidth*0.5f);
                     }
                     for (auto yt : this->ytick_posns) {
+                        this->computeFlatLine (this->idx,
+                                               {this->width,      (float)yt, -this->thickness},
+                                               {this->width + tl, (float)yt, -this->thickness}, uz,
+                                               this->axiscolour, this->axislinewidth*0.5f);
+                    }
+                } else if (this->axisstyle == axisstyle::twinax) {
+                    // Draw ticks for y2
+                    for (auto yt : this->ytick_posns2) {
                         this->computeFlatLine (this->idx,
                                                {this->width,      (float)yt, -this->thickness},
                                                {this->width + tl, (float)yt, -this->thickness}, uz,
@@ -1328,6 +1377,8 @@ namespace morph {
                 Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
                 Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.range_min);
                 Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.range_max);
+                Flt _ymin2 = this->ord2_scale.inverse_one (this->ord2_scale.range_min);
+                Flt _ymax2 = this->ord2_scale.inverse_one (this->ord2_scale.range_max);
 
                 if constexpr (gv_debug) {
                     std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
@@ -1339,12 +1390,18 @@ namespace morph {
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
+                realmin = this->ord2_scale.inverse_one (0);
+                realmax = this->ord2_scale.inverse_one (this->height);
+                this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax);
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
 
                 this->ytick_posns.resize (this->yticks.size());
                 this->ord1_scale.transform (yticks, ytick_posns);
+
+                this->ytick_posns2.resize (this->yticks2.size());
+                this->ord2_scale.transform (yticks2, ytick_posns2);
             }
         }
 
@@ -1423,6 +1480,8 @@ namespace morph {
         std::string xlabel = "x";
         //! The y axis label
         std::string ylabel = "y";
+        //! Second y axis label
+        std::string ylabel2 = "y2";
         //! Whether or not to show a legend
         bool legend = true;
 
@@ -1448,6 +1507,7 @@ namespace morph {
         float xtick_height = 0.0f;
         //! Temporary storage for the max width of the ytick labels
         float ytick_width = 0.0f;
+        float ytick_width2 = 0.0f;
     };
 
 } // namespace morph
