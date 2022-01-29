@@ -6,7 +6,7 @@
 int main()
 {
     // Set up a morph::Visual 'scene environment'.
-    morph::Visual v(1024, 768, "Made with morph::GraphVisual");
+    morph::Visual v(1024, 768, "Twinax GraphVisual example");
     // Create a new GraphVisual with offset within the scene of 0,0,0
     auto gv = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, {0,0,0});
     // Data for the x axis. A vVector is like std::vector, but with built-in maths methods
@@ -17,7 +17,7 @@ int main()
     gv->setdata (x, x.pow(3));
     // And x sq
     gv->axisstyle = morph::axisstyle::twinax;
-    gv->setdata_rightaxis (x, x.pow(2)*1.5);
+    gv->setdata_rightaxis (x, x.pow(2)*100);
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
     // Add the GraphVisual OpenGL model to the Visual scene

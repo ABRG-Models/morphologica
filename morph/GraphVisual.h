@@ -1047,7 +1047,11 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
-                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                std::array<float, 3> clr = this->axiscolour;
+                if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
+                    clr = this->datastyles[0].markercolour;
+                }
+                lbl->setupText (s, lblpos+this->mv_offset, clr);
                 this->texts.push_back (lbl);
             }
             if (this->axisstyle == axisstyle::twinax) {
@@ -1059,7 +1063,9 @@ namespace morph {
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_width2 = geom.width() > this->ytick_width2 ? geom.width() : this->ytick_width2;
                     morph::Vector<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0}; // tune
-                    lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour); // use colour of first data on axis here
+                    std::array<float, 3> clr = this->axiscolour;
+                    if (this->datastyles.size() > 1) { clr = this->datastyles[1].markercolour; }
+                    lbl->setupText (s, lblpos+this->mv_offset, clr);
                     this->texts.push_back (lbl);
                 }
             }
