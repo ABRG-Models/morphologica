@@ -35,10 +35,10 @@ int main (int argc, char** argv)
 
         // Set the graphing policy
         gv->policy = morph::stylepolicy::lines; // markers, lines, both, allcolour
-
+        gv->axisstyle = morph::axisstyle::twinax;
         // We 'prepare' two datasets, but won't fill them with data yet. However, we do give the data legend label here.
-        gv->prepdata ("Third power");
-        gv->prepdata ("Fifth power");
+        gv->prepdata ("Third power", morph::axisside::left);
+        gv->prepdata ("Fifth power", morph::axisside::right);
 
         gv->finalize();
 

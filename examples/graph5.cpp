@@ -19,15 +19,13 @@ int main()
     x.linspace (-0.5, 0.8, 14);
 
     // Set a graph up of x^3
-    std::string ds1legend = unicode::toUtf8 (unicode::alpha);
-    ds1legend += "(x) = x" + unicode::toUtf8 (unicode::ss3);
+    std::string ds1legend = unicode::toUtf8 (unicode::alpha) + "(x) = x" + unicode::toUtf8 (unicode::ss3);
     gv->setdata (x, x.pow(3), ds1legend);
     gv->ylabel = unicode::toUtf8 (unicode::alpha);
 
     // And 100x^2
-    std::string ds2legend = unicode::toUtf8 (unicode::beta);
-    ds2legend += "(x) = 100x" + unicode::toUtf8 (unicode::ss2);
-    gv->setdata_rightaxis (x, x.pow(2)*100, ds2legend);
+    std::string ds2legend = unicode::toUtf8 (unicode::beta) + "(x) = 100x" + unicode::toUtf8 (unicode::ss2);
+    gv->setdata (x, x.pow(2)*100, ds2legend, morph::axisside::right);
     gv->ylabel2 = unicode::toUtf8 (unicode::beta);
 
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model

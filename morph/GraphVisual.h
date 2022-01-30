@@ -345,37 +345,18 @@ namespace morph {
         }
 
         //! Prepare an as-yet empty dataset.
-        void prepdata (const std::string name = "")
+        void prepdata (const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
+            std::cout << "prepdata called\n";
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
-            this->setdata (emptyabsc, emptyord, name);
+            this->setdata (emptyabsc, emptyord, name, axisside);
         }
 
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
-        {
-            this->setdata (_abscissae, _data, name, morph::axisside::left);
-        }
-
-        void setdata_leftaxis (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
-        {
-            if (this->axisstyle != axisstyle::twinax) {
-                throw std::runtime_error ("Ensure axistyle is twinax to call this function");
-            }
-            this->setdata (_abscissae, _data, name, morph::axisside::left);
-        }
-
-        void setdata_rightaxis (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name = "")
-        {
-            if (this->axisstyle != axisstyle::twinax) {
-                throw std::runtime_error ("Ensure axistyle is twinax to call this function");
-            }
-            this->setdata (_abscissae, _data, name, morph::axisside::right);
-        }
-
-        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const std::string name, const morph::axisside axisside)
+        void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data,
+                      const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
             DatasetStyle ds(this->policy);
             ds.axisside = axisside;
@@ -1049,13 +1030,13 @@ namespace morph {
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
                 std::array<float, 3> clr = this->axiscolour;
                 if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
-                    clr = this->datastyles[0].markercolour;
+                    clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
                 }
                 lbl->setupText (s, lblpos+this->mv_offset, clr);
                 this->texts.push_back (lbl);
             }
             if (this->axisstyle == axisstyle::twinax) {
-                x_for_yticks = 1.0f;
+                x_for_yticks = this->width;
                 this->ytick_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
                     std::string s = this->graphNumberFormat (this->yticks2[i]);
@@ -1064,7 +1045,10 @@ namespace morph {
                     this->ytick_width2 = geom.width() > this->ytick_width2 ? geom.width() : this->ytick_width2;
                     morph::Vector<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0}; // tune
                     std::array<float, 3> clr = this->axiscolour;
-                    if (this->datastyles.size() > 1) { clr = this->datastyles[1].markercolour; }
+                    if (this->datastyles.size() > 1) {
+                        clr = this->datastyles[1].policy == stylepolicy::lines ? this->datastyles[1].linecolour : this->datastyles[1].markercolour;
+
+                    }
                     lbl->setupText (s, lblpos+this->mv_offset, clr);
                     this->texts.push_back (lbl);
                 }
@@ -1378,14 +1362,20 @@ namespace morph {
             if (this->manualticks == true) {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
+                if (!(this->abscissa_scale.ready() && this->ord1_scale.ready())) {
+                    throw std::runtime_error ("abscissa and ordinate Scales not set. Is there data?");
+                }
                 // Compute locations for ticks...
                 Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.range_min);
                 Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
                 Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.range_min);
                 Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.range_max);
-                Flt _ymin2 = this->ord2_scale.inverse_one (this->ord2_scale.range_min);
-                Flt _ymax2 = this->ord2_scale.inverse_one (this->ord2_scale.range_max);
-
+                Flt _ymin2 = Flt{0};
+                Flt _ymax2 = Flt{1};
+                if (this->ord2_scale.ready()) {
+                    _ymin2 = this->ord2_scale.inverse_one (this->ord2_scale.range_min);
+                    _ymax2 = this->ord2_scale.inverse_one (this->ord2_scale.range_max);
+                }
                 if constexpr (gv_debug) {
                     std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";
                     std::cout << "y ticks between " << _ymin << " and " << _ymax << " in data units\n";
@@ -1396,9 +1386,12 @@ namespace morph {
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
                 this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
-                realmin = this->ord2_scale.inverse_one (0);
-                realmax = this->ord2_scale.inverse_one (this->height);
-                this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax);
+
+                if (this->ord2_scale.ready()) {
+                    realmin = this->ord2_scale.inverse_one (0);
+                    realmax = this->ord2_scale.inverse_one (this->height);
+                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax);
+                }
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->abscissa_scale.transform (xticks, xtick_posns);
@@ -1406,8 +1399,10 @@ namespace morph {
                 this->ytick_posns.resize (this->yticks.size());
                 this->ord1_scale.transform (yticks, ytick_posns);
 
-                this->ytick_posns2.resize (this->yticks2.size());
-                this->ord2_scale.transform (yticks2, ytick_posns2);
+                if (this->ord2_scale.ready()) {
+                    this->ytick_posns2.resize (this->yticks2.size());
+                    this->ord2_scale.transform (yticks2, ytick_posns2);
+                }
             }
         }
 

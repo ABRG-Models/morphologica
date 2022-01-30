@@ -241,6 +241,8 @@ namespace morph {
             this->type = ScaleFn::Linear;
         }
 
+        virtual bool ready() const = 0;
+
     protected:
         /*!
          * What type of scaling function is in use? Intended for future implementations
@@ -348,6 +350,9 @@ namespace morph {
         //! \return The specified element of #params
         S_el getParams (size_t idx) { return this->params[idx]; }
 
+        //! The Scale object is ready if params has size 2.
+        bool ready() const { return (this->params.size() > 1); }
+
     private:
         //! Compute vector length
         //! \param vec the vector of type \a T
@@ -450,6 +455,9 @@ namespace morph {
         //! \param idx The index into #params
         //! \return The specified element of #params
         T getParams (size_t idx) { return this->params[idx]; }
+
+        //! The Scale object is ready if params has size 2.
+        bool ready() const { return (this->params.size() > 1); }
 
     private:
         //! Linear transform for scalar type; y = mx + c
