@@ -268,7 +268,7 @@ namespace morph {
         void addLabel (const std::string& _text,
                        const morph::Vector<float, 3>& _toffset,
                        const std::array<float, 3>& _tcolour = morph::colour::black,
-                       const morph::VisualFont _font = morph::VisualFont::Vera,
+                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                        const float _fontsize = 0.05,
                        const int _fontres = 24)
         {
@@ -285,7 +285,7 @@ namespace morph {
                        const morph::Vector<float, 3>& _toffset,
                        morph::VisualTextModel*& tm,
                        const std::array<float, 3>& _tcolour = morph::colour::black,
-                       const morph::VisualFont _font = morph::VisualFont::Vera,
+                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                        const float _fontsize = 0.05,
                        const int _fontres = 24)
         {
