@@ -22,48 +22,58 @@ int main (int argc, char** argv)
     v.backgroundWhite();
     v.lightingEffects();
 
+    // Optionally (at compile time) change the range of the axes:
+    static constexpr bool change_axes_range = false;
+
+    // Optionally (compile time) modify the features of the graph by first creating a DatasetStyle object
+    static constexpr bool modify_graph_features = false;
+
+    // Optionally set up the axes with line width, etc
+    static constexpr bool setup_axes = true;
+
     try {
         morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
         morph::vVector<float> data = absc.pow(3);
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-#if 1 // Optionally change the size of the graph and range of the axes
+        // Here, we change the size of the graph and range of the axes (this is optional
         gv->setsize (1.33, 1);
-#endif
 
-#if 0 // Optionally change the range of the axes
-        gv->setlimits (0,1.4,0,1.4);
-#endif
+        if constexpr (change_axes_range) {
+            gv->setlimits (0,1.4,0,1.4);
+        }
 
-#if 0 // Optionally modify the features of the graph
-        morph::DatasetStyle ds;
-        ds.linewidth = 0.005;
-        ds.linecolour = {1.0, 0.0, 0.0};
-        ds.markerstyle = morph::markerstyle::triangle;
-        ds.markersize = 0.02;
-        ds.markercolour = {0.0, 0.0, 1.0};
-        ds.markergap = 0.02;
-        // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
-        gv->setdata (absc, data, ds);
-        ds.markerstyle = morph::markerstyle::square;
-        ds.setcolour ({0.0, 1.0, 0.0});
-        gv->setdata (absc, absc.pow(4), ds);
-#else
-        gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
-        gv->setdata (absc, absc, "linear");
-        gv->setdata (absc, absc.pow(2)+0.05f, "quadratic");
-        gv->setdata (absc, absc.pow(3)+0.1f, "cubic");
-        gv->setdata (absc, absc.pow(4)+0.15f, "quartic");
-        gv->setdata (absc, absc.pow(5)+0.2f, "fifth power");
-#endif
+        if constexpr (modify_graph_features) {
+            morph::DatasetStyle ds;
+            ds.linewidth = 0.005;
+            ds.linecolour = {1.0, 0.0, 0.0};
+            ds.markerstyle = morph::markerstyle::triangle;
+            ds.markersize = 0.02;
+            ds.markercolour = {0.0, 0.0, 1.0};
+            ds.markergap = 0.02;
+            // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
+            gv->setdata (absc, data, ds);
+            ds.markerstyle = morph::markerstyle::square;
+            ds.setcolour ({0.0, 1.0, 0.0});
+            gv->setdata (absc, absc.pow(4), ds);
+        } else {
+            gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
+            // The code here demonstrates how to include unicode characters (ss2 is "superscript 2")
+            using morph::unicode;
+            gv->setdata (absc, absc, "y=x");
+            gv->setdata (absc, absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
+            gv->setdata (absc, absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
+            gv->setdata (absc, absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
+            gv->setdata (absc, absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
+        }
 
+        if constexpr (setup_axes) {
+            gv->axiscolour = {0.5, 0.5, 0.5};
+            gv->axislinewidth = 0.01f;
+            gv->axisstyle = morph::axisstyle::box;
+            gv->setthickness (0.001f);
+        }
 
-#if 1 // Optionally set the axes up
-        gv->axiscolour = {0.5, 0.5, 0.5};
-        gv->axislinewidth = 0.01f;
-        gv->axisstyle = morph::axisstyle::box;
-        gv->setthickness (0.001f);
-#endif
         gv->finalize();
 
         // Add the GraphVisual (as a VisualModel*)
