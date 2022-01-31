@@ -40,6 +40,11 @@ int main (int argc, char** argv)
         gv->prepdata ("Third power", morph::axisside::left);
         gv->prepdata ("Fifth power", morph::axisside::right);
 
+        using morph::unicode;
+        gv->ylabel = "f(x) = x" + unicode::toUtf8(unicode::ss3);
+        // ylabel2 is the right hand y axis label
+        gv->ylabel2 = "f(x) = x" + unicode::toUtf8(unicode::ss5);
+
         gv->finalize();
 
         // Add the GraphVisual (as a VisualModel*)
