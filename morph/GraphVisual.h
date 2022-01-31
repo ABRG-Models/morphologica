@@ -184,7 +184,12 @@ namespace morph {
         {
             this->pendingAppended = true;
             // Transfor the data into temporary containers sd and ad
-            Flt o = this->ord1_scale.transform_one (_ordinate);
+            Flt o = Flt{0};
+            if (this->datastyles[didx].axisside == morph::axisside::left) {
+                o = this->ord1_scale.transform_one (_ordinate);
+            } else {
+                o = this->ord2_scale.transform_one (_ordinate);
+            }
             Flt a = this->abscissa_scale.transform_one (_abscissa);
             //std::cout << "transformed coords: " << a << ", " << o << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
@@ -347,7 +352,6 @@ namespace morph {
         //! Prepare an as-yet empty dataset.
         void prepdata (const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
-            std::cout << "prepdata called\n";
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
             this->setdata (emptyabsc, emptyord, name, axisside);
@@ -520,7 +524,7 @@ namespace morph {
                 if (axisside == morph::axisside::left) {
                     this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
                 } else {
-                    this->ord2_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+                    this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
                 }
                 break;
             }
@@ -529,7 +533,7 @@ namespace morph {
                 if (axisside == morph::axisside::left) {
                     this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
                 } else {
-                    this->ord2_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                    this->ord2_scale.compute_autoscale (this->datamin_y2, data_maxmin.first);
                 }
                 break;
             }
@@ -538,7 +542,7 @@ namespace morph {
                 if (axisside == morph::axisside::left) {
                     this->ord1_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
                 } else {
-                    this->ord2_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                    this->ord2_scale.compute_autoscale (data_maxmin.second, this->datamax_y2);
                 }
                 break;
             }
@@ -580,6 +584,9 @@ namespace morph {
             float _extra = this->dataaxisdist * this->height;
             this->ord1_scale.range_min = _extra;
             this->ord1_scale.range_max = this->height - _extra;
+            // Same for ord2_scale:
+            this->ord2_scale.range_min = _extra;
+            this->ord2_scale.range_max = this->height - _extra;
 
             _extra = this->dataaxisdist * this->width;
             this->abscissa_scale.range_min = _extra;
@@ -608,6 +615,16 @@ namespace morph {
             this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
         }
 
+        //! Set manual limits for the second y axis (ordinate)
+        void setlimits_y2 (Flt _ymin, Flt _ymax)
+        {
+            this->scalingpolicy_y = morph::scalingpolicy::manual; // scalingpolicy_y common to both left and right axes?
+            this->datamin_y2 = _ymin;
+            this->datamax_y2 = _ymax;
+            this->setsize (this->width, this->height);
+            this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
+        }
+
         // Axis ranges. The length of each axis could be determined from the data and
         // abscissas for a static graph, but for a dynamically updating graph, it's
         // going to be necessary to give a hint at how far the data/abscissas might need
@@ -627,6 +644,29 @@ namespace morph {
             // To make the axes larger, we change the scaling that we'll apply to the
             // data (the axes are always width * height in size).
             this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+            this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
+        }
+
+        //! setlimits overload that sets BOTH left and right axes limits
+        void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax, Flt _ymin2, Flt _ymax2)
+        {
+            std::cout << "relevant setlimits called\n";
+            // Set limits with 4 args gives fully manual scaling
+            this->scalingpolicy_x = morph::scalingpolicy::manual;
+            this->datamin_x = _xmin;
+            this->datamax_x = _xmax;
+            this->scalingpolicy_y = morph::scalingpolicy::manual;
+            this->datamin_y = _ymin;
+            this->datamax_y = _ymax;
+            this->datamin_y2 = _ymin2;
+            this->datamax_y2 = _ymax2;
+
+            // First make sure that the range_min/max are correctly set
+            this->setsize (this->width, this->height);
+            // To make the axes larger, we change the scaling that we'll apply to the
+            // data (the axes are always width * height in size).
+            this->ord1_scale.compute_autoscale (this->datamin_y, this->datamax_y);
+            this->ord2_scale.compute_autoscale (this->datamin_y2, this->datamax_y2);
             this->abscissa_scale.compute_autoscale (this->datamin_x, this->datamax_x);
         }
 
@@ -1427,8 +1467,8 @@ namespace morph {
         Flt datamin_y = Flt{0};
         Flt datamax_y = Flt{1};
         //! If required, the second ordinate's minimum/max data values (twinax)
-        Flt data2min_y = Flt{0};
-        Flt data2max_y = Flt{1};
+        Flt datamin_y2 = Flt{0};
+        Flt datamax_y2 = Flt{1};
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
