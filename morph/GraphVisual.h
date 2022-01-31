@@ -650,7 +650,6 @@ namespace morph {
         //! setlimits overload that sets BOTH left and right axes limits
         void setlimits (Flt _xmin, Flt _xmax, Flt _ymin, Flt _ymax, Flt _ymin2, Flt _ymax2)
         {
-            std::cout << "relevant setlimits called\n";
             // Set limits with 4 args gives fully manual scaling
             this->scalingpolicy_x = morph::scalingpolicy::manual;
             this->datamin_x = _xmin;
@@ -960,10 +959,10 @@ namespace morph {
             if (this->axisstyle == axisstyle::cross) {
                 float _y0_mdl = this->ord1_scale.transform_one (0);
                 lblpos = {{0.9f * this->width,
-                           _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_height), 0 }};
+                           _y0_mdl-(this->axislabelgap+geom.height()+this->ticklabelgap+this->xtick_label_height), 0 }};
             } else {
                 lblpos = {{0.5f * this->width - geom.half_width(),
-                           -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0}};
+                           -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_label_height), 0}};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
             this->texts.push_back (lbl);
@@ -972,20 +971,21 @@ namespace morph {
             lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->ylabel);
 
-            // Rotate label if it's long
+            // Rotate label if it's long, but assume NOT rotated first:
             float leftshift = geom.width();
             float downshift = geom.height();
             if (geom.width() > 2*this->fontsize) { // rotate so shift by text height
-                leftshift = geom.height();
+                // Rotated, so left shift due to text is 0
+                leftshift = 0;
                 downshift = geom.half_width();
             }
 
             if (this->axisstyle == axisstyle::cross) {
                 float _x0_mdl = this->abscissa_scale.transform_one (0);
-                lblpos = {{ _x0_mdl-(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                lblpos = {{ _x0_mdl-(this->ticklabelgap+this->ytick_label_width+leftshift+this->axislabelgap),
                             0.9f * this->height, 0 }};
             } else {
-                lblpos = {{ -(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width),
+                lblpos = {{ -(this->ticklabelgap+this->ytick_label_width+leftshift+this->axislabelgap),
                             0.5f*this->height - downshift, 0 }};
             }
 
@@ -1003,15 +1003,15 @@ namespace morph {
                 lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 geom = lbl->getTextGeometry (this->ylabel2);
 
-                // Rotate label if it's long
-                float leftshift = geom.width();
+                // Rotate label if it's long and then leftshift? No need if unrotated.
+                float leftshift = 0.0f;
                 float downshift = geom.height();
                 if (geom.width() > 2*this->fontsize) { // rotate so shift by text height
                     leftshift = geom.height();
                     downshift = geom.half_width();
                 }
 
-                lblpos = {{ this->width+(this->axislabelgap+leftshift+this->ticklabelgap+this->ytick_width2),
+                lblpos = {{ this->width+(this->ticklabelgap+this->ytick_label_width2+this->axislabelgap+leftshift),
                             0.5f*this->height - downshift, 0 }};
 
                 if (geom.width() > 2*this->fontsize) {
@@ -1029,9 +1029,9 @@ namespace morph {
         void drawTickLabels()
         {
             // Reset these members
-            this->xtick_height = 0.0f;
-            this->ytick_width = 0.0f;
-            this->ytick_width2 = 0.0f;
+            this->xtick_label_height = 0.0f;
+            this->ytick_label_width = 0.0f;
+            this->ytick_label_width2 = 0.0f;
 
             float x_for_yticks = 0.0f;
             float y_for_xticks = 0.0f;
@@ -1053,7 +1053,7 @@ namespace morph {
                 // VisualTextModel, so need a static method like this:
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
+                this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
                 morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
@@ -1066,7 +1066,7 @@ namespace morph {
                 std::string s = this->graphNumberFormat (this->yticks[i]);
                 morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
+                this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
                 morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
                 std::array<float, 3> clr = this->axiscolour;
                 if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
@@ -1077,13 +1077,13 @@ namespace morph {
             }
             if (this->axisstyle == axisstyle::twinax) {
                 x_for_yticks = this->width;
-                this->ytick_width2 = 0.0f;
+                this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
                     std::string s = this->graphNumberFormat (this->yticks2[i]);
                     morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
-                    this->ytick_width2 = geom.width() > this->ytick_width2 ? geom.width() : this->ytick_width2;
-                    morph::Vector<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0}; // tune
+                    this->ytick_label_width2 = geom.width() > this->ytick_label_width2 ? geom.width() : this->ytick_label_width2;
+                    morph::Vector<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0};
                     std::array<float, 3> clr = this->axiscolour;
                     if (this->datastyles.size() > 1) {
                         clr = this->datastyles[1].policy == stylepolicy::lines ? this->datastyles[1].linecolour : this->datastyles[1].markercolour;
@@ -1131,9 +1131,7 @@ namespace morph {
             // First, ensure that this->xtick_posns/xticks and this->ytick_posns/yticks are populated
             this->computeTickPositions();
 
-            if (this->axisstyle == axisstyle::cross) {
-                return this->drawCrossAxes();
-            }
+            if (this->axisstyle == axisstyle::cross) { return this->drawCrossAxes(); }
 
             if (this->axisstyle == axisstyle::box
                 || this->axisstyle == axisstyle::twinax
@@ -1513,9 +1511,11 @@ namespace morph {
         //! A separate fontsize for the axis labels, incase these should be different from the tick labels
         float axislabelfontsize = fontsize;
         // might need tickfontsize and axisfontsize
-        //! Gap to x axis tick labels
+        //! EITHER Gap from the y axis to the right hand of the y axis tick label text
+        //! quads OR from the x axis to the top of the x axis tick label text quads
         float ticklabelgap = 0.05;
-        //! Gap from tick labels to axis label
+        //! The gap from the left side of the y tick labels to the right side of the
+        //! axis label (or similar for the x axis label)
         float axislabelgap = 0.05;
         //! The x axis label
         std::string xlabel = "x";
@@ -1545,10 +1545,10 @@ namespace morph {
         morph::Vector<float> uz = {0,0,1};
 
         //! Temporary storage for the max height of the xtick labels
-        float xtick_height = 0.0f;
+        float xtick_label_height = 0.0f;
         //! Temporary storage for the max width of the ytick labels
-        float ytick_width = 0.0f;
-        float ytick_width2 = 0.0f;
+        float ytick_label_width = 0.0f;
+        float ytick_label_width2 = 0.0f;
     };
 
 } // namespace morph
