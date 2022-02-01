@@ -264,13 +264,14 @@ namespace morph {
     public:
 
         //! Add a text label to the model at location (within the model coordinates)
-        //! toffset.
-        void addLabel (const std::string& _text,
-                       const morph::Vector<float, 3>& _toffset,
-                       const std::array<float, 3>& _tcolour = morph::colour::black,
-                       const morph::VisualFont _font = morph::VisualFont::DVSans,
-                       const float _fontsize = 0.05,
-                       const int _fontres = 24)
+        //! toffset. Return the text geometry of the added label so caller can place
+        //! associated text correctly.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::Vector<float, 3>& _toffset,
+                                      const std::array<float, 3>& _tcolour = morph::colour::black,
+                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
+                                      const float _fontsize = 0.05,
+                                      const int _fontres = 24)
         {
             if (this->tshaderprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
@@ -278,16 +279,17 @@ namespace morph {
             morph::VisualTextModel* tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
             this->texts.push_back (tm);
+            return tm->getTextGeometry();
         }
 
         //! Add a text label with a passed-in pointer to a VisualTextModel
-        void addLabel (const std::string& _text,
-                       const morph::Vector<float, 3>& _toffset,
-                       morph::VisualTextModel*& tm,
-                       const std::array<float, 3>& _tcolour = morph::colour::black,
-                       const morph::VisualFont _font = morph::VisualFont::DVSans,
-                       const float _fontsize = 0.05,
-                       const int _fontres = 24)
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::Vector<float, 3>& _toffset,
+                                      morph::VisualTextModel*& tm,
+                                      const std::array<float, 3>& _tcolour = morph::colour::black,
+                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
+                                      const float _fontsize = 0.05,
+                                      const int _fontres = 24)
         {
             if (this->tshaderprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
@@ -295,6 +297,7 @@ namespace morph {
             tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
             this->texts.push_back (tm);
+            return tm->getTextGeometry();
         }
 
         //! Setter for the viewmatrix

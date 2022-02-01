@@ -227,35 +227,32 @@ namespace morph {
         }
 
         //! Add a text label to the scene at a given location. Return the width and
-        //! height of the text in a vector
-        morph::Vector<float, 2>  addLabel (const std::string& _text,
-                                           const morph::Vector<float, 3>& _toffset,
-                                           const std::array<float, 3>& _tcolour = morph::colour::black,
-                                           const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                           const float _fontsize = 0.01,
-                                           const int _fontres = 24)
+        //! height of the text in a TextGeometry object.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::Vector<float, 3>& _toffset,
+                                      const std::array<float, 3>& _tcolour = morph::colour::black,
+                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
+                                      const float _fontsize = 0.01,
+                                      const int _fontres = 24)
         {
             morph::VisualTextModel* tm = nullptr;
             return this->addLabel (_text, _toffset, tm, _tcolour, _font, _fontsize, _fontres);
         }
 
         //! Add label, using the passed-in pointer. Allows client code to update the text model
-        morph::Vector<float, 2>  addLabel (const std::string& _text,
-                                           const morph::Vector<float, 3>& _toffset,
-                                           morph::VisualTextModel*& tm,
-                                           const std::array<float, 3>& _tcolour = morph::colour::black,
-                                           const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                           const float _fontsize = 0.01,
-                                           const int _fontres = 24)
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::Vector<float, 3>& _toffset,
+                                      morph::VisualTextModel*& tm,
+                                      const std::array<float, 3>& _tcolour = morph::colour::black,
+                                      const morph::VisualFont _font = morph::VisualFont::DVSans,
+                                      const float _fontsize = 0.01,
+                                      const int _fontres = 24)
         {
             if (this->tshaderprog == 0) { throw std::runtime_error ("No text shader prog."); }
             tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset, _tcolour);
             this->texts.push_back (tm);
-            morph::Vector<float, 2> dims;
-            dims[0] = tm->width();
-            dims[1] = tm->height();
-            return dims;
+            return tm->getTextGeometry();
         }
 
         /*!

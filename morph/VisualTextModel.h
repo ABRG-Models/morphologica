@@ -256,12 +256,27 @@ namespace morph {
         }
 
         //! Compute the geometry for a sample text.
-        morph::TextGeometry getTextGeometry (const std::string& _txt)
+        morph::TextGeometry getTextGeometry (const std::string& _txt) const
         {
             // First convert string from ASCII/UTF-8 into Unicode.
             std::basic_string<char32_t> utxt = morph::unicode::fromUtf8(_txt);
             morph::TextGeometry geom;
             for (std::basic_string<char32_t>::const_iterator c = utxt.begin(); c != utxt.end(); c++) {
+                morph::gl::CharInfo ci = this->face->glchars[*c];
+                float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
+                geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
+                float bearingy = ci.bearing.y() * this->fontscale;
+                geom.max_bearingy = (bearingy > geom.max_bearingy) ? bearingy : geom.max_bearingy;
+                geom.total_advance += ((ci.advance>>6)*this->fontscale);
+            }
+            return geom;
+        }
+
+        //! Return the geometry for the stored txt
+        morph::TextGeometry getTextGeometry() const
+        {
+            morph::TextGeometry geom;
+            for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
                 morph::gl::CharInfo ci = this->face->glchars[*c];
                 float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
@@ -309,7 +324,7 @@ namespace morph {
             this->quads.clear();
             this->quad_ids.clear();
             // Our string of letters starts at this location
-            float letter_pos = 0.0f; /*this->mv_offset[0]; THERE*/
+            float letter_pos = 0.0f;
             float letter_y = 0.0f;
             float text_epsilon = 0.0f;
             for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
