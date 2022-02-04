@@ -231,7 +231,7 @@ namespace morph {
         std::string str() const
         {
             std::stringstream ss;
-            ss << this->root;
+            ss << std::setw(4) << this->root << std::endl;
             return ss.str();
         }
 
