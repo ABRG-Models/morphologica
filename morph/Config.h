@@ -246,9 +246,9 @@ namespace morph {
                 nlohmann::json combined = this->root;
                 nlohmann::json co(this->config_overrides);
                 combined["config_overrides"] = co;
-                ss << combined;
+                ss << std::setw(4) << combined << std::endl;
             } else {
-                ss << this->root;
+                ss << std::setw(4) << this->root << std::endl;
             }
             return ss.str();
         }
