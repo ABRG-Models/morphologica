@@ -1,12 +1,15 @@
 /*
- * A wrapper around nlohmann JSON code for saving and retrieving parameters
+ * A class for saving and retrieving parameters, with a scheme for command line
+ * overrides.
  *
- * Fixme: All I want in addition to what json offers is ability to open a file, e.g. nlohmann::json j(file_path);
- * Could get this by extending?
+ * This uses nlohmann::json to parse json files.
+ *
+ * Author: Seb James
  */
 #pragma once
 
 #include <morph/nlohmann/json.hpp>
+#include <morph/tools.h>
 #include <list>
 #include <fstream>
 #include <sstream>
@@ -220,7 +223,15 @@ namespace morph {
             std::ofstream configout;
             configout.open (outfile.c_str(), std::ios::out|std::ios::trunc);
             if (configout.is_open()) {
-                configout << std::setw(4) << this->root << std::endl;
+                // Make a copy of root
+                nlohmann::json combined = this->root;
+                // add config_overrides, if necessary
+                if (!config_overrides.empty()) {
+                    nlohmann::json co(this->config_overrides);
+                    combined["config_overrides"] = co;
+                }
+                // Write out.
+                configout << std::setw(4) << combined << std::endl;
                 configout.close();
             } else {
                 this->emsg = "Failed to open file '" + outfile + "' for writing";
@@ -231,15 +242,84 @@ namespace morph {
         std::string str() const
         {
             std::stringstream ss;
-            ss << this->root;
+            if (!config_overrides.empty()) {
+                nlohmann::json combined = this->root;
+                nlohmann::json co(this->config_overrides);
+                combined["config_overrides"] = co;
+                ss << combined;
+            } else {
+                ss << this->root;
+            }
             return ss.str();
+        }
+
+        //! map of configuation parameter overrides applied via command line
+        std::map<std::string, std::string> config_overrides;
+
+        /*!
+         * Process command line args for 'Config overrides' and store as overrides for
+         * the relevant params. Can be used multiple times.
+         *
+         * e.g. morph_program -co:varname=43 -co=co:"stringvar=something with spaces"
+         *
+         * Currently only works for single parameter overrides (ones that you can read
+         * with Config::getFloat() and similar) and not arrays or complex objects.
+         *
+         */
+        void process_args (int argc, char **argv)
+        {
+            for (int i = 0; i < argc; ++i) {
+                std::string arg(argv[i]);
+                std::string::size_type pos = std::string::npos;
+                // co for 'Config override'
+                if ((pos = arg.find ("-co:")) == 0) {
+                    std::string arg_ss = arg.substr (4);
+                    // Split arg based on '='
+                    std::vector<std::string> co = morph::Tools::stringToVector (arg_ss, std::string("="));
+                    if (co.size() >= 2) {
+                        std::cout << "Override parameter '" << co[0] << "' with value '" << co[1] << "'\n";
+                        //...so stick with using a map
+                        this->config_overrides[co[0]] = co[1];
+                    }
+                }
+            }
         }
 
         // Wrappers around gets
         template <typename T>
         T get (const std::string& thing, T defaultval) const
         {
-            return this->root.contains(thing) ? this->root[thing].get<T>() : defaultval;
+            if (this->config_overrides.count(thing) > 0) {
+                T rtn = defaultval;
+                // There's an override to apply. Type will determine how the thing is processed
+                if constexpr (std::is_same<std::decay_t<T>, bool>::value == true) {
+                    std::string bval = this->config_overrides.at(thing);
+                    if (bval == "true" || bval == "True") {
+                        rtn = true;
+                    } else if (bval == "false" || bval == "False") {
+                        rtn = false;
+                    } else {
+                        rtn = std::stoi (bval) > 0 ? true : false;
+                    }
+                } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                    rtn = std::stoi (this->config_overrides.at(thing));
+                } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                    rtn = std::stoul (this->config_overrides.at(thing));
+                } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                    rtn = std::stof (this->config_overrides.at(thing));
+                } else if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                    rtn = std::stod (this->config_overrides.at(thing));
+                } else if constexpr (std::is_same<std::decay_t<T>, std::string>::value == true) {
+                    rtn = this->config_overrides.at(thing);
+                } else {
+                    std::cout << "Type not handled by morph::Config::get, return default value: "
+                              << defaultval << std::endl;
+                }
+                return rtn;
+
+            } else {
+                return this->root.contains(thing) ? this->root[thing].get<T>() : defaultval;
+            }
         }
         // get as a json object
         nlohmann::json get (const std::string& thingname) const
