@@ -463,6 +463,55 @@ information about the simulation run:
 }
 ```
 
+When running batch simulations from a script, it is often useful to sweep through many different values of one parameter, to find out how it affects the result. In this use case, it is tiresome to create a new JSON file for each individual simulation run; it is much easier to write a single JSON file with all the main parameters, and then be able to override one parameter for each run. Here's how you can do this:
+
+When you have created your ```morph::Config``` object, you pass your main function's argc and
+argv to ```morph::Config::process_args(argc, argv)```. This records any
+'overrides' that you've placed into the command line of your
+program. 
+
+```c++
+#include <morph/Config.h>
+
+int main (int argc, char** argv)
+{
+    morph::Config conf("./params.json");
+    if (!conf.ready) { /* handle error */ }
+    conf.process_args (argc, argv); // This line is all you have to add to your setup!
+
+    // Now, when you call conf.getDouble for the parameter 'A', then you'll 
+    // get the one from JSON, unless the command line has an override for A.
+    const double dt = conf.getDouble ("A", 1);
+}
+```
+
+You do have to use a fixed format for the overrides on your command line. So, in an
+example program where you want to update the parameter 'A' in your
+config, you'd run like this:
+```
+myprog -co:A=4.5
+```
+The ```'-co:'``` is the token that ```Config::process_args``` uses to recognise
+that you're overriding the value of A that is given in your existing
+Config ('co' stands for Config Override).
+
+You can then run several programs:
+```
+myprog -co:A=4.6
+myprog -co:A=4.7
+```
+and so on.
+
+You can also use multiple instances, and specify texts and booleans,
+like this:
+```
+myprog -co:A=4 -co:B=5 -co:C=text -co:D=false
+```
+Finally, you can add any of your other usual command line args, as long as they don't match ```'-co:'```.
+```
+myprog ./path/to/myconf.json -p -s -co:A=4 -co:z=true
+```
+
 ## The morph::HdfData class
 
 [morph::HdfData](https://github.com/ABRG-Models/morphologica/blob/main/morph/HdfData.h)
