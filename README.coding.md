@@ -463,7 +463,9 @@ information about the simulation run:
 }
 ```
 
-When running batch simulations from a script, it is often useful to sweep through many different values of one parameter, to find out how it affects the result. In this use case, it is tiresome to create a new JSON file for each individual simulation run; it is much easier to write a single JSON file with all the main parameters, and then be able to override one parameter for each run. Here's how you can do this:
+### Config overrides and batch simulations
+
+When developing a numerical model, it is often useful to sweep through many different values of one parameter, to find out how it affects the model's behaviour. Often, this means writing a script to launch a number of simulations, each with slightly different parameter settings. In this case, it would be tiresome to create a new JSON file for each individual simulation run; it is much easier to write a single JSON file with all the common parameters, and then be able to override one parameter with a new value for each run. Here's how you can do this:
 
 When you have created your ```morph::Config``` object, you pass your main function's argc and
 argv to ```morph::Config::process_args(argc, argv)```. This records any
