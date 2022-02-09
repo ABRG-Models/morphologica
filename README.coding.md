@@ -479,7 +479,9 @@ int main (int argc, char** argv)
 {
     morph::Config conf("./params.json");
     if (!conf.ready) { /* handle error */ }
-    conf.process_args (argc, argv); // This line is all you have to add to your setup!
+    
+    // This line is all you have to add to your setup to be able to override a parameter
+    conf.process_args (argc, argv);
 
     // Now, when you call conf.getDouble for the parameter 'A', then you'll 
     // get the one from JSON, unless the command line has an override for A.
