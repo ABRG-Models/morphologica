@@ -57,7 +57,11 @@ int main()
     return 0;
 }
 ```
-The compares favourably (in terms of amount of boilerplate code) with the equivalent Python, graph1.py:
+The program generates a clean looking graph...
+
+![Screenshot of graph1.cpp output showing a cubic function](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/graph1.png?raw=true)
+
+...and the code compares favourably (in terms of amount of boilerplate code) with the equivalent Python, graph1.py:
 ```Python
 # Visualize the graph from graph1.cpp in Python
 import matplotlib.pyplot as plt
