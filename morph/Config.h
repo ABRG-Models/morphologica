@@ -260,7 +260,7 @@ namespace morph {
          * Process command line args for 'Config overrides' and store as overrides for
          * the relevant params. Can be used multiple times.
          *
-         * e.g. morph_program -co:varname=43 -co=co:"stringvar=something with spaces"
+         * e.g. morph_program -co:varname=43 -co:"stringvar=something with spaces"
          *
          * Currently only works for single parameter overrides (ones that you can read
          * with Config::getFloat() and similar) and not arrays or complex objects.
@@ -272,6 +272,9 @@ namespace morph {
                 std::string arg(argv[i]);
                 std::string::size_type pos = std::string::npos;
                 // co for 'Config override'
+                if ((pos = arg.find ("-oc:")) == 0) {
+                    std::cout << "NB: Use '-co:' rather than '-oc:'!!\n";
+                }
                 if ((pos = arg.find ("-co:")) == 0) {
                     std::string arg_ss = arg.substr (4);
                     // Split arg based on '='
