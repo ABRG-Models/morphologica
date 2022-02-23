@@ -727,14 +727,17 @@ namespace morph {
                 std::cout << "Try (data) ticks of size " << trytick << ", which makes for " << numticks << " ticks.\n";
             }
             // Realmax and realmin come from the full range of abscissa_scale/ord1_scale
-            Flt atick = trytick;
+            Flt midrange = (rmin + rmax) * Flt{0.5};
+            Flt a = std::round (midrange / trytick);
+            Flt atick = a * trytick;
             while (atick <= realmax) {
-                ticks.push_back (atick);
+                // This tick is smaller than 100th of the size of one whole tick to tick spacing, so it must be 0.
+                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick += trytick;
             }
-            atick = trytick - trytick;
+            atick = (a * trytick) - trytick;
             while (atick >= realmin) {
-                ticks.push_back (atick);
+                ticks.push_back (std::abs(atick) < Flt{0.01} * std::abs(trytick) ? Flt{0} : atick);
                 atick -= trytick;
             }
 
