@@ -569,7 +569,7 @@ namespace morph {
             for (auto& i : *this) { i = static_cast<S>(std::pow (i, (*pi++))); }
         }
 
-        //! Return the signum of the vVector, with signum(0)==0
+        //! Return the signum of the Vector, with signum(0)==0
         Vector<S, N> signum() const
         {
             Vector<S, N> rtn;
