@@ -488,6 +488,48 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
+        //! read_contained_vals for an array<T,N> (and by extension, a morph::Vector<T,N>)
+        template<typename T, size_t N>
+        void read_contained_vals (const char* path, std::array<T, N>& vals)
+        {
+            hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
+            if (this->check_dataset_id (dataset_id, path) == -1) { return; }
+            hid_t space_id = H5Dget_space (dataset_id);
+            hsize_t dims[1] = {0}; // 1D
+            int ndims = H5Sget_simple_extent_dims (space_id, dims, NULL);
+            if (ndims != 1) {
+                std::stringstream ee;
+                ee << "In:\n" << __PRETTY_FUNCTION__
+                   << ":\nError: Expected 1D data to be stored in " << path << ". ndims=" << ndims;
+                throw std::runtime_error (ee.str());
+            }
+
+            herr_t status = 0;
+            if constexpr (std::is_same<std::decay_t<T>, double>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+            } else {
+                throw std::runtime_error ("HdfData::read_contained_vals<array<T,N>: Don't know how to read that type T");
+            }
+            this->handle_error (status, "Error. status after H5Dread: ");
+            status = H5Dclose (dataset_id);
+            this->handle_error (status, "Error. status after H5Dclose: ");
+        }
+
         //! read_contained_vals for a vVector of Vector<T,N>
         template<typename T, size_t N>
         void read_contained_vals (const char* path, morph::vVector<morph::Vector<T, N>>& vals)
