@@ -178,5 +178,5 @@ For more info on how to set up CMake files to build a program using morphologica
 
 Authorship of morphologica code is given in each file. Copyright in
 the software is owned by the authors. morphologica is distributed
-under the terms of the GNU General Public License, version 3 (see
+under the terms of the Apache License, version 2 (see
 [LICENSE.txt](https://github.com/ABRG-Models/morphologica/blob/main/LICENSE.txt)).
