@@ -103,6 +103,7 @@ namespace morph {
                 glDeleteBuffers (numVBO, this->vbos);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
                 delete[] this->vbos;
+                glDeleteVertexArrays (1, &this->vao);
             }
         }
 
@@ -200,6 +201,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
+            this->clearTexts();
             this->idx = 0;
             this->initializeVertices();
             this->reinit_buffers();
