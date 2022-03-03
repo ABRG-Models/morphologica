@@ -147,6 +147,12 @@ if(USE_GLEW)
   target_link_libraries(graph5 GLEW::GLEW)
 endif()
 
+add_executable(graph6 graph6.cpp)
+target_link_libraries(graph6 OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph6 GLEW::GLEW)
+endif()
+
 add_executable(graph_bar graph_bar.cpp)
 target_link_libraries(graph_bar OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
