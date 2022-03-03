@@ -708,6 +708,28 @@ namespace morph {
         //! Replace each element with its own log
         void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
 
+        //! Sine
+        vVector<S> sin() const
+        {
+            vVector<S> rtn(this->size());
+            auto sin_element = [](S coord) { return std::sin(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), sin_element);
+            return rtn;
+        }
+        //! Replace each element with its own sine
+        void sin_inplace() { for (auto& i : *this) { i = std::sin(i); } }
+
+        //! Cosine
+        vVector<S> cos() const
+        {
+            vVector<S> rtn(this->size());
+            auto cos_element = [](S coord) { return std::cos(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), cos_element);
+            return rtn;
+        }
+        //! Replace each element with its own cosine
+        void cos_inplace() { for (auto& i : *this) { i = std::cos(i); } }
+
         /*!
          * Compute the element-wise natural exponential of the vector
          *
