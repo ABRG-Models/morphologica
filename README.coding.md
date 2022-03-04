@@ -462,6 +462,29 @@ information about the simulation run:
     if (conf.ready == false) { /* handle error */ }
 }
 ```
+### More complex JSON
+
+morph::Config provides methods to access simple paramters in a JSON file, like these:
+```JSON
+{
+  "param1" : 1,
+  "param2" : 100
+}
+```
+Often that's all you need, but sooner or later, you'll find that you need to place an array of value or some kind of dictionary in your JSON config. Perhaps something like this:
+```JSON
+{
+  "params" : [ { "x": 1, "y": 2, "p": 3 }, { "x": 1, "y": 3, "p": 4 } ]
+}
+```
+Rather than wrapping all the possible ways you might need to interact with containers of parameter values, at this point, we just say "use the underlying JSON type to access your parameters". `morph::Config` uses `nlohmann::json` to provide a JSON datatype. When you call `morph::Config::get(thingname)` you are simply returned an object of type `nlohmann::json` that matches the name you passed in. You can then iterate and access that object as described on the [nlohmann::json Github page](https://github.com/nlohmann/json).
+
+For example:
+```c++
+std::vector<std::string> params;
+nlohmann::json params_array = sconf->get("params"); // sconf is a morph::Config*
+for (auto p : params_array) { params.push_back (p.get<std::string>()); }
+```
 
 ### Config overrides and batch simulations
 
