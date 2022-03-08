@@ -768,6 +768,17 @@ namespace morph {
             this->drawAxisLabels();
         }
 
+        //! Is the passed in coordinate within the graph axes (in the x/y sense, ignoring z)?
+        bool within_axes (morph::Vector<float>& datapoint)
+        {
+            bool within = false;
+            if (datapoint[0] >= 0 && datapoint[0] <= this->width
+                && datapoint[1] >= 0 && datapoint[1] <= this->height) {
+                within = true;
+            }
+            return within;
+        }
+
         static constexpr bool three_d_lines = false;
         //! dsi: data set iterator
         void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
@@ -780,7 +791,9 @@ namespace morph {
                     }
                 } else {
                     for (size_t i = coords_start; i < coords_end; ++i) {
-                        this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                        if (this->within_axes ((*this->graphDataCoords[dsi])[i])) {
+                            this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
+                        } // else marker is outside graph axes so don't draw it
                     }
                 }
             }
@@ -793,49 +806,55 @@ namespace morph {
 
                 for (size_t i = coords_start+1; i < coords_end; ++i) {
                     // Draw tube from location -1 to location 0.
-                    if constexpr (three_d_lines) {
-                        this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                    if (this->draw_beyond_axes == true
+                        || (this->within_axes ((*this->graphDataCoords[dsi])[i-1])
+                            && this->within_axes ((*this->graphDataCoords[dsi])[i]))) {
+
+                        if constexpr (three_d_lines) {
+                            this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                            this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
-                                           this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
-                    } else {
-                        if (this->datastyles[dsi].markergap > 0.0f) {
-                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                                   this->datastyles[dsi].linecolour,
-                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
-                        } else if (appending == true) {
-                            this->computeFlatLineRnd (this->idx,
-                                                      (*this->graphDataCoords[dsi])[i-1], // start
-                                                      (*this->graphDataCoords[dsi])[i],   // end
-                                                      uz,
-                                                      this->datastyles[dsi].linecolour,
-                                                      this->datastyles[dsi].linewidth, 0.0f, true, false);
+                                               this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
                         } else {
-                            // No gaps, so draw a perfect set of joined up lines
-                            if (i == 1+coords_start) {
-                                // First line
-                                this->computeFlatLineN (this->idx,
-                                                        (*this->graphDataCoords[dsi])[i-1], // start
-                                                        (*this->graphDataCoords[dsi])[i],   // end
-                                                        (*this->graphDataCoords[dsi])[i+1], // next
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else if (i == (coords_end-1)) {
-                                // last line
-                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                        (*this->graphDataCoords[dsi])[i-2],
-                                                        uz,
-                                                        this->datastyles[dsi].linecolour,
-                                                        this->datastyles[dsi].linewidth);
-                            } else {
-                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
-                                                       uz,
+
+                            if (this->datastyles[dsi].markergap > 0.0f) {
+                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
                                                        this->datastyles[dsi].linecolour,
-                                                       this->datastyles[dsi].linewidth);
+                                                       this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                            } else if (appending == true) {
+                                this->computeFlatLineRnd (this->idx,
+                                                          (*this->graphDataCoords[dsi])[i-1], // start
+                                                          (*this->graphDataCoords[dsi])[i],   // end
+                                                          uz,
+                                                          this->datastyles[dsi].linecolour,
+                                                          this->datastyles[dsi].linewidth, 0.0f, true, false);
+                            } else {
+                                // No gaps, so draw a perfect set of joined up lines
+                                if (i == 1+coords_start) {
+                                    // First line
+                                    this->computeFlatLineN (this->idx,
+                                                            (*this->graphDataCoords[dsi])[i-1], // start
+                                                            (*this->graphDataCoords[dsi])[i],   // end
+                                                            (*this->graphDataCoords[dsi])[i+1], // next
+                                                            uz,
+                                                            this->datastyles[dsi].linecolour,
+                                                            this->datastyles[dsi].linewidth);
+                                } else if (i == (coords_end-1)) {
+                                    // last line
+                                    this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                            (*this->graphDataCoords[dsi])[i-2],
+                                                            uz,
+                                                            this->datastyles[dsi].linecolour,
+                                                            this->datastyles[dsi].linewidth);
+                                } else {
+                                    this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                           (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
+                                                           uz,
+                                                           this->datastyles[dsi].linecolour,
+                                                           this->datastyles[dsi].linewidth);
+                                }
                             }
                         }
-                    }
+                    } // else line segment is outside axes and we're not to draw it. IDEALLY I'd interpolate to draw the line UP to the axis.
                 }
             }
         }
@@ -1514,6 +1533,8 @@ namespace morph {
         //! A separate fontsize for the axis labels, incase these should be different from the tick labels
         float axislabelfontsize = fontsize;
         // might need tickfontsize and axisfontsize
+        //! If this is true, then draw data lines even where they extend beyond the axes.
+        bool draw_beyond_axes = false;
         //! EITHER Gap from the y axis to the right hand of the y axis tick label text
         //! quads OR from the x axis to the top of the x axis tick label text quads
         float ticklabelgap = 0.05;
