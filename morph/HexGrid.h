@@ -1427,6 +1427,63 @@ namespace morph {
         }
 
         /*!
+         * Resampling function (monochrome).
+         *
+         * \param image_data (input) The monochrome image as a vVector of floats.
+         * \param image_pixelwidth (input) The number of pixels that the image is wide
+         * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
+         * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
+         * \param sigma (input) The sigma for the 2D resampling Gaussian
+         *
+         * \return A new data vVector containing the resampled hex pixel values
+         */
+        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data, const size_t image_pixelwidth,
+                                             const morph::Vector<float, 2>& image_scale,
+                                             const morph::Vector<float, 2>& image_offset,
+                                             const float sigma)
+        {
+            morph::vVector<float> expr_resampled(this->num(), 0.0f);
+
+            size_t image_pixelheight = image_data.size() / image_pixelwidth;
+
+            // distance per pixel in the image.
+            float dist_per_pix_x = image_scale[0] / (image_pixelwidth-1);
+            float dist_per_pix_y = image_scale[1] / (image_pixelheight-1);
+            float half_width = image_scale[0] * 0.5f;
+            float half_height = image_scale[1] * 0.5f;
+
+            size_t csz = image_data.size();
+            float a = 1.0f/(2.0f * sigma);
+            float w = 0.0f;
+            float expr = 0.0f;
+            size_t idx_x = 0; size_t idx_y = 0;
+            float posn_x = 0.0f; float posn_y = 0.0f;
+            float d_x = 0.0f; float d_y = 0.0f;
+
+            for (auto h : this->hexen) {
+                expr = 0.0f;
+#pragma omp parallel for reduction(+:expr)
+                for (unsigned int i = 0; i < csz; ++i) {
+                    // Get x/y pixel coords:
+                    idx_x = i % image_pixelwidth;
+                    idx_y = image_pixelheight - (i / image_pixelheight);
+                    // Get the coordinates of the pixel at index i:
+                    posn_x = (idx_x * dist_per_pix_x) - half_width + image_offset[0];
+                    posn_y = (idx_y * dist_per_pix_y) - half_height + image_offset[1];
+                    // Distance from input pixel to output hex:
+                    d_x = h.x - posn_x;
+                    d_y = h.y - posn_y;
+                    // Compute contributions to each hex pixel, using a 2D (circular) Gaussian
+                    w = std::exp ( - ( (a * d_x * d_x) + (a * d_y * d_y) ) );
+                    expr += w * image_data[i];
+                }
+                expr_resampled[h.vi] = expr;
+            }
+
+            return expr_resampled;
+        }
+
+        /*!
          * What shape domain to set? Set this to the non-default BEFORE calling
          * HexGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
          * is applied.
