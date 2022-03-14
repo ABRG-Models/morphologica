@@ -458,8 +458,7 @@ namespace morph {
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
-            S rtn = *themax;
-            return rtn;
+            return themax == this->end() ? S{0} : *themax;
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
@@ -474,8 +473,7 @@ namespace morph {
         S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
-            S rtn = *themin;
-            return rtn;
+            return themin == this->end() ? S{0} : *themin;
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
