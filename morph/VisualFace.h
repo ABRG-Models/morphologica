@@ -75,7 +75,7 @@ asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_d
 
 #elif defined __WIN__
 
-# include "verafonts.h" // To be renamed or add dvsansfonts.h.
+# include "verafonts.h" // Inclues vera fonts AND DejaVu fonts.
 # include <cstdlib>
 
 #elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
