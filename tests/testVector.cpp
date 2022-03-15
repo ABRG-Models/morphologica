@@ -152,5 +152,12 @@ int main() {
     Vector<Vector<double, 2>, 3> VdV = { VV1, VV2, VV3 };
     std::cout<< "VdV.mean() = " << VdV.mean() << std::endl;
 
+    Vector<float, 2> v_continuous = { 0.5f, 0.6f };
+    Vector<size_t , 2> v_discrete = { 1, 2 };
+    Vector<float, 2> v_cd = v_continuous * v_discrete;
+    std::cout << "You can do Vector<floattype,N> = Vector<floattype,N> * Vector<inttype,N>: " << v_cd << std::endl;
+    // Can't do this though:
+    //  Vector<float, 2> v_dc = v_discrete * v_continuous; // will throw compiler error
+
     return rtn;
 }
