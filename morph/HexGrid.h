@@ -1435,51 +1435,39 @@ namespace morph {
          * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
          * \param sigma (input) The sigma for the 2D resampling Gaussian
          *
-         * \return A new data vVector containing the resampled hex pixel values
+         * \return A new data vVector containing the resampled (and renormalised) hex pixel values
          */
-        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data, const size_t image_pixelwidth,
+        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data,
+                                             const unsigned int image_pixelwidth,
                                              const morph::Vector<float, 2>& image_scale,
-                                             const morph::Vector<float, 2>& image_offset,
-                                             const float sigma)
+                                             const morph::Vector<float, 2>& image_offset)
         {
+            unsigned int csz = image_data.size();
+            morph::Vector<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
+            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
+            morph::Vector<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
+            morph::Vector<float, 2> half_scale = image_scale * 0.5f;
+            morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+
             morph::vVector<float> expr_resampled(this->num(), 0.0f);
-
-            size_t image_pixelheight = image_data.size() / image_pixelwidth;
-
-            // distance per pixel in the image.
-            float dist_per_pix_x = image_scale[0] / (image_pixelwidth-1);
-            float dist_per_pix_y = image_scale[1] / (image_pixelheight-1);
-            float half_width = image_scale[0] * 0.5f;
-            float half_height = image_scale[1] * 0.5f;
-
-            size_t csz = image_data.size();
-            float a = 1.0f/(2.0f * sigma);
-            float w = 0.0f;
-            float expr = 0.0f;
-            size_t idx_x = 0; size_t idx_y = 0;
-            float posn_x = 0.0f; float posn_y = 0.0f;
-            float d_x = 0.0f; float d_y = 0.0f;
-
             for (auto h : this->hexen) {
-                expr = 0.0f;
+                float expr = 0.0f;
 #pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
-                    idx_x = i % image_pixelwidth;
-                    idx_y = image_pixelheight - (i / image_pixelheight);
+                    morph::Vector<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
                     // Get the coordinates of the pixel at index i:
-                    posn_x = (idx_x * dist_per_pix_x) - half_width + image_offset[0];
-                    posn_y = (idx_y * dist_per_pix_y) - half_height + image_offset[1];
+                    morph::Vector<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
                     // Distance from input pixel to output hex:
-                    d_x = h.x - posn_x;
-                    d_y = h.y - posn_y;
-                    // Compute contributions to each hex pixel, using a 2D (circular) Gaussian
-                    w = std::exp ( - ( (a * d_x * d_x) + (a * d_y * d_y) ) );
-                    expr += w * image_data[i];
+                    float d_x = h.x - posn[0];
+                    float d_y = h.y - posn[1];
+                    // Compute contributions to each hex pixel, using 2D (elliptical) Gaussian
+                    expr += std::exp ( - ( (params[0] * d_x * d_x) + (params[1] * d_y * d_y) ) ) * image_data[i];
                 }
                 expr_resampled[h.vi] = expr;
             }
 
+            expr_resampled /= expr_resampled.max(); // renormalise result
             return expr_resampled;
         }
 
