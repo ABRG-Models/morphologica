@@ -393,10 +393,15 @@ namespace morph {
 
                     // load character glyph
                     if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-                        std::cout << "ERROR::FREETYTPE: Failed to load Glyph " << c << std::endl;
+#ifdef WIN32
+                        // VisualStudio's compiler won't stream a char32_t
+                        std::cout << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
+#else
+                        // Other platforms will have a go:
+                        std::cout << "ERROR::FREETYPE: Failed to load Glyph " << c << std::endl;
+#endif
                         continue;
                     }
-                    //std::cout << "INFO::FREETYTPE: Loaded Glyph " << c << std::endl;
 
                     // generate texture
                     unsigned int texture;
