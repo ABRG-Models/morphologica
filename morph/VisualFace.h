@@ -393,13 +393,8 @@ namespace morph {
 
                     // load character glyph
                     if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-#ifdef WIN32
-                        // VisualStudio's compiler won't stream a char32_t
-                        std::cout << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
-#else
-                        // Other platforms will have a go:
-                        std::cout << "ERROR::FREETYPE: Failed to load Glyph " << c << std::endl;
-#endif
+                        std::cout << "ERROR::FREETYPE: Failed to load Glyph for Unicode 0x"
+                                  << std::hex << static_cast<unsigned int>(c) << std::dec << std::endl;
                         continue;
                     }
 
