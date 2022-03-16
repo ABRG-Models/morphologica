@@ -1448,6 +1448,7 @@ namespace morph {
             morph::Vector<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
             morph::Vector<float, 2> half_scale = image_scale * 0.5f;
             morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::Vector<float, 2> threesig = 3.0f * dist_per_pix;
 
             morph::vVector<float> expr_resampled(this->num(), 0.0f);
             for (auto h : this->hexen) {
@@ -1462,7 +1463,9 @@ namespace morph {
                     float d_x = h.x - posn[0];
                     float d_y = h.y - posn[1];
                     // Compute contributions to each hex pixel, using 2D (elliptical) Gaussian
-                    expr += std::exp ( - ( (params[0] * d_x * d_x) + (params[1] * d_y * d_y) ) ) * image_data[i];
+                    if (d_x < threesig[0] && d_y < threesig[1]) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * d_x * d_x) + (params[1] * d_y * d_y) ) ) * image_data[i];
+                    }
                 }
                 expr_resampled[h.vi] = expr;
             }
