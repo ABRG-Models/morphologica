@@ -501,6 +501,9 @@ namespace morph {
         //! Set to true when the program should end
         bool readyToFinish = false;
 
+        //! Set true to disable the 'X' button on the Window from exiting the program
+        bool preventWindowCloseWithButton = false;
+
         /*
          * User-settable projection values for the near clipping distance, the far
          * clipping distance and the field of view of the camera.
@@ -769,6 +772,7 @@ namespace morph {
             glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
             glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
             glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
+            glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
 
             glfwMakeContextCurrent (this->window);
@@ -1136,6 +1140,11 @@ namespace morph {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
             self->window_size_callback (_window, width, height);
         }
+        static void window_close_callback_dispatch (GLFWwindow* _window)
+        {
+            Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
+            self->window_close_callback (_window);
+        }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
@@ -1465,6 +1474,16 @@ namespace morph {
             this->window_w = width;
             this->window_h = height;
             this->render();
+        }
+
+        virtual void window_close_callback (GLFWwindow* _window)
+        {
+            if (this->preventWindowCloseWithButton == false) {
+                std::cout << "User requested exit\n";
+                this->readyToFinish = true;
+            } else {
+                std::cout << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
+            }
         }
 
         virtual void scroll_callback (GLFWwindow* _window, double xoffset, double yoffset)
