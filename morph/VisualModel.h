@@ -181,7 +181,7 @@ namespace morph {
             this->texts.clear();
         }
 
-        //! Clear out the model
+        //! Clear out the model, *including text models*
         void clear()
         {
             this->vertexPositions.clear();
@@ -201,7 +201,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
-            this->clearTexts();
+            // NB: Do NOT call clearTexts() here! We're only updating the model itself.
             this->idx = 0;
             this->initializeVertices();
             this->reinit_buffers();
