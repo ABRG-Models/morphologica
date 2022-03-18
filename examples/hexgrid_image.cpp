@@ -29,7 +29,8 @@ int main()
     cv::Mat img = cv::imread (fn.c_str(), cv::IMREAD_GRAYSCALE);
     img.convertTo (img, CV_32F);
     morph::vVector<float> image_data;
-    image_data.assign((float*)img.data, (float*)img.data + img.total()*img.channels());
+    image_data.assign(reinterpret_cast<float*>(img.data),
+                      reinterpret_cast<float*>(img.data) + img.total() * img.channels());
     image_data /= 255.0f;
     // This controls how large the photo will be on the HexGrid
     morph::Vector<float,2> image_scale = {1.8f, 1.8f};
