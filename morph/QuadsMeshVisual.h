@@ -79,7 +79,7 @@ namespace morph {
         {
             Vector<float> offset_vec;
             offset_vec.set_from(_offset);
-            QuadsVisual(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
+            QuadsVisual<Flt>(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
         ~QuadsMeshVisual() { delete this->dataCoords; }
