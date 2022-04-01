@@ -208,12 +208,6 @@ namespace morph
                 g_id = id_attr->value();
             } // else failed to get g_id
 
-#if 0
-            if (g_id.empty()) {
-                throw std::runtime_error ("Found a <g> element without an id attribute (i.e. a layer without a name)");
-            }
-#endif
-
             // Recursively search down any number of levels until a <path>
             // node is found. Read it, then continue searching.
             rapidxml::xml_node<>* path_node = g_node;
@@ -386,12 +380,6 @@ namespace morph
                 this->lineToMillimetres.second = dl > 0.0f ? mmf/dl : 1.0f;
             }
         }
-
-        /*!
-         * Read a <path> element, assuming that it contains an implicit set of lines encoded as
-         * moveto commands.
-         */
-        float readPathAsLine (rapidxml::xml_node<>* path_node);
 
         /*!
          * Split up a string of SVG command numbers. These are delimited either by a comma, a space
