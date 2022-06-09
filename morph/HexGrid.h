@@ -1451,23 +1451,24 @@ namespace morph {
             morph::Vector<float, 2> threesig = 3.0f * dist_per_pix;
 
             morph::vVector<float> expr_resampled(this->num(), 0.0f);
-            for (auto h : this->hexen) {
+#pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
+            for (size_t xi = 0; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
-#pragma omp parallel for reduction(+:expr)
+//#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
                     morph::Vector<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
                     // Get the coordinates of the pixel at index i:
                     morph::Vector<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
                     // Distance from input pixel to output hex:
-                    float d_x = h.x - posn[0];
-                    float d_y = h.y - posn[1];
+                    float _d_x = this->d_x[xi] - posn[0];
+                    float _d_y = this->d_y[xi] - posn[1];
                     // Compute contributions to each hex pixel, using 2D (elliptical) Gaussian
-                    if (d_x < threesig[0] && d_y < threesig[1]) { // Testing for distance gives slight speedup
-                        expr += std::exp ( - ( (params[0] * d_x * d_x) + (params[1] * d_y * d_y) ) ) * image_data[i];
+                    if (_d_x < threesig[0] && _d_y < threesig[1]) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * _d_x * _d_x) + (params[1] * _d_y * _d_y) ) ) * image_data[i];
                     }
                 }
-                expr_resampled[h.vi] = expr;
+                expr_resampled[xi] = expr;
             }
 
             expr_resampled /= expr_resampled.max(); // renormalise result
