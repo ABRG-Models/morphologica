@@ -784,46 +784,12 @@ namespace morph {
          * \param y height
          * \param c centre argument so that the rectangle centre is offset from the coordinate origin
          * \return A vector of the coordinates of points on the generated rectangle
-         * JMB correction because the increments from row to row (y direction) are not the
-         * same as those between neighbouring hexes in the same row the correction factor is
-         * cos(pi/6)
          */
         std::vector<BezCoord<float>> rectangleCompute (const float x, const float y,
                                                        const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            float dxfraction = this->d/2.0f;
-            float dyfraction = (this->d/2.0f)*morph::SQRT_OF_3_OVER_2_F;
-            int ixwidth = floor(x / dxfraction);
-            int iywidth = floor(y / dyfraction);
-            float xhalf = x/2.0f;
-            float yhalf = y/2.0f;
-            float xoff = c.first;
-            float yoff = c.second;
-            for (int j=0; j<iywidth; j++) {
-                float xv = -xhalf;
-                float yv = j*dyfraction - yhalf;
-                std::cout << " left x " << xv << " y " << yv << std::endl;
-                bpoints.push_back(std::make_pair(xv+xoff,yv+yoff));
-            }
-            for (int i=0; i<ixwidth; i++) {
-                float xv = i*dxfraction - xhalf;
-                float yv = yhalf;
-                std::cout << " upper x " << xv << " y " << yv << std::endl;
-                bpoints.push_back(std::make_pair(xv+xoff,yv+yoff));
-            }
-            for (int j=0; j<iywidth; j++) {
-                float xv = xhalf;
-                float yv = -j*dyfraction + yhalf;
-                std::cout << " right x " << xv << " y " << yv << std::endl;
-                bpoints.push_back(std::make_pair(xv+xoff,yv+yoff));
-            }
-            for (int i=0; i<ixwidth; i++) {
-                float xv = -i*dxfraction + xhalf;
-                float yv =  -yhalf;
-                std::cout << " bottom x " << xv << " y " << yv << std::endl;
-                bpoints.push_back(std::make_pair(xv+xoff,yv+yoff));
-            }
+            throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
             return bpoints;
         }
 
@@ -838,34 +804,7 @@ namespace morph {
                                                            const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            float v = (this->d*morph::SQRT_OF_3_F)/2.0f;
-            float deltax_g = this->d/2.0f;
-            float deltay_g = v;
-            float deltax_r = this->d;
-            float xwidth = r * this->d;
-            float ywidth = g * v;
-            float xoff = c.first;
-            float yoff = c.second;
-            for (int gi=-g; gi < g; gi++) {
-                float x = gi*deltax_g - xwidth;
-                float y = gi*deltay_g;
-                bpoints.push_back(std::make_pair(x+xoff,y+yoff));
-            }
-            for (int ri = -r; ri < r; ri++) {
-                float x = ri*deltax_r + xwidth/2.0;
-                float y  = ywidth;
-                bpoints.push_back(std::make_pair(x+xoff,y+yoff));
-            }
-            for (int gi = g; gi > -g; gi--) {
-                float x = gi*deltax_g + xwidth;
-                float y = gi*deltay_g;
-                bpoints.push_back(std::make_pair(x+xoff,y+yoff));
-            }
-            for (int ri = r; ri > -r; ri--) {
-                float x = ri*deltax_r - xwidth / 2.0;
-                float y = -ywidth;
-                bpoints.push_back(std::make_pair(x+xoff,y+yoff));
-            }
+            throw std::runtime_error ("HexGrid::parallelogramCompute: Implement me");
             return bpoints;
         }
 
@@ -969,9 +908,6 @@ namespace morph {
                                        const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, c);
-            for (unsigned int i=0; i<bpoints.size(); i++) {
-                std::cout << bpoints[i].x() << " , " << bpoints[i].y() << std::endl;
-            }
             this->setBoundary (bpoints, offset);
         }
 
@@ -1051,7 +987,6 @@ namespace morph {
             std::array<int, 6> extents = this->findBoundaryExtents();
             float xmin = this->d * float(extents[0]);
             float xmax = this->d * float(extents[1]);
-            std::cout << " left ri " << extents[0] << " right ri " << extents[1] << std::endl;
             return (xmax - xmin);
         }
 
@@ -1063,7 +998,6 @@ namespace morph {
             std::array<int, 6> extents = this->findBoundaryExtents();
             float ymin = this->v * float(extents[2]);
             float ymax = this->v * float(extents[3]);
-            std::cout << std::endl << " bottom gi " << extents[2] << " top gi " << extents[3] << std::endl;
             return (ymax - ymin);
         }
 
@@ -1210,7 +1144,7 @@ namespace morph {
                     ++hi;
                 }
                 // hi now on bottom row; so travel west
-                while (hi->has_nw() == true) { hi = hi->nw;}
+                while (hi->has_nw() == true) { hi = hi->nw; }
 
                 // hi should now be the bottom left hex.
                 blh = hi;
@@ -1238,6 +1172,7 @@ namespace morph {
                     hi = hi->ne;
 
                     this->d_push_back (hi);
+
                     if (hi->has_ne() == false) {
                         if (hi->gi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
@@ -1260,8 +1195,6 @@ namespace morph {
             } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
 
                 this->d_push_back (hi); // Push back the first one, which is guaranteed to have a NE
-                int rowCount=0;
-                int colCount=0;
                 while (hi->has_ne() == true) {
 
                     // Step to new hex to the E
@@ -1272,16 +1205,12 @@ namespace morph {
                         if (hi->gi == extnts[3]) {
                             // on end of top row and no neighbour east, so finished; push back and break
                             this->d_push_back (hi);
-                            rowCount++;
-                            colCount++;
                             break;
                         } else {
                             // On end of non-top row, so push back...
                             this->d_push_back (hi);
                             // do the 'carriage return'...
                             hi = blh->nne;
-                            colCount++;
-                            rowCount=0;
                             // And push that back...
                             this->d_push_back (hi);
                             // Update the new 'start of last row' iterator
@@ -1290,11 +1219,8 @@ namespace morph {
                     } else {
                         // New hex does have neighbour east, so just push it back.
                         this->d_push_back (hi);
-                        rowCount++;
                     }
                 }
-                //JMB I am writing these out to compared with rowlen and numrows
-                std::cout << " in populate_vectors Parallelogram colCount(rowlen) " << colCount << " rowCount(numrows) " << rowCount << std::endl;
 
             } else { // Hexagon or Boundary
 
@@ -1500,98 +1426,55 @@ namespace morph {
             }
         }
 
-
         /*!
-         * JMB Using this HexGrid as the domain, determine the indicies of
-         * the domain which corrrespond to the indices of the convolution kernel
-         * which exists on another HexGrid, \a
-         * kernelgrid. Return the result in \a convIndex.
+         * Resampling function (monochrome).
+         *
+         * \param image_data (input) The monochrome image as a vVector of floats.
+         * \param image_pixelwidth (input) The number of pixels that the image is wide
+         * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
+         * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
+         * \param sigma (input) The sigma for the 2D resampling Gaussian
+         *
+         * \return A new data vVector containing the resampled (and renormalised) hex pixel values
          */
-        void convolveIndex (const HexGrid& kernelgrid, std::vector<std::vector<int>>& convIndex)
+        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data,
+                                             const unsigned int image_pixelwidth,
+                                             const morph::Vector<float, 2>& image_scale,
+                                             const morph::Vector<float, 2>& image_offset)
         {
-            /*
-            if (result.size() != this->hexen.size()) {
-                throw std::runtime_error ("The result vector is not the same size as the HexGrid.");
-            }
-            if (result.size() != data.size()) {
-                throw std::runtime_error ("The data vector is not the same size as the HexGrid.");
-            }
-            if (kernelgrid.getd() != this->d) {
-                throw std::runtime_error ("The kernel HexGrid must have same d as this HexGrid to carry out convolution.");
-            }
-            if (&data == &result) {
-                throw std::runtime_error ("Pass in separate memory for the result.");
-            }
-            */
-            // For each hex in this HexGrid, compute the vector of indices for convolution with the kernel
-            std::list<Hex>::iterator hi = this->hexen.begin();
-            for (; hi != this->hexen.end(); ++hi) {
-                // For each kernel hex, sum up.
-                for (auto kh : kernelgrid.hexen) {
-                    std::list<Hex>::iterator dhi = hi;
-                    // Kernel hex coords r,g are: kh.ri, kh.gi, which may be (are EXPECTED to be) +ve or -ve
-                    //
-                    // Origin hex coords are h.ri, h.gi
-                    //
-                    // To get the hex whose data we want to multiply with kh's value,
-                    // can go via neighbour relations, but must be prepared to take a
-                    // variable path because going directly in r direction then directly
-                    // in g direction could take us temporarily outside the boundary of
-                    // the HexGrid.
-                    int rr = kh.ri;
-                    int gg = kh.gi;
-                    bool failed = false;
-                    bool finished = false;
-                    while (!finished) {
-                        bool moved = false;
-                        // Try to move in r direction
-                        if (rr > 0) {
-                            if (dhi->has_ne()) {
-                                dhi = dhi->ne;
-                                --rr;
-                                moved = true;
-                            } // Didn't move in +r direction
-                        } else if (rr < 0) {
-                            if (dhi->has_nw()) {
-                                dhi = dhi->nw;
-                                ++rr;
-                                moved = true;
-                            } // Didn't move in -r direction
-                        }
-                        // Try to move in g direction
-                        if (gg > 0) {
-                            if (dhi->has_nne()) {
-                                dhi = dhi->nne;
-                                --gg;
-                                moved = true;
-                            } // Didn't move in +g direction
-                        } else if (gg < 0) {
-                            if (dhi->has_nsw()) {
-                                dhi = dhi->nsw;
-                                ++gg;
-                                moved = true;
-                            } // Didn't move in -g direction
-                        }
+            unsigned int csz = image_data.size();
+            morph::Vector<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
+            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
+            morph::Vector<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
+            morph::Vector<float, 2> half_scale = image_scale * 0.5f;
+            morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::Vector<float, 2> threesig = 3.0f * dist_per_pix;
 
-                        if (rr == 0 && gg == 0) {
-                            finished = true;
-                            break;
-                        }
-
-                        if (!moved) {
-                            // We're stuck; Can't move in r or g direction, so can't add a contribution
-                            failed = true;
-                            break;
-                        }
+            morph::vVector<float> expr_resampled(this->num(), 0.0f);
+#pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
+            for (size_t xi = 0; xi < this->d_x.size(); ++xi) {
+                float expr = 0.0f;
+//#pragma omp parallel for reduction(+:expr)
+                for (unsigned int i = 0; i < csz; ++i) {
+                    // Get x/y pixel coords:
+                    morph::Vector<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
+                    // Get the coordinates of the pixel at index i:
+                    morph::Vector<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
+                    // Distance from input pixel to output hex:
+                    float _d_x = this->d_x[xi] - posn[0];
+                    float _d_y = this->d_y[xi] - posn[1];
+                    // Compute contributions to each hex pixel, using 2D (elliptical) Gaussian
+                    if (_d_x < threesig[0] && _d_y < threesig[1]) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * _d_x * _d_x) + (params[1] * _d_y * _d_y) ) ) * image_data[i];
                     }
+                }
+                expr_resampled[xi] = expr;
+            }
 
-                    if (!failed) {
-                        // add to the index vector the current domain hex
-                          convIndex[hi->vi].push_back(dhi->vi);
-                    }
-                } //end of loop on kernelGrid
-            }//end of loop on domainGrid
-        }//end of convolveIndex
+            expr_resampled /= expr_resampled.max(); // renormalise result
+            return expr_resampled;
+        }
+
         /*!
          * What shape domain to set? Set this to the non-default BEFORE calling
          * HexGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
@@ -2530,9 +2413,7 @@ namespace morph {
 
             if (std::abs(extnts[2]%2) == std::abs(extnts[4]%2)) {
                 // Left most hex is on a parity-matching line to bottom line, no need to add left.
-                std::cout << " left most hex has same parity as bottom row " << std::endl;
             } else {
-                std::cout << " left most hex has opposite parity to bottom row " << std::endl;
                 // Need to add left.
                 if (extnts[2]%2 == 0) {
                     addleft += 1.0f;
@@ -2702,7 +2583,6 @@ namespace morph {
                     }
                 }
             }
-            std::cout << " left val " << limits[0] << " right val " << limits[1] << " bot val " << limits[2] << " top val " << limits[3] << std::endl;
 
             // Now compute the ri and gi values that these xmax/xmin/ymax/ymin correspond to. THIS, if
             // nothing else, should auto-vectorise!  d_ri is the distance moved in ri direction per x, d_gi
@@ -2714,16 +2594,11 @@ namespace morph {
             rtn[2] = (int)(limits[2] / d_gi);
             rtn[3] = (int)(limits[3] / d_gi);
 
-// JMB I had to get rid of this to keep the rectangle as chosen by the constructor call
-// JMB I dont know where the growthbuffers get set, I tried setting them to zero but they must
-// JMB have got reset somewhere else
-            /* Add 'growth buffer'
+            // Add 'growth buffer'
             rtn[0] -= this->d_growthbuffer_horz;
             rtn[1] += this->d_growthbuffer_horz;
             rtn[2] -= this->d_growthbuffer_vert;
             rtn[3] += this->d_growthbuffer_vert;
-            */
-            std::cout << " left ri " << rtn[0] << " right ri " << rtn[1] << " bot gi " << rtn[2] << " top gi " << rtn[3] << " gi leftmost " << rtn[4] << " gi rightmost " << rtn[5] << std::endl;
 
             return rtn;
         }
