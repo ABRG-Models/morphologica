@@ -81,21 +81,21 @@ namespace morph {
                 toffset[0] += this->lengths[0] + this->em;
                 std::cout << "X text offset: " << toffset << std::endl;
                 this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
+                                                            morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->x_label));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
                 this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
+                                                            morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->y_label));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
                 this->texts.push_back (new VisualTextModel (this->tshaderprog,
-                                                            morph::VisualFont::VeraBoldItalic,
+                                                            morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->z_label));
             }
