@@ -91,6 +91,13 @@ if(ARMADILLO_FOUND)
   if(USE_GLEW)
     target_link_libraries(hexgrid_hexdom GLEW::GLEW)
   endif()
+
+  add_executable(unicode_coordaxes unicode_coordaxes.cpp)
+  target_link_libraries(unicode_coordaxes OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(unicode_coordaxes GLEW::GLEW)
+  endif()
+
 endif(ARMADILLO_FOUND)
 
 add_executable(logisticmap logisticmap.cpp)
