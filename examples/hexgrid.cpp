@@ -16,7 +16,7 @@
 int main()
 {
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, ?
+    // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
     morph::Visual v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     // You can set a field of view (in degrees)
     v.fov = 15;
