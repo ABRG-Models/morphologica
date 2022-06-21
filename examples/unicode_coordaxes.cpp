@@ -17,7 +17,7 @@
 #include <morph/unicode.h>
 using morph::unicode;
 
-// Derive Visual to add the extra sfview-specific keyhandling callback
+// Derive Visual to modify the coordinate arrows object in the constructor.
 class MyVisual : public morph::Visual
 {
 public:
