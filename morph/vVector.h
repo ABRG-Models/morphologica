@@ -458,8 +458,7 @@ namespace morph {
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
-            S rtn = *themax;
-            return rtn;
+            return themax == this->end() ? S{0} : *themax;
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
@@ -474,8 +473,7 @@ namespace morph {
         S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
-            S rtn = *themin;
-            return rtn;
+            return themin == this->end() ? S{0} : *themin;
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
@@ -707,6 +705,28 @@ namespace morph {
         }
         //! Replace each element with its own log
         void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
+
+        //! Sine
+        vVector<S> sin() const
+        {
+            vVector<S> rtn(this->size());
+            auto sin_element = [](S coord) { return std::sin(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), sin_element);
+            return rtn;
+        }
+        //! Replace each element with its own sine
+        void sin_inplace() { for (auto& i : *this) { i = std::sin(i); } }
+
+        //! Cosine
+        vVector<S> cos() const
+        {
+            vVector<S> rtn(this->size());
+            auto cos_element = [](S coord) { return std::cos(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), cos_element);
+            return rtn;
+        }
+        //! Replace each element with its own cosine
+        void cos_inplace() { for (auto& i : *this) { i = std::cos(i); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector

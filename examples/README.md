@@ -112,6 +112,12 @@ Example HexGridVisual
 
 ![Screenshot of hexgrid.cpp showing a sinusoidal landscape in the jet colour map](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/hexgrid.png?raw=true)
 
+### hexgrid_image
+
+Creates a HexGrid, then uses `HexGrid::resampleImage` to load a picture.
+
+![Screenshot of hexgrid_image.cpp showing a resampled image of a touring bicycle](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/hexgrid_image.png?raw=true)
+
 ### cartgrid.cpp
 
 Example Cartesian grid (CartGridVisual)

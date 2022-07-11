@@ -179,10 +179,10 @@ int main (int argc, char **argv)
     Visual v1 (win_width, win_height, "Schnakenberg RD");
     // Set a dark blue background (black is the default). This value has the order
     // 'RGBA', though the A(alpha) makes no difference.
-    v1.bgcolour = {0.0f, 0.0f, 0.2f, 1.0f};
+    v1.bgcolour = {conf.getFloat("bgR", 0.2f), conf.getFloat("bgG", 0.2f), conf.getFloat("bgB", 0.2f), 1.0f};
     // You can tweak the near and far clipping planes
     v1.zNear = 0.001;
-    v1.zFar = 20;
+    v1.zFar = 10000;
     // And the field of view of the visual scene.
     v1.fov = 45;
     // You can lock movement of the scene
@@ -203,13 +203,14 @@ int main (int argc, char **argv)
      */
     RD_Schnakenberg<FLT> RD;
 
-    RD.svgpath = ""; // We'll do an elliptical boundary, so set svgpath empty
+    RD.svgpath = conf.getString ("svgpath", ""); // We'll do an elliptical boundary if svgpath is empty
     RD.ellipse_a = conf.getDouble ("ellipse_a", 0.8);
     RD.ellipse_b = conf.getDouble ("ellipse_b", 0.6);
     RD.logpath = logpath;
 
     // Control the size of the hexes, and therefore the number of hexes in the grid
     RD.hextohex_d = conf.getFloat ("hextohex_d", 0.01f);
+    RD.hexspan = conf.getFloat ("hexspan", 4.0f);
 
     // Boundary fall-off distance, this is used to ensure that initial noise in the
     // system rolls off to zero at the boundary.
@@ -272,34 +273,36 @@ int main (int argc, char **argv)
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
+    morph::ColourMapType cmt = morph::ColourMap<FLT>::strToColourMapType (conf.getString ("colourmap", "Jet"));
+
+    // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.
+    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    hgv1->setScalarData (&RD.A);
     // Z position scaling - how hilly/bumpy the visual will be.
-    Scale<FLT, float> zscale; zscale.setParams (0.2f, 0.0f);
+    hgv1->zScale.setParams (0.2f, 0.0f);
     // The second is the colour scaling. Set this to autoscale.
-    Scale<FLT, float> cscale; cscale.do_autoscale = true;
-    unsigned int Agrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
-                                                                    v1.tshaderprog,
-                                                                    RD.hg,
-                                                                    spatOff,
-                                                                    &(RD.A),
-                                                                    zscale,
-                                                                    cscale,
-                                                                    morph::ColourMapType::Jet));
-    v1.getVisualModel(Agrid)->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv1->colourScale.do_autoscale = true;
+    hgv1->cm.setType (cmt);
+    //hgv1->hexVisMode = morph::HexVisMode::Triangles;
+    hgv1->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    // "finalize" is required before adding the HexGridVisual to the morph::Visual.
+    hgv1->finalize();
+    v1.addVisualModel (hgv1);
+
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    unsigned int Bgrid = v1.addVisualModel (new HexGridVisual<FLT> (v1.shaderprog,
-                                                                    v1.tshaderprog,
-                                                                    RD.hg,
-                                                                    spatOff,
-                                                                    &(RD.B),
-                                                                    zscale,
-                                                                    cscale,
-                                                                    morph::ColourMapType::Jet));
-    v1.getVisualModel(Bgrid)->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
-                                        morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    hgv2->setScalarData (&RD.B);
+    hgv2->zScale.setParams (0.2f, 0.0f);
+    hgv2->colourScale.do_autoscale = true;
+    hgv2->cm.setType (cmt);
+    hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
+                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+    hgv2->finalize();
+    v1.addVisualModel (hgv2);
 #endif
 
     // Start the loop
@@ -312,13 +315,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            VisualDataModel<FLT>* avm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Agrid));
-            avm->updateData (&(RD.A));
-            avm->clearAutoscaleColour();
+            hgv1->updateData (&(RD.A));
+            hgv1->clearAutoscaleColour();
 
-            VisualDataModel<FLT>* bvm = static_cast<VisualDataModel<FLT>*>(v1.getVisualModel (Bgrid));
-            bvm->updateData (&(RD.B));
-            bvm->clearAutoscaleColour();
+            hgv2->updateData (&(RD.B));
+            hgv2->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {

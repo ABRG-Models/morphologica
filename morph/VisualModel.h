@@ -103,6 +103,7 @@ namespace morph {
                 glDeleteBuffers (numVBO, this->vbos);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
                 delete[] this->vbos;
+                glDeleteVertexArrays (1, &this->vao);
             }
         }
 
@@ -180,7 +181,7 @@ namespace morph {
             this->texts.clear();
         }
 
-        //! Clear out the model
+        //! Clear out the model, *including text models*
         void clear()
         {
             this->vertexPositions.clear();
@@ -200,6 +201,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
+            // NB: Do NOT call clearTexts() here! We're only updating the model itself.
             this->idx = 0;
             this->initializeVertices();
             this->reinit_buffers();

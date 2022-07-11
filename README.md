@@ -70,7 +70,7 @@ import numpy as np
 # Create some data for the x axis
 x = np.linspace(-0.5, 0.8, 14)
 # Set a graph up of y = x^3
-plt.plot (x, np.power(x,3), '-o')
+plt.plot(x, np.power(x,3), '-o')
 # Add labels
 plt.title('Made with Python/numpy/matplotlib')
 plt.xlabel('x')
@@ -177,6 +177,9 @@ For more info on how to set up CMake files to build a program using morphologica
 ## Credits
 
 Authorship of morphologica code is given in each file. Copyright in
-the software is owned by the authors. morphologica is distributed
-under the terms of the GNU General Public License, version 3 (see
+the software is owned by the authors.
+
+morphologica is made possible by a number of third party projects whose source code is included in this repository. These include [nlohmann::json](https://github.com/nlohmann/json), [lodepng](https://github.com/lvandeve/lodepng), [rapidxml](http://rapidxml.sourceforge.net/) and [incbin](https://github.com/graphitemaster/incbin). Thanks to the authors of these projects!
+
+morphologica is distributed under the terms of the Apache License, version 2 (see
 [LICENSE.txt](https://github.com/ABRG-Models/morphologica/blob/main/LICENSE.txt)).

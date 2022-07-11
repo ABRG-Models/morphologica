@@ -25,10 +25,10 @@ alongside your simulation.
 
 This directory contains a complete example. After you have compiled and
 installed morphologica, you should be able to change directory into
-schnakenberg, create a build directory and carry out a cmake build
+schnakenberg, create a build directory and carry out a cmake build:
 
 ```bash
-cd morphologica/examples/schakenberg
+cd morphologica/standalone_examples/schakenberg
 mkdir build
 cd build
 cmake ..
@@ -50,11 +50,11 @@ classes that Morphologica makes available. It demonstrates:
 * The morph::Tools class, which contains a collection of static
   utility functions.
 
-Run it as follows (I'm assuming you already built morphologica and then
-ran through the build instructions above):
+Run it as follows:
 
 ```bash
-./build/examples/schnakenberg ./examples/schnakenberg.json
+# The paths you use will depend on your current working directory:
+./standalone_examples/build/schnakenberg ./standalone_examples/schnakenberg/schnakenberg.json
 ```
 
 You can interact with the window using your mouse. For some help
@@ -71,7 +71,7 @@ use any OpenMP pragmas for parallel execution, it shows how to write
 the CMakeLists.txt *without* OpenMP.
 
 ```bash
-cd morphologica/examples/neuralnet
+cd morphologica/standalone_examples/neuralnet
 mkdir build
 cd build
 cmake ..
@@ -92,7 +92,7 @@ the morph::recurrentnet namespace in RecurrentNetwork.h and
 RecurrentNetworkModel.h.
 
 ```bash
-cd morphologica/examples/recurrentnet
+cd morphologica/standalone_examples/recurrentnet
 mkdir build
 cd build
 cmake ..

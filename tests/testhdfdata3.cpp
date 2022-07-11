@@ -77,54 +77,6 @@ int main()
             cout << "Coordinate: (" << va3[i][0] << "," << va3[i][1] << "," << va3[i][2] << ")" << endl;
         }
     }
-#if 0
-    // Test the saving of cv::Points
-    {
-        HdfData data("test3.h5");
-
-        cv::Point p;
-        p.x = 1;
-        p.y = 45;
-        data.add_contained_vals ("/Point_i", p);
-
-        cv::Point2d pd;
-        pd.x = 7.6;
-        pd.y = 4.5;
-        data.add_contained_vals ("/Point_d", pd);
-
-        cv::Point2f pf;
-        pf.x = 1.1f;
-        pf.y = 3.3f;
-        data.add_contained_vals ("/Point_f", pf);
-    }
-
-    // Save and retrieve a container of cv::Points
-    {
-        HdfData data("testvecpoints.h5");
-        std::deque<cv::Point2i> vp;
-        vp.push_back (cv::Point2i(1,2));
-        vp.push_back (cv::Point2i(3,5));
-        vp.push_back (cv::Point2i(300,50));
-        data.add_contained_vals ("/vecpoints_i", vp);
-        std::deque<cv::Point2d> vpd;
-        vpd.push_back (cv::Point2d(1,2));
-        vpd.push_back (cv::Point2d(3,5));
-        vpd.push_back (cv::Point2d(300,50));
-        data.add_contained_vals ("/vecpoints_d", vpd);
-        std::deque<cv::Point2f> vpf;
-        vpf.push_back (cv::Point2f(1,2));
-        vpf.push_back (cv::Point2f(3,5));
-        vpf.push_back (cv::Point2f(300,50));
-        data.add_contained_vals ("/vecpoints_f", vpf);
-    }
-
-    {
-        HdfData data("testvecpoints.h5", true);
-        std::deque<cv::Point2d> vpd;
-        data.read_contained_vals("/vecpoints_d", vpd);
-        cout << "vpd[0]: " << vpd[0] << endl;
-    }
-#endif
 
     // Save and retrieve a container of arrays
     {

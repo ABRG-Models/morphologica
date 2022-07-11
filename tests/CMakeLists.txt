@@ -75,6 +75,7 @@ if(ARMADILLO_FOUND)
     target_compile_definitions(${TARGETTEST1_8} PUBLIC FLT=double)
     target_link_libraries(${TARGETTEST1_8} ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${OpenCV_LIBS})
     add_test(testbezderiv3 ${TARGETTEST1_8})
+
   endif()
 
   # Test two curves connected together
@@ -141,6 +142,13 @@ if(HDF5_FOUND)
   target_compile_definitions(testhdfdata4f PUBLIC FLT=float)
   target_link_libraries(testhdfdata4f ${HDF5_C_LIBRARIES})
   add_test(testhdfdata4f testhdfdata4f)
+
+  if(${OpenCV_FOUND})
+    add_executable(testhdfdata5f testhdfdata5.cpp)
+    target_compile_definitions(testhdfdata5f PUBLIC FLT=float )
+    target_link_libraries(testhdfdata5f ${HDF5_C_LIBRARIES} ${OpenCV_LIBS})
+    add_test(testhdfdata5f testhdfdata5f)
+  endif(${OpenCV_FOUND})
 endif(HDF5_FOUND)
 
 if(${glfw3_FOUND})

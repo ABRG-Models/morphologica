@@ -75,7 +75,7 @@ asm("\t.global ___start_dvsansbi_ttf\n\t.global ___stop_dvsansbi_ttf\n___start_d
 
 #elif defined __WIN__
 
-# include "verafonts.h" // To be renamed or add dvsansfonts.h.
+# include "verafonts.h" // Inclues vera fonts AND DejaVu fonts.
 # include <cstdlib>
 
 #elif defined __WIN__INCBIN // Only for parsing this file with the incbin executable to create verafonts.h
@@ -393,10 +393,10 @@ namespace morph {
 
                     // load character glyph
                     if (FT_Load_Char (this->face, c, FT_LOAD_RENDER)) {
-                        std::cout << "ERROR::FREETYTPE: Failed to load Glyph " << c << std::endl;
+                        std::cout << "ERROR::FREETYPE: Failed to load Glyph for Unicode 0x"
+                                  << std::hex << static_cast<unsigned int>(c) << std::dec << std::endl;
                         continue;
                     }
-                    //std::cout << "INFO::FREETYTPE: Loaded Glyph " << c << std::endl;
 
                     // generate texture
                     unsigned int texture;

@@ -122,6 +122,7 @@ namespace morph {
             if (this->vbos != nullptr) {
                 glDeleteBuffers (numVBO, this->vbos);
                 delete[] this->vbos;
+                glDeleteVertexArrays (1, &this->vao);
             }
         }
 

@@ -1427,6 +1427,55 @@ namespace morph {
         }
 
         /*!
+         * Resampling function (monochrome).
+         *
+         * \param image_data (input) The monochrome image as a vVector of floats.
+         * \param image_pixelwidth (input) The number of pixels that the image is wide
+         * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
+         * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
+         * \param sigma (input) The sigma for the 2D resampling Gaussian
+         *
+         * \return A new data vVector containing the resampled (and renormalised) hex pixel values
+         */
+        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data,
+                                             const unsigned int image_pixelwidth,
+                                             const morph::Vector<float, 2>& image_scale,
+                                             const morph::Vector<float, 2>& image_offset)
+        {
+            unsigned int csz = image_data.size();
+            morph::Vector<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
+            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
+            morph::Vector<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
+            morph::Vector<float, 2> half_scale = image_scale * 0.5f;
+            morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::Vector<float, 2> threesig = 3.0f * dist_per_pix;
+
+            morph::vVector<float> expr_resampled(this->num(), 0.0f);
+#pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
+            for (size_t xi = 0; xi < this->d_x.size(); ++xi) {
+                float expr = 0.0f;
+//#pragma omp parallel for reduction(+:expr)
+                for (unsigned int i = 0; i < csz; ++i) {
+                    // Get x/y pixel coords:
+                    morph::Vector<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
+                    // Get the coordinates of the pixel at index i:
+                    morph::Vector<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
+                    // Distance from input pixel to output hex:
+                    float _d_x = this->d_x[xi] - posn[0];
+                    float _d_y = this->d_y[xi] - posn[1];
+                    // Compute contributions to each hex pixel, using 2D (elliptical) Gaussian
+                    if (_d_x < threesig[0] && _d_y < threesig[1]) { // Testing for distance gives slight speedup
+                        expr += std::exp ( - ( (params[0] * _d_x * _d_x) + (params[1] * _d_y * _d_y) ) ) * image_data[i];
+                    }
+                }
+                expr_resampled[xi] = expr;
+            }
+
+            expr_resampled /= expr_resampled.max(); // renormalise result
+            return expr_resampled;
+        }
+
+        /*!
          * What shape domain to set? Set this to the non-default BEFORE calling
          * HexGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
          * is applied.

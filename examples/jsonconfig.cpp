@@ -14,8 +14,8 @@
 
 int main()
 {
+    // First, create an example JSON file
     std::string jsonfile ("./exampleConfig.json");
-
     std::ofstream f;
     f.open ("./exampleConfig.json", std::ios::out | std::ios::trunc);
     if (!f.is_open()) {
@@ -32,18 +32,24 @@ int main()
       << "}\n";
     f.close();
 
+    // Now read from the example
     morph::Config config(jsonfile);
     if (config.ready) {
 
-        // Single values are easy to read
+        // Single values are easy to read. The first arg matches the name in the example
+        // JSON, the second arg is the default to return if "testbool" is absent.
         const bool testbool = config.getBool ("testbool", false);
         std::cout << "\ntestbool from JSON: " << (testbool ? "true" : "false") << " (expect: true)\n";
+
+        // Get an integer from the config, defaulting to 3 if there's no "testint":
         const int testint = config.getInt ("testint", 3);
         std::cout << "\ntestint from JSON: " << testint << " (expect: 27)\n";
+
+        // Get floating point numbers with getFloat() or getDouble():
         const float testfloat = config.getFloat ("testfloat", 9.8f);
         std::cout << "\ntestfloat from JSON: " << testfloat << " (expect: 7.63)\n";
 
-        // A simple array
+        // A simple array of values:
         const auto testarray = config.get("testarray");
         std::cout << "\nValues of the simple array \"testarray\":\n   [   ";
         for (unsigned int j = 0; j < testarray.size(); ++j) {
