@@ -1,6 +1,5 @@
 #
-# This is an example CMakeLists.txt file to compile a program against
-# libmorphologica (which must already have been built and installed).
+# This is an example CMakeLists.txt file to compile a program against morphologica headers
 #
 
 # cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
@@ -66,13 +65,11 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(jsoncpp REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(Freetype REQUIRED)
 
 # Define collections of includes that have to be made for morphologica
-get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
-set(MORPH_INC_CORE ${JSON_INC_PATH} ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+set(MORPH_INC_CORE ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
 set(MORPH_INC_GL ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
 include_directories(${MORPH_INC_CORE} ${MORPH_INC_GL})
 
@@ -92,7 +89,7 @@ add_executable(recurrentnet recurrentnet.cpp)
 target_compile_definitions(recurrentnet PUBLIC FLT=float COMPILE_PLOTTING)
 
 # Morphologica code requires a number of libraries, collected into 'CORE' and 'GL'.
-set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES} jsoncpp_lib)
+set(MORPH_LIBS_CORE ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES})
 set(MORPH_LIBS_GL ${OpenCV_LIBS} OpenGL::GL Freetype::Freetype glfw)
 
 target_link_libraries(recurrentnet ${MORPH_LIBS_CORE} ${MORPH_LIBS_GL})
