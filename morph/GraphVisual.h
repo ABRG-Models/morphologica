@@ -357,6 +357,14 @@ namespace morph {
             this->setdata (emptyabsc, emptyord, name, axisside);
         }
 
+        //! Prepare an as-yet empty dataset with a specified DatasetStyle.
+        void prepdata (const DatasetStyle& ds)
+        {
+            std::vector<Flt> emptyabsc;
+            std::vector<Flt> emptyord;
+            this->setdata (emptyabsc, emptyord, ds);
+        }
+
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
         void setdata (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data,
@@ -1063,41 +1071,45 @@ namespace morph {
                 y_for_xticks = this->ord1_scale.transform_one (0);
             }
 
-            for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+            if (!this->omit_x_tick_labels) {
+                for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
 
-                // Omit the 0 for 'cross' axes (or maybe shift its position)
-                if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
+                    // Omit the 0 for 'cross' axes (or maybe shift its position)
+                    if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                // Expunge any '0' from 0.123 so that it's .123 and so on.
-                std::string s = this->graphNumberFormat (this->xticks[i]);
+                    // Expunge any '0' from 0.123 so that it's .123 and so on.
+                    std::string s = this->graphNumberFormat (this->xticks[i]);
 
-                // Issue: I need the width of the text ss.str() before I can create the
-                // VisualTextModel, so need a static method like this:
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
-                morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
-                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
-                this->texts.push_back (lbl);
-            }
-            for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
-
-                // Omit the 0 for 'cross' axes (or maybe shift its position)
-                if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
-
-                std::string s = this->graphNumberFormat (this->yticks[i]);
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
-                morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
-                std::array<float, 3> clr = this->axiscolour;
-                if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
-                    clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
+                    // Issue: I need the width of the text ss.str() before I can create the
+                    // VisualTextModel, so need a static method like this:
+                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl->getTextGeometry (s);
+                    this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
+                    morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
+                    lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                    this->texts.push_back (lbl);
                 }
-                lbl->setupText (s, lblpos+this->mv_offset, clr);
-                this->texts.push_back (lbl);
             }
-            if (this->axisstyle == axisstyle::twinax) {
+            if (!this->omit_y_tick_labels) {
+                for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
+
+                    // Omit the 0 for 'cross' axes (or maybe shift its position)
+                    if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
+
+                    std::string s = this->graphNumberFormat (this->yticks[i]);
+                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl->getTextGeometry (s);
+                    this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
+                    morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
+                    std::array<float, 3> clr = this->axiscolour;
+                    if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
+                        clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
+                    }
+                    lbl->setupText (s, lblpos+this->mv_offset, clr);
+                    this->texts.push_back (lbl);
+                }
+            }
+            if (this->axisstyle == axisstyle::twinax && !this->omit_y_tick_labels) {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
@@ -1522,6 +1534,10 @@ namespace morph {
         std::deque<Flt> yticks2;
         //! The positions, along the right hand y axis (in model space) for the yticks2
         std::deque<Flt> ytick_posns2;
+        //! Should the x tick *labels* be omitted?
+        bool omit_x_tick_labels = false;
+        //! Should the y (and y2) tick *labels* be omitted?
+        bool omit_y_tick_labels = false;
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your
