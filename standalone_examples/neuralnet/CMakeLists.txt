@@ -1,6 +1,5 @@
 #
-# This is an example CMakeLists.txt file to compile a program against
-# libmorphologica (which must already have been built and installed).
+# This is an example CMakeLists.txt file to compile a program with morphologica headers
 #
 
 # cmake version 3.1 provides the set(CMAKE_CXX_STANDARD 17) feature
@@ -56,16 +55,15 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# Find the libraries which will be needed.
+# Find the libraries which will be needed. OpenCV is used by Mnist.h
 find_package(OpenCV REQUIRED)
-# Find morphologica to ensure that its headers are available.
-find_package(morphologica REQUIRED)
+
+# We assume that the morphologica tree is 'next to' our .cpp files.
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
 
 # Ensure OpenCV can be accessed
 include_directories(${OpenCV_INCLUDE_DIRS})
-
-# We assume that morphologica got installed in /usr/local. Make sure we can access it:
-include_directories(/usr/local/include)
 
 # 3 executables
 add_executable(ff_small ff_small.cpp)
