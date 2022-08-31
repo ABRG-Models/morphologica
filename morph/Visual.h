@@ -880,7 +880,8 @@ namespace morph {
 
             GLchar* source = new GLchar[len+1];
 
-            fread (source, 1, len, infile);
+            int itemsread = static_cast<int>(fread (source, 1, len, infile));
+            if (itemsread != len) { std::cerr << "Wrong number of items read!\n"; }
             fclose (infile);
 
             source[len] = 0;

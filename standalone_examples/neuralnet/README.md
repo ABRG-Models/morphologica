@@ -10,6 +10,7 @@ achieving a 94% success rate.
 Build in the usual cmake manner:
 
 ```bash
+ln -s path/to/morphologica # makes morphologica headers available
 mkdir build
 cd build
 cmake ..

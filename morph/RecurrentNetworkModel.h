@@ -269,7 +269,7 @@ namespace morph {
                 float tauW = conf.getFloat("tauW",32.0);
                 float tauX = conf.getFloat("tauX",1.0);
                 float tauY = conf.getFloat("tauY",1.0);
-                float weightNudgeSize = conf.getFloat("weightNudgeSize",0.001);
+                //float weightNudgeSize = conf.getFloat("weightNudgeSize",0.001);
                 float divergenceThreshold = conf.getFloat("divergenceThreshold",0.000001);
                 int maxConvergenceSteps = conf.getInt("maxConvergenceSteps",400);
 

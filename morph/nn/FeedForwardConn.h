@@ -70,7 +70,10 @@ namespace morph {
                 this->z.zero();
             }
 
-            //! Input layer has total size M = m1 + m2 +... etc where m1, m2 are the lengths of the elements of ins
+            //! Input layer has total size M = m1 + m2 +... etc where m1, m2 are the
+            //! lengths of the elements of ins. Each vVector<T> element of the outer
+            //! std::vector is a connection from a separate population(or layer) of
+            //! neurons.
             std::vector<morph::vVector<T>*> ins;
             //! Pointer to output layer. Size N.
             morph::vVector<T>* out;
