@@ -21,7 +21,7 @@
 int main (int argc, char** argv)
 {
     // Create a feed-forward network
-    std::vector<unsigned int> layer_spec = {2,5,1};
+    std::vector<unsigned int> layer_spec = {2,3,1};
     morph::nn::FeedForwardNet<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
 
