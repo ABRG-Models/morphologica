@@ -55,12 +55,24 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
+# Tell the program where the morph fonts are, to compile them into the binary
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
+
 # Find the libraries which will be needed. OpenCV is used by Mnist.h
 find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+set(MORPH_INC_GL ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
+include_directories(BEFORE ${MORPH_INC_GL})
 
 # We assume that the morphologica tree is 'next to' our .cpp files.
 set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
 include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
+
+set(MORPH_LIBS_GL OpenGL::GL Freetype::Freetype glfw)
 
 # Ensure OpenCV can be accessed
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -69,6 +81,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 add_executable(ff_small ff_small.cpp)
 add_executable(ff_mnist ff_mnist.cpp)
 add_executable(ff_debug ff_debug.cpp)
+# New! The XOR problem, solved with a very small net
+add_executable(ff_xor ff_xor.cpp)
+target_link_libraries(ff_xor ${MORPH_LIBS_GL})
 
 # All the linking is set up here. Only header-only morph includes are used.
 target_link_libraries(ff_small ${OpenCV_LIBS})
