@@ -42,7 +42,7 @@ public:
         // For each connection layer, draw lines, with colours indicating weight?
 
         // Draw neurons in a pattern; this position is updated as each is drawn.
-        morph::Vector<float,3> nloc = {0,0,0};
+        morph::Vector<float,3> nloc = {0,0,0}; // nloc: "neuron location"
         std::array<float,3> clr = {1,0,0};
 
         // Starting locations for each set of neurons, to help draw connection lines
@@ -80,7 +80,7 @@ public:
 
         // Connections. There should be neurons.size()-1 connection layers:
         // std::list<morph::nn::FeedForwardConn<T>> connections;
-        // Connection lines
+        // Connection lines from "neuron location" to "neuron location 2" (nloc2)
         float min_weight = -1;
         float max_weight = 1;
         s.compute_autoscale (min_weight, max_weight);
@@ -92,15 +92,11 @@ public:
             std::vector<morph::vVector<float>>& ws = cl.ws;
             nloc = *sl;
             nloc2 = *(++sl); --sl;
-            std::cout << "0) nloc = " << nloc << std::endl;
-            std::cout << "0) nloc2 = " << nloc2 << std::endl;
             for (auto population : ws) { // FeedForwardConn can accept connections from multiple neuron layers.
                 // Set output position
                 unsigned int counter = 0;
                 for (auto w : population) {
 
-                    std::cout << "nloc = " << nloc << std::endl;
-                    std::cout << "nloc2 = " << nloc2 << std::endl;
                     // Draw connection line from w's input position
                     clr = cmf.convert (s.transform_one(w));
 
@@ -109,14 +105,11 @@ public:
 
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
-                    std::cout << "counter+1=" << (counter+1) << " > " << "M=" << M << "?\n";
                     if (++counter >= M) {
-                        std::cout << "reset nloc/nloc2\n";
                         nloc = *sl; // reset nloc
-                        nloc2[0] += this->radiusFixed * 4.0f; // inc nloc2
+                        nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;
                     } else {
-                        std::cout << "No reset\n";
                         nloc[0] += this->radiusFixed * 4.0f;
                         // nloc2 unchanged
                     }

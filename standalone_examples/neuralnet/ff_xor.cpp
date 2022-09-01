@@ -21,7 +21,7 @@
 int main (int argc, char** argv)
 {
     // Create a feed-forward network
-    std::vector<unsigned int> layer_spec = {2,3,1};
+    std::vector<unsigned int> layer_spec = {2,2,1};
     morph::nn::FeedForwardNet<float> ff1(layer_spec);
     std::cout << ff1 << std::endl;
 
@@ -30,9 +30,9 @@ int main (int argc, char** argv)
     std::vector<morph::vVector<float>> outs = {{1}, {1}, {0}, {0}};
 
     // main loop, while m.training_f has values in:
-    unsigned int epochs = 3000; // Here, an epoch is a run through each batch of in/outs.
+    unsigned int epochs = 5000; // Here, an epoch is a run through each batch of in/outs.
     unsigned int mini_batch_size = ins.size();
-    float eta = 0.5f;
+    float eta = 1.0f;
     std::stringstream ss;
     if (argc > 1) {
         ss << argv[1];
