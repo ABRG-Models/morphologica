@@ -258,3 +258,5 @@ if(${OpenCV_FOUND})
     target_link_libraries(hexgrid_image GLEW::GLEW)
   endif()
 endif()
+
+add_executable(scale scale.cpp)
