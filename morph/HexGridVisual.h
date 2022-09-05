@@ -639,7 +639,14 @@ namespace morph {
         //! An overridable function to set the colour of hex hi
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
-            std::array<float, 3> clr = this->cm.convert (this->dcolour[hi]);
+            std::array<float, 3> clr = {0,0,0};
+            // If vectorData has been set, then use it for the colours; otherwise,
+            // convert this->dcolour using the current colour map.
+            if (this->vectorData != nullptr && !this->vectorData->empty()) {
+                clr = (*this->vectorData)[hi];
+            } else {
+                clr = this->cm.convert (this->dcolour[hi]);
+            }
             return clr;
         }
 
