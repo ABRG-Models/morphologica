@@ -163,7 +163,8 @@ namespace morph {
         //! visualization is of directional information, such as in a quiver plot,
         const std::vector<T>* scalarData = nullptr;
 
-        //! A container for vector data to visualize.
+        //! A container for vector data to visualize. Can also be used for colour of the
+        //! hexes.
         const std::vector<Vector<T>>* vectorData = nullptr;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
