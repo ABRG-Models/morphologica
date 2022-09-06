@@ -80,7 +80,7 @@ namespace morph {
             this->hg = _hg;
         }
 
-#define HGV_DEPRECATED 1
+//#define HGV_DEPRECATED 1 // Now they really ARE deprecated. See how we go...
         // All of the following constructors are deprecated in favour of the simple
         // constructor above. After construction with the above, Colour, z scales and
         // data should be set with setScalarData() setCScale() etc, then
@@ -268,10 +268,25 @@ namespace morph {
         //! something, so that it is visible.
         void markHex (unsigned int hi) { this->markedHexes.insert(hi); }
 
+        unsigned int datasize = 0;
+        //! Find datasize
+        void set_datasize()
+        {
+            this->datasize = 0;
+            if (this->vectorData != nullptr && !this->vectorData->empty()) {
+                this->datasize = this->vectorData->size();
+            } else if (this->scalarData != nullptr && !this->scalarData->empty()) {
+                this->datasize = this->scalarData->size();
+            } // else datasize remains 0
+        }
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices()
         {
+            this->set_datasize();
+            if (this->datasize == 0) { return; }
+
             switch (this->hexVisMode) {
             case HexVisMode::Triangles:
             {
@@ -295,10 +310,14 @@ namespace morph {
         {
             unsigned int nhex = this->hg->num();
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
+            this->dcopy.resize (this->datasize, 0);
+            this->dcolour.resize (this->datasize);
+
+            // zScale and colourScale transform only for scalarData
+            if (this->scalarData != nullptr) {
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            }
 
             std::array<float, 3> blkclr = {0,0,0};
 
@@ -346,10 +365,13 @@ namespace morph {
             unsigned int nhex = this->hg->num();
             unsigned int idx = 0;
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
+            this->dcopy.resize (this->datasize, 0);
+            this->dcolour.resize (this->datasize);
+
+            if (this->scalarData != nullptr) {
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            }
 
             // These Ts are all floats, right?
             float datumC = 0.0f;   // datum at the centre
