@@ -643,7 +643,15 @@ namespace morph {
             // If vectorData has been set, then use it for the colours; otherwise,
             // convert this->dcolour using the current colour map.
             if (this->vectorData != nullptr && !this->vectorData->empty()) {
-                clr = (*this->vectorData)[hi];
+                // May need to cast vectorData Vector<T,3> to std::array<float, 3>
+                if constexpr (std::is_same<std::decay_t<T>, float>::value == true) { // "if T is float"
+                    clr = (*this->vectorData)[hi];
+                } else {
+                    // Need to cast:
+                    for (size_t i = 0; i < 3; ++i) {
+                        clr[i] = static_cast<float>((*this->vectorData)[hi][i]);
+                    }
+                }
             } else {
                 clr = this->cm.convert (this->dcolour[hi]);
             }
