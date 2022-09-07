@@ -37,6 +37,9 @@ int main()
     // Find the max of vf1:
     std::cout << "vf1.max() = " << vf1.max() << std::endl;
 
+    // Find the dot product of vf1 and vf2:
+    std::cout << "vf1 dot vf2 = " << vf1.dot (vf2) << std::endl;
+
     std::cout << "\nFor more examples, see morphologica/tests/testvVector.cpp\n";
     return 0;
 }
