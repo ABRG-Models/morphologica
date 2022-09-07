@@ -260,3 +260,5 @@ if(${OpenCV_FOUND})
 endif()
 
 add_executable(scale scale.cpp)
+
+add_executable(vVector vVector.cpp)
