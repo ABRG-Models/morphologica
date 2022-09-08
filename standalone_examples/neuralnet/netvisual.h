@@ -21,6 +21,11 @@
 
 #include <morph/nn/FeedForwardNet.h>
 
+#include <morph/VisualTextModel.h>
+
+// Set false to compile a version that draws spheres
+static constexpr bool pucks_for_neurons = true;
+
 template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
@@ -55,7 +60,10 @@ public:
         s.compute_autoscale (min_act, max_act);
 
         // Our colour map
-        morph::ColourMap<float> cmf(morph::ColourMapType::Plasma);
+        morph::ColourMap<float> cm(morph::ColourMapType::Plasma);
+
+        float em = 0.04f; // text size
+        morph::Vector<float, 3> toffset = {this->radiusFixed + 0.2f*em, 0, 0};
 
         for (auto nlayer : this->nn->neurons) {
             // Each nlayer is vVector<T>
@@ -65,21 +73,36 @@ public:
             startlocs.push_back (nloc);
             for (auto neuron : nlayer) {
                 // Use colour from neuron value.
-                clr = cmf.convert (s.transform_one(neuron));
+                //float nval = s.transform_one(neuron);
+                std::stringstream ss;
+                ss << std::setprecision(3) << neuron;
+                clr = cm.convert (s.transform_one(neuron));
+                if constexpr (pucks_for_neurons) {
+                    this->computeTube (idx,
+                                       (nloc+this->puckthick)*zoom,
+                                       (nloc-this->puckthick)*zoom,
+                                       morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                                       clr, clr,
+                                       this->radiusFixed*zoom, 16);
+                } else {
+                    this->computeSphere (idx, nloc*zoom, clr, this->radiusFixed*zoom, 16, 20);
+                }
 
-                this->computeTube (idx,
-                                   (nloc+this->puckthick)*zoom,
-                                   (nloc-this->puckthick)*zoom,
-                                   morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
-                                   clr, clr,
-                                   this->radiusFixed*zoom, 16);
+                // Text label for activation
+                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                                                                   morph::VisualFont::DVSansItalic,
+                                                                   em, 48, nloc+toffset, ss.str()));
                 nloc[0] += this->radiusFixed * 4.0f;
             }
 
         }
 
-        // Connections. There should be neurons.size()-1 connection layers:
-        // std::list<morph::nn::FeedForwardConn<T>> connections;
+        // text offsets
+        morph::Vector<float, 3> toffset1 = {em, -em, 0};
+        morph::Vector<float, 3> toffset2 = {em, em, 0};
+        morph::Vector<float, 3> toffsetbias = {0.9f*this->radiusFixed, -0.77f*this->radiusFixed, 0};
+
+        // Connections. There should be neurons.size()-1 connection layers.
         // Connection lines from "neuron location" to "neuron location 2" (nloc2)
         float min_weight = -1;
         float max_weight = 1;
@@ -92,20 +115,40 @@ public:
             std::vector<morph::vVector<float>>& ws = cl.ws;
             nloc = *sl;
             nloc2 = *(++sl); --sl;
+
             for (auto population : ws) { // FeedForwardConn can accept connections from multiple neuron layers.
+
+                // Index into the biases (a vVector of size N in each connection layer, cl)
+                unsigned int bidx = 0;
+
                 // Set output position
                 unsigned int counter = 0;
                 for (auto w : population) {
 
                     // Draw connection line from w's input position
-                    clr = cmf.convert (s.transform_one(w));
+                    clr = cm.convert (s.transform_one(w));
 
                     this->computeLine (idx, nloc, nloc2, this->uz, clr, clr,
                                        this->linewidth*zoom, this->linewidth/4*zoom);
 
+                    std::stringstream ss;
+                    ss << std::setprecision(3) << w;
+                    morph::Vector<float,3> nloccross = nloc.cross (nloc2);
+                    toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
+
+                    this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                                                                       morph::VisualFont::DVSans,
+                                                                       em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str()));
+
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
                     if (++counter >= M) {
+                        // Draw bias text
+                        std::stringstream bb1;
+                        bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
+                        this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                                                                           morph::VisualFont::DVSans,
+                                                                           em/2, 48, (nloc2+toffsetbias), bb1.str()));
                         nloc = *sl; // reset nloc
                         nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;
