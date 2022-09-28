@@ -733,15 +733,21 @@ namespace morph {
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
+            if constexpr (gv_debug) {
+                std::cout << "initial trytick = " << trytick << ", numticks = " << numticks << " max_num_ticks = " << max_num_ticks << std::endl;
+            }
             if (numticks > max_num_ticks) {
-                while (numticks > max_num_ticks) {
-                    trytick = trytick * 2;
+                while (numticks > max_num_ticks && numticks > min_num_ticks) {
+                    trytick = trytick * 2; // bigger tick spacing means fewer ticks
                     numticks = floor(range/trytick);
                 }
             } else {
-                while (numticks < min_num_ticks) {
+                while (numticks < min_num_ticks && numticks < max_num_ticks) {
                     trytick = trytick * 0.5;
                     numticks = floor(range/trytick);
+                    if constexpr (gv_debug) {
+                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
+                    }
                 }
             }
             if constexpr (gv_debug) {
@@ -1448,15 +1454,15 @@ namespace morph {
                 }
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
-                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
+                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
-                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
+                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
 
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
-                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax);
+                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
                 }
 
                 this->xtick_posns.resize (this->xticks.size());
@@ -1532,6 +1538,10 @@ namespace morph {
         bool omit_x_tick_labels = false;
         //! Should the y (and y2) tick *labels* be omitted?
         bool omit_y_tick_labels = false;
+        //! Max number of tick labels permitted
+        Flt max_num_ticks = Flt{10};
+        //! Min number of tick labels permitted
+        Flt min_num_ticks = Flt{3};
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your
