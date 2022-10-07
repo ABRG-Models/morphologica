@@ -280,6 +280,9 @@ namespace morph {
             } // else datasize remains 0
         }
 
+        //! Zoom factor
+        float zoom = 1.0f;
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices()
@@ -323,7 +326,7 @@ namespace morph {
 
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 std::array<float, 3> clr = this->setColour (hi);
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], dcopy[hi], this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*dcopy[hi], this->vertexPositions);
                 if (this->markedHexes.count(hi)) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
@@ -403,10 +406,10 @@ namespace morph {
                 std::array<float, 3> blkclr = {0,0,0};
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datumC}};
+                vtx_0 = {{this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC}};
 
                 // NE vertex
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
@@ -421,8 +424,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
+                vtx_1 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), datum}};
 
                 // SE vertex
                 if (HAS_NE(hi) && HAS_NSE(hi)) {
@@ -436,8 +439,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
+                vtx_2 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum}};
 
                 // S
                 if (HAS_NSE(hi) && HAS_NSW(hi)) {
@@ -451,7 +454,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]-lr), this->zoom*datum, this->vertexPositions);
 
                 // SW
                 if (HAS_NW(hi) && HAS_NSW(hi)) {
@@ -465,7 +468,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
 
                 // NW
                 if (HAS_NNW(hi) && HAS_NW(hi)) {
@@ -479,7 +482,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
 
                 // N
                 if (HAS_NNW(hi) && HAS_NNE(hi)) {
@@ -493,7 +496,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]+lr), this->zoom*datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
