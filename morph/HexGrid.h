@@ -1320,6 +1320,57 @@ namespace morph {
             return theRegion;
         }
 
+        //! Obtain a hexagonal region of hexes around a given central hex, marked by its
+        //! d_ index. This is easier than getting a properly circular region of hexes.
+        std::vector<std::list<Hex>::iterator> getHexagonalRegion (unsigned int centreindex, float radius)
+        {
+            std::vector<std::list<morph::Hex>::iterator> theRegion;
+
+            // Find the hex with index centreindex
+            std::list<Hex>::iterator sh = this->hexen.begin(); // start hex
+            while (sh != this->hexen.end()) {
+                if (sh->vi == centreindex) { break; }
+                sh++;
+            }
+
+            // Return if we didn't find the start hex
+            if (sh == this->hexen.end()) { return theRegion; }
+
+            theRegion.push_back (sh);
+            // For each of 6 directions, step out to collect up the hexes on the disc
+            // ring by ring. For rings 2 and above, also need to fill in hexes
+            // (otherwise you end up with a snowflake shaped disc)
+            std::list<Hex>::iterator h;
+            std::list<Hex>::iterator h2; // for the tangent direction
+            for (unsigned short i = 0; i < 6; ++i) {
+                h = sh;
+                if (h->has_neighbour(i)) {
+                    h = h->get_neighbour(i);
+                    theRegion.push_back (h);
+                    int j = 1;
+                    unsigned short tangentdir = (i+4)%6;
+                    while (this->d*j < radius) {
+                        if (h->has_neighbour(i)) {
+                            h = h->get_neighbour(i);
+                            theRegion.push_back (h);
+                            h2 = h;
+                            for (int k = 0; k<=(j-1); ++k) {
+                                // Go in tangentdir
+                                if (h2->has_neighbour (tangentdir)) {
+                                    h2 = h2->get_neighbour (tangentdir);
+                                    theRegion.push_back (h2);
+                                }
+                            }
+                        } else {
+                            break;
+                        }
+                        ++j;
+                    }
+                }
+            }
+            return theRegion;
+        }
+
         /*!
          * For every hex in hexen, unset the flags HEX_IS_REGION_BOUNDARY and
          * HEX_INSIDE_REGION
