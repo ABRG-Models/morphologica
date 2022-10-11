@@ -106,6 +106,7 @@ namespace morph {
         //! HexGrid.
         void initializeVertices()
         {
+            this->idx = 0;
             this->set_datasize();
             if (this->datasize == 0) { return; }
 
@@ -123,6 +124,8 @@ namespace morph {
             }
             }
         }
+
+        unsigned int idx = 0;
 
         // Initialize vertex buffer objects and vertex array object.
 
@@ -170,6 +173,7 @@ namespace morph {
                     this->indices.push_back (NSW(hi));
                 }
             }
+            this->idx = nhex;
         }
 
         //! Show a set of hexes at the zero?
@@ -185,7 +189,6 @@ namespace morph {
             float lr = this->hg->getLR();
 
             unsigned int nhex = this->hg->num();
-            unsigned int idx = 0;
 
             this->dcopy.resize (this->datasize, 0);
             this->dcolour.resize (this->datasize);
@@ -358,31 +361,31 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 6 triangles in the hex
-                this->indices.push_back (idx+1);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+2);
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
 
-                this->indices.push_back (idx+2);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+3);
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
 
-                this->indices.push_back (idx+3);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+4);
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
 
-                this->indices.push_back (idx+4);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+5);
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+5);
 
-                this->indices.push_back (idx+5);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+6);
+                this->indices.push_back (this->idx+5);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+6);
 
-                this->indices.push_back (idx+6);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+1);
+                this->indices.push_back (this->idx+6);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
 
-                idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
 
             // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
@@ -441,31 +444,31 @@ namespace morph {
                     this->vertex_push (clr, this->vertexColors);
 
                     // Define indices now to produce the 6 triangles in the hex
-                    this->indices.push_back (idx+1);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+2);
+                    this->indices.push_back (this->idx+1);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+2);
 
-                    this->indices.push_back (idx+2);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+3);
+                    this->indices.push_back (this->idx+2);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+3);
 
-                    this->indices.push_back (idx+3);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+4);
+                    this->indices.push_back (this->idx+3);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+4);
 
-                    this->indices.push_back (idx+4);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+5);
+                    this->indices.push_back (this->idx+4);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+5);
 
-                    this->indices.push_back (idx+5);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+6);
+                    this->indices.push_back (this->idx+5);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+6);
 
-                    this->indices.push_back (idx+6);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+1);
+                    this->indices.push_back (this->idx+6);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+1);
 
-                    idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                    this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
                 }
             }
             // End trial grid
