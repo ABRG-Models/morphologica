@@ -439,9 +439,9 @@ namespace morph {
         CartGrid(): d(1.0f), v(1.0f), x_span(1.0f), y_span(1.0f), z(0.0f) {}
 
         //! Construct then load from file.
-        CartGrid (const std::string& path) : d(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
+        CartGrid (const std::string& path) : d(1.0f), v(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
 
-        //! Construct the initial grid with a square element distance of \a d_ and square size lenght x_span.
+        //! Construct the initial grid with a square element distance of \a d_ and square size length x_span.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         : CartGrid (d_, d_, x_span_, x_span_, z_, shape) {}
@@ -1385,7 +1385,7 @@ namespace morph {
             int halfCols = std::abs(std::ceil(halfX/this->d));
             // Use y_span to determine how many rows
             float halfY = this->y_span/2.0f;
-            int halfRows = std::abs(std::ceil(halfY/this->d));
+            int halfRows = std::abs(std::ceil(halfY/this->v));
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
@@ -1442,10 +1442,10 @@ namespace morph {
         //! Initialize a non-symmetric rectangular grid.
         void init2 (float x1, float y1, float x2, float y2)
         {
-            int _xi = x1/this->d;
-            int _xf = x2/this->d;
-            int _yi = y1/this->d;
-            int _yf = y2/this->d;
+            int _xi = std::round(x1/this->d);
+            int _xf = std::round(x2/this->d);
+            int _yi = std::round(y1/this->v);
+            int _yf = std::round(y2/this->v);
 
             std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
 
