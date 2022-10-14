@@ -53,6 +53,19 @@ namespace morph {
         numstyles
     };
 
+    //! line styles are going to be tricky to implement
+    enum class linestyle
+    {
+        solid,
+        dotted,
+        dashes,
+        shortdash,
+        longdash,
+        dotdash,
+        custom,
+        numstyles
+    };
+
     enum class tickstyle
     {
         ticksin,
@@ -355,6 +368,14 @@ namespace morph {
             std::vector<Flt> emptyabsc;
             std::vector<Flt> emptyord;
             this->setdata (emptyabsc, emptyord, name, axisside);
+        }
+
+        //! Prepare an as-yet empty dataset with a specified DatasetStyle.
+        void prepdata (const DatasetStyle& ds)
+        {
+            std::vector<Flt> emptyabsc;
+            std::vector<Flt> emptyord;
+            this->setdata (emptyabsc, emptyord, ds);
         }
 
         //! Set a dataset into the graph using default styles, incrementing colour and
@@ -712,15 +733,21 @@ namespace morph {
             // How big should the range be? log the range, find the floor, raise it to get candidate
             Flt trytick = std::pow (Flt{10.0}, std::floor(std::log10 (range)));
             Flt numticks = floor(range/trytick);
+            if constexpr (gv_debug) {
+                std::cout << "initial trytick = " << trytick << ", numticks = " << numticks << " max_num_ticks = " << max_num_ticks << std::endl;
+            }
             if (numticks > max_num_ticks) {
-                while (numticks > max_num_ticks) {
-                    trytick = trytick * 2;
+                while (numticks > max_num_ticks && numticks > min_num_ticks) {
+                    trytick = trytick * 2; // bigger tick spacing means fewer ticks
                     numticks = floor(range/trytick);
                 }
             } else {
-                while (numticks < min_num_ticks) {
+                while (numticks < min_num_ticks && numticks < max_num_ticks) {
                     trytick = trytick * 0.5;
                     numticks = floor(range/trytick);
+                    if constexpr (gv_debug) {
+                        std::cout << "Trying reduced spacing to increase numticks. trytick = " << trytick << " and numticks= " << numticks << "\n";
+                    }
                 }
             }
             if constexpr (gv_debug) {
@@ -779,7 +806,6 @@ namespace morph {
             return within;
         }
 
-        static constexpr bool three_d_lines = false;
         //! dsi: data set iterator
         void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
         {
@@ -810,50 +836,51 @@ namespace morph {
                         || (this->within_axes ((*this->graphDataCoords[dsi])[i-1])
                             && this->within_axes ((*this->graphDataCoords[dsi])[i]))) {
 
-                        if constexpr (three_d_lines) {
-                            this->computeLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                           this->datastyles[dsi].linecolour, this->datastyles[dsi].linecolour,
-                                               this->datastyles[dsi].linewidth, this->thickness*Flt{0.7}, this->datastyles[dsi].markergap);
+                        if (this->datastyles[dsi].markergap > 0.0f) {
+                            // Draw solid lines between marker points with gaps between line and marker
+                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
+                                                   this->datastyles[dsi].linecolour,
+                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                        } else if (appending == true) {
+                            // We are appending a line to an existing graph, so compute a single line with rounded ends
+                            this->computeFlatLineRnd (this->idx,
+                                                      (*this->graphDataCoords[dsi])[i-1], // start
+                                                      (*this->graphDataCoords[dsi])[i],   // end
+                                                      uz,
+                                                      this->datastyles[dsi].linecolour,
+                                                      this->datastyles[dsi].linewidth, 0.0f, true, false);
                         } else {
+                            // No gaps, so draw a perfect set of joined up lines.
 
-                            if (this->datastyles[dsi].markergap > 0.0f) {
-                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], uz,
-                                                       this->datastyles[dsi].linecolour,
-                                                       this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
-                            } else if (appending == true) {
-                                this->computeFlatLineRnd (this->idx,
-                                                          (*this->graphDataCoords[dsi])[i-1], // start
-                                                          (*this->graphDataCoords[dsi])[i],   // end
-                                                          uz,
-                                                          this->datastyles[dsi].linecolour,
-                                                          this->datastyles[dsi].linewidth, 0.0f, true, false);
+                            // To make this draw dotted or dashed lines, we have to
+                            // track the length of the lines we've added to the graph
+                            // and draw the alt colour (which may be bg colour) between the dashes.
+                            if (i == 1+coords_start) {
+                                // First line
+                                this->computeFlatLineN (this->idx,
+                                                        (*this->graphDataCoords[dsi])[i-1], // start
+                                                        (*this->graphDataCoords[dsi])[i],   // end
+                                                        (*this->graphDataCoords[dsi])[i+1], // next
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
+                            } else if (i == (coords_end-1)) {
+                                // last line
+                                this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                        (*this->graphDataCoords[dsi])[i-2],
+                                                        uz,
+                                                        this->datastyles[dsi].linecolour,
+                                                        this->datastyles[dsi].linewidth);
                             } else {
-                                // No gaps, so draw a perfect set of joined up lines
-                                if (i == 1+coords_start) {
-                                    // First line
-                                    this->computeFlatLineN (this->idx,
-                                                            (*this->graphDataCoords[dsi])[i-1], // start
-                                                            (*this->graphDataCoords[dsi])[i],   // end
-                                                            (*this->graphDataCoords[dsi])[i+1], // next
-                                                            uz,
-                                                            this->datastyles[dsi].linecolour,
-                                                            this->datastyles[dsi].linewidth);
-                                } else if (i == (coords_end-1)) {
-                                    // last line
-                                    this->computeFlatLineP (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                            (*this->graphDataCoords[dsi])[i-2],
-                                                            uz,
-                                                            this->datastyles[dsi].linecolour,
-                                                            this->datastyles[dsi].linewidth);
-                                } else {
-                                    this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
-                                                           (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
-                                                           uz,
-                                                           this->datastyles[dsi].linecolour,
-                                                           this->datastyles[dsi].linewidth);
-                                }
+                                // An intermediate line
+                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i],
+                                                       (*this->graphDataCoords[dsi])[i-2], (*this->graphDataCoords[dsi])[i+1],
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
                             }
                         }
+
                     } // else line segment is outside axes and we're not to draw it. IDEALLY I'd interpolate to draw the line UP to the axis.
                 }
             }
@@ -1063,41 +1090,45 @@ namespace morph {
                 y_for_xticks = this->ord1_scale.transform_one (0);
             }
 
-            for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
+            if (!this->omit_x_tick_labels) {
+                for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
 
-                // Omit the 0 for 'cross' axes (or maybe shift its position)
-                if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
+                    // Omit the 0 for 'cross' axes (or maybe shift its position)
+                    if (this->axisstyle == axisstyle::cross && this->xticks[i] == 0) { continue; }
 
-                // Expunge any '0' from 0.123 so that it's .123 and so on.
-                std::string s = this->graphNumberFormat (this->xticks[i]);
+                    // Expunge any '0' from 0.123 so that it's .123 and so on.
+                    std::string s = this->graphNumberFormat (this->xticks[i]);
 
-                // Issue: I need the width of the text ss.str() before I can create the
-                // VisualTextModel, so need a static method like this:
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
-                morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
-                lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
-                this->texts.push_back (lbl);
-            }
-            for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
-
-                // Omit the 0 for 'cross' axes (or maybe shift its position)
-                if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
-
-                std::string s = this->graphNumberFormat (this->yticks[i]);
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
-                morph::TextGeometry geom = lbl->getTextGeometry (s);
-                this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
-                morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
-                std::array<float, 3> clr = this->axiscolour;
-                if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
-                    clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
+                    // Issue: I need the width of the text ss.str() before I can create the
+                    // VisualTextModel, so need a static method like this:
+                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl->getTextGeometry (s);
+                    this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
+                    morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
+                    lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
+                    this->texts.push_back (lbl);
                 }
-                lbl->setupText (s, lblpos+this->mv_offset, clr);
-                this->texts.push_back (lbl);
             }
-            if (this->axisstyle == axisstyle::twinax) {
+            if (!this->omit_y_tick_labels) {
+                for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
+
+                    // Omit the 0 for 'cross' axes (or maybe shift its position)
+                    if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
+
+                    std::string s = this->graphNumberFormat (this->yticks[i]);
+                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                    morph::TextGeometry geom = lbl->getTextGeometry (s);
+                    this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
+                    morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
+                    std::array<float, 3> clr = this->axiscolour;
+                    if (this->axisstyle == axisstyle::twinax && this->datastyles.size() > 0) {
+                        clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
+                    }
+                    lbl->setupText (s, lblpos+this->mv_offset, clr);
+                    this->texts.push_back (lbl);
+                }
+            }
+            if (this->axisstyle == axisstyle::twinax && !this->omit_y_tick_labels) {
                 x_for_yticks = this->width;
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
@@ -1379,41 +1410,22 @@ namespace morph {
             }
         }
 
-        static constexpr bool three_d_pucks = false;
         // Create an n sided polygon with first vertex 'pointing up'
         void polygonMarker  (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
-            if constexpr (three_d_pucks) {
-                morph::Vector<float> pend = p;
-                p[2] += this->thickness*Flt{0.5};
-                pend[2] -= this->thickness*Flt{0.5};
-                this->computeTube (this->idx, p, pend, ux, uy,
-                                   style.markercolour, style.markercolour,
+            p[2] += this->thickness;
+            this->computeFlatPoly (this->idx, p, ux, uy,
+                                   style.markercolour,
                                    style.markersize*Flt{0.5}, n);
-            } else {
-                p[2] += this->thickness;
-                this->computeFlatPoly (this->idx, p, ux, uy,
-                                       style.markercolour,
-                                       style.markersize*Flt{0.5}, n);
-            }
         }
 
         // Create an n sided polygon with a flat edge 'pointing up'
         void polygonFlattop (morph::Vector<float> p, int n, const morph::DatasetStyle& style)
         {
-            if constexpr (three_d_pucks) {
-                morph::Vector<float> pend = p;
-                p[2] += this->thickness*Flt{0.5};
-                pend[2] -= this->thickness*Flt{0.5};
-                this->computeTube (this->idx, p, pend, ux, uy,
-                                   style.markercolour, style.markercolour,
+            p[2] += this->thickness;
+            this->computeFlatPoly (this->idx, p, ux, uy,
+                                   style.markercolour,
                                    style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
-            } else {
-                p[2] += this->thickness;
-                this->computeFlatPoly (this->idx, p, ux, uy,
-                                       style.markercolour,
-                                       style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
-            }
         }
 
         // Given the data, compute the ticks (or use the ones that client code gave us)
@@ -1442,15 +1454,15 @@ namespace morph {
                 }
                 float realmin = this->abscissa_scale.inverse_one (0);
                 float realmax = this->abscissa_scale.inverse_one (this->width);
-                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax);
+                this->xticks = this->maketicks (_xmin, _xmax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
                 realmin = this->ord1_scale.inverse_one (0);
                 realmax = this->ord1_scale.inverse_one (this->height);
-                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax);
+                this->yticks = this->maketicks (_ymin, _ymax, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
 
                 if (this->ord2_scale.ready()) {
                     realmin = this->ord2_scale.inverse_one (0);
                     realmax = this->ord2_scale.inverse_one (this->height);
-                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax);
+                    this->yticks2 = this->maketicks (_ymin2, _ymax2, realmin, realmax, this->max_num_ticks, this->min_num_ticks);
                 }
 
                 this->xtick_posns.resize (this->xticks.size());
@@ -1522,6 +1534,14 @@ namespace morph {
         std::deque<Flt> yticks2;
         //! The positions, along the right hand y axis (in model space) for the yticks2
         std::deque<Flt> ytick_posns2;
+        //! Should the x tick *labels* be omitted?
+        bool omit_x_tick_labels = false;
+        //! Should the y (and y2) tick *labels* be omitted?
+        bool omit_y_tick_labels = false;
+        //! Max number of tick labels permitted
+        Flt max_num_ticks = Flt{10};
+        //! Min number of tick labels permitted
+        Flt min_num_ticks = Flt{3};
         // Default font
         morph::VisualFont font = morph::VisualFont::DVSans;
         //! Font resolution - determines how textures for glyphs are generated. If your

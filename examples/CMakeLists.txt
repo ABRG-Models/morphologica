@@ -30,6 +30,12 @@ if(USE_GLEW)
   target_link_libraries(helloworld GLEW::GLEW)
 endif()
 
+add_executable(convolve_rect convolve_rect.cpp)
+target_link_libraries(convolve_rect OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(convolve_rect GLEW::GLEW)
+endif()
+
 if(ARMADILLO_FOUND)
   add_executable(convolve convolve.cpp)
   target_link_libraries(convolve OpenGL::GL glfw Freetype::Freetype)
@@ -258,3 +264,7 @@ if(${OpenCV_FOUND})
     target_link_libraries(hexgrid_image GLEW::GLEW)
   endif()
 endif()
+
+add_executable(scale scale.cpp)
+
+add_executable(vVector vVector.cpp)

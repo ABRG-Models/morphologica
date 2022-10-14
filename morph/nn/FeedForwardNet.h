@@ -17,6 +17,7 @@
 #include <sstream>
 #include <ostream>
 #include <map>
+#include <limits>
 
 namespace morph {
     namespace nn {
@@ -94,7 +95,8 @@ namespace morph {
                     // Compute network and cost
                     this->feedforward();
                     float c = this->computeCost();
-                    std::cout << "Input " << ir << " --> " << this->neurons.back() << " cf. " << this->desiredOutput << " (cost: " << c << ")\n";
+                    std::cout << "Input " << ir << " --> " << this->neurons.back()
+                              << " cf. " << this->desiredOutput << " (cost: " << c << ")\n";
                 }
             }
 
@@ -170,6 +172,26 @@ namespace morph {
                 T l = (desiredOutput-this->neurons.back()).length();
                 this->cost = T{0.5} * l * l;
                 return this->cost;
+            }
+
+            // Return the min activation in all the neurons
+            T min_neuron_activation() const
+            {
+                T min = std::numeric_limits<T>::max();
+                for (auto nl : this->neurons) {
+                    for (auto n : nl) { min = n < min ? n : min; }
+                }
+                return min;
+            }
+
+            // Return the max activation in all the neurons
+            T max_neuron_activation() const
+            {
+                T max = std::numeric_limits<T>::lowest();
+                for (auto nl : this->neurons) {
+                    for (auto n : nl) { max = n > max ? n : max; }
+                }
+                return max;
             }
 
             //! What's the cost function of the current output? Computed in computeCost()

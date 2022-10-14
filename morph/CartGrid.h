@@ -439,14 +439,14 @@ namespace morph {
         CartGrid(): d(1.0f), v(1.0f), x_span(1.0f), y_span(1.0f), z(0.0f) {}
 
         //! Construct then load from file.
-        CartGrid (const std::string& path) : d(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
+        CartGrid (const std::string& path) : d(1.0f), v(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
 
-        //! Construct the initial grid with a square element distance of \a d_ and square size lenght x_span.
+        //! Construct the a symmetric, centered grid with a square element distance of \a d_ and square size length x_span.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         : CartGrid (d_, d_, x_span_, x_span_, z_, shape) {}
 
-        //! Construct with rectangular element width d_, height v_
+        //! Construct a grid with rectangular element width d_, height v_ but still symmetric and centred.
         CartGrid (float d_, float v_, float x_span_, float y_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         {
@@ -1072,11 +1072,6 @@ namespace morph {
                 // ri should now be the bottom left rect.
                 blr = ri;
 
-                // Sanity check
-                if (blr->has_ne() == false || blr->has_nw() == true) {
-                    throw std::runtime_error ("We expect the bottom left rect to have an east, but no west neighbour.");
-                }
-
             } // else Hexagon or Boundary starts from 0, hi already set to rects.begin();
 
             // Clear the d_ vectors.
@@ -1088,9 +1083,6 @@ namespace morph {
                 this->d_push_back (ri);
 
                 do {
-                    ri = ri->ne;
-                    this->d_push_back (ri);
-
                     if (ri->has_ne() == false) {
                         if (ri->yi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
@@ -1103,8 +1095,11 @@ namespace morph {
                             ri = blr;
                             this->d_push_back (ri);
                         }
+                    } else {
+                        ri = ri->ne;
+                        this->d_push_back (ri);
                     }
-                } while (ri->has_ne() == true);
+                } while (ri->has_ne() == true || ri->has_nn() == true);
 
             } else { // Boundary
 
@@ -1242,7 +1237,6 @@ namespace morph {
          * kernel data \a kerneldata, which exists on another CartGrid, \a
          * kernelgrid. Return the result in \a result.
          */
-#ifdef DO_LATER
         template<typename T>
         void convolve (const CartGrid& kernelgrid, const std::vector<T>& kerneldata, const std::vector<T>& data, std::vector<T>& result)
         {
@@ -1252,6 +1246,7 @@ namespace morph {
             if (result.size() != data.size()) {
                 throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
             }
+            // Could relax this test...
             if (kernelgrid.getd() != this->d) {
                 throw std::runtime_error ("The kernel CartGrid must have same d as this CartGrid to carry out convolution.");
             }
@@ -1260,64 +1255,56 @@ namespace morph {
             }
 
             // For each rect in this CartGrid, compute the convolution kernel
-            std::list<Rect>::iterator hi = this->rects.begin();
-            for (; hi != this->rects.end(); ++hi) {
+            std::list<Rect>::iterator ri = this->rects.begin();
+
+            for (; ri != this->rects.end(); ++ri) {
                 T sum = T{0};
                 // For each kernel rect, sum up.
-                for (auto kh : kernelgrid.rects) {
-                    std::list<Rect>::iterator dhi = hi;
-                    // Kernel hex coords r,g are: kh.ri, kh.gi, which may be (are EXPECTED to be) +ve or -ve
-                    //
-                    // Origin hex coords are h.ri, h.gi
-                    //
-                    // To get the hex whose data we want to multiply with kh's value,
-                    // can go via neighbour relations, but must be prepared to take a
-                    // variable path because going directly in r direction then directly
-                    // in g direction could take us temporarily outside the boundary of
-                    // the CartGrid.
-                    int rr = kh.ri;
-                    int gg = kh.gi;
+                for (auto kr : kernelgrid.rects) {
+                    std::list<Rect>::iterator dri = ri;
+                    int xx = kr.xi;
+                    int yy = kr.yi;
                     bool failed = false;
                     bool finished = false;
-                    //while (gg != 0 && rr != 0) {
+
                     while (!finished) {
                         bool moved = false;
-                        // Try to move in r direction
-                        if (rr > 0) {
-                            if (dhi->has_ne()) {
-                                dhi = dhi->ne;
-                                --rr;
+                        // Try to move in x direction
+                        if (xx > 0) { // Then kernel rect is to right of 0, so relevant rect on Cartgrid is to east
+                            if (dri->has_ne()) {
+                                dri = dri->ne;
+                                --xx;
                                 moved = true;
-                            } // Didn't move in +r direction
-                        } else if (rr < 0) {
-                            if (dhi->has_nw()) {
-                                dhi = dhi->nw;
-                                ++rr;
+                            } // Didn't move in +x direction
+                        } else if (xx < 0) {
+                            if (dri->has_nw()) {
+                                dri = dri->nw;
+                                ++xx;
                                 moved = true;
-                            } // Didn't move in -r direction
+                            } // Didn't move in -x direction
                         }
-                        // Try to move in g direction
-                        if (gg > 0) {
-                            if (dhi->has_nne()) {
-                                dhi = dhi->nne;
-                                --gg;
+                        // Try to move in y direction
+                        if (yy > 0) {
+                            if (dri->has_nn()) {
+                                dri = dri->nn;
+                                --yy;
                                 moved = true;
-                            } // Didn't move in +g direction
-                        } else if (gg < 0) {
-                            if (dhi->has_nsw()) {
-                                dhi = dhi->nsw;
-                                ++gg;
+                            } // Didn't move in +y direction
+                        } else if (yy < 0) {
+                            if (dri->has_ns()) {
+                                dri = dri->ns;
+                                ++yy;
                                 moved = true;
-                            } // Didn't move in -g direction
+                            } // Didn't move in -y direction
                         }
 
-                        if (rr == 0 && gg == 0) {
+                        if (xx == 0 && yy == 0) {
                             finished = true;
                             break;
                         }
 
                         if (!moved) {
-                            // We're stuck; Can't move in r or g direction, so can't add a contribution
+                            // We're stuck; Can't move in x or y direction, so can't add a contribution
                             failed = true;
                             break;
                         }
@@ -1325,14 +1312,14 @@ namespace morph {
 
                     if (!failed) {
                         // Can do the sum
-                        sum +=  data[dhi->vi] * kerneldata[kh.vi];
+                        sum +=  data[dri->vi] * kerneldata[kr.vi];
                     }
                 }
 
-                result[hi->vi] = sum;
+                result[ri->vi] = sum;
             }
         }
-#endif
+
         /*!
          * What shape domain to set? Set this to the non-default BEFORE calling
          * CartGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
@@ -1385,7 +1372,7 @@ namespace morph {
             int halfCols = std::abs(std::ceil(halfX/this->d));
             // Use y_span to determine how many rows
             float halfY = this->y_span/2.0f;
-            int halfRows = std::abs(std::ceil(halfY/this->d));
+            int halfRows = std::abs(std::ceil(halfY/this->v));
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
@@ -1398,32 +1385,32 @@ namespace morph {
             std::vector<std::list<morph::Rect>::iterator>* nextPrevRow = &prevRowOdd;
 
             // Build grid, raster style.
-            for (int yi = -halfCols; yi <= halfCols; ++yi) {
+            for (int yi = -halfRows; yi <= halfRows; ++yi) {
                 size_t pri = 0;
-                for (int xi = -halfRows; xi <= halfRows; ++xi) {
+                for (int xi = -halfCols; xi <= halfCols; ++xi) {
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
                     auto ri = this->rects.end(); ri--;
                     this->vrects.push_back (&(*ri));
 
                     //std::cout << "emplaced Rect " << ri->outputCart() << std::endl;
-                    if (xi > -halfRows) {
+                    if (xi > -halfCols) {
                         auto ri_w = ri; ri_w--;
                         ri_w->set_ne (ri);
                         ri->set_nw (ri_w);
                     }
-                    if (yi > -halfCols) {
+                    if (yi > -halfRows) {
                         //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << pri << "]"
                         //          << (*prevRow)[pri]->outputCart() << " as S of Rect ri = " << ri->outputCart() << std::endl;
                         (*prevRow)[pri]->set_nn (ri);
                         ri->set_ns ((*prevRow)[pri]);
-                        if (xi > -halfRows) {
+                        if (xi > -halfCols) {
                             //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << (pri-1) << "]"
                             //          << (*prevRow)[pri-1]->outputCart() << " as SW of Rect ri = " << ri->outputCart() << std::endl;
                             (*prevRow)[pri-1]->set_nne (ri);
                             ri->set_nsw ((*prevRow)[pri-1]);
                         }
-                        if (xi < halfRows) {
+                        if (xi < halfCols) {
                             (*prevRow)[pri+1]->set_nnw (ri);
                             ri->set_nse ((*prevRow)[pri+1]);
                         }
@@ -1442,10 +1429,10 @@ namespace morph {
         //! Initialize a non-symmetric rectangular grid.
         void init2 (float x1, float y1, float x2, float y2)
         {
-            int _xi = x1/this->d;
-            int _xf = x2/this->d;
-            int _yi = y1/this->d;
-            int _yf = y2/this->d;
+            int _xi = std::round(x1/this->d);
+            int _xf = std::round(x2/this->d);
+            int _yi = std::round(y1/this->v);
+            int _yf = std::round(y2/this->v);
 
             std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
 
@@ -2085,6 +2072,15 @@ namespace morph {
                 ++ri;
             }
             return nearest;
+        }
+
+        //! Assuming a rectangular CartGrid, find bottom left element
+        std::list<Rect>::iterator findBottomLeft()
+        {
+            std::list<morph::Rect>::iterator bottomleft = this->rects.begin();
+            while (bottomleft->has_ns()) { bottomleft = bottomleft->ns; }
+            while (bottomleft->has_nw()) { bottomleft = bottomleft->nw; }
+            return bottomleft;
         }
 
         /*!

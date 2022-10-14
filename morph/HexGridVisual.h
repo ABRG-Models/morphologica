@@ -80,187 +80,6 @@ namespace morph {
             this->hg = _hg;
         }
 
-#define HGV_DEPRECATED 1
-        // All of the following constructors are deprecated in favour of the simple
-        // constructor above. After construction with the above, Colour, z scales and
-        // data should be set with setScalarData() setCScale() etc, then
-        // VisualModel::finalize() should be called.
-#ifdef HGV_DEPRECATED
-        //! Constructor which does not set colour map
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const Vector<float> _offset,
-                      const std::vector<T>* _data)
-        {
-            // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-
-            // Defaults here. After init, you can reset (at computational cost) to get desired params
-            this->zScale.setParams (1, 0);
-            this->colourScale.do_autoscale = true;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! Constructor which does not set colour map and takes an std::array for
-        //! _offset for backwards compatibility
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
-                      const std::vector<T>* _data)
-        {
-            // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset.set_from (_offset);
-            this->viewmatrix.translate (this->mv_offset);
-
-            // Defaults here. After init, you can reset (at computational cost) to get desired params
-            this->zScale.setParams (1, 0);
-            this->colourScale.do_autoscale = true;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! Constructor which sets default colour map
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const Vector<float> _offset,
-                      const std::vector<T>* _data,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f)
-        {
-            // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-
-            // Defaults here. After init, you can reset (at computational cost) to get desired params
-            this->zScale.setParams (1, 0);
-            this->colourScale.do_autoscale = true;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! Constructor which sets default colour map and takes an std::array for
-        //! _offset for backwards compatibility
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
-                      const std::vector<T>* _data,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f)
-        {
-            // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset.set_from (_offset);
-            this->viewmatrix.translate (this->mv_offset);
-
-            // Defaults here. After init, you can reset (at computational cost) to get desired params
-            this->zScale.setParams (1, 0);
-            this->colourScale.do_autoscale = true;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! Constructor which sets default colour map and z/colour Scale objects
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const Vector<float> _offset,
-                      const std::vector<T>* _data,
-                      const Scale<T, float>& zscale,
-                      const Scale<T, float>& cscale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f,
-                      const bool _zerogrid = false)
-        {
-            // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset = _offset;
-            this->viewmatrix.translate (this->mv_offset);
-
-            this->zScale = zscale;
-            this->colourScale = cscale;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->zerogrid = _zerogrid;
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-
-        //! Constructor which sets default colour map and z/colour Scale objects and
-        //! takes an std::array for _offset for backwards compatibility
-        HexGridVisual(GLuint sp, GLuint tsp,
-                      const HexGrid* _hg,
-                      const std::array<float, 3> _offset,
-                      const std::vector<T>* _data,
-                      const Scale<T, float>& zscale,
-                      const Scale<T, float>& cscale,
-                      ColourMapType _cmt,
-                      const float _hue = 0.0f,
-                      const bool _zerogrid = false)
-        {
-            // This (subcalling another constructor) failed:
-            //Vector<float> offset_vec;
-            //offset_vec.set_from(_offset);
-            // HexGridVisual (sp, _hg, offset_vec, _data, zscale, cscale, _cmt, _hue);
-            //
-            // So do it long-hand:
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
-            this->mv_offset.set_from (_offset);
-            this->viewmatrix.translate (this->mv_offset);
-
-            this->zScale = zscale;
-            this->colourScale = cscale;
-
-            this->hg = _hg;
-            this->scalarData = _data;
-
-            this->cm.setHue (_hue);
-            this->cm.setType (_cmt);
-
-            this->zerogrid = _zerogrid;
-
-            this->initializeVertices();
-            this->postVertexInit();
-        }
-#endif // HGV_DEPRECATED
-
         //! Hexes to mark out. There are hex iterators, that I can do if (markedHexes.count(hi)) {}
         std::set<unsigned int> markedHexes;
 
@@ -268,10 +87,29 @@ namespace morph {
         //! something, so that it is visible.
         void markHex (unsigned int hi) { this->markedHexes.insert(hi); }
 
+        unsigned int datasize = 0;
+        //! Find datasize
+        void set_datasize()
+        {
+            this->datasize = 0;
+            if (this->vectorData != nullptr && !this->vectorData->empty()) {
+                this->datasize = this->vectorData->size();
+            } else if (this->scalarData != nullptr && !this->scalarData->empty()) {
+                this->datasize = this->scalarData->size();
+            } // else datasize remains 0
+        }
+
+        //! Zoom factor
+        float zoom = 1.0f;
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices()
         {
+            this->idx = 0;
+            this->set_datasize();
+            if (this->datasize == 0) { return; }
+
             switch (this->hexVisMode) {
             case HexVisMode::Triangles:
             {
@@ -287,6 +125,8 @@ namespace morph {
             }
         }
 
+        unsigned int idx = 0;
+
         // Initialize vertex buffer objects and vertex array object.
 
         //! Initialize as triangled. Gives a smooth surface with much
@@ -295,16 +135,20 @@ namespace morph {
         {
             unsigned int nhex = this->hg->num();
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
+            this->dcopy.resize (this->datasize, 0);
+            this->dcolour.resize (this->datasize);
+
+            // zScale and colourScale transform only for scalarData
+            if (this->scalarData != nullptr) {
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            }
 
             std::array<float, 3> blkclr = {0,0,0};
 
             for (unsigned int hi = 0; hi < nhex; ++hi) {
                 std::array<float, 3> clr = this->setColour (hi);
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], dcopy[hi], this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*dcopy[hi], this->vertexPositions);
                 if (this->markedHexes.count(hi)) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
@@ -329,6 +173,7 @@ namespace morph {
                     this->indices.push_back (NSW(hi));
                 }
             }
+            this->idx = nhex;
         }
 
         //! Show a set of hexes at the zero?
@@ -344,12 +189,14 @@ namespace morph {
             float lr = this->hg->getLR();
 
             unsigned int nhex = this->hg->num();
-            unsigned int idx = 0;
 
-            this->dcopy.resize (this->scalarData->size());
-            this->zScale.transform (*(this->scalarData), dcopy);
-            this->dcolour.resize (this->scalarData->size());
-            this->colourScale.transform (*(this->scalarData), dcolour);
+            this->dcopy.resize (this->datasize, 0);
+            this->dcolour.resize (this->datasize);
+
+            if (this->scalarData != nullptr) {
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            }
 
             // These Ts are all floats, right?
             float datumC = 0.0f;   // datum at the centre
@@ -381,10 +228,10 @@ namespace morph {
                 std::array<float, 3> blkclr = {0,0,0};
 
                 // First push the 7 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datumC, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datumC}};
+                vtx_0 = {{this->zoom*this->hg->d_x[hi], this->zoom*this->hg->d_y[hi], this->zoom*datumC}};
 
                 // NE vertex
                 if (HAS_NNE(hi) && HAS_NE(hi)) {
@@ -399,8 +246,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
+                vtx_1 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]+vne), datum}};
 
                 // SE vertex
                 if (HAS_NE(hi) && HAS_NSE(hi)) {
@@ -414,8 +261,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
+                vtx_2 = {{this->zoom*(this->hg->d_x[hi]+sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum}};
 
                 // S
                 if (HAS_NSE(hi) && HAS_NSW(hi)) {
@@ -429,7 +276,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]-lr), this->zoom*datum, this->vertexPositions);
 
                 // SW
                 if (HAS_NW(hi) && HAS_NSW(hi)) {
@@ -443,7 +290,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]-vne), this->zoom*datum, this->vertexPositions);
 
                 // NW
                 if (HAS_NNW(hi) && HAS_NW(hi)) {
@@ -457,7 +304,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*(this->hg->d_x[hi]-sr), this->zoom*(this->hg->d_y[hi]+vne), this->zoom*datum, this->vertexPositions);
 
                 // N
                 if (HAS_NNW(hi) && HAS_NNE(hi)) {
@@ -471,7 +318,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
+                this->vertex_push (this->zoom*this->hg->d_x[hi], this->zoom*(this->hg->d_y[hi]+lr), this->zoom*datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -514,31 +361,31 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 6 triangles in the hex
-                this->indices.push_back (idx+1);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+2);
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
 
-                this->indices.push_back (idx+2);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+3);
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
 
-                this->indices.push_back (idx+3);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+4);
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
 
-                this->indices.push_back (idx+4);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+5);
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+5);
 
-                this->indices.push_back (idx+5);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+6);
+                this->indices.push_back (this->idx+5);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+6);
 
-                this->indices.push_back (idx+6);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+1);
+                this->indices.push_back (this->idx+6);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
 
-                idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
 
             // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
@@ -597,31 +444,31 @@ namespace morph {
                     this->vertex_push (clr, this->vertexColors);
 
                     // Define indices now to produce the 6 triangles in the hex
-                    this->indices.push_back (idx+1);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+2);
+                    this->indices.push_back (this->idx+1);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+2);
 
-                    this->indices.push_back (idx+2);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+3);
+                    this->indices.push_back (this->idx+2);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+3);
 
-                    this->indices.push_back (idx+3);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+4);
+                    this->indices.push_back (this->idx+3);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+4);
 
-                    this->indices.push_back (idx+4);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+5);
+                    this->indices.push_back (this->idx+4);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+5);
 
-                    this->indices.push_back (idx+5);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+6);
+                    this->indices.push_back (this->idx+5);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+6);
 
-                    this->indices.push_back (idx+6);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+1);
+                    this->indices.push_back (this->idx+6);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+1);
 
-                    idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                    this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
                 }
             }
             // End trial grid
@@ -639,7 +486,22 @@ namespace morph {
         //! An overridable function to set the colour of hex hi
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
-            std::array<float, 3> clr = this->cm.convert (this->dcolour[hi]);
+            std::array<float, 3> clr = {0,0,0};
+            // If vectorData has been set, then use it for the colours; otherwise,
+            // convert this->dcolour using the current colour map.
+            if (this->vectorData != nullptr && !this->vectorData->empty()) {
+                // May need to cast vectorData Vector<T,3> to std::array<float, 3>
+                if constexpr (std::is_same<std::decay_t<T>, float>::value == true) { // "if T is float"
+                    clr = (*this->vectorData)[hi];
+                } else {
+                    // Need to cast:
+                    for (size_t i = 0; i < 3; ++i) {
+                        clr[i] = static_cast<float>((*this->vectorData)[hi][i]);
+                    }
+                }
+            } else {
+                clr = this->cm.convert (this->dcolour[hi]);
+            }
             return clr;
         }
 

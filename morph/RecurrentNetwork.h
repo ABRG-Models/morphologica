@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <morph/rngd.h> // for morph::randDouble()
 
 namespace morph {
     namespace recurrentnet {
@@ -141,7 +142,7 @@ namespace morph {
 
                 double weightRange = weightMax-weightMin;
                 for(int i=0;i<W.size();i++){
-                    W[i] = morph::Tools::randDouble()*weightRange+weightMin;
+                    W[i] = morph::randDouble()*weightRange+weightMin;
                 }
             }
 
@@ -161,7 +162,7 @@ namespace morph {
             void randomizeState(void){
 
                 for(int i=0;i<N;i++){
-                    X[i] = morph::Tools::randDouble()*2.0-1.0;
+                    X[i] = morph::randDouble()*2.0-1.0;
                 }
             }
 
@@ -328,7 +329,7 @@ namespace morph {
                 if(!converged){
                     W = Wbest;
                     for(int k=0;k<Nweight;k++){
-                        W[k] += (morph::Tools::randDouble()*2-1)*weightNudgeSize;
+                        W[k] += (morph::randDouble()*2-1)*weightNudgeSize;
                     }
                 }
             }
@@ -342,7 +343,7 @@ namespace morph {
                 if(!converged){
                     W = Wbest;
                     for(int k=0;k<Nweight;k++){
-                        W[k] += (morph::Tools::randDouble()*2-1)*weightNudgeSize;
+                        W[k] += (morph::randDouble()*2-1)*weightNudgeSize;
                     }
                 }
             }

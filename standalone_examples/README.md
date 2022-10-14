@@ -29,6 +29,7 @@ schnakenberg, create a build directory and carry out a cmake build:
 
 ```bash
 cd morphologica/standalone_examples/schakenberg
+ln -s ../../../morphologica # This mimics having a copy of morphologica in your code tree
 mkdir build
 cd build
 cmake ..
@@ -72,6 +73,7 @@ the CMakeLists.txt *without* OpenMP.
 
 ```bash
 cd morphologica/standalone_examples/neuralnet
+ln -s ../../../morphologica # This mimics having a copy of morphologica in your code tree
 mkdir build
 cd build
 cmake ..
@@ -93,6 +95,7 @@ RecurrentNetworkModel.h.
 
 ```bash
 cd morphologica/standalone_examples/recurrentnet
+ln -s ../../../morphologica # This mimics having a copy of morphologica in your code tree
 mkdir build
 cd build
 cmake ..

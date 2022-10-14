@@ -58,7 +58,7 @@ sudo port install cmake armadillo
  problems during the build.*
 
 Now skip Option 2 and go to **Common manual dependency builds** to
-compile jsoncpp and glfw3 by hand.
+compile glfw3 by hand.
 
 ### Option 2: Manual dependency builds
 
@@ -141,9 +141,7 @@ sudo make install
 ### Common manual dependency builds
 
 Whether or not you used mac ports to install hdf5 and
-armadillo, the JSON-reading library jsoncpp needs to be built
-separately, as I don't believe it is currently available as a
-port. glfw3 also needs to be built separately (I've not investigated
+armadillo, glfw3 also needs to be built separately (I've not investigated
 whether there is a mac ports version of glfw).
 
 #### glfw3
