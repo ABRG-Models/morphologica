@@ -105,10 +105,12 @@ namespace morph {
                 this->dcopy.resize (this->vectorData->size());
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
+                this->dcolour3.resize (this->vectorData->size());
                 for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
                     this->dcolour[i] = (*this->vectorData)[i][0];
                     this->dcolour2[i] = (*this->vectorData)[i][1];
                     // Could also extract a third colour for Trichrome vs Duochrome
+                    this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
                 std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
@@ -167,18 +169,23 @@ namespace morph {
                 this->dcopy.resize (this->vectorData->size());
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
+                this->dcolour3.resize (this->vectorData->size());
                 for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
                     this->dcolour[i] = (*this->vectorData)[i][0];
                     this->dcolour2[i] = (*this->vectorData)[i][1];
-                    // Could also extract a third colour for Trichrome vs Duochrome
+                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
+                    this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
                 std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
                 this->colourScale.autoscaled = false;
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
+                this->colourScale.transform (this->dcolour3, this->dcolour3);
                 std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
+                std::pair<T,T> maxmin3 = morph::MathAlgo::maxmin (this->dcolour3);
                 std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                          << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
+                          << " , G maxmin: " << maxmin2.first << ","<< maxmin2.second
+                          << " , B maxmin: " << maxmin3.first << ","<< maxmin3.second << std::endl;
             }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
@@ -418,7 +425,9 @@ namespace morph {
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
-            if (this->cm.getType() == morph::ColourMapType::Duochrome) {
+            if (this->cm.getType() == morph::ColourMapType::RGB) {
+                clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi], this->dcolour3[hi]);
+            } else if (this->cm.getType() == morph::ColourMapType::Duochrome) {
                 // Use vectorData
                 clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
             } else {
@@ -435,6 +444,7 @@ namespace morph {
         //! A copy of the scalarData (or first field of vectorData), scaled to be a colour value
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
+        std::vector<float> dcolour3;
     };
 
     //! Extended CartGridVisual class for plotting with individual red, green and blue

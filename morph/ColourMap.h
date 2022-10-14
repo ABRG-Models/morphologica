@@ -29,6 +29,9 @@ namespace morph {
         MonochromeGreen,
         Duochrome,    // Two fixed hues, vary saturation of each with two input numbers.
         Trichrome,    // As for Duochrome, but with three inputs
+        RGB,          // A kind of 'null' colour map that takes R, G and B values and returns as an RGB colour.
+                      // Of course, you don't really need a morph::ColourMap to do this, but it can be useful where
+                      // the ColourMap is embedded in the workflow, such as in a VisualDataModel.
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -250,13 +253,13 @@ namespace morph {
             return this->duochrome (_datum1, _datum2);
         }
 
-        //! An overload of convert for TriChrome ColourMaps
+        //! An overload of convert for TriChrome or RGB ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
         {
-            if (this->type != ColourMapType::Trichrome) {
-                throw std::runtime_error ("Set ColourMapType to Trichrome.");
+            if (this->type != ColourMapType::Trichrome && this->type != ColourMapType::RGB) {
+                throw std::runtime_error ("Set ColourMapType to Trichrome or RGB.");
             }
-            return this->trichrome (_datum1, _datum2, _datum3);
+            return this->type == ColourMapType::Trichrome ? (this->trichrome (_datum1, _datum2, _datum3)) : (this->rgb (_datum1, _datum2, _datum3));
         }
 
         //! Convert the scalar datum into an RGB (or BGR) colour
@@ -702,6 +705,19 @@ namespace morph {
             clr1[1] += clr2[1] + clr3[1];
             clr1[2] += clr2[2] + clr3[2];
             return clr1;
+        }
+
+        //! A pass-through with bounds checking
+        static std::array<float,3> rgb (float datum1, float datum2, float datum3)
+        {
+            datum1 = datum1 > 1.0f ? 1.0f : datum1;
+            datum2 = datum2 > 1.0f ? 1.0f : datum2;
+            datum3 = datum3 > 1.0f ? 1.0f : datum3;
+            datum1 = datum1 < 0.0f ? 0.0f : datum1;
+            datum2 = datum2 < 0.0f ? 0.0f : datum2;
+            datum3 = datum3 < 0.0f ? 0.0f : datum3;
+            std::array<float,3> clr = {datum1, datum2, datum3};
+            return clr;
         }
 
         /*!
