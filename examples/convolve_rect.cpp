@@ -21,8 +21,6 @@ int main()
 
     // This'll be a 256x64 grid. This constructor creates a 'non-centred' cartgrid.
     morph::CartGrid cg(0.01, 0.01, 0.0f, 0.0f, 256*0.01-0.01, 64*0.01-0.01);
-    // This is centred
-    //morph::CartGrid cg(0.01, 0.01, 0.64f, 2.56f);
     cg.setBoundaryOnOuterEdge();
 
     // Populate a vector of floats with data

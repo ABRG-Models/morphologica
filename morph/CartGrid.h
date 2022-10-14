@@ -441,12 +441,12 @@ namespace morph {
         //! Construct then load from file.
         CartGrid (const std::string& path) : d(1.0f), v(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
 
-        //! Construct the initial grid with a square element distance of \a d_ and square size length x_span.
+        //! Construct the a symmetric, centered grid with a square element distance of \a d_ and square size length x_span.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         : CartGrid (d_, d_, x_span_, x_span_, z_, shape) {}
 
-        //! Construct with rectangular element width d_, height v_
+        //! Construct a grid with rectangular element width d_, height v_ but still symmetric and centred.
         CartGrid (float d_, float v_, float x_span_, float y_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         {
