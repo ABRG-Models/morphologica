@@ -1385,32 +1385,32 @@ namespace morph {
             std::vector<std::list<morph::Rect>::iterator>* nextPrevRow = &prevRowOdd;
 
             // Build grid, raster style.
-            for (int yi = -halfCols; yi <= halfCols; ++yi) {
+            for (int yi = -halfRows; yi <= halfRows; ++yi) {
                 size_t pri = 0;
-                for (int xi = -halfRows; xi <= halfRows; ++xi) {
+                for (int xi = -halfCols; xi <= halfCols; ++xi) {
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
                     auto ri = this->rects.end(); ri--;
                     this->vrects.push_back (&(*ri));
 
                     //std::cout << "emplaced Rect " << ri->outputCart() << std::endl;
-                    if (xi > -halfRows) {
+                    if (xi > -halfCols) {
                         auto ri_w = ri; ri_w--;
                         ri_w->set_ne (ri);
                         ri->set_nw (ri_w);
                     }
-                    if (yi > -halfCols) {
+                    if (yi > -halfRows) {
                         //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << pri << "]"
                         //          << (*prevRow)[pri]->outputCart() << " as S of Rect ri = " << ri->outputCart() << std::endl;
                         (*prevRow)[pri]->set_nn (ri);
                         ri->set_ns ((*prevRow)[pri]);
-                        if (xi > -halfRows) {
+                        if (xi > -halfCols) {
                             //std::cout << "For (xi,yi) = (" << xi << "," << yi << ") set Rect (*prevRow)[" << (pri-1) << "]"
                             //          << (*prevRow)[pri-1]->outputCart() << " as SW of Rect ri = " << ri->outputCart() << std::endl;
                             (*prevRow)[pri-1]->set_nne (ri);
                             ri->set_nsw ((*prevRow)[pri-1]);
                         }
-                        if (xi < halfRows) {
+                        if (xi < halfCols) {
                             (*prevRow)[pri+1]->set_nnw (ri);
                             ri->set_nse ((*prevRow)[pri+1]);
                         }
