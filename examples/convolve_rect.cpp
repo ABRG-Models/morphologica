@@ -20,7 +20,7 @@ int main()
     int rtn = 0;
 
     // This'll be a 256x64 grid. This constructor creates a 'non-centred' cartgrid.
-    morph::CartGrid cg(0.01, 0.01, 0.0f, 0.0f, 256*0.01-0.01, 64*0.01-0.01);
+    morph::CartGrid cg(0.01f, 0.01f, 0.0f, 0.0f, 256*0.01f-0.01f, 64*0.01f-0.01f);
     cg.setBoundaryOnOuterEdge();
 
     // Populate a vector of floats with data
@@ -29,7 +29,7 @@ int main()
     float nonconvolvedSum = data.sum();
 
     // Create a small CartGrid to contain the convolution kernel
-    morph::CartGrid kernel (0.01, 0.01, 0.05, 0.05);
+    morph::CartGrid kernel (0.01f, 0.01f, 0.05f, 0.05f);
 
     kernel.setBoundaryOnOuterEdge();
     morph::vVector<float> kdata(kernel.num());
@@ -37,7 +37,7 @@ int main()
     // Put a Gaussian in the kernel
     // Once-only parts of the calculation of the Gaussian.
     float sigma = 0.025f;
-    float one_over_sigma_root_2_pi = 1 / sigma * 2.506628275;
+    float one_over_sigma_root_2_pi = 1 / sigma * 2.506628275f;
     float two_sigma_sq = 2.0f * sigma * sigma;
     // Gaussian dist. result, and a running sum of the results:
     float gauss = 0;
