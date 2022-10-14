@@ -1072,11 +1072,6 @@ namespace morph {
                 // ri should now be the bottom left rect.
                 blr = ri;
 
-                // Sanity check
-                if (blr->has_ne() == false || blr->has_nw() == true) {
-                    throw std::runtime_error ("We expect the bottom left rect to have an east, but no west neighbour.");
-                }
-
             } // else Hexagon or Boundary starts from 0, hi already set to rects.begin();
 
             // Clear the d_ vectors.
@@ -1088,9 +1083,6 @@ namespace morph {
                 this->d_push_back (ri);
 
                 do {
-                    ri = ri->ne;
-                    this->d_push_back (ri);
-
                     if (ri->has_ne() == false) {
                         if (ri->yi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
@@ -1103,8 +1095,11 @@ namespace morph {
                             ri = blr;
                             this->d_push_back (ri);
                         }
+                    } else {
+                        ri = ri->ne;
+                        this->d_push_back (ri);
                     }
-                } while (ri->has_ne() == true);
+                } while (ri->has_ne() == true || ri->has_nn() == true);
 
             } else { // Boundary
 
@@ -1242,7 +1237,6 @@ namespace morph {
          * kernel data \a kerneldata, which exists on another CartGrid, \a
          * kernelgrid. Return the result in \a result.
          */
-#ifdef DO_LATER
         template<typename T>
         void convolve (const CartGrid& kernelgrid, const std::vector<T>& kerneldata, const std::vector<T>& data, std::vector<T>& result)
         {
@@ -1252,6 +1246,7 @@ namespace morph {
             if (result.size() != data.size()) {
                 throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
             }
+            // Could relax this test...
             if (kernelgrid.getd() != this->d) {
                 throw std::runtime_error ("The kernel CartGrid must have same d as this CartGrid to carry out convolution.");
             }
@@ -1260,64 +1255,56 @@ namespace morph {
             }
 
             // For each rect in this CartGrid, compute the convolution kernel
-            std::list<Rect>::iterator hi = this->rects.begin();
-            for (; hi != this->rects.end(); ++hi) {
+            std::list<Rect>::iterator ri = this->rects.begin();
+
+            for (; ri != this->rects.end(); ++ri) {
                 T sum = T{0};
                 // For each kernel rect, sum up.
-                for (auto kh : kernelgrid.rects) {
-                    std::list<Rect>::iterator dhi = hi;
-                    // Kernel hex coords r,g are: kh.ri, kh.gi, which may be (are EXPECTED to be) +ve or -ve
-                    //
-                    // Origin hex coords are h.ri, h.gi
-                    //
-                    // To get the hex whose data we want to multiply with kh's value,
-                    // can go via neighbour relations, but must be prepared to take a
-                    // variable path because going directly in r direction then directly
-                    // in g direction could take us temporarily outside the boundary of
-                    // the CartGrid.
-                    int rr = kh.ri;
-                    int gg = kh.gi;
+                for (auto kr : kernelgrid.rects) {
+                    std::list<Rect>::iterator dri = ri;
+                    int xx = kr.xi;
+                    int yy = kr.yi;
                     bool failed = false;
                     bool finished = false;
-                    //while (gg != 0 && rr != 0) {
+
                     while (!finished) {
                         bool moved = false;
-                        // Try to move in r direction
-                        if (rr > 0) {
-                            if (dhi->has_ne()) {
-                                dhi = dhi->ne;
-                                --rr;
+                        // Try to move in x direction
+                        if (xx > 0) { // Then kernel rect is to right of 0, so relevant rect on Cartgrid is to east
+                            if (dri->has_ne()) {
+                                dri = dri->ne;
+                                --xx;
                                 moved = true;
-                            } // Didn't move in +r direction
-                        } else if (rr < 0) {
-                            if (dhi->has_nw()) {
-                                dhi = dhi->nw;
-                                ++rr;
+                            } // Didn't move in +x direction
+                        } else if (xx < 0) {
+                            if (dri->has_nw()) {
+                                dri = dri->nw;
+                                ++xx;
                                 moved = true;
-                            } // Didn't move in -r direction
+                            } // Didn't move in -x direction
                         }
-                        // Try to move in g direction
-                        if (gg > 0) {
-                            if (dhi->has_nne()) {
-                                dhi = dhi->nne;
-                                --gg;
+                        // Try to move in y direction
+                        if (yy > 0) {
+                            if (dri->has_nn()) {
+                                dri = dri->nn;
+                                --yy;
                                 moved = true;
-                            } // Didn't move in +g direction
-                        } else if (gg < 0) {
-                            if (dhi->has_nsw()) {
-                                dhi = dhi->nsw;
-                                ++gg;
+                            } // Didn't move in +y direction
+                        } else if (yy < 0) {
+                            if (dri->has_ns()) {
+                                dri = dri->ns;
+                                ++yy;
                                 moved = true;
-                            } // Didn't move in -g direction
+                            } // Didn't move in -y direction
                         }
 
-                        if (rr == 0 && gg == 0) {
+                        if (xx == 0 && yy == 0) {
                             finished = true;
                             break;
                         }
 
                         if (!moved) {
-                            // We're stuck; Can't move in r or g direction, so can't add a contribution
+                            // We're stuck; Can't move in x or y direction, so can't add a contribution
                             failed = true;
                             break;
                         }
@@ -1325,14 +1312,14 @@ namespace morph {
 
                     if (!failed) {
                         // Can do the sum
-                        sum +=  data[dhi->vi] * kerneldata[kh.vi];
+                        sum +=  data[dri->vi] * kerneldata[kr.vi];
                     }
                 }
 
-                result[hi->vi] = sum;
+                result[ri->vi] = sum;
             }
         }
-#endif
+
         /*!
          * What shape domain to set? Set this to the non-default BEFORE calling
          * CartGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
@@ -2085,6 +2072,15 @@ namespace morph {
                 ++ri;
             }
             return nearest;
+        }
+
+        //! Assuming a rectangular CartGrid, find bottom left element
+        std::list<Rect>::iterator findBottomLeft()
+        {
+            std::list<morph::Rect>::iterator bottomleft = this->rects.begin();
+            while (bottomleft->has_ns()) { bottomleft = bottomleft->ns; }
+            while (bottomleft->has_nw()) { bottomleft = bottomleft->nw; }
+            return bottomleft;
         }
 
         /*!
