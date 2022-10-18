@@ -113,12 +113,8 @@ namespace morph {
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
-                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
                 this->colourScale.autoscaled = false;
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
-                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
-                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                          << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
             }
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
@@ -177,15 +173,9 @@ namespace morph {
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
-                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
                 this->colourScale.autoscaled = false;
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
                 this->colourScale.transform (this->dcolour3, this->dcolour3);
-                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
-                std::pair<T,T> maxmin3 = morph::MathAlgo::maxmin (this->dcolour3);
-                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                          << " , G maxmin: " << maxmin2.first << ","<< maxmin2.second
-                          << " , B maxmin: " << maxmin3.first << ","<< maxmin3.second << std::endl;
             }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.

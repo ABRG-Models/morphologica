@@ -32,8 +32,15 @@ namespace morph {
         Boundary // The shape of the arbitrary boundary set with CartGrid::setBoundary
     };
 
+    enum class CartDomainWrap {
+        None,        // No wrapping
+        Horizontal,  // The eastern neighbour of the most eastern element is the most western element on that row
+        Vertical,
+        Both
+    };
+
     /*!
-     * This class is used to build an cartesian grid of rectangular elements.
+     * This class is used to build a Cartesian grid of rectangular elements.
      *
      * It has been developed from HexGrid.h. It looks byzantine in complexity, given
      * than it's 'only' supposed to provide a way to track a rectangular grid. This is
@@ -462,7 +469,8 @@ namespace morph {
 
         //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and creating to x2,y2.
         CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
-                  CartDomainShape shape = CartDomainShape::Rectangle)
+                  CartDomainShape shape = CartDomainShape::Rectangle,
+                  CartDomainWrap wrap = CartDomainWrap::Horizontal)
         {
             this->d = d_;
             this->v = v_;
@@ -470,9 +478,9 @@ namespace morph {
             this->y_span = y2 - y1;
             this->z = z_;
             this->domainShape = shape;
+            this->domainWrap = wrap;
 
             // init2 is the non-symmetic initialisation for making arbitrary rectangular grids.
-            std::cout << "call init2("<<x1<<", etc)\n";
             this->init2 (x1, y1, x2, y2);
         }
 
@@ -699,27 +707,27 @@ namespace morph {
             // around the edge.
             std::list<morph::Rect>::iterator bpi = this->rects.begin();
             // Head to the south west corner
-            while (bpi->has_nw()) { bpi = bpi->nw; }
-            while (bpi->has_ns()) { bpi = bpi->ns; }
+            while (bpi->has_nw() && !bpi->wraps_w()) { bpi = bpi->nw; }
+            while (bpi->has_ns() && !bpi->wraps_s()) { bpi = bpi->ns; }
             bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             //std::cout << "set flag at start on rect " << bpi->outputCart() << std::endl;
 
-            while (bpi->has_ne()) {
+            while (bpi->has_ne() && !bpi->wraps_e()) {
                 bpi = bpi->ne;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going E on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_nn()) {
+            while (bpi->has_nn() && !bpi->wraps_n()) {
                 bpi = bpi->nn;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going N on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_nw()) {
+            while (bpi->has_nw() && !bpi->wraps_w()) {
                 bpi = bpi->nw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going W on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_ns() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
+            while (bpi->has_ns() && !bpi->wraps_s() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
                 bpi = bpi->ns;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going S on rect " << bpi->outputCart() << std::endl;
@@ -872,6 +880,7 @@ namespace morph {
             return ss.str();
         }
 
+#if 0
         /*!
          * Show the coordinates of the vertices of the overall rect grid generated.
          */
@@ -889,6 +898,7 @@ namespace morph {
             }
             return ss.str();
         }
+#endif
 
         /*!
          * Returns the width of the CartGrid (from -x to +x)
@@ -1067,8 +1077,7 @@ namespace morph {
                     ++ri;
                 }
                 // ri now on bottom row; so travel west
-                while (ri->has_nw() == true) { ri = ri->nw; }
-
+                while (ri->has_nw() == true && !ri->wraps_w()) { ri = ri->nw; }
                 // ri should now be the bottom left rect.
                 blr = ri;
 
@@ -1083,7 +1092,7 @@ namespace morph {
                 this->d_push_back (ri);
 
                 do {
-                    if (ri->has_ne() == false) {
+                    if (ri->has_ne() == false || (ri->has_ne() && ri->wraps_e())) {
                         if (ri->yi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
                             break;
@@ -1099,7 +1108,9 @@ namespace morph {
                         ri = ri->ne;
                         this->d_push_back (ri);
                     }
-                } while (ri->has_ne() == true || ri->has_nn() == true);
+
+                } while ((ri->has_ne() == true && !ri->wraps_e())
+                         || (ri->has_nn() == true && !ri->wraps_n()));
 
             } else { // Boundary
 
@@ -1232,6 +1243,84 @@ namespace morph {
             }
         }
 
+        //! Apply a box filter
+        template<typename T>
+        void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+
+            // At each pixel/rect sum up the contributions from a square box of side
+            // boxside. This is symmetric if boxside is odd.
+            //
+            // On either side, walk [(box side - 1) / 2] steps, if boxside is odd.  If
+            // boxside is even, then one walk (right/up) is boxside/2, then other
+            // (left/down) is (boxside/2)-1
+            unsigned int neg_steps = boxside%2==0 ? (boxside/2) - 1 : (boxside-1)/2;
+            unsigned int pos_steps = boxside%2==0 ? (boxside/2) : (boxside-1)/2;
+            T boxa = static_cast<T>(boxside) * static_cast<T>(boxside); // square box area
+
+            // Now can go through the rects
+            std::list<Rect>::iterator ri = this->rects.begin();
+            for (; ri != this->rects.end(); ++ri) {
+                // On each rect, sum up the contributions from neighbours. This is a
+                // naive, slow, but easy to code algorithm. It can be a bit faster if
+                // you keep a track of the sum in the box filter.
+                std::list<Rect>::iterator ri_col = ri;
+                std::list<Rect>::iterator ri_row = ri;
+
+                // First step down to a starting point, without summing
+                unsigned int act_neg_steps = 0;
+                for (unsigned int i = 0; i < neg_steps; ++i) {
+                    if (ri_row->has_ns()) {
+                        ri_row = ri_row->ns;
+                        ++act_neg_steps;
+                    }
+                }
+
+                result[ri->vi] = T{0};
+
+                // Should now be at the bottom of the square.
+                for (unsigned int j = 0; j < (act_neg_steps + 1 + pos_steps); ++j) {
+
+                    ri_col = ri_row; // middle of row
+
+                    result[ri->vi] += data[ri_col->vi]; // add value of middle pixel in row
+
+                    // Step left neg_steps, first, summing
+                    for (unsigned int i = 0; i < neg_steps; ++i) {
+                        if (ri_col->has_nw()) { // May wrap, that's ok
+                            ri_col = ri_col->nw;
+                            result[ri->vi] += data[ri_col->vi];
+                        } // else nothing to add.
+                    }
+                    // Step right pos_steps, summing
+                    ri_col = ri_row; // back to middle
+                    for (unsigned int i = 0; i < pos_steps; ++i) {
+                        if (ri_col->has_ne()) {
+                            ri_col = ri_col->ne;
+                            result[ri->vi] += data[ri_col->vi];
+                        }
+                    }
+
+                    if (ri_row->has_nn()) {
+                        ri_row = ri_row->nn;
+                    } else {
+                        break;
+                    }
+                }
+
+                result[ri->vi] /= boxa;
+            }
+        }
+
         /*!
          * Using this CartGrid as the domain, convolve the domain data \a data with the
          * kernel data \a kerneldata, which exists on another CartGrid, \a
@@ -1326,6 +1415,9 @@ namespace morph {
          * is applied.
          */
         CartDomainShape domainShape = CartDomainShape::Rectangle;
+
+        //! Edge wrapping? None, Horizontal, Vertical or Both.
+        CartDomainWrap domainWrap = CartDomainWrap::None;
 
         /*!
          * The list of rects that make up this CartGrid.
@@ -1434,8 +1526,6 @@ namespace morph {
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
 
-            std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
-
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
 
@@ -1447,9 +1537,9 @@ namespace morph {
             std::vector<std::list<morph::Rect>::iterator>* nextPrevRow = &prevRowOdd;
 
             // Build grid, raster style.
-            for (int yi = _yi; yi <= _yf; ++yi) {
+            for (int yi = _yi; yi <= _yf; ++yi) { // for each row
                 size_t pri = 0;
-                for (int xi = _xi; xi <= _xf; ++xi) {
+                for (int xi = _xi; xi <= _xf; ++xi) { // for each element in row
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
                     auto ri = this->rects.end(); ri--;
@@ -1475,6 +1565,14 @@ namespace morph {
                     ++pri;
                     nextPrevRow->push_back (ri);
                 }
+                // Now row has been created, can complete the wraparound links (if necessary). *nextPrevRow is the current row.
+                if (this->domainWrap == morph::CartDomainWrap::Horizontal || this->domainWrap == morph::CartDomainWrap::Both) {
+                    (*nextPrevRow)[0]->set_nw ((*nextPrevRow)[_xf-_xi]);
+                    (*nextPrevRow)[0]->set_wraps_w();
+                    (*nextPrevRow)[_xf-_xi]->set_ne ((*nextPrevRow)[0]);
+                    (*nextPrevRow)[_xf-_xi]->set_wraps_e();
+                }
+
                 // Swap prevRow and nextPrevRow.
                 std::vector<std::list<morph::Rect>::iterator>* tmp = prevRow;
                 prevRow = nextPrevRow;
@@ -2117,6 +2215,7 @@ namespace morph {
         //! A boundary to apply to the initial, rectangular grid.
         BezCurvePath<float> boundary;
 
+#if 0 // These are never set
         /*
          * Rect references to the rects on the vertices of the rectagonal
          * grid. Configured during init(). These will become invalid when a new
@@ -2127,7 +2226,7 @@ namespace morph {
         std::list<Rect>::iterator vertexNW;
         std::list<Rect>::iterator vertexSW;
         std::list<Rect>::iterator vertexSE;
-
+#endif
         /*!
          * Set true when a new boundary or domain has been applied. This means that
          * the #vertexNE, #vertexSW, and similar iterators are no longer valid.
