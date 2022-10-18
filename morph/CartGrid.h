@@ -1091,7 +1091,6 @@ namespace morph {
 
                 this->d_push_back (ri);
 
-                std::cout << "spinny do while?\n";
                 do {
                     if (ri->has_ne() == false || (ri->has_ne() && ri->wraps_e())) {
                         if (ri->yi == extnts[3]) {
@@ -1112,7 +1111,6 @@ namespace morph {
 
                 } while ((ri->has_ne() == true && !ri->wraps_e())
                          || (ri->has_nn() == true && !ri->wraps_n()));
-                std::cout << "not spinny do while\n";
 
             } else { // Boundary
 
@@ -1122,7 +1120,6 @@ namespace morph {
                 }
             }
 
-            std::cout << "spinny in populate_d_neighbours?\n";
             this->populate_d_neighbours();
         }
 
