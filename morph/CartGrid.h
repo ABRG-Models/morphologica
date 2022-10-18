@@ -1465,9 +1465,6 @@ namespace morph {
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
 
-            std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
-            std::cout << "yi to yf: "<< _yi << " to " << _yf << std::endl;
-
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
 
