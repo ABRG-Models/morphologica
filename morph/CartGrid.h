@@ -1245,7 +1245,7 @@ namespace morph {
 
         //! Apply a box filter
         template<typename T>
-        void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside, bool wrap_h=false, bool wrap_v=false)
+        void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
         {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
@@ -1257,7 +1257,68 @@ namespace morph {
                 throw std::runtime_error ("Pass in separate memory for the result.");
             }
 
-            // write me
+            // At each pixel/rect sum up the contributions from a square box of side
+            // boxside. This is symmetric if boxside is odd.
+            //
+            // On either side, walk [(box side - 1) / 2] steps, if boxside is odd.  If
+            // boxside is even, then one walk (right/up) is boxside/2, then other
+            // (left/down) is (boxside/2)-1
+            unsigned int neg_steps = boxside%2==0 ? (boxside/2) - 1 : (boxside-1)/2;
+            unsigned int pos_steps = boxside%2==0 ? (boxside/2) : (boxside-1)/2;
+            T boxa = static_cast<T>(boxside) * static_cast<T>(boxside); // square box area
+
+            // Now can go through the rects
+            std::list<Rect>::iterator ri = this->rects.begin();
+            for (; ri != this->rects.end(); ++ri) {
+                // On each rect, sum up the contributions from neighbours. This is a
+                // naive, slow, but easy to code algorithm. It can be a bit faster if
+                // you keep a track of the sum in the box filter.
+                std::list<Rect>::iterator ri_col = ri;
+                std::list<Rect>::iterator ri_row = ri;
+
+                // First step down to a starting point, without summing
+                unsigned int act_neg_steps = 0;
+                for (unsigned int i = 0; i < neg_steps; ++i) {
+                    if (ri_row->has_ns()) {
+                        ri_row = ri_row->ns;
+                        ++act_neg_steps;
+                    }
+                }
+
+                result[ri->vi] = T{0};
+
+                // Should now be at the bottom of the square.
+                for (unsigned int j = 0; j < (act_neg_steps + 1 + pos_steps); ++j) {
+
+                    ri_col = ri_row; // middle of row
+
+                    result[ri->vi] += data[ri_col->vi]; // add value of middle pixel in row
+
+                    // Step left neg_steps, first, summing
+                    for (unsigned int i = 0; i < neg_steps; ++i) {
+                        if (ri_col->has_nw()) { // May wrap, that's ok
+                            ri_col = ri_col->nw;
+                            result[ri->vi] += data[ri_col->vi];
+                        } // else nothing to add.
+                    }
+                    // Step right pos_steps, summing
+                    ri_col = ri_row; // back to middle
+                    for (unsigned int i = 0; i < pos_steps; ++i) {
+                        if (ri_col->has_ne()) {
+                            ri_col = ri_col->ne;
+                            result[ri->vi] += data[ri_col->vi];
+                        }
+                    }
+
+                    if (ri_row->has_nn()) {
+                        ri_row = ri_row->nn;
+                    } else {
+                        break;
+                    }
+                }
+
+                result[ri->vi] /= boxa;
+            }
         }
 
         /*!
@@ -1299,13 +1360,13 @@ namespace morph {
                         bool moved = false;
                         // Try to move in x direction
                         if (xx > 0) { // Then kernel rect is to right of 0, so relevant rect on Cartgrid is to east
-                            if (dri->has_real_ne()) {
+                            if (dri->has_ne()) {
                                 dri = dri->ne;
                                 --xx;
                                 moved = true;
                             } // Didn't move in +x direction
                         } else if (xx < 0) {
-                            if (dri->has_real_nw()) {
+                            if (dri->has_nw()) {
                                 dri = dri->nw;
                                 ++xx;
                                 moved = true;
@@ -1313,13 +1374,13 @@ namespace morph {
                         }
                         // Try to move in y direction
                         if (yy > 0) {
-                            if (dri->has_real_nn()) {
+                            if (dri->has_nn()) {
                                 dri = dri->nn;
                                 --yy;
                                 moved = true;
                             } // Didn't move in +y direction
                         } else if (yy < 0) {
-                            if (dri->has_real_ns()) {
+                            if (dri->has_ns()) {
                                 dri = dri->ns;
                                 ++yy;
                                 moved = true;
