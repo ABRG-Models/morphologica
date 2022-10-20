@@ -192,7 +192,8 @@ namespace morph {
 
         //! Append a single datum onto the relevant graph. Build on existing data in
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
-        //! index and counts up from 0.
+        //! index and counts up from 0. Have to save _abscissa and _ordinate in a local
+        //! copy of the data to be able to rescale.
         void append (const Flt& _abscissa, const Flt& _ordinate, const size_t didx)
         {
             this->pendingAppended = true;
@@ -200,10 +201,13 @@ namespace morph {
             Flt o = Flt{0};
             if (this->datastyles[didx].axisside == morph::axisside::left) {
                 o = this->ord1_scale.transform_one (_ordinate);
+                this->ord1.push_back (o);
             } else {
                 o = this->ord2_scale.transform_one (_ordinate);
+                this->ord2.push_back (o);
             }
             Flt a = this->abscissa_scale.transform_one (_abscissa);
+            this->abscissae.push_back (a);
             //std::cout << "transformed coords: " << a << ", " << o << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -212,6 +216,13 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][0] = a;
             (*this->graphDataCoords[didx])[oldsz][1] = o;
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
+
+            if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
+                std::cout << "RESCALE x! writeme next\n";
+            }
+            if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
+                std::cout << "RESCALE y!\n";
+            }
         }
 
         //! Before calling the base class's render method, check if we have any pending data
@@ -426,6 +437,14 @@ namespace morph {
                       const std::vector<Flt>& _data, const DatasetStyle& ds)
         {
             if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
+
+            // Save data first
+            this->abscissae.set_from (_abscissae);
+            if (ds.axisside == morph::axisside::left) {
+                this->ord1.set_from (_data);
+            } else {
+                this->ord2.set_from (_data);
+            }
 
             size_t dsize = _data.size();
             size_t didx = this->graphDataCoords.size();
@@ -805,6 +824,10 @@ namespace morph {
             }
             return within;
         }
+
+        //! Is the passed in coordinate within the graph axes (in the x sense, ignoring z)?
+        bool within_axes_x (morph::Vector<float>& dpt) { return (dpt[0] >= 0 && dpt[0] <= this->width); }
+        bool within_axes_y (morph::Vector<float>& dpt) { return (dpt[1] >= 0 && dpt[1] <= this->height); }
 
         //! dsi: data set iterator
         void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
@@ -1484,10 +1507,16 @@ namespace morph {
         std::vector<std::vector<Vector<float>>*> graphDataCoords;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
+        //! A copy of the abscissa data values
+        morph::vVector<Flt> abscissae;
         //! A scaling for the first (left hand) ordinate
         morph::Scale<Flt> ord1_scale;
+        //! A copy of the first (left hand) ordinate data values
+        morph::vVector<Flt> ord1;
         //! A scaling for the second (right hand) ordinate, if it's a twin axis graph
         morph::Scale<Flt> ord2_scale;
+        //! A copy of the second (right hand) ordinate data values
+        morph::vVector<Flt> ord2;
         //! What's the scaling policy for the abscissa?
         morph::scalingpolicy scalingpolicy_x = morph::scalingpolicy::autoscale;
         //! If required, the abscissa's minimum/max data values
@@ -1501,6 +1530,10 @@ namespace morph {
         //! If required, the second ordinate's minimum/max data values (twinax)
         Flt datamin_y2 = Flt{0};
         Flt datamax_y2 = Flt{1};
+        //! Auto-rescale x axis if data goes off the edge of the graph (by doubling range?)
+        bool auto_rescale_x = false;
+        //! Auto-rescale y axis if data goes off the edge of the graph
+        bool auto_rescale_y = false;
         //! A vector of styles for the datasets to be displayed on this graph
         std::vector<DatasetStyle> datastyles;
         //! A default policy for showing datasets - lines, markers or both
