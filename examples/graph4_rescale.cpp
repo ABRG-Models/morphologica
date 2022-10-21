@@ -31,7 +31,7 @@ int main (int argc, char** argv)
         // Optionally change the size of the graph and range of the axes
         gv->setsize (1.33, 1);
         // Optionally change the range of the axes
-        gv->setlimits (-1, 0.5, -1, 1);
+        gv->setlimits (-1, 0.1, -1, 1);
 
         // Set the graphing policy
         gv->policy = morph::stylepolicy::lines; // markers, lines, both, allcolour
@@ -45,6 +45,7 @@ int main (int argc, char** argv)
         // ylabel2 is the right hand y axis label
         gv->ylabel2 = "f(x) = x" + unicode::toUtf8(unicode::ss5);
 
+        // Enable auto-rescaling of the x axis
         gv->auto_rescale_x = true;
 
         gv->finalize();
