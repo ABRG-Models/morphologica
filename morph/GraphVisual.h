@@ -200,14 +200,15 @@ namespace morph {
             // Transfor the data into temporary containers sd and ad
             Flt o = Flt{0};
             if (this->datastyles[didx].axisside == morph::axisside::left) {
+                this->ord1.push_back (_ordinate);
+                this->absc1.push_back (_abscissa);
                 o = this->ord1_scale.transform_one (_ordinate);
-                this->ord1.push_back (o);
             } else {
+                this->ord2.push_back (_ordinate);
+                this->absc2.push_back (_abscissa);
                 o = this->ord2_scale.transform_one (_ordinate);
-                this->ord2.push_back (o);
             }
             Flt a = this->abscissa_scale.transform_one (_abscissa);
-            this->abscissae.push_back (a);
             //std::cout << "transformed coords: " << a << ", " << o << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -218,8 +219,23 @@ namespace morph {
             (*this->graphDataCoords[didx])[oldsz][2] = Flt{0};
 
             if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
-                std::cout << "RESCALE x! writeme next\n";
+                std::cout << "RESCALE x!\n";
+                this->clear();
+                this->graphDataCoords.clear();
+                this->pendingAppended = true; // as the graph will be re-drawn
+                this->ord1_scale.autoscaled = false;
+                this->ord2_scale.autoscaled = false;
+                this->setlimits_x (this->datamin_x, this->datamax_x*2.0f);
+                if (!this->ord1.empty()) {
+                    this->setdata (this->absc1, this->ord1, this->ds_ord1);
+                }
+                if (!this->ord2.empty()) {
+                    this->setdata (this->absc2, this->ord2, this->ds_ord2);
+                }
+                VisualModel::clear(); // Get rid of the vertices
+                this->initializeVertices(); // Re-build
             }
+
             if (!this->within_axes_y ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_y) {
                 std::cout << "RESCALE y!\n";
             }
@@ -239,7 +255,7 @@ namespace morph {
             VisualModel::render();
         }
 
-        //! Clear all the data for the graph, but leave the containers in place.
+        //! Clear all the coordinate data for the graph, but leave the containers in place.
         void clear()
         {
             size_t dsize = this->graphDataCoords.size();
@@ -436,14 +452,18 @@ namespace morph {
         void setdata (const std::vector<Flt>& _abscissae,
                       const std::vector<Flt>& _data, const DatasetStyle& ds)
         {
+            std::cout << "abscissae size " << _abscissae.size() << " and data size: " << _data.size() << std::endl;
             if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
 
             // Save data first
-            this->abscissae.set_from (_abscissae);
             if (ds.axisside == morph::axisside::left) {
+                this->absc1.set_from (_abscissae);
                 this->ord1.set_from (_data);
+                this->ds_ord1 = ds;
             } else {
+                this->absc2.set_from (_abscissae);
                 this->ord2.set_from (_data);
+                this->ds_ord2 = ds;
             }
 
             size_t dsize = _data.size();
@@ -941,6 +961,7 @@ namespace morph {
         void drawLegend()
         {
             size_t gd_size = this->graphDataCoords.size();
+            std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
 
             // Text offset from marker to text
             morph::Vector<float> toffset = {this->fontsize, 0.0f, 0.0f};
@@ -1507,12 +1528,17 @@ namespace morph {
         std::vector<std::vector<Vector<float>>*> graphDataCoords;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
-        //! A copy of the abscissa data values
-        morph::vVector<Flt> abscissae;
+        //! A copy of the abscissa data values for ord1
+        morph::vVector<Flt> absc1;
+        //! A copy of the abscissa data values for ord2
+        morph::vVector<Flt> absc2;
         //! A scaling for the first (left hand) ordinate
         morph::Scale<Flt> ord1_scale;
         //! A copy of the first (left hand) ordinate data values
         morph::vVector<Flt> ord1;
+        //! ds_ord1
+        morph::DatasetStyle ds_ord1;
+        morph::DatasetStyle ds_ord2;
         //! A scaling for the second (right hand) ordinate, if it's a twin axis graph
         morph::Scale<Flt> ord2_scale;
         //! A copy of the second (right hand) ordinate data values
