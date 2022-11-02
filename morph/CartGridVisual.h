@@ -72,7 +72,7 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices()
+        virtual void initializeVertices()
         {
             switch (this->cartVisMode) {
             case CartVisMode::Triangles:
@@ -138,6 +138,8 @@ namespace morph {
                     this->indices.push_back (NSW(ri));
                 }
             }
+
+            this->idx = this->vertexPositions.size();
         }
 
         //! Show a set of hexes at the zero?
@@ -154,7 +156,7 @@ namespace morph {
             float vy = 0.5f * dy;
 
             unsigned int nrect = this->cg->num();
-            unsigned int idx = 0;
+            this->idx = 0;
 
             if (this->scalarData != nullptr) {
                 this->dcopy.resize (this->scalarData->size());
@@ -299,23 +301,23 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 4 triangles in the hex
-                this->indices.push_back (idx+1);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+2);
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
 
-                this->indices.push_back (idx+2);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+3);
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
 
-                this->indices.push_back (idx+3);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+4);
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
 
-                this->indices.push_back (idx+4);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+1);
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
 
-                idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
+                this->idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
             }
 
 #if 0
@@ -376,31 +378,31 @@ namespace morph {
                     this->vertex_push (clr, this->vertexColors);
 
                     // Define indices now to produce the 6 triangles in the hex
-                    this->indices.push_back (idx+1);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+2);
+                    this->indices.push_back (this->idx+1);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+2);
 
-                    this->indices.push_back (idx+2);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+3);
+                    this->indices.push_back (this->idx+2);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+3);
 
-                    this->indices.push_back (idx+3);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+4);
+                    this->indices.push_back (this->idx+3);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+4);
 
-                    this->indices.push_back (idx+4);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+5);
+                    this->indices.push_back (this->idx+4);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+5);
 
-                    this->indices.push_back (idx+5);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+6);
+                    this->indices.push_back (this->idx+5);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+6);
 
-                    this->indices.push_back (idx+6);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+1);
+                    this->indices.push_back (this->idx+6);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+1);
 
-                    idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                    this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
                 }
             }
             // End trial grid
