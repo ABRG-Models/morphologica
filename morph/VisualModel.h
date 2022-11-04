@@ -362,6 +362,14 @@ namespace morph {
             this->viewmatrix.translate (v0);
         }
 
+        void setViewRotationFixTexts (const Quaternion<float>& r)
+        {
+            this->viewmatrix.setToIdentity();
+            this->mv_rotation = r;
+            this->viewmatrix.translate (this->mv_offset);
+            this->viewmatrix.rotate (this->mv_rotation);
+        }
+
         //! Set a rotation (only) into the view
         void setViewRotation (const Quaternion<float>& r)
         {
@@ -373,7 +381,7 @@ namespace morph {
             // When rotating a model that contains texts, we need to rotate the scene
             // for the texts and also inverse-rotate the view of the texts.
             for (auto& t : this->texts) {
-                // Rotate the scene. Note this won't work if the CisualModel has a
+                // Rotate the scene. Note this won't work if the VisualModel has a
                 // mv_offset that is away from the origin.
                 t->setSceneRotation (r); // Need this to rotate about mv_offset. BUT the
                                          // translation is already there in the text,
