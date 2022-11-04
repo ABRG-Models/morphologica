@@ -31,10 +31,10 @@ namespace morph {
     public:
         // Note, we need a Quaternion which has magnitude 1 as the default.
         Quaternion (void)
-            : w(1.0)
-            , x(0.0)
-            , y(0.0)
-            , z(0.0) {}
+            : w(Flt{1})
+            , x(Flt{0})
+            , y(Flt{0})
+            , z(Flt{0}) {}
 
         Quaternion (Flt _w, Flt _x, Flt _y, Flt _z)
             : w(_w)
@@ -64,7 +64,7 @@ namespace morph {
          */
         void renormalize (void)
         {
-            Flt oneovermag = 1.0 / std::sqrt (w*w + x*x + y*y + z*z);
+            Flt oneovermag = Flt{1} / std::sqrt (w*w + x*x + y*y + z*z);
             this->w *= oneovermag;
             this->x *= oneovermag;
             this->y *= oneovermag;
@@ -81,7 +81,7 @@ namespace morph {
         bool checkunit (void)
         {
             bool rtn = true;
-            Flt metric = 1.0 - (w*w + x*x + y*y + z*z);
+            Flt metric = Flt{1} - (w*w + x*x + y*y + z*z);
             if (std::abs(metric) > morph::Quaternion<Flt>::unitThresh) {
                 rtn = false;
             }
@@ -133,6 +133,15 @@ namespace morph {
             return qi;
         }
 
+        //! Reset to a zero rotation
+        void reset()
+        {
+            this->w = Flt{1};
+            this->x = Flt{0};
+            this->y = Flt{0};
+            this->z = Flt{0};
+        }
+
         //! Multiply this quaternion by other as: this = this * q2, i.e. q1 is 'this->'
         void postmultiply (const Quaternion<Flt>& q2)
         {
@@ -169,7 +178,7 @@ namespace morph {
          */
         void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
         {
-            Flt halfangle = angle*0.5;
+            Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis_x * sinHalf, axis_y * sinHalf, axis_z * sinHalf);
@@ -182,7 +191,7 @@ namespace morph {
          */
         void rotate (const std::array<Flt, 3>& axis, const Flt angle)
         {
-            Flt halfangle = angle*0.5;
+            Flt halfangle = angle * Flt{0.5};
             Flt cosHalf = std::cos (halfangle);
             Flt sinHalf = std::sin (halfangle);
             Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
@@ -212,24 +221,24 @@ namespace morph {
         void rotationMatrix (std::array<Flt, 16>& mat) const
         {
             mat[0] = w*w + x*x - y*y - z*z;
-            mat[1] = 2*x*y + 2*w*z;
-            mat[2] = 2*x*z - 2*w*y;
-            mat[3] = 0.0;
+            mat[1] = Flt{2}*x*y + Flt{2}*w*z;
+            mat[2] = Flt{2}*x*z - Flt{2}*w*y;
+            mat[3] = Flt{0};
 
-            mat[4] = 2*x*y - 2*w*z;
+            mat[4] = Flt{2}*x*y - Flt{2}*w*z;
             mat[5] = w*w - x*x + y*y - z*z;
-            mat[6] = 2*y*z - 2*w*x;
-            mat[7] = 0.0;
+            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[7] = Flt{0};
 
-            mat[8] = 2*x*z + 2*w*y;
-            mat[9] = 2*y*z + 2*w*x;
+            mat[8] = Flt{2}*x*z + Flt{2}*w*y;
+            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
             mat[10] = w*w - x*x - y*y + z*z;
-            mat[11] = 0.0;
+            mat[11] = Flt{0};
 
-            mat[12] = 0.0;
-            mat[13] = 0.0;
-            mat[14] = 0.0;
-            mat[15] = 1.0;
+            mat[12] = Flt{0};
+            mat[13] = Flt{0};
+            mat[14] = Flt{0};
+            mat[15] = Flt{1};
         }
 
         //! Obtain rotation matrix assuming this IS a unit Quaternion
@@ -243,25 +252,25 @@ namespace morph {
         //! Rotate the matrix \a mat by this Quaternion, assuming it's a unit Quaternion
         void unitRotationMatrix (std::array<Flt, 16>& mat) const
         {
-            mat[0] = 1.0 - 2*y*y - 2*z*z;
-            mat[1] = 2*x*y + 2*w*z;
-            mat[2] = 2*x*z - 2*w*y;
-            mat[3] = 0.0;
+            mat[0] = Flt{1} - Flt{2}*y*y - Flt{2}*z*z;
+            mat[1] = Flt{2}*x*y + Flt{2}*w*z;
+            mat[2] = Flt{2}*x*z - Flt{2}*w*y;
+            mat[3] = Flt{0};
 
-            mat[4] = 2*x*y - 2*w*z;
-            mat[5] = 1.0 - 2*x*x - 2*z*z;
-            mat[6] = 2*y*z - 2*w*x;
-            mat[7] = 0.0;
+            mat[4] = Flt{2}*x*y - Flt{2}*w*z;
+            mat[5] = 1.0 - Flt{2}*x*x - Flt{2}*z*z;
+            mat[6] = Flt{2}*y*z - Flt{2}*w*x;
+            mat[7] = Flt{0};
 
-            mat[8] = 2*x*z + 2*w*y;
-            mat[9] = 2*y*z + 2*w*x;
-            mat[10] = 1.0 - 2*x*x - 2*y*y;
-            mat[11] = 0.0;
+            mat[8] = Flt{2}*x*z + Flt{2}*w*y;
+            mat[9] = Flt{2}*y*z + Flt{2}*w*x;
+            mat[10] = Flt{1} - Flt{2}*x*x - Flt{2}*y*y;
+            mat[11] = Flt{0};
 
-            mat[12] = 0.0;
-            mat[13] = 0.0;
-            mat[14] = 0.0;
-            mat[15] = 1.0;
+            mat[12] = Flt{0};
+            mat[13] = Flt{0};
+            mat[14] = Flt{0};
+            mat[15] = Flt{1};
         }
 
         //! Overload the stream output operator
