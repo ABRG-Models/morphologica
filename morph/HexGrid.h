@@ -452,7 +452,7 @@ namespace morph {
                  HexDomainShape shape = HexDomainShape::Boundary)
         {
             this->d = d_;
-            this->v = this->d * SQRT_OF_3_OVER_2_F;
+            this->v = this->d * morph::mathconst<float>::root_3_over_2;
             this->x_span = x_span_;
             this->z = z_;
             this->domainShape = shape;
@@ -468,7 +468,7 @@ namespace morph {
         void init (float d_, float x_span_, float z_ = 0.0f)
         {
             this->d = d_;
-            this->v = this->d * SQRT_OF_3_OVER_2_F;
+            this->v = this->d * morph::mathconst<float>::root_3_over_2;
             this->x_span = x_span_;
             this->z = z_;
             this->init();
@@ -1062,19 +1062,19 @@ namespace morph {
          * The distance from the centre of the Hex to any of the vertices. This is the
          * "long radius".
          */
-        float getLR() const { return (this->d/morph::SQRT_OF_3_F); }
+        float getLR() const { return (this->d/morph::mathconst<float>::sqrt_of_3); }
 
         /*!
          * The vertical distance from the centre of the hex to the "north east" vertex
          * of the hex.
          */
-        float getVtoNE() const { return (this->d/(2.0f*morph::SQRT_OF_3_F)); }
+        float getVtoNE() const { return (this->d/(2.0f*morph::mathconst<float>::sqrt_of_3)); }
 
         /*!
          * Compute and return the area of one hex in the grid. The area is that of 6
          * triangles: (1/2 LR * d/2) * 6 // or (d*d*3)/(2*sqrt(3)) = d * d * sqrt(3)/2
          */
-        float getHexArea() const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
+        float getHexArea() const { return (this->d * this->d * morph::mathconst<float>::root_3_over_2); }
 
         /*!
          * Find the minimum value of x' on the HexGrid, where x' is the x axis rotated
@@ -2758,7 +2758,7 @@ namespace morph {
          * The centre to centre hex distance between hexes on adjacent rows - the
          * 'vertical' distance.
          */
-        float v = 1.0f * SQRT_OF_3_OVER_2_F;
+        float v = 1.0f * morph::mathconst<float>::root_3_over_2;
 
         /*!
          * Give the hexagonal hex grid a diameter of approximately x_span in the
