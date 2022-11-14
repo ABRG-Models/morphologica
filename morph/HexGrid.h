@@ -795,16 +795,49 @@ namespace morph {
 
         /*!
          * Compute a set of coordinates arranged as a parallelogram
-         * \param r Number of hexes to the E (and to the W)
-         * \param g Number of hexes to the NE (and SW)
+         * \param re Number of hexes to the E
+         * \param gne Number of hexes to the NE
+         * \param rw Number of hexes to the W
+         * \param gsw Number of hexes to the SW
          * \param c centre argument so that the parallelogram centre is offset from the coordinate origin
          * \return A vector of the coordinates of points on the generated pgram
          */
-        std::vector<BezCoord<float>> parallelogramCompute (const int r, const int g,
+        std::vector<BezCoord<float>> parallelogramCompute (const int re, const int gne,
+                                                           const int rw, const int gsw,
                                                            const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            throw std::runtime_error ("HexGrid::parallelogramCompute: Implement me");
+            // To to bottom left first
+            float x = c.first - (rw * this->d + gsw * this->d/2.0f);
+            float y = c.second - gsw * this->v;
+
+            // 'Draw' bottom
+            for (int i = 0; i < 2*(rw+re); ++i) {
+                morph::BezCoord<float> b(std::make_pair(x, y));
+                bpoints.push_back (b);
+                x += this->d/2.0f;
+            }
+            // Right
+            for (int i = 0; i < 2*(gsw+gne); ++i) {
+                morph::BezCoord<float> b(std::make_pair(x, y));
+                bpoints.push_back (b);
+                x += this->d/4.0f;
+                y += this->v/2.0f;
+            }
+            // Top
+            for (int i = 0; i < 2*(rw+re); ++i) {
+                morph::BezCoord<float> b(std::make_pair(x, y));
+                bpoints.push_back (b);
+                x -= this->d/2.0f;
+            }
+            // Left
+            for (int i = 0; i < 2*(gsw+gne); ++i) {
+                morph::BezCoord<float> b(std::make_pair(x, y));
+                bpoints.push_back (b);
+                x -= this->d/4.0f;
+                y -= this->v/2.0f;
+            }
+
             return bpoints;
         }
 
@@ -907,7 +940,10 @@ namespace morph {
         void setParallelogramBoundary (const int r, const int g,
                                        const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
-            std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, c);
+            if (this->domainShape == morph::HexDomainShape::Parallelogram) {
+                throw std::runtime_error ("Use setParallelogramBoundary on a domain of shape 'Hexagon' or 'Boundary'");
+            }
+            std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, r, g, c);
             this->setBoundary (bpoints, offset);
         }
 
