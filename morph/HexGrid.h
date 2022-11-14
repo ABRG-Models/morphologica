@@ -27,7 +27,13 @@
 namespace morph {
 
     /*!
-     * Enumerates the way that the guidance molecules are set up
+     * The 'domain' is the set of hexagons that exist in the HexGrid. The idea of
+     * 'Rectangle' and 'Parallelogram' was to have a domain of hexes underlying a region
+     * into which an arbitrary boundary had been set, thus making the strides between
+     * hexes in different rows of the HexGrid predictable. This turned out to give no
+     * performance advantage over simply setting a boundary and discarding all the hexes
+     * outside the boundary. Mostly, when you use a HexGrid, you'll want
+     * HexDomainShape::Boundary. This is the default.
      */
     enum class HexDomainShape {
         Rectangle,
@@ -925,7 +931,7 @@ namespace morph {
         }
 
         /*!
-         * Set up a rectangular boundary of width x and height y
+         * Set up a rectangular boundary of width x and height y.
          */
         void setRectangularBoundary (const float x, const float y,
                                      const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
@@ -1566,8 +1572,10 @@ namespace morph {
          * What shape domain to set? Set this to the non-default BEFORE calling
          * HexGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
          * is applied.
+         *
+         * HexDomainShape::Boundary is most commonly used, so is the default.
          */
-        HexDomainShape domainShape = HexDomainShape::Parallelogram;
+        HexDomainShape domainShape = HexDomainShape::Boundary;
 
         /*!
          * The list of hexes that make up this HexGrid.
