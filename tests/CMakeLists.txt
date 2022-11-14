@@ -253,9 +253,6 @@ add_test(testQuaternion testQuaternion)
 add_executable(testVector testVector.cpp)
 add_test(testVector testVector)
 
-add_executable(testvec testvec.cpp)
-add_test(testvec testvec)
-
 # testVector elemental operations
 add_executable(testVectorElementOps testVectorElementOps.cpp)
 add_test(testVectorElementOps testVectorElementOps)
