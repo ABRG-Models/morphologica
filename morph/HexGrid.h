@@ -761,7 +761,6 @@ namespace morph {
             }
 
             this->populate_d_vectors();
-
         }
 
         /*!
@@ -872,7 +871,7 @@ namespace morph {
             }
 
             // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
-            for (double phi = 0.0; phi < morph::TWO_PI_D; phi+=delta_phi) {
+            for (double phi = 0.0; phi < morph::mathconst<double>::two_pi; phi+=delta_phi) {
                 float x_pt = static_cast<float>(a * std::cos (phi) + c.first);
                 float y_pt = static_cast<float>(b * std::sin (phi) + c.second);
                 morph::BezCoord<float> b(std::make_pair(x_pt, y_pt));
