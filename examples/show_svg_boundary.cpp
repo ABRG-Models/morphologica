@@ -60,7 +60,7 @@ int main(int argc, char** argv)
         // Read the curves
         ReadCurves r(argv[1]);
         // Create a HexGrid
-        morph::HexGrid hg(hexdia, gridspan, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid hg(hexdia, gridspan, 0);
         // Apply the curves as a boundary
         cout << "Number of hexes before setting boundary: " << hg.num() << endl;
         hg.setBoundary (r.getCorticalPath());

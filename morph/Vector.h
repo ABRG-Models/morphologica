@@ -174,6 +174,24 @@ namespace morph {
             return rtn;
         }
 
+        //! Return this Vector in single precision, float format
+        Vector<float, N> as_float() const
+        {
+            Vector<float, N> v;
+            v.zero();
+            v += *this;
+            return v;
+        }
+
+        //! Return this Vector in double precision, float format
+        Vector<float, N> as_double() const
+        {
+            Vector<double, N> v;
+            v.zero();
+            v += *this;
+            return v;
+        }
+
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
         {

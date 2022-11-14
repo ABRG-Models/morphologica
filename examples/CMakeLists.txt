@@ -86,18 +86,6 @@ if(ARMADILLO_FOUND)
     target_link_libraries(hexgrid GLEW::GLEW)
   endif()
 
-  add_executable(hexgrid_pgram hexgrid_pgram.cpp)
-  target_link_libraries(hexgrid_pgram OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(hexgrid_pgram GLEW::GLEW)
-  endif()
-
-  add_executable(hexgrid_hexdom hexgrid_hexdom.cpp)
-  target_link_libraries(hexgrid_hexdom OpenGL::GL glfw Freetype::Freetype)
-  if(USE_GLEW)
-    target_link_libraries(hexgrid_hexdom GLEW::GLEW)
-  endif()
-
   add_executable(unicode_coordaxes unicode_coordaxes.cpp)
   target_link_libraries(unicode_coordaxes OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)

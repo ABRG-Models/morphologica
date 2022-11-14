@@ -15,7 +15,7 @@ int main()
         std::string curvepath = "../../tests/trialmod.svg";
         morph::ReadCurves r(curvepath);
 
-        morph::HexGrid hg(0.02, 7, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid hg(0.02, 7, 0);
         hg.setBoundary (r.getCorticalPath());
 
         std::cout << hg.extent() << std::endl;

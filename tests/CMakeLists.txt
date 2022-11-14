@@ -169,34 +169,6 @@ if(${glfw3_FOUND})
       endif()
     endif(HDF5_FOUND)
 
-    # Test boundary pgram
-    add_executable(testdom_pgram testdom_pgram.cpp)
-    target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_pgram GLEW::GLEW)
-    endif()
-
-    # Test boundary rect
-    add_executable(testdom_rect testdom_rect.cpp)
-    target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_rect GLEW::GLEW)
-    endif()
-
-    # Test boundary hex
-    add_executable(testdom_hex testdom_hex.cpp)
-    target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_hex GLEW::GLEW)
-    endif()
-
-    # Test boundary bound
-    add_executable(testdom_bound testdom_bound.cpp)
-    target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_bound GLEW::GLEW)
-    endif()
-
     add_executable(testbighexgrid testbighexgrid.cpp)
     target_link_libraries(testbighexgrid OpenGL::GL glfw Freetype::Freetype)
     if(USE_GLEW)
@@ -280,6 +252,9 @@ add_test(testQuaternion testQuaternion)
 # testVector.
 add_executable(testVector testVector.cpp)
 add_test(testVector testVector)
+
+add_executable(testvec testvec.cpp)
+add_test(testvec testvec)
 
 # testVector elemental operations
 add_executable(testVectorElementOps testVectorElementOps.cpp)

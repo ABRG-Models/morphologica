@@ -179,6 +179,12 @@ namespace morph {
         //! Show a set of hexes at the zero?
         bool zerogrid = false;
 
+        //! Show boundary as 'marked' hexes?
+        bool showboundary = false;
+
+        //! Show centre hex as a 'marked' hex?
+        bool showcentre = false;
+
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
@@ -225,6 +231,12 @@ namespace morph {
                 // Use a single colour for each hex, even though hex z positions are
                 // interpolated. Do the _colour_ scaling:
                 std::array<float, 3> clr = this->setColour (hi);
+                if (this->showboundary && (this->hg->vhexen[hi])->boundaryHex() == true) {
+                    this->markHex (hi);
+                }
+                if (this->showcentre && this->hg->d_x[hi] == 0.0f && this->hg->d_y[hi] == 0.0f) {
+                    this->markHex (hi);
+                }
                 std::array<float, 3> blkclr = {0,0,0};
 
                 // First push the 7 positions of the triangle vertices, starting with the centre

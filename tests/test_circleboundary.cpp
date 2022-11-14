@@ -28,7 +28,7 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid hg(0.01, 3, 0);
         hg.setCircularBoundary (1);
 
         std::cout << hg.extent() << std::endl;
