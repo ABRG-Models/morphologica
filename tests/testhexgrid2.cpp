@@ -16,7 +16,7 @@ int main()
         string curvepath = "../../tests/trial.svg";
         ReadCurves r(curvepath);
 
-        HexGrid hg(0.02, 7, 0, HexDomainShape::Boundary);
+        HexGrid hg(0.02f, 7.0f, 0.0f);
         hg.setBoundary (r.getCorticalPath());
 
         cout << hg.extent() << endl;

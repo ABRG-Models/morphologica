@@ -1,6 +1,9 @@
 /*
  * Author: Seb James
  *
+ * In this iteration of HexGrid, the idea of the 'domain' has been taken out, as it
+ * wasn't useful.
+ *
  * Date: 2018/07
  */
 #pragma once
@@ -25,22 +28,6 @@
 #include <limits>
 
 namespace morph {
-
-    /*!
-     * The 'domain' is the set of hexagons that exist in the HexGrid. The idea of
-     * 'Rectangle' and 'Parallelogram' was to have a domain of hexes underlying a region
-     * into which an arbitrary boundary had been set, thus making the strides between
-     * hexes in different rows of the HexGrid predictable. This turned out to give no
-     * performance advantage over simply setting a boundary and discarding all the hexes
-     * outside the boundary. Mostly, when you use a HexGrid, you'll want
-     * HexDomainShape::Boundary. This is the default.
-     */
-    enum class HexDomainShape {
-        Rectangle,
-        Parallelogram,
-        Hexagon,
-        Boundary // The shape of the arbitrary boundary set with HexGrid::setBoundary
-    };
 
     /*!
      * This class is used to build an hexagonal grid of hexagons. The member hexagons
@@ -70,8 +57,8 @@ namespace morph {
          *
          * Vectors containing the "domain" info extracted from the list of Hexes. The
          * "domain" is the set of Hexes left over after the boundary has been applied
-         * and the outer Hexes have been reduced down to a regular, somewhat
-         * rectangular set.
+         * and the original, outer Hexes have been reduced down to those that will be
+         * used in the computation.
          *
          * Each of these is prefixed d_ and is carefully aligned.
          *
@@ -448,14 +435,12 @@ namespace morph {
          * which may be useful as an identifier if several HexGrids are being managed
          * by client code, but is not otherwise made use of.
          */
-        HexGrid (float d_, float x_span_, float z_ = 0.0f,
-                 HexDomainShape shape = HexDomainShape::Boundary)
+        HexGrid (float d_, float x_span_, float z_ = 0.0f)
         {
             this->d = d_;
             this->v = this->d * morph::mathconst<float>::root_3_over_2;
             this->x_span = x_span_;
             this->z = z_;
-            this->domainShape = shape;
             this->init();
         }
 
@@ -549,14 +534,7 @@ namespace morph {
                 throw std::runtime_error (ee.str());
             }
 
-            if (this->domainShape == morph::HexDomainShape::Boundary) {
-                // Boundary IS contiguous, discard hexes outside the boundary.
-                this->discardOutsideBoundary();
-            } else {
-                throw std::runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to "
-                                          "do if domain shape is not HexDomainShape::Boundary.");
-            }
-
+            this->discardOutsideBoundary();
             this->populate_d_vectors();
         }
 
@@ -642,16 +620,8 @@ namespace morph {
                 }
             }
 
-            if (this->domainShape == morph::HexDomainShape::Boundary) {
-                this->discardOutsideBoundary();
-                this->populate_d_vectors();
-            } else {
-                // Given that the boundary IS contiguous, can now set a domain of hexes (rectangular,
-                // parallelogram or hexagonal region, such that computations can be efficient) and discard
-                // hexes outside the domain.  setDomain() will define a regular domain, then discard those
-                // hexes outside the regular domain and populate all the d_ vectors.
-                this->setDomain();
-            }
+            this->discardOutsideBoundary();
+            this->populate_d_vectors();
         }
 
         /*!
@@ -753,13 +723,8 @@ namespace morph {
                 throw std::runtime_error (ee.str());
             }
 
-            if (this->domainShape == morph::HexDomainShape::Boundary) {
-                // Boundary IS contiguous, discard hexes outside the boundary.
-                this->discardOutsideBoundary();
-            } else {
-                throw std::runtime_error ("For now, setBoundary (const list<Hex>& pHexes) doesn't know what to do if domain shape is not HexDomainShape::Boundary.");
-            }
-
+            // Boundary IS contiguous, discard hexes outside the boundary.
+            this->discardOutsideBoundary();
             this->populate_d_vectors();
         }
 
@@ -945,22 +910,8 @@ namespace morph {
         void setParallelogramBoundary (const int r, const int g,
                                        const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
         {
-            if (this->domainShape == morph::HexDomainShape::Parallelogram) {
-                throw std::runtime_error ("Use setParallelogramBoundary on a domain of shape 'Hexagon' or 'Boundary'");
-            }
             std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, r, g, c);
             this->setBoundary (bpoints, offset);
-        }
-
-        /*!
-         * To use the originally generated hexagonal domain as a simple HexGrid,k call
-         * this to ensure vector indices and the domain are all set up as they should
-         * be.
-         */
-        void leaveAsHexagon()
-        {
-            this->renumberVectorIndices();
-            this->setDomain();
         }
 
         /*!
@@ -1153,124 +1104,20 @@ namespace morph {
         }
 
         /*!
-         * Populate d_ vectors. simple version. (Finds extents, then calls
-         * populate_d_vectors(const array<int, 6>&)
+         * Populate the d_* vectors
          */
         void populate_d_vectors()
         {
-            std::array<int, 6> extnts = this->findBoundaryExtents();
-            this->populate_d_vectors (extnts);
-        }
-
-        /*!
-         * Populate d_ vectors, paying attention to domainShape.
-         */
-        void populate_d_vectors (const std::array<int, 6>& extnts)
-        {
-            // First, find the starting hex. For Rectangular and parallelogram domains,
-            // that's the bottom left hex.
+            // The starting hex is always the centre one.
             std::list<morph::Hex>::iterator hi = this->hexen.begin();
-            // bottom left hex.
-            std::list<morph::Hex>::iterator blh = this->hexen.end();
-
-            if (this->domainShape == morph::HexDomainShape::Rectangle
-                || this->domainShape == morph::HexDomainShape::Parallelogram) {
-
-                // Use neighbour relations to go from bottom left to top right.  Find hex on bottom row.
-                while (hi != this->hexen.end()) {
-                    if (hi->gi == extnts[2]) {
-                        // We're on the bottom row
-                        break;
-                    }
-                    ++hi;
-                }
-                // hi now on bottom row; so travel west
-                while (hi->has_nw() == true) { hi = hi->nw; }
-
-                // hi should now be the bottom left hex.
-                blh = hi;
-
-                // Sanity check
-                if (blh->has_nne() == false || blh->has_ne() == false || blh->has_nnw() == true) {
-                    std::stringstream ee;
-                    ee << "We expect the bottom left hex to have an east and a "
-                       << "north east neighbour, but no north west neighbour. This has: "
-                       << (blh->has_nne() == true ? "Neighbour NE ":"NO Neighbour NE ")
-                       << (blh->has_ne() == true ? "Neighbour E ":"NO Neighbour E ")
-                       << (blh->has_nnw() == true ? "Neighbour NW ":"NO Neighbour NW ");
-                    throw std::runtime_error (ee.str());
-                }
-            } // else Hexagon or Boundary starts from 0, hi already set to hexen.begin();
-
             // Clear the d_ vectors.
             this->d_clear();
-
             // Now raster through the hexes, building the d_ vectors.
-            if (this->domainShape == morph::HexDomainShape::Rectangle) {
-                bool next_row_ne = true;
+            while (hi != this->hexen.end()) {
                 this->d_push_back (hi);
-                do {
-                    hi = hi->ne;
-
-                    this->d_push_back (hi);
-
-                    if (hi->has_ne() == false) {
-                        if (hi->gi == extnts[3]) {
-                            // last (i.e. top) row and no neighbour east, so finished.
-                            break;
-                        } else {
-                            if (next_row_ne == true) {
-                                hi = blh->nne;
-                                next_row_ne = false;
-                                blh = hi;
-                            } else {
-                                hi = blh->nnw;
-                                next_row_ne = true;
-                                blh = hi;
-                            }
-                            this->d_push_back (hi);
-                        }
-                    }
-                } while (hi->has_ne() == true);
-
-            } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
-
-                this->d_push_back (hi); // Push back the first one, which is guaranteed to have a NE
-                while (hi->has_ne() == true) {
-
-                    // Step to new hex to the E
-                    hi = hi->ne;
-
-                    if (hi->has_ne() == false) {
-                        // New hex has no NE, so it is on end of row.
-                        if (hi->gi == extnts[3]) {
-                            // on end of top row and no neighbour east, so finished; push back and break
-                            this->d_push_back (hi);
-                            break;
-                        } else {
-                            // On end of non-top row, so push back...
-                            this->d_push_back (hi);
-                            // do the 'carriage return'...
-                            hi = blh->nne;
-                            // And push that back...
-                            this->d_push_back (hi);
-                            // Update the new 'start of last row' iterator
-                            blh = hi;
-                        }
-                    } else {
-                        // New hex does have neighbour east, so just push it back.
-                        this->d_push_back (hi);
-                    }
-                }
-
-            } else { // Hexagon or Boundary
-
-                while (hi != this->hexen.end()) {
-                    this->d_push_back (hi);
-                    hi++;
-                }
+                hi++;
             }
-
+            // Set up the neighbour relations
             this->populate_d_neighbours();
         }
 
@@ -1566,15 +1413,6 @@ namespace morph {
             expr_resampled /= expr_resampled.max(); // renormalise result
             return expr_resampled;
         }
-
-        /*!
-         * What shape domain to set? Set this to the non-default BEFORE calling
-         * HexGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
-         * is applied.
-         *
-         * HexDomainShape::Boundary is most commonly used, so is the default.
-         */
-        HexDomainShape domainShape = HexDomainShape::Boundary;
 
         /*!
          * The list of hexes that make up this HexGrid.
@@ -2698,42 +2536,6 @@ namespace morph {
         }
 
         /*!
-         * setDomain() will define a regular domain, then discard those hexes outside
-         * the regular domain and populate all the d_ vectors.
-         *
-         * setDomain() ASSUMES that a boundary has already been set.
-         */
-        void setDomain()
-        {
-            // 1. Find extent of boundary, both left/right and up/down, with 'buffer region' already added.
-            std::array<int, 6> extnts = this->findBoundaryExtents();
-            // 1.5 set rowlen and numrows
-            this->d_rowlen = extnts[1]-extnts[0]+1;
-            this->d_numrows = extnts[3]-extnts[2]+1;
-            this->d_size = this->d_rowlen * this->d_numrows;
-            // 2. Mark Hexes inside whichever domain
-            if (this->domainShape == morph::HexDomainShape::Rectangle) {
-                this->markHexesInsideRectangularDomain (extnts);
-            } else if (this->domainShape == morph::HexDomainShape::Parallelogram) {
-                this->markHexesInsideParallelogramDomain (extnts);
-            } else if (this->domainShape == morph::HexDomainShape::Hexagon) {
-                // The original domain was hexagonal, so just mark ALL of them as being in the domain.
-                this->markAllHexesInsideDomain();
-            } else {
-                throw std::runtime_error ("Unknown HexDomainShape");
-            }
-            // 3. Discard hexes outside domain
-            this->discardOutsideDomain();
-            // 3.5 Mark hexes inside boundary
-            std::list<morph::Hex>::iterator centroidHex = this->findHexNearest (this->boundaryCentroid);
-            this->markHexesInside (centroidHex);
-            // Before populating d_ vectors, also compute the distance to boundary
-            this->computeDistanceToBoundary();
-            // 4. Populate d_ vectors
-            this->populate_d_vectors (extnts);
-        }
-
-        /*!
          * Does what it says on the tin. Re-number the Hex::vi vector index in each
          * Hex in the HexGrid, from the start of the list<Hex> hexen until the end.
          */
@@ -2791,7 +2593,7 @@ namespace morph {
         std::list<Hex>::iterator vertexSE;
 
         /*!
-         * Set true when a new boundary or domain has been applied. This means that
+         * Set true when a new boundary has been applied. This means that
          * the #vertexE, #vertexW, and similar iterators are no longer valid.
          */
         bool gridReduced = false;

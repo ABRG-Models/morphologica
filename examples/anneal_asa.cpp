@@ -234,8 +234,8 @@ int main (int argc, char** argv)
 // This sets up a noisy 2D objective function with multiple peaks
 void setup_objective()
 {
-    hg = new morph::HexGrid(0.01, 1.5, 0, morph::HexDomainShape::Hexagon);
-    hg->leaveAsHexagon();
+    hg = new morph::HexGrid(0.01, 1.5, 0);
+    hg->setCircularBoundary(1);
     obj_f.resize (hg->num());
 
     // Create 2 Gaussians and sum them as the main features
@@ -286,7 +286,7 @@ void setup_objective()
     sigma = F{0.005};
     one_over_sigma_root_2_pi = F{1} / sigma * F{2.506628275};
     two_sigma_sq = F{2} * sigma * sigma;
-    morph::HexGrid kernel(F{0.01}, F{20}*sigma, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid kernel(F{0.01}, F{20}*sigma, 0);
     kernel.setCircularBoundary (F{6}*sigma);
     std::vector<F> kerneldata (kernel.num(), F{0});
     gauss = F{0};
@@ -314,8 +314,8 @@ void setup_objective()
 // during the anneal, we'll use the actual function values
 void setup_objective_boha()
 {
-    hg = new morph::HexGrid(0.01, 2.5, 0, morph::HexDomainShape::Hexagon);
-    hg->leaveAsHexagon();
+    hg = new morph::HexGrid(0.01, 2.5, 0);
+    hg->setCircularBoundary(1.2f);
     obj_f.resize (hg->num());
     F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
     for (auto h : hg->hexen) {

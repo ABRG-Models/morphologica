@@ -23,7 +23,7 @@ int main()
     v.zNear = 0.001;
 
     try {
-        morph::HexGrid hg(0.002, 8, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid hg(0.002, 8, 0);
         hg.setEllipticalBoundary (1.6,2);
 
         std::cout << hg.extent() << std::endl;

@@ -25,7 +25,7 @@ int main()
     v.setSceneTransZ (-3.0f);
 
     // Create an elliptical hexgrid for the input/output domains
-    morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01, 3, 0);
     hg.setEllipticalBoundary (0.45, 0.3);
 
     // Populate a vector of floats with data
@@ -40,7 +40,7 @@ int main()
 
     // Create a circular HexGrid to contain the Gaussian convolution kernel
     float sigma = 0.025f;
-    morph::HexGrid kernel(0.01, 20.0f*sigma, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid kernel(0.01, 20.0f*sigma, 0);
     kernel.setCircularBoundary (6.0f*sigma);
     std::vector<float> kerneldata (kernel.num(), 0.0f);
     // Once-only parts of the calculation of the Gaussian.

@@ -44,7 +44,7 @@ int main()
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a HexGrid to show in the scene
-    morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01, 3, 0);
     hg.setCircularBoundary (0.3);
     std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
 

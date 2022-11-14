@@ -44,7 +44,7 @@ int main()
     v.lightingEffects (true);
 
     morph::Vector<float> offset = {0,0,0};
-    morph::HexGrid hg (0.01, 10, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg (0.01, 10, 0);
     hg.setCircularBoundary (2.5);
     std::vector<FLT> banana_vals(hg.num(), 0.0f);
     for (size_t i = 0; i < hg.num(); ++i) {

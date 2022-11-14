@@ -28,7 +28,7 @@ int main()
 {
     int rtn = 0;
     try {
-        HexGrid hg(0.2, 1, 0, HexDomainShape::Boundary);
+        HexGrid hg(0.2, 1, 0);
 
         hg.setBoundaryOnOuterEdge();
 

@@ -21,7 +21,7 @@ int main()
 {
     morph::Visual v(1600, 1000, "Demo of HexGrid::resampleImage");
 
-    morph::HexGrid hg(0.01f, 3.0f, 0.0f, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01f, 3.0f, 0.0f);
     hg.setCircularBoundary (1.2f);
 
     // Load an image with the help of OpenCV.

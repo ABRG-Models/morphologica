@@ -372,7 +372,7 @@ namespace morph {
         {
             // Create a HexGrid. 3 is the 'x span' which determines how
             // many hexes are initially created. 0 is the z co-ordinate for the HexGrid.
-            this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
+            this->hg = new HexGrid (this->hextohex_d, this->hexspan, 0);
             DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
 
             // Either set a boundary using the svgpath, or set it as an ellipse

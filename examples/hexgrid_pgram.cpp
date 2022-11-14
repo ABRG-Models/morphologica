@@ -43,8 +43,8 @@ int main()
 
     // Create a HexGrid to show in the scene
     morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Parallelogram);
-    //hg.setParallelogramBoundary (0.3, 0.5);
-    hg.setCircularBoundary (0.4);
+    //hg.setParallelogramBoundary (0.3, 0.5); // fails if domainShape is HexDomainShape::Parallelogram
+    hg.setCircularBoundary (0.4); // ok even if domainShape is HexDomainShape::Parallelogram
     std::cout << "Number of pixels in grid:" << hg.num() << std::endl;
 
     // Make some dummy data (a sine wave) to make an interesting surface
@@ -61,6 +61,8 @@ int main()
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
+    hgv->showboundary = true;
+    //hgv->showcentre = true;
     hgv->finalize();
     unsigned int gridId = v.addVisualModel (hgv);
     std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
