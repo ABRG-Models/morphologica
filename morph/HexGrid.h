@@ -1414,6 +1414,21 @@ namespace morph {
             return expr_resampled;
         }
 
+        // Shift data by dx, with wrapping if set for the hexgrid
+        template <typename T>
+        morph::vVector<T> shift (const morph::vVector<T>& image_data,
+                                 const morph::Vector<float, 2>& dx)
+        {
+            unsigned int csz = image_data.size();
+            morph::vVector<T> shifted(csz, T{0});
+            morph::vVector<T> intermediate(csz, T{0});
+            //for (auto h : this->hexen) {
+                // where does it go when shifted by dx[0]?
+                // where does it go when shifted by dx[1]? Can I superimpose the results?
+            //}
+            return shifted;
+        }
+
         /*!
          * The list of hexes that make up this HexGrid.
          */
