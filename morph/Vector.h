@@ -597,6 +597,16 @@ namespace morph {
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
+        //! Return the floor of the Vector
+        Vector<S, N> floor() const
+        {
+            Vector<S, N> rtn;
+            auto _floor = [](S coord) -> S { return (std::floor(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _floor);
+            return rtn;
+        }
+        void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
+
         /*!
          * Compute the element-wise square root of the vector
          *
@@ -823,6 +833,14 @@ namespace morph {
             vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
             vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
             return vrtn;
+        }
+
+        //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        S cross (const Vector<_S, _N>& w) const
+        {
+            S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
+            return rtn;
         }
 
         /*!
