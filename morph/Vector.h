@@ -607,6 +607,26 @@ namespace morph {
         }
         void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
 
+        //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
+        Vector<S, N> trunc() const
+        {
+            Vector<S, N> rtn;
+            auto _trunc = [](S coord) -> S { return (std::trunc(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
+            return rtn;
+        }
+        void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
+
+        //! Return the ceiling of the Vector
+        Vector<S, N> ceil() const
+        {
+            Vector<S, N> rtn;
+            auto _ceil = [](S coord) -> S { return (std::ceil(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
+            return rtn;
+        }
+        void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
+
         /*!
          * Compute the element-wise square root of the vector
          *
