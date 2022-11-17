@@ -1424,123 +1424,37 @@ namespace morph {
             unsigned int csz = image_data.size();
             morph::vVector<T> shifted(csz, T{0});
 
-            // How many 'r' steps and how many 'g' steps does the vector dx represent?
-            Vector<float, 2> rg = { (dx[0]-(dx[1]/this->v)*this->d*0.5f), (dx[1]/this->v) };
-
-            // How many integral steps in r and g axes?
-            Vector<float, 2> int_rg_f = rg.floor();
-            // Convert to int
-            Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
-            // Compute remainder
-            Vector<float, 2> rem_rg = rg - int_rg_f;
-
-            std::cout << "Integral g: " << int_rg[1] << ", and integral r: " << int_rg[0] << std::endl;
-            std::cout << "Remainder g: " << rem_rg[1] << ", and remainder r: " << rem_rg[0] << std::endl;
-            // The remainder movement in Cartesian coordinates
-            Vector<float, 2> rem_xy = {
-                (rem_rg[0] * this->d + rem_rg[1] * this->d * 0.5f),
-                (rem_rg[1] * this->v)
-            };
-
             // If g and r are purely integral, then the transform is simple; copy data
             // from hex(i,j) in image_data to hex(i+r,j+g) in shifted, where the +r and
             // +g are steps via neighbour relations (to ensure wrapping works)
 
             // Otherwise, distribute data from hex(i,j) of image_data proportionally between 4 hexes.
 
-            // Now imagine shifting dest_hex by g and r. This gives the overlap with
-            // dest_hex and we copy this proportion of image_data[h->vi] into
-            // dest_hex. It also gives an overlap with dest_hex neighbours and
-            // corresponding proportions should becopied into these hexes.
+            // How many 'r' steps and how many 'g' steps does the vector dx represent?
+            Vector<float, 2> rg = {
+                this->d * (dx[0] - dx[1] * morph::mathconst<float>::one_over_root_3),
+                this->d * (dx[1] * morph::mathconst<float>::two_over_root_3)
+            };
+            std::cout << "Movement expressed as r/g is rg=" << rg << std::endl;
+            // How many integral steps in r and g axes?
+            Vector<float, 2> int_rg_f = rg.trunc();
+            std::cout << "integral steps (rg.floor/ceiling()): " << int_rg_f << std::endl;
+            // Convert to int
+            Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
+            std::cout << "integral steps (int): " << int_rg << std::endl;
+            // Compute remainder
+            Vector<float, 2> rem_rg = rg - int_rg_f;
 
-            // we have coordinates for nw corner, sw corner, ne and se corners. These
-            // form the corners of a rectangle. The first part of the puzzle is to
-            // calculate the area of this rectangle. After that, the area of the other
-            // overlap regions can be computed. There's a triangle above the rectangle
-            // and a triangle below. It looks like if you compute these, then that's
-            // half the overlap area!
+            std::cout << "Integral r: " << int_rg[0] << ", and integral g: " << int_rg[1] << std::endl;
+            std::cout << "Remainder r: " << rem_rg[0] << ", and remainder g: " << rem_rg[1] << std::endl;
+            // The remainder movement in Cartesian coordinates
+            Vector<float, 2> rem_xy = {
+                (rem_rg[0] * this->d + rem_rg[1] * this->d * 0.5f),
+                (rem_rg[1] * this->v)
+            };
+            std::cout << "Remainder x: " << rem_xy[0] << ", and remainder y: " << rem_xy[1] << std::endl;
 
-            // Corners of base hex
-            Vector<float, 2> sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-            Vector<float, 2> nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-            Vector<float, 2> ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-            Vector<float, 2> se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-            Vector<float, 2> n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
-            Vector<float, 2> s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
-
-            // Output hex locations in octave form for plotting with plot (hex(:,1), hex(:,2), 'o-')
-            std::cout << "hex=["
-                      << n_loc.str_mat() << ";"
-                      << ne_loc.str_mat() << ";"
-                      << se_loc.str_mat() << ";"
-                      << s_loc.str_mat() << ";"
-                      << sw_loc.str_mat() << ";"
-                      << nw_loc.str_mat() << "]\n";
-
-            // Overall shift could be to ne, nw, sw or se. Remainders should tell which way the overlap shift is.
-            if (rem_xy[0] > 0.0f && rem_xy[1] > 0.0f) {
-                // ne
-                std::cout << "ne" << std::endl;
-
-                // Find intersection between nw-ne line and the line defining the ne edge of the base hex
-                // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
-                Vector<float, 2> p1 = n_loc;
-                Vector<float, 2> q1 = ne_loc;
-                Vector<float, 2> p2 = nw_loc+rem_xy;
-                Vector<float, 2> q2 = ne_loc+rem_xy;
-                std::cout << "p1 = " << p1 << " to q1 = " << q1 << std::endl;
-                std::cout << "p2 = " << p2 << " to q2 = " << q2 << std::endl;
-                morph::rotation_sense p1q1p2 = morph::MathAlgo::orientation (p1,q1,p2);
-                morph::rotation_sense p1q1q2 = morph::MathAlgo::orientation (p1,q1,q2);
-                morph::rotation_sense p2q2p1 = morph::MathAlgo::orientation (p2,q2,p1);
-                morph::rotation_sense p2q2q1 = morph::MathAlgo::orientation (p2,q2,q1);
-                int cc = 0;
-                if (p1q1p2 != p1q1q2 && p2q2p1 != p2q2q1) {
-                    // Intersect, but where. https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-                    float u = (p2-p1).cross(q1-p1) / (q1-p1).cross(q2-p2);
-                    Vector<float, 2> isect = p2 + u * (q2-p2);
-                    //VAR(isect);
-                    // Rectangle area:
-                    float vside = d*morph::mathconst<float>::one_over_root_3;
-                    float hside = (isect - p2).length();
-                    float r_area = vside * hside;
-                    VAR(r_area);
-                    std::cout << "hex area is " << this->hexen.begin()->getArea() << std::endl;
-
-                } else {
-                    // Are they colinear? Shouldn't be...
-                    std::cout << "No intersect?\n";
-                    if (p1q1p2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, p2, q1)) { ++cc; }
-                    else if (p1q1q2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, q2, q1)) { ++cc; }
-                    else if (p2q2p1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, p1, q2)) { ++cc; }
-                    else if (p2q2q1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, q1, q2)) { ++cc; }
-                    //else { std::cout << ":(" << std::endl; }
-                }
-
-            } else if (rem_xy[0] > 0.0f && rem_xy[1] < 0.0f) {
-                // se
-                std::cout << "se" << std::endl;
-            } else if (rem_xy[0] < 0.0f && rem_xy[1] > 0.0f) {
-                // nw
-                std::cout << "nw" << std::endl;
-            } else if (rem_xy[0] < 0.0f && rem_xy[1] < 0.0f) {
-                // sw
-                std::cout << "sw" << std::endl;
-            } else if (rem_xy[0] == 0.0f && rem_xy[1] > 0.0f) {
-                // n
-                std::cout << "n" << std::endl;
-            } else if (rem_xy[0] == 0.0f && rem_xy[1] < 0.0f) {
-                // s
-                std::cout << "s" << std::endl;
-            } else if (rem_xy[0] < 0.0f && rem_xy[1] == 0.0f) {
-                // w
-                std::cout << "w" << std::endl;
-            } else if (rem_xy[0] > 0.0f && rem_xy[1] == 0.0f) {
-                // e
-                std::cout << "e" << std::endl;
-            }
-
-
+            Vector<float, 13> overlap = this->compute_hex_overlap (rem_xy);
 
             std::list<Hex>::iterator h = this->hexen.begin();
             while (h != this->hexen.end()) {
@@ -1566,17 +1480,257 @@ namespace morph {
                 }
                 // dest_hex should now be set
 
-                shifted[dest_hex->vi] = image_data[h->vi]; // overly simple, but a start
-
-                // Now imagine shifting dest_hex by g and r. This gives the overlap with
-                // dest_hex and we copy this proportion of image_data[h->vi] into
-                // dest_hex. It also gives an overlap with dest_hex neighbours and
-                // corresponding proportions should becopied into these hexes.
+                // Having computed all the overlaps:
+                shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
+                if (dest_hex->has_ne()) {
+                    shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
+                }
+                // etc etc (writeme)
 
                 ++h;
             }
 
             std::copy (shifted.begin(), shifted.end(), image_data.begin());
+        }
+
+        // For visualising the compute_hex_overlap stuff.
+        Vector<float, 2> sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
+        Vector<float, 2> s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+
+        Vector<float, 2> sw_sft = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> nw_sft = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> ne_sft = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> se_sft = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+        Vector<float, 2> n_sft = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
+        Vector<float, 2> s_sft = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+
+        Vector<float, 2> p1;
+        Vector<float, 2> q1;
+        Vector<float, 2> p2;
+        Vector<float, 2> q2;
+        Vector<float, 2> p3;
+        Vector<float, 2> q3;
+        Vector<float, 2> p4;
+        Vector<float, 2> q4;
+
+        Vector<float, 2> i1 = {-1.0f, -1.0f};
+        Vector<float, 2> i2 = {-1.0f, -1.0f};
+        Vector<float, 2> i3 = {-1.0f, -1.0f};
+        Vector<float, 2> i4 = {-1.0f, -1.0f};
+        Vector<float, 2> i5 = {-1.0f, -1.0f};
+
+        Vector<float, 2> shiftcopy;
+
+        /*!
+         * Find the intersection point between two line segments. The first segment runs
+         * from position _p1 to _q1 and the second from position _p2 to _q2. If no
+         * intersect, return object should contain the minimum representation of a
+         * float.
+         */
+        Vector<float, 2> intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
+                                       const Vector<float, 2> _p2, const Vector<float, 2> _q2)
+        {
+            Vector<float, 2> isect;
+            isect.set_from (std::numeric_limits<float>::min());
+
+            float q_m_pxr = (_p2-_p1).cross(_q1-_p1);
+            float rxs = (_q1-_p1).cross(_q2-_p2);
+            float u = -1.0f;
+            float t = -1.0f;
+            if (rxs != 0.0f) {
+                u = q_m_pxr / rxs; // u = (q-p) x r/(r x s)
+                float den = (_q1-_p1).cross(_q2-_p2);
+                if (den != 0.0f) {
+                    t = (_p2-_p1).cross(_q2-_p2) / den;
+                }
+            }
+            if (rxs != 0.0f && t > 0.0f && t < 1.0f && u > 0.0f && u < 1.0f) {
+                // Lines intersect
+                isect = _p2 + u * (_q2-_p2);
+            } // else non intersecting/co-linear/parallel-non intersecting
+
+            return isect;
+        }
+
+        /*!
+         * Compute the overlap of a (grid sized) hex shifted by the 2D Cartesian vector
+         * 'shift' on the adjacent hexes. The return Vector has 13 elements that give
+         * the overlap between the shifted hex and the underlying hexes, which are 0:
+         * centre; 1:ne, 2:nw, 3:w 4:sw 5:se 6:e 7:ene 8:nn 9:wnw 10:wsw 11:ss 12:ese An
+         * assumption is that shift is small.
+         */
+        Vector<float, 13> compute_hex_overlap (Vector<float, 2> shift)
+        {
+            std::cout << "The hex area is " << this->hexen.begin()->getArea() << std::endl;
+
+            this->shiftcopy[0] = shift[0];
+            this->shiftcopy[1] = shift[1];
+
+            Vector<float, 13> overlap;
+            overlap.zero();
+
+            // Corners of base hex 0
+            sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
+            s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+
+            // Corners of the shifted hex
+            sw_sft = sw_loc + shift;
+            nw_sft = nw_loc + shift;
+            ne_sft = ne_loc + shift;
+            se_sft = se_loc + shift;
+            n_sft = n_loc + shift;
+            s_sft = s_loc + shift;
+
+            // Find intersections between sides of the base hex and the shifted
+            // hex. This will inform what rotation to make before computing areas using
+            // the triangles-and-rectangles algorithm.
+
+            // Intersection 1 is between n->ne of base and nw->n of shifted
+            Vector<float, 2> isct1 = this->intersection (n_loc, ne_loc, nw_sft, n_sft);
+            // Intersection 2 is between nw->n of base and sw->se of shifted
+            Vector<float, 2> isct2 = this->intersection (nw_loc, n_loc, sw_sft, nw_sft);
+            // Intersection 3 etc round the hexagon
+            Vector<float, 2> isct3 = this->intersection (sw_loc, nw_loc, s_sft, sw_sft);
+            // Intersection 4
+            Vector<float, 2> isct4 = this->intersection (s_loc, sw_loc, se_sft, s_sft);
+            // Intersection 5
+            Vector<float, 2> isct5 = this->intersection (se_loc, s_loc, ne_sft, se_sft);
+            // Intersection 6
+            Vector<float, 2> isct6 = this->intersection (ne_loc, se_loc, n_sft, ne_sft);
+
+            std::cout << "isct1: " << isct1 << ", isct2: " << isct2 << ", isct3: " << isct3 << std::endl;
+            std::cout << "isct4: " << isct4 << ", isct5: " << isct5 << ", isct6: " << isct6 << std::endl;
+
+            // Depending on values in isct1-6, select a this->compute_overlap() overload
+            // or pass a relevant rotation in.
+            float ovarea = this->compute_overlap_e (shift);
+            VAR(ovarea);
+
+            return overlap;
+        }
+
+        // Compute hexagon overlap for a north-east (or east) shift
+        float compute_overlap_e (const Vector<float, 2>& shift)
+        {
+            // Find intersection between nw-ne line and the line defining the ne edge of the base hex
+            // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
+            p1 = n_loc;
+            q1 = ne_loc;
+            p2 = nw_loc+shift;
+            q2 = n_loc+shift;
+
+            // i5 intersection:
+            p3 = s_loc;
+            q3 = se_loc;
+            p4 = sw_loc+shift;
+            q4 = s_loc+shift;
+
+            // Where do 2 lines intersect? https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+            // p=p1; p+r=q1; q=p2; q+s=q2.
+            float q_m_pxr = (p2-p1).cross(q1-p1);
+            float rxs = (q1-p1).cross(q2-p2);
+
+            float q_m_pxr5 = (p4-p3).cross(q3-p3);
+            float rxs5 = (q3-p3).cross(q4-p4);
+
+            // We're doing this to compute the area of a rectangle
+            float a1 = 0.0f;
+            float t1 = 0.0f;
+            float t2 = 0.0f;
+            float a2 = 0.0f;
+
+            // We're going to find the top intersection of the nw edge of the moved
+            // hex with the ne edge of the base hex. And some other intersections
+            // (see the diagram that I've only drawn in pencil so far).
+            i1 = {-1.0f, -1.0f};
+            i2 = {-1.2f, -1.0f};
+            i3 = {-1.4f, -1.0f};
+            i4 = {-1.6f, -1.0f};
+            i5 = {-1.8f, -1.0f};
+
+            float u = -1.0f;
+            float t = -1.0f;
+            if (rxs != 0.0f) {
+                u = q_m_pxr / rxs; // u = (q-p) x r/(r x s)
+                VAR(u);
+                float den = (q1-p1).cross(q2-p2);
+                if (den != 0.0f) {
+                    t = (p2-p1).cross(q2-p2) / den;
+                }
+            }
+
+            if (rxs == 0.0f && q_m_pxr == 0.0f) {
+                // collinear. Area remains 0?
+            } else if (rxs == 0.0f && q_m_pxr != 0.0f) {
+                // parallel/nonintersecting. Area remains 0?
+            } else if (rxs != 0.0f && t > 0.0f && t < 1.0f && u > 0.0f && u < 1.0f) {
+                // Intersecting
+                i1 = p2 + u * (q2-p2);
+                VAR(i1);
+
+                // Now reason out i2, i3 and i4.
+                i2[0] = i1[0];
+                i2[1] = p2[1];
+                VAR(i2);
+
+                i3[0] = i1[0];
+                i3[1] = -(i2[1] - shift[1]) + shift[1];
+                VAR(i3);
+
+                // i4 is i1 mirrored about the x axis of the shifted hex:
+                i4[0] = i1[0];
+                //float i_t = i1[1] - shift[1];
+                //i4[1] = -i_t + shift[1];
+                i4[1] = -(i1[1] - shift[1]) + shift[1];
+                VAR(i4);
+
+                // Rectangle area
+                float vside = d*morph::mathconst<float>::one_over_root_3;
+                float hside = (i2 - p2).length();
+                a1 = vside * hside;
+                VAR(a1);
+
+                // Area of top triangle is defined by the points i1, i2 and p2
+                vside = i1[1]-i2[1];
+                VAR(vside);
+                hside = i2[0]-p2[0];
+                VAR(hside);
+                t1 = vside * hside * 0.5f;
+                VAR(t1);
+                // Area of bottom triangle defined by i3, i4 and (sw_loc+shift), but hside is unchanged
+                vside = i3[1]-i4[1];
+                VAR(vside);
+                t2 = vside * hside * 0.5f;
+                VAR(t2);
+
+                // Lastly, a2, the middle strip is based on the last intersect, i5
+                if ((rxs == 0.0f && q_m_pxr == 0.0f) || (rxs == 0.0f && q_m_pxr != 0.0f)) {
+                    std::cout << "No intersect?\n";
+                } else if (rxs != 0.0f) {
+                    float u5 = q_m_pxr5 / rxs5;
+                    i5 = p4 + u5 * (q4-p4);
+
+                    // Area of central parallelogram
+                    a2 = (i1[1]-i4[1]) * (i5[0]-i1[0]);
+
+                } // else no intersect...
+                else { std::cout << "No intersect 2?\n"; }
+
+            } // else not parallel, but line segments don't intersect
+
+            float ov_area = (a1 + t1 + t2) * 2.0f + a2;
+            std::cout << "Overlap area = " << ov_area;
+            std::cout << "\nOverlap proportion: " << ov_area / this->hexen.begin()->getArea() << std::endl;
+
+            return ov_area;
         }
 
         /*!

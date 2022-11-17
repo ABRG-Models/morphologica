@@ -185,6 +185,8 @@ namespace morph {
         //! Show centre hex as a 'marked' hex?
         bool showcentre = false;
 
+        bool showoverlap = true;
+
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
@@ -398,6 +400,149 @@ namespace morph {
                 this->indices.push_back (this->idx+1);
 
                 this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+            }
+
+            if (this->showoverlap == true) {
+                // Show points and lines for hex overlap/shift
+                std::array<float, 3> clr = { 0.3, 0.5, 0.1 };
+                std::array<float, 3> blk = { 0, 0, 0 };
+                morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
+
+                float sw = this->hg->getd()/80.0f; // sphere radius (~width)
+                float lw = this->hg->getd()/40.0f; // line width
+                float lh = this->hg->getd()/60.0f; // line height
+
+                // Vertices and lines of base hexagon
+                this->computeSphere (this->idx, this->hg->sw_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, this->hg->nw_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx, this->hg->sw_loc.plus_one_dim(),
+                                   this->hg->nw_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, this->hg->n_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   this->hg->nw_loc.plus_one_dim(),
+                                   this->hg->n_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, this->hg->ne_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   this->hg->n_loc.plus_one_dim(),
+                                   this->hg->ne_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, this->hg->se_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   this->hg->ne_loc.plus_one_dim(),
+                                   this->hg->se_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   this->hg->se_loc.plus_one_dim(),
+                                   this->hg->s_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   this->hg->s_loc.plus_one_dim(),
+                                   this->hg->sw_loc.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+
+                // Vertices and lines of shifted hexagon
+                clr = { 0.9, 0.1, 0.1 };
+                this->computeSphere (this->idx, (this->hg->sw_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, (this->hg->nw_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx, (this->hg->sw_sft).plus_one_dim(),
+                                   (this->hg->nw_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, (this->hg->n_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   (this->hg->nw_sft).plus_one_dim(),
+                                   (this->hg->n_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, (this->hg->ne_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   (this->hg->n_sft).plus_one_dim(),
+                                   (this->hg->ne_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, (this->hg->se_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   (this->hg->ne_sft).plus_one_dim(),
+                                   (this->hg->se_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   (this->hg->se_sft).plus_one_dim(),
+                                   (this->hg->s_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+                this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+                this->computeLine (this->idx,
+                                   (this->hg->s_sft).plus_one_dim(),
+                                   (this->hg->sw_sft).plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+
+                // Drawn lines for finding i1
+                clr = blk;
+                this->computeLine (this->idx,
+                                   this->hg->p1.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q1.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, blk, blk, lw/2.0f, lh);
+
+                this->computeLine (this->idx,
+                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, blk, blk, lw/2.0f, lh);
+
+                // intersection points
+                sw = this->hg->getd()/40.0f;
+                this->computeSphere (this->idx, this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, this->hg->i2.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, this->hg->i3.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, this->hg->i4.plus_one_dim(), clr, sw, 14, 12);
+                this->computeSphere (this->idx, this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
+
+                // Draw grey triangles/rects for the relevant areas
+                clr = {0.5f, 0.5f, 0.5f};
+                // t1
+                this->computeLine (this->idx,
+                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                // t2
+                this->computeLine (this->idx,
+                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+
+                // Sides of a1
+                this->computeLine (this->idx,
+                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->nw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+
+                // Side of the central rectangle, from i5 and up
+                Vector<float, 2> i6 = this->hg->i5;
+                i6[1] += (this->hg->i1[1]-this->hg->i4[1]);
+                this->computeLine (this->idx,
+                                   this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   i6.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
             }
 
             // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
