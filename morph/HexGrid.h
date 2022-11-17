@@ -12,7 +12,9 @@
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
 #include <morph/MathConst.h>
+#include <morph/MathAlgo.h>
 #include <morph/HdfData.h>
+#include <morph/debug.h>
 
 #include <set>
 #include <list>
@@ -1416,17 +1418,165 @@ namespace morph {
 
         // Shift data by dx, with wrapping if set for the hexgrid
         template <typename T>
-        morph::vVector<T> shift (const morph::vVector<T>& image_data,
-                                 const morph::Vector<float, 2>& dx)
+        void shiftdata (morph::vVector<T>& image_data,
+                        const morph::Vector<float, 2>& dx)
         {
             unsigned int csz = image_data.size();
             morph::vVector<T> shifted(csz, T{0});
-            morph::vVector<T> intermediate(csz, T{0});
-            //for (auto h : this->hexen) {
-                // where does it go when shifted by dx[0]?
-                // where does it go when shifted by dx[1]? Can I superimpose the results?
-            //}
-            return shifted;
+
+            // How many 'r' steps and how many 'g' steps does the vector dx represent?
+            Vector<float, 2> rg = { (dx[0]-(dx[1]/this->v)*this->d*0.5f), (dx[1]/this->v) };
+
+            // How many integral steps in r and g axes?
+            Vector<float, 2> int_rg_f = rg.floor();
+            // Convert to int
+            Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
+            // Compute remainder
+            Vector<float, 2> rem_rg = rg - int_rg_f;
+
+            std::cout << "Integral g: " << int_rg[1] << ", and integral r: " << int_rg[0] << std::endl;
+            std::cout << "Remainder g: " << rem_rg[1] << ", and remainder r: " << rem_rg[0] << std::endl;
+            // The remainder movement in Cartesian coordinates
+            Vector<float, 2> rem_xy = {
+                (rem_rg[0] * this->d + rem_rg[1] * this->d * 0.5f),
+                (rem_rg[1] * this->v)
+            };
+
+            // If g and r are purely integral, then the transform is simple; copy data
+            // from hex(i,j) in image_data to hex(i+r,j+g) in shifted, where the +r and
+            // +g are steps via neighbour relations (to ensure wrapping works)
+
+            // Otherwise, distribute data from hex(i,j) of image_data proportionally between 4 hexes.
+
+            // Now imagine shifting dest_hex by g and r. This gives the overlap with
+            // dest_hex and we copy this proportion of image_data[h->vi] into
+            // dest_hex. It also gives an overlap with dest_hex neighbours and
+            // corresponding proportions should becopied into these hexes.
+
+            // we have coordinates for nw corner, sw corner, ne and se corners. These
+            // form the corners of a rectangle. The first part of the puzzle is to
+            // calculate the area of this rectangle. After that, the area of the other
+            // overlap regions can be computed. There's a triangle above the rectangle
+            // and a triangle below. It looks like if you compute these, then that's
+            // half the overlap area!
+
+            // Corners of base hex
+            Vector<float, 2> sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            Vector<float, 2> nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            Vector<float, 2> ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            Vector<float, 2> se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            Vector<float, 2> n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
+            Vector<float, 2> s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+
+            // Output hex locations in octave form for plotting with plot (hex(:,1), hex(:,2), 'o-')
+            std::cout << "hex=["
+                      << n_loc.str_mat() << ";"
+                      << ne_loc.str_mat() << ";"
+                      << se_loc.str_mat() << ";"
+                      << s_loc.str_mat() << ";"
+                      << sw_loc.str_mat() << ";"
+                      << nw_loc.str_mat() << "]\n";
+
+            // Overall shift could be to ne, nw, sw or se. Remainders should tell which way the overlap shift is.
+            if (rem_xy[0] > 0.0f && rem_xy[1] > 0.0f) {
+                // ne
+                std::cout << "ne" << std::endl;
+
+                // Find intersection between nw-ne line and the line defining the ne edge of the base hex
+                // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
+                Vector<float, 2> p1 = n_loc;
+                Vector<float, 2> q1 = ne_loc;
+                Vector<float, 2> p2 = nw_loc+rem_xy;
+                Vector<float, 2> q2 = ne_loc+rem_xy;
+                std::cout << "p1 = " << p1 << " to q1 = " << q1 << std::endl;
+                std::cout << "p2 = " << p2 << " to q2 = " << q2 << std::endl;
+                morph::rotation_sense p1q1p2 = morph::MathAlgo::orientation (p1,q1,p2);
+                morph::rotation_sense p1q1q2 = morph::MathAlgo::orientation (p1,q1,q2);
+                morph::rotation_sense p2q2p1 = morph::MathAlgo::orientation (p2,q2,p1);
+                morph::rotation_sense p2q2q1 = morph::MathAlgo::orientation (p2,q2,q1);
+                int cc = 0;
+                if (p1q1p2 != p1q1q2 && p2q2p1 != p2q2q1) {
+                    // Intersect, but where. https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+                    float u = (p2-p1).cross(q1-p1) / (q1-p1).cross(q2-p2);
+                    Vector<float, 2> isect = p2 + u * (q2-p2);
+                    //VAR(isect);
+                    // Rectangle area:
+                    float vside = d*morph::mathconst<float>::one_over_root_3;
+                    float hside = (isect - p2).length();
+                    float r_area = vside * hside;
+                    VAR(r_area);
+                    std::cout << "hex area is " << this->hexen.begin()->getArea() << std::endl;
+
+                } else {
+                    // Are they colinear? Shouldn't be...
+                    std::cout << "No intersect?\n";
+                    if (p1q1p2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, p2, q1)) { ++cc; }
+                    else if (p1q1q2 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p1, q2, q1)) { ++cc; }
+                    else if (p2q2p1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, p1, q2)) { ++cc; }
+                    else if (p2q2q1 == morph::rotation_sense::colinear && morph::MathAlgo::onsegment (p2, q1, q2)) { ++cc; }
+                    //else { std::cout << ":(" << std::endl; }
+                }
+
+            } else if (rem_xy[0] > 0.0f && rem_xy[1] < 0.0f) {
+                // se
+                std::cout << "se" << std::endl;
+            } else if (rem_xy[0] < 0.0f && rem_xy[1] > 0.0f) {
+                // nw
+                std::cout << "nw" << std::endl;
+            } else if (rem_xy[0] < 0.0f && rem_xy[1] < 0.0f) {
+                // sw
+                std::cout << "sw" << std::endl;
+            } else if (rem_xy[0] == 0.0f && rem_xy[1] > 0.0f) {
+                // n
+                std::cout << "n" << std::endl;
+            } else if (rem_xy[0] == 0.0f && rem_xy[1] < 0.0f) {
+                // s
+                std::cout << "s" << std::endl;
+            } else if (rem_xy[0] < 0.0f && rem_xy[1] == 0.0f) {
+                // w
+                std::cout << "w" << std::endl;
+            } else if (rem_xy[0] > 0.0f && rem_xy[1] == 0.0f) {
+                // e
+                std::cout << "e" << std::endl;
+            }
+
+
+
+            std::list<Hex>::iterator h = this->hexen.begin();
+            while (h != this->hexen.end()) {
+                // image_data[i] is the data to shift.
+                std::list<Hex>::iterator dest_hex = h;
+                if (int_rg[1] > 0) {
+                    for (int j = 0; j < int_rg[1] && dest_hex->has_nne(); ++j) {
+                        dest_hex = dest_hex->nne;
+                    }
+                } else {
+                    for (int j = 0; j > int_rg[1] && dest_hex->has_nsw(); --j) {
+                        dest_hex = dest_hex->nsw;
+                    }
+                }
+                if (int_rg[0] > 0) {
+                    for (int j = 0; j < int_rg[0] && dest_hex->has_ne(); ++j) {
+                        dest_hex = dest_hex->ne;
+                    }
+                } else {
+                    for (int j = 0; j > int_rg[0] && dest_hex->has_nw(); --j) {
+                        dest_hex = dest_hex->nw;
+                    }
+                }
+                // dest_hex should now be set
+
+                shifted[dest_hex->vi] = image_data[h->vi]; // overly simple, but a start
+
+                // Now imagine shifting dest_hex by g and r. This gives the overlap with
+                // dest_hex and we copy this proportion of image_data[h->vi] into
+                // dest_hex. It also gives an overlap with dest_hex neighbours and
+                // corresponding proportions should becopied into these hexes.
+
+                ++h;
+            }
+
+            std::copy (shifted.begin(), shifted.end(), image_data.begin());
         }
 
         /*!
