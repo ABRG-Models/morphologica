@@ -40,6 +40,7 @@ namespace morph {
 
         static constexpr T sqrt_of_3 = T{1.732050807568877293527446341505872366942805253810381};
         static constexpr T one_over_root_3 = T{1}/sqrt_of_3;
+        static constexpr T two_over_root_3 = T{2}/sqrt_of_3;
         static constexpr T one_over_2_root_3 = T{1}/(T{2}*sqrt_of_3);
         static constexpr T root_3_over_2 = sqrt_of_3/T{2};
 
