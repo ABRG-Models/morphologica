@@ -64,6 +64,15 @@ namespace morph {
             this->mat[3] = Flt{1};
         }
 
+        //! Set this matrix up so that it would rotate a 2D vector by rot_rad radians, anticlockwise.
+        void rotate (const Flt rot_rad)
+        {
+            this->mat[0] = std::cos (rot_rad);
+            this->mat[1] = std::sin (rot_rad);
+            this->mat[2] = -this->mat[1]; // -sin
+            this->mat[3] = this->mat[0];
+        }
+
         //! Access elements of the matrix
         Flt& operator[] (size_t idx) { return this->mat[idx]; }
         // note: assume Flt is a built-in type here (safe - Flt will be float or double)
