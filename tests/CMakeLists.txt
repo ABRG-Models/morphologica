@@ -284,6 +284,10 @@ add_test(testTransformMatrix testTransformMatrix)
 add_executable(testMatrix33 testMatrix33.cpp)
 add_test(testMatrix33 testMatrix33)
 
+# Test morph::Matrix22 (2x2 matrix)
+add_executable(testMatrix22 testMatrix22.cpp)
+add_test(testMatrix22 testMatrix22)
+
 # Test Hex::get_vertex_coord()
 add_executable(testHexVertexPos testHexVertexPos.cpp)
 add_test(testHexVertexPos testHexVertexPos)
