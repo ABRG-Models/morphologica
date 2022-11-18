@@ -440,6 +440,7 @@ namespace morph {
         float getSR() const { return this->d/2; }
 
         //! The distance from the centre of the Hex to any of the vertices. This is the "long radius".
+        //! Also the side-length of an edge of the Hex.
         float getLR() const
         {
             float lr = this->d/morph::SQRT_OF_3_F;
