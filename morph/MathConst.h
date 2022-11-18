@@ -45,14 +45,22 @@ namespace morph {
         static constexpr T root_3_over_2 = sqrt_of_3/T{2};
 
         static constexpr T pi = T{3.141592653589793238462643383279502884197169399375106};
+
         static constexpr T pi_over_2 = pi/T{2};
+        static constexpr T three_pi_over_2 = pi*T{3}/T{2};
+
         static constexpr T pi_over_3 = pi/T{3};
+        static constexpr T two_pi_over_3 = pi*T{2}/T{3};
+        static constexpr T four_pi_over_3 = pi*T{4}/T{3};
+        static constexpr T five_pi_over_3 = pi*T{5}/T{3};
+
         static constexpr T pi_over_4 = pi/T{4};
         static constexpr T pi_over_5 = pi/T{5};
         static constexpr T pi_over_6 = pi/T{6};
         static constexpr T pi_over_7 = pi/T{7};
         static constexpr T pi_over_8 = pi/T{8};
         static constexpr T pi_over_9 = pi/T{9};
+
         static constexpr T two_pi   = pi*T{2};
         static constexpr T three_pi = pi*T{3};
         static constexpr T four_pi  = pi*T{4};
@@ -61,6 +69,5 @@ namespace morph {
         static constexpr T seven_pi = pi*T{7};
         static constexpr T eight_pi = pi*T{8};
         static constexpr T nine_pi  = pi*T{9};
-        static constexpr T three_pi_over_2 = pi*T{3}/T{2};
     };
 }
