@@ -15,6 +15,7 @@
 #include <morph/MathAlgo.h>
 #include <morph/HdfData.h>
 #include <morph/debug.h>
+#include <morph/Matrix22.h>
 
 #include <set>
 #include <list>
@@ -1438,10 +1439,9 @@ namespace morph {
             std::cout << "Movement expressed as r/g is rg=" << rg << std::endl;
             // How many integral steps in r and g axes?
             Vector<float, 2> int_rg_f = rg.trunc();
-            std::cout << "integral steps (rg.floor/ceiling()): " << int_rg_f << std::endl;
             // Convert to int
             Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
-            std::cout << "integral steps (int): " << int_rg << std::endl;
+            std::cout << "integral steps: " << int_rg << std::endl;
             // Compute remainder
             Vector<float, 2> rem_rg = rg - int_rg_f;
 
@@ -1522,6 +1522,7 @@ namespace morph {
         Vector<float, 2> i3 = {-1.0f, -1.0f};
         Vector<float, 2> i4 = {-1.0f, -1.0f};
         Vector<float, 2> i5 = {-1.0f, -1.0f};
+        Vector<float, 2> i6 = {-1.0f, -1.0f};
 
         Vector<float, 2> shiftcopy;
 
@@ -1530,12 +1531,13 @@ namespace morph {
          * from position _p1 to _q1 and the second from position _p2 to _q2. If no
          * intersect, return object should contain the minimum representation of a
          * float.
+         * See https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
          */
         Vector<float, 2> intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
                                        const Vector<float, 2> _p2, const Vector<float, 2> _q2)
         {
             Vector<float, 2> isect;
-            isect.set_from (std::numeric_limits<float>::min());
+            isect.set_from (std::numeric_limits<float>::quiet_NaN());
 
             float q_m_pxr = (_p2-_p1).cross(_q1-_p1);
             float rxs = (_q1-_p1).cross(_q2-_p2);
@@ -1595,136 +1597,188 @@ namespace morph {
 
             // Intersection 1 is between n->ne of base and nw->n of shifted
             Vector<float, 2> isct1 = this->intersection (n_loc, ne_loc, nw_sft, n_sft);
-            // Intersection 2 is between nw->n of base and sw->se of shifted
             Vector<float, 2> isct2 = this->intersection (nw_loc, n_loc, sw_sft, nw_sft);
-            // Intersection 3 etc round the hexagon
             Vector<float, 2> isct3 = this->intersection (sw_loc, nw_loc, s_sft, sw_sft);
-            // Intersection 4
             Vector<float, 2> isct4 = this->intersection (s_loc, sw_loc, se_sft, s_sft);
-            // Intersection 5
             Vector<float, 2> isct5 = this->intersection (se_loc, s_loc, ne_sft, se_sft);
-            // Intersection 6
             Vector<float, 2> isct6 = this->intersection (ne_loc, se_loc, n_sft, ne_sft);
-
-            std::cout << "isct1: " << isct1 << ", isct2: " << isct2 << ", isct3: " << isct3 << std::endl;
-            std::cout << "isct4: " << isct4 << ", isct5: " << isct5 << ", isct6: " << isct6 << std::endl;
 
             // Depending on values in isct1-6, select a this->compute_overlap() overload
             // or pass a relevant rotation in.
-            float ovarea = this->compute_overlap_e (shift);
+            float ovarea;
+            if (!isct1.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 0);
+            } else if (!isct2.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 1); // with 60 degree rotation
+            } else if (!isct3.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 2);
+            } else if (!isct4.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 3);
+            } else if (!isct5.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 4);
+            } else if (!isct6.has_nan()) {
+                ovarea = this->compute_overlap_e (shift, 5);
+            }
             VAR(ovarea);
 
             return overlap;
         }
 
-        // Compute hexagon overlap for a north-east (or east) shift
-        float compute_overlap_e (const Vector<float, 2>& shift)
+        // Compute hexagon overlap for an east shift, applying the given rotation
+        // increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
+        // anticlockwise, and so on.
+        float compute_overlap (const Vector<float, 2>& shift, const unsigned int _rotation)
         {
+            // We'll want a unit vector in the vertical direction that we can rotate
+            Vector<float, 2> uvv = {0.0f, 1.0f};
+            Vector<float, 2> uvh = {1.0f, 0.0f};
+
+            // A rotational transformation matrix
+            morph::Matrix22<float> rotn; // defaults to identity matrix
+
             // Find intersection between nw-ne line and the line defining the ne edge of the base hex
             // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
-            p1 = n_loc;
-            q1 = ne_loc;
-            p2 = nw_loc+shift;
-            q2 = n_loc+shift;
+            switch (_rotation) {
+            case 0:
+            {
+                // i1 intersection:
+                p1 = n_loc;
+                q1 = ne_loc;
+                p2 = nw_loc+shift;
+                q2 = n_loc+shift;
+                // i5 intersection:
+                p3 = se_loc;
+                q3 = s_loc;
+                p4 = s_loc+shift;
+                q4 = sw_loc+shift;
+                break;
+            }
+            case 1:
+            {
+                // i1
+                p1 = nw_loc;
+                q1 = n_loc;
+                p2 = sw_loc+shift;
+                q2 = nw_loc+shift;
+                // i5 intersection:
+                p3 = ne_loc;
+                q3 = se_loc;
+                p4 = se_loc+shift;
+                q4 = s_loc+shift;
 
-            // i5 intersection:
-            p3 = s_loc;
-            q3 = se_loc;
-            p4 = sw_loc+shift;
-            q4 = s_loc+shift;
+                rotn.rotate(morph::mathconst<float>::pi_over_3);
+                break;
+            }
+            case 2:
+            {
+                // i1
+                p1 = sw_loc;
+                q1 = nw_loc;
+                p2 = s_loc+shift;
+                q2 = sw_loc+shift;
+                // i5 intersection:
+                p3 = n_loc;
+                q3 = ne_loc;
+                p4 = ne_loc+shift;
+                q4 = se_loc+shift;
 
-            // Where do 2 lines intersect? https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-            // p=p1; p+r=q1; q=p2; q+s=q2.
-            float q_m_pxr = (p2-p1).cross(q1-p1);
-            float rxs = (q1-p1).cross(q2-p2);
+                rotn.rotate(morph::mathconst<float>::two_pi_over_3);
+                break;
+            }
+            case 3:
+            {
+                p1 = s_loc;
+                q1 = sw_loc;
+                p2 = se_loc+shift;
+                q2 = s_loc+shift;
+                // i5 intersection:
+                p3 = nw_loc;
+                q3 = n_loc;
+                p4 = n_loc+shift;
+                q4 = ne_loc+shift;
 
-            float q_m_pxr5 = (p4-p3).cross(q3-p3);
-            float rxs5 = (q3-p3).cross(q4-p4);
+                rotn.rotate(morph::mathconst<float>::pi);
+                break;
+            }
+            case 4:
+            {
+                // i1
+                p1 = se_loc;
+                q1 = s_loc;
+                p2 = ne_loc+shift;
+                q2 = se_loc+shift;
+                // i5 intersection:
+                p3 = sw_loc;
+                q3 = nw_loc;
+                p4 = nw_loc+shift;
+                q4 = n_loc+shift;
 
-            // We're doing this to compute the area of a rectangle
+                rotn.rotate(morph::mathconst<float>::four_pi_over_3);
+                break;
+            }
+            case 5:
+            default:
+            {
+                // i1
+                p1 = ne_loc;
+                q1 = se_loc;
+                p2 = n_loc+shift;
+                q2 = ne_loc+shift;
+                // i5 intersection:
+                p3 = s_loc;
+                q3 = sw_loc;
+                p4 = sw_loc+shift;
+                q4 = nw_loc+shift;
+
+                rotn.rotate(morph::mathconst<float>::five_pi_over_3);
+                break;
+            }
+            }
+
+            // Rotate our basis vectors
+            uvv = rotn * uvv;
+            uvh = rotn * uvh;
+
+            // Variables to hold the areas of rectangles a1 and a2 and triangles t1 and t2.
             float a1 = 0.0f;
             float t1 = 0.0f;
             float t2 = 0.0f;
             float a2 = 0.0f;
 
-            // We're going to find the top intersection of the nw edge of the moved
-            // hex with the ne edge of the base hex. And some other intersections
-            // (see the diagram that I've only drawn in pencil so far).
-            i1 = {-1.0f, -1.0f};
-            i2 = {-1.2f, -1.0f};
-            i3 = {-1.4f, -1.0f};
-            i4 = {-1.6f, -1.0f};
-            i5 = {-1.8f, -1.0f};
+            // Where do 2 lines intersect?
+            i1 = this->intersection (p1, q1, p2, q2);
+            i5 = this->intersection (p3, q3, p4, q4);
 
-            float u = -1.0f;
-            float t = -1.0f;
-            if (rxs != 0.0f) {
-                u = q_m_pxr / rxs; // u = (q-p) x r/(r x s)
-                VAR(u);
-                float den = (q1-p1).cross(q2-p2);
-                if (den != 0.0f) {
-                    t = (p2-p1).cross(q2-p2) / den;
-                }
+            // Now reason out i2, i3 and i4.
+            i2 = i1 - uvv * (i1-p2).dot(uvv);
+
+            i3 = i1 - uvv * ((i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+
+            // i4 is i1 mirrored about the x axis of the shifted hex, or equivalently:
+            i4 = i1 - uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+
+            // i6 for visualization only:
+            i6 = i5 + uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+
+            // Rectangle a1 area
+            float vside = d*morph::mathconst<float>::one_over_root_3;
+            float hside = (i2 - p2).length();
+            a1 = vside * hside;
+
+            // Area of top triangle is defined by the points i1, i2 and p2
+            vside = (i1-i2).length();
+            hside = (i2-p2).length();
+            t1 = vside * hside * 0.5f;
+            // Area of bottom triangle defined by i3, i4 and (sw_loc+shift), but hside is unchanged
+            vside = (i3-i4).length();
+            t2 = vside * hside * 0.5f;
+
+            // Lastly, a2, the middle strip is based on the last intersect, i5
+            if (i5.has_nan()) {
+                std::cout << "No intersection i5, deal with this...\n";
+            } else {
+                a2 = (i1-i4).length() * (i5-i1).dot(uvh);
             }
-
-            if (rxs == 0.0f && q_m_pxr == 0.0f) {
-                // collinear. Area remains 0?
-            } else if (rxs == 0.0f && q_m_pxr != 0.0f) {
-                // parallel/nonintersecting. Area remains 0?
-            } else if (rxs != 0.0f && t > 0.0f && t < 1.0f && u > 0.0f && u < 1.0f) {
-                // Intersecting
-                i1 = p2 + u * (q2-p2);
-                VAR(i1);
-
-                // Now reason out i2, i3 and i4.
-                i2[0] = i1[0];
-                i2[1] = p2[1];
-                VAR(i2);
-
-                i3[0] = i1[0];
-                i3[1] = -(i2[1] - shift[1]) + shift[1];
-                VAR(i3);
-
-                // i4 is i1 mirrored about the x axis of the shifted hex:
-                i4[0] = i1[0];
-                //float i_t = i1[1] - shift[1];
-                //i4[1] = -i_t + shift[1];
-                i4[1] = -(i1[1] - shift[1]) + shift[1];
-                VAR(i4);
-
-                // Rectangle area
-                float vside = d*morph::mathconst<float>::one_over_root_3;
-                float hside = (i2 - p2).length();
-                a1 = vside * hside;
-                VAR(a1);
-
-                // Area of top triangle is defined by the points i1, i2 and p2
-                vside = i1[1]-i2[1];
-                VAR(vside);
-                hside = i2[0]-p2[0];
-                VAR(hside);
-                t1 = vside * hside * 0.5f;
-                VAR(t1);
-                // Area of bottom triangle defined by i3, i4 and (sw_loc+shift), but hside is unchanged
-                vside = i3[1]-i4[1];
-                VAR(vside);
-                t2 = vside * hside * 0.5f;
-                VAR(t2);
-
-                // Lastly, a2, the middle strip is based on the last intersect, i5
-                if ((rxs == 0.0f && q_m_pxr == 0.0f) || (rxs == 0.0f && q_m_pxr != 0.0f)) {
-                    std::cout << "No intersect?\n";
-                } else if (rxs != 0.0f) {
-                    float u5 = q_m_pxr5 / rxs5;
-                    i5 = p4 + u5 * (q4-p4);
-
-                    // Area of central parallelogram
-                    a2 = (i1[1]-i4[1]) * (i5[0]-i1[0]);
-
-                } // else no intersect...
-                else { std::cout << "No intersect 2?\n"; }
-
-            } // else not parallel, but line segments don't intersect
 
             float ov_area = (a1 + t1 + t2) * 2.0f + a2;
             std::cout << "Overlap area = " << ov_area;

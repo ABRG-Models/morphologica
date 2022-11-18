@@ -489,6 +489,17 @@ namespace morph {
                                    this->hg->q2.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, blk, blk, lw/2.0f, lh);
 
+                // finding i5
+                this->computeLine (this->idx,
+                                   this->hg->p3.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q3.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, blk, blk, lw/2.0f, lh);
+
+                this->computeLine (this->idx,
+                                   this->hg->p4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, blk, blk, lw/2.0f, lh);
+
                 // intersection points
                 sw = this->hg->getd()/40.0f;
                 this->computeSphere (this->idx, this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
@@ -514,7 +525,7 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
                 // t2
                 this->computeLine (this->idx,
-                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
@@ -523,13 +534,13 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
                                    this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
 
                 // Sides of a1
                 this->computeLine (this->idx,
-                                   this->hg->sw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   this->hg->nw_sft.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
                                    this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
@@ -537,11 +548,9 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
 
                 // Side of the central rectangle, from i5 and up
-                Vector<float, 2> i6 = this->hg->i5;
-                i6[1] += (this->hg->i1[1]-this->hg->i4[1]);
                 this->computeLine (this->idx,
                                    this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   i6.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->i6.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
             }
 
