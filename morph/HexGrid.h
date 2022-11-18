@@ -1607,17 +1607,17 @@ namespace morph {
             // or pass a relevant rotation in.
             float ovarea;
             if (!isct1.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 0);
+                ovarea = this->compute_overlap (shift, 0);
             } else if (!isct2.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 1); // with 60 degree rotation
+                ovarea = this->compute_overlap (shift, 1); // with 60 degree rotation
             } else if (!isct3.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 2);
+                ovarea = this->compute_overlap (shift, 2);
             } else if (!isct4.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 3);
+                ovarea = this->compute_overlap (shift, 3);
             } else if (!isct5.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 4);
+                ovarea = this->compute_overlap (shift, 4);
             } else if (!isct6.has_nan()) {
-                ovarea = this->compute_overlap_e (shift, 5);
+                ovarea = this->compute_overlap (shift, 5);
             }
             VAR(ovarea);
 
@@ -1745,18 +1745,15 @@ namespace morph {
             float t2 = 0.0f;
             float a2 = 0.0f;
 
-            // Where do 2 lines intersect?
+            // Compute the relevant intersections
             i1 = this->intersection (p1, q1, p2, q2);
             i5 = this->intersection (p3, q3, p4, q4);
 
             // Now reason out i2, i3 and i4.
             i2 = i1 - uvv * (i1-p2).dot(uvv);
-
             i3 = i1 - uvv * ((i1-p2).dot(uvv) + this->hexen.begin()->getLR());
-
             // i4 is i1 mirrored about the x axis of the shifted hex, or equivalently:
             i4 = i1 - uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
-
             // i6 for visualization only:
             i6 = i5 + uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
 
