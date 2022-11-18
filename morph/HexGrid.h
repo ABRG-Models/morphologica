@@ -1517,6 +1517,10 @@ namespace morph {
         Vector<float, 2> p4;
         Vector<float, 2> q4;
 
+        // Usually, top left of rectangle a1 is p2, but it may be q4 if i5 is to 'left' of i1
+        Vector<float, 2> a1_tl;
+        Vector<float, 2> a1_bl;
+
         Vector<float, 2> i1 = {-1.0f, -1.0f};
         Vector<float, 2> i2 = {-1.0f, -1.0f};
         Vector<float, 2> i3 = {-1.0f, -1.0f};
@@ -1596,6 +1600,7 @@ namespace morph {
             // the triangles-and-rectangles algorithm.
 
             // Intersection 1 is between n->ne of base and nw->n of shifted
+            // FIXME: Put these calls into compute_overlap()
             Vector<float, 2> isct1 = this->intersection (n_loc, ne_loc, nw_sft, n_sft);
             Vector<float, 2> isct2 = this->intersection (nw_loc, n_loc, sw_sft, nw_sft);
             Vector<float, 2> isct3 = this->intersection (sw_loc, nw_loc, s_sft, sw_sft);
@@ -1641,12 +1646,12 @@ namespace morph {
             switch (_rotation) {
             case 0:
             {
-                // i1 intersection:
+                // Lines to find i1 intersection:
                 p1 = n_loc;
                 q1 = ne_loc;
                 p2 = nw_loc+shift;
                 q2 = n_loc+shift;
-                // i5 intersection:
+                // Lines to find i5 intersection:
                 p3 = se_loc;
                 q3 = s_loc;
                 p4 = s_loc+shift;
@@ -1655,12 +1660,11 @@ namespace morph {
             }
             case 1:
             {
-                // i1
                 p1 = nw_loc;
                 q1 = n_loc;
                 p2 = sw_loc+shift;
                 q2 = nw_loc+shift;
-                // i5 intersection:
+
                 p3 = ne_loc;
                 q3 = se_loc;
                 p4 = se_loc+shift;
@@ -1671,12 +1675,11 @@ namespace morph {
             }
             case 2:
             {
-                // i1
                 p1 = sw_loc;
                 q1 = nw_loc;
                 p2 = s_loc+shift;
                 q2 = sw_loc+shift;
-                // i5 intersection:
+
                 p3 = n_loc;
                 q3 = ne_loc;
                 p4 = ne_loc+shift;
@@ -1691,7 +1694,7 @@ namespace morph {
                 q1 = sw_loc;
                 p2 = se_loc+shift;
                 q2 = s_loc+shift;
-                // i5 intersection:
+
                 p3 = nw_loc;
                 q3 = n_loc;
                 p4 = n_loc+shift;
@@ -1702,12 +1705,11 @@ namespace morph {
             }
             case 4:
             {
-                // i1
                 p1 = se_loc;
                 q1 = s_loc;
                 p2 = ne_loc+shift;
                 q2 = se_loc+shift;
-                // i5 intersection:
+
                 p3 = sw_loc;
                 q3 = nw_loc;
                 p4 = nw_loc+shift;
@@ -1719,12 +1721,11 @@ namespace morph {
             case 5:
             default:
             {
-                // i1
                 p1 = ne_loc;
                 q1 = se_loc;
                 p2 = n_loc+shift;
                 q2 = ne_loc+shift;
-                // i5 intersection:
+
                 p3 = s_loc;
                 q3 = sw_loc;
                 p4 = sw_loc+shift;
@@ -1749,32 +1750,54 @@ namespace morph {
             i1 = this->intersection (p1, q1, p2, q2);
             i5 = this->intersection (p3, q3, p4, q4);
 
+            // Is i5 to the +uvh of i1? In zero-rotn frame, "Is i5 to the right of i1?"
+            bool i5_to_right = true;
+            if ((i5-i1).dot(uvh) < 0.0f) { i5_to_right = false; } // +ve means "to right". Leave true if not right or left.
+
+            // Usually, top left of rectangle a1 is p2
+            a1_tl = p2;
+            a1_bl = q4; // used in visualisation, but not for area computation
+
+            if (i5_to_right == false) {
+                // different set of points. i5 is the new i1
+                morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
+                // uvv/uvh now have to reverse direction
+                uvv = -uvv; uvh = -uvh;
+                // q4 is the new p2
+                a1_tl = q4;
+                a1_bl = p2;
+            }
+
             // Now reason out i2, i3 and i4.
-            i2 = i1 - uvv * (i1-p2).dot(uvv);
-            i3 = i1 - uvv * ((i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+            i2 = i1 - uvv * (i1-a1_tl).dot(uvv);
+            i3 = i1 - uvv * ((i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
             // i4 is i1 mirrored about the x axis of the shifted hex, or equivalently:
-            i4 = i1 - uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+            i4 = i1 - uvv * (2.0f * (i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
             // i6 for visualization only:
-            i6 = i5 + uvv * (2.0f * (i1-p2).dot(uvv) + this->hexen.begin()->getLR());
+            i6 = i5 + uvv * (2.0f * (i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
 
             // Rectangle a1 area
             float vside = d*morph::mathconst<float>::one_over_root_3;
-            float hside = (i2 - p2).length();
+            float hside = (i2 - a1_tl).length();
             a1 = vside * hside;
+            VAR(a1);
 
             // Area of top triangle is defined by the points i1, i2 and p2
             vside = (i1-i2).length();
-            hside = (i2-p2).length();
+            hside = (i2-a1_tl).length();
             t1 = vside * hside * 0.5f;
+            VAR(t1);
             // Area of bottom triangle defined by i3, i4 and (sw_loc+shift), but hside is unchanged
             vside = (i3-i4).length();
             t2 = vside * hside * 0.5f;
+            VAR(t2); // I think t2 is always the same as t1.
 
             // Lastly, a2, the middle strip is based on the last intersect, i5
             if (i5.has_nan()) {
                 std::cout << "No intersection i5, deal with this...\n";
             } else {
-                a2 = (i1-i4).length() * (i5-i1).dot(uvh);
+                a2 = (i1-i4).length() * std::abs((i5-i1).dot(uvh));
+                VAR(a2);
             }
 
             float ov_area = (a1 + t1 + t2) * 2.0f + a2;

@@ -512,7 +512,7 @@ namespace morph {
                 clr = {0.5f, 0.5f, 0.5f};
                 // t1
                 this->computeLine (this->idx,
-                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
@@ -521,11 +521,11 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
                                    this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 // t2
                 this->computeLine (this->idx,
-                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
@@ -534,13 +534,13 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
                                    this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
 
                 // Sides of a1
                 this->computeLine (this->idx,
-                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
-                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}),
                                    uz, clr, clr, lw/2.0f, lh);
                 this->computeLine (this->idx,
                                    this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}),
