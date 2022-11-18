@@ -159,5 +159,16 @@ int main() {
     // Can't do this though:
     //  Vector<float, 2> v_dc = v_discrete * v_continuous; // will throw compiler error
 
+    Vector<float, 2> withinf = { std::numeric_limits<float>::infinity(), 3.0f };
+    Vector<float, 2> withnan = { std::numeric_limits<float>::quiet_NaN(), 3.0f };
+
+    std::cout << "withinf: " << withinf << " which has inf? " << (withinf.has_inf() ? "Yes" : "No")  << std::endl;
+    std::cout << "withinf: " << withinf << " which has nan? " << (withinf.has_nan() ? "Yes" : "No")  << std::endl;
+    std::cout << "withinf: " << withinf << " which has nan or inf? " << (withinf.has_nan_or_inf() ? "Yes" : "No")  << std::endl;
+
+    std::cout << "withnan: " << withnan << " which has inf? " << (withnan.has_inf() ? "Yes" : "No")  << std::endl;
+    std::cout << "withnan: " << withnan << " which has nan? " << (withnan.has_nan() ? "Yes" : "No")  << std::endl;
+    std::cout << "withnan: " << withnan << " which has nan or inf? " << (withnan.has_nan_or_inf() ? "Yes" : "No")  << std::endl;
+
     return rtn;
 }

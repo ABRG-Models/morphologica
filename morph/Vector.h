@@ -479,63 +479,33 @@ namespace morph {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
+        //! Return true if any element is infinity
+        bool has_inf() const
+        {
+            if constexpr (std::numeric_limits<S>::has_infinity) {
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
+            } else {
+                return false;
+            }
+        }
+
+        //! Return true if any element is NaN
+        bool has_nan() const
+        {
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN
+                          || std::numeric_limits<S>::has_signaling_NaN) {
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isnan(i);});
+            } else {
+                return false;
+            }
+        }
+
         //! Return true if any element is NaN or infinity
         bool has_nan_or_inf() const
         {
             bool has_nan_or_inf = false;
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::quiet_NaN();
-                    });
-            }
-            if (has_nan_or_inf) { return has_nan_or_inf; }
-
-            if constexpr (std::numeric_limits<S>::has_infinity) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::infinity();
-                    });
-            }
-            if (has_nan_or_inf) { return has_nan_or_inf; }
-
-            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::signaling_NaN();
-                    });
-            }
-
-            return has_nan_or_inf;
-        }
-
-        //! Return true if any element is NaN or infinity
-        bool has_inf() const
-        {
-            bool has_inf = false;
-            if constexpr (std::numeric_limits<S>::has_infinity) {
-                has_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::infinity();
-                    });
-            }
-            return has_inf;
-        }
-
-        //! Return true if any element is NaN or infinity
-        bool has_nan() const
-        {
-            bool has_nan = false;
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
-                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::quiet_NaN();
-                    });
-            }
-            if (has_nan) { return has_nan; }
-
-            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
-                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::signaling_NaN();
-                    });
-            }
-
-            return has_nan;
+            has_nan_or_inf = this->has_nan();
+            return has_nan_or_inf ? has_nan_or_inf : this->has_inf();
         }
 
         //! Return the arithmetic mean of the elements
