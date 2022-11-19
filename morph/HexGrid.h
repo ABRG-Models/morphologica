@@ -438,12 +438,9 @@ namespace morph {
          * which may be useful as an identifier if several HexGrids are being managed
          * by client code, but is not otherwise made use of.
          */
-        HexGrid (float d_, float x_span_, float z_ = 0.0f)
+        HexGrid (float d_, float x_span_, float z_ = 0.0f) : d(d_), x_span(x_span_), z(z_)
         {
-            this->d = d_;
             this->v = this->d * morph::mathconst<float>::root_3_over_2;
-            this->x_span = x_span_;
-            this->z = z_;
             this->init();
         }
 
@@ -1495,19 +1492,19 @@ namespace morph {
         }
 
         // Member attributes for visualising the compute_hex_overlap stuff.
-        Vector<float, 2> sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
-        Vector<float, 2> s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+        Vector<float, 2> sw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> nw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> ne_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> se_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> n_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> s_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
-        Vector<float, 2> sw_sft = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> nw_sft = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> ne_sft = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> se_sft = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-        Vector<float, 2> n_sft = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
-        Vector<float, 2> s_sft = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
+        Vector<float, 2> sw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> nw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> ne_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> se_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> n_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> s_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
         Vector<float, 2> p1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> q1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
@@ -2611,39 +2608,39 @@ namespace morph {
             bool neighbourNearer = true;
 
             std::list<morph::Hex>::iterator h = startFrom;
-            float d = h->distanceFrom (point);
-            float d_ = 0.0f;
+            float dmin = h->distanceFrom (point);
+            float dcur = 0.0f;
 
             while (neighbourNearer == true) {
 
                 neighbourNearer = false;
-                if (h->has_ne() && (d_ = h->ne->distanceFrom (point)) < d) {
-                    d = d_;
+                if (h->has_ne() && (dcur = h->ne->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->ne;
                     neighbourNearer = true;
 
-                } else if (h->has_nne() && (d_ = h->nne->distanceFrom (point)) < d) {
-                    d = d_;
+                } else if (h->has_nne() && (dcur = h->nne->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->nne;
                     neighbourNearer = true;
 
-                } else if (h->has_nnw() && (d_ = h->nnw->distanceFrom (point)) < d) {
-                    d = d_;
+                } else if (h->has_nnw() && (dcur = h->nnw->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->nnw;
                     neighbourNearer = true;
 
-                } else if (h->has_nw() && (d_ = h->nw->distanceFrom (point)) < d) {
-                    d = d_;
+                } else if (h->has_nw() && (dcur = h->nw->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->nw;
                     neighbourNearer = true;
 
-                } else if (h->has_nsw() && (d_ = h->nsw->distanceFrom (point)) < d) {
-                    d = d_;
+                } else if (h->has_nsw() && (dcur = h->nsw->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->nsw;
                     neighbourNearer = true;
 
-                } else if (h->has_nse() && (d_ = h->nse->distanceFrom (point)) < d) {
-                    d = d_;
+                } else if (h->has_nse() && (dcur = h->nse->distanceFrom (point)) < dmin) {
+                    dmin = dcur;
                     h = h->nse;
                     neighbourNearer = true;
                 }
