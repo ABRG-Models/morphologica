@@ -1508,27 +1508,27 @@ namespace morph {
         Vector<float, 2> n_sft = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
         Vector<float, 2> s_sft = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
 
-        Vector<float, 2> p1;
-        Vector<float, 2> q1;
-        Vector<float, 2> p2;
-        Vector<float, 2> q2;
-        Vector<float, 2> p3;
-        Vector<float, 2> q3;
-        Vector<float, 2> p4;
-        Vector<float, 2> q4;
+        Vector<float, 2> p1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> q1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> p2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> q2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> p3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> q3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> p4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> q4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         // Usually, top left of rectangle a1 is p2, but it may be q4 if i5 is to 'left' of i1
-        Vector<float, 2> a1_tl;
-        Vector<float, 2> a1_bl;
+        Vector<float, 2> a1_tl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> a1_bl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
-        Vector<float, 2> i1 = {-1.0f, -1.0f};
-        Vector<float, 2> i2 = {-1.0f, -1.0f};
-        Vector<float, 2> i3 = {-1.0f, -1.0f};
-        Vector<float, 2> i4 = {-1.0f, -1.0f};
-        Vector<float, 2> i5 = {-1.0f, -1.0f};
-        Vector<float, 2> i6 = {-1.0f, -1.0f};
+        Vector<float, 2> i1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> i2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> i3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> i4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> i5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> i6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
-        Vector<float, 2> shiftcopy;
+        Vector<float, 2> shiftcopy = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         /*!
          * Find the intersection point between two line segments. The first segment runs
@@ -1691,17 +1691,17 @@ namespace morph {
             // or pass a relevant rotation in.
             float overlap_proportion;
             if (!isct1.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 0);
+                overlap_proportion = this->compute_overlap (0);
             } else if (!isct2.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 1); // with 60 degree rotation
+                overlap_proportion = this->compute_overlap (1); // with 60 degree rotation
             } else if (!isct3.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 2);
+                overlap_proportion = this->compute_overlap (2);
             } else if (!isct4.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 3);
+                overlap_proportion = this->compute_overlap (3);
             } else if (!isct5.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 4);
+                overlap_proportion = this->compute_overlap (4);
             } else if (!isct6.has_nan()) {
-                overlap_proportion = this->compute_overlap (shift, 5);
+                overlap_proportion = this->compute_overlap (5);
             } else if (!isct7.has_nan() || !isct8.has_nan() || !isct9.has_nan()) {
                 overlap_proportion = this->compute_overlap_colinear();
             }
@@ -1760,7 +1760,7 @@ namespace morph {
         // Compute hexagon overlap for an east shift, applying the given rotation
         // increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
         // anticlockwise, and so on.
-        float compute_overlap (const Vector<float, 2>& shift, const unsigned int _rotation)
+        float compute_overlap (const unsigned int _rotation)
         {
             // We'll want a unit vector in the vertical direction that we can rotate
             Vector<float, 2> uvv = {0.0f, 1.0f};
@@ -1777,26 +1777,26 @@ namespace morph {
                 // Lines to find i1 intersection:
                 p1 = n_loc;
                 q1 = ne_loc;
-                p2 = nw_loc+shift;
-                q2 = n_loc+shift;
+                p2 = nw_sft;
+                q2 = n_sft;
                 // Lines to find i5 intersection:
                 p3 = se_loc;
                 q3 = s_loc;
-                p4 = s_loc+shift;
-                q4 = sw_loc+shift;
+                p4 = s_sft;
+                q4 = sw_sft;
                 break;
             }
             case 1:
             {
                 p1 = nw_loc;
                 q1 = n_loc;
-                p2 = sw_loc+shift;
-                q2 = nw_loc+shift;
+                p2 = sw_sft;
+                q2 = nw_sft;
 
                 p3 = ne_loc;
                 q3 = se_loc;
-                p4 = se_loc+shift;
-                q4 = s_loc+shift;
+                p4 = se_sft;
+                q4 = s_sft;
 
                 rotn.rotate(morph::mathconst<float>::pi_over_3);
                 break;
@@ -1805,13 +1805,13 @@ namespace morph {
             {
                 p1 = sw_loc;
                 q1 = nw_loc;
-                p2 = s_loc+shift;
-                q2 = sw_loc+shift;
+                p2 = s_sft;
+                q2 = sw_sft;
 
                 p3 = n_loc;
                 q3 = ne_loc;
-                p4 = ne_loc+shift;
-                q4 = se_loc+shift;
+                p4 = ne_sft;
+                q4 = se_sft;
 
                 rotn.rotate(morph::mathconst<float>::two_pi_over_3);
                 break;
@@ -1820,13 +1820,13 @@ namespace morph {
             {
                 p1 = s_loc;
                 q1 = sw_loc;
-                p2 = se_loc+shift;
-                q2 = s_loc+shift;
+                p2 = se_sft;
+                q2 = s_sft;
 
                 p3 = nw_loc;
                 q3 = n_loc;
-                p4 = n_loc+shift;
-                q4 = ne_loc+shift;
+                p4 = n_sft;
+                q4 = ne_sft;
 
                 rotn.rotate(morph::mathconst<float>::pi);
                 break;
@@ -1835,13 +1835,13 @@ namespace morph {
             {
                 p1 = se_loc;
                 q1 = s_loc;
-                p2 = ne_loc+shift;
-                q2 = se_loc+shift;
+                p2 = ne_sft;
+                q2 = se_sft;
 
                 p3 = sw_loc;
                 q3 = nw_loc;
-                p4 = nw_loc+shift;
-                q4 = n_loc+shift;
+                p4 = nw_sft;
+                q4 = n_sft;
 
                 rotn.rotate(morph::mathconst<float>::four_pi_over_3);
                 break;
@@ -1851,13 +1851,13 @@ namespace morph {
             {
                 p1 = ne_loc;
                 q1 = se_loc;
-                p2 = n_loc+shift;
-                q2 = ne_loc+shift;
+                p2 = n_sft;
+                q2 = ne_sft;
 
                 p3 = s_loc;
                 q3 = sw_loc;
-                p4 = sw_loc+shift;
-                q4 = nw_loc+shift;
+                p4 = sw_sft;
+                q4 = nw_sft;
 
                 rotn.rotate(morph::mathconst<float>::five_pi_over_3);
                 break;
@@ -1915,7 +1915,7 @@ namespace morph {
             hside = (i2-a1_tl).length();
             t1 = vside * hside * 0.5f;
             VAR(t1);
-            // Area of bottom triangle defined by i3, i4 and (sw_loc+shift), but hside is unchanged
+            // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
             vside = (i3-i4).length();
             t2 = vside * hside * 0.5f;
             VAR(t2); // I think t2 is always the same as t1.
