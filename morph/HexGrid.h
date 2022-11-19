@@ -1481,33 +1481,34 @@ namespace morph {
                 // dest_hex should now be set
 
                 // Having computed all the overlaps:
+#if 0 // This IS doing stuff now...
                 shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
                 if (dest_hex->has_ne()) {
                     shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
                 }
                 // etc etc (writeme)
-
+#endif
                 ++h;
             }
 
             std::copy (shifted.begin(), shifted.end(), image_data.begin());
         }
 
-        // For visualising the compute_hex_overlap stuff.
+        // Member attributes for visualising the compute_hex_overlap stuff.
         Vector<float, 2> sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> ne_loc = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> se_loc = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> n_loc = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
         Vector<float, 2> s_loc = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
-
+        //
         Vector<float, 2> sw_sft = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> nw_sft = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> ne_sft = { (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> se_sft = { (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
         Vector<float, 2> n_sft = { 0.0f, (d*morph::mathconst<float>::one_over_root_3) };
         Vector<float, 2> s_sft = { 0.0f, (-d*morph::mathconst<float>::one_over_root_3) };
-
+        //
         Vector<float, 2> p1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> q1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> p2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
@@ -1516,19 +1517,17 @@ namespace morph {
         Vector<float, 2> q3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> p4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> q4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-
+        //
         // Usually, top left of rectangle a1 is p2, but it may be q4 if i5 is to 'left' of i1
         Vector<float, 2> a1_tl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> a1_bl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-
+        //
         Vector<float, 2> i1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> i2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> i3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> i4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> i5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> i6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-
-        Vector<float, 2> shiftcopy = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         /*!
          * Find the intersection point between two line segments. The first segment runs
@@ -1540,12 +1539,23 @@ namespace morph {
         Vector<float, 2> intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
                                        const Vector<float, 2> _p2, const Vector<float, 2> _q2)
         {
+            // Carry this calculation out in high precision. There is an edge case when
+            // all crossing intersections can be missed, but the tests on parallel lines
+            // also fails to find lines parallel to each other. Using doubles makes this
+            // edge case less likely to occur. It would be nice to have a way of
+            // noticing this, though. Perhaps solution is to say "if the line is
+            // parallel and non-intersecting, BUT the points on the lines means they
+            // must be nearly overlapping, then treat as colinear. Then I could switch
+            // back to float precision.
+
             Vector<float, 2> isect;
             isect.set_from (std::numeric_limits<float>::quiet_NaN());
 
             // _p1 = p; _q1 = p + r
             // _p2 = q; _q2 = q + s
             float q_m_pxr = (_p2-_p1).cross(_q1-_p1);
+            std::cout << "r = " << (_q1-_p1) << ", s = " << (_q2-_p2)
+                      << " and r x s = " << (_q1-_p1).cross(_q2-_p2) << std::endl;
             float rxs = (_q1-_p1).cross(_q2-_p2);
             float u = -1.0f;
             float t = -1.0f;
@@ -1562,23 +1572,34 @@ namespace morph {
                 float t_1 = (_q2 - _p1).dot (_q1-_p1) / (_q1-_p1).dot(_q1-_p1);
                 if (t_0 > 0.0f || t_0 < 1.0f || t_1 > 0.0f || t_1 < 1.0f) {
                     isect = _p1 + t_0 * (_q1-_p1);
-                    Vector<float, 2> isect2 = _p1 + t_1 * (_q1-_p1);
+                    //Vector<float, 2> isect2 = _p1 + t_1 * (_q1-_p1);
                 } else {
                     isect[1] = 0.0f; // isect[0] remains nan
                 }
 
             } else if (rxs == 0.0f && q_m_pxr != 0.0f) {
-                // Parallel and non-intersecting
-                isect[0] = 0.0f; // isect[1] remains nan
+                // Parallel and non-intersecting. Place distance between lines into isect[0], leave other one NaN.
+                // Get normal to p2-q2
+                morph::Matrix22<float> rot90;
+                rot90.rotate (morph::mathconst<float>::pi_over_2);
+                // Write out to member p1 etc for vis
+                this->p1 = _p1;
+                this->q1 = _q1;
+                this->p2 = _p2;
+                this->q2 = _q2;
+                Vector<float, 2> nor = rot90 * (_q2-_p2);
+                // Project p2-p1 onto normal
+                float d_p1 = (_p2-_p1).dot(nor);
+                //float d_q1 = (_p2-_q1).dot(nor); // should be same distance
+                isect[0] = d_p1; // isect[1] remains nan
 
             } else if (rxs != 0.0f && t > 0.0f && t < 1.0f && u > 0.0f && u < 1.0f) {
                 // Lines intersect
                 isect = _p2 + u * (_q2-_p2);
             } // else non intersecting
 
-            return isect;
+            return isect.as_float();
         }
-
 #if 0
         // Return two vectors in one 4 element vector. Assumed to be colinear
         Vector<float, 4> colinear_intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
@@ -1586,10 +1607,9 @@ namespace morph {
         {
             Vector<float, 4> rtn;
             rtn.set_from (std::numeric_limits<float>::quiet_NaN());
-
             // _p1 = p; _q1 = p + r
             // _p2 = q; _q2 = q + s
-            float q_m_pxr = (_p2-_p1).cross(_q1-_p1);
+            float q_m_pxr = (_p2_p1).cross(_q1-_p1);
             float rxs = (_q1-_p1).cross(_q2-_p2);
             float u = -1.0f;
             float t = -1.0f;
@@ -1627,11 +1647,9 @@ namespace morph {
                 } // else rtn remains filled with nans
 
             } // else non intersecting or normally intersecting or parallel non-intersecting
-
             return rtn;
         }
 #endif
-
         /*!
          * Compute the overlap of a (grid sized) hex shifted by the 2D Cartesian vector
          * 'shift' on the adjacent hexes. The return Vector has 13 elements that give
@@ -1642,9 +1660,6 @@ namespace morph {
         Vector<float, 13> compute_hex_overlap (Vector<float, 2> shift)
         {
             std::cout << "The hex area is " << this->hexen.begin()->getArea() << std::endl;
-
-            this->shiftcopy[0] = shift[0];
-            this->shiftcopy[1] = shift[1];
 
             Vector<float, 13> overlap;
             overlap.zero();
@@ -1685,35 +1700,48 @@ namespace morph {
             Vector<float, 2> isct8 = this->intersection (sw_loc, nw_loc, sw_sft, nw_sft);
             Vector<float, 2> isct9 = this->intersection (s_loc, sw_loc, s_sft, sw_sft);
             std::cout << "colinear isects: " << isct7 << ", " << isct8 << ", " << isct9 << std::endl;
-            // FIXME: the segments could be parallel but no longer intersecting and there would STILL be the possiblity of an overlap!
+            // Note: the segments could be parallel but no longer intersecting and there
+            // would STILL be the possiblity of an overlap. However, I think that the
+            // scheme of choosing integer hex-jumps may avoid this case from occurring.
 
             // Depending on values in isct1-6, select a this->compute_overlap() overload
             // or pass a relevant rotation in.
-            float overlap_proportion;
             if (!isct1.has_nan()) {
-                overlap_proportion = this->compute_overlap (0);
+                overlap = this->compute_overlap (0);
             } else if (!isct2.has_nan()) {
-                overlap_proportion = this->compute_overlap (1); // with 60 degree rotation
+                overlap = this->compute_overlap (1); // with 60 degree rotation
             } else if (!isct3.has_nan()) {
-                overlap_proportion = this->compute_overlap (2);
+                overlap = this->compute_overlap (2);
             } else if (!isct4.has_nan()) {
-                overlap_proportion = this->compute_overlap (3);
+                overlap = this->compute_overlap (3);
             } else if (!isct5.has_nan()) {
-                overlap_proportion = this->compute_overlap (4);
+                overlap = this->compute_overlap (4);
             } else if (!isct6.has_nan()) {
-                overlap_proportion = this->compute_overlap (5);
+                overlap = this->compute_overlap (5);
             } else if (!isct7.has_nan() || !isct8.has_nan() || !isct9.has_nan()) {
-                overlap_proportion = this->compute_overlap_colinear();
+                overlap = this->compute_overlap_colinear();
+            } else if (!std::isnan(isct7[0]) && std::isnan(isct7[1])) { // This test means "parallel and non-intersecting"
+                std::cout << "compare " << isct7[0] << " and " << shift.length() << std::endl;
+            } else if (!std::isnan(isct8[0]) && std::isnan(isct8[1])) {
+                std::cout << "compare " << isct8[0] << " and " << shift.length()<< std::endl;
+            } else if (!std::isnan(isct9[0]) && std::isnan(isct9[1])) {
+                std::cout << "compare " << isct9[0] << " and " << shift.length() << std::endl;
             }
-            VAR(overlap_proportion);
+            VAR(overlap);
 
             return overlap;
         }
 
         // Simpler overlap computation for hexes sliding along parallel edges
         // Call this after you have determined that any of the hexagon sides are colinear
-        float compute_overlap_colinear()
+        Vector<float, 13> compute_overlap_colinear()
         {
+            // Store the hex overlap proportions in the return object
+            Vector<float, 13> rtn;
+            rtn.zero();
+
+            float hexarea = this->hexen.begin()->getArea();
+
             // Pairs of corners. Assume they don't go beyond each other.
             Vector<float, 2> n_s = s_loc - n_sft;
             Vector<float, 2> s_n = n_loc - s_sft;
@@ -1748,19 +1776,48 @@ namespace morph {
                     VAR (a1);
                     t1 = 0.5f * this->d * lr ;
                     VAR (t1);
+
+                    // The overlap on adjacent hexes is a parallelogram of side lr and end dimension 2*lr - minpp
+                    float pw = (2.0f * lr - minpp) * morph::mathconst<float>::root_3_over_2;
+                    // float pll1 = pw * lr; // parallelogram area
+
+                    // use pps.argmin to find out which of the directions the shift is in
+                    unsigned int hidx = pps.argmin();
+                    std::cout << "pps idx: "<< hidx << " (0:ns 1:sn 2:nesw 3:swne 4:senw 5:nwse)\n";
+
+                    // From Hex.h. HEX_NEIGHBOUR_POS_E = 0; HEX_NEIGHBOUR_POS_NE = 1
+                    // etc. Shift by one to go into our return object.
+                    switch (hidx) {
+                    case 0:
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_SW] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_SE] = pw * lr / hexarea;
+                        break;
+                    }
+                    case 1:
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_NE] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_NW] = pw * lr / hexarea;
+                        break;
+                    }
+                    default: { break; }
+                    }
+
                 } else if (minpp < lr) {
                     // Reduced triangles
                     std::cout << "writeme for reduced triangles\n";
                 }
             }
 
-            return (a1 + t1) / this->hexen.begin()->getArea();
+            rtn[0] = (a1 + t1) / hexarea;
+
+            return rtn;
         }
 
         // Compute hexagon overlap for an east shift, applying the given rotation
         // increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
         // anticlockwise, and so on.
-        float compute_overlap (const unsigned int _rotation)
+        Vector<float, 13> compute_overlap (const unsigned int _rotation)
         {
             // We'll want a unit vector in the vertical direction that we can rotate
             Vector<float, 2> uvv = {0.0f, 1.0f};
@@ -1932,7 +1989,12 @@ namespace morph {
             std::cout << "Overlap area = " << ov_area;
             std::cout << "\nOverlap proportion: " << ov_area / this->hexen.begin()->getArea() << std::endl;
 
-            return ov_area / this->hexen.begin()->getArea();
+            // Store the overlap proportion in the return object
+            Vector<float, 13> rtn;
+            rtn.zero();
+            rtn[0] = ov_area / this->hexen.begin()->getArea();
+
+            return rtn;
         }
 
         /*!
