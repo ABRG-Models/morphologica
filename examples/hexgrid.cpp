@@ -41,8 +41,8 @@ int main()
     // Add some text labels to the scene
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
-    // Create a HexGrid to show in the scene. As HexDomainShape is 'Boundary', hexes
-    // outside the circular boundary will all be discarded.
+    // Create a HexGrid to show in the scene. Hexes outside the circular boundary will
+    // all be discarded.
 #ifdef __WIN__ // HexGrid performance is bad on Windows
     morph::HexGrid hg(0.03f, 3.0f, 0.0f);
 #else
