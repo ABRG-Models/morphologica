@@ -184,7 +184,7 @@ namespace morph {
         }
 
         //! Return this Vector in double precision, float format
-        Vector<float, N> as_double() const
+        Vector<double, N> as_double() const
         {
             Vector<double, N> v;
             v.zero();
