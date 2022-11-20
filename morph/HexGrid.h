@@ -1536,23 +1536,12 @@ namespace morph {
         Vector<float, 2> intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
                                        const Vector<float, 2> _p2, const Vector<float, 2> _q2)
         {
-            // Carry this calculation out in high precision. There is an edge case when
-            // all crossing intersections can be missed, but the tests on parallel lines
-            // also fails to find lines parallel to each other. Using doubles makes this
-            // edge case less likely to occur. It would be nice to have a way of
-            // noticing this, though. Perhaps solution is to say "if the line is
-            // parallel and non-intersecting, BUT the points on the lines means they
-            // must be nearly overlapping, then treat as colinear. Then I could switch
-            // back to float precision.
-
             Vector<float, 2> isect;
             isect.set_from (std::numeric_limits<float>::quiet_NaN());
 
             // _p1 = p; _q1 = p + r
             // _p2 = q; _q2 = q + s
             float q_m_pxr = (_p2-_p1).cross(_q1-_p1);
-            std::cout << "r = " << (_q1-_p1) << ", s = " << (_q2-_p2)
-                      << " and r x s = " << (_q1-_p1).cross(_q2-_p2) << std::endl;
             float rxs = (_q1-_p1).cross(_q2-_p2);
             float u = -1.0f;
             float t = -1.0f;
@@ -1569,7 +1558,6 @@ namespace morph {
                 float t_1 = (_q2 - _p1).dot (_q1-_p1) / (_q1-_p1).dot(_q1-_p1);
                 if (t_0 > 0.0f || t_0 < 1.0f || t_1 > 0.0f || t_1 < 1.0f) {
                     isect = _p1 + t_0 * (_q1-_p1);
-                    //Vector<float, 2> isect2 = _p1 + t_1 * (_q1-_p1);
                 } else {
                     isect[1] = 0.0f; // isect[0] remains nan
                 }
@@ -1597,56 +1585,7 @@ namespace morph {
 
             return isect.as_float();
         }
-#if 0
-        // Return two vectors in one 4 element vector. Assumed to be colinear
-        Vector<float, 4> colinear_intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
-                                                const Vector<float, 2> _p2, const Vector<float, 2> _q2)
-        {
-            Vector<float, 4> rtn;
-            rtn.set_from (std::numeric_limits<float>::quiet_NaN());
-            // _p1 = p; _q1 = p + r
-            // _p2 = q; _q2 = q + s
-            float q_m_pxr = (_p2_p1).cross(_q1-_p1);
-            float rxs = (_q1-_p1).cross(_q2-_p2);
-            float u = -1.0f;
-            float t = -1.0f;
-            if (rxs != 0.0f) {
-                u = q_m_pxr / rxs; // u = (q-p) x r/(r x s)
-                float den = (_q1-_p1).cross(_q2-_p2);
-                if (den != 0.0f) {
-                    t = (_p2-_p1).cross(_q2-_p2) / den;
-                }
-            }
-            if (rxs == 0.0f && q_m_pxr == 0.0f) {
-                // Colinear, figure out if overlapping
-                float t_0 = (_p2 - _p1).dot (_q1-_p1) / (_q1-_p1).dot(_q1-_p1);
-                float t_1 = (_q2 - _p1).dot (_q1-_p1) / (_q1-_p1).dot(_q1-_p1);
-                if (t_0 > 0.0f || t_0 < 1.0f || t_1 > 0.0f || t_1 < 1.0f) {
-                    std::cout << "Co-linear and overlapping :)\n";
-                    VAR(t_0); // .5
-                    VAR(t_1); // 1.5
 
-                    Vector<float, 2> isect;
-                    Vector<float, 2> isect2;
-                    // Not quite there with this logic
-                    if (t_0 > 0.0f || t_0 < 1.0f) {
-                        isect = _p1 + t_0 * (_q1-_p1);
-                        isect2 = _p1 + (_q1-_p1);
-                    } else if (t_1 > 0.0f || t_1 < 1.0f) {
-                        isect = _p2 + t_1 * (_q2-_p2);
-                        isect2 = _p2 + (_q2-_p2);
-                    }
-
-                    rtn[0] = isect[0];
-                    rtn[1] = isect[1];
-                    rtn[2] = isect2[0];
-                    rtn[3] = isect2[1];
-                } // else rtn remains filled with nans
-
-            } // else non intersecting or normally intersecting or parallel non-intersecting
-            return rtn;
-        }
-#endif
         /*!
          * Compute the overlap of a (grid sized) hex shifted by the 2D Cartesian vector
          * 'shift' on the adjacent hexes. The return Vector has 13 elements that give
@@ -1858,20 +1797,6 @@ namespace morph {
             // Find intersection between nw-ne line and the line defining the ne edge of the base hex
             // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
             switch (_rotation) {
-            case 0:
-            {
-                // Lines to find i1 intersection:
-                p1 = n_loc;
-                q1 = ne_loc;
-                p2 = nw_sft;
-                q2 = n_sft;
-                // Lines to find i5 intersection:
-                p3 = se_loc;
-                q3 = s_loc;
-                p4 = s_sft;
-                q4 = sw_sft;
-                break;
-            }
             case 1:
             {
                 p1 = nw_loc;
@@ -1933,7 +1858,6 @@ namespace morph {
                 break;
             }
             case 5:
-            default:
             {
                 p1 = ne_loc;
                 q1 = se_loc;
@@ -1946,6 +1870,21 @@ namespace morph {
                 q4 = nw_sft;
 
                 rotn.rotate(morph::mathconst<float>::five_pi_over_3);
+                break;
+            }
+            case 0:
+            default:
+            {
+                // Lines to find i1 intersection:
+                p1 = n_loc;
+                q1 = ne_loc;
+                p2 = nw_sft;
+                q2 = n_sft;
+                // Lines to find i5 intersection:
+                p3 = se_loc;
+                q3 = s_loc;
+                p4 = s_sft;
+                q4 = sw_sft;
                 break;
             }
             }
@@ -2022,6 +1961,18 @@ namespace morph {
             Vector<float, 13> rtn;
             rtn.zero();
             rtn[0] = ov_area / this->hexen.begin()->getArea();
+
+            // Additional areas. In the default 'move to the right' case, there is
+            // overlap with the hex to the NE, the one to the east and the one to the
+            // south east. With rotations, these will cycle around.
+
+            // NE. Parallelogram defined by i1, ne_loc, n_sft.
+
+            // E. Area defined by triangle below NE parallelogram, rectangle, and
+            // another triangle. Similar computation as the one under the '0th' overlap.
+
+            // SE. Parallelogram like the NE one.
+
 
             return rtn;
         }
