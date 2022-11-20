@@ -1701,6 +1701,9 @@ namespace morph {
             // would STILL be the possiblity of an overlap. However, I think that the
             // scheme of choosing integer hex-jumps may avoid this case from occurring.
 
+            // If angle of shift is within this threshold of pi/6, 3pi/6, 5pi/6 etc, then we compute_overlap_colinear.
+            float anglethreshold = 2.0f*std::numeric_limits<float>::epsilon();
+
             // Depending on values in isct1-6, select a this->compute_overlap() overload
             // or pass a relevant rotation in.
             if (!isct1.has_nan()) {
@@ -1715,14 +1718,16 @@ namespace morph {
                 overlap = this->compute_overlap (4);
             } else if (!isct6.has_nan()) {
                 overlap = this->compute_overlap (5);
-            } else if (!isct7.has_nan() || !isct8.has_nan() || !isct9.has_nan()) {
+            } else if (!isct7.has_nan() || !isct8.has_nan() || !isct9.has_nan() // 1st three test for colinear edges
+                       || (std::abs(shift.angle()    -   morph::mathconst<float>::pi_over_6) <= anglethreshold) // rest test for shift angle
+                       || (std::abs(shift.angle()    +   morph::mathconst<float>::pi_over_6) <= anglethreshold) // rest test for shift angle
+                       || (std::abs(shift.angle() - 3.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)
+                       || (std::abs(shift.angle() + 3.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)
+                       || (std::abs(shift.angle() - 5.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)
+                       || (std::abs(shift.angle() + 5.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)) {
+                       //|| (std::abs(shift.angle() - 9.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)
+                       //|| (std::abs(shift.angle() - 7.0f*morph::mathconst<float>::pi_over_6) <= anglethreshold)) {
                 overlap = this->compute_overlap_colinear();
-            } else if (!std::isnan(isct7[0]) && std::isnan(isct7[1])) { // This test means "parallel and non-intersecting"
-                std::cout << "compare " << isct7[0] << " and " << shift.length() << std::endl;
-            } else if (!std::isnan(isct8[0]) && std::isnan(isct8[1])) {
-                std::cout << "compare " << isct8[0] << " and " << shift.length()<< std::endl;
-            } else if (!std::isnan(isct9[0]) && std::isnan(isct9[1])) {
-                std::cout << "compare " << isct9[0] << " and " << shift.length() << std::endl;
             }
             VAR(overlap);
 
@@ -1785,19 +1790,46 @@ namespace morph {
                     // From Hex.h. HEX_NEIGHBOUR_POS_E = 0; HEX_NEIGHBOUR_POS_NE = 1
                     // etc. Shift by one to go into our return object.
                     switch (hidx) {
-                    case 0:
+                    case 0: // slide to s
                     {
                         rtn[1+HEX_NEIGHBOUR_POS_SW] = pw * lr / hexarea;
                         rtn[1+HEX_NEIGHBOUR_POS_SE] = pw * lr / hexarea;
                         break;
                     }
-                    case 1:
+                    case 1: // slide to n
                     {
                         rtn[1+HEX_NEIGHBOUR_POS_NE] = pw * lr / hexarea;
                         rtn[1+HEX_NEIGHBOUR_POS_NW] = pw * lr / hexarea;
                         break;
                     }
-                    default: { break; }
+                    case 2: // slide to se
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_W] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_SW] = pw * lr / hexarea;
+                        break;
+                    }
+                    case 3: // slide to ne
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_E] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_NE] = pw * lr / hexarea;
+                        break;
+                    }
+                    case 4: // slide to nw
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_W] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_NW] = pw * lr / hexarea;
+                        break;
+                    }
+                    case 5: // slide to se
+                    {
+                        rtn[1+HEX_NEIGHBOUR_POS_SE] = pw * lr / hexarea;
+                        rtn[1+HEX_NEIGHBOUR_POS_E] = pw * lr / hexarea;
+                        break;
+                    }
+                    default: {
+                        std::cout << "Unknown case: " << hidx << " (fixme)\n";
+                        break;
+                    }
                     }
 
                 } else if (minpp < lr) {
