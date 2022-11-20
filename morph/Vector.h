@@ -837,7 +837,7 @@ namespace morph {
          * Two dimensional angle in radians (only for N=2)
          */
         template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S angle (const Vector<_S, _N>& v) const
+        S angle() const
         {
             S _angle = std::atan2 ((*this)[1], (*this)[0]);
             return _angle;
