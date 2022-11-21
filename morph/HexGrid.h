@@ -1429,9 +1429,10 @@ namespace morph {
             // Otherwise, distribute data from hex(i,j) of image_data proportionally between 4 hexes.
 
             // How many 'r' steps and how many 'g' steps does the vector dx represent?
-            Vector<float, 2> rg = {
-                this->d * (dx[0] - dx[1] * morph::mathconst<float>::one_over_root_3),
-                this->d * (dx[1] * morph::mathconst<float>::two_over_root_3)
+            std::cout << "d = " << this->d << ", dx = " << dx << std::endl;
+            Vector<float, 2> rg = { // This is wrong?
+                (1.0f/this->d) * (dx[0] - dx[1] * morph::mathconst<float>::one_over_root_3),
+                (1.0f/this->d) * (dx[1] * morph::mathconst<float>::two_over_root_3)
             };
             std::cout << "Movement expressed as r/g is rg=" << rg << std::endl;
             // How many integral steps in r and g axes?
@@ -1443,13 +1444,13 @@ namespace morph {
             Vector<float, 2> rem_rg = rg - int_rg_f;
 
             std::cout << "Integral r: " << int_rg[0] << ", and integral g: " << int_rg[1] << std::endl;
-            std::cout << "Remainder r: " << rem_rg[0] << ", and remainder g: " << rem_rg[1] << std::endl;
+            //std::cout << "Remainder r: " << rem_rg[0] << ", and remainder g: " << rem_rg[1] << std::endl;
             // The remainder movement in Cartesian coordinates
             Vector<float, 2> rem_xy = {
                 (rem_rg[0] * this->d + rem_rg[1] * this->d * 0.5f),
                 (rem_rg[1] * this->v)
             };
-            std::cout << "Remainder x: " << rem_xy[0] << ", and remainder y: " << rem_xy[1] << std::endl;
+            //std::cout << "Remainder x: " << rem_xy[0] << ", and remainder y: " << rem_xy[1] << std::endl;
 
             Vector<float, 13> overlap = this->compute_hex_overlap (rem_xy);
 
@@ -1478,10 +1479,11 @@ namespace morph {
                 // dest_hex should now be set
 
                 // Having computed all the overlaps:
-#if 1 // This IS doing stuff now...
                 shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
                 if (dest_hex->has_ne()) {
                     shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
+                } else {
+                    std::cout << "No Neighbour E?? dest_hex " << dest_hex->outputCart() << " has no neighbour east.\n";
                 }
                 if (dest_hex->has_nne()) {
                     shifted[dest_hex->nne->vi] += overlap[2] * image_data[h->vi];
@@ -1498,8 +1500,7 @@ namespace morph {
                 if (dest_hex->has_nse()) {
                     shifted[dest_hex->nse->vi] += overlap[6] * image_data[h->vi];
                 }
-                // etc etc (writeme)
-#endif
+
                 ++h;
             }
 
@@ -1610,8 +1611,6 @@ namespace morph {
          */
         Vector<float, 13> compute_hex_overlap (Vector<float, 2> shift)
         {
-            std::cout << "The hex area is " << this->hexen.begin()->getArea() << std::endl;
-
             Vector<float, 13> overlap;
             overlap.zero();
 
@@ -1689,8 +1688,10 @@ namespace morph {
             return overlap;
         }
 
-        // Simpler overlap computation for hexes sliding along parallel edges
-        // Call this after you have determined that any of the hexagon sides are colinear
+        /*!
+         * Simpler overlap computation for hexes sliding along parallel edges Call this
+         * after you have determined that any of the hexagon sides are colinear
+         */
         Vector<float, 13> compute_overlap_colinear()
         {
             // Store the hex overlap proportions in the return object
@@ -1718,21 +1719,16 @@ namespace morph {
             pps[4] = se_nw.length();
             pps[5] = nw_se.length();
             float minpp = pps.min();
-            std::cout << "pps: " << pps << std::endl;
             float a1 = 0.0f;
             float t1 = 0.0f;
             float lr = this->hexen.begin()->getLR();
-            std::cout << "minpp = " << minpp << " cf 2 x lr: " << (2.0f * lr) << std::endl;
 
             if (minpp < 2.0f*lr) {
                 // Ok, one of pps is less than the long distance across a hex
                 if (minpp >= lr) {
                     // Area is triangles plus rectangle
-                    std::cout << "a1 is of side length " << (minpp-lr) << std::endl;
                     a1 = (minpp-lr) * this->d;
-                    VAR (a1);
                     t1 = 0.5f * this->d * lr ;
-                    VAR (t1);
 
                     // The overlap on adjacent hexes is a parallelogram of side lr and end dimension 2*lr - minpp
                     float pw = (2.0f * lr - minpp) * morph::mathconst<float>::root_3_over_2;
@@ -1740,7 +1736,7 @@ namespace morph {
 
                     // use pps.argmin to find out which of the directions the shift is in
                     unsigned int hidx = pps.argmin();
-                    std::cout << "pps idx: "<< hidx << " (0:ns 1:sn 2:nesw 3:swne 4:senw 5:nwse)\n";
+                    //std::cout << "pps idx: "<< hidx << " (0:ns 1:sn 2:nesw 3:swne 4:senw 5:nwse)\n";
 
                     rtn[0] = (a1 + t1) / hexarea;
 
@@ -1800,6 +1796,7 @@ namespace morph {
             return rtn;
         }
 
+        // More vectors for visualisation
         Vector<float, 2> unit_60 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> unit_300 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
@@ -1808,9 +1805,11 @@ namespace morph {
         Vector<float, 2> pll2_bot = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> pll2_tr = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
-        // Compute hexagon overlap for an east shift, applying the given rotation
-        // increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
-        // anticlockwise, and so on.
+        /*!
+         * Compute hexagon overlap for an east shift, applying the given rotation
+         * increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
+         * anticlockwise, and so on.
+         */
         Vector<float, 13> compute_overlap (const unsigned int _rotation)
         {
             // We'll want a unit vector in the vertical direction that we can rotate
@@ -1839,35 +1838,35 @@ namespace morph {
             {
                 p1 = nw_loc; q1 = n_loc; p2 = sw_sft; q2 = nw_sft;
                 p3 = ne_loc; q3 = se_loc; p4 = se_sft; q4 = s_sft;
-                rotn.rotate(morph::mathconst<float>::pi_over_3);
+                rotn.rotate (morph::mathconst<float>::pi_over_3);
                 break;
             }
             case 2:
             {
                 p1 = sw_loc; q1 = nw_loc; p2 = s_sft; q2 = sw_sft;
                 p3 = n_loc; q3 = ne_loc; p4 = ne_sft; q4 = se_sft;
-                rotn.rotate(morph::mathconst<float>::two_pi_over_3);
+                rotn.rotate (morph::mathconst<float>::two_pi_over_3);
                 break;
             }
             case 3:
             {
                 p1 = s_loc; q1 = sw_loc; p2 = se_sft; q2 = s_sft;
                 p3 = nw_loc; q3 = n_loc; p4 = n_sft; q4 = ne_sft;
-                rotn.rotate(morph::mathconst<float>::pi);
+                rotn.rotate (morph::mathconst<float>::pi);
                 break;
             }
             case 4:
             {
                 p1 = se_loc; q1 = s_loc; p2 = ne_sft; q2 = se_sft;
                 p3 = sw_loc; q3 = nw_loc; p4 = nw_sft; q4 = n_sft;
-                rotn.rotate(morph::mathconst<float>::four_pi_over_3);
+                rotn.rotate (morph::mathconst<float>::four_pi_over_3);
                 break;
             }
             case 5:
             {
                 p1 = ne_loc; q1 = se_loc; p2 = n_sft; q2 = ne_sft;
                 p3 = s_loc; q3 = sw_loc; p4 = sw_sft; q4 = nw_sft;
-                rotn.rotate(morph::mathconst<float>::five_pi_over_3);
+                rotn.rotate (morph::mathconst<float>::five_pi_over_3);
                 break;
             }
             }
@@ -1928,32 +1927,28 @@ namespace morph {
             i6 = i5 + uvv * (2.0f * (i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
 
             // Rectangle a1 area
-            float vside = d*morph::mathconst<float>::one_over_root_3;
+            float vside = d * morph::mathconst<float>::one_over_root_3;
             float hside = (i2 - a1_tl).length();
             a1 = vside * hside;
-            VAR(a1);
 
             // Area of top triangle is defined by the points i1, i2 and p2
             vside = (i1-i2).length();
             hside = (i2-a1_tl).length();
             t1 = vside * hside * 0.5f;
-            VAR(t1);
+
             // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
             vside = (i3-i4).length();
-            t2 = vside * hside * 0.5f;
-            VAR(t2); // I think t2 is always the same as t1.
+            t2 = vside * hside * 0.5f; // always same as t1?
 
             // Lastly, a2, the middle strip is based on the last intersect, i5
             if (i5.has_nan()) {
-                std::cout << "No intersection i5, deal with this...\n";
+                throw std::runtime_error ("No intersection i5, deal with this...");
             } else {
                 a2 = (i1-i4).length() * std::abs((i5-i1).dot(uvh));
-                VAR(a2);
             }
 
             float hex_area = this->hexen.begin()->getArea();
             float ov_area = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
-            std::cout << "Overlap area proportion = " << ov_area << std::endl;
 
             // Store the overlap proportion in the return object
             Vector<float, 13> rtn;
@@ -1966,14 +1961,12 @@ namespace morph {
 
             // NE. Parallelogram defined by i1 (red), pll1_br (q1) (green), pll1_top (q2) (blue).
             float ap1 = std::abs((pll1_top-i1).dot(unit_60)) * (pll1_br-i1).length() / hex_area;
-            VAR (ap1);
 
             // This is NE for zero rotation, and thus goes in rtn[2] for _rotation==0
             rtn[1+(1+_rotation)%6] = ap1;
 
             // SE. Parallelogram defined by i5 (black), p3 (blue) and p4 (green)
             float ap2 = std::abs((pll2_bot-i5).dot(unit_300)) * (pll2_tr-i5).length() / hex_area;
-            VAR (ap2);
 
             rtn[1+(5+_rotation)%6] = ap2;
 
@@ -1983,6 +1976,84 @@ namespace morph {
             rtn[1+_rotation] = 1.0f - ov_area - ap1 - ap2;
 
             return rtn;
+        }
+
+        // Set up wrapping. Really, this works on parallelogram shaped domains.
+        void setwrap (bool onR, bool onG, bool onB)
+        {
+            std::cout << "setwrap called\n";
+
+            if (onR && onG && onB) {
+                throw std::runtime_error ("HexGrid::setwrap: Wrap on max 2 axes, for sanity!");
+            }
+
+            // Find furthest SW hex
+            bool first = true;
+            std::array<float, 4> limits = {{0,0,0,0}};
+            auto h = this->hexen.begin();
+            std::list<Hex>::iterator bl_hex = this->hexen.begin();
+            while (h != this->hexen.end()) {
+                if (h->testFlags(HEX_IS_BOUNDARY) == true) {
+                    if (first) {
+                        limits = {{h->x, h->x, h->y, h->y}};
+                        first = false;
+                    }
+                    if (h->x < limits[0] && h->y <= limits[2]) {
+                        limits[0] = h->x; limits[2] = h->y;
+                        bl_hex = h;
+                    }
+                }
+                ++h;
+            }
+            // Find hex nearest limits. Really?
+            std::cout << "Bottom left hex is " << bl_hex->outputCart() << std::endl;
+
+            int count = 0;
+            std::list<Hex>::iterator row_start =  bl_hex;
+            if (onR) {
+                // go to end of each row and wrap back to the start. This may only work
+                // for parallelograms, at least in an initial implementation.
+                // First row
+                std::list<Hex>::iterator cur_hex = row_start;
+                while (cur_hex->has_ne()) { cur_hex = cur_hex->ne; }
+                cur_hex->set_ne(bl_hex);
+                bl_hex->set_nw(cur_hex);
+                std::cout << "set E hex of " << cur_hex->outputCart() << " to " << bl_hex->outputCart() << std::endl;
+                // Rest of the rows
+                while (row_start->has_nne()) {
+                    row_start = row_start->nne;
+                    cur_hex = row_start;
+                    count = 0;
+                    while (cur_hex->has_ne()) {
+                        cur_hex = cur_hex->ne;
+                        ++count;
+                    }
+                    std::cout << "set E hex of " << cur_hex->outputCart() << " to " << row_start->outputCart() << std::endl;
+                    cur_hex->set_ne (row_start);
+                    row_start->set_nw (cur_hex);
+                }
+            }
+
+            row_start = bl_hex; // really 'col_start' now
+            if (onG) { // scan up columns in the 'G' direction
+                // First col
+                std::list<Hex>::iterator cur_hex = row_start;
+                while (cur_hex->has_nne()) { cur_hex = cur_hex->nne; }
+                cur_hex->set_nne (bl_hex);
+                bl_hex->set_nnw (cur_hex);
+                std::cout << "set NE hex of " << cur_hex->outputCart() << " to " << bl_hex->outputCart() << std::endl;
+                // Rest of the rows
+                for (int i = 0; i < count; ++i) { // NB: Assumes every row the same length
+                    row_start = row_start->ne;
+                    cur_hex = row_start;
+                    while (cur_hex->has_nne()) { cur_hex = cur_hex->nne; }
+                    cur_hex->set_nne(row_start);
+                    row_start->set_nsw(cur_hex);
+                    std::cout << "set NE hex of " << cur_hex->outputCart() << " to " << row_start->outputCart() << std::endl;
+                }
+            }
+
+            std::cout << "setwrap finished\n";
         }
 
         /*!
