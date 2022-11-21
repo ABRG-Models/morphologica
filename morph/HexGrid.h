@@ -1478,10 +1478,25 @@ namespace morph {
                 // dest_hex should now be set
 
                 // Having computed all the overlaps:
-#if 0 // This IS doing stuff now...
+#if 1 // This IS doing stuff now...
                 shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
                 if (dest_hex->has_ne()) {
                     shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
+                }
+                if (dest_hex->has_nne()) {
+                    shifted[dest_hex->nne->vi] += overlap[2] * image_data[h->vi];
+                }
+                if (dest_hex->has_nnw()) {
+                    shifted[dest_hex->nnw->vi] += overlap[3] * image_data[h->vi];
+                }
+                if (dest_hex->has_nw()) {
+                    shifted[dest_hex->nw->vi] += overlap[4] * image_data[h->vi];
+                }
+                if (dest_hex->has_nsw()) {
+                    shifted[dest_hex->nsw->vi] += overlap[5] * image_data[h->vi];
+                }
+                if (dest_hex->has_nse()) {
+                    shifted[dest_hex->nse->vi] += overlap[6] * image_data[h->vi];
                 }
                 // etc etc (writeme)
 #endif
@@ -1669,6 +1684,7 @@ namespace morph {
                 overlap = this->compute_overlap_colinear();
             }
             VAR(overlap);
+            VAR(overlap.sum());
 
             return overlap;
         }
@@ -1726,6 +1742,8 @@ namespace morph {
                     unsigned int hidx = pps.argmin();
                     std::cout << "pps idx: "<< hidx << " (0:ns 1:sn 2:nesw 3:swne 4:senw 5:nwse)\n";
 
+                    rtn[0] = (a1 + t1) / hexarea;
+
                     // From Hex.h. HEX_NEIGHBOUR_POS_E = 0; HEX_NEIGHBOUR_POS_NE = 1
                     // etc. Shift by one to go into our return object.
                     switch (hidx) {
@@ -1773,14 +1791,22 @@ namespace morph {
 
                 } else if (minpp < lr) {
                     // Reduced triangles
-                    std::cout << "writeme for reduced triangles\n";
+                    throw std::runtime_error ("compute_overlap_colinear: writeme for reduced triangles");
                 }
+            } else {
+                throw std::runtime_error ("compute_overlap_colinear: unexpected case.");
             }
-
-            rtn[0] = (a1 + t1) / hexarea;
 
             return rtn;
         }
+
+        Vector<float, 2> unit_60 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> unit_300 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+
+        Vector<float, 2> pll1_top = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> pll1_br = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> pll2_bot = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> pll2_tr = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         // Compute hexagon overlap for an east shift, applying the given rotation
         // increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
@@ -1790,6 +1816,9 @@ namespace morph {
             // We'll want a unit vector in the vertical direction that we can rotate
             Vector<float, 2> uvv = {0.0f, 1.0f};
             Vector<float, 2> uvh = {1.0f, 0.0f};
+            // Unit vector in 60 degree direction
+            unit_60 = {0.5f, morph::mathconst<float>::root_3_over_2};
+            unit_300 = {0.5f, -morph::mathconst<float>::root_3_over_2};
 
             // A rotational transformation matrix
             morph::Matrix22<float> rotn; // defaults to identity matrix
@@ -1797,94 +1826,48 @@ namespace morph {
             // Find intersection between nw-ne line and the line defining the ne edge of the base hex
             // So, that's the intersection of the line segments n_loc -> ne_loc and nw_loc+rem_xy -> ne_loc+rem_xy
             switch (_rotation) {
+            case 0:
+            default:
+            {
+                // Lines to find i1 intersection:
+                p1 = n_loc; q1 = ne_loc; p2 = nw_sft; q2 = n_sft;
+                // Lines to find i5 intersection:
+                p3 = se_loc; q3 = s_loc; p4 = s_sft; q4 = sw_sft;
+                break;
+            }
             case 1:
             {
-                p1 = nw_loc;
-                q1 = n_loc;
-                p2 = sw_sft;
-                q2 = nw_sft;
-
-                p3 = ne_loc;
-                q3 = se_loc;
-                p4 = se_sft;
-                q4 = s_sft;
-
+                p1 = nw_loc; q1 = n_loc; p2 = sw_sft; q2 = nw_sft;
+                p3 = ne_loc; q3 = se_loc; p4 = se_sft; q4 = s_sft;
                 rotn.rotate(morph::mathconst<float>::pi_over_3);
                 break;
             }
             case 2:
             {
-                p1 = sw_loc;
-                q1 = nw_loc;
-                p2 = s_sft;
-                q2 = sw_sft;
-
-                p3 = n_loc;
-                q3 = ne_loc;
-                p4 = ne_sft;
-                q4 = se_sft;
-
+                p1 = sw_loc; q1 = nw_loc; p2 = s_sft; q2 = sw_sft;
+                p3 = n_loc; q3 = ne_loc; p4 = ne_sft; q4 = se_sft;
                 rotn.rotate(morph::mathconst<float>::two_pi_over_3);
                 break;
             }
             case 3:
             {
-                p1 = s_loc;
-                q1 = sw_loc;
-                p2 = se_sft;
-                q2 = s_sft;
-
-                p3 = nw_loc;
-                q3 = n_loc;
-                p4 = n_sft;
-                q4 = ne_sft;
-
+                p1 = s_loc; q1 = sw_loc; p2 = se_sft; q2 = s_sft;
+                p3 = nw_loc; q3 = n_loc; p4 = n_sft; q4 = ne_sft;
                 rotn.rotate(morph::mathconst<float>::pi);
                 break;
             }
             case 4:
             {
-                p1 = se_loc;
-                q1 = s_loc;
-                p2 = ne_sft;
-                q2 = se_sft;
-
-                p3 = sw_loc;
-                q3 = nw_loc;
-                p4 = nw_sft;
-                q4 = n_sft;
-
+                p1 = se_loc; q1 = s_loc; p2 = ne_sft; q2 = se_sft;
+                p3 = sw_loc; q3 = nw_loc; p4 = nw_sft; q4 = n_sft;
                 rotn.rotate(morph::mathconst<float>::four_pi_over_3);
                 break;
             }
             case 5:
             {
-                p1 = ne_loc;
-                q1 = se_loc;
-                p2 = n_sft;
-                q2 = ne_sft;
-
-                p3 = s_loc;
-                q3 = sw_loc;
-                p4 = sw_sft;
-                q4 = nw_sft;
-
+                p1 = ne_loc; q1 = se_loc; p2 = n_sft; q2 = ne_sft;
+                p3 = s_loc; q3 = sw_loc; p4 = sw_sft; q4 = nw_sft;
                 rotn.rotate(morph::mathconst<float>::five_pi_over_3);
-                break;
-            }
-            case 0:
-            default:
-            {
-                // Lines to find i1 intersection:
-                p1 = n_loc;
-                q1 = ne_loc;
-                p2 = nw_sft;
-                q2 = n_sft;
-                // Lines to find i5 intersection:
-                p3 = se_loc;
-                q3 = s_loc;
-                p4 = s_sft;
-                q4 = sw_sft;
                 break;
             }
             }
@@ -1892,6 +1875,8 @@ namespace morph {
             // Rotate our basis vectors
             uvv = rotn * uvv;
             uvh = rotn * uvh;
+            unit_60 = rotn * unit_60;
+            unit_300 = rotn * unit_300;
 
             // Variables to hold the areas of rectangles a1 and a2 and triangles t1 and t2.
             float a1 = 0.0f;
@@ -1910,15 +1895,28 @@ namespace morph {
             // Usually, top left of rectangle a1 is p2
             a1_tl = p2;
             a1_bl = q4; // used in visualisation, but not for area computation
+            pll1_top = q2;
+            pll1_br = q1;
+            pll2_bot = p4;
+            pll2_tr = p3;
 
             if (i5_to_right == false) {
                 // different set of points. i5 is the new i1
                 morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 // uvv/uvh now have to reverse direction
-                uvv = -uvv; uvh = -uvh;
+                uvv = -uvv; uvh = -uvh; // Fixme: don't think uvh should be reveresed. Test.
                 // q4 is the new p2
                 a1_tl = q4;
                 a1_bl = p2;
+                // Also unit_60/unit_300 have to be swapped
+                tmp = unit_60;
+                unit_60 = unit_300;
+                unit_300 = tmp;
+                // q1, q2 have to swap with p3, p4 (q1->p3 and q2->p4)
+                pll1_top = p4;
+                pll1_br = p3;
+                pll2_bot = q2;
+                pll2_tr = q1;
             }
 
             // Now reason out i2, i3 and i4.
@@ -1953,26 +1951,36 @@ namespace morph {
                 VAR(a2);
             }
 
-            float ov_area = (a1 + t1 + t2) * 2.0f + a2;
-            std::cout << "Overlap area = " << ov_area;
-            std::cout << "\nOverlap proportion: " << ov_area / this->hexen.begin()->getArea() << std::endl;
+            float hex_area = this->hexen.begin()->getArea();
+            float ov_area = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
+            std::cout << "Overlap area proportion = " << ov_area << std::endl;
 
             // Store the overlap proportion in the return object
             Vector<float, 13> rtn;
             rtn.zero();
-            rtn[0] = ov_area / this->hexen.begin()->getArea();
+            rtn[0] = ov_area;
 
             // Additional areas. In the default 'move to the right' case, there is
             // overlap with the hex to the NE, the one to the east and the one to the
             // south east. With rotations, these will cycle around.
 
-            // NE. Parallelogram defined by i1, ne_loc, n_sft.
+            // NE. Parallelogram defined by i1 (red), pll1_br (q1) (green), pll1_top (q2) (blue).
+            float ap1 = std::abs((pll1_top-i1).dot(unit_60)) * (pll1_br-i1).length() / hex_area;
+            VAR (ap1);
+
+            // This is NE for zero rotation, and thus goes in rtn[2] for _rotation==0
+            rtn[1+(1+_rotation)%6] = ap1;
+
+            // SE. Parallelogram defined by i5 (black), p3 (blue) and p4 (green)
+            float ap2 = std::abs((pll2_bot-i5).dot(unit_300)) * (pll2_tr-i5).length() / hex_area;
+            VAR (ap2);
+
+            rtn[1+(5+_rotation)%6] = ap2;
 
             // E. Area defined by triangle below NE parallelogram, rectangle, and
-            // another triangle. Similar computation as the one under the '0th' overlap.
-
-            // SE. Parallelogram like the NE one.
-
+            // another triangle. Similar computation as the one under the '0th' overlap,
+            // but can solve as Hex area - the others.
+            rtn[1+_rotation] = 1.0f - ov_area - ap1 - ap2;
 
             return rtn;
         }

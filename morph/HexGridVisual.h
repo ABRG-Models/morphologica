@@ -617,7 +617,10 @@ namespace morph {
             // intersection points
             sw = this->hg->getd()/40.0f;
             if (!this->hg->i1.has_nan()) {
+                clr = {1,0,0};
                 this->computeSphere (this->idx, this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("i1", (this->hg->i1).plus_one_dim()+Vector<float>({sw,0,0.02}));
+                clr = {0,0,0};
             }
             if (!this->hg->i2.has_nan()) {
                 this->computeSphere (this->idx, this->hg->i2.plus_one_dim(), clr, sw, 14, 12);
@@ -630,7 +633,49 @@ namespace morph {
             }
             if (!this->hg->i5.has_nan()) {
                 this->computeSphere (this->idx, this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("i5", (this->hg->i5).plus_one_dim()+Vector<float>({sw,0,0.02}));
             }
+
+            // p/q points used to compute additional pgrams
+            if (!this->hg->q2.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->q2.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q2", (this->hg->q2).plus_one_dim()+Vector<float>({sw,0,0.02}));
+            }
+            if (!this->hg->q1.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q1", (this->hg->q1).plus_one_dim()+Vector<float>({sw,0,0.02}));
+
+            }
+#if 1 // 60/300 units vectors
+            if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
+                clr = {1,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   (this->hg->i1+this->hg->unit_60).plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+            if (!this->hg->i5.has_nan() && !this->hg->unit_300.has_nan()) {
+                clr = {0,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   (this->hg->i5+this->hg->unit_300).plus_one_dim()+Vector<float>({0,0,0.02}),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+#endif
+            if (!this->hg->p3.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p3", (this->hg->p3).plus_one_dim()+Vector<float>({sw,0,0.02}));
+
+            }
+            if (!this->hg->p4.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p4.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p4", (this->hg->p4).plus_one_dim()+Vector<float>({sw,0,0.02}));
+            }
+
 
             // Draw grey triangles/rects for the relevant areas
             clr = {0.5f, 0.5f, 0.5f};
