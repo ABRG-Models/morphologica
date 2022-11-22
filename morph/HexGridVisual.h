@@ -185,12 +185,35 @@ namespace morph {
         //! Show centre hex as a 'marked' hex?
         bool showcentre = false;
 
-        bool showoverlap = true;
+        //! Set true to show the overlap geometry workings
+        bool showoverlap = false;
+
+        //! Set false to omit the hexes (to show just the geometry of showoverlap==true)
+        bool showhexes = true;
 
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
         void initializeVerticesHexesInterpolated()
+        {
+            if (this->showhexes == true) {
+                this->computeHexes();
+            }
+
+            // Optionally show some hexes to verify the hex overlap area computation (see HexGrid::shiftdata)
+            if (this->showoverlap == true) {
+                this->computeOverlapIndices();
+            }
+
+            // Optionally show a Flat surface for the zero plane
+            if (this->zerogrid == true) {
+                this->computeZerogridIndices();
+            }
+            // End trial grid
+        }
+
+        // Compute vertices for the patchwork quilt of hexes
+        void computeHexes()
         {
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
@@ -401,17 +424,6 @@ namespace morph {
 
                 this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
-
-            // Optionally show some hexes to verify the hex overlap area computation (see HexGrid::shiftdata)
-            if (this->showoverlap == true) {
-                this->computeOverlapIndices();
-            }
-
-            // Optionally show a Flat surface for the zero plane
-            if (this->zerogrid == true) {
-                this->computeZerogridIndices();
-            }
-            // End trial grid
         }
 
         // Show a Flat surface for the zero plane. Currently, this is expensively
@@ -656,6 +668,21 @@ namespace morph {
                                 0.1f*this->hg->getd(), 48);
 
             }
+            if (!this->hg->q3.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->q3.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q3", (this->hg->q3).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+            if (!this->hg->q4.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q4.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q4", (this->hg->q4).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
 #if 1 // 60/300 units vectors
             if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
                 clr = {1,0,0};
@@ -672,6 +699,21 @@ namespace morph {
                                    uz, clr, clr, lw/2.0f, lh);
             }
 #endif
+            if (!this->hg->p1.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p1", (this->hg->p1).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p2.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->p2.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p2", (this->hg->p2).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
             if (!this->hg->p3.has_nan()) {
                 clr = {0,0,1};
                 this->computeSphere (this->idx, this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
