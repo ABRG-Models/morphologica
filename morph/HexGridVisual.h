@@ -563,6 +563,37 @@ namespace morph {
                                this->hg->s_loc.plus_one_dim(),
                                this->hg->sw_loc.plus_one_dim(),
                                uz, clr, clr, lw, lh);
+            if (!this->hg->q1.has_nan() && !this->hg->q6.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q1.plus_one_dim(),
+                                   this->hg->q6.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->p6.has_nan() && !this->hg->q6.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p6.plus_one_dim(),
+                                   this->hg->q6.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->p6.has_nan() && !this->hg->q5.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p6.plus_one_dim(),
+                                   this->hg->q5.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->q6.has_nan() && !this->hg->p8.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q6.plus_one_dim(),
+                                   this->hg->p8.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->q8.has_nan() && !this->hg->p8.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q8.plus_one_dim(),
+                                   this->hg->p8.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+
 
             // Vertices and lines of shifted hexagon
             clr = { 0.9, 0.1, 0.1 };
@@ -683,6 +714,38 @@ namespace morph {
                                 0.1f*this->hg->getd(), 48);
 
             }
+            if (!this->hg->q5.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q5", (this->hg->q5).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q6.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q6.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q6", (this->hg->q6).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q7.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q7.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q7", (this->hg->q7).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q8.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q8.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q8", (this->hg->q8).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
 #if 1 // 60/300 units vectors
             if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
                 clr = {1,0,0};
@@ -696,6 +759,13 @@ namespace morph {
                 this->computeLine (this->idx,
                                    this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
                                    (this->hg->i5+this->hg->unit_300).plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+            if (!this->hg->i1.has_nan() && !this->hg->unit_120.has_nan()) {
+                clr = {1,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   (this->hg->i1+this->hg->unit_120).plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
 #endif
@@ -729,7 +799,30 @@ namespace morph {
                                 clr, morph::VisualFont::DVSans,
                                 0.1f*this->hg->getd(), 48);
             }
+            if (!this->hg->p5.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p5", (this->hg->p5).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
 
+            }
+            if (!this->hg->p6.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p6.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p6", (this->hg->p6).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p8.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p8.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p8", (this->hg->p8).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
 
             // Draw grey triangles/rects for the relevant areas
             clr = {0.5f, 0.5f, 0.5f};
