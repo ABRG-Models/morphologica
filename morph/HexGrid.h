@@ -1421,6 +1421,13 @@ namespace morph {
         Vector<float, 2> se_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> n_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> s_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        // Original location of the zero hex
+        Vector<float, 2> sw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> nw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> ne_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> se_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> n_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        Vector<float, 2> s_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
         Vector<float, 2> sw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         Vector<float, 2> nw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
@@ -1495,6 +1502,10 @@ namespace morph {
             // Convert to int
             Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
             std::cout << "integral steps: " << int_rg << std::endl;
+            Vector<float, 2> int_xy = {
+                (int_rg_f[0] * this->d + int_rg_f[1] * this->d * 0.5f),
+                (int_rg_f[1] * this->v)
+            };
             // Compute remainder
             Vector<float, 2> rem_rg = rg - int_rg_f;
 
@@ -1507,16 +1518,48 @@ namespace morph {
             };
             std::cout << "Remainder x: " << rem_xy[0] << ", and remainder y: " << rem_xy[1] << std::endl;
 
+            // Corners of base hex 0
+            sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            ne_loc = {  (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
+            se_loc = {  (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
+            n_loc =  {   0.0f   , ( d*morph::mathconst<float>::one_over_root_3)   };
+            s_loc =  {   0.0f   , (-d*morph::mathconst<float>::one_over_root_3)   };
+
+            // Origin hex
+            sw_0 = sw_loc - int_xy;
+            nw_0 = nw_loc - int_xy;
+            ne_0 = ne_loc - int_xy;
+            se_0 = se_loc - int_xy;
+            n_0 = n_loc - int_xy;
+            s_0 = s_loc - int_xy;
+
+            // Corners of the shifted hex
+            sw_sft = sw_loc + rem_xy;
+            nw_sft = nw_loc + rem_xy;
+            ne_sft = ne_loc + rem_xy;
+            se_sft = se_loc + rem_xy;
+            n_sft = n_loc + rem_xy;
+            s_sft = s_loc + rem_xy;
+
             Vector<float, 19> overlap = this->compute_hex_overlap (rem_xy);
 
             if (overlap[0] == -100.0f) {
                 std::cout << "overlap[0] is -100\n";
                 return false;
             }
+
+            static constexpr bool debugdata = true;
+
             std::list<Hex>::iterator h = this->hexen.begin();
             while (h != this->hexen.end()) {
                 // image_data[i] is the data to shift.
+                bool datatocopy = false;
+                if constexpr (debugdata) {
+                    datatocopy = image_data[h->vi] > T{0} ? true : false;
+                }
                 std::list<Hex>::iterator dest_hex = h;
+                if (datatocopy) std::cout << "Copying hex data at " << h->outputRG() << "...";
                 if (int_rg[1] > 0) {
                     for (int j = 0; j < int_rg[1] && dest_hex->has_nne(); ++j) {
                         dest_hex = dest_hex->nne;
@@ -1536,16 +1579,22 @@ namespace morph {
                     }
                 }
                 // dest_hex should now be set
+                if constexpr (debugdata) { if (datatocopy) { std::cout << " to desthex: " << dest_hex->outputRG() << std::endl; } }
 
                 // Having computed all the overlaps:
+                if (datatocopy && overlap[0]) std::cout << "Adding [0] " << (overlap[0]*100.0f) << "\% to dest_hex itself\n";
                 shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
+
                 if (dest_hex->has_ne()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[1]) { std::cout << "Adding [1] " << (overlap[1]*100.0f) << "\% to dest_hex ne\n"; } }
                     shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
 
                     if (dest_hex->ne->has_ne()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[8]) { std::cout << "Adding [8] " << (overlap[8]*100.0f) << "\% to dest_hex ne->ne\n";} }
                         shifted[dest_hex->ne->ne->vi] += overlap[8] * image_data[h->vi];
                     }
                     if (dest_hex->ne->has_nne()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[9]) { std::cout << "Adding [9] " << (overlap[9]*100.0f) << "\% to dest_hex ne->nne\n"; } }
                         shifted[dest_hex->ne->nne->vi] += overlap[9] * image_data[h->vi];
                     }
                 } else {
@@ -1553,49 +1602,66 @@ namespace morph {
                 }
 
                 if (dest_hex->has_nne()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[2]) { std::cout << "Adding [2] " << (overlap[2]*100.0f) << "\% to dest_hex nne\n"; } }
                     shifted[dest_hex->nne->vi] += overlap[2] * image_data[h->vi];
                     if (dest_hex->nne->has_nne()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[10]) { std::cout << "Adding [10] " << (overlap[10]*100.0f) << "\% to dest_hex nne->nne\n"; } }
                         shifted[dest_hex->nne->nne->vi] += overlap[10] * image_data[h->vi];
                     }
                     if (dest_hex->nne->has_nnw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[11]) { std::cout << "Adding [11] " << (overlap[11]*100.0f) << "\% to dest_hex nne->nnw\n"; } }
                         shifted[dest_hex->nne->nnw->vi] += overlap[11] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nnw()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[3]) { std::cout << "Adding [3] " << (overlap[3]*100.0f) << "\% to dest_hex nnw\n"; } }
                     shifted[dest_hex->nnw->vi] += overlap[3] * image_data[h->vi];
                     if (dest_hex->nnw->has_nnw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[12]) { std::cout << "Adding [12] " << (overlap[12]*100.0f) << "\% to dest_hex nnw->nnw\n"; } }
                         shifted[dest_hex->nnw->nnw->vi] += overlap[12] * image_data[h->vi];
                     }
                     if (dest_hex->nnw->has_nw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[13]) { std::cout << "Adding [13] " << (overlap[13]*100.0f) << "\% to dest_hex nnw->nw\n"; } }
                         shifted[dest_hex->nnw->nw->vi] += overlap[13] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nw()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[4]) { std::cout << "Adding [4] " << (overlap[4]*100.0f) << "\% to dest_hex nw\n"; } }
                     shifted[dest_hex->nw->vi] += overlap[4] * image_data[h->vi];
                     if (dest_hex->nw->has_nw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[14]) { std::cout << "Adding [14] " << (overlap[14]*100.0f) << "\% to dest_hex nw->nw\n"; } }
                         shifted[dest_hex->nw->nw->vi] += overlap[14] * image_data[h->vi];
                     }
                     if (dest_hex->nw->has_nsw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[15]) { std::cout << "Adding [15] " << (overlap[15]*100.0f) << "\% to dest_hex nw->nsw\n"; } }
                         shifted[dest_hex->nw->nsw->vi] += overlap[15] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nsw()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[5]) { std::cout << "Adding [5] " << (overlap[5]*100.0f) << "\% to dest_hex nsw\n"; } }
                     shifted[dest_hex->nsw->vi] += overlap[5] * image_data[h->vi];
                     if (dest_hex->nsw->has_nsw()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[16]) { std::cout << "Adding [16] " << (overlap[16]*100.0f) << "\% to dest_hex nsw->nsw\n"; } }
                         shifted[dest_hex->nsw->nsw->vi] += overlap[16] * image_data[h->vi];
                     }
                     if (dest_hex->nsw->has_nse()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[17]) { std::cout << "Adding [17] " << (overlap[17]*100.0f) << "\% to dest_hex nsw->nse\n"; } }
                         shifted[dest_hex->nsw->nse->vi] += overlap[17] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nse()) {
+                    if constexpr (debugdata) { if (datatocopy && overlap[6]) { std::cout << "Adding [6] " << (overlap[6]*100.0f) << "\% to dest_hex nse\n"; } }
                     shifted[dest_hex->nse->vi] += overlap[6] * image_data[h->vi];
                     if (dest_hex->nse->has_nse()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[18]) { std::cout << "Adding [18] " << (overlap[18]*100.0f) << "\% to dest_hex nse->nse\n"; } }
                         shifted[dest_hex->nse->nse->vi] += overlap[18] * image_data[h->vi];
                     }
                     if (dest_hex->nse->has_ne()) {
+                        if constexpr (debugdata) { if (datatocopy && overlap[7]) { std::cout << "Adding [7] " << (overlap[7]*100.0f) << "\% to dest_hex nse->ne\n"; } }
                         shifted[dest_hex->nse->ne->vi] += overlap[7] * image_data[h->vi];
                     }
+                } else {
+                    if constexpr (debugdata) { std::cout << "No nse for hex " << dest_hex->outputRG() << "\n"; }
                 }
 
                 ++h;
@@ -1672,22 +1738,6 @@ namespace morph {
             overlap.zero();
             float lr = this->getLR();
 
-            // Corners of base hex 0
-            sw_loc = { (-d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-            nw_loc = { (-d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-            ne_loc = {  (d*0.5f), ( d*morph::mathconst<float>::one_over_2_root_3) };
-            se_loc = {  (d*0.5f), (-d*morph::mathconst<float>::one_over_2_root_3) };
-            n_loc =  {   0.0f   , ( d*morph::mathconst<float>::one_over_root_3)   };
-            s_loc =  {   0.0f   , (-d*morph::mathconst<float>::one_over_root_3)   };
-
-            // Corners of the shifted hex
-            sw_sft = sw_loc + shift;
-            nw_sft = nw_loc + shift;
-            ne_sft = ne_loc + shift;
-            se_sft = se_loc + shift;
-            n_sft = n_loc + shift;
-            s_sft = s_loc + shift;
-
             // hexvectors from centre to points:
             morph::Vector<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
             morph::Vector<float, 2> hv_n =  { 0, lr };
@@ -1706,14 +1756,14 @@ namespace morph {
             Vector<float, 2> isct4 = this->intersection (s_loc, sw_loc, se_sft, s_sft);
             Vector<float, 2> isct5 = this->intersection (se_loc, s_loc, ne_sft, se_sft);
             Vector<float, 2> isct6 = this->intersection (ne_loc, se_loc, n_sft, ne_sft);
-            //std::cout << "isects: " << isct1 << ", " << isct2 << ", " << isct3 << ", "
-            //          << isct4 << ", " << isct5 << ", " << isct6 << "\n";
+            std::cout << "isects: " << isct1 << ", " << isct2 << ", " << isct3 << ", "
+                      << isct4 << ", " << isct5 << ", " << isct6 << "\n";
 
             // Parallel intersections
             Vector<float, 2> isct7 = this->intersection (nw_loc, n_loc, nw_sft, n_sft);
             Vector<float, 2> isct8 = this->intersection (sw_loc, nw_loc, sw_sft, nw_sft);
             Vector<float, 2> isct9 = this->intersection (s_loc, sw_loc, s_sft, sw_sft);
-            //std::cout << "colinear isects: " << isct7 << ", " << isct8 << ", " << isct9 << std::endl;
+            std::cout << "colinear isects: " << isct7 << ", " << isct8 << ", " << isct9 << std::endl;
             // Note: the segments could be parallel but no longer intersecting and there
             // would STILL be the possiblity of an overlap. However, I think that the
             // scheme of choosing integer hex-jumps may avoid this case from occurring.
@@ -1725,17 +1775,17 @@ namespace morph {
             Vector<float, 2> isct13 = this->intersection (s_loc, s_loc + hv_s, ne_sft, se_sft);
             Vector<float, 2> isct14 = this->intersection (se_loc, se_loc + hv_se, n_sft, ne_sft);
             Vector<float, 2> isct15 = this->intersection (ne_loc, ne_loc + hv_ne, nw_sft, n_sft);
-            //std::cout << "extra colinear isects1-3: " << isct10 << ", " << isct11 << ", " << isct12 << std::endl;
-            //std::cout << "extra colinear isects4-6: " << isct13 << ", " << isct14 << ", " << isct15 << std::endl;
+            std::cout << "extra colinear isects1-3: " << isct10 << ", " << isct11 << ", " << isct12 << std::endl;
+            std::cout << "extra colinear isects4-6: " << isct13 << ", " << isct14 << ", " << isct15 << std::endl;
 
             // Nearly finally, intersects that occur when the hex is moved to the point at
             // which the moved hex has just one point inside the base hex
-            Vector<float, 2> isct16 = this->intersection (n_loc, ne_loc, sw_sft, nw_sft);
-            Vector<float, 2> isct17 = this->intersection (ne_loc, se_loc, nw_sft, n_sft);
-            Vector<float, 2> isct18 = this->intersection (se_loc, s_loc, n_sft, ne_sft);
-            Vector<float, 2> isct19 = this->intersection (s_loc, sw_loc, ne_sft, se_sft);
-            Vector<float, 2> isct20 = this->intersection (sw_loc, nw_loc, se_sft, s_sft);
-            Vector<float, 2> isct21 = this->intersection (nw_loc, n_loc, s_sft, sw_sft);
+            Vector<float, 2> isct16 = this->intersection (n_loc, ne_loc, nw_sft, sw_sft);
+            Vector<float, 2> isct17 = this->intersection (nw_loc, n_loc, sw_sft, s_sft);
+            Vector<float, 2> isct18 = this->intersection (sw_loc, nw_loc, s_sft, se_sft);
+            Vector<float, 2> isct19 = this->intersection (s_loc, sw_loc, se_sft, ne_sft);
+            Vector<float, 2> isct20 = this->intersection (se_loc, s_loc, ne_sft, n_sft);
+            Vector<float, 2> isct21 = this->intersection (ne_loc, se_loc, n_sft, nw_sft);
             std::cout << "corner isects1-3: " << isct16 << ", " << isct17 << ", " << isct18 << std::endl;
             std::cout << "corner isects4-6: " << isct19 << ", " << isct20 << ", " << isct21 << std::endl;
 
@@ -1782,15 +1832,15 @@ namespace morph {
             } else if (!isct16.has_nan()) {
                 overlap = this->compute_overlap_corner(0);
             } else if (!isct17.has_nan()) {
-                overlap = this->compute_overlap_corner(5);
+                overlap = this->compute_overlap_corner(1);
             } else if (!isct18.has_nan()) {
-                overlap = this->compute_overlap_corner(4);
+                overlap = this->compute_overlap_corner(2);
             } else if (!isct19.has_nan()) {
                 overlap = this->compute_overlap_corner(3);
             } else if (!isct20.has_nan()) {
-                overlap = this->compute_overlap_corner(2);
+                overlap = this->compute_overlap_corner(4);
             } else if (!isct21.has_nan()) {
-                overlap = this->compute_overlap_corner(1);
+                overlap = this->compute_overlap_corner(5);
 
             } else if (!isct22.has_nan()) {
                 overlap = this->compute_overlap_far (0);
@@ -1818,7 +1868,7 @@ namespace morph {
             } else if (!isct33.has_nan()) {
                 overlap = this->compute_overlap_far2 (5);
 
-            } else if (!isct10.has_nan()) {
+            } else if (!isct10.has_nan() && std::isnan(isct13[0])) {
                 overlap = this->compute_overlap_colinear2 (0);
             } else if (!isct11.has_nan()) {
                 overlap = this->compute_overlap_colinear2 (1);
@@ -1830,6 +1880,19 @@ namespace morph {
                 overlap = this->compute_overlap_colinear2 (4);
             } else if (!isct15.has_nan()) {
                 overlap = this->compute_overlap_colinear2 (5);
+
+            } else if (!isct10.has_nan() && !std::isnan(isct13[0])) {
+                overlap = this->compute_overlap_colinear3 (0);
+            } else if (!isct11.has_nan() && !std::isnan(isct14[0])) {
+                overlap = this->compute_overlap_colinear3 (1);
+            } else if (!isct12.has_nan() && !std::isnan(isct15[0])) {
+                overlap = this->compute_overlap_colinear3 (2);
+            } else if (!isct13.has_nan() && !std::isnan(isct10[0])) {
+                overlap = this->compute_overlap_colinear3 (3);
+            } else if (!isct14.has_nan() && !std::isnan(isct11[0])) {
+                overlap = this->compute_overlap_colinear3 (4);
+            } else if (!isct15.has_nan() && !std::isnan(isct12[0])) {
+                overlap = this->compute_overlap_colinear3 (5);
 
             } else if (!isct7.has_nan() || !isct8.has_nan() || !isct9.has_nan() // 1st three test for colinear edges
                        || (std::abs(shift.angle()    -   morph::mathconst<float>::pi_over_6) <= anglethreshold) // rest test for shift angle
@@ -1965,17 +2028,35 @@ namespace morph {
         //! Deals with another kind of "colinear overlap".
         Vector<float, 19> compute_overlap_colinear2 (const unsigned int _rotation)
         {
-            std::cout << __FUNCTION__ << " called\n";
-
+            std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n";
             Vector<float, 19> rtn;
             rtn.zero();
             morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
             unit_60 = rotn * morph::Vector<float, 2>({ 0.5f, morph::mathconst<float>::root_3_over_2 });
             // Main parallelogram is defined by points p1, q1, q4.
             float ap1 = std::abs((p1-q4).dot(unit_60)) * this->getLR() / this->hexen.begin()->getArea();
+            std::cout << "Place ap1="<<ap1<<" into [0] and [" << 1+_rotation << "] with remainder = 1-2ap1 = "
+                      << (1.0f - 2.0f * ap1) << " going in [" << ((2+_rotation)%6) << "]\n";
             rtn[0] = ap1;
-            rtn[1+_rotation] = ap1;
-            rtn[(2+_rotation)%6] = 1.0f - 2.0f * ap1;
+            rtn[1+_rotation] = ap1; // [ 1 2 3 4 5 6 ]
+            rtn[(2+_rotation)%6] = 1.0f - 2.0f * ap1; // [ 2 3 4 5 0 1 ]
+            return rtn;
+        }
+        //! And the other 6 permutations of colinear overlap
+        Vector<float, 19> compute_overlap_colinear3 (const unsigned int _rotation)
+        {
+            std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n";
+            Vector<float, 19> rtn;
+            rtn.zero();
+            morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
+            unit_120 = rotn * morph::Vector<float, 2>({ -0.5f, morph::mathconst<float>::root_3_over_2});
+            // Main parallelogram is defined by points p2, q2 and q3.
+            float ap1 = std::abs((p2-q3).dot(unit_120)) * this->getLR() / this->hexen.begin()->getArea();
+            std::cout << "Place ap1="<<ap1<<" into [0] and [" << 1+_rotation << "] with remainder = 1-2ap1 = "
+                      << (1.0f - 2.0f * ap1) << " going in [" << ((2+_rotation)%6) << "]\n";
+            rtn[0] = ap1;
+            rtn[1+_rotation] = ap1; // [ 1 2 3 4 5 6 ]
+            rtn[1+(_rotation+11)%6] = 1.0f - 2.0f * ap1; // [6 1 2 3 4 5]
             return rtn;
         }
 
@@ -2164,8 +2245,7 @@ namespace morph {
             a1 = vside * hside;
 
             // Area of top triangle is defined by the points i1, i2 and a1_tl
-            vside = (i1-i2).length();
-            //hside = (i2-a1_tl).length();
+            vside = (i1-i2).length(); // hside unchanged
             t1 = vside * hside * 0.5f;
 
             // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
@@ -2262,11 +2342,6 @@ namespace morph {
                 tmp = unit_60;
                 unit_60 = unit_300;
                 unit_300 = tmp;
-                // q1, q2 have to swap with p3, p4 (q1->p3 and q2->p4)
-                pll1_top = p4;
-                pll1_br = p3;
-                pll2_bot = q2;
-                pll2_tr = q1;
             }
 
             // Now reason out i2, i3 and i4.
@@ -2365,6 +2440,7 @@ namespace morph {
             pll2_bot = p4;
             pll2_tr = p3;
 
+            // Does this go before or after the swapping stuff bit??
             // NE. Parallelogram defined by i1 (red), pll1_br (q1) (green), pll1_top (q2) (blue).
             float ap1 = std::abs((pll1_top-i1).dot(unit_60)) * (pll1_br-i1).length() / hex_area;
             std::cout << "'NW' parallelogram ap1: " << ap1 << std::endl;
@@ -2386,36 +2462,32 @@ namespace morph {
                 tmp = unit_60;
                 unit_60 = unit_300;
                 unit_300 = tmp;
-                // q1, q2 have to swap with p3, p4 (q1->p3 and q2->p4)
-                pll1_top = p4;
-                pll1_br = p3;
-                pll2_bot = q2;
-                pll2_tr = q1;
             }
 
+            float lr = this->getLR();
             // Now reason out i2, i3 and i4.
             i2 = i1 - uvv * (i1-a1_tl).dot(uvv);
-            i3 = i1 - uvv * ((i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
+            i3 = i1 - uvv * ((i1-a1_tl).dot(uvv) + lr);
             // i4 is i1 mirrored about the x axis of the shifted hex, or equivalently:
-            i4 = i1 - uvv * (2.0f * (i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
+            i4 = i1 - uvv * (2.0f * (i1-a1_tl).dot(uvv) + lr);
             // i6 for visualization only:
-            i6 = i5 + uvv * (2.0f * (i1-a1_tl).dot(uvv) + this->hexen.begin()->getLR());
+            i6 = i5 + uvv * (2.0f * (i1-a1_tl).dot(uvv) + lr);
 
             // Rectangle a1 area
-            float vside = d * morph::mathconst<float>::one_over_root_3;
-            float hside = (i2 - a1_tl).length();
+            float vside = lr;
+            float hside = (i2-a1_tl).length();
+            VAR(hside);
             a1 = vside * hside;
-            VAR (a1);
+            VAR (a1/hex_area);
             // Area of top triangle is defined by the points i1, i2 and p2
             vside = (i1-i2).length();
-            hside = (i2-a1_tl).length();
             t1 = vside * hside * 0.5f;
-            //VAR (t1);
+            VAR (t1/hex_area);
 
             // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
             vside = (i3-i4).length();
             t2 = vside * hside * 0.5f; // always same as t1?
-            //VAR (t2);
+            VAR (t2/hex_area);
 
             // Lastly, a2, the middle strip is based on the last intersect, i5
             if (i5.has_nan()) {
@@ -2423,7 +2495,7 @@ namespace morph {
                 std::cout << "No intersection i5?\n";
             } else {
                 a2 = (i1-i4).length() * std::abs((i5-i1).dot(uvh));
-                //VAR (a2);
+                VAR (a2/hex_area);
             }
 
             float ov_area_prop = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
@@ -2505,7 +2577,7 @@ namespace morph {
 
             // Far parallelogram defined by i1, p5 and q6.
             float ap2 = std::abs((q6-i1).dot(unit_240)) * (i1-p5).length() / hex_area;
-            rtn[_rotation+8] = ap2;
+            rtn[7+(2*_rotation+2)%12] = ap2;
 
             // Usually, top left of rectangle a1 is q2
             a1_tl = q2;
@@ -2537,13 +2609,12 @@ namespace morph {
             i6 = i5 + unit_30 * (2.0f * (i1-a1_tl).dot(unit_30) + lr);
 
             // Rectangle a1 area
-            float vside = d * morph::mathconst<float>::one_over_root_3;
+            float vside = lr;
             float hside = (i2 - a1_tl).length();
             a1 = vside * hside;
 
             // Area of top triangle is defined by the points i1, i2 and p2
-            vside = (i1-i2).length();
-            hside = (i2-a1_tl).length();
+            vside = (i1-i2).length(); // hside unchanged
             t1 = vside * hside * 0.5f;
 
             // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
@@ -2559,16 +2630,16 @@ namespace morph {
             }
 
             float ov_area_prop = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
-            rtn[1+(1+_rotation)%6] = ov_area_prop;
+            rtn[1+(1+_rotation)%6] = ov_area_prop; // [2 3 4 5 6 1]
 
-            // The area remainder goes in rtn[7+(2*_rotation+2)%12] i.e. [9, 11, 13, 15, 17, 7]
+            // The area remainder goes in [1 2 3 4 5 6]
             float rem_prop = 1.0f - ov_area_prop - ap1 - ap2;
-            rtn[7+(2*_rotation+2)%12] = rem_prop;
+            rtn[1+_rotation] = rem_prop;
 
             return rtn;
         }
 
-        // Set up wrapping. Really, this works on parallelogram shaped domains.
+        // Set up wrapping. Really, this works only on parallelogram shaped domains.
         void setwrap (bool onR, bool onG, bool onB)
         {
             std::cout << "setwrap called\n";
@@ -2599,7 +2670,7 @@ namespace morph {
             std::cout << "Bottom left hex is " << bl_hex->outputCart() << std::endl;
 
             int count = 0;
-            std::list<Hex>::iterator row_start =  bl_hex;
+            std::list<Hex>::iterator row_start = bl_hex;
             if (onR) {
                 // go to end of each row and wrap back to the start. This may only work
                 // for parallelograms, at least in an initial implementation.
@@ -2619,27 +2690,63 @@ namespace morph {
                         ++count;
                     }
                     std::cout << "set E hex of " << cur_hex->outputCart() << " to " << row_start->outputCart() << std::endl;
+
                     cur_hex->set_ne (row_start);
                     row_start->set_nw (cur_hex);
                 }
             }
 
-            row_start = bl_hex; // really 'col_start' now
+            std::list<Hex>::iterator col_start = bl_hex;
+            int vcount = 0;
             if (onG) { // scan up columns in the 'G' direction
                 // First col
-                std::list<Hex>::iterator cur_hex = row_start;
-                while (cur_hex->has_nne()) { cur_hex = cur_hex->nne; }
+                std::list<Hex>::iterator cur_hex = col_start;
+                while (cur_hex->has_nne()) { cur_hex = cur_hex->nne; ++vcount; }
                 cur_hex->set_nne (bl_hex);
-                bl_hex->set_nnw (cur_hex);
-                std::cout << "set NE hex of " << cur_hex->outputCart() << " to " << bl_hex->outputCart() << std::endl;
+                bl_hex->set_nsw (cur_hex);
+                std::cout << "Firstcol. set NE hex of " << cur_hex->outputRG() << " to " << bl_hex->outputRG() << std::endl;
+                std::cout << "Firstcol. set SW hex of " << bl_hex->outputRG() << " to " << cur_hex->outputRG() << std::endl;
+
+                cur_hex->set_nnw(bl_hex->nw);
+                bl_hex->nw->set_nse(cur_hex->ne);
+                std::cout << "Firstcol. set NW hex of " << cur_hex->outputRG() << " to " << bl_hex->nw->outputRG() << std::endl;
+                std::cout << "Firstcol. set SE hex of " << bl_hex->nw->outputRG() << " to " << cur_hex->ne->outputRG() << std::endl;
+
                 // Rest of the rows
                 for (int i = 0; i < count; ++i) { // NB: Assumes every row the same length
-                    row_start = row_start->ne;
-                    cur_hex = row_start;
+                    col_start = col_start->ne;
+                    cur_hex = col_start;
                     while (cur_hex->has_nne()) { cur_hex = cur_hex->nne; }
-                    cur_hex->set_nne(row_start);
-                    row_start->set_nsw(cur_hex);
-                    std::cout << "set NE hex of " << cur_hex->outputCart() << " to " << row_start->outputCart() << std::endl;
+
+                    cur_hex->set_nne(col_start);
+                    col_start->set_nsw(cur_hex);
+                    std::cout << "set NE hex of " << cur_hex->outputRG() << " to " << col_start->outputRG() << std::endl;
+                    std::cout << "set SW hex of " << col_start->outputRG() << " to " << cur_hex->outputRG() << std::endl;
+
+                    // Also set the nnw of the current hex to be the nse of the start of the prev col
+                    cur_hex->set_nnw(col_start->nw);
+                    col_start->nw->set_nse(cur_hex);
+                    std::cout << "set NW hex of " << cur_hex->outputRG() << " to " << col_start->nw->outputRG() << std::endl;
+                    std::cout << "set SE hex of " << col_start->nw->outputRG() << " to " << cur_hex->outputRG() << std::endl;
+                }
+            }
+
+            // Final scan across to set se neighbours of end rows and nw neighbours of start rows.
+            row_start = bl_hex;
+            if (onR) {
+                std::list<Hex>::iterator cur_hex = row_start;
+                // First row
+                for (int i = 0; i < count; ++i) { cur_hex = cur_hex->ne; }
+                row_start->set_nnw(cur_hex->nne);
+                cur_hex->set_nse(row_start->nsw);
+
+                // Rest of the rows
+                for (int j = 0; j < vcount; ++j) {
+                    row_start = row_start->nne;
+                    cur_hex = row_start;
+                    for (int i = 0; i < count; ++i) { cur_hex = cur_hex->ne; }
+                    row_start->set_nnw(cur_hex->nne);
+                    cur_hex->set_nse(row_start->nsw);
                 }
             }
 

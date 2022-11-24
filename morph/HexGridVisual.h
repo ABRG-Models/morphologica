@@ -595,6 +595,39 @@ namespace morph {
             }
 
 
+            // Vertices and lines of 0 hexagon
+            clr = { 0.1, 0.1, 0.8 };
+            this->computeSphere (this->idx, (this->hg->sw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere (this->idx, (this->hg->nw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx, (this->hg->sw_0).plus_one_dim(),
+                               (this->hg->nw_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->n_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->nw_0).plus_one_dim(),
+                               (this->hg->n_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->ne_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->n_0).plus_one_dim(),
+                               (this->hg->ne_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->se_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->ne_0).plus_one_dim(),
+                               (this->hg->se_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->se_0).plus_one_dim(),
+                               (this->hg->s_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->s_0).plus_one_dim(),
+                               (this->hg->sw_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+
             // Vertices and lines of shifted hexagon
             clr = { 0.9, 0.1, 0.1 };
             this->computeSphere (this->idx, (this->hg->sw_sft).plus_one_dim(), clr, sw, 14, 12);
@@ -876,7 +909,51 @@ namespace morph {
                                    this->hg->i6.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
                                    uz, clr, clr, lw/2.0f, lh);
             }
-        }
+
+            // Parallel and rectangle vertices. Do vert cylinders
+            if (!this->hg->pll1_top.has_nan()) {
+                clr = morph::colour::magenta2;
+                this->computeTube (this->idx,
+                                   this->hg->pll1_top.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll1_top.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll1_br.has_nan()) {
+                clr = morph::colour::deeppink2;
+                this->computeTube (this->idx,
+                                   this->hg->pll1_br.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll1_br.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll2_bot.has_nan()) {
+                clr = morph::colour::dodgerblue2;
+                this->computeTube (this->idx,
+                                   this->hg->pll2_bot.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll2_bot.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll2_tr.has_nan()) {
+                clr = morph::colour::darkgreen;
+                this->computeTube (this->idx,
+                                   this->hg->pll2_tr.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll2_tr.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->a1_tl.has_nan()) {
+                clr = morph::colour::yellow;
+                this->computeTube (this->idx,
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->a1_bl.has_nan()) {
+                clr = morph::colour::green;
+                this->computeTube (this->idx,
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+       }
 
         //! Initialize as hexes, with a step quad between each
         //! hex. Might look cool. Writeme.
