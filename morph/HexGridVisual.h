@@ -102,6 +102,21 @@ namespace morph {
         //! Zoom factor
         float zoom = 1.0f;
 
+        //! Show a set of hexes at the zero?
+        bool zerogrid = false;
+
+        //! Show boundary as 'marked' hexes?
+        bool showboundary = false;
+
+        //! Show centre hex as a 'marked' hex?
+        bool showcentre = false;
+
+        //! Set true to show the overlap geometry workings
+        bool showoverlap = false;
+
+        //! Set false to omit the hexes (to show just the geometry of showoverlap==true)
+        bool showhexes = true;
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices()
@@ -175,21 +190,6 @@ namespace morph {
             }
             this->idx = nhex;
         }
-
-        //! Show a set of hexes at the zero?
-        bool zerogrid = false;
-
-        //! Show boundary as 'marked' hexes?
-        bool showboundary = false;
-
-        //! Show centre hex as a 'marked' hex?
-        bool showcentre = false;
-
-        //! Set true to show the overlap geometry workings
-        bool showoverlap = false;
-
-        //! Set false to omit the hexes (to show just the geometry of showoverlap==true)
-        bool showhexes = true;
 
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
