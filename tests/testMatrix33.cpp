@@ -83,6 +83,10 @@ int main()
     morph::Matrix33<float> mult3alt = mult1 * mult2.mat;
     std::cout << "mult1 * mult2.mat =\n" << mult3alt << std::endl;
 
+    morph::Matrix33<float> mult2_t = mult2;
+    mult2_t.transpose();
+    std::cout << "mult2 transposed =\n" << mult2_t << std::endl;
+
     if (mult3.mat[0] != 120
         || mult3.mat[1] != 162
         || mult3.mat[2] != 204

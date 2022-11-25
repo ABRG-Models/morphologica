@@ -102,6 +102,21 @@ namespace morph {
         //! Zoom factor
         float zoom = 1.0f;
 
+        //! Show a set of hexes at the zero?
+        bool zerogrid = false;
+
+        //! Show boundary as 'marked' hexes?
+        bool showboundary = false;
+
+        //! Show centre hex as a 'marked' hex?
+        bool showcentre = false;
+
+        //! Set true to show the overlap geometry workings
+        bool showoverlap = false;
+
+        //! Set false to omit the hexes (to show just the geometry of showoverlap==true)
+        bool showhexes = true;
+
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
         void initializeVertices()
@@ -176,19 +191,29 @@ namespace morph {
             this->idx = nhex;
         }
 
-        //! Show a set of hexes at the zero?
-        bool zerogrid = false;
-
-        //! Show boundary as 'marked' hexes?
-        bool showboundary = false;
-
-        //! Show centre hex as a 'marked' hex?
-        bool showcentre = false;
-
         //! Initialize as hexes, with z position of each of the 6
         //! outer edges of the hexes interpolated, but a single colour
         //! for each hex. Gives a smooth surface.
         void initializeVerticesHexesInterpolated()
+        {
+            if (this->showhexes == true) {
+                this->computeHexes();
+            }
+
+            // Optionally show some hexes to verify the hex overlap area computation (see HexGrid::shiftdata)
+            if (this->showoverlap == true) {
+                this->computeOverlapIndices();
+            }
+
+            // Optionally show a Flat surface for the zero plane
+            if (this->zerogrid == true) {
+                this->computeZerogridIndices();
+            }
+            // End trial grid
+        }
+
+        // Compute vertices for the patchwork quilt of hexes
+        void computeHexes()
         {
             float sr = this->hg->getSR();
             float vne = this->hg->getVtoNE();
@@ -399,92 +424,536 @@ namespace morph {
 
                 this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
             }
-
-            // Show a Flat surface for the zero plane? This is expensively plotting out all the hexes...
-            if (this->zerogrid == true) {
-                for (unsigned int hi = 0; hi < nhex; ++hi) {
-
-                    // z position is always 0
-                    datum = 0.0f;
-                    // Use a single colour for the zero grid
-                    std::array<float, 3> clr = { .8f, .8f, .8f};
-
-                    // First push the 7 positions of the triangle vertices, starting with the centre
-                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datum, this->vertexPositions);
-
-                    // Use the centre position as the first location for finding the normal vector
-                    vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datum}};
-                    // NE vertex
-                    this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                    vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
-                    // SE vertex
-                    this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                    vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
-                    // S
-                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
-                    // SW
-                    this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
-                    // NW
-                    this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
-                    // N
-                    this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
-
-                    // From vtx_0,1,2 compute normal. This sets the correct normal, but note
-                    // that there is only one 'layer' of vertices; the back of the
-                    // HexGridVisual will be coloured the same as the front. To get lighting
-                    // effects to look really good, the back of the surface could need the
-                    // opposite normal.
-                    morph::Vector<float> plane1 = vtx_1 - vtx_0;
-                    morph::Vector<float> plane2 = vtx_2 - vtx_0;
-                    morph::Vector<float> vnorm = plane2.cross (plane1);
-                    vnorm.renormalize();
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-                    this->vertex_push (vnorm, this->vertexNormals);
-
-                    // Seven vertices with the same colour
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-                    this->vertex_push (clr, this->vertexColors);
-
-                    // Define indices now to produce the 6 triangles in the hex
-                    this->indices.push_back (this->idx+1);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+2);
-
-                    this->indices.push_back (this->idx+2);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+3);
-
-                    this->indices.push_back (this->idx+3);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+4);
-
-                    this->indices.push_back (this->idx+4);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+5);
-
-                    this->indices.push_back (this->idx+5);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+6);
-
-                    this->indices.push_back (this->idx+6);
-                    this->indices.push_back (this->idx);
-                    this->indices.push_back (this->idx+1);
-
-                    this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
-                }
-            }
-            // End trial grid
         }
+
+        // Show a Flat surface for the zero plane. Currently, this is expensively
+        // plotting out all the hexes because that was easy. it could be simply a big
+        // rectangle of two triangles.
+        void computeZerogridIndices()
+        {
+            float sr = this->hg->getSR();
+            float vne = this->hg->getVtoNE();
+            float lr = this->hg->getLR();
+            unsigned int nhex = this->hg->num();
+
+            morph::Vector<float> vtx_0, vtx_1, vtx_2;
+            for (unsigned int hi = 0; hi < nhex; ++hi) {
+
+                // z position is always 0
+                float datum = 0.0f;
+                // Use a single colour for the zero grid
+                std::array<float, 3> clr = { .8f, .8f, .8f};
+
+                // First push the 7 positions of the triangle vertices, starting with the centre
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi], datum, this->vertexPositions);
+
+                // Use the centre position as the first location for finding the normal vector
+                vtx_0 = {{this->hg->d_x[hi], this->hg->d_y[hi], datum}};
+                // NE vertex
+                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                vtx_1 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]+vne, datum}};
+                // SE vertex
+                this->vertex_push (this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                vtx_2 = {{this->hg->d_x[hi]+sr, this->hg->d_y[hi]-vne, datum}};
+                // S
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]-lr, datum, this->vertexPositions);
+                // SW
+                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]-vne, datum, this->vertexPositions);
+                // NW
+                this->vertex_push (this->hg->d_x[hi]-sr, this->hg->d_y[hi]+vne, datum, this->vertexPositions);
+                // N
+                this->vertex_push (this->hg->d_x[hi], this->hg->d_y[hi]+lr, datum, this->vertexPositions);
+
+                // From vtx_0,1,2 compute normal. This sets the correct normal, but note
+                // that there is only one 'layer' of vertices; the back of the
+                // HexGridVisual will be coloured the same as the front. To get lighting
+                // effects to look really good, the back of the surface could need the
+                // opposite normal.
+                morph::Vector<float> plane1 = vtx_1 - vtx_0;
+                morph::Vector<float> plane2 = vtx_2 - vtx_0;
+                morph::Vector<float> vnorm = plane2.cross (plane1);
+                vnorm.renormalize();
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+
+                // Seven vertices with the same colour
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+
+                // Define indices now to produce the 6 triangles in the hex
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
+
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
+
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
+
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+5);
+
+                this->indices.push_back (this->idx+5);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+6);
+
+                this->indices.push_back (this->idx+6);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
+
+                this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+            }
+        }
+
+        // Compute indices to visualise hexes that have been shifted wrt one
+        // another. Used to verify the HexGrid::shiftdata function.
+        void computeOverlapIndices()
+        {
+            // Show points and lines for hex overlap/shift
+            std::array<float, 3> clr = { 0.3, 0.5, 0.1 };
+            std::array<float, 3> blk = { 0, 0, 0 };
+            morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
+
+            float sw = this->hg->getd()/80.0f; // sphere radius (~width)
+            float lw = this->hg->getd()/40.0f; // line width
+            float lh = this->hg->getd()/60.0f; // line height
+
+            // Vertices and lines of base hexagon
+            this->computeSphere (this->idx, this->hg->sw_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere (this->idx, this->hg->nw_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx, this->hg->sw_loc.plus_one_dim(),
+                               this->hg->nw_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, this->hg->n_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               this->hg->nw_loc.plus_one_dim(),
+                               this->hg->n_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, this->hg->ne_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               this->hg->n_loc.plus_one_dim(),
+                               this->hg->ne_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, this->hg->se_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               this->hg->ne_loc.plus_one_dim(),
+                               this->hg->se_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               this->hg->se_loc.plus_one_dim(),
+                               this->hg->s_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, this->hg->s_loc.plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               this->hg->s_loc.plus_one_dim(),
+                               this->hg->sw_loc.plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            if (!this->hg->q1.has_nan() && !this->hg->q6.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q1.plus_one_dim(),
+                                   this->hg->q6.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->p6.has_nan() && !this->hg->q6.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p6.plus_one_dim(),
+                                   this->hg->q6.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->p6.has_nan() && !this->hg->q5.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p6.plus_one_dim(),
+                                   this->hg->q5.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->q6.has_nan() && !this->hg->p8.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q6.plus_one_dim(),
+                                   this->hg->p8.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+            if (!this->hg->q8.has_nan() && !this->hg->p8.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->q8.plus_one_dim(),
+                                   this->hg->p8.plus_one_dim(),
+                                   uz, clr, clr, lw, lh);
+            }
+
+
+            // Vertices and lines of 0 hexagon
+            clr = { 0.1, 0.1, 0.8 };
+            this->computeSphere (this->idx, (this->hg->sw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere (this->idx, (this->hg->nw_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx, (this->hg->sw_0).plus_one_dim(),
+                               (this->hg->nw_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->n_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->nw_0).plus_one_dim(),
+                               (this->hg->n_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->ne_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->n_0).plus_one_dim(),
+                               (this->hg->ne_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->se_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->ne_0).plus_one_dim(),
+                               (this->hg->se_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->se_0).plus_one_dim(),
+                               (this->hg->s_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_0).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->s_0).plus_one_dim(),
+                               (this->hg->sw_0).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+
+            // Vertices and lines of shifted hexagon
+            clr = { 0.9, 0.1, 0.1 };
+            this->computeSphere (this->idx, (this->hg->sw_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeSphere (this->idx, (this->hg->nw_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx, (this->hg->sw_sft).plus_one_dim(),
+                               (this->hg->nw_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->n_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->nw_sft).plus_one_dim(),
+                               (this->hg->n_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->ne_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->n_sft).plus_one_dim(),
+                               (this->hg->ne_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->se_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->ne_sft).plus_one_dim(),
+                               (this->hg->se_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->se_sft).plus_one_dim(),
+                               (this->hg->s_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+            this->computeSphere (this->idx, (this->hg->s_sft).plus_one_dim(), clr, sw, 14, 12);
+            this->computeLine (this->idx,
+                               (this->hg->s_sft).plus_one_dim(),
+                               (this->hg->sw_sft).plus_one_dim(),
+                               uz, clr, clr, lw, lh);
+
+            // Drawn lines for finding i1
+            clr = blk;
+            if (!this->hg->p1.has_nan() && !this->hg->q1.has_nan()
+                && !this->hg->p2.has_nan() && !this->hg->q2.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->q1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, blk, blk, lw/2.0f, lh);
+
+                this->computeLine (this->idx,
+                                   this->hg->p2.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->q2.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, blk, blk, lw/2.0f, lh);
+            }
+
+            // finding i5
+            if (!this->hg->p3.has_nan() && !this->hg->q3.has_nan()
+                && !this->hg->p4.has_nan() && !this->hg->q4.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->p3.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->q3.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, blk, blk, lw/2.0f, lh);
+
+                this->computeLine (this->idx,
+                                   this->hg->p4.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->q4.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, blk, blk, lw/2.0f, lh);
+            }
+
+            // intersection points
+            sw = this->hg->getd()/40.0f;
+            if (!this->hg->i1.has_nan()) {
+                clr = {1,0,0};
+                this->computeSphere (this->idx, this->hg->i1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("i1", (this->hg->i1).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+                clr = {0,0,0};
+            }
+            if (!this->hg->i2.has_nan()) {
+                this->computeSphere (this->idx, this->hg->i2.plus_one_dim(), clr, sw, 14, 12);
+            }
+            if (!this->hg->i3.has_nan()) {
+                this->computeSphere (this->idx, this->hg->i3.plus_one_dim(), clr, sw, 14, 12);
+            }
+            if (!this->hg->i4.has_nan()) {
+                this->computeSphere (this->idx, this->hg->i4.plus_one_dim(), clr, sw, 14, 12);
+            }
+            if (!this->hg->i5.has_nan()) {
+                this->computeSphere (this->idx, this->hg->i5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("i5", (this->hg->i5).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+
+            // p/q points used to compute additional pgrams
+            if (!this->hg->q2.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->q2.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q2", (this->hg->q2).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+            if (!this->hg->q1.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q1", (this->hg->q1).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q3.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->q3.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q3", (this->hg->q3).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+            if (!this->hg->q4.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q4.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q4", (this->hg->q4).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q5.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q5", (this->hg->q5).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q6.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q6.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q6", (this->hg->q6).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q7.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q7.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q7", (this->hg->q7).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->q8.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->q8.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("q8", (this->hg->q8).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+#if 1 // 60/300 units vectors
+            if (!this->hg->i1.has_nan() && !this->hg->unit_60.has_nan()) {
+                clr = {1,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   (this->hg->i1+this->hg->unit_60).plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+            if (!this->hg->i5.has_nan() && !this->hg->unit_300.has_nan()) {
+                clr = {0,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   (this->hg->i5+this->hg->unit_300).plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+            if (!this->hg->i1.has_nan() && !this->hg->unit_120.has_nan()) {
+                clr = {1,0,0};
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   (this->hg->i1+this->hg->unit_120).plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+#endif
+            if (!this->hg->p1.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p1.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p1", (this->hg->p1).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p2.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->p2.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p2", (this->hg->p2).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+            if (!this->hg->p3.has_nan()) {
+                clr = {0,0,1};
+                this->computeSphere (this->idx, this->hg->p3.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p3", (this->hg->p3).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p4.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p4.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p4", (this->hg->p4).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+            }
+            if (!this->hg->p5.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p5.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p5", (this->hg->p5).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p6.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p6.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p6", (this->hg->p6).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+            if (!this->hg->p8.has_nan()) {
+                clr = {0,1,0};
+                this->computeSphere (this->idx, this->hg->p8.plus_one_dim(), clr, sw, 14, 12);
+                this->addLabel ("p8", (this->hg->p8).plus_one_dim()+Vector<float>({sw,0,0.02}) * this->hg->getd(),
+                                clr, morph::VisualFont::DVSans,
+                                0.1f*this->hg->getd(), 48);
+
+            }
+
+            // Draw grey triangles/rects for the relevant areas
+            clr = {0.5f, 0.5f, 0.5f};
+            // t1
+            if (!this->hg->a1_tl.has_nan() && !this->hg->i1.has_nan() && !this->hg->i2.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i1.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+            // t2
+            if (!this->hg->a1_bl.has_nan() && !this->hg->i3.has_nan() && !this->hg->i4.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i4.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+
+            // Sides of a1
+            if (!this->hg->a1_bl.has_nan() && !this->hg->i2.has_nan() && !this->hg->i3.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+                this->computeLine (this->idx,
+                                   this->hg->i2.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i3.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+
+            // Side of the central rectangle, from i5 and up
+            if (!this->hg->i5.has_nan() && !this->hg->i6.has_nan()) {
+                this->computeLine (this->idx,
+                                   this->hg->i5.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   this->hg->i6.plus_one_dim()+Vector<float>({0,0,0.02}) * this->hg->getd(),
+                                   uz, clr, clr, lw/2.0f, lh);
+            }
+
+            // Parallel and rectangle vertices. Do vert cylinders
+            if (!this->hg->pll1_top.has_nan()) {
+                clr = morph::colour::magenta2;
+                this->computeTube (this->idx,
+                                   this->hg->pll1_top.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll1_top.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll1_br.has_nan()) {
+                clr = morph::colour::deeppink2;
+                this->computeTube (this->idx,
+                                   this->hg->pll1_br.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll1_br.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll2_bot.has_nan()) {
+                clr = morph::colour::dodgerblue2;
+                this->computeTube (this->idx,
+                                   this->hg->pll2_bot.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll2_bot.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->pll2_tr.has_nan()) {
+                clr = morph::colour::darkgreen;
+                this->computeTube (this->idx,
+                                   this->hg->pll2_tr.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->pll2_tr.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->a1_tl.has_nan()) {
+                clr = morph::colour::yellow;
+                this->computeTube (this->idx,
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->a1_tl.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+            if (!this->hg->a1_bl.has_nan()) {
+                clr = morph::colour::green;
+                this->computeTube (this->idx,
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,0.1}) * this->hg->getd(),
+                                   this->hg->a1_bl.plus_one_dim()+Vector<float>({0,0,-0.1}) * this->hg->getd(),
+                                   clr, clr, lw/4.0f);
+            }
+       }
 
         //! Initialize as hexes, with a step quad between each
         //! hex. Might look cool. Writeme.

@@ -184,7 +184,7 @@ namespace morph {
         }
 
         //! Return this Vector in double precision, float format
-        Vector<float, N> as_double() const
+        Vector<double, N> as_double() const
         {
             Vector<double, N> v;
             v.zero();
@@ -479,63 +479,33 @@ namespace morph {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
+        //! Return true if any element is infinity
+        bool has_inf() const
+        {
+            if constexpr (std::numeric_limits<S>::has_infinity) {
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isinf(i);});
+            } else {
+                return false;
+            }
+        }
+
+        //! Return true if any element is NaN
+        bool has_nan() const
+        {
+            if constexpr (std::numeric_limits<S>::has_quiet_NaN
+                          || std::numeric_limits<S>::has_signaling_NaN) {
+                return std::any_of (this->cbegin(), this->cend(), [](S i){return std::isnan(i);});
+            } else {
+                return false;
+            }
+        }
+
         //! Return true if any element is NaN or infinity
         bool has_nan_or_inf() const
         {
             bool has_nan_or_inf = false;
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::quiet_NaN();
-                    });
-            }
-            if (has_nan_or_inf) { return has_nan_or_inf; }
-
-            if constexpr (std::numeric_limits<S>::has_infinity) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::infinity();
-                    });
-            }
-            if (has_nan_or_inf) { return has_nan_or_inf; }
-
-            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
-                has_nan_or_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::signaling_NaN();
-                    });
-            }
-
-            return has_nan_or_inf;
-        }
-
-        //! Return true if any element is NaN or infinity
-        bool has_inf() const
-        {
-            bool has_inf = false;
-            if constexpr (std::numeric_limits<S>::has_infinity) {
-                has_inf = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::infinity();
-                    });
-            }
-            return has_inf;
-        }
-
-        //! Return true if any element is NaN or infinity
-        bool has_nan() const
-        {
-            bool has_nan = false;
-            if constexpr (std::numeric_limits<S>::has_quiet_NaN) {
-                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::quiet_NaN();
-                    });
-            }
-            if (has_nan) { return has_nan; }
-
-            if constexpr (std::numeric_limits<S>::has_signaling_NaN) {
-                has_nan = std::any_of (this->cbegin(), this->cend(), [](S i){
-                        return i == std::numeric_limits<S>::signaling_NaN();
-                    });
-            }
-
-            return has_nan;
+            has_nan_or_inf = this->has_nan();
+            return has_nan_or_inf ? has_nan_or_inf : this->has_inf();
         }
 
         //! Return the arithmetic mean of the elements
@@ -596,6 +566,36 @@ namespace morph {
             return rtn;
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
+
+        //! Return the floor of the Vector
+        Vector<S, N> floor() const
+        {
+            Vector<S, N> rtn;
+            auto _floor = [](S coord) -> S { return (std::floor(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _floor);
+            return rtn;
+        }
+        void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
+
+        //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
+        Vector<S, N> trunc() const
+        {
+            Vector<S, N> rtn;
+            auto _trunc = [](S coord) -> S { return (std::trunc(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
+            return rtn;
+        }
+        void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
+
+        //! Return the ceiling of the Vector
+        Vector<S, N> ceil() const
+        {
+            Vector<S, N> rtn;
+            auto _ceil = [](S coord) -> S { return (std::ceil(coord)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
+            return rtn;
+        }
+        void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
 
         /*!
          * Compute the element-wise square root of the vector
@@ -823,6 +823,24 @@ namespace morph {
             vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
             vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
             return vrtn;
+        }
+
+        //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        S cross (const Vector<_S, _N>& w) const
+        {
+            S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
+            return rtn;
+        }
+
+        /*!
+         * Two dimensional angle in radians (only for N=2)
+         */
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        S angle() const
+        {
+            S _angle = std::atan2 ((*this)[1], (*this)[0]);
+            return _angle;
         }
 
         /*!
