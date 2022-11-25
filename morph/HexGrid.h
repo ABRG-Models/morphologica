@@ -2449,10 +2449,10 @@ namespace morph {
 
             // SE. Parallelogram defined by i5 (black), p3 (blue) and p4 (green)
             float ap2 = std::abs((pll2_bot-i5).dot(unit_300)) * (pll2_tr-i5).length() / hex_area;
-            std::cout << "'SE' parallelogram ap2: " << ap2 << std::endl;
+            if constexpr (debug_hexshift) { std::cout << "'SE' parallelogram ap2: " << ap2 << std::endl; }
 
             if (i5_to_right == false) {
-                std::cout << "to right is false, swapping stuff...\n";
+                if constexpr (debug_hexshift) { std::cout << "to right is false, swapping stuff...\n"; }
                 // different set of points. i5 is the new i1
                 morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 // uvv/uvh now have to reverse direction
@@ -2478,18 +2478,14 @@ namespace morph {
             // Rectangle a1 area
             float vside = lr;
             float hside = (i2-a1_tl).length();
-            VAR(hside);
             a1 = vside * hside;
-            VAR (a1/hex_area);
             // Area of top triangle is defined by the points i1, i2 and p2
             vside = (i1-i2).length();
             t1 = vside * hside * 0.5f;
-            VAR (t1/hex_area);
 
             // Area of bottom triangle defined by i3, i4 and (sw_sft), but hside is unchanged
             vside = (i3-i4).length();
             t2 = vside * hside * 0.5f; // always same as t1?
-            VAR (t2/hex_area);
 
             // Lastly, a2, the middle strip is based on the last intersect, i5
             if (i5.has_nan()) {
@@ -2497,11 +2493,10 @@ namespace morph {
                 std::cout << "No intersection i5?\n";
             } else {
                 a2 = (i1-i4).length() * std::abs((i5-i1).dot(uvh));
-                VAR (a2/hex_area);
             }
 
             float ov_area_prop = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
-            std::cout << "Triangles and rectangles: " << ov_area_prop << "\n";
+            //std::cout << "Triangles and rectangles: " << ov_area_prop << "\n";
 
             // Store the overlap proportion in the return object
             Vector<float, 19> rtn;
@@ -2513,15 +2508,15 @@ namespace morph {
             // south east. With rotations, these will cycle around.
 
             // This is NE for zero rotation, and thus goes in rtn[2] for _rotation==0
-            std::cout << "ap1 set into rtn["<< (1+(1+_rotation)%6) << "]\n";
+            if constexpr (debug_hexshift) { std::cout << "ap1 set into rtn["<< (1+(1+_rotation)%6) << "]\n"; }
             rtn[1+(1+_rotation)%6] = ap1;
             // SE. Parallelogram defined by i5 (black), p3 (blue) and p4 (green)
-            std::cout << "ap2 set into rtn["<< (1+(5+_rotation)%6) << "]\n";
+            if constexpr (debug_hexshift) { std::cout << "ap2 set into rtn["<< (1+(5+_rotation)%6) << "]\n"; }
             rtn[1+(5+_rotation)%6] = ap2;
             // E. Area defined by triangle below NE parallelogram, rectangle, and
             // another triangle. Similar computation as the one under the '0th' overlap,
             // but can solve as Hex area - the others.
-            std::cout << "Setting remainder quadrilateral (NE) into rtn[" << 1+_rotation << "]\n";
+            if constexpr (debug_hexshift) { std::cout << "Setting remainder quadrilateral (NE) into rtn[" << 1+_rotation << "]\n"; }
             rtn[1+_rotation] = 1.0f - ov_area_prop - ap1 - ap2;
 
             return rtn;
@@ -2531,7 +2526,7 @@ namespace morph {
         // shifted hex overlaps on by 'one corner'.
         Vector<float, 19> compute_overlap_corner (const unsigned int _rotation)
         {
-            std::cout << __FUNCTION__ << " called rotation: " << _rotation << "\n";
+            if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called rotation: " << _rotation << "\n"; }
 
             Vector<float, 19> rtn;
             rtn.zero();
