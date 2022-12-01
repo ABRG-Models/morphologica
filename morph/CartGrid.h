@@ -470,7 +470,7 @@ namespace morph {
         //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and creating to x2,y2.
         CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle,
-                  CartDomainWrap wrap = CartDomainWrap::Horizontal)
+                  CartDomainWrap wrap = CartDomainWrap::None)
         {
             this->d = d_;
             this->v = v_;
@@ -1240,6 +1240,43 @@ namespace morph {
         {
             for (auto& rr : this->rects) {
                 rr.unsetFlag (RECT_IS_REGION_BOUNDARY | RECT_INSIDE_REGION);
+            }
+        }
+
+        /*!
+         * Apply single pixel on-centre/off-surround filter by convolving a square
+         * filter, side width with a central peak of side on_width. Central on region
+         * is given the value on_value (distributed amoungst the bits). Off region is
+         * set such that the sum of the filter is 0. The filter for edge pixels is
+         * modified to ensure that the filter sum is always 0.
+         */
+        template<typename T>
+        void oncentre_offsurround (const std::vector<T>& data, std::vector<T>& result)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+            // For each rect in this CartGrid, compute the convolution kernel
+            for (std::list<Rect>::iterator ri = this->rects.begin(); ri != this->rects.end(); ++ri) {
+                result[ri->vi] = data[ri->vi]; // The 'on' part of the filter
+                T count = T{0};
+                T offpart = T{0};
+                offpart += ri->has_ne()  ? count+=T{1}, data[ri->ne->vi]  : T{0};
+                offpart += ri->has_nne() ? count+=T{1}, data[ri->nne->vi] : T{0};
+                offpart += ri->has_nn()  ? count+=T{1}, data[ri->nn->vi]  : T{0};
+                offpart += ri->has_nnw() ? count+=T{1}, data[ri->nnw->vi] : T{0};
+                offpart += ri->has_nw()  ? count+=T{1}, data[ri->nw->vi]  : T{0};
+                offpart += ri->has_nsw() ? count+=T{1}, data[ri->nsw->vi] : T{0};
+                offpart += ri->has_ns()  ? count+=T{1}, data[ri->ns->vi]  : T{0};
+                offpart += ri->has_nse() ? count+=T{1}, data[ri->nse->vi] : T{0};
+                //std::cout << "subtract " << offpart << "/" << count << std::endl;
+                result[ri->vi] -= offpart/count;
             }
         }
 
