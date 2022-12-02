@@ -649,6 +649,13 @@ namespace morph {
             }
         }
 
+        // find the CartGrid position which corresponds to the max value in image_data.
+        morph::Vector<float, 2> findmax (const morph::vVector<float>& image_data)
+        {
+            unsigned int idx = image_data.argmax();
+            return morph::Vector<float, 2>({this->d_x[idx], this->d_y[idx]});
+        }
+
         // Create a radial representation of the image_data associated with this
         // CartGrid, which for this function is assumed to be rectangular. The
         // representation is taken from the location at view_pos, with an angular offset
