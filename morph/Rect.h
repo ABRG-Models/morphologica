@@ -384,6 +384,13 @@ namespace morph {
             return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
+        float distanceFrom (const morph::Vector<float, 2>& cartesianPoint) const
+        {
+            float deltax = cartesianPoint[0] - x;
+            float deltay = cartesianPoint[1] - y;
+            return std::sqrt (deltax*deltax + deltay*deltay);
+        }
+
         //! Compute the distance from another rect to this one.
         float distanceFrom (const Rect& otherRect) const
         {
