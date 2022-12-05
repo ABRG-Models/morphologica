@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <deque>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 // A retinotectal axon branch class. Holds current and historical positions, a preferred
 // termination zone, and the algorithm for computing the next position. Could derive
@@ -12,17 +12,17 @@ struct branch
 {
     // Compute the next position for this branch, using information from all other
     // branches and the parameters vector, m
-    void compute_next (const std::vector<branch<T>>& branches, const morph::Vector<T, 4>& m)
+    void compute_next (const std::vector<branch<T>>& branches, const morph::vec<T, 4>& m)
     {
         // Current location is named b
-        morph::Vector<T, 2> b = path.back();
+        morph::vec<T, 2> b = path.back();
         // Chemoaffinity is G
-        morph::Vector<T, 2> G = this->tz - b; // or x_b0 - x_b, in paper
+        morph::vec<T, 2> G = this->tz - b; // or x_b0 - x_b, in paper
         // Competition, C, and Axon-axon interactions, I, computed during the same loop
         // over the other branches
-        morph::Vector<T, 2> C = {0, 0};
-        morph::Vector<T, 2> I = {0, 0};
-        morph::Vector<T, 2> nullvec = {0, 0}; // null vector
+        morph::vec<T, 2> C = {0, 0};
+        morph::vec<T, 2> I = {0, 0};
+        morph::vec<T, 2> nullvec = {0, 0}; // null vector
         // Other branches are called k, making a set B_b, with a number of members that I call n_k
         T n_k = T{0};
         for (auto k : branches) {
@@ -30,7 +30,7 @@ struct branch
             // Paper deals with U_C(b,k) - the vector from branch b to branch k - and
             // sums these. However, that gives a competition term with a sign error. So
             // here, sum up the unit vectors kb.
-            morph::Vector<T, 2> kb = b - k.path.back();
+            morph::vec<T, 2> kb = b - k.path.back();
             T d = kb.length();
             T W = d <= this->two_r ? (T{1} - d/this->two_r) : T{0};
             T Q = k.EphA / this->EphA; // forward signalling (used predominantly in paper)
@@ -50,7 +50,7 @@ struct branch
 
         // Border effect. A force perpendicular to the boundary, falling off over the
         // distance r.
-        morph::Vector<T, 2> B = {0, 0};
+        morph::vec<T, 2> B = {0, 0};
         // Test b, to see if it's near the border. Use winding number to see if it's
         // inside? Then, if outside, find out which edge it's nearest and apply that
         // force. Too complex. Instead, look at b's location. If x<0, then add component
@@ -93,13 +93,13 @@ struct branch
         this->next = b;
     }
     // The location and all previous locations of this branch.
-    std::deque<morph::Vector<T, 2>> path;
+    std::deque<morph::vec<T, 2>> path;
     // Place the next computed location for path in 'next' so that while computing, we
     // don't modify the numbers we're working from. After looping through all branches,
     // add this to path.
-    morph::Vector<T, 2> next;
+    morph::vec<T, 2> next;
     // Termination zone for this branch
-    morph::Vector<T, 2> tz = {0, 0};
+    morph::vec<T, 2> tz = {0, 0};
     // EphA expression for this branch
     T EphA = 0;
     // A sequence id

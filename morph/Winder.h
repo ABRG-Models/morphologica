@@ -39,18 +39,18 @@ namespace morph {
      * or std::list (but not std::map). The coordinate should be some type which has one
      * of the following: .first and .second attributes (such as std::pair), .x and .y
      * attributes (such as OpenCV's cv::Point), .x() and .y() methods or the ability to
-     * access members in an array-like fashion (std::vector or morph::Vector). For example:
+     * access members in an array-like fashion (std::vector or morph::vec). For example:
      *
      *\code{c++}
-     *  std::list<morph::Vector<float, 2>> path;
+     *  std::list<morph::vec<float, 2>> path;
      *  // Code which populates path goes here
      *  morph::Winder w(path);
-     *  morph::Vector<float, 2> pixel = {0.7, 0.6};
+     *  morph::vec<float, 2> pixel = {0.7, 0.6};
      *  int winding_number = w.wind (pixel);
      *\endcode
      *
      * \tparam T the (2D) coordinate type (this might be cv::Point, morph::BezCoord,
-     * morph::vVector, morph::Vector, std::array or std::vector)
+     * morph::vvec, morph::vec, std::array or std::vector)
      *
      * \tparam Container Something like an std::vector, std::list or std::array,
      * containing a path of points. The template-template is not flexible enough for

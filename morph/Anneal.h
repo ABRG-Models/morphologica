@@ -15,8 +15,8 @@
 #include <string>
 #include <iostream>
 #include <morph/MathAlgo.h>
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vvec.h>
+#include <morph/vec.h>
 #include <morph/Random.h>
 #include <morph/HdfData.h>
 
@@ -110,15 +110,15 @@ namespace morph {
         //! Allow user to set parameter names, so that these can be saved out
         std::vector<std::string> param_names;
         //! Candidate parameter values. In the Ingber papers, these are 'alphas'.
-        morph::vVector<T> x_cand;
+        morph::vvec<T> x_cand;
         //! Value of the objective function for the candidate parameters.
         T f_x_cand = T{0};
         //! The currently accepted parameters.
-        morph::vVector<T> x;
+        morph::vvec<T> x;
         //! Value of the objective function for the current parameters.
         T f_x = T{0};
         //! The best parameters so far.
-        morph::vVector<T> x_best;
+        morph::vvec<T> x_best;
         //! The value of the objective function for the best parameters.
         T f_x_best = T{0};
         //! The value of the objective function for the best parameters the last time it changed by more than objective_repeat_precision
@@ -126,7 +126,7 @@ namespace morph {
         //! How many times has this best objective repeated? Reset on reanneal.
         unsigned int f_x_best_repeats = 0;
         //! A special set of parameters to ask the user to compute (when computing reanneal).
-        morph::vVector<T> x_plusdelta;
+        morph::vvec<T> x_plusdelta;
         //! The set of objective function values for x_set.
         T f_x_plusdelta = T{0};
 
@@ -156,21 +156,21 @@ namespace morph {
         //! Absolute count of number of calls to ::step().
         unsigned int steps = 0;
         //! A history of all accepted parameters evaluated
-        morph::vVector<morph::vVector<T>> param_hist_accepted;
+        morph::vvec<morph::vvec<T>> param_hist_accepted;
         //! For each entry in param_hist, record also its objective function value.
-        morph::vVector<T> f_param_hist_accepted;
+        morph::vvec<T> f_param_hist_accepted;
         //! History of rejected parameters. For num_rejected, use param_hist_rejected.size().
-        morph::vVector<morph::vVector<T>> param_hist_rejected;
+        morph::vvec<morph::vvec<T>> param_hist_rejected;
         //! Objective function values of rejected parameters.
-        morph::vVector<T> f_param_hist_rejected;
+        morph::vvec<T> f_param_hist_rejected;
         //! History of T_k means
-        morph::vVector<T> T_k_hist;
+        morph::vvec<T> T_k_hist;
         //! History of T_cost means
-        morph::vVector<T> T_cost_hist;
+        morph::vvec<T> T_cost_hist;
         //! History of f_x
-        morph::vVector<T> f_x_hist;
+        morph::vvec<T> f_x_hist;
         //! History of f_x_best
-        morph::vVector<T> f_x_best_hist;
+        morph::vvec<T> f_x_best_hist;
 
         //! The state tells client code what it needs to do next.
         Anneal_State state = Anneal_State::Unknown;
@@ -190,42 +190,42 @@ namespace morph {
         //! to be forced every reanneal_after_steps steps.
         unsigned int k_r = 0;
         //! The temperatures, T_i(k). Note that there is a temperature for each of D dimensions.
-        morph::vVector<T> T_k;
+        morph::vvec<T> T_k;
         //! Initial temperatures T_i(0). Set to 1.
-        morph::vVector<T> T_0;
+        morph::vvec<T> T_0;
         //! Expected final T_i(k_f). Computed.
-        morph::vVector<T> T_f;
+        morph::vvec<T> T_f;
         //! Internal ASA parameter, m=-log(temperature_ratio_scale). Note that there is
         //! an mi for each of D dimensions, though these are usually all set to the same
         //! value.
-        morph::vVector<T> m;
+        morph::vvec<T> m;
         //! Internal ASA parameter, n=log(temperature_anneal_scale).
-        morph::vVector<T> n;
+        morph::vvec<T> n;
         //! Internal control parameter, c = m exp(-n/D).
-        morph::vVector<T> c;
-        morph::vVector<T> c_cost;
+        morph::vvec<T> c;
+        morph::vvec<T> c_cost;
         //! Initial value for T_cost
-        morph::vVector<T> T_cost_0;
+        morph::vvec<T> T_cost_0;
         //! Temperature used in the acceptance function.
-        morph::vVector<T> T_cost;
+        morph::vvec<T> T_cost;
         //! Number of accepted parameter sets. index_cost_acceptances in asa.c
         unsigned int k_cost = 0;
         //! Parameter ranges defining the portion of parameter space to search - [Ai, Bi].
-        morph::vVector<T> range_min; // A
-        morph::vVector<T> range_max; // B
-        morph::vVector<T> rdelta;    // = range_max - range_min;
-        morph::vVector<T> rmeans;    // = (range_max + range_min)/T{2};
+        morph::vvec<T> range_min; // A
+        morph::vvec<T> range_max; // B
+        morph::vvec<T> rdelta;    // = range_max - range_min;
+        morph::vvec<T> rmeans;    // = (range_max + range_min)/T{2};
         //! Holds the estimated rates of change of the objective vs. parameter changes
         //! for the current location, x, in parameter space.
-        morph::vVector<T> tangents;
+        morph::vvec<T> tangents;
         //! The random number generator used in the acceptance_check function.
         morph::RandUniform<T> rng_u;
 
     public: // User-accessible methods.
 
         //! The constructor requires initial parameters and parameter ranges.
-        Anneal (const morph::vVector<T>& initial_params,
-                const morph::vVector<morph::Vector<T,2>>& param_ranges)
+        Anneal (const morph::vvec<T>& initial_params,
+                const morph::vvec<morph::vec<T,2>>& param_ranges)
         {
             this->D = initial_params.size();
             this->range_min.resize (this->D);
@@ -371,11 +371,11 @@ namespace morph {
     protected: // Internal algorithm methods.
 
         //! Generate delta parameter near to x_start, for cost tangent estimation
-        morph::vVector<T> generate_delta_parameter (const morph::vVector<T>& x_start) const
+        morph::vvec<T> generate_delta_parameter (const morph::vvec<T>& x_start) const
         {
             // we do x_start*(1 + delta_param) or x_start*(1-delta_param). First try former.
-            morph::vVector<T> plusminus (this->D, T{1});
-            morph::vVector<T> x_new = x_start * (T{1} + plusminus * this->delta_param);
+            morph::vvec<T> plusminus (this->D, T{1});
+            morph::vvec<T> x_new = x_start * (T{1} + plusminus * this->delta_param);
             // Check that each element of x_new is within the specified bounds.
             for (size_t i = 0; i < this->D; ++i) {
                 if (x_new[i] > this->range_max[i] || x_new[i] < this->range_min[i]) {
@@ -390,14 +390,14 @@ namespace morph {
         //! A function to generate a new set of parameters for x_cand.
         void generate_next()
         {
-            morph::vVector<T> x_new;
+            morph::vvec<T> x_new;
             bool generated = false;
             while (!generated) {
-                morph::vVector<T> u(this->D);
+                morph::vvec<T> u(this->D);
                 u.randomize();
-                morph::vVector<T> u2 = ((u*T{2}) - T{1}).abs();
-                morph::vVector<T> sigu = (u-T{0.5}).signum();
-                morph::vVector<T> y = sigu * this->T_k * ( ((T{1}/this->T_k)+T{1}).pow(u2) - T{1} );
+                morph::vvec<T> u2 = ((u*T{2}) - T{1}).abs();
+                morph::vvec<T> sigu = (u-T{0.5}).signum();
+                morph::vvec<T> y = sigu * this->T_k * ( ((T{1}/this->T_k)+T{1}).pow(u2) - T{1} );
                 x_new = this->x + y;
                 // Check that x_new is within the specified bounds
                 if (x_new <= this->range_max && x_new >= this->range_min) { generated = true;  }
@@ -563,14 +563,14 @@ namespace morph {
                 return;
             }
 
-            morph::vVector<T> abs_tangents = tangents.abs();
+            morph::vvec<T> abs_tangents = tangents.abs();
             T max_tangent = abs_tangents.max();
             for (auto& t : abs_tangents) {
                 if (t < eps) { t = max_tangent; } // Will ensure T_re won't update for this one
             }
 
             // Update parameter temperature and k
-            morph::vVector<T> T_re = (this->T_k * (max_tangent / tangents)).abs();
+            morph::vvec<T> T_re = (this->T_k * (max_tangent / tangents)).abs();
 
             if (T_re > T{0}) {
                 unsigned int k_re = static_cast<unsigned int>(((this->T_0/T_re).log() / this->c).pow(D).mean());
@@ -588,15 +588,15 @@ namespace morph {
             // Also update the cost temperature, T_cost and k_cost.
 
             // Reset initial cost temperature from f_x, f_x_best, their delta and the epsilon
-            morph::vVector<T> T_cost_0_candidates = { f_x, f_x_best, (f_x_best - f_x), eps };
+            morph::vvec<T> T_cost_0_candidates = { f_x, f_x_best, (f_x_best - f_x), eps };
             T_cost_0_candidates.abs_inplace();
             this->T_cost_0.min_elementwise_inplace (T_cost_0_candidates.max());
 
-            morph::vVector<T> T_cost_candidates = {std::abs(f_x_best - f_x), T_cost.max(), eps };
-            morph::vVector<T> tmp_dbl1 = T_cost_0;
+            morph::vvec<T> T_cost_candidates = {std::abs(f_x_best - f_x), T_cost.max(), eps };
+            morph::vvec<T> tmp_dbl1 = T_cost_0;
             tmp_dbl1.min_elementwise_inplace (T_cost_candidates.max());
 
-            morph::vVector<T> tvdb3 = ((T_cost_0+eps)/tmp_dbl1).log().abs();
+            morph::vvec<T> tvdb3 = ((T_cost_0+eps)/tmp_dbl1).log().abs();
             this->k_cost = static_cast<unsigned int>(eps + (tvdb3/this->c_cost).pow(this->D).mean());
             // Note: asa.c code has opion to reduce this down if it's too high.
 

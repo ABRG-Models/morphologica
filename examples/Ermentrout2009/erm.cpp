@@ -24,7 +24,7 @@
 typedef morph::VisualDataModel<FLT>* VdmPtr;
 #include <morph/HexGridVisual.h>
 #include <morph/GraphVisual.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathAlgo.h>
 
 // Simulation code header
@@ -153,7 +153,7 @@ int main (int argc, char **argv)
     // A z position to place the hexgrid visuals
     float _Z = 0.0f;
 
-    morph::Vector<float, 3> spatOff = {0,0,_Z}; // spatial offset
+    morph::vec<float, 3> spatOff = {0,0,_Z}; // spatial offset
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;

@@ -7,7 +7,8 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -28,17 +29,17 @@ int main()
     std::string fn = "../examples/bike256.png";
     cv::Mat img = cv::imread (fn.c_str(), cv::IMREAD_GRAYSCALE);
     img.convertTo (img, CV_32F);
-    morph::vVector<float> image_data;
+    morph::vvec<float> image_data;
     image_data.assign(reinterpret_cast<float*>(img.data),
                       reinterpret_cast<float*>(img.data) + img.total() * img.channels());
     image_data /= 255.0f;
     // This controls how large the photo will be on the HexGrid
-    morph::Vector<float,2> image_scale = {1.8f, 1.8f};
+    morph::vec<float,2> image_scale = {1.8f, 1.8f};
     // You can shift the photo with an offset if necessary
-    morph::Vector<float,2> image_offset = {0.0f, 0.0f};
+    morph::vec<float,2> image_offset = {0.0f, 0.0f};
 
     // Here's the HexGrid method that will resample the square pixel grid onto the hex grid
-    morph::vVector<float> hex_image_data = hg.resampleImage (image_data, img.cols, image_scale, image_offset);
+    morph::vvec<float> hex_image_data = hg.resampleImage (image_data, img.cols, image_scale, image_offset);
 
     // Now visualise with a HexGridVisual
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, {0.0f,0.0f,0.0f });

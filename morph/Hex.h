@@ -16,7 +16,7 @@
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
 #include <morph/MathConst.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>
@@ -412,8 +412,8 @@ namespace morph {
         float x = 0.0f;
         //! Cartesian 'y' coordinate of the centre of the Hex.
         float y = 0.0f;
-        // Getter for (x,y) as a Vector
-        morph::Vector<float, 2> x_y() { return morph::Vector<float, 2>({this->x, this->y}); }
+        // Getter for (x,y) as a morph::vec
+        morph::vec<float, 2> x_y() { return morph::vec<float, 2>({this->x, this->y}); }
 
         //! Polar coordinates of the centre of the Hex. Public, for direct access by client code.
         float r = 0.0f;

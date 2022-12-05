@@ -4,7 +4,7 @@
 #pragma once
 
 #include <vector>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/ColourMap.h>
 #include <morph/Scale.h>
@@ -20,7 +20,7 @@ namespace morph {
         VisualDataModel()
             : morph::VisualModel::VisualModel() {}
 
-        VisualDataModel (GLuint sp, const Vector<float> _offset)
+        VisualDataModel (GLuint sp, const vec<float> _offset)
             : morph::VisualModel::VisualModel (sp, _offset) {}
 
         //! Deconstructor should *not* deallocate data - client code should do that
@@ -43,8 +43,8 @@ namespace morph {
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
         void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
-        void setVectorData (const std::vector<Vector<float>>* _vectors) { this->vectorData = _vectors; }
-        void setDataCoords (std::vector<Vector<float>>* _coords) { this->dataCoords = _coords; }
+        void setVectorData (const std::vector<vec<float>>* _vectors) { this->vectorData = _vectors; }
+        void setDataCoords (std::vector<vec<float>>* _coords) { this->dataCoords = _coords; }
 
         void updateZScale (const Scale<T, float>& zscale)
         {
@@ -58,7 +58,7 @@ namespace morph {
             this->reinit();
         }
 
-        void setVectorScale (const Scale<Vector<T>>& vscale)
+        void setVectorScale (const Scale<vec<T>>& vscale)
         {
             this->vectorScale = vscale;
             this->reinit();
@@ -95,7 +95,7 @@ namespace morph {
         }
 
         //! Update coordinate data and scalar data along with z-scaling for scalar data
-        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<vec<float>>* _coords, const std::vector<T>* _data,
                                  const Scale<T, float>& zscale)
         {
             this->dataCoords = _coords;
@@ -105,7 +105,7 @@ namespace morph {
         }
 
         //! Update coordinate data and scalar data along with z- and colour-scaling for scalar data
-        virtual void updateData (std::vector<Vector<float>>* _coords, const std::vector<T>* _data,
+        virtual void updateData (std::vector<vec<float>>* _coords, const std::vector<T>* _data,
                                  const Scale<T, float>& zscale, const Scale<T, float>& cscale)
         {
             this->dataCoords = _coords;
@@ -116,21 +116,21 @@ namespace morph {
         }
 
         //! Update just the coordinate data
-        virtual void updateCoords (std::vector<Vector<float>>* _coords)
+        virtual void updateCoords (std::vector<vec<float>>* _coords)
         {
             this->dataCoords = _coords;
             this->reinit();
         }
 
         //! Update the vector data (for plotting quiver plots)
-        void updateData (const std::vector<Vector<float>>* _vectors)
+        void updateData (const std::vector<vec<float>>* _vectors)
         {
             this->vectorData = _vectors;
             this->reinit();
         }
 
         //! Update both coordinate and vector data
-        void updateData (std::vector<Vector<float>>* _coords, const std::vector<Vector<T>>* _vectors)
+        void updateData (std::vector<vec<float>>* _coords, const std::vector<vec<T>>* _vectors)
         {
             this->dataCoords = _coords;
             this->vectorData = _vectors;
@@ -157,7 +157,7 @@ namespace morph {
 
         //! A scaling function for the vectorData. This will scale the lengths of the
         //! vectorData.
-        Scale<Vector<T>> vectorScale;
+        Scale<vec<T>> vectorScale;
 
         //! The data to visualize. T may simply be float or double, or, if the
         //! visualization is of directional information, such as in a quiver plot,
@@ -165,17 +165,17 @@ namespace morph {
 
         //! A container for vector data to visualize. Can also be used for colour of the
         //! hexes.
-        const std::vector<Vector<T>>* vectorData = nullptr;
+        const std::vector<vec<T>>* vectorData = nullptr;
 
         //! The coordinates at which to visualize data, if appropriate (e.g. scatter
         //! graph, quiver plot). Note fixed type of float, which is suitable for
         //! OpenGL coordinates. Not const as child code may resize or update content.
-        std::vector<Vector<float>>* dataCoords = nullptr;
+        std::vector<vec<float>>* dataCoords = nullptr;
 
         //! Graph data coordinates. Different from dataCoords, because it's a vector of
         //! vectors of pointers to data, with one pointer for each graph in the
         //! model. Not const, too.
-        std::vector<std::vector<Vector<float>>*> graphDataCoords;
+        std::vector<std::vector<vec<float>>*> graphDataCoords;
     };
 
 } // namespace morph

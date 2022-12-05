@@ -1,7 +1,7 @@
 #include "morph/Matrix22.h"
 #include <iostream>
 #include <array>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathConst.h>
 
 void setMatrixSequence (morph::Matrix22<float>& tm)
@@ -75,11 +75,11 @@ int main()
         ++rtn;
     }
 
-    // Vector rotation
-    morph::Vector<double, 2> v1 = { 0.0, 0.1 };
+    // vec rotation
+    morph::vec<double, 2> v1 = { 0.0, 0.1 };
     morph::Matrix22<double> rotn;
     rotn.rotate (morph::mathconst<double>::pi_over_3);
-    morph::Vector<double, 2> v1_rot = rotn * v1;
+    morph::vec<double, 2> v1_rot = rotn * v1;
     std::cout << "v1: " << v1 << ", rotated pi/3 is: "  << v1_rot << std::endl;
 
     rotn.rotate (morph::mathconst<double>::two_pi_over_3);

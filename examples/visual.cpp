@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -55,7 +55,7 @@ int main()
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
+    morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
     hgv->finalize();

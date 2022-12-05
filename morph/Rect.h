@@ -12,7 +12,7 @@
 #include <list>
 #include <utility>
 #include <cmath>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
 
@@ -384,7 +384,7 @@ namespace morph {
             return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
-        float distanceFrom (const morph::Vector<float, 2>& cartesianPoint) const
+        float distanceFrom (const morph::vec<float, 2>& cartesianPoint) const
         {
             float deltax = cartesianPoint[0] - x;
             float deltay = cartesianPoint[1] - y;
@@ -436,9 +436,9 @@ namespace morph {
         float z = 0.0f;
 
         //! Get the Cartesian position of this Rect as a fixed size array.
-        morph::Vector<float, 3> position() const
+        morph::vec<float, 3> position() const
         {
-            morph::Vector<float,3> rtn = { { this->x, this->y, this->z } };
+            morph::vec<float,3> rtn = { { this->x, this->y, this->z } };
             return rtn;
         }
 

@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -22,7 +22,7 @@ class MyVisual : public morph::Visual
 {
 public:
     MyVisual (int width, int height, const std::string& title,
-              const morph::Vector<float, 2> caOffset, const morph::Vector<float> caLength,
+              const morph::vec<float, 2> caOffset, const morph::vec<float> caLength,
               const float caThickness, const float caEm)
         : morph::Visual (width, height, title, caOffset, caLength, caThickness, caEm)
     {
@@ -82,7 +82,7 @@ int main()
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0f, -0.05f, 0.0f };
+    morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot

@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/ColourMap.h>
 #include <iostream>
 #include <vector>
@@ -71,8 +71,8 @@ namespace morph {
     {
     public:
         PointRowsMeshVisual(GLuint sp,
-                            std::vector<Vector<float,3>>* _pointrows,
-                            const Vector<float, 3> _offset,
+                            std::vector<vec<float,3>>* _pointrows,
+                            const vec<float, 3> _offset,
                             const std::vector<Flt>* _data,
                             const Scale<Flt>& cscale,
                             ColourMapType _cmt, // mesh

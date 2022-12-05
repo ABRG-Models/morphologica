@@ -18,7 +18,7 @@
 #endif
 #endif
 #include <morph/VisualModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Scale.h>
 #include <vector>
 #include <array>
@@ -30,7 +30,7 @@ class BranchVisual : public morph::VisualModel
 {
 public:
     BranchVisual(GLuint sp, GLuint tsp,
-                 const morph::Vector<float, 3> _offset,
+                 const morph::vec<float, 3> _offset,
                  std::vector<branch<Flt>>* _branches)
     {
         this->branches = _branches;
@@ -51,8 +51,8 @@ public:
             // Colour comes from target location.
             std::array<float, 3> clr = { b.tz[0], b.tz[1], 0 };
             std::array<float, 3> clr2 = { 0, 0, this->EphA_scale.transform_one(b.EphA) };
-            morph::Vector<float, 3> last = { 0, 0, 0 };
-            morph::Vector<float, 3> cur = { 0, 0, 0 };
+            morph::vec<float, 3> last = { 0, 0, 0 };
+            morph::vec<float, 3> cur = { 0, 0, 0 };
             // First draw the path
             for (unsigned int i = 1; i < b.path.size(); ++i) {
                 last[0] = b.path[i-1][0];
@@ -81,5 +81,5 @@ public:
     Flt radiusFixed = Flt{0.01};
     Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
+    morph::vec<float, 3> uz = {0.0f, 0.0f, 1.0f};
 };

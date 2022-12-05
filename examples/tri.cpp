@@ -3,7 +3,7 @@
  */
 #include <morph/Visual.h>
 #include <morph/TriangleVisual.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 
 int main (int argc, char** argv)
@@ -22,13 +22,13 @@ int main (int argc, char** argv)
     v.lightingEffects(true);
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        morph::Vector<float, 3> c1 = { 0, 0, 0 };
-        morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
-        morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
+        morph::vec<float, 3> c1 = { 0, 0, 0 };
+        morph::vec<float, 3> c2 = { 0.25, 0, 0 };
+        morph::vec<float, 3> c3 = { 0.0, 0.3, 0 };
 
-        morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
+        morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
         v.addVisualModel (new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1));
 

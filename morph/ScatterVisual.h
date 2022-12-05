@@ -16,7 +16,7 @@
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -29,7 +29,7 @@ namespace morph {
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:
-        ScatterVisual(GLuint sp, const Vector<float> _offset)
+        ScatterVisual(GLuint sp, const vec<float> _offset)
         {
             this->shaderprog = sp;
             this->mv_offset = _offset;
@@ -39,14 +39,14 @@ namespace morph {
         }
 
         //! Quick hack to add an additional point
-        void add (morph::Vector<float> coord, Flt value)
+        void add (morph::vec<float> coord, Flt value)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
             this->computeSphere (this->idx, coord, clr, this->radiusFixed, 16, 20);
             this->reinit_buffers();
         }
         //! Additional point with variable size
-        void add (morph::Vector<float> coord, Flt value, Flt size)
+        void add (morph::vec<float> coord, Flt value, Flt size)
         {
             std::array<float, 3> clr = this->cm.convert (this->colourScale.transform_one (value));
             this->computeSphere (this->idx, coord, clr, size, 16, 20);

@@ -9,7 +9,7 @@
 #include <morph/PointRowsVisual.h>
 #endif
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -28,11 +28,11 @@ int main (int argc, char** argv)
     v.lightingEffects (true);
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        std::vector<morph::Vector<float, 3>> points;
+        std::vector<morph::vec<float, 3>> points;
         std::vector<float> data; // copy points[:][2] into data
         points.push_back ({ 0, 0,   0.1 }); data.push_back(points.back()[2]);
         points.push_back ({ 0, 2,   0.7 }); data.push_back(points.back()[2]);

@@ -4,8 +4,8 @@
  */
 
 #include <morph/Anneal.h>
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vvec.h>
+#include <morph/vec.h>
 #include <morph/Config.h>
 #include <morph/Hex.h>
 #include <morph/HexGrid.h>
@@ -24,8 +24,8 @@ typedef double F;
 
 // A global hexgrid for the locations of the objective function
 morph::HexGrid* hg = nullptr;
-// And a vVector to be the data
-morph::vVector<F> obj_f;
+// And a vvec to be the data
+morph::vvec<F> obj_f;
 
 // Set up an objective function. Creates hg and populates obj_f. Note objective has
 // discrete values.
@@ -36,9 +36,9 @@ void setup_objective_boha();
 
 // Return values of the objective function. Params contains coordinates into the
 // HexGrid. Values from obj_f are returned.
-F objective (const morph::vVector<F>& params);
-F objective_boha (const morph::vVector<F>& params);
-F objective_hg (const morph::vVector<F>& params);
+F objective (const morph::vvec<F>& params);
+F objective_boha (const morph::vvec<F>& params);
+F objective_hg (const morph::vvec<F>& params);
 
 int main (int argc, char** argv)
 {
@@ -49,9 +49,9 @@ int main (int argc, char** argv)
 #endif
 
     // Here, our search space is 2D
-    morph::vVector<F> p = { 0.45, 0.45};
+    morph::vvec<F> p = { 0.45, 0.45};
     // These ranges should fall within the hexagonal domain
-    morph::vVector<morph::Vector<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
+    morph::vvec<morph::vec<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
 
     // Set up the anneal algorithm object
     morph::Anneal<F> anneal(p, p_rng);
@@ -95,7 +95,7 @@ int main (int argc, char** argv)
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
 
-    morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+    morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
     morph::HexGridVisual<F>* hgv = new morph::HexGridVisual<F>(v.shaderprog, v.tshaderprog, hg, offset);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
@@ -106,7 +106,7 @@ int main (int argc, char** argv)
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    morph::Vector<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
+    morph::vec<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
@@ -131,7 +131,7 @@ int main (int argc, char** argv)
     v.addVisualModel (sp);
 
     // Add a graph to track T_i and T_cost
-    morph::Vector<float> spatOff = {1.2f, -0.5f, 0.0f};
+    morph::vec<float> spatOff = {1.2f, -0.5f, 0.0f};
     morph::GraphVisual<F>* graph1 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
     graph1->twodimensional = true;
     graph1->setlimits (0, 1000, -10, 1);
@@ -239,8 +239,8 @@ void setup_objective()
     obj_f.resize (hg->num());
 
     // Create 2 Gaussians and sum them as the main features
-    morph::vVector<F> obj_f_a(hg->num(), F{0});
-    morph::vVector<F> obj_f_b(hg->num(), F{0});
+    morph::vvec<F> obj_f_a(hg->num(), F{0});
+    morph::vvec<F> obj_f_b(hg->num(), F{0});
 
     // Now assign an analytical function to the thing - make it a couple of Gaussians
     F sigma = F{0.045};
@@ -274,7 +274,7 @@ void setup_objective()
     for (auto& k : hg->hexen) { obj_f_b[k.vi] *= F{0.01}; }
 
     // Make noise
-    morph::vVector<F> noise(hg->num());
+    morph::vvec<F> noise(hg->num());
     noise.randomize();
     noise *= F{0.2};
 
@@ -299,7 +299,7 @@ void setup_objective()
     for (auto& k : kernel.hexen) { kerneldata[k.vi] /= sum; }
 
     // A vector for the result
-    morph::vVector<F> convolved (hg->num(), F{0});
+    morph::vvec<F> convolved (hg->num(), F{0});
 
     // Call the convolution method from HexGrid:
     hg->convolve (kernel, kerneldata, obj_f, convolved);
@@ -323,7 +323,7 @@ void setup_objective_boha()
     }
 }
 
-F objective (const morph::vVector<F>& params)
+F objective (const morph::vvec<F>& params)
 {
 #ifdef USE_BOHACHEVSKY_FUNCTION
     return objective_boha (params);
@@ -332,7 +332,7 @@ F objective (const morph::vVector<F>& params)
 #endif
 }
 
-F objective_boha (const morph::vVector<F>& params)
+F objective_boha (const morph::vvec<F>& params)
 {
     F x = params[0];
     F y = params[1];
@@ -341,7 +341,7 @@ F objective_boha (const morph::vVector<F>& params)
     return fn;
 }
 
-F objective_hg (const morph::vVector<F>& params)
+F objective_hg (const morph::vvec<F>& params)
 {
     // Find the hex nearest the coordinate defined by params and return its value
     std::pair<float, float> coord;

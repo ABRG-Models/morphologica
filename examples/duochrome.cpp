@@ -5,7 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/ScatterVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -23,12 +23,12 @@ int main (int argc, char** argv)
     static constexpr int slen = 20;
     static constexpr int half_slen = slen/2;
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        std::vector<morph::Vector<float, 3>> points(slen*slen);
-        std::vector<morph::Vector<float, 3>> vecdata(slen*slen);
+        std::vector<morph::vec<float, 3>> points(slen*slen);
+        std::vector<morph::vec<float, 3>> vecdata(slen*slen);
         std::vector<float> data(slen*slen);
         size_t k = 0;
         for (int i = -half_slen; i < half_slen; ++i) {

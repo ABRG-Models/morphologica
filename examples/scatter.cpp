@@ -5,8 +5,8 @@
 #include <morph/ColourMap.h>
 #include <morph/ScatterVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -26,16 +26,16 @@ int main (int argc, char** argv)
     v.lightingEffects();
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        // Note use of morph::vVectors here, which can be passed into
-        // VisualDataModel::setDataCoords(std::vector<Vector<float>>* _coords)
+        // Note use of morph::vvecs here, which can be passed into
+        // VisualDataModel::setDataCoords(std::vector<vec<float>>* _coords)
         // and setScalarData(const std::vector<T>* _data)
-        // This is possible because morph::vVector derives from std::vector.
-        morph::vVector<morph::Vector<float, 3>> points(20*20);
-        morph::vVector<float> data(20*20);
+        // This is possible because morph::vvec derives from std::vector.
+        morph::vvec<morph::vec<float, 3>> points(20*20);
+        morph::vvec<float> data(20*20);
         size_t k = 0;
         for (int i = -10; i < 10; ++i) {
             for (int j = -10; j < 10; ++j) {

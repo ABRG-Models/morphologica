@@ -1,5 +1,5 @@
 #include <morph/nn/ElmanNet.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <vector>
 #include <iostream>
 
@@ -45,8 +45,8 @@ Cost:      0
     float in2 = 0.0f;
     float in1xorin2 = 1.0f;
 
-    morph::vVector<float> input = {1};
-    morph::vVector<float> des_output = {1};
+    morph::vvec<float> input = {1};
+    morph::vvec<float> des_output = {1};
 
     // Set the new input and desired output
     input[0] = in1;

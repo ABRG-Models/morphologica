@@ -4,6 +4,7 @@
 #include <morph/ColourMap.h>
 #include <iostream>
 #include <morph/Visual.h>
+#include <morph/vec.h>
 #include <morph/HexGridVisual.h>
 
 using namespace morph;
@@ -51,7 +52,7 @@ int main()
         // Create a HexGrid Visual
         morph::Visual v(1600, 1000, "HexGrid");
         v.lightingEffects();
-        morph::Vector<float, 3> offset = { 0.0f, -0.0f, 0.0f };
+        morph::vec<float, 3> offset = { 0.0f, -0.0f, 0.0f };
         morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
         // Set up data for the HexGridVisual and colour hexes according to their state as being boundary/inside/domain, etc
         std::vector<float> colours (hg.num(), 0.0f);

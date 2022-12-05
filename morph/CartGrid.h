@@ -10,7 +10,8 @@
 #include <morph/BezCoord.h>
 #include <morph/MathConst.h>
 #include <morph/HdfData.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Scale.h>
 
 #include <set>
@@ -650,29 +651,29 @@ namespace morph {
         }
 
         // find the CartGrid position which corresponds to the max value in image_data.
-        morph::Vector<float, 2> findmax (const morph::vVector<float>& image_data)
+        morph::vec<float, 2> findmax (const morph::vvec<float>& image_data)
         {
             unsigned int idx = image_data.argmax();
-            return morph::Vector<float, 2>({this->d_x[idx], this->d_y[idx]});
+            return morph::vec<float, 2>({this->d_x[idx], this->d_y[idx]});
         }
 
         // Create a radial representation of the image_data associated with this
         // CartGrid, which for this function is assumed to be rectangular. The
         // representation is taken from the location at view_pos, with an angular offset
         // of view_angle.
-        void resampleToPolar (const morph::vVector<float>& image_data,
-                              morph::CartGrid& cg_polar, morph::vVector<float>& polar_data,
-                              morph::Vector<float, 2> view_pos, float view_angle, morph::ScaleFn radscale = morph::ScaleFn::Linear)
+        void resampleToPolar (const morph::vvec<float>& image_data,
+                              morph::CartGrid& cg_polar, morph::vvec<float>& polar_data,
+                              morph::vec<float, 2> view_pos, float view_angle, morph::ScaleFn radscale = morph::ScaleFn::Linear)
         {
             polar_data.zero();
 
             // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
-            morph::Vector<float, 2> dist_per_pix = { this->d, this->v };
-            morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::vec<float, 2> dist_per_pix = { this->d, this->v };
+            morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
             float assumecirc = params.mean();
-            morph::Vector<float, 2> polar_span = cg_polar.getSpan();
+            morph::vec<float, 2> polar_span = cg_polar.getSpan();
 
-            morph::Vector<unsigned int, 2> polar_span_pix = cg_polar.getSpanPix();
+            morph::vec<unsigned int, 2> polar_span_pix = cg_polar.getSpanPix();
             if (polar_span_pix[0]%2 == 0) {
                 throw std::runtime_error ("Fix cg_polar to have an odd width (so that it runs from -x:0:+x)");
             }
@@ -696,8 +697,8 @@ namespace morph {
                 float phi_imframe = (cg_polar.d_x[xi] * rad_per_dist) + view_angle;
                 if (phi_imframe > morph::mathconst<float>::pi) { phi_imframe -= morph::mathconst<float>::two_pi; }
                 // x,y in the image frame associated with r,phi in the polar rep:
-                morph::Vector<float, 2> abs_xy_imframe = morph::Vector<float, 2>({r * std::cos(phi_imframe),
-                                                                                  r * std::sin(phi_imframe)}) + view_pos;
+                morph::vec<float, 2> abs_xy_imframe = morph::vec<float, 2>({r * std::cos(phi_imframe),
+                                                                            r * std::sin(phi_imframe)}) + view_pos;
 
                 // If abs_xy_imframe is outside the bounds of the image region, then leave value 0 and move on.
                 if (this->isInsideRectangularBoundary (abs_xy_imframe) == false) { continue; }
@@ -712,7 +713,7 @@ namespace morph {
 
                 // Closest pix
                 std::list<morph::Rect>::iterator curr = nearest;
-                float dd = (abs_xy_imframe - morph::Vector<float, 2>({curr->x, curr->y})).length();
+                float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
                 float expr = std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
 
                 float contributors = 1.0f;
@@ -720,7 +721,7 @@ namespace morph {
                 for (unsigned short nn = 0; nn < 8; ++nn) {
                     if (nearest->has_neighbour(nn)) {
                         curr = nearest->get_neighbour(nn);
-                        float dd = (abs_xy_imframe - morph::Vector<float, 2>({curr->x, curr->y})).length();
+                        float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
                         // sum according to 2D Gaussian:
                         expr += std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
                         contributors += 1.0f;
@@ -1038,14 +1039,14 @@ namespace morph {
         float getv() const { return this->v; }
 
         //! Get the x_span/y_span
-        morph::Vector<float, 2> getSpan() { return morph::Vector<float, 2>({this->x_span, this->y_span}); }
+        morph::vec<float, 2> getSpan() { return morph::vec<float, 2>({this->x_span, this->y_span}); }
 
         //! Get the x/y span in elements/pixels
-        morph::Vector<unsigned int, 2> getSpanPix()
+        morph::vec<unsigned int, 2> getSpanPix()
         {
             unsigned int _x_pixdist = static_cast<unsigned int>(this->x_span/this->d);
             unsigned int _y_pixdist = static_cast<unsigned int>(this->y_span/this->v);
-            return morph::Vector<unsigned int, 2>({ 1+_x_pixdist, 1+_y_pixdist });
+            return morph::vec<unsigned int, 2>({ 1+_x_pixdist, 1+_y_pixdist });
         }
 
         /*!
@@ -1270,19 +1271,19 @@ namespace morph {
         }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 3>> getCoordinates3()
+        std::vector<morph::vec<float, 3>> getCoordinates3()
         {
-            std::vector<morph::Vector<float, 3>> coords (this->num());
+            std::vector<morph::vec<float, 3>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i], this->z };
             }
             return coords;
         }
 
-        //! Get all the (x,y) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 2>> getCoordinates2()
+        //! Get all the (x,y) coordinates from the grid and return as vector of vecs
+        std::vector<morph::vec<float, 2>> getCoordinates2()
         {
-            std::vector<morph::Vector<float, 2>> coords (this->num());
+            std::vector<morph::vec<float, 2>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i] };
             }
@@ -1697,7 +1698,7 @@ namespace morph {
         }
 
         // ASSUMING that the boundary is rectangular, is the point inside the rectangle?
-        bool isInsideRectangularBoundary (const morph::Vector<float, 2>& point)
+        bool isInsideRectangularBoundary (const morph::vec<float, 2>& point)
         {
             if (point[0] < this->x_minmax[0]) { return false; }
             if (point[0] > this->x_minmax[1]) { return false; }
@@ -1849,7 +1850,7 @@ namespace morph {
             return false;
         }
 
-        std::list<Rect>::iterator findRectNearPoint (const Vector<float, 2>& point, std::list<Rect>::iterator startFrom)
+        std::list<Rect>::iterator findRectNearPoint (const vec<float, 2>& point, std::list<Rect>::iterator startFrom)
         {
             bool neighbourNearer = true;
 
@@ -2328,7 +2329,7 @@ namespace morph {
             return nearest;
         }
 
-        std::list<Rect>::iterator findRectNearest (const morph::Vector<float, 2>& pos)
+        std::list<Rect>::iterator findRectNearest (const morph::vec<float, 2>& pos)
         {
             std::list<morph::Rect>::iterator nearest = this->rects.end();
             std::list<morph::Rect>::iterator ri = this->rects.begin();
@@ -2397,8 +2398,8 @@ namespace morph {
 
     public:
         // Min/max x and y to record size of domain. Populate during init.
-        morph::Vector<float, 2> x_minmax = {0,0};
-        morph::Vector<float, 2> y_minmax = {0,0};
+        morph::vec<float, 2> x_minmax = {0,0};
+        morph::vec<float, 2> y_minmax = {0,0};
     };
 
 } // namespace morph

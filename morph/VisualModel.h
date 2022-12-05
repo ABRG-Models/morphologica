@@ -18,7 +18,7 @@
 #endif
 #endif
 #include <morph/TransformMatrix.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathConst.h>
 #include <morph/VisualCommon.h>
 #include <morph/VisualTextModel.h>
@@ -78,7 +78,7 @@ namespace morph {
             this->model_scaling.setToIdentity();
         }
 
-        VisualModel (GLuint sp, const Vector<float> _mv_offset)
+        VisualModel (GLuint sp, const vec<float> _mv_offset)
         {
             this->shaderprog = sp;
             this->mv_offset = _mv_offset;
@@ -86,7 +86,7 @@ namespace morph {
             this->model_scaling.setToIdentity();
         }
 
-        VisualModel (GLuint sp, GLuint tsp, const Vector<float> _mv_offset)
+        VisualModel (GLuint sp, GLuint tsp, const vec<float> _mv_offset)
         {
             this->shaderprog = sp;
             this->tshaderprog = tsp;
@@ -269,7 +269,7 @@ namespace morph {
         //! toffset. Return the text geometry of the added label so caller can place
         //! associated text correctly.
         morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::Vector<float, 3>& _toffset,
+                                      const morph::vec<float, 3>& _toffset,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                                       const float _fontsize = 0.05,
@@ -286,7 +286,7 @@ namespace morph {
 
         //! Add a text label with a passed-in pointer to a VisualTextModel
         morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::Vector<float, 3>& _toffset,
+                                      const morph::vec<float, 3>& _toffset,
                                       morph::VisualTextModel*& tm,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
@@ -314,7 +314,7 @@ namespace morph {
         }
 
         //! Set a translation into the scene and into any child texts
-        void setSceneTranslation (const Vector<float>& v0)
+        void setSceneTranslation (const vec<float>& v0)
         {
             this->scenematrix.setToIdentity();
             this->sv_offset = v0;
@@ -324,7 +324,7 @@ namespace morph {
         }
 
         //! Set a translation (only) into the scene view matrix
-        void addSceneTranslation (const Vector<float>& v0)
+        void addSceneTranslation (const vec<float>& v0)
         {
             this->sv_offset += v0;
             this->scenematrix.translate (v0);
@@ -347,7 +347,7 @@ namespace morph {
         }
 
         //! Set a translation to the model view matrix
-        void setViewTranslation (const Vector<float>& v0)
+        void setViewTranslation (const vec<float>& v0)
         {
             this->viewmatrix.setToIdentity();
             this->mv_offset = v0;
@@ -356,7 +356,7 @@ namespace morph {
         }
 
         //! Add a translation to the model view matrix
-        void addViewTranslation (const Vector<float>& v0)
+        void addViewTranslation (const vec<float>& v0)
         {
             this->mv_offset += v0;
             this->viewmatrix.translate (v0);
@@ -578,12 +578,12 @@ namespace morph {
          * model->world transformation - it's applied as a translation in
          * VisualModel::viewmatrix.
          */
-        Vector<float> mv_offset;
+        vec<float> mv_offset;
         //! Model view rotation
         Quaternion<float> mv_rotation;
 
         //! Scene view offset
-        Vector<float> sv_offset;
+        vec<float> sv_offset;
         //! Scene view rotation
         Quaternion<float> sv_rotation;
 
@@ -622,13 +622,13 @@ namespace morph {
         // The max and min values in the next 8 attriubutes are only computed if gltf files are going to be output by Visual::safegltf()
 
         //! Max values of 0th, 1st and 2nd coordinates in vertexPositions
-        morph::Vector<float, 3> vpos_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        morph::vec<float, 3> vpos_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         //! Min values in vertexPositions
-        morph::Vector<float, 3> vpos_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::Vector<float, 3> vcol_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-        morph::Vector<float, 3> vcol_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        morph::Vector<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-        morph::Vector<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::vec<float, 3> vpos_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::vec<float, 3> vcol_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        morph::vec<float, 3> vcol_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        morph::vec<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        morph::vec<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         //! Max value in indices
         VBOint idx_max = 0;
         //! Min value in indices.
@@ -653,8 +653,8 @@ namespace morph {
             vp.push_back (arr[1]);
             vp.push_back (arr[2]);
         }
-        //! Push morph::Vector of 3 floats onto the vector of floats \a vp
-        void vertex_push (const Vector<float>& vec, std::vector<float>& vp)
+        //! Push morph::vec of 3 floats onto the vector of floats \a vp
+        void vertex_push (const vec<float>& vec, std::vector<float>& vp)
         {
             std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
@@ -685,15 +685,15 @@ namespace morph {
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (VBOint& idx, Vector<float> start, Vector<float> end,
+        void computeTube (VBOint& idx, vec<float> start, vec<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
             // The vector from start to end defines a vector and a plane. Find a
             // 'circle' of points in that plane.
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
+            vec<float> vstart = start;
+            vec<float> vend = end;
+            vec<float> v = vend - vstart;
             v.renormalize();
 
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal
@@ -702,15 +702,15 @@ namespace morph {
             // plan to define a point on the circle. Note that this starting point on
             // the circle is at a random position, which means that this version of
             // computeTube is useful for tubes that have quite a few segments.
-            Vector<float> rand_vec;
+            vec<float> rand_vec;
             rand_vec.randomize();
-            Vector<float> inplane = rand_vec.cross(v);
+            vec<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
 
             // Now use parameterization of circle inplane = p1-x1 and
             // c1(t) = ( (p1-x1).normalized sin(t) + v.normalized cross (p1-x1).normalized * cos(t) )
             // c1(t) = ( inplane sin(t) + v * inplane * cos(t)
-            Vector<float> v_x_inplane = v.cross(inplane);
+            vec<float> v_x_inplane = v.cross(inplane);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vstart, this->vertexPositions);
@@ -722,7 +722,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -731,7 +731,7 @@ namespace morph {
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -741,7 +741,7 @@ namespace morph {
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -751,7 +751,7 @@ namespace morph {
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
                 float t = (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -872,17 +872,17 @@ namespace morph {
          * \param rotation A rotation in the ux/uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeTube (VBOint& idx, Vector<float> start, Vector<float> end,
-                          Vector<float> ux, Vector<float> uy,
+        void computeTube (VBOint& idx, vec<float> start, vec<float> end,
+                          vec<float> ux, vec<float> uy,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12, float rotation = 0.0f)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
+            vec<float> vstart = start;
+            vec<float> vend = end;
 
             // v is a face normal
-            Vector<float> v = uy.cross(ux);
+            vec<float> v = uy.cross(ux);
             v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -894,7 +894,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -903,7 +903,7 @@ namespace morph {
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -913,7 +913,7 @@ namespace morph {
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -923,7 +923,7 @@ namespace morph {
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -996,14 +996,14 @@ namespace morph {
 
         //! Compute a Quad from 4 arbitrary corners
         void computeFlatQuad (VBOint& idx,
-                              Vector<float> c1, Vector<float> c2,
-                              Vector<float> c3, Vector<float> c4,
+                              vec<float> c1, vec<float> c2,
+                              vec<float> c3, vec<float> c4,
                               std::array<float, 3> col)
         {
             // is the face normal
-            Vector<float> u1 = c1-c2;
-            Vector<float> u2 = c2-c3;
-            Vector<float> v = u1.cross(u2);
+            vec<float> u1 = c1-c2;
+            vec<float> u2 = c2-c3;
+            vec<float> v = u1.cross(u2);
             v.renormalize();
             // Push corner vertices
             this->vertex_push (c1, this->vertexPositions);
@@ -1043,13 +1043,13 @@ namespace morph {
          * \param rotation A rotation in the ux/uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeFlatPoly (VBOint& idx, Vector<float> vstart,
-                              Vector<float> ux, Vector<float> uy,
+        void computeFlatPoly (VBOint& idx, vec<float> vstart,
+                              vec<float> ux, vec<float> uy,
                               std::array<float, 3> col,
                               float r=1.0f, int segments=12, float rotation=0.0f)
         {
             // v is a face normal
-            Vector<float> v = uy.cross(ux);
+            vec<float> v = uy.cross(ux);
             v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -1061,7 +1061,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
@@ -1100,7 +1100,7 @@ namespace morph {
          * \param t Thickness of the ring
          * \param segments Number of tube segments used to render the ring
          */
-        void computeRing (VBOint& idx, Vector<float> ro, std::array<float, 3> rc, float r = 1.0f,
+        void computeRing (VBOint& idx, vec<float> ro, std::array<float, 3> rc, float r = 1.0f,
                           float t = 0.1f, int segments = 12)
         {
             for (int j = 0; j < segments; j++) {
@@ -1118,10 +1118,10 @@ namespace morph {
                 float yout_n = (r+(t*0.5f)) * sin(segnext);
 
                 // Now draw a quad
-                Vector<float> c1 = {xin, yin, 0};
-                Vector<float> c2 = {xout, yout, 0};
-                Vector<float> c3 = {xout_n, yout_n, 0};
-                Vector<float> c4 = {xin_n, yin_n, 0};
+                vec<float> c1 = {xin, yin, 0};
+                vec<float> c2 = {xout, yout, 0};
+                vec<float> c3 = {xout_n, yout_n, 0};
+                vec<float> c4 = {xin_n, yin_n, 0};
                 this->computeFlatQuad (idx, ro+c1, ro+c2, ro+c3, ro+c4, rc);
             }
         }
@@ -1136,7 +1136,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (VBOint& idx, Vector<float> so, std::array<float, 3> sc, float r = 1.0f,
+        void computeSphere (VBOint& idx, vec<float> so, std::array<float, 3> sc, float r = 1.0f,
                             int rings = 10, int segments = 12)
         {
             // First cap, draw as a triangle fan, but record indices so that
@@ -1273,7 +1273,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (VBOint& idx, Vector<float> so,
+        void computeSphere (VBOint& idx, vec<float> so,
                             std::array<float, 3> sc, std::array<float, 3> sc2,
                             float r = 1.0f, int rings = 10, int segments = 12)
         {
@@ -1421,8 +1421,8 @@ namespace morph {
          * \param segments Number of segments used to render the tube
          */
         void computeCone (VBOint& idx,
-                          Vector<float> centre,
-                          Vector<float> tip,
+                          vec<float> centre,
+                          vec<float> tip,
                           float ringoffset,
                           std::array<float, 3> col,
                           float r = 1.0f, int segments = 12)
@@ -1431,17 +1431,17 @@ namespace morph {
             // intermediate ring which is on the base ring, but has different normals, a
             // 'ring' around the tip (with suitable normals) and a 'tip' vertex
 
-            Vector<float> vbase = centre;
-            Vector<float> vtip = tip;
-            Vector<float> v = vtip - vbase;
+            vec<float> vbase = centre;
+            vec<float> vtip = tip;
+            vec<float> v = vtip - vbase;
             v.renormalize();
 
             // circle in a plane defined by a point and a normal
-            Vector<float> rand_vec;
+            vec<float> rand_vec;
             rand_vec.randomize();
-            Vector<float> inplane = rand_vec.cross(v);
+            vec<float> inplane = rand_vec.cross(v);
             inplane.renormalize();
-            Vector<float> v_x_inplane = v.cross(inplane);
+            vec<float> v_x_inplane = v.cross(inplane);
 
             // Push the central point of the start cap - this is at location vstart
             this->vertex_push (vbase, this->vertexPositions);
@@ -1451,7 +1451,7 @@ namespace morph {
             // Base ring with normals in direction -v
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
@@ -1462,7 +1462,7 @@ namespace morph {
             // Intermediate ring of vertices around/aligned with the base ring with normals in direction c
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
                 c.renormalize();
@@ -1473,7 +1473,7 @@ namespace morph {
             // Intermediate ring of vertices around the tip with normals direction c
             for (int j = 0; j < segments; j++) {
                 float t = j * morph::TWO_PI_F/(float)segments;
-                Vector<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
+                vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
                 c.renormalize();
@@ -1550,8 +1550,8 @@ namespace morph {
         } // end of cone calculation
 
         //! Compute a line with a single colour
-        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
-                          Vector<float> uz,
+        void computeLine (VBOint& idx, vec<float> start, vec<float> end,
+                          vec<float> uz,
                           std::array<float, 3> col,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
@@ -1573,8 +1573,8 @@ namespace morph {
          * \param thickness The thickness/depth of the line in uy direction
          * \param shorten An amount by which to shorten the length of the line at each end.
          */
-        void computeLine (VBOint& idx, Vector<float> start, Vector<float> end,
-                          Vector<float> uz,
+        void computeLine (VBOint& idx, vec<float> start, vec<float> end,
+                          vec<float> uz,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
@@ -1582,9 +1582,9 @@ namespace morph {
             const int segments = 8;
 
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
+            vec<float> vstart = start;
+            vec<float> vend = end;
+            vec<float> v = vend - vstart;
             v.renormalize();
 
             // If shorten is not 0, then modify vstart and vend
@@ -1594,7 +1594,7 @@ namespace morph {
             }
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -1616,11 +1616,11 @@ namespace morph {
             angles[6] = morph::TWO_PI_F - angles[0];
             angles[7] = angles[6];
             // The normals for the vertices around the line
-            std::array<Vector<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
+            std::array<vec<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
 
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
-                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -1628,7 +1628,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point outwards. Need Additional vertices
             for (int j = 0; j < segments; j++) {
-                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -1636,7 +1636,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (norms[j], this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -1644,7 +1644,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                Vector<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
+                vec<float> c = uz * sin(angles[j]) * r + vv * cos(angles[j]) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -1716,15 +1716,15 @@ namespace morph {
         } // end computeLine
 
         // Like computeLine, but this line has no thickness.
-        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
-                              Vector<float> uz,
+        void computeFlatLine (VBOint& idx, vec<float> start, vec<float> end,
+                              vec<float> uz,
                               std::array<float, 3> col,
                               float w = 0.1f, float shorten = 0.0f)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
+            vec<float> vstart = start;
+            vec<float> vend = end;
+            vec<float> v = vend - vstart;
             v.renormalize();
 
             // If shorten is not 0, then modify vstart and vend
@@ -1734,15 +1734,15 @@ namespace morph {
             }
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            Vector<float> ww = (vv*w*0.5f);
-            Vector<float> c1 = vstart + ww;
-            Vector<float> c2 = vstart - ww;
-            Vector<float> c3 = vend - ww;
-            Vector<float> c4 = vend + ww;
+            vec<float> ww = (vv*w*0.5f);
+            vec<float> c1 = vstart + ww;
+            vec<float> c2 = vstart - ww;
+            vec<float> c3 = vend - ww;
+            vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (uz, this->vertexNormals);
@@ -1780,15 +1780,15 @@ namespace morph {
         // Like computeFlatLine but with option to add rounded start/end caps (I lazily
         // draw a whole circle around start/end to achieve this, rather than figuring
         // out a semi-circle).
-        void computeFlatLineRnd (VBOint& idx, Vector<float> start, Vector<float> end,
-                                 Vector<float> uz,
+        void computeFlatLineRnd (VBOint& idx, vec<float> start, vec<float> end,
+                                 vec<float> uz,
                                  std::array<float, 3> col,
                                  float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
-            Vector<float> v = vend - vstart;
+            vec<float> vstart = start;
+            vec<float> vend = end;
+            vec<float> v = vend - vstart;
             v.renormalize();
 
             // If shorten is not 0, then modify vstart and vend
@@ -1798,15 +1798,15 @@ namespace morph {
             }
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            Vector<float> ww = (vv*w*0.5f);
-            Vector<float> c1 = vstart + ww;
-            Vector<float> c2 = vstart - ww;
-            Vector<float> c3 = vend - ww;
-            Vector<float> c4 = vend + ww;
+            vec<float> ww = (vv*w*0.5f);
+            vec<float> c1 = vstart + ww;
+            vec<float> c2 = vstart - ww;
+            vec<float> c3 = vend - ww;
+            vec<float> c4 = vend + ww;
 
             int segments = 12;
             float r = 0.5f * w;
@@ -1822,7 +1822,7 @@ namespace morph {
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::TWO_PI_F/(float)segments;
-                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, 0 };
+                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -1860,7 +1860,7 @@ namespace morph {
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
                     float t = j * morph::TWO_PI_F/(float)segments;
-                    morph::Vector<float> c = { sin(t) * r, cos(t) * r, 0 };
+                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -1914,42 +1914,42 @@ namespace morph {
         //! Like computeFlatLine, but this line has no thickness and you can provide the
         //! previous and next data points so that this line, the previous line and the
         //! next line can line up perfectly without drawing a circular rounded 'end cap'!
-        void computeFlatLine (VBOint& idx, Vector<float> start, Vector<float> end,
-                              Vector<float> prev, Vector<float> next,
-                              Vector<float> uz,
+        void computeFlatLine (VBOint& idx, vec<float> start, vec<float> end,
+                              vec<float> prev, vec<float> next,
+                              vec<float> uz,
                               std::array<float, 3> col,
                               float w = 0.1f)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
+            vec<float> vstart = start;
+            vec<float> vend = end;
 
             // line segment vectors
-            Vector<float> v = vend - vstart;
+            vec<float> v = vend - vstart;
             v.renormalize();
-            Vector<float> vp = vstart - prev;
+            vec<float> vp = vstart - prev;
             vp.renormalize();
-            Vector<float> vn = next - vend;
+            vec<float> vn = next - vend;
             vn.renormalize();
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
-            Vector<float> vvp = vp.cross(uz);
+            vec<float> vvp = vp.cross(uz);
             vvp.renormalize();
-            Vector<float> vvn = vn.cross(uz);
+            vec<float> vvn = vn.cross(uz);
             vvn.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+            vec<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
 
-            Vector<float> c1 = vstart + ww;
-            Vector<float> c2 = vstart - ww;
+            vec<float> c1 = vstart + ww;
+            vec<float> c2 = vstart - ww;
 
             ww = ( (vv+vvn)*0.5f * w*0.5f );
 
-            Vector<float> c3 = vend - ww;
-            Vector<float> c4 = vend + ww;
+            vec<float> c3 = vend - ww;
+            vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (uz, this->vertexNormals);
@@ -1980,38 +1980,38 @@ namespace morph {
         } // end computeFlatLine that joins perfectly
 
         //! Make a joined up line with previous.
-        void computeFlatLineP (VBOint& idx, Vector<float> start, Vector<float> end,
-                               Vector<float> prev,
-                               Vector<float> uz,
+        void computeFlatLineP (VBOint& idx, vec<float> start, vec<float> end,
+                               vec<float> prev,
+                               vec<float> uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
+            vec<float> vstart = start;
+            vec<float> vend = end;
 
             // line segment vectors
-            Vector<float> v = vend - vstart;
+            vec<float> v = vend - vstart;
             v.renormalize();
-            Vector<float> vp = vstart - prev;
+            vec<float> vp = vstart - prev;
             vp.renormalize();
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
-            Vector<float> vvp = vp.cross(uz);
+            vec<float> vvp = vp.cross(uz);
             vvp.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            Vector<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+            vec<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
 
-            Vector<float> c1 = vstart + ww;
-            Vector<float> c2 = vstart - ww;
+            vec<float> c1 = vstart + ww;
+            vec<float> c2 = vstart - ww;
 
             ww = (vv*w*0.5f);
 
-            Vector<float> c3 = vend - ww;
-            Vector<float> c4 = vend + ww;
+            vec<float> c3 = vend - ww;
+            vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (uz, this->vertexNormals);
@@ -2042,38 +2042,38 @@ namespace morph {
         } // end computeFlatLine that joins perfectly with prev
 
         //! Flat line, joining up with next
-        void computeFlatLineN (VBOint& idx, Vector<float> start, Vector<float> end,
-                               Vector<float> next,
-                               Vector<float> uz,
+        void computeFlatLineN (VBOint& idx, vec<float> start, vec<float> end,
+                               vec<float> next,
+                               vec<float> uz,
                                std::array<float, 3> col,
                                float w = 0.1f)
         {
             // The vector from start to end defines direction of the tube
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
+            vec<float> vstart = start;
+            vec<float> vend = end;
 
             // line segment vectors
-            Vector<float> v = vend - vstart;
+            vec<float> v = vend - vstart;
             v.renormalize();
-            Vector<float> vn = next - vend;
+            vec<float> vn = next - vend;
             vn.renormalize();
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
-            Vector<float> vvn = vn.cross(uz);
+            vec<float> vvn = vn.cross(uz);
             vvn.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            Vector<float> ww = (vv*w*0.5f);
+            vec<float> ww = (vv*w*0.5f);
 
-            Vector<float> c1 = vstart + ww;
-            Vector<float> c2 = vstart - ww;
+            vec<float> c1 = vstart + ww;
+            vec<float> c2 = vstart - ww;
 
             ww = ( (vv+vvn)*0.5f * w*0.5f );
 
-            Vector<float> c3 = vend - ww;
-            Vector<float> c4 = vend + ww;
+            vec<float> c3 = vend - ww;
+            vec<float> c4 = vend + ww;
 
             this->vertex_push (c1, this->vertexPositions);
             this->vertex_push (uz, this->vertexNormals);
@@ -2106,8 +2106,8 @@ namespace morph {
         // Like computeLine, but this line has no thickness and it's dashed.
         // dashlen: the length of dashes
         // gap prop: The proportion of dash length used for the gap
-        void computeFlatDashedLine (VBOint& idx, Vector<float> start, Vector<float> end,
-                                    Vector<float> uz,
+        void computeFlatDashedLine (VBOint& idx, vec<float> start, vec<float> end,
+                                    vec<float> uz,
                                     std::array<float, 3> col,
                                     float w = 0.1f, float shorten = 0.0f,
                                     float dashlen = 0.1f, float gapprop = 0.3f)
@@ -2115,10 +2115,10 @@ namespace morph {
             if (dashlen == 0.0f) { return; }
 
             // The vector from start to end defines direction of the line
-            Vector<float> vstart = start;
-            Vector<float> vend = end;
+            vec<float> vstart = start;
+            vec<float> vend = end;
 
-            Vector<float> v = vend - vstart;
+            vec<float> v = vend - vstart;
             float linelen = v.length();
             v.renormalize();
 
@@ -2130,22 +2130,22 @@ namespace morph {
             }
 
             // vv is normal to v and uz
-            Vector<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(uz);
             vv.renormalize();
 
             // Loop, creating the dashes
-            Vector<float> dash_s = vstart;
-            Vector<float> dash_e = dash_s + v * dashlen;
-            Vector<float> dashes = dash_e - vstart;
+            vec<float> dash_s = vstart;
+            vec<float> dash_e = dash_s + v * dashlen;
+            vec<float> dashes = dash_e - vstart;
 
             while (dashes.length() < linelen) {
 
                 // corners of the line, and the start angle is determined from vv and w
-                Vector<float> ww = (vv*w*0.5f);
-                Vector<float> c1 = dash_s + ww;
-                Vector<float> c2 = dash_s - ww;
-                Vector<float> c3 = dash_e - ww;
-                Vector<float> c4 = dash_e + ww;
+                vec<float> ww = (vv*w*0.5f);
+                vec<float> c1 = dash_s + ww;
+                vec<float> c2 = dash_s - ww;
+                vec<float> c3 = dash_e - ww;
+                vec<float> c4 = dash_e + ww;
 
                 this->vertex_push (c1, this->vertexPositions);
                 this->vertex_push (uz, this->vertexNormals);

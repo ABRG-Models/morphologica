@@ -13,7 +13,7 @@
 #include <morph/ReadCurves.h>
 #include <morph/Random.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 int main()
 {
@@ -71,7 +71,7 @@ int main()
     std::cout << "Unconvolved sum: " << nonconvolvedSum << ", convolved sum: " << convolvedSum << "\n";
 
     // Visualize the 3 maps
-    morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
+    morph::vec<float, 3> offset = { -0.5, 0.0, 0.0 };
     morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
     hgv->cm.setType(morph::ColourMapType::Viridis);

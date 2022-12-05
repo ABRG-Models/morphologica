@@ -13,7 +13,7 @@
 #include <fstream>
 #include <cmath>
 #include "morph/Scale.h"
-#include "morph/Vector.h"
+#include "morph/vec.h"
 
 int main()
 {
@@ -43,7 +43,7 @@ int main()
         }
         std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
-        morph::Vector<float, 3> offset = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
         morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float> (v.shaderprog, v.tshaderprog, &hg, offset);
         hgv->hexVisMode = morph::HexVisMode::Triangles; // Triangles faster to render than the default hexes
         hgv->setScalarData (&data);

@@ -10,7 +10,7 @@
 #pragma once
 
 #include <morph/nn/FeedForwardConn.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <list>
 #include <vector>
@@ -37,7 +37,7 @@ namespace morph {
                 // Set up initial conditions
                 for (auto nn : layer_spec) {
                     // Create, and zero, a layer containing nn neurons:
-                    morph::vVector<T> lyr(nn);
+                    morph::vvec<T> lyr(nn);
                     lyr.zero();
                     size_t lastLayerSize = 0;
                     if (!this->neurons.empty()) { // Set lastLayerSize
@@ -84,8 +84,8 @@ namespace morph {
 
             //! A function which shows the difference between the network output and
             //! desiredOutput for debugging
-            void evaluate (const std::vector<morph::vVector<float>>& ins,
-                           const std::vector<morph::vVector<float>>& outs)
+            void evaluate (const std::vector<morph::vvec<float>>& ins,
+                           const std::vector<morph::vvec<float>>& outs)
             {
                 auto op = outs.begin();
                 for (auto ir : ins) {
@@ -102,7 +102,7 @@ namespace morph {
 
             // FIXME: Put in a derived class specifically for Mnist handling.
             //! Evaluate against the Mnist test image set
-            unsigned int evaluate (const std::multimap<unsigned char, morph::vVector<float>>& testData, int num=10000)
+            unsigned int evaluate (const std::multimap<unsigned char, morph::vvec<float>>& testData, int num=10000)
             {
                 // For each image in testData, compute cost
                 float evalcost = 0.0f;
@@ -143,7 +143,7 @@ namespace morph {
                 //
                 // delta^l = w^l+1 . delta^l+1 0 sigma_prime (z^l)
                 //
-                // (where 0 signifies hadamard product, as implemented by vVector's operator*)
+                // (where 0 signifies hadamard product, as implemented by vvec's operator*)
                 // delta = dC_x/da() * sigmoid_prime(z_out)
                 auto citer = this->connections.end();
                 --citer; // Now points at output layer
@@ -157,7 +157,7 @@ namespace morph {
             }
 
             //! Set up an input along with desired output
-            void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput)
+            void setInput (const morph::vvec<T>& theInput, const morph::vvec<T>& theOutput)
             {
                 *(this->neurons.begin()) = theInput;
                 this->desiredOutput = theOutput;
@@ -198,13 +198,13 @@ namespace morph {
             T cost = T{0};
 
             //! A variable number of neuron layers, each of variable size.
-            std::list<morph::vVector<T>> neurons;
+            std::list<morph::vvec<T>> neurons;
             //! Connections. There should be neurons.size()-1 connection layers:
             std::list<morph::nn::FeedForwardConn<T>> connections;
             //! The error (dC/dz) of the output layer
-            morph::vVector<T> delta_out;
+            morph::vvec<T> delta_out;
             //! The desired output of the network
-            morph::vVector<T> desiredOutput;
+            morph::vvec<T> desiredOutput;
         };
 
         template <typename T>

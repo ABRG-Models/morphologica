@@ -1,18 +1,18 @@
 #include "morph/HdfData.h"
-#include "morph/vVector.h"
+#include "morph/vvec.h"
 #include <iostream>
 
-// Test containers of vVectors
+// Test containers of vvecs
 
 int main()
 {
     int rtn = 1;
 
-    morph::vVector<morph::vVector<FLT>> vvv;
-    vvv.push_back (morph::vVector<FLT>({1,2,3}));
-    vvv.push_back (morph::vVector<FLT>({2,2,3}));
-    vvv.push_back (morph::vVector<FLT>({3,2,3}));
-    vvv.push_back (morph::vVector<FLT>({4,2,3}));
+    morph::vvec<morph::vvec<FLT>> vvv;
+    vvv.push_back (morph::vvec<FLT>({1,2,3}));
+    vvv.push_back (morph::vvec<FLT>({2,2,3}));
+    vvv.push_back (morph::vvec<FLT>({3,2,3}));
+    vvv.push_back (morph::vvec<FLT>({4,2,3}));
 
     // Check content
     for (auto vv : vvv) { std::cout << "vv: " << vv << std::endl; }
@@ -22,8 +22,8 @@ int main()
         data.add_contained_vals ("/vvv", vvv);
     } // data closes when out of scope
 
-    // void read_contained_vals (const char* path, morph::vVector<morph::vVector<T>>& vals)
-    morph::vVector<morph::vVector<FLT>> vvread;
+    // void read_contained_vals (const char* path, morph::vvec<morph::vvec<T>>& vals)
+    morph::vvec<morph::vvec<FLT>> vvread;
     {
         morph::HdfData data("test4.h5", morph::FileAccess::ReadOnly);
         data.read_contained_vals ("/vvv", vvread);

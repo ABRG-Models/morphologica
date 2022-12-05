@@ -10,7 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathConst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
@@ -201,9 +201,9 @@ namespace morph {
         //! Algorithm, which uses slopes, taken from
         //! https://www.geeksforgeeks.org/orientation-3-ordered-points/
         template<typename T>
-        static rotation_sense orientation (const morph::Vector<T, 2>& p,
-                                           const morph::Vector<T, 2>& q,
-                                           const morph::Vector<T, 2>& r)
+        static rotation_sense orientation (const morph::vec<T, 2>& p,
+                                           const morph::vec<T, 2>& q,
+                                           const morph::vec<T, 2>& r)
         {
             T val = (q[1] - p[1]) * (r[0] - q[0])  -  (q[0] - p[0]) * (r[1] - q[1]);
             if (val == T{0}) { return rotation_sense::colinear; }
@@ -214,9 +214,9 @@ namespace morph {
         // point q lies on line segment 'pr'. Copied from:
         // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
         template<typename T>
-        static bool onsegment (const morph::Vector<T, 2>& p,
-                               const morph::Vector<T, 2>& q,
-                               const morph::Vector<T, 2>& r)
+        static bool onsegment (const morph::vec<T, 2>& p,
+                               const morph::vec<T, 2>& q,
+                               const morph::vec<T, 2>& r)
         {
             if (q[0] <= std::max(p[0], r[0]) && q[0] >= std::min(p[0], r[0]) &&
                 q[1] <= std::max(p[1], r[1]) && q[1] >= std::min(p[1], r[1])) {

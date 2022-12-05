@@ -5,7 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/QuiverVisual.h>
 #include <morph/ScatterVisual.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Scale.h>
 #include <iostream>
 #include <fstream>
@@ -34,16 +34,16 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        vector<morph::Vector<float, 3>> coords;
+        vector<morph::vec<float, 3>> coords;
         coords.push_back ({0, 0,   0});
         coords.push_back ({1, 1,   0});
         coords.push_back ({2, 0,   0});
         coords.push_back ({1, 0.8, 0});
         coords.push_back ({2, 0.5, 0});
 
-        vector<morph::Vector<float, 3>> quivs;
+        vector<morph::vec<float, 3>> quivs;
         quivs.push_back ({0.3,   0.4,  0});
         quivs.push_back ({0.1,   0.2,  0.1});
         quivs.push_back ({-0.1,  0,    0});
@@ -58,7 +58,7 @@ int main (int argc, char** argv)
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 
-        vector<morph::Vector<float, 3>> points;
+        vector<morph::vec<float, 3>> points;
         points.push_back ({0,0,0});
         points.push_back ({1,1,0});
         points.push_back ({2,2.2,0});

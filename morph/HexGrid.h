@@ -8,6 +8,8 @@
  */
 #pragma once
 
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Hex.h>
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
@@ -1368,37 +1370,37 @@ namespace morph {
         /*!
          * Resampling function (monochrome).
          *
-         * \param image_data (input) The monochrome image as a vVector of floats.
+         * \param image_data (input) The monochrome image as a vvec of floats.
          * \param image_pixelwidth (input) The number of pixels that the image is wide
          * \param image_scale (input) The size that the image should be resampled to (same units as HexGrid)
          * \param image_offset (input) An offset in HexGrid units to shift the image wrt to the HexGrid's origin
          * \param sigma (input) The sigma for the 2D resampling Gaussian
          *
-         * \return A new data vVector containing the resampled (and renormalised) hex pixel values
+         * \return A new data vvec containing the resampled (and renormalised) hex pixel values
          */
-        morph::vVector<float> resampleImage (const morph::vVector<float>& image_data,
+        morph::vvec<float> resampleImage (const morph::vvec<float>& image_data,
                                              const unsigned int image_pixelwidth,
-                                             const morph::Vector<float, 2>& image_scale,
-                                             const morph::Vector<float, 2>& image_offset)
+                                             const morph::vec<float, 2>& image_scale,
+                                             const morph::vec<float, 2>& image_offset)
         {
             unsigned int csz = image_data.size();
-            morph::Vector<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
+            morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
             // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
-            morph::Vector<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
-            morph::Vector<float, 2> half_scale = image_scale * 0.5f;
-            morph::Vector<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
-            morph::Vector<float, 2> threesig = 3.0f * dist_per_pix;
+            morph::vec<float, 2> dist_per_pix = image_scale / (image_pixelsz-1);
+            morph::vec<float, 2> half_scale = image_scale * 0.5f;
+            morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            morph::vec<float, 2> threesig = 3.0f * dist_per_pix;
 
-            morph::vVector<float> expr_resampled(this->num(), 0.0f);
+            morph::vvec<float> expr_resampled(this->num(), 0.0f);
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
             for (size_t xi = 0; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
 //#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
                     // Get x/y pixel coords:
-                    morph::Vector<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
+                    morph::vec<unsigned int, 2> idx = {(i % image_pixelsz[0]), (image_pixelsz[1] - (i / image_pixelsz[1]))};
                     // Get the coordinates of the pixel at index i:
-                    morph::Vector<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
+                    morph::vec<float, 2> posn = (dist_per_pix * idx) - half_scale + image_offset;
                     // Distance from input pixel to output hex:
                     float _d_x = this->d_x[xi] - posn[0];
                     float _d_y = this->d_y[xi] - posn[1];
@@ -1415,76 +1417,76 @@ namespace morph {
         }
 
         // Member attributes for visualising the compute_hex_overlap stuff. Put in class HexOverlapGeometry or something
-        Vector<float, 2> sw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> nw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> ne_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> se_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> n_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> s_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> sw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> nw_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> ne_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> se_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> n_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> s_loc = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         // Original location of the zero hex
-        Vector<float, 2> sw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> nw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> ne_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> se_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> n_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> s_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> sw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> nw_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> ne_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> se_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> n_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> s_0 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
-        Vector<float, 2> sw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> nw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> ne_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> se_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> n_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> s_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> sw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> nw_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> ne_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> se_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> n_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> s_sft = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
-        Vector<float, 2> p1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q7 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> p8 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> q8 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q7 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> p8 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> q8 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
         // Usually, top left of rectangle a1 is p2, but it may be q4 if i5 is to 'left' of i1
-        Vector<float, 2> a1_tl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> a1_bl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> a1_tl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> a1_bl = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
         //
-        Vector<float, 2> i1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> i2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> i3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> i4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> i5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> i6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i1 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i2 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i3 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i4 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i5 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> i6 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         // More vectors for visualisation. The 60 and 300 degree unit vectors are used to compute area of parallelogram.
-        Vector<float, 2> unit_60 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_300 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_120 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_150 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_240 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_210 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> unit_30 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_60 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_300 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_120 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_150 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_240 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_210 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> unit_30 = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
-        Vector<float, 2> pll1_top = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> pll1_br = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> pll2_bot = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-        Vector<float, 2> pll2_tr = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> pll1_top = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> pll1_br = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> pll2_bot = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
+        vec<float, 2> pll2_tr = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
 
         static constexpr bool debug_hexshift = false;
 
         // Shift data by dx, with wrapping if set for the hexgrid
         template <typename T>
-        bool shiftdata (morph::vVector<T>& image_data, const morph::Vector<float, 2>& dx)
+        bool shiftdata (morph::vvec<T>& image_data, const morph::vec<float, 2>& dx)
         {
             unsigned int csz = image_data.size();
-            morph::vVector<T> shifted(csz, T{0});
+            morph::vvec<T> shifted(csz, T{0});
 
             // If g and r are purely integral, then the transform is simple; copy data
             // from hex(i,j) in image_data to hex(i+r,j+g) in shifted, where the +r and
@@ -1494,26 +1496,26 @@ namespace morph {
 
             // How many 'r' steps and how many 'g' steps does the vector dx represent?
             if constexpr (debug_hexshift) { std::cout << "d = " << this->d << ", dx = " << dx << std::endl; }
-            Vector<float, 2> rg = {
+            vec<float, 2> rg = {
                 (1.0f/this->d) * (dx[0] - dx[1] * morph::mathconst<float>::one_over_root_3),
                 (1.0f/this->d) * (dx[1] * morph::mathconst<float>::two_over_root_3)
             };
             if constexpr (debug_hexshift) { std::cout << "Movement expressed as r/g is rg=" << rg << std::endl; }
             // How many integral steps in r and g axes?
-            Vector<float, 2> int_rg_f = rg.trunc();
+            vec<float, 2> int_rg_f = rg.trunc();
             // Convert to int
-            Vector<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
+            vec<int, 2> int_rg = { static_cast<int>(std::round (int_rg_f[0])), static_cast<int>(std::round (int_rg_f[1])) };
             if constexpr (debug_hexshift) { std::cout << "integral steps: " << int_rg << std::endl; }
-            Vector<float, 2> int_xy = {
+            vec<float, 2> int_xy = {
                 (int_rg_f[0] * this->d + int_rg_f[1] * this->d * 0.5f),
                 (int_rg_f[1] * this->v)
             };
             // Compute remainder
-            Vector<float, 2> rem_rg = rg - int_rg_f;
+            vec<float, 2> rem_rg = rg - int_rg_f;
 
             if constexpr (debug_hexshift) { std::cout << "Remainder r: " << rem_rg[0] << ", and remainder g: " << rem_rg[1] << std::endl; }
             // The remainder movement in Cartesian coordinates
-            Vector<float, 2> rem_xy = {
+            vec<float, 2> rem_xy = {
                 (rem_rg[0] * this->d + rem_rg[1] * this->d * 0.5f),
                 (rem_rg[1] * this->v)
             };
@@ -1543,7 +1545,7 @@ namespace morph {
             n_sft = n_loc + rem_xy;
             s_sft = s_loc + rem_xy;
 
-            Vector<float, 19> overlap = this->compute_hex_overlap (rem_xy);
+            vec<float, 19> overlap = this->compute_hex_overlap (rem_xy);
 
             if (overlap[0] == -100.0f) {
                 if constexpr (debug_hexshift) { std::cout << "overlap[0] is -100\n"; }
@@ -1679,10 +1681,10 @@ namespace morph {
          * float.
          * See https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
          */
-        Vector<float, 2> intersection (const Vector<float, 2> _p1, const Vector<float, 2> _q1,
-                                       const Vector<float, 2> _p2, const Vector<float, 2> _q2)
+        vec<float, 2> intersection (const vec<float, 2> _p1, const vec<float, 2> _q1,
+                                       const vec<float, 2> _p2, const vec<float, 2> _q2)
         {
-            Vector<float, 2> isect;
+            vec<float, 2> isect;
             isect.set_from (std::numeric_limits<float>::quiet_NaN());
 
             // _p1 = p; _q1 = p + r
@@ -1713,7 +1715,7 @@ namespace morph {
                 // Get normal to p2-q2
                 morph::Matrix22<float> rot90;
                 rot90.rotate (morph::mathconst<float>::pi_over_2);
-                Vector<float, 2> nor = rot90 * (_q2-_p2);
+                vec<float, 2> nor = rot90 * (_q2-_p2);
                 // Project p2-p1 onto normal
                 float d_p1 = (_p2-_p1).dot(nor);
                 isect[0] = d_p1; // isect[1] remains nan
@@ -1728,87 +1730,87 @@ namespace morph {
 
         /*!
          * Compute the overlap of a (grid sized) hex shifted by the 2D Cartesian vector
-         * 'shift' on the adjacent hexes. The return Vector has 13 elements that give
+         * 'shift' on the adjacent hexes. The return vec has 13 elements that give
          * the overlap between the shifted hex and the underlying hexes, which are 0:
          * centre; 1:ne, 2:nw, 3:w 4:sw 5:se 6:e 7:ene 8:nn 9:wnw 10:wsw 11:ss 12:ese An
          * assumption is that shift is small.
          */
-        Vector<float, 19> compute_hex_overlap (Vector<float, 2> shift)
+        vec<float, 19> compute_hex_overlap (vec<float, 2> shift)
         {
-            Vector<float, 19> overlap;
+            vec<float, 19> overlap;
             overlap.zero();
             float lr = this->getLR();
 
             // hexvectors from centre to points:
-            morph::Vector<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
-            morph::Vector<float, 2> hv_n =  { 0, lr };
-            morph::Vector<float, 2> hv_nw = {-morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr};
-            morph::Vector<float, 2> hv_sw = {-morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
-            morph::Vector<float, 2> hv_s =  { 0, -lr };
-            morph::Vector<float, 2> hv_se = { morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
+            morph::vec<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
+            morph::vec<float, 2> hv_n =  { 0, lr };
+            morph::vec<float, 2> hv_nw = {-morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr};
+            morph::vec<float, 2> hv_sw = {-morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
+            morph::vec<float, 2> hv_s =  { 0, -lr };
+            morph::vec<float, 2> hv_se = { morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
 
             // Find intersections between sides of the base hex and the shifted
             // hex. This will inform which of the different area computation algorithms to
 
             // Intersection 1 is between n->ne of base and nw->n of shifted
-            Vector<float, 2> isct1 = this->intersection (n_loc, ne_loc, nw_sft, n_sft);
-            Vector<float, 2> isct2 = this->intersection (nw_loc, n_loc, sw_sft, nw_sft);
-            Vector<float, 2> isct3 = this->intersection (sw_loc, nw_loc, s_sft, sw_sft);
-            Vector<float, 2> isct4 = this->intersection (s_loc, sw_loc, se_sft, s_sft);
-            Vector<float, 2> isct5 = this->intersection (se_loc, s_loc, ne_sft, se_sft);
-            Vector<float, 2> isct6 = this->intersection (ne_loc, se_loc, n_sft, ne_sft);
+            vec<float, 2> isct1 = this->intersection (n_loc, ne_loc, nw_sft, n_sft);
+            vec<float, 2> isct2 = this->intersection (nw_loc, n_loc, sw_sft, nw_sft);
+            vec<float, 2> isct3 = this->intersection (sw_loc, nw_loc, s_sft, sw_sft);
+            vec<float, 2> isct4 = this->intersection (s_loc, sw_loc, se_sft, s_sft);
+            vec<float, 2> isct5 = this->intersection (se_loc, s_loc, ne_sft, se_sft);
+            vec<float, 2> isct6 = this->intersection (ne_loc, se_loc, n_sft, ne_sft);
             if constexpr (debug_hexshift) { std::cout << "isects: " << isct1 << ", " << isct2 << ", " << isct3 << ", "
                                                       << isct4 << ", " << isct5 << ", " << isct6 << "\n"; }
 
             // Parallel intersections
-            Vector<float, 2> isct7 = this->intersection (nw_loc, n_loc, nw_sft, n_sft);
-            Vector<float, 2> isct8 = this->intersection (sw_loc, nw_loc, sw_sft, nw_sft);
-            Vector<float, 2> isct9 = this->intersection (s_loc, sw_loc, s_sft, sw_sft);
+            vec<float, 2> isct7 = this->intersection (nw_loc, n_loc, nw_sft, n_sft);
+            vec<float, 2> isct8 = this->intersection (sw_loc, nw_loc, sw_sft, nw_sft);
+            vec<float, 2> isct9 = this->intersection (s_loc, sw_loc, s_sft, sw_sft);
             if constexpr (debug_hexshift) { std::cout << "colinear isects: " << isct7 << ", " << isct8 << ", " << isct9 << std::endl; }
             // Note: the segments could be parallel but no longer intersecting and there
             // would STILL be the possiblity of an overlap. However, I think that the
             // scheme of choosing integer hex-jumps may avoid this case from occurring.
 
             // Colinear intersections with adjacent hexes
-            Vector<float, 2> isct10 = this->intersection (n_loc, n_loc + hv_n, sw_sft, nw_sft);
-            Vector<float, 2> isct11 = this->intersection (nw_loc, nw_loc + hv_nw, s_sft, sw_sft);
-            Vector<float, 2> isct12 = this->intersection (sw_loc, sw_loc + hv_sw, se_sft, s_sft);
-            Vector<float, 2> isct13 = this->intersection (s_loc, s_loc + hv_s, ne_sft, se_sft);
-            Vector<float, 2> isct14 = this->intersection (se_loc, se_loc + hv_se, n_sft, ne_sft);
-            Vector<float, 2> isct15 = this->intersection (ne_loc, ne_loc + hv_ne, nw_sft, n_sft);
+            vec<float, 2> isct10 = this->intersection (n_loc, n_loc + hv_n, sw_sft, nw_sft);
+            vec<float, 2> isct11 = this->intersection (nw_loc, nw_loc + hv_nw, s_sft, sw_sft);
+            vec<float, 2> isct12 = this->intersection (sw_loc, sw_loc + hv_sw, se_sft, s_sft);
+            vec<float, 2> isct13 = this->intersection (s_loc, s_loc + hv_s, ne_sft, se_sft);
+            vec<float, 2> isct14 = this->intersection (se_loc, se_loc + hv_se, n_sft, ne_sft);
+            vec<float, 2> isct15 = this->intersection (ne_loc, ne_loc + hv_ne, nw_sft, n_sft);
             if constexpr (debug_hexshift) { std::cout << "extra colinear isects1-3: " << isct10 << ", " << isct11 << ", " << isct12 << std::endl; }
             if constexpr (debug_hexshift) { std::cout << "extra colinear isects4-6: " << isct13 << ", " << isct14 << ", " << isct15 << std::endl; }
 
             // Nearly finally, intersects that occur when the hex is moved to the point at
             // which the moved hex has just one point inside the base hex
-            Vector<float, 2> isct16 = this->intersection (n_loc, ne_loc, nw_sft, sw_sft);
-            Vector<float, 2> isct17 = this->intersection (nw_loc, n_loc, sw_sft, s_sft);
-            Vector<float, 2> isct18 = this->intersection (sw_loc, nw_loc, s_sft, se_sft);
-            Vector<float, 2> isct19 = this->intersection (s_loc, sw_loc, se_sft, ne_sft);
-            Vector<float, 2> isct20 = this->intersection (se_loc, s_loc, ne_sft, n_sft);
-            Vector<float, 2> isct21 = this->intersection (ne_loc, se_loc, n_sft, nw_sft);
+            vec<float, 2> isct16 = this->intersection (n_loc, ne_loc, nw_sft, sw_sft);
+            vec<float, 2> isct17 = this->intersection (nw_loc, n_loc, sw_sft, s_sft);
+            vec<float, 2> isct18 = this->intersection (sw_loc, nw_loc, s_sft, se_sft);
+            vec<float, 2> isct19 = this->intersection (s_loc, sw_loc, se_sft, ne_sft);
+            vec<float, 2> isct20 = this->intersection (se_loc, s_loc, ne_sft, n_sft);
+            vec<float, 2> isct21 = this->intersection (ne_loc, se_loc, n_sft, nw_sft);
             if constexpr (debug_hexshift) { std::cout << "corner isects1-3: " << isct16 << ", " << isct17 << ", " << isct18 << std::endl; }
             if constexpr (debug_hexshift) { std::cout << "corner isects4-6: " << isct19 << ", " << isct20 << ", " << isct21 << std::endl; }
 
             // And intersects that may occur if the hex is moved slightly beyond the
             // original base hex (next to base hex NE edge in rotation=0 case)
-            Vector<float, 2> isct22 = this->intersection (ne_loc, ne_loc+hv_ne, s_sft, sw_sft);
-            Vector<float, 2> isct23 = this->intersection (n_loc, n_loc+hv_n, se_sft, s_sft);
-            Vector<float, 2> isct24 = this->intersection (nw_loc, nw_loc+hv_nw, se_sft, ne_sft);
-            Vector<float, 2> isct25 = this->intersection (sw_loc, sw_loc+hv_sw, n_sft, ne_sft);
-            Vector<float, 2> isct26 = this->intersection (s_loc, s_loc+hv_s, nw_sft, n_sft);
-            Vector<float, 2> isct27 = this->intersection (se_loc, se_loc+hv_se, sw_sft, nw_sft);
+            vec<float, 2> isct22 = this->intersection (ne_loc, ne_loc+hv_ne, s_sft, sw_sft);
+            vec<float, 2> isct23 = this->intersection (n_loc, n_loc+hv_n, se_sft, s_sft);
+            vec<float, 2> isct24 = this->intersection (nw_loc, nw_loc+hv_nw, se_sft, ne_sft);
+            vec<float, 2> isct25 = this->intersection (sw_loc, sw_loc+hv_sw, n_sft, ne_sft);
+            vec<float, 2> isct26 = this->intersection (s_loc, s_loc+hv_s, nw_sft, n_sft);
+            vec<float, 2> isct27 = this->intersection (se_loc, se_loc+hv_se, sw_sft, nw_sft);
             if constexpr (debug_hexshift) { std::cout << "far isects1-3: " << isct22 << ", " << isct23 << ", " << isct24 << std::endl; }
             if constexpr (debug_hexshift) { std::cout << "far isects4-6: " << isct25 << ", " << isct26 << ", " << isct27 << std::endl; }
 
             // And intersects that may occur if the hex is moved slightly beyond the
             // original base hex (next to base hex E edge in rotation=0 case)
-            Vector<float, 2> isct28 = this->intersection (ne_loc, ne_loc+hv_ne, sw_sft, nw_sft);
-            Vector<float, 2> isct29 = this->intersection (n_loc, n_loc+hv_n, s_sft, sw_sft);
-            Vector<float, 2> isct30 = this->intersection (nw_loc, nw_loc+hv_nw, se_sft, s_sft);
-            Vector<float, 2> isct31 = this->intersection (sw_loc, sw_loc+hv_sw, ne_sft, se_sft);
-            Vector<float, 2> isct32 = this->intersection (s_loc, s_loc+hv_s, n_sft, ne_sft);
-            Vector<float, 2> isct33 = this->intersection (se_loc, se_loc+hv_se, nw_sft, n_sft);
+            vec<float, 2> isct28 = this->intersection (ne_loc, ne_loc+hv_ne, sw_sft, nw_sft);
+            vec<float, 2> isct29 = this->intersection (n_loc, n_loc+hv_n, s_sft, sw_sft);
+            vec<float, 2> isct30 = this->intersection (nw_loc, nw_loc+hv_nw, se_sft, s_sft);
+            vec<float, 2> isct31 = this->intersection (sw_loc, sw_loc+hv_sw, ne_sft, se_sft);
+            vec<float, 2> isct32 = this->intersection (s_loc, s_loc+hv_s, n_sft, ne_sft);
+            vec<float, 2> isct33 = this->intersection (se_loc, se_loc+hv_se, nw_sft, n_sft);
             if constexpr (debug_hexshift) { std::cout << "far2 isects1-3: " << isct28 << ", " << isct29 << ", " << isct30 << std::endl; }
             if constexpr (debug_hexshift) { std::cout << "far2 isects4-6: " << isct31 << ", " << isct32 << ", " << isct33 << std::endl; }
 
@@ -1922,28 +1924,28 @@ namespace morph {
          * Simpler overlap computation for hexes sliding along parallel edges Call this
          * after you have determined that any of the hexagon sides are colinear
          */
-        Vector<float, 19> compute_overlap_colinear()
+        vec<float, 19> compute_overlap_colinear()
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called\n"; }
 
             // Store the hex overlap proportions in the return object
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
 
             float hexarea = this->hexen.begin()->getArea();
 
             // Pairs of corners. Assume they don't go beyond each other.
-            Vector<float, 2> n_s = s_loc - n_sft;
-            Vector<float, 2> s_n = n_loc - s_sft;
+            vec<float, 2> n_s = s_loc - n_sft;
+            vec<float, 2> s_n = n_loc - s_sft;
 
-            Vector<float, 2> ne_sw = sw_loc - ne_sft;
-            Vector<float, 2> sw_ne = ne_loc - sw_sft;
+            vec<float, 2> ne_sw = sw_loc - ne_sft;
+            vec<float, 2> sw_ne = ne_loc - sw_sft;
 
-            Vector<float, 2> se_nw = nw_loc - se_sft;
-            Vector<float, 2> nw_se = se_loc - nw_sft;
+            vec<float, 2> se_nw = nw_loc - se_sft;
+            vec<float, 2> nw_se = se_loc - nw_sft;
 
             // Find the one with the minimum distance and make sure this distance is less than 2*getLR()
-            Vector<float, 6> pps; // point to point distances
+            vec<float, 6> pps; // point to point distances
             pps[0] = n_s.length();
             pps[1] = s_n.length();
             pps[2] = ne_sw.length();
@@ -2027,13 +2029,13 @@ namespace morph {
         }
 
         //! Deals with another kind of "colinear overlap".
-        Vector<float, 19> compute_overlap_colinear2 (const unsigned int _rotation)
+        vec<float, 19> compute_overlap_colinear2 (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) {std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n"; }
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
             morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
-            unit_60 = rotn * morph::Vector<float, 2>({ 0.5f, morph::mathconst<float>::root_3_over_2 });
+            unit_60 = rotn * morph::vec<float, 2>({ 0.5f, morph::mathconst<float>::root_3_over_2 });
             // Main parallelogram is defined by points p1, q1, q4.
             float ap1 = std::abs((p1-q4).dot(unit_60)) * this->getLR() / this->hexen.begin()->getArea();
             if constexpr (debug_hexshift) {
@@ -2046,13 +2048,13 @@ namespace morph {
             return rtn;
         }
         //! And the other 6 permutations of colinear overlap
-        Vector<float, 19> compute_overlap_colinear3 (const unsigned int _rotation)
+        vec<float, 19> compute_overlap_colinear3 (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called with rotation " << _rotation << "\n"; }
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
             morph::Matrix22<float> rotn = this->setup_hexoverlap_geometry (_rotation);
-            unit_120 = rotn * morph::Vector<float, 2>({ -0.5f, morph::mathconst<float>::root_3_over_2});
+            unit_120 = rotn * morph::vec<float, 2>({ -0.5f, morph::mathconst<float>::root_3_over_2});
             // Main parallelogram is defined by points p2, q2 and q3.
             float ap1 = std::abs((p2-q3).dot(unit_120)) * this->getLR() / this->hexen.begin()->getArea();
             if constexpr (debug_hexshift) {
@@ -2075,12 +2077,12 @@ namespace morph {
             float lr = this->getLR();
             morph::Matrix22<float> rotn;
             // hexvectors from centre to points:
-            morph::Vector<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
-            morph::Vector<float, 2> hv_n =  { 0, lr };
-            morph::Vector<float, 2> hv_nw = {-morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr};
-            morph::Vector<float, 2> hv_sw = {-morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
-            morph::Vector<float, 2> hv_s =  { 0, -lr };
-            morph::Vector<float, 2> hv_se = { morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
+            morph::vec<float, 2> hv_ne = { morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr };
+            morph::vec<float, 2> hv_n =  { 0, lr };
+            morph::vec<float, 2> hv_nw = {-morph::mathconst<float>::root_3_over_2 * lr, 0.5f * lr};
+            morph::vec<float, 2> hv_sw = {-morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
+            morph::vec<float, 2> hv_s =  { 0, -lr };
+            morph::vec<float, 2> hv_se = { morph::mathconst<float>::root_3_over_2 * lr, -0.5f * lr};
 
             switch (_rotation) {
             case 0:
@@ -2170,7 +2172,7 @@ namespace morph {
 
         // Like compute_overlap_far, but with one edge parallel to the east edge of the
         // base hex.
-        Vector<float, 19> compute_overlap_far2 (const unsigned int _rotation)
+        vec<float, 19> compute_overlap_far2 (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called\n"; }
 
@@ -2179,7 +2181,7 @@ namespace morph {
             // basis vectors
             unit_150 = { -morph::mathconst<float>::root_3_over_2, 0.5f };
             unit_60 = { 0.5f, morph::mathconst<float>::root_3_over_2 };
-            Vector<float, 2> uvh = {1.0f, 0.0f};
+            vec<float, 2> uvh = {1.0f, 0.0f};
 
             // Rotate 'em
             unit_60 = rotn * unit_60;
@@ -2195,7 +2197,7 @@ namespace morph {
             float t2 = 0.0f;
             float a2 = 0.0f;
 
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
 
             // Compute relevant intersections. After this, the computation is same as in
@@ -2224,7 +2226,7 @@ namespace morph {
 
             if (i5_to_right == false) {
                 // different set of points. i5 is the new i1
-                morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
+                morph::vec<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 a1_tl = p4;
                 a1_bl = q4;
                 // Also unit_150/unit_60 have to be swapped
@@ -2279,13 +2281,13 @@ namespace morph {
         // edge case. If the shift goes beyond this, the base hex is shifted by another
         // full hex in the r or g directions. This has one edge parallel to the NE edge
         // of the base hex.
-        Vector<float, 19> compute_overlap_far (const unsigned int _rotation)
+        vec<float, 19> compute_overlap_far (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called rotation " << _rotation << "\n"; }
 
             // We'll want a unit vector in the vertical direction that we can rotate
-            Vector<float, 2> uvv = {0.0f, 1.0f};
-            Vector<float, 2> uvh = {1.0f, 0.0f};
+            vec<float, 2> uvv = {0.0f, 1.0f};
+            vec<float, 2> uvh = {1.0f, 0.0f};
             // Unit vector in 60 degree direction
             unit_60 = {0.5f, morph::mathconst<float>::root_3_over_2};
             unit_300 = {0.5f, -morph::mathconst<float>::root_3_over_2};
@@ -2334,7 +2336,7 @@ namespace morph {
 
             if (i5_to_right == false) {
                 // different set of points. i5 is the new i1
-                morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
+                morph::vec<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 // uvv now has to reverse direction
                 uvv = -uvv;
                 // q4 is the new p2
@@ -2379,7 +2381,7 @@ namespace morph {
             float ov_area_prop = ((a1 + t1 + t2) * 2.0f + a2) / hex_area;
 
             // Store the overlap proportion in the return object
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
             rtn[2+_rotation] = ov_area_prop;
 
@@ -2400,13 +2402,13 @@ namespace morph {
          * increment. _rotation=0 means 0 degrees; _rotation=1 means 60 degrees
          * anticlockwise, and so on.
          */
-        Vector<float, 19> compute_overlap (const unsigned int _rotation)
+        vec<float, 19> compute_overlap (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called for rotation=" << _rotation << "\n"; }
 
             // We'll want a unit vector in the vertical direction that we can rotate
-            Vector<float, 2> uvv = {0.0f, 1.0f};
-            Vector<float, 2> uvh = {1.0f, 0.0f};
+            vec<float, 2> uvv = {0.0f, 1.0f};
+            vec<float, 2> uvh = {1.0f, 0.0f};
             // Unit vector in 60 degree direction
             unit_60 = {0.5f, morph::mathconst<float>::root_3_over_2};
             unit_300 = {0.5f, -morph::mathconst<float>::root_3_over_2};
@@ -2454,7 +2456,7 @@ namespace morph {
             if (i5_to_right == false) {
                 if constexpr (debug_hexshift) { std::cout << "to right is false, swapping stuff...\n"; }
                 // different set of points. i5 is the new i1
-                morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
+                morph::vec<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 // uvv/uvh now have to reverse direction
                 uvv = -uvv;
                 // q4 is the new p2
@@ -2499,7 +2501,7 @@ namespace morph {
             //std::cout << "Triangles and rectangles: " << ov_area_prop << "\n";
 
             // Store the overlap proportion in the return object
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
             rtn[0] = ov_area_prop;
 
@@ -2524,19 +2526,19 @@ namespace morph {
 
         // Similar to compute_overlap(), but slightly permuted. This is called when the
         // shifted hex overlaps on by 'one corner'.
-        Vector<float, 19> compute_overlap_corner (const unsigned int _rotation)
+        vec<float, 19> compute_overlap_corner (const unsigned int _rotation)
         {
             if constexpr (debug_hexshift) { std::cout << __FUNCTION__ << " called rotation: " << _rotation << "\n"; }
 
-            Vector<float, 19> rtn;
+            vec<float, 19> rtn;
             rtn.zero();
 
             // Unit vectors
-            Vector<float, 2> uvv = {0.0f, 1.0f};
-            Vector<float, 2> unit_240 = {-0.5f, -morph::mathconst<float>::root_3_over_2};
-            Vector<float, 2> unit_120 = { -0.5f, morph::mathconst<float>::root_3_over_2};
-            Vector<float, 2> unit_30 = { morph::mathconst<float>::root_3_over_2, 0.5f };
-            Vector<float, 2> unit_210 = { -morph::mathconst<float>::root_3_over_2, -0.5f };
+            vec<float, 2> uvv = {0.0f, 1.0f};
+            vec<float, 2> unit_240 = {-0.5f, -morph::mathconst<float>::root_3_over_2};
+            vec<float, 2> unit_120 = { -0.5f, morph::mathconst<float>::root_3_over_2};
+            vec<float, 2> unit_30 = { morph::mathconst<float>::root_3_over_2, 0.5f };
+            vec<float, 2> unit_210 = { -morph::mathconst<float>::root_3_over_2, -0.5f };
 
             // Hex long radius/edge length
             float lr = this->getLR();
@@ -2582,7 +2584,7 @@ namespace morph {
 
             if (i5_to_left == true) {
                 // different set of points. i5 is the new i1
-                morph::Vector<float, 2> tmp = i1; i1 = i5; i5 = tmp;
+                morph::vec<float, 2> tmp = i1; i1 = i5; i5 = tmp;
                 // uvv/uvh now have to reverse direction
                 // uvh = -uvh;  // uvv not reversed
                 // q4 is the new p2
