@@ -452,8 +452,11 @@ namespace morph {
         void setdata (const std::vector<Flt>& _abscissae,
                       const std::vector<Flt>& _data, const DatasetStyle& ds)
         {
-            std::cout << "abscissae size " << _abscissae.size() << " and data size: " << _data.size() << std::endl;
-            if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
+            if (_abscissae.size() != _data.size()) {
+                std::stringstream ee;
+                ee << "size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
+                throw std::runtime_error (ee.str());
+            }
 
             // Save data first
             if (ds.axisside == morph::axisside::left) {
@@ -653,6 +656,24 @@ namespace morph {
             this->abscissa_scale.range_max = this->width - _extra;
 
             this->thickness *= this->width;
+        }
+
+        // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
+        void zoomgraph (Flt factor)
+        {
+            float _w = this->width;
+            float _h = this->height;
+            this->setsize (_w*factor, _h*factor);
+
+            this->fontsize *= factor;
+            //this->fontres /= factor; // maybe
+            this->axislabelfontsize *= factor;
+
+            this->ticklabelgap *= factor;
+            this->axislabelgap *= factor;
+
+            this->ticklength *= factor;
+            this->axislinewidth *= factor;
         }
 
         //! Set manual limits for the x axis (abscissa)
@@ -961,7 +982,7 @@ namespace morph {
         void drawLegend()
         {
             size_t gd_size = this->graphDataCoords.size();
-            std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
+            //std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
