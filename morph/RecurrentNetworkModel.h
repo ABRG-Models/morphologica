@@ -620,7 +620,15 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog, v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                morph::HexGridVisual<float>* hgv1 = new HexGridVisual<float> (v.shaderprog, v.tshaderprog, domain.hg, offset);
+                hgv1->setScalarData (&fFlt);
+                hgv1->zScale = zscale;
+                hgv1->colourScale = scale;
+                hgv1->cm.setType (colourMap);
+                // How to do a label:
+                //hgv1->addLabel ("My label", { -0.2f, -1.4f, 0.01f }, morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+                hgv1->finalize();
+                v.addVisualModel (hgv1);
                 v.render();
                 v.render();
                 v.saveImage(fname);
@@ -655,7 +663,13 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog,v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                morph::HexGridVisual<float>* hgv1 = new HexGridVisual<float> (v.shaderprog, v.tshaderprog, domain.hg, offset);
+                hgv1->setScalarData (&fFlt);
+                hgv1->zScale = zscale;
+                hgv1->colourScale = scale;
+                hgv1->cm.setType (colourMap);
+                hgv1->finalize();
+                v.addVisualModel (hgv1);
                 v.render();
                 v.render();
                 v.saveImage(fname);

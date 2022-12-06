@@ -846,8 +846,8 @@ namespace morph {
         }
 
         //! Is the passed in coordinate within the graph axes (in the x sense, ignoring z)?
-        bool within_axes_x (morph::Vector<float>& dpt) { return (dpt[0] >= 0 && dpt[0] <= this->width); }
-        bool within_axes_y (morph::Vector<float>& dpt) { return (dpt[1] >= 0 && dpt[1] <= this->height); }
+        bool within_axes_x (morph::vec<float>& dpt) { return (dpt[0] >= 0 && dpt[0] <= this->width); }
+        bool within_axes_y (morph::vec<float>& dpt) { return (dpt[1] >= 0 && dpt[1] <= this->height); }
 
         //! dsi: data set iterator
         void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
@@ -1529,20 +1529,20 @@ namespace morph {
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
         //! A copy of the abscissa data values for ord1
-        morph::vVector<Flt> absc1;
+        morph::vvec<Flt> absc1;
         //! A copy of the abscissa data values for ord2
-        morph::vVector<Flt> absc2;
+        morph::vvec<Flt> absc2;
         //! A scaling for the first (left hand) ordinate
         morph::Scale<Flt> ord1_scale;
         //! A copy of the first (left hand) ordinate data values
-        morph::vVector<Flt> ord1;
+        morph::vvec<Flt> ord1;
         //! ds_ord1
         morph::DatasetStyle ds_ord1;
         morph::DatasetStyle ds_ord2;
         //! A scaling for the second (right hand) ordinate, if it's a twin axis graph
         morph::Scale<Flt> ord2_scale;
         //! A copy of the second (right hand) ordinate data values
-        morph::vVector<Flt> ord2;
+        morph::vvec<Flt> ord2;
         //! What's the scaling policy for the abscissa?
         morph::scalingpolicy scalingpolicy_x = morph::scalingpolicy::autoscale;
         //! If required, the abscissa's minimum/max data values

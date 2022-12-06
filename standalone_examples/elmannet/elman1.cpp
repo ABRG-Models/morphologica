@@ -1,12 +1,13 @@
 #include <morph/nn/ElmanNet.h>
 #include <iostream>
 #include <morph/Random.h>
+#include <morph/vvec.h>
 
 // Prepare XOR sequence (xs) and prediction sequence (ps). The XOR sequence is computed
 // as in Elman, 1990. Create two bits at random, then xor the bits to make the third
 // bit. Create another two bits at random and then insert the XOR of these as the sixth
 // bit. Repeat xs_trips times. The sequence ps[i] is simply the value of xs[i+1].
-void generateInput (size_t xs_trips, morph::vVector<float>& xs, morph::vVector<float>& ps, morph::vVector<float>& xl)
+void generateInput (size_t xs_trips, morph::vvec<float>& xs, morph::vvec<float>& ps, morph::vvec<float>& xl)
 {
     xs.resize (xs_trips*3, 0.0f);
     ps.resize (xs_trips*3, 0.0f);
@@ -81,11 +82,11 @@ int main()
     // Number of 'triplets' in the XOR sequence (triplet comprises 'in', 'in' and 'correct out' bits.
     size_t xs_trips = 1000;
     // The XOR sequence container
-    morph::vVector<float> xs;
+    morph::vvec<float> xs;
     // The prediction sequence container - to reproduce Elman 1990, Fig. 3
-    morph::vVector<float> ps;
+    morph::vvec<float> ps;
     // The result of XORing the last two bits each time - to verify that trained Elman net implements XOR
-    morph::vVector<float> xl;
+    morph::vvec<float> xl;
     // populate xs, ps and xl:
     generateInput (xs_trips, xs, ps, xl);
 
@@ -94,7 +95,7 @@ int main()
     // computed by the backprop into this container 'gradients'. For each std::pair in
     // gradients, 'first' is nabla_w and 'second' is nabla_b (there are as many pairs as
     // there are connections in el1).
-    std::vector<std::pair<std::vector<morph::vVector<float>>, morph::vVector<float>>> gradients;
+    std::vector<std::pair<std::vector<morph::vvec<float>>, morph::vvec<float>>> gradients;
     for (auto& c : el1.connections) { gradients.push_back (std::make_pair(c.nabla_ws, c.nabla_b)); }
 
     //
@@ -102,8 +103,8 @@ int main()
     //
 
     // Containers to pass as input and desired output. Values from xs and ps are copied into these, shorter vectors.
-    morph::vVector<float> input = {1};
-    morph::vVector<float> des_output = {1};
+    morph::vvec<float> input = {1};
+    morph::vvec<float> des_output = {1};
     // For each epoch run through the length of xs/ps
     for (size_t ep = 0; ep<epochs; ++ep) {
         for (size_t i = 0; i < xs.size(); ++i) {
@@ -164,14 +165,14 @@ int main()
     // Create 2 more truly random binary strings for testing/debug
     morph::RandUniform<unsigned char> brng(0,1);
     // Random string 1
-    morph::vVector<float> rs1;
+    morph::vvec<float> rs1;
     rs1.resize(eval_elements);
     for (auto& r : rs1) {
         unsigned char rn = brng.get();
         r = rn > 0 ? 1.0f : 0.0f;
     }
     // Random string 2
-    morph::vVector<float> rs2;
+    morph::vvec<float> rs2;
     rs2.resize(eval_elements);
     for (auto& r : rs2) {
         unsigned char rn = brng.get();
@@ -179,8 +180,8 @@ int main()
     }
 
     // Containers for the results
-    morph::vVector<float> costs(graph_cycles, 0.0f);
-    morph::vVector<float> randcosts(graph_cycles, 0.0f);
+    morph::vvec<float> costs(graph_cycles, 0.0f);
+    morph::vvec<float> randcosts(graph_cycles, 0.0f);
 
     for (size_t i = 0; i < eval_elements; ++i) {
         // Set the new input and desired output

@@ -10,7 +10,7 @@
 #include <morph/Mnist.h>
 #include <morph/Random.h>
 #include <morph/nn/FeedForwardNet.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <fstream>
 #include <vector>
 #include <utility>
@@ -23,8 +23,8 @@ int main()
     std::cout << ff1 << std::endl;
 
     // 5 data points from the function I want to find. This converts a quadratic input to a ~linear output
-    std::vector<morph::vVector<float>> ins = {{0.05, 0.0025}, {0.2, 0.04}, {0.4, 0.16}, {0.6, 0.36}, {0.8, 0.64}};
-    std::vector<morph::vVector<float>> outs = {{0.8, 0.95}, {0.6, 0.7}, {0.4, 0.5}, {0.2, 0.2}, {0.05, 0.05}};
+    std::vector<morph::vvec<float>> ins = {{0.05, 0.0025}, {0.2, 0.04}, {0.4, 0.16}, {0.6, 0.36}, {0.8, 0.64}};
+    std::vector<morph::vvec<float>> outs = {{0.8, 0.95}, {0.6, 0.7}, {0.4, 0.5}, {0.2, 0.2}, {0.05, 0.05}};
 
     // main loop, while m.training_f has values in:
     unsigned int epochs = 2000; // Here, an epoch is a run through each batch of 5 in/outs.
@@ -35,7 +35,7 @@ int main()
     // Accumulate the dC/dw and dC/db values in graidents. for each pair, the first
     // is nabla_w the second is nabla_b. There are as many pairs as there are
     // connections in ff1.
-    std::vector<std::pair<morph::vVector<float>, morph::vVector<float>>> mean_gradients;
+    std::vector<std::pair<morph::vvec<float>, morph::vvec<float>>> mean_gradients;
     // Init mean gradients
     for (auto& c : ff1.connections) {
         mean_gradients.push_back (std::make_pair(c.nabla_ws[0], c.nabla_b));
@@ -61,8 +61,8 @@ int main()
         for (unsigned int mb = 0; mb < mini_batch_size; ++mb) {
 
             // Note: NOT stochastic!
-            morph::vVector<float> thein = ins[mb];
-            morph::vVector<float> theout = outs[mb];
+            morph::vvec<float> thein = ins[mb];
+            morph::vvec<float> theout = outs[mb];
 
             ff1.setInput (thein, theout);
             ff1.feedforward();

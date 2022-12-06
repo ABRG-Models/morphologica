@@ -3,7 +3,7 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/VisualDataModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 // basic model class
 template<class Flt>
@@ -75,7 +75,7 @@ int main(int argc, char **argv){
         std::vector<float> Y(1,0);
 
         // add a graph
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, morph::Vector<float>{-graph_offset,-graph_offset,0.0f});
+        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, morph::vec<float>{-graph_offset,-graph_offset,0.0f});
         morph::DatasetStyle ds;
         ds.linewidth = 0.01;
         ds.linecolour = {0.0, 0.0, 0.0};
@@ -128,4 +128,3 @@ int main(int argc, char **argv){
 
         return 0.;
 }
-
