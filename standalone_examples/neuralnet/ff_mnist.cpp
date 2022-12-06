@@ -8,7 +8,7 @@
 #include <morph/Mnist.h>
 #include <morph/Random.h>
 #include <morph/nn/FeedForwardNet.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <fstream>
 #include <vector>
 #include <map>
@@ -34,7 +34,7 @@ int main()
     // Accumulate the dC/dw and dC/db values in gradients. for each pair, the first is
     // nabla_w the second is nabla_b. There are as many pairs as there are connections
     // in ff1. Here, we declare an initialize mean_gradients
-    std::vector<std::pair<morph::vVector<float>, morph::vVector<float>>> mean_gradients;
+    std::vector<std::pair<morph::vvec<float>, morph::vvec<float>>> mean_gradients;
     for (auto& c : ff1.connections) {
         mean_gradients.push_back (std::make_pair(c.nabla_ws[0], c.nabla_b));
     }
@@ -49,7 +49,7 @@ int main()
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 
         // At start of epoch, make a copy of the training data:
-        std::multimap<unsigned char, morph::vVector<float>> training_f = m.training_f;
+        std::multimap<unsigned char, morph::vvec<float>> training_f = m.training_f;
 
         unsigned int jj = training_f.size()/mini_batch_size;
         for (unsigned int j = 0; j < jj; ++j) {
@@ -75,8 +75,8 @@ int main()
                     }
                 }
                 unsigned int key = static_cast<unsigned int>(t_iter->first);
-                morph::vVector<float> thein = t_iter->second;
-                morph::vVector<float> theout(10);
+                morph::vvec<float> thein = t_iter->second;
+                morph::vvec<float> theout(10);
                 theout.zero();
                 theout[key] = 1.0f;
                 training_f.erase (t_iter);
