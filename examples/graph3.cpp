@@ -5,8 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/GraphVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -23,7 +22,7 @@ int main (int argc, char** argv)
     v.lightingEffects();
 
     try {
-        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+        morph::vvec<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
 
         float step = 1.4f;
         float row2 = 1.2f;
@@ -31,7 +30,7 @@ int main (int argc, char** argv)
         morph::DatasetStyle ds;
 
         morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
-        morph::vVector<float> data = absc.pow(3);
+        morph::vvec<float> data = absc.pow(3);
 
         ds.linecolour =  {1.0, 0.0, 0.0};
         ds.linewidth = 0.015f;
@@ -52,7 +51,7 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
-        morph::vVector<float> data2 = absc.pow(2);
+        morph::vvec<float> data2 = absc.pow(2);
         ds.linecolour = {0.0, 0.0, 1.0};
         ds.markerstyle = morph::markerstyle::hexagon;
         ds.markercolour = {0.0, 0.0, 0.0};
@@ -65,7 +64,7 @@ int main (int argc, char** argv)
         v.addVisualModel (static_cast<morph::VisualModel*>(gv));
 
         gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-row2,0});
-        morph::vVector<float> data3 = absc.pow(4);
+        morph::vvec<float> data3 = absc.pow(4);
         gv->setsize (1,0.8);
         ds.linecolour = {0.0, 1.0, 0.0};
         ds.markerstyle = morph::markerstyle::circle;
@@ -86,7 +85,7 @@ int main (int argc, char** argv)
         for (int i = 0; i < 1000; ++i) {
             absc[i] = static_cast<float>(i-500) * 0.01f;
         }
-        morph::vVector<float> data4 = absc.pow(5);
+        morph::vvec<float> data4 = absc.pow(5);
         gv->setsize (1,0.8);
         ds.linecolour = {0.0, 0.0, 1.0};
         ds.markerstyle = morph::markerstyle::none;

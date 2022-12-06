@@ -14,7 +14,7 @@
 #include <list>
 #include <sstream>
 #include <iostream>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <morph/nn/FeedForwardConn.h>
 
 namespace morph {
@@ -36,7 +36,7 @@ namespace morph {
                 // Set up initial conditions
                 for (unsigned int nn = 0; nn < n_layers; ++nn) {
                     // Create, and zero, a layer containing nn neurons:
-                    morph::vVector<T> lyr(layer_spec[nn]);
+                    morph::vvec<T> lyr(layer_spec[nn]);
                     lyr.zero();
 
                     // Add the layer to this->neurons
@@ -56,7 +56,7 @@ namespace morph {
 
                         //std::cout << "New connection " << nn << std::endl;
                         // Combine two inputs if this is not a connection to the output layer
-                        std::vector<morph::vVector<T>*> _inputs;
+                        std::vector<morph::vvec<T>*> _inputs;
                         _inputs.push_back (&*lm1); // The neuron 'layer minus one'
                         //std::cout << " with input " << *lm1 << std::endl;
                         if (nn < (n_layers-1)) {
@@ -99,8 +99,8 @@ namespace morph {
             void feedforward()
             {
                 // Step 1, feed back the context results from the last run into the contextNeuron layers
-                typename std::list<morph::vVector<T>>::iterator cni = contextNeurons.begin();
-                typename std::list<morph::vVector<T>>::iterator ni = neurons.begin();
+                typename std::list<morph::vvec<T>>::iterator cni = contextNeurons.begin();
+                typename std::list<morph::vvec<T>>::iterator ni = neurons.begin();
                 ++ni; // skip first neuron layer
                 while (cni != contextNeurons.end()) {
                     if (ni == neurons.end()) { throw std::runtime_error ("Not enough neuron layers"); }
@@ -120,8 +120,8 @@ namespace morph {
 
             //! A function which shows the difference between the network output and
             //! desiredOutput for debugging
-            void evaluate (const std::vector<morph::vVector<float>>& ins,
-                           const std::vector<morph::vVector<float>>& outs)
+            void evaluate (const std::vector<morph::vvec<float>>& ins,
+                           const std::vector<morph::vvec<float>>& outs)
             {
                 auto op = outs.begin();
                 for (auto ir : ins) {
@@ -149,7 +149,7 @@ namespace morph {
                 //
                 // delta^l = w^l+1 . delta^l+1 0 sigma_prime (z^l)
                 //
-                // (where 0 signifies hadamard product, as implemented by vVector's operator*)
+                // (where 0 signifies hadamard product, as implemented by vvec's operator*)
                 // delta = dC_x/da() * sigmoid_prime(z_out)
                 auto citer = this->connections.end();
                 --citer; // Now points at output layer
@@ -163,7 +163,7 @@ namespace morph {
             }
 
             //! Set up an input along with desired output
-            void setInput (const morph::vVector<T>& theInput, const morph::vVector<T>& theOutput)
+            void setInput (const morph::vvec<T>& theInput, const morph::vvec<T>& theOutput)
             {
                 *(this->neurons.begin()) = theInput;
                 // Set each context layer to 0.5, initially
@@ -179,7 +179,7 @@ namespace morph {
                 // Here is where we compute delta_out:
                 this->delta_out = (this->neurons.back()-desiredOutput) * (this->connections.back().sigmoid_prime_z_lplus1());
                 // And the cost:
-                morph::vVector<T> prediction = this->neurons.back();
+                morph::vvec<T> prediction = this->neurons.back();
                 // Want the prediction error, which is either correct or incorrect.
                 for (auto& p : prediction) {
                     p = p > T{0.5} ? T{1} : T{0};
@@ -197,22 +197,22 @@ namespace morph {
             T cost = T{0};
 
             //! A variable number of neuron layers, each of variable size. NB: get
-            //! memory errors if this is an std::vector of morph::vVectors. Don't know why.
-            std::list<morph::vVector<T>> neurons;
+            //! memory errors if this is an std::vector of morph::vvecs. Don't know why.
+            std::list<morph::vvec<T>> neurons;
 
             //! Context neuron layers - those that are fed back to. This size of this vector is
             //! neurons.size()-2 - that is there is one context layer for each hidden layer in
             //! the feedforward stack.
-            std::list<morph::vVector<T>> contextNeurons;
+            std::list<morph::vvec<T>> contextNeurons;
 
             //! Connections. There should be neurons.size()-1 connection layers:
             std::list<morph::nn::FeedForwardConn<T>> connections;
 
             //! The error (dC/dz) of the output layer
-            morph::vVector<T> delta_out;
+            morph::vvec<T> delta_out;
 
             //! The desired output of the network
-            morph::vVector<T> desiredOutput;
+            morph::vvec<T> desiredOutput;
         };
 
         template <typename T>

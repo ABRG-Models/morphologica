@@ -42,7 +42,7 @@
 # include <morph/ColourMap.h>
 # include <morph/VisualDataModel.h>
 # include <morph/Scale.h>
-# include <morph/Vector.h>
+# include <morph/vec.h>
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const std::string& logpath, const std::string& name,
@@ -76,7 +76,7 @@ using morph::ColourMap;
 using morph::ColourMapType;
 using morph::VisualDataModel;
 using morph::Scale;
-using morph::Vector;
+using morph::vec;
 #endif
 using morph::Config;
 using morph::Tools;
@@ -267,7 +267,7 @@ int main (int argc, char **argv)
     // Before starting the simulation, create the HexGridVisuals.
 
     // Spatial offset, for positioning of HexGridVisuals
-    Vector<float> spatOff;
+    vec<float> spatOff;
     float xzero = 0.0f;
 
     // A. Offset in x direction to the left.

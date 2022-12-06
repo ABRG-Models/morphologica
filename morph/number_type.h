@@ -37,11 +37,11 @@ namespace is_resizable_vector_impl {
 }
 
 #include <array>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 namespace is_fixedsize_vector_impl {
     template <typename T>                struct is_fixedsize_vector:std::false_type{};
     template <typename T, std::size_t N> struct is_fixedsize_vector<std::array<T,N>>        : std::true_type {};
-    template <typename T, std::size_t N> struct is_fixedsize_vector<morph::Vector<T,N>>     : std::true_type {};
+    template <typename T, std::size_t N> struct is_fixedsize_vector<morph::vec<T,N>>     : std::true_type {};
     //template <typename T>                struct is_fixedsize_vector<std::pair<T,T>>      : std::true_type {}; // 2D vector
 }
 #endif

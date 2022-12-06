@@ -4,8 +4,8 @@
  * near 1.
  */
 
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Random.h>
 #include <morph/histo.h>
 #include <morph/Visual.h>
@@ -18,7 +18,7 @@ int main()
     static constexpr size_t n = 2;
 
     // Create N normalized vectors at random.
-    morph::vVector<morph::Vector<float, n>> vVecs(N);
+    morph::vvec<morph::vec<float, n>> vVecs(N);
     morph::RandUniform<float> rn_u(-1.0f, 1.0f);
     morph::RandNormal<float> rn_n(1.0f, 0.06f);
     for (size_t i = 0; i < N; ++i) {
@@ -32,7 +32,7 @@ int main()
     }
 
     // Get scalar products between pairs
-    morph::vVector<float> sp (N/n);
+    morph::vvec<float> sp (N/n);
     for (size_t i = 0; i < N/n; ++i) { sp[i] = vVecs[i].dot (vVecs[i+N/n]); } // No good for n!=2
 
     // Make a histogram of the scalar product pairs

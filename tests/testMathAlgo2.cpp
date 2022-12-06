@@ -2,7 +2,7 @@
 #include <iostream>
 #include <queue>
 #include <list>
-#include "morph/Vector.h"
+#include "morph/vec.h"
 
 using namespace morph;
 using namespace std;
@@ -87,8 +87,8 @@ int main()
     vector<float> cen2 = MathAlgo::centroid (vvf);
     cout << "centroid (" << cen2[0] << "," << cen2[1] << "," << cen2[2] << ")" << endl;
 
-    Vector<float> Vf1 = {0,0,0};
-    vector<Vector<float>> vVec3;
+    vec<float> Vf1 = {0,0,0};
+    vector<vec<float>> vVec3;
     Vf1.randomize();
     vVec3.push_back (Vf1);
     Vf1.randomize();
@@ -97,8 +97,8 @@ int main()
     vVec3.push_back (Vf1);
     Vf1.randomize();
     vVec3.push_back (Vf1);
-    Vector<float> cen3 = MathAlgo::centroid (vVec3);
-    cout << "Centroid of vector of Vector<float> = " << cen3 << endl;
+    vec<float> cen3 = MathAlgo::centroid (vVec3);
+    cout << "Centroid of vector of vec<float> = " << cen3 << endl;
 
     list<int> li;
     li.push_back(2);

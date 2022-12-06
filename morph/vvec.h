@@ -1,14 +1,14 @@
 /*!
  * \file
- * \brief An N dimensional vector class template which derives from std::array.
+ * \brief An N dimensional vector class template, morph::vvec which derives from std::vector.
  *
- * \author Seb James (with thanks to Konrad Rudolph and Miguel Avila for code review)
- * \date April 2020
+ * \author Seb James
+ * \date May 2020
  */
 #pragma once
 
 #include <cmath>
-#include <array>
+#include <vector>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -24,177 +24,171 @@
 namespace morph {
 
     /*!
-     * \brief N-D vector class
+     * \brief N-D vector class deriving from std::vector
      *
-     * An N dimensional vector class template which derives from std::array. Vector
+     * An N dimensional vector class template which derives from std::vector. Its
      * components are of scalar type S. It is anticipated that S will be set either to
      * floating point scalar types such as float or double, or to integer scalar types
      * such as int, long long int and so on. Thus, a typical (and in fact, the default)
      * signature would be:
      *
-     * Vector<float, 3> v;
+     *\code{.cpp}
+     * vvec<float> v(3);
+     *\endcode
      *
-     * The class inherits std:array's fixed-size array of memory for storing the
-     * components of the vector. It adds numerous methods which allow objects of type
-     * Vector to have arithmetic operations applied to them, either scalar (add a scalar
-     * to all elements; divide all elements by a scalar, etc) or vector (including dot
-     * and cross products, normalization and so on.
+     * The class inherits std::vector's dynamically-resizeable memory for storing the
+     * components of the vector and std::vector's constructors.. It adds numerous
+     * methods which allow objects of type vvec to have arithmetic operations applied
+     * to them, either scalar (add a scalar to all elements; divide all elements by a
+     * scalar, etc) or vector (including dot and cross products, normalization and so
+     * on.
      *
-     * Because morph::Vector extends std::array, it works best when compiled with a
-     * c++-17 compiler (although it can be compiled with a c++-11 compiler). This is
-     * because std::array is an 'aggregate class' with no user-provided constructors,
-     * and morph::Vector does not add any of its own constructors. Prior to c++-17,
-     * aggregate classes were not permitted to have base classes. So, if you want to do:
-     *
-     * Vector<float, 3> v = { 1.0f , 1.0f, 1.0f };
-     *
-     * You need c++-17. Otherwise, restrict your client code to doing:
-     *
-     * Vector<float, 3> v;
-     * v[0] = 1.0f; v[1] = 1.0f; v[2] = 1.0f;
+     * This class is better for writing neural networks than morph::vec, whose size
+     * has to be set at compile time.
      */
-    template <typename S, size_t N> struct Vector;
+    template <typename S, typename Al> struct vvec;
 
     /*!
      * Template friendly mechanism to overload the stream operator.
      *
-     * Note forward declaration of the Vector template class and this template for
+     * Note forward declaration of the vvec template class and this template for
      * stream operator overloading. Example adapted from
      * https://stackoverflow.com/questions/4660123
      */
-    template <typename S, size_t N> std::ostream& operator<< (std::ostream&, const Vector<S, N>&);
+    template <typename S, typename Al> std::ostream& operator<< (std::ostream&, const vvec<S, Al>&);
 
-    template <typename S=float, size_t N=3>
-    struct Vector : public std::array<S, N>
+    template <typename S=float, typename Al=std::allocator<S>>
+    struct vvec : public std::vector<S, Al>
     {
+        //! We inherit std::vector's constructors like this:
+        using std::vector<S, Al>::vector;
+
         //! \return the first component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
         S x() const { return (*this)[0]; }
         //! \return the second component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
         S y() const { return (*this)[1]; }
         //! \return the third component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
         S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
         S w() const { return (*this)[3]; }
 
-        //! Set data members from an std::vector
+        //! Set data members from an std::vector (by copying)
         template <typename _S=S>
         void set_from (const std::vector<_S>& vec)
         {
-            if (vec.size() != N) {
-                throw std::runtime_error ("Vector::set_from(): Ensure vector sizes match");
-            }
+            this->resize(vec.size());
             std::copy (vec.begin(), vec.end(), this->begin());
         }
 
-        //! Set data members from an array the of same size and type.
-        template <typename _S=S>
+        //! Set data members from an std::array, matching the size of the array first.
+        template <typename _S=S, size_t N>
         void set_from (const std::array<_S, N>& ar)
         {
+            this->resize(N);
             std::copy (ar.begin(), ar.end(), this->begin());
         }
 
-        /*!
-         * Set the data members of this Vector from the passed in, larger array, \a ar,
-         * ignoring the last element of \a ar. Used when working with 4D vectors in
-         * graphics applications involving 4x4 transform matrices.
-         */
-        template <typename _S=S>
-        void set_from (const std::array<_S, (N+1)>& ar)
-        {
-            // Don't use std::copy here, because ar has more elements than *this.
-            for (size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
-        }
-
-        /*!
-         * Set the data members of this Vector from the passed in, smaller array, \a ar,
-         * ignoring the last element of this vector (which is set to 0). Used when
-         * working with 2D vectors that you want to visualise in a 3D environment with
-         * z set to 0.
-         */
-        template <typename _S=S>
-        void set_from (const std::array<_S, (N-1)>& ar)
-        {
-            // Don't use std::copy here, because ar has more elements than *this.
-            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
-            (*this)[N-1] = S{0};
-        }
-
-        /*!
-         * Set an N D Vector from an N+1 D Vector. Intended to convert 4D vectors (that
-         * have been operated on by 4x4 matrices) into 3D vectors.
-         */
-        template <typename _S=S>
-        void set_from (const Vector<_S, (N+1)>& v)
-        {
-            for (size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
-        }
-
-        //! Set an N D Vector from an (N-1) D Vector.
-        template <typename _S=S>
-        void set_from (const Vector<_S, (N-1)>& v)
-        {
-            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
-            (*this)[N-1] = S{0};
-        }
-
-        //! Set all elements from the value type v
+        //! Set all elements from the value type v. Same as vvec::set
         template <typename _S=S>
         void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
-         * Set a linear sequence into the vector from value start to value stop. Uses
-         * the Vector's size to determine how many values to create. You *can* use this
-         * with integer types, but be prepared to notice strange rounding errors.
+         * Set the data members of this vvec from the passed in, larger array, \a ar,
+         * ignoring the last element of \a ar. Used when working with 4D vectors in
+         * graphics applications involving 4x4 transform matrices.
          */
-        template <typename _S=S, typename _S2=S>
-        void linspace (const _S start, const _S2 stop)
+        template <typename _S=S>
+        void set_from_onelonger (const std::vector<_S>& v)
         {
-            S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
-            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+            if (v.size() == (this->size()+1)) {
+                for (size_t i = 0; i < this->size(); ++i) {
+                    (*this)[i] = v[i];
+                }
+            } // else do nothing?
+        }
+
+        /*!
+         * Set the data members of this vvec from the passed in, larger array, \a ar,
+         * ignoring the last element of \a ar. Used when working with 4D vectors in
+         * graphics applications involving 4x4 transform matrices.
+         */
+        template <typename _S=S, size_t N>
+        void set_from_onelonger (const std::array<_S, N>& v)
+        {
+            if ((this->size()+1) == N) {
+                for (size_t i = 0; i < this->size(); ++i) {
+                    (*this)[i] = v[i];
+                }
+            } // else do nothing?
         }
 
         //! Return a vector with one less dimension - losing the last one.
-        Vector<S, N-1> less_one_dim () const
+        vvec<S> less_one_dim () const
         {
-            Vector<S, N-1> rtn;
+            size_t N = this->size();
+            vvec<S> rtn(N-1);
             for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
             return rtn;
         }
 
         //! Return a vector with one additional dimension - setting it to 0.
-        Vector<S, N+1> plus_one_dim () const
+        vvec<S> plus_one_dim () const
         {
-            Vector<S, N+1> rtn;
+            size_t N = this->size();
+            vvec<S> rtn(N+1);
             for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
             rtn[N] = S{0};
             return rtn;
         }
 
-        //! Return this Vector in single precision, float format
-        Vector<float, N> as_float() const
+        //! Return this vvec in single precision, float format
+        vvec<float> as_float() const
         {
-            Vector<float, N> v;
-            v.zero();
-            v += *this;
-            return v;
+            vvec<float> vv(this->size(), 0.0f);
+            vv += *this;
+            return vv;
         }
 
-        //! Return this Vector in double precision, float format
-        Vector<double, N> as_double() const
+        //! Return this vvec in double precision format
+        vvec<double> as_double() const
         {
-            Vector<double, N> v;
-            v.zero();
-            v += *this;
-            return v;
+            vvec<double> vv(this->size(), 0.0);
+            vv += *this;
+            return vv;
+        }
+
+        /*!
+         * Set an N-D vvec from an N+1 D vvec. Intended to convert 4D vectors (that
+         * have been operated on by 4x4 matrices) into 3D vectors.
+         */
+        template <typename _S=S>
+        void set_from_onelonger (const vvec<_S>& v)
+        {
+            if (v.size() == (this->size()+1)) {
+                for (size_t i = 0; i < this->size(); ++i) {
+                    (*this)[i] = v[i];
+                }
+            } // else do nothing?
+        }
+
+        /*!
+         * Set a linear sequence into the vector from value start to value stop. If
+         * num>0 then resize the vector first, otherwise use the vvec's current
+         * size. You *can* use this with integer types, but be prepared to notice odd
+         * rounding errors.
+         */
+        template <typename _S=S, typename _S2=S>
+        void linspace (const _S start, const _S2 stop, const size_t num=0)
+        {
+            if (num > 0) { this->resize (num); }
+            S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (this->size()-1);
+            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
         //! Stream the coordinates of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
         {
+            if (this->empty()) { return; }
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
             for (auto i : *this) {
@@ -232,8 +226,10 @@ namespace morph {
             return ss.str();
         }
 
-        //! Output the vector in a form suitable to paste into Python, as a numpy
-        //! vector, assuming you imported numpy as np
+        /*!
+         * Output the vector in a form suitable to paste into Python, as a numpy vector,
+         * assuming you imported numpy as np
+         */
         std::string str_numpy() const
         {
             std::stringstream ss;
@@ -256,33 +252,6 @@ namespace morph {
             }
         }
 
-        /*!
-         * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
-         * swapping x and y in a 2D Vector.
-         */
-        void rotate()
-        {
-            if constexpr (N>1) {
-                S z_el = (*this)[0];
-                for (size_t i = 1; i < N; ++i) {
-                    (*this)[i-1] = (*this)[i];
-                }
-                (*this)[N-1] = z_el;
-            } // else no op
-        }
-
-        //! If N is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
-        void rotate_pairs()
-        {
-            static_assert ((N%2==0), "N must be even to call morph::Vector::rotate_pairs");
-            S tmp_el = S{0};
-            for (size_t i = 0; i < N; i+=2) {
-                tmp_el = (*this)[i];
-                (*this)[i] = (*this)[i+1];
-                (*this)[i+1] = tmp_el;
-            }
-        }
-
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
@@ -298,7 +267,7 @@ namespace morph {
         void randomize()
         {
             RandUniform<S> ru;
-            ru.get (*this);
+            for (auto& i : *this) { i = ru.get(); }
         }
 
         /*!
@@ -311,7 +280,7 @@ namespace morph {
         void randomize (S min, S max)
         {
             RandUniform<S> ru (min, max);
-            ru.get (*this);
+            for (auto& i : *this) { i = ru.get(); }
         }
 
         /*!
@@ -324,7 +293,37 @@ namespace morph {
         void randomizeN (S _mean, S _sd)
         {
             RandNormal<S> rn (_mean, _sd);
-            rn.get (*this);
+            for (auto& i : *this) { i = rn.get(); }
+        }
+
+        /*!
+         * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
+         * swapping x and y in a 2D vector.
+         */
+        void rotate()
+        {
+            if (this->size() > 1) {
+                S z_el = (*this)[0];
+                for (size_t i = 1; i < this->size(); ++i) {
+                    (*this)[i-1] = (*this)[i];
+                }
+                (*this)[this->size()-1] = z_el;
+            } // else no op
+        }
+
+        //! If size is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
+        void rotate_pairs()
+        {
+            size_t N = this->size();
+            if (N%2!=0) {
+                throw std::runtime_error ("vvec size must be even to call morph::vvec::rotate_pairs");
+            }
+            S tmp_el = S{0};
+            for (size_t i = 0; i < N; i+=2) {
+                tmp_el = (*this)[i];
+                (*this)[i] = (*this)[i+1];
+                (*this)[i+1] = tmp_el;
+            }
         }
 
         /*!
@@ -332,7 +331,6 @@ namespace morph {
          *
          * \return true if the length of the vector is 1.
          */
-        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         bool checkunit() const
         {
             /*!
@@ -340,7 +338,7 @@ namespace morph {
              *
              * The threshold outside of which the vector is no longer considered to be a
              * unit vector. Note this is hard coded as a constexpr, to avoid messing with
-             * the initialization of the Vector with curly brace initialization.
+             * the initialization of the vvec with curly brace initialization.
              *
              * Clearly, this will be the wrong threshold for some cases. Possibly, a
              * template parameter could set this; so size_t U could indicate the threshold;
@@ -350,10 +348,10 @@ namespace morph {
              * numeric_limits<S>::epsilon and find out what multiple of epsilon would make
              * sense.
              */
-            static constexpr _S unitThresh = _S{0.001};
+            static constexpr S unitThresh = 0.001;
 
-            auto subtract_squared = [](_S a, _S b) { return static_cast<_S>(a - b * b); };
-            const _S metric = std::accumulate (this->begin(), this->end(), _S{1}, subtract_squared);
+            auto subtract_squared = [](S a, S b) { return a - b * b; };
+            const S metric = std::accumulate (this->begin(), this->end(), S{1}, subtract_squared);
             if (std::abs(metric) > unitThresh) {
                 return false;
             }
@@ -368,26 +366,38 @@ namespace morph {
         S length() const
         {
             auto add_squared = [](S a, S b) { return a + b * b; };
-            // Add check on whether S is integral or float. If integral, then std::round then cast the result of std::sqrt()
-            if constexpr (std::is_integral<std::decay_t<S>>::value == true) {
-                const S len = static_cast<S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared))));
-                return len;
-            } else {
-                const S len = std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared));
-                return len;
-            }
+            const S len = std::sqrt (std::accumulate (this->begin(), this->end(), S{0}, add_squared));
+            return len;
         }
 
         /*!
-         * Find the squared length of the vector.
+         * Find the squared length of the vector which is the same as the sum of squared
+         * elements, if elements are scalar.
          *
-         * \return the square of the length
+         * \return the length squared
          */
         S length_sq() const
         {
             auto add_squared = [](S a, S b) { return a + b * b; };
             const S len_sq = std::accumulate (this->begin(), this->end(), S{0}, add_squared);
             return len_sq;
+        }
+
+        /*!
+         * Return the sum of the squares of the elements. If S typed elements are
+         * morph::vecs or morph::vvecs, then return the sum of the squares of the
+         * lengths of the elements in the zeroth element of the return S type.
+         */
+        S sos() const
+        {
+            S _sos = S{0};
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                _sos = this->length_sq();
+            } else {
+                // S is a vector so i is a vector.
+                for (auto& i : *this) { _sos[0] += i.length_sq(); }
+            }
+            return _sos;
         }
 
         //! Return the value of the longest component of the vector.
@@ -424,11 +434,14 @@ namespace morph {
             return rtn;
         }
 
-        //! Return the index of the shortest component of the vector.
+        /*!
+         * Return the index of the shortest component of the vector. If this is a vector
+         * of vectors, then return the index of the shortest vector.
+         */
         size_t argshortest() const
         {
             size_t idx = 0;
-            // Check on the type S. If S is a Vector thing, then abs_compare needs to be different.
+            // Check on the type S. If S is a vector thing, then abs_compare needs to be different.
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
                 auto theshortest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -445,8 +458,7 @@ namespace morph {
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
-            S rtn = *themax;
-            return rtn;
+            return themax == this->end() ? S{0} : *themax;
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
@@ -461,8 +473,7 @@ namespace morph {
         S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
-            S rtn = *themin;
-            return rtn;
+            return themin == this->end() ? S{0} : *themin;
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
@@ -472,6 +483,14 @@ namespace morph {
             size_t idx = (themin - this->begin());
             return idx;
         }
+
+        //! Perform element-wise max. For each element, if val is the maximum, the element becomes val.
+        template <typename _S=S>
+        void max_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::max (i, val); } }
+
+        //! Perform element-wise min. For each element, if val is the minimum, the element becomes val.
+        template <typename _S=S>
+        void min_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::min (i, val); } }
 
         //! Return true if any element is zero
         bool has_zero() const
@@ -515,97 +534,97 @@ namespace morph {
             return sum / this->size();
         }
 
+        //! Return the variance of the elements
+        S variance() const
+        {
+            if (this->empty()) { return S{0}; }
+            S _mean = this->mean();
+            S sos_deviations = S{0};
+            for (S val : *this) {
+                sos_deviations += ((val-_mean)*(val-_mean));
+            }
+            S variance = sos_deviations / (this->size()-1);
+            return variance;
+        }
+
+        //! Return the standard deviation of the elements
+        S std() const
+        {
+            if (this->empty()) { return S{0}; }
+            return std::sqrt (this->variance());
+        }
+
         //! Return the sum of the elements
-        S sum() const { return std::accumulate (this->begin(), this->end(), S{0}); }
+        S sum() const
+        {
+            return std::accumulate (this->begin(), this->end(), S{0});
+        }
 
         //! Return the product of the elements
         S product() const
         {
-            auto _product = [](S a, S b) mutable -> S { return a ? a * b : b; };
+            auto _product = [](S a, S b) mutable { return a ? a * b : b; };
             return std::accumulate (this->begin(), this->end(), S{0}, _product);
         }
 
         /*!
          * Compute the element-wise pth power of the vector
          *
-         * \return a Vector whose elements have been raised to the power p
+         * \return a vvec whose elements have been raised to the power p
          */
-        Vector<S, N> pow (const S& p) const
+        vvec<S> pow (const S& p) const
         {
-            Vector<S, N> rtn;
-            auto raise_to_p = [p](S coord) -> S { return static_cast<S>(std::pow(coord, p)); };
+            vvec<S> rtn(this->size());
+            auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
         //! Raise each element to the power p
-        void pow_inplace (const S& p) { for (auto& i : *this) { i = static_cast<S>(std::pow (i, p)); } }
+        void pow_inplace (const S& p) { for (auto& i : *this) { i = std::pow (i, p); } }
 
         //! Element-wise power
         template<typename _S=S>
-        Vector<S, N> pow (const Vector<_S, N>& p) const
+        vvec<S> pow (const vvec<_S>& p) const
         {
+            if (p.size() != this->size()) {
+                throw std::runtime_error ("element-wise power: p dims should equal vvec's dims");
+            }
             auto pi = p.begin();
-            Vector<S, N> rtn;
-            auto raise_to_p = [pi](S coord) mutable -> S { return static_cast<S>(std::pow(coord, (*pi++))); };
+            vvec<S> rtn(this->size());
+            auto raise_to_p = [pi](S coord) mutable { return std::pow(coord, static_cast<S>(*pi++)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
+        //! Raise each element, i, to the power p[i]
         template<typename _S=S>
-        void pow_inplace (const Vector<_S, N>& p)
+        void pow_inplace (const vvec<_S>& p)
         {
+            if (p.size() != this->size()) {
+                throw std::runtime_error ("element-wise power: p dims should equal vvec's dims");
+            }
             auto pi = p.begin();
-            for (auto& i : *this) { i = static_cast<S>(std::pow (i, (*pi++))); }
+            for (auto& i : *this) { i = std::pow (i, static_cast<S>(*pi++)); }
         }
 
-        //! Return the signum of the Vector, with signum(0)==0
-        Vector<S, N> signum() const
+        //! Return the signum of the vvec, with signum(0)==0
+        vvec<S> signum() const
         {
-            Vector<S, N> rtn;
-            auto _signum = [](S coord) -> S { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
+            vvec<S> rtn(this->size());
+            auto _signum = [](S coord) { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
-        //! Return the floor of the Vector
-        Vector<S, N> floor() const
-        {
-            Vector<S, N> rtn;
-            auto _floor = [](S coord) -> S { return (std::floor(coord)); };
-            std::transform (this->begin(), this->end(), rtn.begin(), _floor);
-            return rtn;
-        }
-        void floor_inplace() { for (auto& i : *this) { i = std::floor(i); } }
-
-        //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
-        Vector<S, N> trunc() const
-        {
-            Vector<S, N> rtn;
-            auto _trunc = [](S coord) -> S { return (std::trunc(coord)); };
-            std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
-            return rtn;
-        }
-        void trunc_inplace() { for (auto& i : *this) { i = std::trunc(i); } }
-
-        //! Return the ceiling of the Vector
-        Vector<S, N> ceil() const
-        {
-            Vector<S, N> rtn;
-            auto _ceil = [](S coord) -> S { return (std::ceil(coord)); };
-            std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
-            return rtn;
-        }
-        void ceil_inplace() { for (auto& i : *this) { i = std::ceil(i); } }
-
         /*!
          * Compute the element-wise square root of the vector
          *
-         * \return a Vector whose elements have been square-rooted
+         * \return a vvec whose elements have been square-rooted
          */
-        Vector<S, N> sqrt() const
+        vvec<S> sqrt() const
         {
-            Vector<S, N> rtn;
-            auto sqrt_element = [](S coord) -> S { return static_cast<S>(std::sqrt(coord)); };
+            vvec<S> rtn(this->size());
+            auto sqrt_element = [](S coord) { return static_cast<S>(std::sqrt(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
@@ -615,12 +634,12 @@ namespace morph {
         /*!
          * Compute the element-wise square of the vector
          *
-         * \return a Vector whose elements have been squared
+         * \return a vvec whose elements have been squared
          */
-        Vector<S, N> sq() const
+        vvec<S> sq() const
         {
-            Vector<S, N> rtn;
-            auto sq_element = [](S coord) -> S { return (coord * coord); };
+            vvec<S> rtn(this->size());
+            auto sq_element = [](S coord) { return std::pow(coord, 2); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
         }
@@ -628,76 +647,98 @@ namespace morph {
         void sq_inplace() { for (auto& i : *this) { i = (i*i); } }
 
         /*!
-         * Compute the element-wise natural log of the vector
+         * Compute the element-wise natural logarithm of the vector
          *
-         * \return a Vector whose elements have been logged
+         * \return a vvec whose elements have been logged
          */
-        Vector<S, N> log() const
+        vvec<S> log() const
         {
-            Vector<S, N> rtn;
-            auto log_element = [](S coord) -> S { return static_cast<S>(std::log(coord)); };
+            vvec<S> rtn(this->size());
+            auto log_element = [](S coord) { return std::log(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
-        //! Replace each element with its own natural log
-        void log_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log(i)); } }
+        //! Replace each element with its own log
+        void log_inplace() { for (auto& i : *this) { i = std::log(i); } }
 
         /*!
-         * Compute the element-wise log to base 10 of the vector
+         * Compute the element-wise logarithm-to-base-10 of the vector
          *
-         * \return a Vector whose elements have been logged
+         * \return a vvec whose elements have been log10ed
          */
-        Vector<S, N> log10() const
+        vvec<S> log10() const
         {
-            Vector<S, N> rtn;
-            auto log_element = [](S coord) -> S { return static_cast<S>(std::log10(coord)); };
+            vvec<S> rtn(this->size());
+            auto log_element = [](S coord) { return std::log10(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
-        //! Replace each element with its own log to base 10
-        void log10_inplace() { for (auto& i : *this) { i = static_cast<S>(std::log10(i)); } }
+        //! Replace each element with its own log
+        void log10_inplace() { for (auto& i : *this) { i = std::log10(i); } }
+
+        //! Sine
+        vvec<S> sin() const
+        {
+            vvec<S> rtn(this->size());
+            auto sin_element = [](S coord) { return std::sin(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), sin_element);
+            return rtn;
+        }
+        //! Replace each element with its own sine
+        void sin_inplace() { for (auto& i : *this) { i = std::sin(i); } }
+
+        //! Cosine
+        vvec<S> cos() const
+        {
+            vvec<S> rtn(this->size());
+            auto cos_element = [](S coord) { return std::cos(coord); };
+            std::transform (this->begin(), this->end(), rtn.begin(), cos_element);
+            return rtn;
+        }
+        //! Replace each element with its own cosine
+        void cos_inplace() { for (auto& i : *this) { i = std::cos(i); } }
 
         /*!
          * Compute the element-wise natural exponential of the vector
          *
-         * \return a Vector whose elements have been exponentiated
+         * \return a vvec whose elements have been exponentiate
          */
-        Vector<S, N> exp() const
+        vvec<S> exp() const
         {
-            Vector<S, N> rtn;
-            auto exp_element = [](S coord) -> S { return static_cast<S>(std::exp(coord)); };
+            vvec<S> rtn(this->size());
+            auto exp_element = [](S coord) { return std::exp(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
             return rtn;
         }
-        //! Replace each element with its own natural exponential
-        void exp_inplace() { for (auto& i : *this) { i = static_cast<S>(std::exp(i)); } }
+        //! Replace each element with its own exp
+        void exp_inplace() { for (auto& i : *this) { i = std::exp(i); } }
 
         /*!
          * Compute the element-wise absolute values of the vector
          *
-         * \return a Vector of the absolute values of *this
+         * \return a vvec whose elements have been 'absed'
          */
-        Vector<S, N> abs() const
+        vvec<S> abs() const
         {
-            Vector<S, N> rtn;
-            auto abs_element = [](S coord) -> S { return static_cast<S>(std::abs(coord)); };
+            vvec<S> rtn(this->size());
+            auto abs_element = [](S coord) { return std::abs(coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
-        //! Replace each element with its own absolute value
-        void abs_inplace() { for (auto& i : *this) { i = static_cast<S>(std::abs(i)); } }
+        //! Replace each element with its absolute value
+        void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
-            auto _element_fails = [rhs](S a, S b) -> S { return a  (b < rhs ? S{0} : S{1}); };
+            auto _element_fails = [rhs](S a, S b) { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
         //! <= a scalar. Return true if every element is less than the scalar
         bool operator<=(const S rhs) const
         {
-            auto _element_fails = [rhs](S a, S b) -> S { return a + (b <= rhs ? S{0} : S{1}); };
+            auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
@@ -715,32 +756,52 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        /*!
-         * Use something like this as a compare function when storing morph::Vectors in
-         * a std::set:
-         *
-         *    auto _cmp = [](Vector<float, 3> a, Vector<float, 3> b) { return a.lexical_lessthan(b); };
-         *    std::set<Vector<float, 3>, decltype(_cmp)> aset(_cmp);
-         *
-         * The default comparison for std::set is the operator<. The definition here
-         * applied to !comp(a,b) && !comp(b,a) will suggest that two different Vectors
-         * are equal even when they're not and so your std::sets will fail to insert
-         * unique Vectors
-         */
+        // vvec-to-vvec comparisons. Although there's an underlying std::vector
+        // implementation of these operators, I prefer to reimplement with a requirement
+        // that the vvecs should have the same size to be compared, as this is a
+        // better defined comparison. These might be slow if your vvec is very big.
+        //
+        // More importantly, I *completely redefine the meaning of the comparison
+        // operators between vvecs*. This messes up the use of containers that make
+        // use of comparison operators like std::set.
+        //
+        // Use something like this as a compare function when storing morph::vvec in
+        // a std::set:
+        //
+        //    auto _cmp = [](vvec<float, 3> a, vvec<float, 3> b) { return a.lexical_lessthan(b); };
+        //    std::set<vvec<float, 3>, decltype(_cmp)> aset(_cmp); // C++-11/C++-17
+        //
+        // If the std::set is a class member, then define a compare struct with an operator().
+        //
+        // The default comparison for std::set is the operator<. The definition here
+        // applied to !comp(a,b) && !comp(b,a) will suggest that two different vvecs
+        // are equal even when they're not and so your std::sets will fail to insert
+        // unique vvecs
+
+        //! Lexical less-than similar to the operator< implemented for std::vector
         template<typename _S=S>
-        bool lexical_lessthan (const Vector<_S, N>& rhs) const
+        bool lexical_lessthan (const vvec<_S>& rhs) const
         {
             return std::lexicographical_compare (this->begin(), this->end(), rhs.begin(), rhs.end());
         }
 
         //! Another way to compare vectors would be by length.
         template<typename _S=S>
-        bool length_lessthan (const Vector<_S, N>& rhs) const { return this->length() < rhs.length(); }
+        bool length_lessthan (const vvec<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("length based comparison: rhs dims should equal vvec's dims");
+            }
+            return this->length() < rhs.length();
+        }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
-        bool operator< (const Vector<_S, N>& rhs) const
+        bool operator< (const vvec<_S>& rhs) const
         {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vvec's dims");
+            }
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b < (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -748,8 +809,11 @@ namespace morph {
 
         //! Return true if each element of *this is <= its counterpart in rhs.
         template<typename _S=S>
-        bool operator<= (const Vector<_S, N>& rhs) const
+        bool operator<= (const vvec<_S>& rhs) const
         {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vvec's dims");
+            }
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b <= (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -757,8 +821,11 @@ namespace morph {
 
         //! Return true if each element of *this is greater than its counterpart in rhs.
         template<typename _S=S>
-        bool operator> (const Vector<_S, N>& rhs) const
+        bool operator> (const vvec<_S>& rhs) const
         {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vvec's dims");
+            }
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b > (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -766,8 +833,11 @@ namespace morph {
 
         //! Return true if each element of *this is >= its counterpart in rhs.
         template<typename _S=S>
-        bool operator>= (const Vector<_S, N>& rhs) const
+        bool operator>= (const vvec<_S>& rhs) const
         {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("element-wise comparison: rhs dims should equal vvec's dims");
+            }
             auto ri = rhs.begin();
             auto _element_fails = [ri](S a, S b) mutable { return a + (b >= (*ri++) ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
@@ -776,11 +846,11 @@ namespace morph {
         /*!
          * Unary negate operator
          *
-         * \return a Vector whose elements have been negated.
+         * \return a vvec whose elements have been negated.
          */
-        Vector<S, N> operator-() const
+        vvec<S> operator-() const
         {
-            Vector<S, N> rtn;
+            vvec<S> rtn(this->size());
             std::transform (this->begin(), this->end(), rtn.begin(), std::negate<S>());
             return rtn;
         }
@@ -793,54 +863,46 @@ namespace morph {
         bool operator!() const { return (this->length() == S{0}) ? true : false; }
 
         /*!
-         * \brief Scalar (dot) product
+         * \brief Scalar (dot) product of two vvecs
          *
-         * Compute the scalar product of this Vector and the Vector, v.
+         * Compute the scalar product of this vvec and the vvec, v.
+         *
+         * If \a v and *this have different sizes, then throw exception.
          *
          * \return scalar product
          */
         template<typename _S=S>
-        S dot (const Vector<_S, N>& v) const
+        S dot (const vvec<_S>& v) const
         {
+            if (this->size() != v.size()) {
+                throw std::runtime_error ("vvec::dot(): vectors must have equal size");
+            }
             auto vi = v.begin();
-            auto dot_product = [vi](S a, _S b) mutable { return a + b * (*vi++); };
+            auto dot_product = [vi](S a, _S b) mutable -> S { return a + static_cast<S>(b) * static_cast<S>(*vi++); };
             const S rtn = std::accumulate (this->begin(), this->end(), S{0}, dot_product);
             return rtn;
         }
 
         /*!
-         * Vector cross product.
+         * Compute the vector cross product.
          *
-         * Cross product of this with another vector \a v (if N==3). In
+         * Cross product of this with another vvec \a v (if N==3). In
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
-        Vector<S, _N> cross (const Vector<_S, _N>& v) const
+        template<typename _S=S>
+        vvec<S, Al> cross (const vvec<_S>& v) const
         {
-            Vector<S, _N> vrtn;
-            vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
-            vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
-            vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
+            vvec<S, Al> vrtn;
+            if (this->size() == 3 && v.size() == 3) {
+                vrtn.resize(3);
+                vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
+                vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
+                vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
+            } else {
+                throw std::runtime_error ("vvec::cross(): Cross product is defined here for 3 dimensions only");
+            }
             return vrtn;
-        }
-
-        //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S cross (const Vector<_S, _N>& w) const
-        {
-            S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
-            return rtn;
-        }
-
-        /*!
-         * Two dimensional angle in radians (only for N=2)
-         */
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
-        S angle() const
-        {
-            S _angle = std::atan2 ((*this)[1], (*this)[0]);
-            return _angle;
         }
 
         /*!
@@ -852,39 +914,85 @@ namespace morph {
          * \return Hadamard product of left hand size (*this) and right hand size (\a v)
          */
         template<typename _S=S>
-        Vector<S, N> operator* (const Vector<_S, N>& v) const
+        vvec<S, Al> operator* (const vvec<_S>& v) const
         {
-            Vector<S, N> rtn;
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vvec::operator*: Hadamard product is defined here for vectors of same dimensionality only");
+            }
+            vvec<S, Al> rtn(this->size(), S{0});
             auto vi = v.begin();
-            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
+            // Visual Studio may complain about there being no static_cast<S> of (*vi++), here
+            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * (*vi++); };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
 
         /*!
-         * Vector multiply *= operator.
+         * vvec multiply *= operator.
          *
-         * Hadamard product. Multiply *this vector with \a v, elementwise.
+         * Hadamard product. Multiply *this vector with \a v, elementwise. If \a v has a
+         * different number of elements to *this, then an exception is thrown.
          */
         template <typename _S=S>
-        void operator*= (const Vector<_S, N>& v)
+        void operator*= (const vvec<_S>& v) {
+            if (v.size() == this->size()) {
+                auto vi = v.begin();
+                auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * (*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+            } else {
+                throw std::runtime_error ("vvec::operator*=: Hadamard product is defined here for vectors of same dimensionality only");
+            }
+        }
+
+        /*!
+         * operator/ gives element by element division
+         *
+         * 'Hadamard' division - elementwise division. If the vectors are of
+         * differing lengths, then an exception is thrown.
+         *
+         * \return Hadamard division of left hand size (*this) by right hand size (\a v)
+         */
+        template<typename _S=S>
+        vvec<S, Al> operator/ (const vvec<_S>& v) const
         {
+            if (v.size() != this->size()) {
+                throw std::runtime_error ("vvec::operator*: Hadamard division is defined here for vectors of same dimensionality only");
+            }
+            vvec<S, Al> rtn(this->size(), S{0});
             auto vi = v.begin();
-            auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
-            std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
+            auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
+            std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
+            return rtn;
+        }
+
+        /*!
+         * vvec division /= operator.
+         *
+         * Hadamard division. Divide *this vector by \a v, elementwise. If \a v has a
+         * different number of elements to *this, then an exception is thrown.
+         */
+        template <typename _S=S>
+        void operator/= (const vvec<_S>& v) {
+            if (v.size() == this->size()) {
+                auto vi = v.begin();
+                auto div_by_s = [vi](S lhs) mutable -> S { return lhs / (*vi++); };
+                std::transform (this->begin(), this->end(), this->begin(), div_by_s);
+            } else {
+                throw std::runtime_error ("vvec::operator*=: Hadamard division is defined here for vectors of same dimensionality only");
+            }
         }
 
         /*!
          * Scalar multiply * operator
          *
          * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this Vector<S, N> by s, element-wise.
+         * scalar type. Multiplies this vvec<S> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<S, N> operator* (const _S& s) const
+        vvec<S> operator* (const _S& s) const
         {
-            Vector<S, N> rtn;
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            vvec<S> rtn(this->size());
+            auto mult_by_s = [s](S coord) -> S { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -893,47 +1001,21 @@ namespace morph {
          * Scalar multiply *= operator
          *
          * This function will only be defined if typename _S is a
-         * scalar type. Multiplies this Vector<S, N> by s, element-wise.
+         * scalar type. Multiplies this vvec<S> by s, element-wise.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            auto mult_by_s = [s](S coord) -> S { return coord * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
-        }
-
-        /*!
-         * operator/ gives a 'Hadamard' division - elementwise division.
-         *
-         * If the vectors are of differing lengths, then an exception is thrown.
-         *
-         * \return elementwise division of left hand size (*this) by right hand size (\a v)
-         */
-        template<typename _S=S>
-        Vector<S, N> operator/ (const Vector<_S, N>& v) const
-        {
-            Vector<S, N> rtn;
-            std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
-            return rtn;
-        }
-
-        /*!
-         * Vector division /= operator.
-         *
-         * Element by element division. Divide *this vector by \a v, elementwise.
-         */
-        template <typename _S=S>
-        void operator/= (const Vector<_S, N>& v)
-        {
-            std::transform (this->begin(), this->end(), v.begin(), this->begin(), std::divides<S>());
         }
 
         //! Scalar divide by s
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<S, N> operator/ (const _S& s) const
+        vvec<S> operator/ (const _S& s) const
         {
-            Vector<S, N> rtn;
-            auto div_by_s = [s](S coord) { return coord / s; };
+            vvec<S> rtn(this->size());
+            auto div_by_s = [s](S coord) -> S { return coord / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -942,56 +1024,57 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
-            auto div_by_s = [s](S coord) { return coord / s; };
+            auto div_by_s = [s](S coord) -> S { return coord / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
-        //! Vector addition operator
+        //! vvec addition operator
         template<typename _S=S>
-        Vector<S, N> operator+ (const Vector<_S, N>& v) const
+        vvec<S> operator+ (const vvec<_S>& v) const
         {
-            Vector<S, N> vrtn;
+            vvec<S> vrtn(this->size());
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable { return a + (*vi++); };
+            // Static cast is encouraged by Visual Studio, but it prevents addition of vvec of vecs and vvec of scalars
+            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), add_v);
             return vrtn;
         }
 
-        //! Vector addition operator
+        //! vvec addition operator
         template<typename _S=S>
-        void operator+= (const Vector<_S, N>& v)
+        void operator+= (const vvec<_S>& v)
         {
             auto vi = v.begin();
-            auto add_v = [vi](S a) mutable { return a + (*vi++); };
+            auto add_v = [vi](S a) mutable -> S { return a + /* static_cast<S> */(*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), add_v);
         }
 
-        //! Vector subtraction operator
+        //! A vvec subtraction operator
         template<typename _S=S>
-        Vector<S, N> operator- (const Vector<_S, N>& v) const
+        vvec<S> operator- (const vvec<_S>& v) const
         {
-            Vector<S, N> vrtn;
+            vvec<S> vrtn(this->size());
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
             return vrtn;
         }
 
-        //! Vector subtraction operator
+        //! A vvec subtraction operator
         template<typename _S=S>
-        void operator-= (const Vector<_S, N>& v)
+        void operator-= (const vvec<_S>& v)
         {
             auto vi = v.begin();
-            auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
+            auto subtract_v = [vi](S a) mutable -> S { return a - (*vi++); };
             std::transform (this->begin(), this->end(), this->begin(), subtract_v);
         }
 
         //! Scalar addition
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<S, N> operator+ (const _S& s) const
+        vvec<S> operator+ (const _S& s) const
         {
-            Vector<S, N> rtn;
-            auto add_s = [s](S coord) { return coord + s; };
+            vvec<S> rtn(this->size());
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -1000,16 +1083,16 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
         //! Scalar subtraction
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        Vector<S, N> operator- (const _S& s) const
+        vvec<S> operator- (const _S& s) const
         {
-            Vector<S, N> rtn;
-            auto subtract_s = [s](S coord) { return coord - s; };
+            vvec<S> rtn(this->size());
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -1018,31 +1101,31 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
         //! Addition which should work for any member type that implements the + operator
-        Vector<S, N> operator+ (const S& s) const
+        vvec<S> operator+ (const S& s) const
         {
-            Vector<S, N> rtn;
-            auto add_s = [s](S coord) { return coord + s; };
+            vvec<S> rtn(this->size());
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
 
-        //! Addition += operator for any type same as the enclosed type that implements + op
+        //! Addition += operator for any time same as the enclosed type that implements + op
         void operator+= (const S& s) const
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S coord) -> S { return coord + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
         //! Subtraction which should work for any member type that implements the - operator
-        Vector<S, N> operator- (const S& s) const
+        vvec<S> operator- (const S& s) const
         {
-            Vector<S, N> rtn;
-            auto subtract_s = [s](S coord) { return coord - s; };
+            vvec<S> rtn(this->size());
+            auto subtract_s = [s](S coord) -> S { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -1055,40 +1138,40 @@ namespace morph {
         }
 
         //! Overload the stream output operator
-        friend std::ostream& operator<< <S, N> (std::ostream& os, const Vector<S, N>& v);
+        friend std::ostream& operator<< <S> (std::ostream& os, const vvec<S>& v);
     };
 
-    template <typename S=float, size_t N=3>
-    std::ostream& operator<< (std::ostream& os, const Vector<S, N>& v)
+    template <typename S=float, typename Al=std::allocator<S>>
+    std::ostream& operator<< (std::ostream& os, const vvec<S, Al>& v)
     {
         os << v.str();
         return os;
     }
 
     // Operators that can do premultiply, predivide by scaler so you could do,
-    // e.g. Vector<float> denom = {1,2,3}; Vector<float> result = float(1) / denom;
+    // e.g. vvec<float> result = float(1) / vvec<float>({1,2,3});
 
-    //! Scalar * Vector<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S, size_t N> Vector<S, N> operator* (S lhs, const Vector<S, N>& rhs) { return rhs * lhs; }
+    //! Scalar * vvec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
+    template <typename S> vvec<S> operator* (S lhs, const vvec<S>& rhs) { return rhs * lhs; }
 
-    //! Scalar / Vector<>
-    template <typename S, size_t N>
-    Vector<S, N> operator/ (S lhs, const Vector<S, N>& rhs)
+    //! Scalar / vvec<>
+    template <typename S>
+    vvec<S> operator/ (S lhs, const vvec<S>& rhs)
     {
-        Vector<S, N> division;
+        vvec<S> division(rhs.size(), S{0});
         auto lhs_div_by_vec = [lhs](S coord) { return lhs / coord; };
         std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
         return division;
     }
 
-    //! Scalar + Vector<> (commutative)
-    template <typename S, size_t N> Vector<S, N> operator+ (S lhs, const Vector<S, N>& rhs) { return rhs + lhs; }
+    //! Scalar + vvec<> (commutative)
+    template <typename S> vvec<S> operator+ (S lhs, const vvec<S>& rhs) { return rhs + lhs; }
 
-    //! Scalar - Vector<>
-    template <typename S, size_t N>
-    Vector<S, N> operator- (S lhs, const Vector<S, N>& rhs)
+    //! Scalar - vvec<>
+    template <typename S>
+    vvec<S> operator- (S lhs, const vvec<S>& rhs)
     {
-        Vector<S, N> subtraction;
+        vvec<S> subtraction(rhs.size(), S{0});
         auto lhs_minus_vec = [lhs](S coord) { return lhs - coord; };
         std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
         return subtraction;

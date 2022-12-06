@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -35,9 +35,9 @@ namespace morph {
     {
     public:
         QuiverVisual(GLuint sp,
-                     std::vector<Vector<float>>* _coords,
-                     const Vector<float> _offset,
-                     const std::vector<Vector<Flt,3>>* _quivers,
+                     std::vector<vec<float>>* _coords,
+                     const vec<float> _offset,
+                     const std::vector<vec<Flt,3>>* _quivers,
                      ColourMapType _cmt,
                      const float _hue = 0.0f) {
             // Set up...
@@ -66,7 +66,7 @@ namespace morph {
                 return;
             }
 
-            Vector<Flt> zero3 = {0.0,0.0,0.0};
+            vec<Flt> zero3 = {0.0,0.0,0.0};
             std::vector<Flt> lengths;
             for (unsigned int i = 0; i < nquiv; ++i) {
                 lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
@@ -77,9 +77,9 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
 
-            Vector<Flt> half = {0.5,0.5,0.5};
-            Vector<Flt> vectorData_i, halfquiv;
-            Vector<float> start, end, coords_i;
+            vec<Flt> half = {0.5,0.5,0.5};
+            vec<Flt> vectorData_i, halfquiv;
+            vec<float> start, end, coords_i;
             std::array<float, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
                 coords_i = (*this->dataCoords)[i];
@@ -113,8 +113,8 @@ namespace morph {
                 // Plus sphere or cone:
                 this->computeSphere (idx, coords_i, clr, lengths[i]/10.0);
                 // Compute a tip for the cone.
-                Vector<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
-                Vector<float> tip;
+                vec<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
+                vec<float> tip;
                 // Multiply vectorData_i by a fraction and that's the cone end. Note
                 // reuse of halfquiv variable
                 std::transform (frac.begin(), frac.end(),

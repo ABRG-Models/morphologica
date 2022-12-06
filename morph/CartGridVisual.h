@@ -12,7 +12,7 @@
 #include <morph/ColourMap.h>
 #include <morph/CartGrid.h>
 #include <morph/MathAlgo.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -56,7 +56,7 @@ namespace morph {
     {
     public:
         //! Single constructor for simplicity
-        CartGridVisual(GLuint sp, GLuint tsp, const CartGrid* _cg, const Vector<float> _offset)
+        CartGridVisual(GLuint sp, GLuint tsp, const CartGrid* _cg, const vec<float> _offset)
         {
             // Set up...
             this->shaderprog = sp;
@@ -191,7 +191,7 @@ namespace morph {
 
             float datum = 0.0f;
 
-            morph::Vector<float> vtx_0, vtx_1, vtx_2;
+            morph::vec<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
@@ -283,9 +283,9 @@ namespace morph {
                 // HexGridVisual will be coloured the same as the front. To get lighting
                 // effects to look really good, the back of the surface could need the
                 // opposite normal.
-                morph::Vector<float> plane1 = vtx_1 - vtx_0;
-                morph::Vector<float> plane2 = vtx_2 - vtx_0;
-                morph::Vector<float> vnorm = plane2.cross (plane1);
+                morph::vec<float> plane1 = vtx_1 - vtx_0;
+                morph::vec<float> plane2 = vtx_2 - vtx_0;
+                morph::vec<float> vnorm = plane2.cross (plane1);
                 vnorm.renormalize();
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
@@ -356,9 +356,9 @@ namespace morph {
                     // HexGridVisual will be coloured the same as the front. To get lighting
                     // effects to look really good, the back of the surface could need the
                     // opposite normal.
-                    morph::Vector<float> plane1 = vtx_1 - vtx_0;
-                    morph::Vector<float> plane2 = vtx_2 - vtx_0;
-                    morph::Vector<float> vnorm = plane2.cross (plane1);
+                    morph::vec<float> plane1 = vtx_1 - vtx_0;
+                    morph::vec<float> plane2 = vtx_2 - vtx_0;
+                    morph::vec<float> vnorm = plane2.cross (plane1);
                     vnorm.renormalize();
                     this->vertex_push (vnorm, this->vertexNormals);
                     this->vertex_push (vnorm, this->vertexNormals);
@@ -450,7 +450,7 @@ namespace morph {
 
         CartGridVisualManual(GLuint sp, GLuint tsp,
                              const morph::CartGrid* _cg,
-                             const morph::Vector<float> _offset)
+                             const morph::vec<float> _offset)
             : morph::CartGridVisual<T>(sp, tsp, _cg, _offset)
         {
             R.resize (this->cg->num(), 0.0f);

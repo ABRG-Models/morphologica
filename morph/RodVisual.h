@@ -1,8 +1,8 @@
 #pragma once
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/VisualModel.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <array>
 
 namespace morph {
@@ -14,16 +14,16 @@ namespace morph {
         RodVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, start and end coordinates, radius and a single colour.
-        RodVisual(GLuint sp, const Vector<float, 3> _offset,
-                  const Vector<float, 3> _start_coord, const Vector<float, 3> _end_coord, const float _radius,
+        RodVisual(GLuint sp, const vec<float, 3> _offset,
+                  const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                   const std::array<float, 3> _col)
         {
             this->init (sp, _offset, _start_coord, _end_coord, _radius, _col, _col);
         }
 
         //! Initialise with offset, start and end coordinates, radius and start and end colours.
-        RodVisual(GLuint sp, const Vector<float, 3> _offset,
-                  const Vector<float, 3> _start_coord, const Vector<float, 3> _end_coord, const float _radius,
+        RodVisual(GLuint sp, const vec<float, 3> _offset,
+                  const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                   const std::array<float, 3> _start_col, const std::array<float, 3> _end_col)
         {
             this->init (sp, _offset, _start_coord, _end_coord, _radius, _start_col, _end_col);
@@ -31,8 +31,8 @@ namespace morph {
 
         virtual ~RodVisual () {}
 
-        void init (GLuint sp, const Vector<float, 3> _offset,
-                   const Vector<float, 3> _start_coord, const Vector<float, 3> _end_coord, const float _radius,
+        void init (GLuint sp, const vec<float, 3> _offset,
+                   const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                    const std::array<float, 3> _start_col, const std::array<float, 3> _end_col)
         {
             // Set up...
@@ -75,9 +75,9 @@ namespace morph {
         }
 
         //! The position of the start of the rod, given with respect to the parent's offset
-        Vector<float, 3> start_coord = {0.0f, 0.0f, 0.0f};
+        vec<float, 3> start_coord = {0.0f, 0.0f, 0.0f};
         //! The position of the end of the rod, given with respect to the parent's offset
-        Vector<float, 3> end_coord = {1.0f, 0.0f, 0.0f};
+        vec<float, 3> end_coord = {1.0f, 0.0f, 0.0f};
         //! The radius of the rod
         float radius = 1.0f;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <stdexcept>
 #include <iostream>
 
@@ -29,9 +29,9 @@ namespace morph {
             //! ID handle of the glyph texture
             unsigned int textureID;
             //! Size of glyph
-            morph::Vector<int,2>  size;
+            morph::vec<int,2>  size;
             //! Offset from baseline to left/top of glyph
-            morph::Vector<int,2>  bearing;
+            morph::vec<int,2>  bearing;
             //! Offset to advance to next glyph
             unsigned int advance;
         };

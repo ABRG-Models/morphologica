@@ -1,7 +1,7 @@
 #include "morph/TransformMatrix.h"
 #include <iostream>
 #include <array>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 void setMatrixSequence (morph::TransformMatrix<float>& tm)
 {
@@ -180,8 +180,8 @@ int main()
         ++rtn;
     }
 
-    // test matrix times Vector<T,4> multiplication  std::array = mat * morph::Vector
-    morph::Vector<float, 4> v4 = {1,0,0,0};
+    // test matrix times vec<T,4> multiplication  std::array = mat * morph::vec
+    morph::vec<float, 4> v4 = {1,0,0,0};
     std::array<float, 4> r = mult4 * v4;
     std::cout << " mult4 * " << v4 << ": (" << r[0] << "," << r[1] << "," << r[2] << "," << r[3] << ")\n";
     if ((r[0]==15 && r[1]==17 && r[2]==0 && r[3]==0) == false) {

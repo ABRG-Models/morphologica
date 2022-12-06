@@ -18,8 +18,8 @@
 #endif
 #endif
 #include <morph/TransformMatrix.h>
-#include <morph/Vector.h>
-#include <morph/MathConst.h>
+#include <morph/vec.h>
+#include <morph/mathconst.h>
 #include <morph/VisualCommon.h>
 #include <morph/unicode.h>
 #include <morph/VisualFace.h>
@@ -72,7 +72,7 @@ namespace morph {
          */
         VisualTextModel (GLuint tsp,
                          morph::VisualFont visualfont, float _m_width, int _fontpixels,
-                         const morph::Vector<float> _mv_offset, const std::string& _txt,
+                         const morph::vec<float> _mv_offset, const std::string& _txt,
                          std::array<float, 3> _clr = {0,0,0})
         {
             this->tshaderprog = tsp;
@@ -188,7 +188,7 @@ namespace morph {
         void setSceneMatrix (const TransformMatrix<float>& sv) { this->scenematrix = sv; }
 
         //! Set the translation specified by \a v0 into the scene translation
-        void setSceneTranslation (const Vector<float>& v0)
+        void setSceneTranslation (const vec<float>& v0)
         {
             this->sv_offset = v0;
             this->scenematrix.setToIdentity();
@@ -197,7 +197,7 @@ namespace morph {
         }
 
         //! Set a translation (only) into the scene view matrix
-        void addSceneTranslation (const Vector<float>& v0)
+        void addSceneTranslation (const vec<float>& v0)
         {
             this->sv_offset += v0;
             this->scenematrix.translate (v0);
@@ -222,7 +222,7 @@ namespace morph {
         }
 
         //! Set a translation to the model view matrix
-        void setViewTranslation (const Vector<float>& v0)
+        void setViewTranslation (const vec<float>& v0)
         {
             this->mv_offset = v0;
             this->viewmatrix.setToIdentity();
@@ -231,7 +231,7 @@ namespace morph {
         }
 
         //! Add a translation to the model view matrix
-        void addViewTranslation (const Vector<float>& v0)
+        void addViewTranslation (const vec<float>& v0)
         {
             this->mv_offset += v0;
             this->viewmatrix.translate (v0);
@@ -290,7 +290,7 @@ namespace morph {
 
         //! Set up a new text at a given position, with the given colour.
         void setupText (const std::string& _txt,
-                        const morph::Vector<float> _mv_offset, std::array<float, 3> _clr = {0,0,0})
+                        const morph::vec<float> _mv_offset, std::array<float, 3> _clr = {0,0,0})
         {
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
@@ -300,7 +300,7 @@ namespace morph {
 
         //! Set up a new text at a given position, with the given colour and a pre-rotation
         void setupText (const std::string& _txt,
-                        const morph::Quaternion<float>& _rotation, const morph::Vector<float> _mv_offset,
+                        const morph::Quaternion<float>& _rotation, const morph::vec<float> _mv_offset,
                         std::array<float, 3> _clr = {0,0,0})
         {
             this->mv_rotation = _rotation;
@@ -521,7 +521,7 @@ namespace morph {
         //! VisualTextModel is the letter 'x' within a CoordArrows VisualModel, then the
         //! model-view offset here should be the CoordArrows model-view offset PLUS the
         //! length of the CoordArrow x axis length.
-        Vector<float> mv_offset;
+        vec<float> mv_offset;
         //! The model-view rotation of this text object. mv_offset and mv_rotation are
         //! together used to compute viewmatrix. Keep a copy so that it is easy to reset
         //! the viewmatrix and recompute it with either a new offset or a new rotation.
@@ -531,7 +531,7 @@ namespace morph {
         Quaternion<float> parent_rotation;
 
         //! Scene view offset
-        Vector<float> sv_offset;
+        vec<float> sv_offset;
         //! Scene view rotation
         Quaternion<float> sv_rotation;
         //! The text-model-specific view matrix and a scene matrix
@@ -549,7 +549,7 @@ namespace morph {
         //! left, right, top and bottom extents of the text for this
         //! VisualTextModel. setupText should modify these as it sets up quads. Order of
         //! numbers is left, right, bottom, top
-        Vector<float, 4> extents = { 1e7, -1e7, 1e7, -1e7 };
+        vec<float, 4> extents = { 1e7, -1e7, 1e7, -1e7 };
         //! The texture ID for each quad - so that we draw the right texture image over each quad.
         std::vector<unsigned int> quad_ids;
         //! Position within vertex buffer object (if I use an array of VBO)
@@ -601,8 +601,8 @@ namespace morph {
             vp.push_back (arr[1]);
             vp.push_back (arr[2]);
         }
-        //! Push morph::Vector of 3 floats onto the vector of floats \a vp
-        void vertex_push (const Vector<float>& vec, std::vector<float>& vp)
+        //! Push morph::vec of 3 floats onto the vector of floats \a vp
+        void vertex_push (const vec<float>& vec, std::vector<float>& vp)
         {
             std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }

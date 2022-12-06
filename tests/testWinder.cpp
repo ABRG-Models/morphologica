@@ -6,8 +6,8 @@
 #include <list>
 #include "morph/Winder.h"
 #include "morph/BezCoord.h"
-#include "morph/Vector.h"
-#include "morph/vVector.h"
+#include "morph/vec.h"
+#include "morph/vvec.h"
 
 using std::cout;
 using std::endl;
@@ -99,30 +99,30 @@ int main() {
         --rtn;
     }
 
-    // morph::vVector
-    std::list<morph::vVector<float>> lvVec;
+    // morph::vvec
+    std::list<morph::vvec<float>> lvVec;
     lvVec.push_back ({0.0f,0.0f});
     lvVec.push_back ({1000.0f,0.0f});
     lvVec.push_back ({1000.0f,1000.0f});
     lvVec.push_back ({0.0f,1000.0f});
     lvVec.push_back ({0.0f,0.0f});
     morph::Winder w6(lvVec);
-    morph::vVector<float> px6 = {500.0f,500.0f};
+    morph::vvec<float> px6 = {500.0f,500.0f};
     int wn6 = w6.wind (px6);
     cout << "Winding number = " << wn6 << endl;
     if (wn6 != 1) {
         --rtn;
     }
 
-    // morph::Vector
-    std::vector<morph::Vector<float, 2>> lVec;
+    // morph::vec
+    std::vector<morph::vec<float, 2>> lVec;
     lVec.push_back ({0.0f,0.0f});
     lVec.push_back ({1000.0f,0.0f});
     lVec.push_back ({1000.0f,1000.0f});
     lVec.push_back ({0.0f,1000.0f});
     lVec.push_back ({0.0f,0.0f});
     morph::Winder w7(lVec);
-    morph::Vector<float, 2> px7 = {500.0f,500.0f};
+    morph::vec<float, 2> px7 = {500.0f,500.0f};
     int wn7 = w7.wind (px7);
     cout << "Winding number = " << wn7 << endl;
     if (wn7 != 1) {

@@ -13,7 +13,8 @@
 #include <morph/ReadCurves.h>
 #include <morph/Random.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 
 int main()
 {
@@ -24,7 +25,7 @@ int main()
     cg.setBoundaryOnOuterEdge();
 
     // Populate a vector of floats with data
-    morph::vVector<float> data (cg.num());
+    morph::vvec<float> data (cg.num());
     data.randomize();
     float nonconvolvedSum = data.sum();
 
@@ -32,7 +33,7 @@ int main()
     morph::CartGrid kernel (0.01f, 0.01f, 0.05f, 0.05f);
 
     kernel.setBoundaryOnOuterEdge();
-    morph::vVector<float> kdata(kernel.num());
+    morph::vvec<float> kdata(kernel.num());
 
     // Put a Gaussian in the kernel
     // Once-only parts of the calculation of the Gaussian.
@@ -54,7 +55,7 @@ int main()
     for (auto& k : kernel.rects) { kdata[k.vi] /= sum; }
 
     // A vector for the result
-    morph::vVector<float> convolved (cg.num(), 0.0f);
+    morph::vvec<float> convolved (cg.num(), 0.0f);
 
     // Call the convolution method from HexGrid:
     cg.convolve (kernel, kdata, data, convolved);
@@ -67,13 +68,13 @@ int main()
     // Visualize the 3 maps
     morph::Visual v(800,600,"Convolution window");
 
-    morph::Vector<float, 3> offset = { 0.0f, 0.0f, 0.0f };
+    morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
     morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v.shaderprog, v.tshaderprog, &cg, offset);
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgv->zScale.setParams (0, 0);
-    cgv->addLabel(std::string("Original"), morph::Vector<float, 3>({0.0f,-0.13f,0.0f}),
+    cgv->addLabel(std::string("Original"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
                   morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
     cgv->finalize();
     v.addVisualModel (cgv);
@@ -84,8 +85,8 @@ int main()
     cgvk->setScalarData (&kdata);
     cgvk->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgvk->zScale.setParams (0, 0);
-    cgvk->addLabel(std::string("Kernel"), morph::Vector<float, 3>({0.0f,-0.13f,0.0f}),
-                  morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
+    cgvk->addLabel(std::string("Kernel"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
+                   morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
     cgvk->finalize();
     v.addVisualModel (cgvk);
 
@@ -95,8 +96,8 @@ int main()
     cgvr->setScalarData (&convolved);
     cgvr->cm.setType (morph::ColourMapType::GreyscaleInv);
     cgvr->zScale.setParams (0, 0);
-    cgvr->addLabel(std::string("Convolved"), morph::Vector<float, 3>({0.0f,-0.13f,0.0f}),
-                  morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
+    cgvr->addLabel(std::string("Convolved"), morph::vec<float, 3>({0.0f,-0.13f,0.0f}),
+                   morph::colour::black, morph::VisualFont::DVSans, 0.1f, 48);
     cgvr->finalize();
     v.addVisualModel (cgvr);
 

@@ -1,21 +1,21 @@
 /*
- * Example usage of the morph::vVector class.
+ * Example usage of the morph::vvec class.
  *
- * vVector is like std::vector, with maths operations built-in. It makes it convenient
+ * vvec is like std::vector, with maths operations built-in. It makes it convenient
  * to program maths operations on arrays of numbers.
  *
  * Because it is derived from std::vector, you can often use it in place of std::vector.
  */
 
 #include <iostream>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 
 int main()
 {
-    // Create and initialize a vVector of floating point numbers:
-    morph::vVector<float> vf1 = {1.2f, 3.4f, 7.0f};
+    // Create and initialize a vvec of floating point numbers:
+    morph::vvec<float> vf1 = {1.2f, 3.4f, 7.0f};
     // Create another:
-    morph::vVector<float> vf2;
+    morph::vvec<float> vf2;
     // Set up the second using the numpy-like linspace function:
     vf2.linspace (0.0f, 1.0f, 3);
 
@@ -31,7 +31,7 @@ int main()
     // Add one to a simple scalar number
     std::cout << "vf1 + 4 = " << (vf1 + 4) << std::endl;
 
-    // Raise a vVector to a power:
+    // Raise a vvec to a power:
     std::cout << "vf1 to power 2: " << vf1.pow(2) << std::endl;
 
     // Find the max of vf1:
@@ -40,6 +40,6 @@ int main()
     // Find the dot product of vf1 and vf2:
     std::cout << "vf1 dot vf2 = " << vf1.dot (vf2) << std::endl;
 
-    std::cout << "\nFor more examples, see morphologica/tests/testvVector.cpp\n";
+    std::cout << "\nFor more examples, see morphologica/tests/testvvec.cpp\n";
     return 0;
 }

@@ -75,7 +75,7 @@ int main(int argc, char** argv)
         // Display with morph::Visual
         morph::Visual v(1600, 1000, "Your SVG defined boundary");
         v.lightingEffects();
-        morph::Vector<float, 3> offset = { 0.0f, -0.0f, 0.0f };
+        morph::vec<float, 3> offset = { 0.0f, -0.0f, 0.0f };
         morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
         // Set up data for the HexGridVisual and colour hexes according to their state as being boundary/inside/domain, etc
         vector<float> colours (hg.num(), 0.0f);

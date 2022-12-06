@@ -8,9 +8,11 @@
 #include <morph/Rect.h>
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/HdfData.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
+#include <morph/Scale.h>
 
 #include <set>
 #include <list>
@@ -648,6 +650,91 @@ namespace morph {
             }
         }
 
+        // find the CartGrid position which corresponds to the max value in image_data.
+        morph::vec<float, 2> findmax (const morph::vvec<float>& image_data)
+        {
+            unsigned int idx = image_data.argmax();
+            return morph::vec<float, 2>({this->d_x[idx], this->d_y[idx]});
+        }
+
+        // Create a radial representation of the image_data associated with this
+        // CartGrid, which for this function is assumed to be rectangular. The
+        // representation is taken from the location at view_pos, with an angular offset
+        // of view_angle.
+        void resampleToPolar (const morph::vvec<float>& image_data,
+                              morph::CartGrid& cg_polar, morph::vvec<float>& polar_data,
+                              morph::vec<float, 2> view_pos, float view_angle, morph::ScaleFn radscale = morph::ScaleFn::Linear)
+        {
+            polar_data.zero();
+
+            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
+            morph::vec<float, 2> dist_per_pix = { this->d, this->v };
+            morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            float assumecirc = params.mean();
+            morph::vec<float, 2> polar_span = cg_polar.getSpan();
+
+            morph::vec<unsigned int, 2> polar_span_pix = cg_polar.getSpanPix();
+            if (polar_span_pix[0]%2 == 0) {
+                throw std::runtime_error ("Fix cg_polar to have an odd width (so that it runs from -x:0:+x)");
+            }
+
+            // Now now that polar_span in x is symmetric
+            float rad_per_dist = morph::mathconst<float>::two_pi/(polar_span[0]+cg_polar.getd());
+
+            std::list<morph::Rect>::iterator lastrect = this->rects.begin();
+#pragma omp parallel for
+            for (size_t xi = 0; xi < cg_polar.num(); ++xi) { // for each output pixel which is an r/phi pair
+
+                float r = cg_polar.d_y[xi]; // Linear
+                if (radscale == morph::ScaleFn::Logarithmic) {
+                    r = std::log (this->v+cg_polar.d_y[xi]) - std::log(this->v);
+                    r *= 0.4f; // You can play with this factor
+                    //std::cout << "For r linear = " << cg_polar.d_y[xi] << ", log transform is " << r << std::endl;
+                }
+                //float phi = cg_polar.d_x[xi] * rad_per_dist;
+
+                // r and phi in the image frame:
+                float phi_imframe = (cg_polar.d_x[xi] * rad_per_dist) + view_angle;
+                if (phi_imframe > morph::mathconst<float>::pi) { phi_imframe -= morph::mathconst<float>::two_pi; }
+                // x,y in the image frame associated with r,phi in the polar rep:
+                morph::vec<float, 2> abs_xy_imframe = morph::vec<float, 2>({r * std::cos(phi_imframe),
+                                                                            r * std::sin(phi_imframe)}) + view_pos;
+
+                // If abs_xy_imframe is outside the bounds of the image region, then leave value 0 and move on.
+                if (this->isInsideRectangularBoundary (abs_xy_imframe) == false) { continue; }
+
+                // Find pixel nearest abs_xy_imframe
+                //std::list<morph::Rect>::iterator nearest = this->findRectNearest (abs_xy_imframe);
+                // or (if it's faster?):
+                std::list<morph::Rect>::iterator nearest = this->findRectNearPoint (abs_xy_imframe, lastrect);
+                lastrect = nearest;
+
+                // Now sum up contribution from nearest and its neighbours to polar_data[xi].
+
+                // Closest pix
+                std::list<morph::Rect>::iterator curr = nearest;
+                float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
+                float expr = std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
+
+                float contributors = 1.0f;
+                // 8 Neighbours
+                for (unsigned short nn = 0; nn < 8; ++nn) {
+                    if (nearest->has_neighbour(nn)) {
+                        curr = nearest->get_neighbour(nn);
+                        float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
+                        // sum according to 2D Gaussian:
+                        expr += std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
+                        contributors += 1.0f;
+                    }
+                }
+
+                polar_data[xi] = expr / contributors;
+            }
+
+            //polar_data /= polar_data.max(); // renormalise?
+        }
+
+
         /*!
          * This sets a boundary, just as
          * morph::CartGrid::setBoundary(vector<morph::BezCoord<float>& bpoints, bool offset)
@@ -951,6 +1038,17 @@ namespace morph {
          */
         float getv() const { return this->v; }
 
+        //! Get the x_span/y_span
+        morph::vec<float, 2> getSpan() { return morph::vec<float, 2>({this->x_span, this->y_span}); }
+
+        //! Get the x/y span in elements/pixels
+        morph::vec<unsigned int, 2> getSpanPix()
+        {
+            unsigned int _x_pixdist = static_cast<unsigned int>(this->x_span/this->d);
+            unsigned int _y_pixdist = static_cast<unsigned int>(this->y_span/this->v);
+            return morph::vec<unsigned int, 2>({ 1+_x_pixdist, 1+_y_pixdist });
+        }
+
         /*!
          * Get the shortest distance from the centre to the perimeter. This is the
          * "short radius".
@@ -973,46 +1071,6 @@ namespace morph {
          * Compute and return the area of one rect in the grid.
          */
         float getRectArea() const { return (this->d * this->v); }
-
-        /*!
-         * Find the minimum value of x' on the CartGrid, where x' is the x axis rotated
-         * by phi degrees.
-         */
-        float getXmin (float phi = 0.0f) const
-        {
-            float xmin = 0.0f;
-            float x_ = 0.0f;
-            bool first = true;
-            for (auto r : this->rects) {
-                x_ = r.x * std::cos (phi) + r.y * std::sin (phi);
-                if (first) {
-                    xmin = x_;
-                    first = false;
-                }
-                xmin = x_ < xmin ? x_ : xmin;
-            }
-            return xmin;
-        }
-
-        /*!
-         * Find the maximum value of x' on the CartGrid, where x' is the x axis rotated
-         * by phi degrees.
-         */
-        float getXmax (float phi = 0.0f) const
-        {
-            float xmax = 0.0f;
-            float x_ = 0.0f;
-            bool first = true;
-            for (auto r : this->rects) {
-                x_ = r.x * std::cos (phi) + r.y * std::sin (phi);
-                if (first) {
-                    xmax = x_;
-                    first = false;
-                }
-                xmax = x_ > xmax ? x_ : xmax;
-            }
-            return xmax;
-        }
 
         /*!
          * Run through all the rects and compute the distance to the nearest boundary
@@ -1213,19 +1271,19 @@ namespace morph {
         }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 3>> getCoordinates3()
+        std::vector<morph::vec<float, 3>> getCoordinates3()
         {
-            std::vector<morph::Vector<float, 3>> coords (this->num());
+            std::vector<morph::vec<float, 3>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i], this->z };
             }
             return coords;
         }
 
-        //! Get all the (x,y) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 2>> getCoordinates2()
+        //! Get all the (x,y) coordinates from the grid and return as vector of vecs
+        std::vector<morph::vec<float, 2>> getCoordinates2()
         {
-            std::vector<morph::Vector<float, 2>> coords (this->num());
+            std::vector<morph::vec<float, 2>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i] };
             }
@@ -1503,6 +1561,9 @@ namespace morph {
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->v));
 
+            this->x_minmax = {-halfCols * this->d, halfCols * this->d};
+            this->y_minmax = {-halfRows * this->v, halfRows * this->v};
+
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
 
@@ -1558,6 +1619,9 @@ namespace morph {
         //! Initialize a non-symmetric rectangular grid.
         void init2 (float x1, float y1, float x2, float y2)
         {
+            this->x_minmax = {x1, x2};
+            this->y_minmax = {y1, y2};
+
             int _xi = std::round(x1/this->d);
             int _xf = std::round(x2/this->d);
             int _yi = std::round(y1/this->v);
@@ -1631,6 +1695,16 @@ namespace morph {
             std::list<morph::Rect>::iterator h = this->findRectNearPoint (point, startFrom);
             h->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             return h;
+        }
+
+        // ASSUMING that the boundary is rectangular, is the point inside the rectangle?
+        bool isInsideRectangularBoundary (const morph::vec<float, 2>& point)
+        {
+            if (point[0] < this->x_minmax[0]) { return false; }
+            if (point[0] > this->x_minmax[1]) { return false; }
+            if (point[1] < this->y_minmax[0]) { return false; }
+            if (point[1] > this->y_minmax[1]) { return false; }
+            return true;
         }
 
         /*!
@@ -1774,6 +1848,52 @@ namespace morph {
             }
 
             return false;
+        }
+
+        std::list<Rect>::iterator findRectNearPoint (const vec<float, 2>& point, std::list<Rect>::iterator startFrom)
+        {
+            bool neighbourNearer = true;
+
+            std::list<morph::Rect>::iterator h = startFrom;
+            float d = h->distanceFrom (point);
+            float d_ = 0.0f;
+
+            while (neighbourNearer == true) {
+
+                neighbourNearer = false;
+                if (h->has_ne() && (d_ = h->ne->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->ne;
+                    neighbourNearer = true;
+
+                } else if (h->has_nne() && (d_ = h->nne->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nne;
+                    neighbourNearer = true;
+
+                } else if (h->has_nnw() && (d_ = h->nnw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nnw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nw() && (d_ = h->nw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nsw() && (d_ = h->nsw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nsw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nse() && (d_ = h->nse->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nse;
+                    neighbourNearer = true;
+                }
+            }
+
+            return h;
         }
 
         /*!
@@ -2209,6 +2329,24 @@ namespace morph {
             return nearest;
         }
 
+        std::list<Rect>::iterator findRectNearest (const morph::vec<float, 2>& pos)
+        {
+            std::list<morph::Rect>::iterator nearest = this->rects.end();
+            std::list<morph::Rect>::iterator ri = this->rects.begin();
+            float dist = std::numeric_limits<float>::max();
+            while (ri != this->rects.end()) {
+                float dx = pos[0] - ri->x;
+                float dy = pos[1] - ri->y;
+                float dl = std::sqrt (dx*dx + dy*dy);
+                if (dl < dist) {
+                    dist = dl;
+                    nearest = ri;
+                }
+                ++ri;
+            }
+            return nearest;
+        }
+
         //! Assuming a rectangular CartGrid, find bottom left element
         std::list<Rect>::iterator findBottomLeft()
         {
@@ -2252,23 +2390,16 @@ namespace morph {
         //! A boundary to apply to the initial, rectangular grid.
         BezCurvePath<float> boundary;
 
-#if 0 // These are never set
-        /*
-         * Rect references to the rects on the vertices of the rectagonal
-         * grid. Configured during init(). These will become invalid when a new
-         * boundary is applied to the original rectagonal grid. When this occurs,
-         * gridReduced should be set false.
-         */
-        std::list<Rect>::iterator vertexNE;
-        std::list<Rect>::iterator vertexNW;
-        std::list<Rect>::iterator vertexSW;
-        std::list<Rect>::iterator vertexSE;
-#endif
         /*!
          * Set true when a new boundary or domain has been applied. This means that
          * the #vertexNE, #vertexSW, and similar iterators are no longer valid.
          */
         bool gridReduced = false;
+
+    public:
+        // Min/max x and y to record size of domain. Populate during init.
+        morph::vec<float, 2> x_minmax = {0,0};
+        morph::vec<float, 2> y_minmax = {0,0};
     };
 
 } // namespace morph

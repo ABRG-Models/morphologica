@@ -1,7 +1,7 @@
 // Twinax graph
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 
 using morph::unicode;
 
@@ -13,8 +13,8 @@ int main()
     auto gv = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, {0,0,0});
     // This is going to be a twin axis graph
     gv->axisstyle = morph::axisstyle::twinax;
-    // Data for the x axis. A vVector is like std::vector, but with built-in maths methods
-    morph::vVector<double> x;
+    // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
+    morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
     x.linspace (-0.5, 0.8, 14);
 

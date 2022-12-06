@@ -2,8 +2,7 @@
  * Linear regression, with visualisation
  */
 
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <morph/Random.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
@@ -13,14 +12,14 @@
 int main()
 {
     // Data
-    morph::vVector<float> absc = { 1, 2, 3, 4, 5 }; // x
-    morph::vVector<float> ord = { 1, 3, 2, 3, 5 }; // y
+    morph::vvec<float> absc = { 1, 2, 3, 4, 5 }; // x
+    morph::vvec<float> ord = { 1, 3, 2, 3, 5 }; // y
 
     // Fit y = mx + c
     std::pair<float, float> mc = morph::MathAlgo::linregr (absc, ord);
     std::cout << "Linear regression coefficients: gradient=" << mc.first << ", offset=" << mc.second << std::endl;
     // Create fit data points for visualisation:
-    morph::vVector<float> fit = (absc * mc.first) + mc.second;
+    morph::vvec<float> fit = (absc * mc.first) + mc.second;
 
     // Visualise data and linear fit
     morph::Visual v(1024, 768, "Linear regression", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);

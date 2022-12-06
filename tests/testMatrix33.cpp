@@ -1,7 +1,6 @@
 #include "morph/Matrix33.h"
 #include <iostream>
 #include <array>
-#include <morph/Vector.h>
 
 void setMatrixSequence (morph::Matrix33<float>& tm)
 {

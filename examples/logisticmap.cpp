@@ -5,8 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/GraphVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -23,8 +22,8 @@ int main (int argc, char** argv)
     v.lightingEffects();
 
     try {
-        morph::vVector<double> absc;
-        morph::vVector<double> ord;
+        morph::vvec<double> absc;
+        morph::vvec<double> ord;
         morph::GraphVisual<double>* gv = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, {0,0,0});
 
         double x = 0.5;

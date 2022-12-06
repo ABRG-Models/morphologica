@@ -9,7 +9,7 @@
  */
 #pragma once
 
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <sstream>
 #include <ostream>
@@ -27,7 +27,7 @@ namespace morph {
         struct FeedForwardConn
         {
             //! Construct for connection from single input layer to single output layer
-            FeedForwardConn (morph::vVector<T>* _in, morph::vVector<T>* _out)
+            FeedForwardConn (morph::vvec<T>* _in, morph::vvec<T>* _out)
             {
                 this->ins.resize(1);
                 this->ins[0] = _in;
@@ -35,14 +35,14 @@ namespace morph {
             }
 
             //! Construct for connection from many input layers to single output layer
-            FeedForwardConn (std::vector<morph::vVector<T>*> _ins, morph::vVector<T>* _out)
+            FeedForwardConn (std::vector<morph::vvec<T>*> _ins, morph::vvec<T>* _out)
             {
                 this->ins = _ins;
                 this->commonInit (_out);
             }
 
             //! Init common to all constructors
-            void commonInit (morph::vVector<T>* _out)
+            void commonInit (morph::vvec<T>* _out)
             {
                 this->out = _out;
                 this->N = this->out->size();
@@ -71,28 +71,28 @@ namespace morph {
             }
 
             //! Input layer has total size M = m1 + m2 +... etc where m1, m2 are the
-            //! lengths of the elements of ins. Each vVector<T> element of the outer
+            //! lengths of the elements of ins. Each vvec<T> element of the outer
             //! std::vector is a connection from a separate population(or layer) of
             //! neurons.
-            std::vector<morph::vVector<T>*> ins;
+            std::vector<morph::vvec<T>*> ins;
             //! Pointer to output layer. Size N.
-            morph::vVector<T>* out;
+            morph::vvec<T>* out;
             //! The size (i.e. number of neurons) in out.
             size_t N = 0;
             //! The errors in the input layer of neurons. Size M = m1 + m2 +...
-            std::vector<morph::vVector<T>> deltas;
+            std::vector<morph::vvec<T>> deltas;
             //! Weights.
             //! Order of weights: w_11, w_12,.., w_1M, w_21, w_22, w_2M, etc. Size M by N = m1xN + m2xN +...
-            std::vector<morph::vVector<T>> ws;
+            std::vector<morph::vvec<T>> ws;
             //! Biases. Size N.
-            morph::vVector<T> b;
+            morph::vvec<T> b;
             //! The gradients of cost vs. weights. Size M by N = m1xN + m2xN +...
-            std::vector<morph::vVector<T>> nabla_ws;
+            std::vector<morph::vvec<T>> nabla_ws;
             //! The gradients of cost vs. biases. Size N.
-            morph::vVector<T> nabla_b;
+            morph::vvec<T> nabla_b;
             //! Activation of the output neurons. Computed in feedforward, used in backprop
             //! z = sum(w.in) + b. Final output written into *out is the sigmoid(z). Size N.
-            morph::vVector<T> z;
+            morph::vvec<T> z;
 
             //! Output as a string
             std::string str() const
@@ -136,10 +136,10 @@ namespace morph {
 
                 // Loop over input populations:
                 for (size_t i = 0; i < this->ins.size(); ++i) {
-                    // A morph::vVector for a 'part of w'
-                    morph::vVector<T>* _in = this->ins[i];
+                    // A morph::vvec for a 'part of w'
+                    morph::vvec<T>* _in = this->ins[i];
                     size_t m = _in->size();// Size m[i]
-                    morph::vVector<T> wpart(m);
+                    morph::vvec<T> wpart(m);
                     // Get weights, outputs and biases iterators
                     auto witer = this->ws[i].begin();
                     // Carry out an N sized for loop computing each output
@@ -169,12 +169,12 @@ namespace morph {
             }
 
             //! The content of *FeedForwardConn::out is sigmoid(z^l+1). \return has size N
-            morph::vVector<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
+            morph::vvec<T> sigmoid_prime_z_lplus1() { return (*out) * (-(*out)+T{1}); }
 
             //! The content of *FeedForwardConn::in is sigmoid(z^l). \return has size M = m1 + m2 +...
-            std::vector<morph::vVector<T>> sigmoid_prime_z_l()
+            std::vector<morph::vvec<T>> sigmoid_prime_z_l()
             {
-                std::vector<morph::vVector<T>> rtn (this->ins.size());
+                std::vector<morph::vvec<T>> rtn (this->ins.size());
                 for (size_t i = 0; i < this->ins.size(); ++i) {
                     rtn[i] = (*ins[i]) * (-(*ins[i])+T{1});
                 }
@@ -204,7 +204,7 @@ namespace morph {
              * Compute this->delta using the values computed in FeedForwardConn::feedforward
              * (which must have been executed beforehand).
              */
-            void backprop (const morph::vVector<T>& delta_l_nxt) // delta_l_nxt has size N.
+            void backprop (const morph::vvec<T>& delta_l_nxt) // delta_l_nxt has size N.
             {
                 // Check sum of sizes in delta_l_nxt
                 if (delta_l_nxt.size() != this->out->size()) {
@@ -214,9 +214,9 @@ namespace morph {
                     throw std::runtime_error (ee.str());
                 }
 
-                // we have to do weights * delta_l_nxt to give a morph::vVector<T>
+                // we have to do weights * delta_l_nxt to give a morph::vvec<T>
                 // result. This is the equivalent of the matrix multiplication:
-                std::vector<morph::vVector<T>> w_times_deltas(this->ins.size());
+                std::vector<morph::vvec<T>> w_times_deltas(this->ins.size());
                 for (size_t idx = 0; idx < this->ins.size(); ++idx) {
                     size_t m = this->ins[idx]->size();
                     w_times_deltas[idx].resize(m);
@@ -230,7 +230,7 @@ namespace morph {
                 }
 
                  // spzl has size M; deriv of input
-                std::vector<morph::vVector<T>> spzl = this->sigmoid_prime_z_l();
+                std::vector<morph::vvec<T>> spzl = this->sigmoid_prime_z_l();
 
                 if (spzl.size() < this->deltas.size()) {
                     throw std::runtime_error ("Sizes error (spzl and deltas)");

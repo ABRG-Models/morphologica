@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <morph/MathAlgo.h>
 #include <memory>
 #include <utility>
@@ -50,9 +50,9 @@ namespace morph {
         T range = T{0}; // range of data
         T datacount = T{0}; // how many elements were there in data?
         T binwidth = T{0}; // Width of each bin
-        morph::vVector<T> bins; // centres of bins
-        morph::vVector<T> binedges;
-        morph::vVector<T> counts;
-        morph::vVector<T> proportions;
+        morph::vvec<T> bins; // centres of bins
+        morph::vvec<T> binedges;
+        morph::vvec<T> counts;
+        morph::vvec<T> proportions;
     };
 }

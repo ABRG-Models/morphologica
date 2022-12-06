@@ -86,17 +86,17 @@ int main()
 
         morph::Visual v(1600, 1000, "Dirichlet code");
         v.lightingEffects();
-        morph::Vector<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-        morph::Vector<float, 3> offset2 = offset;
+        morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float, 3> offset2 = offset;
         offset2 += {0,0,0.002f};
         array<float,3> cl_b = morph::ColourMap<float>::jetcolour (0.78);
         float sz = hg.hexen.front().d;
         for (auto h : hg.hexen) {
             array<float,3> cl_a = morph::ColourMap<float>::jetcolour (f[h.vi]);
             array<float,3> p = h.position();
-            Vector<float,3> pv = { p[0], p[1], p[2] };
-            Vector<float,3> vtx = pv;
-            vtx += Vector<float, 3>({1,0,0});
+            vec<float,3> pv = { p[0], p[1], p[2] };
+            vec<float,3> vtx = pv;
+            vtx += vec<float, 3>({1,0,0});
             v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, pv, vtx, sz/1.8f, 0.002f, cl_a, 6));
             if (h.boundaryHex()) {
                 v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset2, pv, vtx, sz/12.0f, 0.002f, cl_b, 6));
@@ -105,10 +105,10 @@ int main()
 
         array<float,3> cl_c = morph::ColourMap<float>::jetcolour (0.98);
         for (auto verti : vertices) {
-            Vector<float,3> posn = {0, 0, 0.002};
+            vec<float,3> posn = {0, 0, 0.002};
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
-            Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+            vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
             v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/8.0f, 0.002f, cl_c, 60));
         }
 
@@ -119,25 +119,25 @@ int main()
             for (auto dom_inner : dom_outer.vertices) {
                 // Draw the paths
                 for (auto path : dom_inner.pathto_next) {
-                    Vector<float,3> posn = {{0,0,0}};
+                    vec<float,3> posn = {{0,0,0}};
                     posn[0] = path.first;
                     posn[1] = path.second;
-                    Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+                    vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
                     v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_d, 6));
                 }
                 for (auto path : dom_inner.pathto_neighbour) {
-                    Vector<float,3> posn = {{0,0,0}};
+                    vec<float,3> posn = {{0,0,0}};
                     posn[0] = path.first;
                     posn[1] = path.second;
-                    Vector<float,3> vtx = posn + Vector<float, 3>({1,0,0});
+                    vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
                     v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_e, 6));
                 }
             }
         }
 
         // Draw small hex at boundary centroid.
-        Vector<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
-        Vector<float,3> centroidv = centroid + Vector<float,3> ({ 0.0f, 1.0f, 0.0f });
+        vec<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
+        vec<float,3> centroidv = centroid + vec<float,3> ({ 0.0f, 1.0f, 0.0f });
         v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0}, centroid, centroidv, sz/16.0f, 0.01f, {0,0,1}, 10));
         // red hex at zero
         v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0.01f}, {0,0,0}, {0,1,0}, sz/20.0f, 0.01f, {1,0,0}, 8));

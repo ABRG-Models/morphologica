@@ -8,7 +8,7 @@
 # include <morph/QuadsVisual.h>
 #endif
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -24,7 +24,7 @@ int main (int argc, char** argv)
     v.lightingEffects (true);
 
     try {
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
         morph::Scale<float> scale;
         scale.setParams (1.0, 0.0);
 

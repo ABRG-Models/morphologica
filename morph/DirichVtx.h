@@ -8,7 +8,7 @@
  */
 #pragma once
 
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <cmath>
 #include <limits>
 #include <utility>

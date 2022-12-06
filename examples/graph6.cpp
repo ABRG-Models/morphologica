@@ -2,8 +2,8 @@
 // a graph can be completely redrawn each time, if required.
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/vVector.h>
-#include <morph/MathConst.h>
+#include <morph/vvec.h>
+#include <morph/mathconst.h>
 
 int main()
 {
@@ -11,7 +11,7 @@ int main()
 
     auto gv = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, {0,0,0});
 
-    morph::vVector<double> x;
+    morph::vvec<double> x;
     x.linspace (-morph::mathconst<double>::pi, morph::mathconst<double>::pi, 100);
 
     double dx = 0.0;

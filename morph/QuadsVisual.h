@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -25,7 +25,7 @@ namespace morph {
     public:
         QuadsVisual(GLuint sp,
                     const std::vector<std::array<Flt,12>>* _quads,
-                    const Vector<float> _offset,
+                    const vec<float> _offset,
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
@@ -43,7 +43,7 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<Vector<float>>(this->quads->size());
+            this->dataCoords = new std::vector<vec<float>>(this->quads->size());
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
                 // q is an array<Flt, 12>. These lines compute the centroid:
@@ -70,7 +70,7 @@ namespace morph {
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
                     const float _hue = 0.0f) {
-            Vector<float> offset_vec;
+            vec<float> offset_vec;
             offset_vec.set_from(_offset);
             QuadsVisual(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
         }
@@ -79,7 +79,7 @@ namespace morph {
             delete this->dataCoords;
         }
 
-        virtual void updateCoords (std::vector<Vector<Flt>>* _coords) {
+        virtual void updateCoords (std::vector<vec<Flt>>* _coords) {
             throw std::runtime_error ("This won't work.");
         }
 
@@ -98,11 +98,11 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->colourScale.transform ((*this->scalarData), dcopy);
 
-            morph::Vector<float> v0, v1, v2, v3;
+            morph::vec<float> v0, v1, v2, v3;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = (*this->quads)[qi];
-                // Convert the array of 12 floats into 4 Vectors
+                // Convert the array of 12 floats into 4 vecs
                 v0 = {quad[0], quad[1], quad[2]};
                 v1 = {quad[3], quad[4], quad[5]};
                 v2 = {quad[6], quad[7], quad[8]};
@@ -114,9 +114,9 @@ namespace morph {
                 this->vertex_push (v3, this->vertexPositions);
 
                 // Compute normal
-                morph::Vector<float> plane1 = v1 - v0;
-                morph::Vector<float> plane2 = v2 - v0;
-                morph::Vector<float> vnorm = plane2.cross (plane1);
+                morph::vec<float> plane1 = v1 - v0;
+                morph::vec<float> plane2 = v2 - v0;
+                morph::vec<float> vnorm = plane2.cross (plane1);
                 vnorm.renormalize();
 
                 // All same colours
@@ -133,7 +133,7 @@ namespace morph {
 
                 if (this->computeBackQuads == true) {
                     // Compute a 'depth' in the direction of the normal
-                    morph::Vector<float> depth = vnorm;
+                    morph::vec<float> depth = vnorm;
                     depth *= plane1.length();
                     depth *= 0.01f;
 

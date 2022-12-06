@@ -8,9 +8,9 @@
  */
 #pragma once
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/VisualModel.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/VisualTextModel.h>
 #include <array>
 
@@ -32,7 +32,7 @@ namespace morph {
         //! factor to slim/thicken the axes and _em controls the size of the axis
         //! labels. Set _em to 0.0f to omit the text x/y/z labels.
         CoordArrows(GLuint sp, GLuint tsp,
-                    const Vector<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
+                    const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
         {
             this->init (sp, tsp, _lengths, _thickness, _em);
         }
@@ -40,7 +40,7 @@ namespace morph {
         virtual ~CoordArrows () {}
 
         void init (GLuint sp, GLuint tsp,
-                   const Vector<float, 3> _lengths, const float _thickness, const float _em)
+                   const vec<float, 3> _lengths, const float _thickness, const float _em)
         {
             // Set up...
             this->shaderprog = sp;
@@ -77,7 +77,7 @@ namespace morph {
         void initAxisLabels()
         {
             if (this->em > 0.0f) {
-                morph::Vector<float> toffset = this->mv_offset;
+                morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 std::cout << "X text offset: " << toffset << std::endl;
                 this->texts.push_back (new VisualTextModel (this->tshaderprog,
@@ -114,8 +114,8 @@ namespace morph {
 
             // Draw four spheres to make up the coord frame, with centre at 0,0,0
             // (mv_offset is applied in translation matrices)
-            Vector<float, 3> reloffset = {0,0,0};
-            Vector<float, 3> zerocoord = {0,0,0};
+            vec<float, 3> reloffset = {0,0,0};
+            vec<float, 3> zerocoord = {0,0,0};
             this->computeSphere (idx, zerocoord, centresphere_col, this->thickness*this->lengths[0]/20.0);
 
             // x
@@ -137,7 +137,7 @@ namespace morph {
         }
 
         //! The lengths of the x, y and z arrows.
-        Vector<float, 3> lengths;
+        vec<float, 3> lengths;
         //! A thickness scaling factor, to apply to the arrows.
         float thickness = 1.0f;
         //! m size for text labels

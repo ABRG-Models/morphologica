@@ -11,7 +11,7 @@
  *
  * Classes created from the template class morph::Scale will derive from one of the
  * morph::ScaleImpl <ntype, T, S> classes, where ntype is the 'number type' (0 means the
- * numbers are mathematical vectors like morph::Vector, std::array or std::vector; 1
+ * numbers are mathematical vectors like morph::vec, std::array or std::vector; 1
  * means that the numbers are scalars like float, double or int)
  *
  * Usage: See \c tests/testScale.cpp \n
@@ -62,7 +62,7 @@ namespace morph {
      *
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double, etc or a type which can contain a vector such as std::array,
-     * morph::Vector or std::vector.
+     * morph::vec or std::vector.
      *
      * \tparam S Output number type. Having separate type allows for scaling of a range
      * of integers into a floating point value between 0 and 1 which can be advantageous
@@ -202,7 +202,7 @@ namespace morph {
          *
          * \param data The data from which to determine the scaling parameters. In
          * practice, this will be something like \c std::vector<float> or
-         * \c std::list<morph::Vector<double,2>>
+         * \c std::list<morph::vec<double,2>>
          */
         template < template <typename, typename> typename Container,
                    typename TT=T,
@@ -256,7 +256,7 @@ namespace morph {
      * \brief ScaleImpl for vector \a T
      *
      * A default implementation base class for Scale which is used when the number type
-     * of \a T is a vector such as std::array or morph::Vector.
+     * of \a T is a vector such as std::array or morph::vec.
      *
      * \tparam ntype The 'number type' as contained in number_type::value. 1 for
      * vectors, 0 for scalars. Default is 0. This class is active if ntype is 0. There
@@ -265,7 +265,7 @@ namespace morph {
      *
      * \tparam T The type of the number to be scaled. Should be some scalar type such as
      * int, double, etc or a type which can contain a vector such as std::array,
-     * morph::Vector or std::vector. It is from the type \a T that ntype is determined.
+     * morph::vec or std::vector. It is from the type \a T that ntype is determined.
      *
      * \sa ScaleImplBase
      */

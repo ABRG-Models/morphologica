@@ -261,4 +261,4 @@ endif()
 
 add_executable(scale scale.cpp)
 
-add_executable(vVector vVector.cpp)
+add_executable(vvec vvec.cpp)

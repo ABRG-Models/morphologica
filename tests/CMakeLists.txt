@@ -249,30 +249,30 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
-# testVector.
-add_executable(testVector testVector.cpp)
-add_test(testVector testVector)
+# test morph::vec.
+add_executable(testvec testvec.cpp)
+add_test(testvec testvec)
 
-# testVector elemental operations
-add_executable(testVectorElementOps testVectorElementOps.cpp)
-add_test(testVectorElementOps testVectorElementOps)
+# test morph::vec elemental operations
+add_executable(testvecElementOps testvecElementOps.cpp)
+add_test(testvecElementOps testvecElementOps)
 
-# Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
-add_executable(testvVector testvVector.cpp)
-add_test(testvVector testvVector)
+# Test the "mathematic vector made from an std::vector" code (this vvec is better for neural networks)
+add_executable(testvvec testvvec.cpp)
+add_test(testvvec testvvec)
 
-add_executable(testvVectorOfVectors testvVectorOfVectors.cpp)
-add_test(testvVectorOfVectors testvVectorOfVectors)
+add_executable(testvvecofvecs testvvecofvecs.cpp)
+add_test(testvvecofvecs testvvecofvecs)
 
-# It's possible to modify testVector.cpp to be c++-11 or c++-14 friendly:
-add_executable(testVector14 testVector14.cpp)
-target_compile_features(testVector14 PUBLIC cxx_std_14)
-add_test(testVector14 testVector14)
-add_executable(testVector11 testVector14.cpp)
-target_compile_features(testVector11 PUBLIC cxx_std_11)
-add_test(testVector11 testVector11)
+# It's possible to modify testvec.cpp to be c++-11 or c++-14 friendly:
+add_executable(testvec14 testvec14.cpp)
+target_compile_features(testvec14 PUBLIC cxx_std_14)
+add_test(testvec14 testvec14)
+add_executable(testvec11 testvec14.cpp)
+target_compile_features(testvec11 PUBLIC cxx_std_11)
+add_test(testvec11 testvec11)
 
-# Test the Scaling of vectors
+# Test the Scaling of vecs
 add_executable(testScaleVector testScaleVector.cpp)
 add_test(testScaleVector testScaleVector)
 

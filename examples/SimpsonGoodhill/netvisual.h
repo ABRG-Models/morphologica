@@ -18,7 +18,7 @@
 #endif
 #endif
 #include <morph/VisualModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Scale.h>
 #include <array>
 
@@ -28,7 +28,7 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset, net<Flt>* _locations)
+    NetVisual(GLuint sp, GLuint tsp, const morph::vec<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
         this->shaderprog = sp;
@@ -46,8 +46,8 @@ public:
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
-            morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+            morph::vec<Flt, 3> c1 = this->locations->p[c[0]];
+            morph::vec<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/Flt{4});
@@ -66,5 +66,5 @@ public:
     Flt radiusFixed = Flt{0.01};
     Flt linewidth = Flt{0.008};
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0.0f, 0.0f, 1.0f};
+    morph::vec<float, 3> uz = {0.0f, 0.0f, 1.0f};
 };
