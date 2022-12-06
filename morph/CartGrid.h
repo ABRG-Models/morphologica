@@ -501,7 +501,7 @@ namespace morph {
             this->init (d_, d_, x_span_, x_span_, z_);
         }
 
-        //! Compute the centroid of the passed in list of Rectes.
+        //! Compute the centroid of the passed in list of Rects.
         std::pair<float, float> computeCentroid (const std::list<Rect>& pRects)
         {
             std::pair<float, float> centroid;
