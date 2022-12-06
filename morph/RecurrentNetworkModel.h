@@ -23,7 +23,7 @@
 #include <morph/Random.h>
 #include <morph/Config.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/RecurrentNetworkTools.h>
 #include <morph/RecurrentNetwork.h>
 #include <morph/ReadCurves.h>
@@ -588,7 +588,7 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-3.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
                 scale.do_autoscale = true;
                 std::vector<float> fFlt;
@@ -614,7 +614,7 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
                 scale.do_autoscale = true;
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
@@ -642,7 +642,7 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
 
                 if(color_min==color_max){

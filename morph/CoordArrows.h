@@ -10,7 +10,7 @@
 
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/VisualTextModel.h>
 #include <array>
 

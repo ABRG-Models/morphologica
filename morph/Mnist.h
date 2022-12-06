@@ -41,7 +41,7 @@
 #include <stdexcept>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 
 namespace morph {
 
@@ -68,7 +68,7 @@ namespace morph {
 
         void loadData (const std::string& tag,
                        std::multimap<unsigned char, cv::Mat>& theMats,
-                       std::multimap<unsigned char, morph::vVector<float>>& vecFloats)
+                       std::multimap<unsigned char, morph::vvec<float>>& vecFloats)
         {
             // Training data
             std::ifstream img_f;
@@ -143,7 +143,7 @@ namespace morph {
                 auto ii = theMats.insert ({lbl, tmp}); // create a new mat header in the list
                 oneimg.copyTo (ii->second);
 
-                morph::vVector<float> ar(nr*nc);
+                morph::vvec<float> ar(nr*nc);
                 size_t i = 0;
                 for (int r = 0; r < this->nr; ++r) {
                     for (int c = 0; c < this->nc; ++c) {
@@ -187,16 +187,16 @@ namespace morph {
         //! The basepath for finding the files that contain the numeral image data
         std::string basepath = "mnist/";
 
-        //! The training data. The key to this multimap is the label, the Mat (or vVector)
+        //! The training data. The key to this multimap is the label, the Mat (or vvec)
         //! contains each training image. This is to be 50000 out of 60000 examples.
         std::multimap<unsigned char, cv::Mat> training;
         // Same data extracted into vectors of floats, rather than Mats.
-        std::multimap<unsigned char, morph::vVector<float>> training_f;
+        std::multimap<unsigned char, morph::vvec<float>> training_f;
 
-        //! The test data. The key to this multimap is the label; the Mat (or vVector)
+        //! The test data. The key to this multimap is the label; the Mat (or vvec)
         //! contains each test image
         std::multimap<unsigned char, cv::Mat> test;
-        std::multimap<unsigned char, morph::vVector<float>> test_f;
+        std::multimap<unsigned char, morph::vvec<float>> test_f;
     };
 
 } // namespace morph

@@ -42,7 +42,7 @@ namespace morph {
      * manipulating those points on the way to discovering a minimum of a function.
      *
      * This could be re-written with template <typename T, size_t N> where N is the
-     * dimensionality of the search, and using morph::Vector<T, N+1> as the type for
+     * dimensionality of the search, and using morph::vec<T, N+1> as the type for
      * vertices.
      */
     template <typename T>

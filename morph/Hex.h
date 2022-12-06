@@ -15,7 +15,7 @@
 #include <cmath>
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/vec.h>
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT

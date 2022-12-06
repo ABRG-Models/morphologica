@@ -19,7 +19,7 @@
 #endif
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/VisualCommon.h>
 #include <morph/unicode.h>
 #include <morph/VisualFace.h>

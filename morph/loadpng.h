@@ -1,5 +1,5 @@
 /*
- * Helper to load PNG images into morph::vVector<Vector<float>> format and similar.
+ * Helper to load PNG images into morph::vvec<morph::vec<float>> format and similar.
  *
  * Note: You have to #include this before morph/Visual.h
  */
@@ -10,8 +10,8 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 
 namespace morph {
 
@@ -19,10 +19,10 @@ namespace morph {
      * Wrap lodepng::decode to load a PNG from file, placing the data into the
      * image_data array. Figure out based on the type of T, how to scale the numbers.
      *
-     * Use with T as float, double, unsigned char/int or morph::Vector<float, 3> etc
+     * Use with T as float, double, unsigned char/int or morph::vec<float, 3> etc
      */
     template <typename T>
-    static morph::Vector<unsigned int, 2> loadpng (const std::string& filename, morph::vVector<T>& image_data)
+    static morph::vec<unsigned int, 2> loadpng (const std::string& filename, morph::vvec<T>& image_data)
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -30,7 +30,7 @@ namespace morph {
         // Assume RGBA and bit depth of 8
         lodepng::decode (png, w, h, filename, LCT_RGBA, 8);
         // For return:
-        morph::Vector<unsigned int, 2> dims = {w, h};
+        morph::vec<unsigned int, 2> dims = {w, h};
 
         // Now convert out into a value placed in image_data
         // If T is float or double, then get mean RGB, convert to range 0 to 1
@@ -66,7 +66,7 @@ namespace morph {
     }
 
     template <typename T, size_t N>
-    static morph::Vector<unsigned int, 2> loadpng (const std::string& filename, morph::vVector<morph::Vector<T, N>>& image_data)
+    static morph::vec<unsigned int, 2> loadpng (const std::string& filename, morph::vvec<morph::vec<T, N>>& image_data)
     {
         std::vector<unsigned char> png;
         unsigned int w = 0;
@@ -74,7 +74,7 @@ namespace morph {
         // Assume RGBA and bit depth of 8
         lodepng::decode (png, w, h, filename, LCT_RGBA, 8);
         // For return:
-        morph::Vector<unsigned int, 2> dims = {w, h};
+        morph::vec<unsigned int, 2> dims = {w, h};
 
         // Now convert out into a value placed in image_data
         // If T is float or double, then get mean RGB, convert to range 0 to 1

@@ -13,7 +13,7 @@
 #include <morph/Hex.h>
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/MathAlgo.h>
 #include <morph/HdfData.h>
 #include <morph/debug.h>

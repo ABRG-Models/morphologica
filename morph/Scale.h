@@ -11,7 +11,7 @@
  *
  * Classes created from the template class morph::Scale will derive from one of the
  * morph::ScaleImpl <ntype, T, S> classes, where ntype is the 'number type' (0 means the
- * numbers are mathematical vectors like morph::Vector, std::array or std::vector; 1
+ * numbers are mathematical vectors like morph::vec, std::array or std::vector; 1
  * means that the numbers are scalars like float, double or int)
  *
  * Usage: See \c tests/testScale.cpp \n

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <array>
 #include <morph/vec.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 
 void setMatrixSequence (morph::Matrix22<float>& tm)
 {

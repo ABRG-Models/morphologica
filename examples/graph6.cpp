@@ -3,7 +3,7 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 
 int main()
 {

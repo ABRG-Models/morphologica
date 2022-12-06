@@ -12,9 +12,9 @@
 # include <GL3/gl3.h>
 #endif
 #endif
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/GraphVisual.h> // Share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
 
 namespace morph {
@@ -27,7 +27,7 @@ namespace morph {
         //! \param sp shader program id
         //! \param tsp text shader program id
         //! \param _offset The offset within morph::Visual space to place these axes
-        TriaxesVisual (GLuint sp, GLuint tsp, const Vector<float> _offset)
+        TriaxesVisual (GLuint sp, GLuint tsp, const vec<float> _offset)
         {
             this->shaderprog = sp;
             this->tshaderprog = tsp;
@@ -228,7 +228,7 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 this->xtick_width = geom.width() > this->xtick_width ? geom.width() : this->xtick_width;
-                morph::Vector<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
+                morph::vec<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
@@ -239,7 +239,7 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
-                morph::Vector<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
+                morph::vec<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
@@ -250,7 +250,7 @@ namespace morph {
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;
                 this->ztick_width = geom.width() > this->ztick_width ? geom.width() : this->ztick_width;
-                morph::Vector<float> lblpos = {y_for_zticks-this->ticklabelgap-geom.width(), 0, (float)this->ztick_posns[i]};
+                morph::vec<float> lblpos = {y_for_zticks-this->ticklabelgap-geom.width(), 0, (float)this->ztick_posns[i]};
                 lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
                 this->texts.push_back (lbl);
             }
@@ -262,7 +262,7 @@ namespace morph {
             // x axis label (easy)
             morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
             morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
-            morph::Vector<float> lblpos;
+            morph::vec<float> lblpos;
             lblpos = {{0.5f * this->axis_ends[0] - geom.half_width(),
                        -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_height), 0}};
             lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
@@ -303,17 +303,17 @@ namespace morph {
         }
 
         //! Set the input_min to be the values at the zero points of the graph axes
-        morph::Vector<Flt, 3> input_min = {0,0,0};
+        morph::vec<Flt, 3> input_min = {0,0,0};
         //! Set the input_min to be the values at the maxes of the graph axes
-        morph::Vector<Flt, 3> input_max = {1,1,1};
+        morph::vec<Flt, 3> input_max = {1,1,1};
 
         // Axes parameters
 
         //! x axis max location in model space. Default behaviour is a 1x1x1 cube
-        morph::Vector<Flt, 3> axis_ends = {1,1,1};
+        morph::vec<Flt, 3> axis_ends = {1,1,1};
         //! colour for the axis box/lines. Text also takes this colour.
-        morph::Vector<float, 3> axiscolour = {0,0,0};
-        morph::Vector<float, 3> axiscolour2 = { 0.7f, 0.7f, 0.7f };
+        morph::vec<float, 3> axiscolour = {0,0,0};
+        morph::vec<float, 3> axiscolour2 = { 0.7f, 0.7f, 0.7f };
         //! Set axis and text colours for a dark or black background
         bool darkbg = false;
         //! The line width of the main axis bars
@@ -367,9 +367,9 @@ namespace morph {
         std::string zlabel = "z";
     protected:
         //! Unit vectors
-        morph::Vector<float> ux = {1,0,0};
-        morph::Vector<float> uy = {0,1,0};
-        morph::Vector<float> uz = {0,0,1};
+        morph::vec<float> ux = {1,0,0};
+        morph::vec<float> uy = {0,1,0};
+        morph::vec<float> uz = {0,0,1};
         //! xtick label height
         float xtick_height = 0.0f;
         //! ytick label height

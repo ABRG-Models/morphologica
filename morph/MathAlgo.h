@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include <morph/vec.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
 

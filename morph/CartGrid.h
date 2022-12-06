@@ -8,7 +8,7 @@
 #include <morph/Rect.h>
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/HdfData.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>

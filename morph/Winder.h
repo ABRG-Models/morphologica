@@ -13,7 +13,7 @@
 #include <memory>
 #include <cmath>
 #include <stdexcept>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/expression_sfinae.h>
 
 namespace morph {
