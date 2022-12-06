@@ -116,26 +116,26 @@ v.lightingEffects(true);
 ```
 
 Now that the Visual instance exists, you can add VisualModels. You'll
-see a lot of ```morph::Vector<float, 3>``` objects. These are very much like
+see a lot of ```morph::vec<float, 3>``` objects. These are very much like
 (and in fact are derived from) ```std::array<>``` from the standard library.
 
 ```c++
 // Each VisualModel is given an 'offset within the Visual
 // environment'. Use this offset to control the relative locations of
 // all your VisualModel objects.
-morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
 // Here, I'm using a very simple morph::TriangleVisual to draw a
 // triangle on the screen. I have to specify three corners. These
 // coordinates are in 'VisualModel space'
-morph::Vector<float, 3> c1 = { 0, 0, 0 };
-morph::Vector<float, 3> c2 = { 0.25, 0, 0 };
-morph::Vector<float, 3> c3 = { 0.0, 0.3, 0 };
+morph::vec<float, 3> c1 = { 0, 0, 0 };
+morph::vec<float, 3> c2 = { 0.25, 0, 0 };
+morph::vec<float, 3> c3 = { 0.0, 0.3, 0 };
 
 // The last piece of information that the TriangleVisual will
 // require is a colour. This is an RGB triplet, so this triangle will
 // be red.
-morph::Vector<float, 3> colour1 = { 1.0, 0.0, 0.0 };
+morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
 // Now create the TriangleVisual. You allocate memory for the
 // model here; morph::Visual will be responsible for deallocating the
@@ -197,8 +197,8 @@ public:
     TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
     //! Initialise with offset, three coordinates and a single colour.
-    TriangleVisual(GLuint sp, const Vector<float, 3> _offset,
-                   const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+    TriangleVisual(GLuint sp, const vec<float, 3> _offset,
+                   const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                    const std::array<float, 3> _col)
     {
         this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
@@ -219,8 +219,8 @@ convention in other VisualModel-based classes in which I attempt to
 minimise the number of arguments passed to the constructor.
 
 ```c++
-void init (GLuint sp, const Vector<float, 3> _offset,
-           const Vector<float, 3> _coord1, const Vector<float, 3> _coord2, const Vector<float, 3> _coord3,
+void init (GLuint sp, const vec<float, 3> _offset,
+           const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
            const std::array<float, 3> _col)
 {
     // Keep a copy of the shader program handle/id - common to all VisualModels
@@ -304,13 +304,13 @@ colour.
 ```c++
 //! Compute a triangle from 3 arbitrary corners
 void computeTriangle (VBOint& idx,
-                      Vector<float> c1, Vector<float> c2, Vector<float> c3,
+                      vec<float> c1, vec<float> c2, vec<float> c3,
                       std::array<float, 3> colr)
 {
     // v is the face normal
-    Vector<float> u1 = c1-c2;
-    Vector<float> u2 = c2-c3;
-    Vector<float> v = u1.cross(u2);
+    vec<float> u1 = c1-c2;
+    vec<float> u2 = c2-c3;
+    vec<float> v = u1.cross(u2);
     v.renormalize();
     // Push corner vertices
     this->vertex_push (c1, this->vertexPositions);
@@ -328,8 +328,8 @@ void computeTriangle (VBOint& idx,
 }
 ```
 
-Here, ```Vector<float>``` is a ```morph::Vector<float,3>``` and note that I can
-do vector arithmetic with Vectors. The code adds each corner to
+Here, ```vec<float>``` is a ```morph::vec<float,3>``` and note that I can
+do vector arithmetic with vecs. The code adds each corner to
 ```vertexPositions```, using the convenience function ```VisualModel::vertex_push()```
 (which adds all 3 elements of one coordinate to
 vertexPositions/Colors/Normals in one call). It computes the
@@ -371,8 +371,8 @@ public:
         }
         // Connections
         for (auto c : this->locations->c) {
-            morph::Vector<Flt, 3> c1 = this->locations->p[c[0]];
-            morph::Vector<Flt, 3> c2 = this->locations->p[c[1]];
+            morph::vec<Flt, 3> c1 = this->locations->p[c[0]];
+            morph::vec<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
             // This is VisualModel::computeLine()
@@ -493,7 +493,7 @@ When developing a numerical model, it is often useful to sweep through many diff
 When you have created your ```morph::Config``` object, you pass your main function's argc and
 argv to ```morph::Config::process_args(argc, argv)```. This records any
 'overrides' that you've placed into the command line of your
-program. 
+program.
 
 ```c++
 #include <morph/Config.h>
@@ -502,11 +502,11 @@ int main (int argc, char** argv)
 {
     morph::Config conf("./params.json");
     if (!conf.ready) { /* handle error */ }
-    
+
     // This line is all you have to add to your setup to be able to override a parameter
     conf.process_args (argc, argv);
 
-    // Now, when you call conf.getDouble for the parameter 'A', then you'll 
+    // Now, when you call conf.getDouble for the parameter 'A', then you'll
     // get the one from JSON, unless the command line has an override for A.
     const double dt = conf.getDouble ("A", 1);
 }
@@ -590,7 +590,7 @@ std::vector<float> d1;
 std::list<int> d2;
 std::deque<unsigned int> d3;
 std::vector<std::array<float, 3>> d4;
-morph::vVector<morph::Vector<float>> d5;
+morph::vvec<morph::vec<float>> d5;
 ```
 
 If you want to write just a single value into your h5 file, then the
@@ -664,21 +664,21 @@ arbitrary boundaries.
 
 A class for data scaling, with autoscaling features.
 
-## morph::Vector
+## morph::vec
 
 This is an extension of std::array to make a class for mathematical vector
 manipulation in N dimensions.
 
 While you *can* just store your vectors in std::array, here are 15
-things that you can do with morph::Vector<> (a mathematical vector
+things that you can do with morph::vec<> (a mathematical vector
 class) that require much more code with plain std::array:
 
 ```c++
-#include <morph/Vector.h>
-using morph::Vector;
+#include <morph/vec.h>
+using morph::vec;
 {
     // 1 Access by named components:
-    Vector<float, 3> v = {1,2,3};
+    vec<float, 3> v = {1,2,3};
     cout << "x: " << v.x() << endl;
     cout << "y: " << v.y() << endl;
     cout << "z: " << v.z() << endl;
@@ -693,33 +693,33 @@ using morph::Vector;
     // 6 Get its vector length:
     cout << "Length: " << v.length() << endl;
     // 7 Negate the vector
-    Vector<int, 2> vi = {1,2,3};
-    Vector<int, 2> vi3 = -vi;
+    vec<int, 2> vi = {1,2,3};
+    vec<int, 2> vi3 = -vi;
     // 8 Compute the cross product (3D only)
-    Vector<double, 3> a = {1,0,0};
-    Vector<double, 3> b = {0,1,0};
-    Vector<double, 3> c = a * b;
+    vec<double, 3> a = {1,0,0};
+    vec<double, 3> b = {0,1,0};
+    vec<double, 3> c = a * b;
     cout << a << "*" << b << "=" << c << endl;
     // 9 Compute the dot product
-    Vector<int, 2> vv1 = {1,1};
-    Vector<int, 2> vv2 = {2,2};
+    vec<int, 2> vv1 = {1,1};
+    vec<int, 2> vv2 = {2,2};
     int dp = vv1.dot (vv2);
     // 10-13 Scalar multiply, divide, add, subtract
     vv2 *= 2UL;
     vv2 = vv2 / 5;
-    Vector<int, 2> vv;
+    vec<int, 2> vv;
     vv = vv1 + 7;
     vv = vv1 - 9;
-    // 14 Vector addition
-    Vector<double, 3> e = a+b;
+    // 14 vector addition
+    vec<double, 3> e = a+b;
     cout << "a + b = " << e << endl;
-    // 15 Vector subtraction
-    Vector<double, 3> f = a-b;
+    // 15 vector subtraction
+    vec<double, 3> f = a-b;
     cout << "a - b = " << f << endl;
 }
 ```
 
-There's *even more* that you can do with a morph::Vector, take a look in the [header](https://github.com/ABRG-Models/morphologica/blob/main/morph/Vector.h).
+There's *even more* that you can do with a morph::vec, take a look in the [header](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h).
 
 ## BezCurve, BezCurvePath and BezCoord
 
@@ -734,7 +734,7 @@ All of the morphologica classes are *header-only*, which means there is no 'libm
 * morph::BezCurve: Link to ```libarmadillo```. Used for matrix algebra.
 * morph::HexGrid and morph::CartGrid: These use BezCurves, so need ```libarmadillo```.
 
-Some morphologica classes use no third party code. ```morph::Vector```, for example is very much standalone.
+Some morphologica classes use no third party code. ```morph::vec```, for example is very much standalone.
 
 This is the only real headache of working with morphologica: working out the right compiler line to call to compile a morphologica program.
 
