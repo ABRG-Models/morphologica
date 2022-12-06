@@ -55,7 +55,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
 # Find the libraries which will be needed
-find_package(HDF5 REQUIRED)
+find_package(HDF5 1.10.0...1.10.99 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(LAPACK REQUIRED)

@@ -142,6 +142,12 @@ if(USE_GLEW)
   target_link_libraries(graph4 GLEW::GLEW)
 endif()
 
+add_executable(graph4_rescale graph4_rescale.cpp)
+target_link_libraries(graph4_rescale OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph4_rescale GLEW::GLEW)
+endif()
+
 add_executable(graph5 graph5.cpp)
 target_link_libraries(graph5 OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
