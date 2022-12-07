@@ -22,6 +22,7 @@
 #include <morph/ColourMap.h>
 #include <morph/colour.h>
 #include <morph/histo.h>
+#include <morph/mathconst.h>
 #include <iostream>
 #include <vector>
 #include <deque>
@@ -220,7 +221,7 @@ namespace morph {
 
             if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
                 std::cout << "RESCALE x!\n";
-                this->clear();
+                this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
                 this->ord1_scale.autoscaled = false;
@@ -232,7 +233,7 @@ namespace morph {
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
                 }
-                VisualModel::clear(); // Get rid of the vertices
+                VisualModel::clear(); // Get rid of the vertices.
                 this->initializeVertices(); // Re-build
             }
 
@@ -256,7 +257,7 @@ namespace morph {
         }
 
         //! Clear all the coordinate data for the graph, but leave the containers in place.
-        void clear()
+        void clear_graph_data()
         {
             size_t dsize = this->graphDataCoords.size();
             for (size_t i = 0; i < dsize; ++i) {
@@ -299,6 +300,7 @@ namespace morph {
                 (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
             }
 
+            this->clearTexts(); // VisualModel::clearTexts()
             this->reinit();
         }
 
@@ -832,9 +834,6 @@ namespace morph {
         }
 
     protected:
-
-        //! The OpenGL indices index
-        VBOint idx = 0;
 
         //! Stores the length of each entry in graphDataCoords - i.e how many data
         //! points are in each graph curve
@@ -1490,7 +1489,7 @@ namespace morph {
             p[2] += this->thickness;
             this->computeFlatPoly (this->idx, p, ux, uy,
                                    style.markercolour,
-                                   style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+                                   style.markersize*Flt{0.5}, n, morph::mathconst<float>::pi/static_cast<float>(n));
         }
 
         // Given the data, compute the ticks (or use the ones that client code gave us)
