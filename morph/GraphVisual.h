@@ -22,6 +22,7 @@
 #include <morph/ColourMap.h>
 #include <morph/colour.h>
 #include <morph/histo.h>
+#include <morph/mathconst.h>
 #include <iostream>
 #include <vector>
 #include <deque>
@@ -220,7 +221,7 @@ namespace morph {
 
             if (!this->within_axes_x ((*this->graphDataCoords[didx])[oldsz]) && this->auto_rescale_x) {
                 std::cout << "RESCALE x!\n";
-                this->clear();
+                this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
                 this->ord1_scale.autoscaled = false;
@@ -232,7 +233,7 @@ namespace morph {
                 if (!this->ord2.empty()) {
                     this->setdata (this->absc2, this->ord2, this->ds_ord2);
                 }
-                VisualModel::clear(); // Get rid of the vertices
+                VisualModel::clear(); // Get rid of the vertices.
                 this->initializeVertices(); // Re-build
             }
 
@@ -256,7 +257,7 @@ namespace morph {
         }
 
         //! Clear all the coordinate data for the graph, but leave the containers in place.
-        void clear()
+        void clear_graph_data()
         {
             size_t dsize = this->graphDataCoords.size();
             for (size_t i = 0; i < dsize; ++i) {
@@ -299,6 +300,7 @@ namespace morph {
                 (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
             }
 
+            this->clearTexts(); // VisualModel::clearTexts()
             this->reinit();
         }
 
@@ -452,8 +454,11 @@ namespace morph {
         void setdata (const std::vector<Flt>& _abscissae,
                       const std::vector<Flt>& _data, const DatasetStyle& ds)
         {
-            std::cout << "abscissae size " << _abscissae.size() << " and data size: " << _data.size() << std::endl;
-            if (_abscissae.size() != _data.size()) { throw std::runtime_error ("size mismatch"); }
+            if (_abscissae.size() != _data.size()) {
+                std::stringstream ee;
+                ee << "size mismatch. abscissa size " << _abscissae.size() << " and data size: " << _data.size();
+                throw std::runtime_error (ee.str());
+            }
 
             // Save data first
             if (ds.axisside == morph::axisside::left) {
@@ -655,6 +660,24 @@ namespace morph {
             this->thickness *= this->width;
         }
 
+        // Make all the bits of the graph - fonts, line thicknesses, etc, bigger by factor. Call before finalize().
+        void zoomgraph (Flt factor)
+        {
+            float _w = this->width;
+            float _h = this->height;
+            this->setsize (_w*factor, _h*factor);
+
+            this->fontsize *= factor;
+            //this->fontres /= factor; // maybe
+            this->axislabelfontsize *= factor;
+
+            this->ticklabelgap *= factor;
+            this->axislabelgap *= factor;
+
+            this->ticklength *= factor;
+            this->axislinewidth *= factor;
+        }
+
         //! Set manual limits for the x axis (abscissa)
         void setlimits_x (Flt _xmin, Flt _xmax)
         {
@@ -812,9 +835,6 @@ namespace morph {
 
     protected:
 
-        //! The OpenGL indices index
-        VBOint idx = 0;
-
         //! Stores the length of each entry in graphDataCoords - i.e how many data
         //! points are in each graph curve
         std::vector<size_t> coords_lengths;
@@ -961,7 +981,7 @@ namespace morph {
         void drawLegend()
         {
             size_t gd_size = this->graphDataCoords.size();
-            std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
+            //std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
@@ -1469,7 +1489,7 @@ namespace morph {
             p[2] += this->thickness;
             this->computeFlatPoly (this->idx, p, ux, uy,
                                    style.markercolour,
-                                   style.markersize*Flt{0.5}, n, morph::PI_F/(float)n);
+                                   style.markersize*Flt{0.5}, n, morph::mathconst<float>::pi/static_cast<float>(n));
         }
 
         // Given the data, compute the ticks (or use the ones that client code gave us)

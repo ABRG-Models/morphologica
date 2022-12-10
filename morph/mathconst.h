@@ -69,5 +69,9 @@ namespace morph {
         static constexpr T seven_pi = pi*T{7};
         static constexpr T eight_pi = pi*T{8};
         static constexpr T nine_pi  = pi*T{9};
+
+        // multiplier to convert degrees to radians
+        static constexpr T deg2rad  = two_pi/T{360};
+        static constexpr T rad2deg  = T{360}/two_pi;
     };
 }
