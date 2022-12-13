@@ -1044,8 +1044,8 @@ namespace morph {
         //! Get the x/y span in elements/pixels
         morph::vec<unsigned int, 2> getSpanPix()
         {
-            unsigned int _x_pixdist = static_cast<unsigned int>(this->x_span/this->d);
-            unsigned int _y_pixdist = static_cast<unsigned int>(this->y_span/this->v);
+            unsigned int _x_pixdist = static_cast<unsigned int>(std::round(this->x_span/this->d));
+            unsigned int _y_pixdist = static_cast<unsigned int>(std::round(this->y_span/this->v));
             return morph::vec<unsigned int, 2>({ 1+_x_pixdist, 1+_y_pixdist });
         }
 
