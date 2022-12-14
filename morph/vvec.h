@@ -818,6 +818,59 @@ namespace morph {
             }
         }
 
+        //! Return the discrete differential, computed as the mean difference between a
+        //! datum and its adjacent neighbours.
+        vvec<S> diff (const wrapdata wrap = wrapdata::none)
+        {
+            int n = this->size();
+            vvec<S> rtn (n);
+            if (wrap == wrapdata::none) {
+                S last = (*this)[0];
+                rtn[0] = (*this)[1] - last;
+                for (int i = 1; i < n-1; ++i) {
+                    S difn = S{0.5} * (((*this)[i] - last) + ((*this)[i+1] - (*this)[i]));
+                    last = (*this)[i];
+                    rtn[i] = difn;
+                }
+                std::cout << "rtn["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
+                rtn[n-1] = (*this)[n-1] - last;
+            } else {
+                S last = (*this)[n-1];
+                for (int i = 0; i < n; ++i) {
+                    S next = (i == n-1) ? (*this)[0] : (*this)[i+1];
+                    S difn = S{0.5} * (((*this)[i] - last) + (next         - (*this)[i]));
+                    last = (*this)[i];
+                    rtn[i] = difn;
+                }
+            }
+            return rtn;
+        }
+        //! Compute the discrete differential of the data in *this
+        void diff_inplace (const wrapdata wrap = wrapdata::none)
+        {
+            int n = this->size();
+            if (wrap == wrapdata::none) {
+                S last = (*this)[0];
+                (*this)[0] = (*this)[1] - last; // first step precedes loop
+                for (int i = 1; i < n-1; ++i) {
+                    S difn = S{0.5} * (((*this)[i] - last) + ((*this)[i+1] - (*this)[i]));
+                    last = (*this)[i];
+                    (*this)[i] = difn;
+                }
+                std::cout << "(*this)["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
+                (*this)[n-1] = (*this)[n-1] - last; // last step follows the loop
+            } else { // DO wrap
+                S first = (*this)[0];
+                S last = (*this)[n-1];
+                for (int i = 0; i < n; ++i) {
+                    S next = (i == n-1) ? first : (*this)[i+1];
+                    S difn = S{0.5} * (((*this)[i] - last) + (next         - (*this)[i]));
+                    last = (*this)[i];
+                    (*this)[i] = difn;
+                }
+            }
+        }
+
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
