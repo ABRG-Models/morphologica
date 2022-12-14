@@ -487,6 +487,78 @@ namespace morph {
             return idx;
         }
 
+        /*!
+         * Return the locations where the function crosses zero. Returned as a float so
+         * that it can take intermediate values and also indicate the direction of the
+         * crossing. For example, if the function crosses from a negative value at index
+         * 2 to a positive value at index 3, then the entry in the return object would
+         * be 2.5f. If it also crosses zero from +ve at index 6 to -ve at index 7, then
+         * the other element in the return object would be -6.5f. If the function
+         * evaluates as zero *at* index 12, then the last entry would be 12.0f.
+         */
+        vvec<float> zerocross (const wrapdata wrap = wrapdata::none) const
+        {
+            int n = this->size();
+            vvec<float> crossings;
+            if (wrap == wrapdata::none) {
+                S lastval = (*this)[0];
+                // What about the very first one? By definition, it can't cross.
+                for (int i = 1; i < n; ++i) {
+                    if ((*this)[i] == S{0}) {
+                        // Positive or negative crossing?
+                        if (i == n-1) {
+                            // 0 right at end. In no-wrap mode, can't cross by definition.
+                        } else {
+                            if (lastval < S{0} && ((*this)[i+1] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[i+1] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                            //else if (lastval > S{0} && ((*this)[i+1] > S{0})) { dirn = S{0}; } // fn touches 0 from above, DOESN'T cross
+                            //else if (lastval < S{0} && ((*this)[i+1] < S{0})) { dirn = S{0}; } // fn touches 0 from below, DOESN'T cross
+                        }
+
+                    } else if (lastval > S{0} && (*this)[i] < S{0}) {
+                        crossings.push_back (-static_cast<float>(i)+0.5f);
+                    } else if (lastval < S{0} && (*this)[i] > S{0}) {
+                        crossings.push_back (static_cast<float>(i)-0.5f);
+                    }
+                    lastval = (*this)[i];
+                }
+            } else { // wrapdata::wrap
+                S lastval = (*this)[n-1];
+                std::cout << "first lastval = " << lastval << std::endl;
+                for (int i = 0; i < n; ++i) {
+                    if ((*this)[i] == S{0}) {
+                        // Positive or negative crossing?
+                        if (i == n-1) {
+                            // 0 right at end.
+                            if (lastval < S{0} && ((*this)[0] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[0] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                        } else {
+                            if (lastval < S{0} && ((*this)[i+1] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[i+1] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                        }
+
+                    } else if (lastval > S{0} && (*this)[i] < S{0}) {
+                        crossings.push_back (i > 0 ? -static_cast<float>(i)+0.5f : -static_cast<float>(n-1)-0.5f);
+                    } else if (lastval < S{0} && (*this)[i] > S{0}) {
+                        crossings.push_back (i > 0 ? static_cast<float>(i)-0.5f :  static_cast<float>(n-1)-0.5f);
+                    }
+                    lastval = (*this)[i];
+                }
+                // Crossing at the start should show up at the end
+                if (!crossings.empty() && std::abs(crossings[0]) > 1.0f) { crossings.rotate(); }
+            }
+            return crossings;
+        }
+
         //! Perform element-wise max. For each element, if val is the maximum, the element becomes val.
         template <typename _S=S>
         void max_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::max (i, val); } }

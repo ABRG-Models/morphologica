@@ -1,5 +1,4 @@
 #include <morph/vvec.h>
-#include <array>
 
 int main()
 {
