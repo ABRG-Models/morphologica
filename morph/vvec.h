@@ -63,6 +63,9 @@ namespace morph {
         //! We inherit std::vector's constructors like this:
         using std::vector<S, Al>::vector;
 
+        //! Used in functions for which wrapping is important
+        enum class wrapdata { none, wrap };
+
         //! \return the first component of the vector
         S x() const { return (*this)[0]; }
         //! \return the second component of the vector
@@ -743,7 +746,7 @@ namespace morph {
 
         //! Smooth the vector by convolving with a gaussian filter with Gaussian width
         //! sigma and overall width 2*sigma*n_sigma
-        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma, const bool wrap=false) const
+        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none) const
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
@@ -754,7 +757,7 @@ namespace morph {
             return this->convolve (filter, wrap);
         }
         //! Gaussian smoothing in place
-        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma, const bool wrap=false)
+        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none)
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
@@ -766,7 +769,7 @@ namespace morph {
         }
 
         //! Do 1-D convolution of *this with the presented kernel and return the result
-        vvec<S> convolve (const vvec<S>& kernel, const bool wrap=false) const
+        vvec<S> convolve (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none) const
         {
             int _n = this->size();
             vvec<S> rtn(_n);
@@ -781,8 +784,8 @@ namespace morph {
                     // ii is the index into the data by which kernel[j] should be multiplied
                     int ii = i+j-zki;
                     // Handle wrapping around the data with these two ternaries
-                    ii += ii < 0 && wrap==true ? _n : 0;
-                    ii -= ii >= _n && wrap==true ? _n : 0;
+                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
+                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
                     if (ii < 0 || ii >= _n) { continue; }
                     sum += (*this)[ii] * kernel[j];
                 }
@@ -790,7 +793,7 @@ namespace morph {
             }
             return rtn;
         }
-        void convolve_inplace (const vvec<S>& kernel, const bool wrap=false)
+        void convolve_inplace (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none)
         {
             int _n = this->size();
             vvec<S> d(_n); // We make a copy of *this
@@ -806,8 +809,8 @@ namespace morph {
                     // ii is the index into the data by which kernel[j] should be multiplied
                     int ii = i+j-zki;
                     // Handle wrapping around the data with these two ternaries
-                    ii += ii < 0 && wrap==true ? _n : 0;
-                    ii -= ii >= _n && wrap==true ? _n : 0;
+                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
+                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
                     if (ii < 0 || ii >= _n) { continue; }
                     sum += d[ii] * kernel[j];
                 }

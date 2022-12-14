@@ -7,6 +7,7 @@
 int main()
 {
     using mc = morph::mathconst<double>;
+    using wrapdata = morph::vvec<double>::wrapdata;
 
     morph::vvec<double> x;
     x.linspace (-mc::pi, mc::pi-(mc::pi/5.0), 60);
@@ -19,7 +20,7 @@ int main()
     morph::vvec<double> filter = {.2, .4, .6, .8, 1, 0.8, 0.6, 0.4, 0.2};
     filter /= filter.sum();
 
-    morph::vvec<double> y2 = y.convolve (filter, true);
+    morph::vvec<double> y2 = y.convolve (filter, wrapdata::wrap);
 
     // Graph x and y
     morph::Visual v(1024, 768, "1D convolutions with morph::vvec");
