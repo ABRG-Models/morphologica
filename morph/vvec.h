@@ -728,6 +728,93 @@ namespace morph {
         //! Replace each element with its absolute value
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
 
+        //! Compute the symmetric Gaussian function
+        vvec<S> gauss (const S sigma)
+        {
+            vvec<S> rtn(this->size());
+            auto _element = [sigma](S i) { return std::exp (i*i/(S{-2}*sigma*sigma)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _element);
+            return rtn;
+        }
+        void gauss_inplace (const S sigma)
+        {
+            for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
+        }
+
+        //! Smooth the vector by convolving with a gaussian filter with Gaussian width
+        //! sigma and overall width 2*sigma*n_sigma
+        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma, const bool wrap=false) const
+        {
+            morph::vvec<S> filter;
+            S hw = std::round(sigma*n_sigma);
+            size_t elements = static_cast<size_t>(2*hw) + 1;
+            filter.linspace (-hw, hw, elements);
+            filter.gauss_inplace (sigma);
+            filter /= filter.sum();
+            return this->convolve (filter, wrap);
+        }
+        //! Gaussian smoothing in place
+        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma, const bool wrap=false)
+        {
+            morph::vvec<S> filter;
+            S hw = std::round(sigma*n_sigma);
+            size_t elements = static_cast<size_t>(2*hw) + 1;
+            filter.linspace (-hw, hw, elements);
+            filter.gauss_inplace (sigma);
+            filter /= filter.sum();
+            this->convolve_inplace (filter, wrap);
+        }
+
+        //! Do 1-D convolution of *this with the presented kernel and return the result
+        vvec<S> convolve (const vvec<S>& kernel, const bool wrap=false) const
+        {
+            int _n = this->size();
+            vvec<S> rtn(_n);
+            int kw = kernel.size(); // kernel width
+            int khw = kw/2;  // kernel half width
+            int khwr = kw%2; // kernel half width remainder
+            int zki = khwr ? khw : khw-1; // zero of the kernel index
+            for (int i = 0; i < _n; ++i) {
+                // For each element, i, compute the convolution sum
+                S sum = S{0};
+                for (int j = 0; j<kw; ++j) {
+                    // ii is the index into the data by which kernel[j] should be multiplied
+                    int ii = i+j-zki;
+                    // Handle wrapping around the data with these two ternaries
+                    ii += ii < 0 && wrap==true ? _n : 0;
+                    ii -= ii >= _n && wrap==true ? _n : 0;
+                    if (ii < 0 || ii >= _n) { continue; }
+                    sum += (*this)[ii] * kernel[j];
+                }
+                rtn[i] = sum;
+            }
+            return rtn;
+        }
+        void convolve_inplace (const vvec<S>& kernel, const bool wrap=false)
+        {
+            int _n = this->size();
+            vvec<S> d(_n); // We make a copy of *this
+            std::copy (this->begin(), this->end(), d.begin());
+            int kw = kernel.size(); // kernel width
+            int khw = kw/2;  // kernel half width
+            int khwr = kw%2; // kernel half width remainder
+            int zki = khwr ? khw : khw-1; // zero of the kernel index
+            for (int i = 0; i < _n; ++i) {
+                // For each element, i, compute the convolution sum
+                S sum = S{0};
+                for (int j = 0; j<kw; ++j) {
+                    // ii is the index into the data by which kernel[j] should be multiplied
+                    int ii = i+j-zki;
+                    // Handle wrapping around the data with these two ternaries
+                    ii += ii < 0 && wrap==true ? _n : 0;
+                    ii -= ii >= _n && wrap==true ? _n : 0;
+                    if (ii < 0 || ii >= _n) { continue; }
+                    sum += d[ii] * kernel[j];
+                }
+                (*this)[i] = sum;
+            }
+        }
+
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
