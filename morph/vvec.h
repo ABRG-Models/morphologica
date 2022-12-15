@@ -527,7 +527,6 @@ namespace morph {
                 }
             } else { // wrapdata::wrap
                 S lastval = (*this)[n-1];
-                std::cout << "first lastval = " << lastval << std::endl;
                 for (int i = 0; i < n; ++i) {
                     if ((*this)[i] == S{0}) {
                         // Positive or negative crossing?
@@ -690,6 +689,35 @@ namespace morph {
             return rtn;
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
+
+        //! Return a vvec which is a copy of *this for which positive, non-zero elements have been removed
+        vvec<S> prune_positive() const
+        {
+            vvec<S> rtn;
+            for (auto& i : *this) { if (i <= S{0}) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_positive_inplace()
+        {
+            vvec<S> pruned;
+            // We *could* reduce *this down, but that would involve a lot of std::vector deletions.
+            for (auto& i : *this) { if (i <= S{0}) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
+
+        //! Return a vvec which is a copy of *this for which negative, non-zero elements have been removed
+        vvec<S> prune_negative() const
+        {
+            vvec<S> rtn;
+            for (auto& i : *this) { if (i >= S{0}) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_negative_inplace()
+        {
+            vvec<S> pruned;
+            for (auto& i : *this) { if (i >= S{0}) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
 
         /*!
          * Compute the element-wise square root of the vector
