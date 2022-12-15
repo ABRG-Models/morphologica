@@ -268,3 +268,21 @@ endif()
 add_executable(scale scale.cpp)
 
 add_executable(vvec vvec.cpp)
+
+add_executable(vvec_convolve vvec_convolve.cpp)
+target_link_libraries(vvec_convolve OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(vvec_convolve GLEW::GLEW)
+endif()
+
+add_executable(vvec_gauss vvec_gauss.cpp)
+target_link_libraries(vvec_gauss OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(vvec_gauss GLEW::GLEW)
+endif()
+
+add_executable(vvec_smoothgauss vvec_smoothgauss.cpp)
+target_link_libraries(vvec_smoothgauss OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(vvec_smoothgauss GLEW::GLEW)
+endif()

@@ -63,6 +63,9 @@ namespace morph {
         //! We inherit std::vector's constructors like this:
         using std::vector<S, Al>::vector;
 
+        //! Used in functions for which wrapping is important
+        enum class wrapdata { none, wrap };
+
         //! \return the first component of the vector
         S x() const { return (*this)[0]; }
         //! \return the second component of the vector
@@ -484,6 +487,77 @@ namespace morph {
             return idx;
         }
 
+        /*!
+         * Return the locations where the function crosses zero. Returned as a float so
+         * that it can take intermediate values and also indicate the direction of the
+         * crossing. For example, if the function crosses from a negative value at index
+         * 2 to a positive value at index 3, then the entry in the return object would
+         * be 2.5f. If it also crosses zero from +ve at index 6 to -ve at index 7, then
+         * the other element in the return object would be -6.5f. If the function
+         * evaluates as zero *at* index 12, then the last entry would be 12.0f.
+         */
+        vvec<float> zerocross (const wrapdata wrap = wrapdata::none) const
+        {
+            int n = this->size();
+            vvec<float> crossings;
+            if (wrap == wrapdata::none) {
+                S lastval = (*this)[0];
+                // What about the very first one? By definition, it can't cross.
+                for (int i = 1; i < n; ++i) {
+                    if ((*this)[i] == S{0}) {
+                        // Positive or negative crossing?
+                        if (i == n-1) {
+                            // 0 right at end. In no-wrap mode, can't cross by definition.
+                        } else {
+                            if (lastval < S{0} && ((*this)[i+1] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[i+1] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                            //else if (lastval > S{0} && ((*this)[i+1] > S{0})) { dirn = S{0}; } // fn touches 0 from above, DOESN'T cross
+                            //else if (lastval < S{0} && ((*this)[i+1] < S{0})) { dirn = S{0}; } // fn touches 0 from below, DOESN'T cross
+                        }
+
+                    } else if (lastval > S{0} && (*this)[i] < S{0}) {
+                        crossings.push_back (-static_cast<float>(i)+0.5f);
+                    } else if (lastval < S{0} && (*this)[i] > S{0}) {
+                        crossings.push_back (static_cast<float>(i)-0.5f);
+                    }
+                    lastval = (*this)[i];
+                }
+            } else { // wrapdata::wrap
+                S lastval = (*this)[n-1];
+                for (int i = 0; i < n; ++i) {
+                    if ((*this)[i] == S{0}) {
+                        // Positive or negative crossing?
+                        if (i == n-1) {
+                            // 0 right at end.
+                            if (lastval < S{0} && ((*this)[0] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[0] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                        } else {
+                            if (lastval < S{0} && ((*this)[i+1] > S{0})) {
+                                crossings.push_back (static_cast<float>(i));
+                            } else if (lastval > S{0} && ((*this)[i+1] < S{0})) {
+                                crossings.push_back (-static_cast<float>(i));
+                            }
+                        }
+
+                    } else if (lastval > S{0} && (*this)[i] < S{0}) {
+                        crossings.push_back (i > 0 ? -static_cast<float>(i)+0.5f : -static_cast<float>(n-1)-0.5f);
+                    } else if (lastval < S{0} && (*this)[i] > S{0}) {
+                        crossings.push_back (i > 0 ? static_cast<float>(i)-0.5f :  static_cast<float>(n-1)-0.5f);
+                    }
+                    lastval = (*this)[i];
+                }
+                // Crossing at the start should show up at the end
+                if (!crossings.empty() && std::abs(crossings[0]) > 1.0f) { crossings.rotate(); }
+            }
+            return crossings;
+        }
+
         //! Perform element-wise max. For each element, if val is the maximum, the element becomes val.
         template <typename _S=S>
         void max_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::max (i, val); } }
@@ -616,6 +690,35 @@ namespace morph {
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
+        //! Return a vvec which is a copy of *this for which positive, non-zero elements have been removed
+        vvec<S> prune_positive() const
+        {
+            vvec<S> rtn;
+            for (auto& i : *this) { if (i <= S{0}) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_positive_inplace()
+        {
+            vvec<S> pruned;
+            // We *could* reduce *this down, but that would involve a lot of std::vector deletions.
+            for (auto& i : *this) { if (i <= S{0}) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
+
+        //! Return a vvec which is a copy of *this for which negative, non-zero elements have been removed
+        vvec<S> prune_negative() const
+        {
+            vvec<S> rtn;
+            for (auto& i : *this) { if (i >= S{0}) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_negative_inplace()
+        {
+            vvec<S> pruned;
+            for (auto& i : *this) { if (i >= S{0}) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
+
         /*!
          * Compute the element-wise square root of the vector
          *
@@ -727,6 +830,146 @@ namespace morph {
         }
         //! Replace each element with its absolute value
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
+
+        //! Compute the symmetric Gaussian function
+        vvec<S> gauss (const S sigma)
+        {
+            vvec<S> rtn(this->size());
+            auto _element = [sigma](S i) { return std::exp (i*i/(S{-2}*sigma*sigma)); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _element);
+            return rtn;
+        }
+        void gauss_inplace (const S sigma)
+        {
+            for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
+        }
+
+        //! Smooth the vector by convolving with a gaussian filter with Gaussian width
+        //! sigma and overall width 2*sigma*n_sigma
+        vvec<S> smooth_gauss (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none) const
+        {
+            morph::vvec<S> filter;
+            S hw = std::round(sigma*n_sigma);
+            size_t elements = static_cast<size_t>(2*hw) + 1;
+            filter.linspace (-hw, hw, elements);
+            filter.gauss_inplace (sigma);
+            filter /= filter.sum();
+            return this->convolve (filter, wrap);
+        }
+        //! Gaussian smoothing in place
+        void smooth_gauss_inplace (const S sigma, const unsigned int n_sigma, const wrapdata wrap = wrapdata::none)
+        {
+            morph::vvec<S> filter;
+            S hw = std::round(sigma*n_sigma);
+            size_t elements = static_cast<size_t>(2*hw) + 1;
+            filter.linspace (-hw, hw, elements);
+            filter.gauss_inplace (sigma);
+            filter /= filter.sum();
+            this->convolve_inplace (filter, wrap);
+        }
+
+        //! Do 1-D convolution of *this with the presented kernel and return the result
+        vvec<S> convolve (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none) const
+        {
+            int _n = this->size();
+            vvec<S> rtn(_n);
+            int kw = kernel.size(); // kernel width
+            int khw = kw/2;  // kernel half width
+            int khwr = kw%2; // kernel half width remainder
+            int zki = khwr ? khw : khw-1; // zero of the kernel index
+            for (int i = 0; i < _n; ++i) {
+                // For each element, i, compute the convolution sum
+                S sum = S{0};
+                for (int j = 0; j<kw; ++j) {
+                    // ii is the index into the data by which kernel[j] should be multiplied
+                    int ii = i+j-zki;
+                    // Handle wrapping around the data with these two ternaries
+                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
+                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
+                    if (ii < 0 || ii >= _n) { continue; }
+                    sum += (*this)[ii] * kernel[j];
+                }
+                rtn[i] = sum;
+            }
+            return rtn;
+        }
+        void convolve_inplace (const vvec<S>& kernel, const wrapdata wrap = wrapdata::none)
+        {
+            int _n = this->size();
+            vvec<S> d(_n); // We make a copy of *this
+            std::copy (this->begin(), this->end(), d.begin());
+            int kw = kernel.size(); // kernel width
+            int khw = kw/2;  // kernel half width
+            int khwr = kw%2; // kernel half width remainder
+            int zki = khwr ? khw : khw-1; // zero of the kernel index
+            for (int i = 0; i < _n; ++i) {
+                // For each element, i, compute the convolution sum
+                S sum = S{0};
+                for (int j = 0; j<kw; ++j) {
+                    // ii is the index into the data by which kernel[j] should be multiplied
+                    int ii = i+j-zki;
+                    // Handle wrapping around the data with these two ternaries
+                    ii += ii < 0 && wrap==wrapdata::wrap ? _n : 0;
+                    ii -= ii >= _n && wrap==wrapdata::wrap ? _n : 0;
+                    if (ii < 0 || ii >= _n) { continue; }
+                    sum += d[ii] * kernel[j];
+                }
+                (*this)[i] = sum;
+            }
+        }
+
+        //! Return the discrete differential, computed as the mean difference between a
+        //! datum and its adjacent neighbours.
+        vvec<S> diff (const wrapdata wrap = wrapdata::none)
+        {
+            int n = this->size();
+            vvec<S> rtn (n);
+            if (wrap == wrapdata::none) {
+                S last = (*this)[0];
+                rtn[0] = (*this)[1] - last;
+                for (int i = 1; i < n-1; ++i) {
+                    S difn = S{0.5} * (((*this)[i] - last) + ((*this)[i+1] - (*this)[i]));
+                    last = (*this)[i];
+                    rtn[i] = difn;
+                }
+                std::cout << "rtn["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
+                rtn[n-1] = (*this)[n-1] - last;
+            } else {
+                S last = (*this)[n-1];
+                for (int i = 0; i < n; ++i) {
+                    S next = (i == n-1) ? (*this)[0] : (*this)[i+1];
+                    S difn = S{0.5} * (((*this)[i] - last) + (next         - (*this)[i]));
+                    last = (*this)[i];
+                    rtn[i] = difn;
+                }
+            }
+            return rtn;
+        }
+        //! Compute the discrete differential of the data in *this
+        void diff_inplace (const wrapdata wrap = wrapdata::none)
+        {
+            int n = this->size();
+            if (wrap == wrapdata::none) {
+                S last = (*this)[0];
+                (*this)[0] = (*this)[1] - last; // first step precedes loop
+                for (int i = 1; i < n-1; ++i) {
+                    S difn = S{0.5} * (((*this)[i] - last) + ((*this)[i+1] - (*this)[i]));
+                    last = (*this)[i];
+                    (*this)[i] = difn;
+                }
+                std::cout << "(*this)["<<(n-1) << "] = " << (*this)[n-1] << " - " << last << std::endl;
+                (*this)[n-1] = (*this)[n-1] - last; // last step follows the loop
+            } else { // DO wrap
+                S first = (*this)[0];
+                S last = (*this)[n-1];
+                for (int i = 0; i < n; ++i) {
+                    S next = (i == n-1) ? first : (*this)[i+1];
+                    S difn = S{0.5} * (((*this)[i] - last) + (next         - (*this)[i]));
+                    last = (*this)[i];
+                    (*this)[i] = difn;
+                }
+            }
+        }
 
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
