@@ -918,7 +918,15 @@ namespace morph {
                             // To make this draw dotted or dashed lines, we have to
                             // track the length of the lines we've added to the graph
                             // and draw the alt colour (which may be bg colour) between the dashes.
-                            if (i == 1+coords_start) {
+                            if (i == 1+coords_start && (coords_end-coords_start)==2) {
+                                // First and only line
+                                this->computeFlatLine (this->idx,
+                                                       (*this->graphDataCoords[dsi])[i-1], // start
+                                                       (*this->graphDataCoords[dsi])[i],   // end
+                                                       uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth);
+                            } else if (i == 1+coords_start) {
                                 // First line
                                 this->computeFlatLineN (this->idx,
                                                         (*this->graphDataCoords[dsi])[i-1], // start
