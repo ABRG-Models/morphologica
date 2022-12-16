@@ -8,7 +8,7 @@
 namespace morph {
 
     //! This class creates the vertices for a cylindrical 'rod' in a 3D scene.
-    class RodVisual : public VisualModel
+    class RodVisual final : public VisualModel
     {
     public:
         RodVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
@@ -29,7 +29,7 @@ namespace morph {
             this->init (sp, _offset, _start_coord, _end_coord, _radius, _start_col, _end_col);
         }
 
-        virtual ~RodVisual () {}
+        ~RodVisual () {}
 
         void init (GLuint sp, const vec<float, 3> _offset,
                    const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
@@ -52,6 +52,7 @@ namespace morph {
             this->postVertexInit();
         }
 
+        static constexpr bool use_oriented_tube = false;
         //! Initialize vertex buffer objects and vertex array object.
         void initializeVertices (void)
         {
@@ -63,15 +64,15 @@ namespace morph {
             // The indices index
             VBOint idx = 0;
             // Draw a tube. That's it!
-#if 1
-            this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
-                               this->start_col, this->end_col, this->radius, 12);
-#else
-            // Can alternatively use the 'oriented' tube
-            this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
-                               {0,1,0}, {0,0,1},
-                               this->start_col, this->end_col, this->radius, 6, morph::PI_F/6.0f);
-#endif
+            if constexpr (use_oriented_tube == false) {
+                this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
+                                   this->start_col, this->end_col, this->radius, 12);
+            } else {
+                // Can alternatively use the 'oriented' tube
+                this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
+                                   {0,1,0}, {0,0,1},
+                                   this->start_col, this->end_col, this->radius, 6, morph::PI_F/6.0f);
+            }
         }
 
         //! The position of the start of the rod, given with respect to the parent's offset
