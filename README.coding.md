@@ -137,12 +137,10 @@ morph::vec<float, 3> c3 = { 0.0, 0.3, 0 };
 // be red.
 morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
-// Now create the TriangleVisual. You allocate memory for the
-// model here; morph::Visual will be responsible for deallocating the
-// memory, as long as you add the VisualModel-derived object to the Visual...
-morph::TriangleVisual* tv = new morph::TriangleVisual (v.shaderprog, offset, c1, c2, c3, colour1)
+// Now create the VisualModel as a std::unique_ptr<morph::TriangleVisual>
+auto tv = std::make_unique<morph::TriangleVisual> (v.shaderprog, offset, c1, c2, c3, colour1)
 
-// ...like this:
+// You'll pass ownership of 'tv' to the visual scene like this:
 v.addVisualModel (tv);
 ```
 

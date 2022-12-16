@@ -42,6 +42,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <memory>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -143,18 +144,9 @@ namespace morph {
             this->init();
         }
 
-        //! Deconstructor deallocates CoordArrows and destroys GLFW windows
+        //! Deconstructor destroys GLFW windows
         virtual ~Visual()
         {
-            delete this->coordArrows;
-            for (unsigned int i = 0; i < this->vm.size(); ++i) {
-                delete this->vm[i];
-            }
-            if (this->textModel != nullptr) {
-                delete this->textModel;
-            }
-            for (auto t : this->texts) { delete t; }
-            this->texts.clear();
             glfwDestroyWindow (this->window);
             morph::VisualResources::deregister();
         }
@@ -163,20 +155,18 @@ namespace morph {
         void saveImage (const std::string& img_filename)
         {
             glfwMakeContextCurrent (this->window);
-            GLubyte* bits; // RGB bits
-            GLubyte* rbits;
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
             int h = viewport[3];
-            bits = new GLubyte[w*h*4];
-            rbits = new GLubyte[w*h*4];
+            auto bits = std::make_unique<GLubyte[]>(w*h*4);
+            auto rbits = std::make_unique<GLubyte[]>(w*h*4);
             glFinish(); // finish all commands of OpenGL
             glPixelStorei (GL_PACK_ALIGNMENT, 1);
             glPixelStorei (GL_PACK_ROW_LENGTH, 0);
             glPixelStorei (GL_PACK_SKIP_ROWS, 0);
             glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-            glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+            glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
             for (int i = 0; i < h; ++i) {
                 int rev_line = (h-i-1)*4*w;
                 int for_line = i*4*w;
@@ -184,12 +174,10 @@ namespace morph {
                     rbits[rev_line+j] = bits[for_line+j];
                 }
             }
-            unsigned int error = lodepng::encode (img_filename, rbits, w, h);
+            unsigned int error = lodepng::encode (img_filename, rbits.get(), w, h);
             if (error) {
                 std::cout << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
             }
-            delete[] rbits;
-            delete[] bits;
         }
 
         //! Make this Visual the current one, so that when creating/adding a visual
@@ -197,34 +185,40 @@ namespace morph {
         void setCurrent() { glfwMakeContextCurrent (this->window); }
 
         /*!
-         * Add a VisualModel to the scene. The VisualModel* should be a pointer to a
-         * visual model which has been newly allocated by the client code. Do not add
-         * a pointer to the same VisualModel more than once! When this morph::Visual
-         * object goes out of scope, its deconstructor will delete each VisualModel
-         * that it has a pointer for.
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
+         * ownership of the unique_ptr. The index into Visual::vm is returned.
          */
-        unsigned int addVisualModel (VisualModel* model)
+        template <typename T>
+        unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
-            this->vm.push_back (model);
+            std::unique_ptr<VisualModel> vmp = std::move(model);
+            this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
             return rtn;
+        }
+        /*!
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
+         * ownership of the unique_ptr. A non-owning pointer to the model is returned.
+         */
+        template <typename T>
+        T* addVisualModel (std::unique_ptr<T>& model)
+        {
+            std::unique_ptr<VisualModel> vmp = std::move(model);
+            this->vm.push_back (std::move(vmp));
+            return static_cast<T*>(this->vm.back().get());
         }
 
         /*!
          * VisualModel Getter
          *
-         * For the given \a modelId, return a pointer to the visual model.
+         * For the given \a modelId, return a (non-owning) pointer to the visual model.
          *
          * \return VisualModel pointer
          */
-        VisualModel* getVisualModel (unsigned int modelId) { return (this->vm[modelId]); }
+        VisualModel* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
 
         //! Remove the VisualModel with ID \a modelId from the scene.
-        void removeVisualModel (unsigned int modelId)
-        {
-            delete this->vm[modelId];
-            this->vm.erase (this->vm.begin() + modelId);
-        }
+        void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
         //! Add a text label to the scene at a given location. Return the width and
         //! height of the text in a TextGeometry object.
@@ -249,9 +243,10 @@ namespace morph {
                                       const int _fontres = 24)
         {
             if (this->tshaderprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
-            tm->setupText (_text, _toffset, _tcolour);
-            this->texts.push_back (tm);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->tshaderprog, _font, _fontsize, _fontres);
+            tmup->setupText (_text, _toffset, _tcolour);
+            tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
             return tm->getTextGeometry();
         }
 
@@ -382,7 +377,7 @@ namespace morph {
             TransformMatrix<float> scenetransonly;
             scenetransonly.translate (this->scenetrans);
 
-            typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
+            auto vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
                 if ((*vmi)->twodimensional == true) {
                     // It's a two-d thing. Now what?
@@ -399,17 +394,17 @@ namespace morph {
             vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
             if (this->showTitle == true) {
                 // Render the title text
-                glUseProgram (this->tshaderprog);
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);
                 this->textModel->render();
             }
 
-            for (auto t : this->texts) {
-                glUseProgram (this->tshaderprog);
-                t->setSceneTranslation (v0);
-                t->setVisibleOn (this->bgcolour);
-                t->render();
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) {
+                (*ti)->setSceneTranslation (v0);
+                (*ti)->setVisibleOn (this->bgcolour);
+                (*ti)->render();
+                ++ti;
             }
 
             glfwSwapBuffers (this->window);
@@ -749,7 +744,7 @@ namespace morph {
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
-        std::vector<VisualModel*> vm;
+        std::vector<std::unique_ptr<VisualModel>> vm;
 
     private:
         //! Private initialization, used by constructors.
@@ -846,7 +841,7 @@ namespace morph {
             }
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
-            this->coordArrows = new CoordArrows();
+            this->coordArrows = std::make_unique<CoordArrows>();
             this->coordArrows->init (this->shaderprog,
                                      this->tshaderprog,
                                      this->coordArrowsLength,
@@ -855,10 +850,10 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = new VisualTextModel (this->tshaderprog,
-                                                   morph::VisualFont::DVSans,
-                                                   0.035f, 64, {0.0f, 0.0f, 0.0f},
-                                                   this->title);
+            this->textModel = std::make_unique<VisualTextModel> (this->tshaderprog,
+                                                                 morph::VisualFont::DVSans,
+                                                                 0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
+                                                                 this->title);
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -1053,7 +1048,7 @@ namespace morph {
 
     protected:
         //! A little model of the coordinate axes.
-        CoordArrows* coordArrows;
+        std::unique_ptr<CoordArrows> coordArrows;
 
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
         vec<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
@@ -1066,9 +1061,9 @@ namespace morph {
 
     private:
         //! A VisualTextModel for a title text.
-        VisualTextModel* textModel = nullptr;
+        std::unique_ptr<VisualTextModel> textModel = nullptr;
         //! Text models for labels
-        std::vector<morph::VisualTextModel*> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel>> texts;
 
         /*
          * Variables to manage projection and rotation of the object
