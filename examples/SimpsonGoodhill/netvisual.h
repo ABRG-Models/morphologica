@@ -28,11 +28,10 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, GLuint tsp, const morph::vec<float, 3> _offset, net<Flt>* _locations)
+    NetVisual(morph::gl::shaderprogs& sp, const morph::vec<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = sp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }

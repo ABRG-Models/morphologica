@@ -9,7 +9,7 @@ int main()
 {
     morph::Visual v(1024, 768, "Continuous redrawing of GraphVisual");
 
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
 
     morph::vvec<double> x;
     x.linspace (-morph::mathconst<double>::pi, morph::mathconst<double>::pi, 100);

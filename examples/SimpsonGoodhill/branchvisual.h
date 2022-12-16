@@ -29,13 +29,12 @@ template <typename Flt>
 class BranchVisual : public morph::VisualModel
 {
 public:
-    BranchVisual(GLuint sp, GLuint tsp,
+    BranchVisual(morph::gl::shaderprogs& sp,
                  const morph::vec<float, 3> _offset,
                  std::vector<branch<Flt>>* _branches)
     {
         this->branches = _branches;
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = sp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }

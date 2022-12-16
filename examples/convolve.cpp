@@ -72,7 +72,7 @@ int main()
 
     // Visualize the 3 maps
     morph::vec<float, 3> offset = { -0.5, 0.0, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     hgv->setScalarData (&data);
     hgv->cm.setType(morph::ColourMapType::Viridis);
     hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
@@ -81,7 +81,7 @@ int main()
     auto hgvp = v.addVisualModel (hgv);
 
     offset[1] += 0.6f;
-    auto kgv = std::make_unique<morph::HexGridVisual<float>>(v.shaderprog, v.tshaderprog, &kernel, offset);
+    auto kgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &kernel, offset);
     kgv->setScalarData (&kerneldata);
     kgv->cm.setType(morph::ColourMapType::Viridis);
     kgv->finalize();
@@ -92,7 +92,7 @@ int main()
 
     offset[1] -= 0.6f;
     offset[0] += 1.0f;
-    auto rgv = std::make_unique<morph::HexGridVisual<float>>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto rgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     rgv->setScalarData (&convolved);
     rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();

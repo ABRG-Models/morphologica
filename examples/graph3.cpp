@@ -29,7 +29,7 @@ int main (int argc, char** argv)
 
         morph::DatasetStyle ds;
 
-        auto gv = std::make_unique<morph::GraphVisual<float>>(v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+        auto gv = std::make_unique<morph::GraphVisual<float>>(v.shaders, morph::vec<float>({0,0,0}));
         morph::vvec<float> data = absc.pow(3);
 
         ds.linecolour =  {1.0, 0.0, 0.0};
@@ -50,7 +50,7 @@ int main (int argc, char** argv)
         gv->finalize();
         v.addVisualModel (gv);
 
-        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({step,0,0}));
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({step,0,0}));
         morph::vvec<float> data2 = absc.pow(2);
         ds.linecolour = {0.0, 0.0, 1.0};
         ds.markerstyle = morph::markerstyle::hexagon;
@@ -63,7 +63,7 @@ int main (int argc, char** argv)
         gv->finalize();
         v.addVisualModel (gv);
 
-        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,-row2,0}));
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,-row2,0}));
         morph::vvec<float> data3 = absc.pow(4);
         gv->setsize (1,0.8);
         ds.linecolour = {0.0, 1.0, 0.0};
@@ -80,7 +80,7 @@ int main (int argc, char** argv)
         gv->finalize();
         v.addVisualModel (gv);
 
-        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({step,-row2,0}));
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({step,-row2,0}));
         absc.resize(1000, 0.0f);
         for (int i = 0; i < 1000; ++i) {
             absc[i] = static_cast<float>(i-500) * 0.01f;

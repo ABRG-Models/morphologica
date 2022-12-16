@@ -160,7 +160,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * (RD.hg->width());
-    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaders, RD.hg, spatOff);
     hgv1->setSizeScale (myscale, myscale);
     hgv1->setScalarData (&RD.n[0]);
     // You can directly set VisualDataModel::zScale and ::colourScale:
@@ -176,7 +176,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
-    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaders, RD.hg, spatOff);
     hgv2->setSizeScale (myscale, myscale);
     hgv2->setScalarData (&RD.c[0]);
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -190,7 +190,7 @@ int main (int argc, char **argv)
 
     // Set up a 2D graph with morph::GraphVisual
     spatOff = {0.5f, -2.0f, 0.0f};
-    auto graph1 = std::make_unique<morph::GraphVisual<FLT>> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph1 = std::make_unique<morph::GraphVisual<FLT>> (v.shaders, spatOff);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = true;
     graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_ymax", 40000.0f));

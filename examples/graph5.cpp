@@ -10,7 +10,7 @@ int main()
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Twinax GraphVisual example");
     // Create a new GraphVisual with offset within the scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
     // This is going to be a twin axis graph
     gv->axisstyle = morph::axisstyle::twinax;
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods

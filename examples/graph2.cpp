@@ -33,7 +33,7 @@ int main (int argc, char** argv)
     try {
         morph::vvec<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
         morph::vvec<float> data = absc.pow(3);
-        auto gvup = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+        auto gvup = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
 
         // Here, we change the size of the graph and range of the axes (this is optional
         gvup->setsize (1.33, 1);

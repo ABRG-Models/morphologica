@@ -149,7 +149,7 @@ struct SimpsonGoodhill
         morph::vec<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
-        auto bvup = std::make_unique<BranchVisual<T>> (v->shaderprog, v->tshaderprog, offset, &this->branches);
+        auto bvup = std::make_unique<BranchVisual<T>> (v->shaders, offset, &this->branches);
         bvup->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         bvup->finalize();
@@ -157,14 +157,14 @@ struct SimpsonGoodhill
 
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        auto cvup = std::make_unique<NetVisual<T>> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, offset, &this->ax_centroids);
         cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
         cvup->finalize();
         this->cv = v->addVisualModel (cvup);
 
         // Show a vis of the retina, to compare positions/colours
         offset[0] += 1.3f;
-        auto cgv = std::make_unique<morph::CartGridVisual<float>>(v->shaderprog, v->tshaderprog, retina, offset);
+        auto cgv = std::make_unique<morph::CartGridVisual<float>>(v->shaders, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::vec<float, 3>> points = this->retina->getCoordinates3();
         cgv->setVectorData (&points);

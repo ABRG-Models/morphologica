@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     v.lightingEffects (true);
 
     morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<F>>(v.shaderprog, v.tshaderprog, hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<F>>(v.shaders, hg, offset);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
     hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
@@ -110,20 +110,20 @@ int main (int argc, char** argv)
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    auto cand_up = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
+    auto cand_up = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    auto best_up = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
+    auto best_up = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    auto curr_up = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto curr_up = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
     // Fourth object marks the starting place
     col = { .5f, .5f, .5f };
     polypos[2] = objective(p);
-    auto sp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto sp = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
     auto candp = v.addVisualModel (cand_up);
     auto bestp = v.addVisualModel (best_up);
@@ -132,7 +132,7 @@ int main (int argc, char** argv)
 
     // Add a graph to track T_i and T_cost
     morph::vec<float> spatOff = {1.2f, -0.5f, 0.0f};
-    auto graph1 = std::make_unique<morph::GraphVisual<F>> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph1 = std::make_unique<morph::GraphVisual<F>> (v.shaders, spatOff);
     graph1->twodimensional = true;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
@@ -144,7 +144,7 @@ int main (int argc, char** argv)
     auto graph1p = v.addVisualModel (graph1);
 
     spatOff[0] += 1.1f;
-    auto graph2 = std::make_unique<morph::GraphVisual<F>> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph2 = std::make_unique<morph::GraphVisual<F>> (v.shaders, spatOff);
     graph2->twodimensional = true;
     graph2->setlimits (0, 1000, -1.0f, 1.0f);
     graph2->policy = morph::stylepolicy::lines;

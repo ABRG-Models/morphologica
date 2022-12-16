@@ -42,7 +42,7 @@ int main()
     morph::Visual v(1024, 768, "Histogram", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
 
     // Create a new GraphVisual with offset within the scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
     gv->setdata (h); // to become gv->add_bargraph (h [,morph::colour::darkorchid1] [,morph::colour::orchid2])
     gv->xlabel = "Scalar product";
     gv->ylabel = "Proportion";

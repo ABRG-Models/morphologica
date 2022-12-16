@@ -48,7 +48,7 @@ int main (int argc, char** argv)
         std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
         morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-        auto hgv = std::make_unique<morph::HexGridVisual<float>> (v.shaderprog, v.tshaderprog, &hg, offset);
+        auto hgv = std::make_unique<morph::HexGridVisual<float>> (v.shaders, &hg, offset);
         hgv->setScalarData (&data);
         hgv->cm.setType (morph::ColourMapType::Rainbow);
         hgv->zScale.setParams(0,0);

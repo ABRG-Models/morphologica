@@ -49,7 +49,7 @@ int main (int argc, char** argv)
             }
         }
 
-        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaderprog, offset);
+        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
         sv->radiusFixed = 0.03f;

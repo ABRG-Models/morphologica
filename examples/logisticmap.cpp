@@ -24,7 +24,7 @@ int main (int argc, char** argv)
     try {
         morph::vvec<double> absc;
         morph::vvec<double> ord;
-        auto gv = std::make_unique<morph::GraphVisual<double>>(v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
+        auto gv = std::make_unique<morph::GraphVisual<double>>(v.shaders, morph::vec<float>({0,0,0}));
 
         double x = 0.5;
         double x1 = 0.0;

@@ -50,7 +50,7 @@ int main (int argc, char** argv)
         quivs.push_back ({-0.04, 0.05, -.2});
         quivs.push_back ({0.3,  -0.1,  0});
 
-        auto qvp = std::make_unique<morph::QuiverVisual<float>> (v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::Cividis);
+        auto qvp = std::make_unique<morph::QuiverVisual<float>> (v.shaders, &coords, offset, &quivs, morph::ColourMapType::Cividis);
         unsigned int visId = v.addVisualModelId (qvp);
         cout << "Added Visual with visId " << visId << endl;
 
@@ -66,7 +66,7 @@ int main (int argc, char** argv)
         points.push_back ({4,3.9,0});
         vector<float> data = {0.1, 0.2, 0.5, 0.6, 0.95};
 
-        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaderprog, offset);
+        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
         sv->radiusFixed = 0.03f;

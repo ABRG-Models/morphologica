@@ -56,7 +56,7 @@ int main (int argc, char** argv)
                 k++;
             }
         }
-        auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
+        auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
         v.addVisualModel (vmp);
 
         v.render();
