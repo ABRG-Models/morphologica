@@ -29,7 +29,7 @@ int main (int argc, char** argv)
 
         morph::DatasetStyle ds;
 
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
+        auto gv = std::make_unique<morph::GraphVisual<float>>(v.shaderprog, v.tshaderprog, morph::vec<float>({0,0,0}));
         morph::vvec<float> data = absc.pow(3);
 
         ds.linecolour =  {1.0, 0.0, 0.0};
@@ -48,9 +48,9 @@ int main (int argc, char** argv)
 
         gv->setthickness (0.001f);
         gv->finalize();
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        v.addVisualModel (gv);
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,0,0});
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({step,0,0}));
         morph::vvec<float> data2 = absc.pow(2);
         ds.linecolour = {0.0, 0.0, 1.0};
         ds.markerstyle = morph::markerstyle::hexagon;
@@ -61,9 +61,9 @@ int main (int argc, char** argv)
         gv->xlabel = "Abscissa (notice that mm is not rotated)";
         gv->setthickness (0.005f);
         gv->finalize();
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        v.addVisualModel (gv);
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,-row2,0});
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({0,-row2,0}));
         morph::vvec<float> data3 = absc.pow(4);
         gv->setsize (1,0.8);
         ds.linecolour = {0.0, 1.0, 0.0};
@@ -78,9 +78,9 @@ int main (int argc, char** argv)
         gv->xlabel = "mmi is just long enough to be rotated";
         gv->setthickness (0.001f);
         gv->finalize();
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        v.addVisualModel (gv);
 
-        gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {step,-row2,0});
+        gv = std::make_unique<morph::GraphVisual<float>> (v.shaderprog, v.tshaderprog, morph::vec<float>({step,-row2,0}));
         absc.resize(1000, 0.0f);
         for (int i = 0; i < 1000; ++i) {
             absc[i] = static_cast<float>(i-500) * 0.01f;
@@ -95,7 +95,7 @@ int main (int argc, char** argv)
         gv->setthickness (0.002f);
         gv->finalize();
         gv->twodimensional = false;
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        v.addVisualModel (gv);
 
         v.render();
         while (v.readyToFinish == false) {

@@ -42,7 +42,7 @@ int main()
     morph::vvec<float> hex_image_data = hg.resampleImage (image_data, img.cols, image_scale, image_offset);
 
     // Now visualise with a HexGridVisual
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, {0.0f,0.0f,0.0f });
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaderprog, v.tshaderprog, &hg, morph::vec<float>({0,0,0}));
 
     // Set the image data as the scalar data for the HexGridVisual
     hgv->setScalarData (&hex_image_data);

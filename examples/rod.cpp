@@ -36,17 +36,15 @@ int main (int argc, char** argv)
         morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
         morph::vec<float, 3> colour2 = { 0.0, 0.9, 0.4 };
 
-        unsigned int visId = v.addVisualModel (new morph::RodVisual (v.shaderprog, offset, start, end, 0.1f, colour1, colour2));
+        std::unique_ptr<morph::VisualModel> rvm = std::make_unique<morph::RodVisual> (v.shaderprog, offset, start, end, 0.1f, colour1, colour2);
+        v.addVisualModel (rvm);
 
-        std::cout << "Added RodVisual with visId " << visId << std::endl;
-#if 1
         morph::vec<float, 3> start2 = { -0.1, 0.2, 0.6 };
         morph::vec<float, 3> end2 = { 0.2, 0.4, 0.6 };
+        // You can reuse the unique_ptr rvm, once you've transferred ownership with v.addVisualModel (rvm)
+        rvm = std::make_unique<morph::RodVisual>(v.shaderprog, offset, start2, end2, 0.05f, colour2);
+        v.addVisualModel (rvm);
 
-        visId = v.addVisualModel (new morph::RodVisual (v.shaderprog, offset, start2, end2, 0.05f, colour2));
-
-        std::cout << "Added RodVisual with visId " << visId << std::endl;
-#endif
         v.render();
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);

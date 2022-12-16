@@ -56,10 +56,8 @@ int main (int argc, char** argv)
                 k++;
             }
         }
-
-        unsigned int visId = v.addVisualModel (new morph::QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen));
-
-        std::cout << "Added Visual with visId " << visId << std::endl;
+        auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
+        v.addVisualModel (vmp);
 
         v.render();
         while (v.readyToFinish == false) {

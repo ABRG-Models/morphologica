@@ -103,9 +103,11 @@ int main()
             vec<float,3> pv = { p[0], p[1], p[2] };
             vec<float,3> vtx = pv;
             vtx += vec<float, 3>({1,0,0});
-            v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, pv, vtx, sz/1.8f, 0.002f, cl_a, 6));
+            auto pvp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, pv, vtx, sz/1.8f, 0.002f, cl_a, 6);
+            v.addVisualModel (pvp);
             if (h.boundaryHex()) {
-                v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset2, pv, vtx, sz/12.0f, 0.002f, cl_b, 6));
+                auto pvp2 = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset2, pv, vtx, sz/12.0f, 0.002f, cl_b, 6);
+                v.addVisualModel (pvp2);
             }
         }
 
@@ -115,7 +117,8 @@ int main()
             posn[0] = verti.v.first;
             posn[1] = verti.v.second;
             vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
-            v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/8.0f, 0.002f, cl_c, 60));
+            auto pvp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, posn, vtx, sz/8.0f, 0.002f, cl_c, 60);
+            v.addVisualModel (pvp);
         }
 
         offset += { 0, 0, 0.004 };
@@ -129,14 +132,16 @@ int main()
                     posn[0] = path.first;
                     posn[1] = path.second;
                     vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
-                    v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_d, 6));
+                    auto pvp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_d, 6);
+                    v.addVisualModel (pvp);
                 }
                 for (auto path : dom_inner.pathto_neighbour) {
                     vec<float,3> posn = {{0,0,0}};
                     posn[0] = path.first;
                     posn[1] = path.second;
                     vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
-                    v.addVisualModel (new morph::PolygonVisual (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_e, 6));
+                    auto pvp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, posn, vtx, sz/16.0f, 0.002f, cl_e, 6);
+                    v.addVisualModel (pvp);
                 }
             }
         }
@@ -144,9 +149,15 @@ int main()
         // Draw small hex at boundary centroid.
         vec<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
         vec<float,3> centroidv = centroid + vec<float,3> ({ 0.0f, 1.0f, 0.0f });
-        v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0}, centroid, centroidv, sz/16.0f, 0.01f, {0,0,1}, 10));
+        vec<float,3> zeros = {0,0,0};
+        vec<float,3> ux = {1,0,0};
+        vec<float,3> uy = {0,1,0};
+        vec<float,3> uz = {0,0,1};
+        auto pvp = std::make_unique<morph::PolygonVisual> (v.shaderprog, zeros, centroid, centroidv, sz/16.0f, 0.01f, uz, 10);
+        v.addVisualModel (pvp);
         // red hex at zero
-        v.addVisualModel (new morph::PolygonVisual (v.shaderprog, {0,0,0.01f}, {0,0,0}, {0,1,0}, sz/20.0f, 0.01f, {1,0,0}, 8));
+        auto pvp2 = std::make_unique<morph::PolygonVisual> (v.shaderprog, vec<float,3>({0,0,0.01f}), zeros, uy, sz/20.0f, 0.01f, ux, 8);
+        v.addVisualModel (pvp2);
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);

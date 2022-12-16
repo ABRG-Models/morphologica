@@ -252,24 +252,24 @@ int main (int argc, char **argv)
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<FLT>* uvm = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto uvm = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     uvm->setScalarData (&(RD.u));
     uvm->zScale.setParams (0.2f, 0.0f);
     uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     uvm->finalize();
-    v1.addVisualModel (uvm);
+    auto uvmp = v1.addVisualModel (uvm);
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<FLT>* vvm = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto vvm = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     vvm->setScalarData (&(RD.v));
     vvm->zScale.setParams (0.2f, 0.0f);
     vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                    morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     vvm->finalize();
-    v1.addVisualModel (vvm);
+    auto vvmp = v1.addVisualModel (vvm);
 #endif
 
     // Start the loop
@@ -282,11 +282,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            uvm->updateData (&(RD.u));
-            uvm->clearAutoscaleColour();
+            uvmp->updateData (&(RD.u));
+            uvmp->clearAutoscaleColour();
 
-            vvm->updateData (&(RD.v));
-            vvm->clearAutoscaleColour();
+            vvmp->updateData (&(RD.v));
+            vvmp->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {

@@ -58,12 +58,12 @@ int main (int argc, char** argv)
         std::vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
 #ifdef MESH
-        unsigned int visId = v.addVisualModel (new morph::QuadsMeshVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma));
+        auto qmv = std::make_unique<morph::QuadsMeshVisual<float>> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma);
+        v.addVisualModel (qmv);
 #else
-        unsigned int visId = v.addVisualModel (new morph::QuadsVisual<float> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome));
+        auto qv = std::make_unique<morph::QuadsVisual<float>> (v.shaderprog, &surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome);
+        v.addVisualModel (qv);
 #endif
-
-        std::cout << "Added Visual with visId " << visId << std::endl;
 
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);

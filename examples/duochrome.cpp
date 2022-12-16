@@ -43,7 +43,7 @@ int main (int argc, char** argv)
             }
         }
 
-        morph::ScatterVisual<float>* sv = new morph::ScatterVisual<float> (v.shaderprog, offset);
+        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaderprog, offset);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
         // Set the vector data to the coordinates - we'll visualize duochrome based on x and y
@@ -54,9 +54,7 @@ int main (int argc, char** argv)
         sv->cm.setHueGB();
         //sv->cm.setHue(0.515f);
         sv->finalize();
-        unsigned int visId = v.addVisualModel (sv);
-
-        std::cout << "Added Visual with visId " << visId << std::endl;
+        v.addVisualModel (sv);
 
         v.render();
         while (v.readyToFinish == false) {

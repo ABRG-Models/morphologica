@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     v.lightingEffects (true);
 
     morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
-    morph::HexGridVisual<F>* hgv = new morph::HexGridVisual<F>(v.shaderprog, v.tshaderprog, hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<F>>(v.shaderprog, v.tshaderprog, hg, offset);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
     hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
@@ -110,29 +110,29 @@ int main (int argc, char** argv)
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
+    auto cand_up = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.001f, 0.8f, col, 10);
+    auto best_up = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto curr_up = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
     // Fourth object marks the starting place
     col = { .5f, .5f, .5f };
     polypos[2] = objective(p);
-    morph::PolygonVisual* sp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto sp = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
-    v.addVisualModel (candp);
-    v.addVisualModel (bestp);
-    v.addVisualModel (currp);
+    auto candp = v.addVisualModel (cand_up);
+    auto bestp = v.addVisualModel (best_up);
+    auto currp = v.addVisualModel (curr_up);
     v.addVisualModel (sp);
 
     // Add a graph to track T_i and T_cost
     morph::vec<float> spatOff = {1.2f, -0.5f, 0.0f};
-    morph::GraphVisual<F>* graph1 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph1 = std::make_unique<morph::GraphVisual<F>> (v.shaderprog, v.tshaderprog, spatOff);
     graph1->twodimensional = true;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
@@ -141,10 +141,10 @@ int main (int argc, char** argv)
     graph1->prepdata ("Tparam");
     graph1->prepdata ("Tcost");
     graph1->finalize();
-    v.addVisualModel (graph1);
+    auto graph1p = v.addVisualModel (graph1);
 
     spatOff[0] += 1.1f;
-    morph::GraphVisual<F>* graph2 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph2 = std::make_unique<morph::GraphVisual<F>> (v.shaderprog, v.tshaderprog, spatOff);
     graph2->twodimensional = true;
     graph2->setlimits (0, 1000, -1.0f, 1.0f);
     graph2->policy = morph::stylepolicy::lines;
@@ -154,7 +154,7 @@ int main (int argc, char** argv)
     graph2->prepdata ("f_x_best + .5");
     graph2->prepdata ("f_x_cand");
     graph2->finalize();
-    v.addVisualModel (graph2);
+    auto graph2p = v.addVisualModel (graph2);
 
     v.render();
 #endif
@@ -194,11 +194,11 @@ int main (int argc, char** argv)
         currp->reinit();
 
         // Append to the 2D graph of sums:
-        graph1->append ((float)anneal.steps, std::log(anneal.T_k.mean()), 0);
-        graph1->append ((float)anneal.steps, std::log(anneal.T_cost.mean()), 1);
-        graph2->append ((float)anneal.steps, anneal.f_x-0.2, 0);
-        graph2->append ((float)anneal.steps, anneal.f_x_best, 1);
-        graph2->append ((float)anneal.steps, anneal.f_x_cand+0.2, 2);
+        graph1p->append ((float)anneal.steps, std::log(anneal.T_k.mean()), 0);
+        graph1p->append ((float)anneal.steps, std::log(anneal.T_cost.mean()), 1);
+        graph2p->append ((float)anneal.steps, anneal.f_x-0.2, 0);
+        graph2p->append ((float)anneal.steps, anneal.f_x_best, 1);
+        graph2p->append ((float)anneal.steps, anneal.f_x_cand+0.2, 2);
 
 
         glfwWaitEventsTimeout (0.0166);

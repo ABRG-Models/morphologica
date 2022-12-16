@@ -273,7 +273,7 @@ int main (int argc, char **argv)
     spatOff = { xzero, 0.0, 0.0 };
 
     // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.)
-    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     hgv1->setScalarData (&RD.A);
     hgv1->zScale.setParams (0.2f, 0.0f);
     hgv1->colourScale.do_autoscale = true;
@@ -281,12 +281,12 @@ int main (int argc, char **argv)
     hgv1->addLabel ("Variable A", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                     morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     hgv1->finalize();
-    v1.addVisualModel (hgv1);
+    auto hgv1p = v1.addVisualModel (hgv1);
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
     hgv2->setScalarData (&RD.B);
     hgv2->zScale.setParams (0.2f, 0.0f);
     hgv2->colourScale.do_autoscale = true;
@@ -294,7 +294,7 @@ int main (int argc, char **argv)
     hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                     morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     hgv2->finalize();
-    v1.addVisualModel (hgv2);
+    auto hgv2p = v1.addVisualModel (hgv2);
 #endif
 
     // Start the loop
@@ -307,11 +307,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            hgv1->updateData (&(RD.A));
-            hgv1->clearAutoscaleColour();
+            hgv1p->updateData (&(RD.A));
+            hgv1p->clearAutoscaleColour();
 
-            hgv2->updateData (&(RD.B));
-            hgv2->clearAutoscaleColour();
+            hgv2p->updateData (&(RD.B));
+            hgv2p->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {

@@ -53,7 +53,7 @@ int main()
     }
     std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
     std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
-    morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
@@ -67,19 +67,19 @@ int main()
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
+    auto candup = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.001f, 0.8f, col, 10);
+    auto bestup = std::make_unique<morph::PolygonVisual>(v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto currup = std::make_unique<morph::PolygonVisual> (v.shaderprog, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
-    v.addVisualModel (candp);
-    v.addVisualModel (bestp);
-    v.addVisualModel (currp);
+    auto candp = v.addVisualModel (candup);
+    auto bestp = v.addVisualModel (bestup);
+    auto currp = v.addVisualModel (currup);
 #endif
 
     morph::Anneal<FLT> anneal(p, p_rng);

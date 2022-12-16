@@ -45,12 +45,11 @@ int main()
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaderprog, v.tshaderprog, &hg, offset);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->finalize();
-    unsigned int gridId = v.addVisualModel (hgv);
-    std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
+    auto hgvp = v.addVisualModel (hgv);
 
     using namespace std::chrono;
     using std::chrono::steady_clock;
@@ -66,7 +65,7 @@ int main()
             data[hi] = std::sin(k*r[hi])/k*r[hi];
         }
 
-        hgv->updateData (&data);
+        hgvp->updateData (&data);
         k += 0.02f;
 
         auto tduration = steady_clock::now() - tstart;

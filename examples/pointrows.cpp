@@ -50,12 +50,13 @@ int main (int argc, char** argv)
         points.push_back ({ 2, 4,   0.1 }); data.push_back(points.back()[2]);
 
 #ifdef MESH
-        unsigned int visId = v.addVisualModel (new morph::PointRowsMeshVisual<float> (v.shaderprog, &points, offset, &data, scale, morph::ColourMapType::Twilight,
-                                                                                      0.0f, 1.0f, 1.0f, 0.04f, morph::ColourMapType::Jet, 0.0f, 1.0f, 1.0f, 0.1f));
+        auto prmv = std::make_unique<morph::PointRowsMeshVisual<float>>(v.shaderprog, &points, offset, &data, scale, morph::ColourMapType::Twilight,
+                                                                        0.0f, 1.0f, 1.0f, 0.04f, morph::ColourMapType::Jet, 0.0f, 1.0f, 1.0f, 0.1f);
+        v.addVisualModel (prmv);
 #else
-        unsigned int visId = v.addVisualModel (new morph::PointRowsVisual<float> (v.shaderprog, &points, offset, &data, scale, morph::ColourMapType::Twilight));
+        auto prv = std::make_unique<morph::PointRowsVisual<float>>(v.shaderprog, &points, offset, &data, scale, morph::ColourMapType::Twilight);
+        v.addVisualModel (prv);
 #endif
-        std::cout << "Added Visual with visId " << visId << std::endl;
 
         v.render();
         while (v.readyToFinish == false) {

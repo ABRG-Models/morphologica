@@ -49,16 +49,14 @@ int main (int argc, char** argv)
             }
         }
 
-        morph::ScatterVisual<float>* sv = new morph::ScatterVisual<float> (v.shaderprog, offset);
+        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaderprog, offset);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
         sv->radiusFixed = 0.03f;
         sv->colourScale = scale;
         sv->cm.setType (morph::ColourMapType::Plasma);
         sv->finalize();
-        unsigned int visId = v.addVisualModel (sv);
-
-        std::cout << "Added Visual with visId " << visId << std::endl;
+        v.addVisualModel (sv);
 
         v.render();
         while (v.readyToFinish == false) {

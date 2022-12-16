@@ -149,7 +149,7 @@ struct SimpsonGoodhill
         morph::vec<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->branches);
+        this->bv = std::make_unique<BranchVisual<T>> (v->shaderprog, v->tshaderprog, offset, &this->branches);
         this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         this->bv->finalize();
@@ -200,7 +200,7 @@ struct SimpsonGoodhill
     // Centroid of the branches for each axon
     net<T> ax_centroids;
     // A visual environment
-    morph::Visual* v;
+    morph::Visual v;
     // Specialised visualization of agents with a history
     BranchVisual<T>* bv;
     // Centroid visual
