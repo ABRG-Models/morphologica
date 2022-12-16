@@ -242,8 +242,8 @@ namespace morph {
                                       const float _fontsize = 0.01,
                                       const int _fontres = 24)
         {
-            if (this->tshaderprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->tshaderprog, _font, _fontsize, _fontres);
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
             tmup->setupText (_text, _toffset, _tcolour);
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
@@ -277,7 +277,7 @@ namespace morph {
 #else
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
-            glUseProgram (this->shaderprog);
+            glUseProgram (this->shaders.gprog);
 
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
@@ -312,22 +312,22 @@ namespace morph {
             // Lighting shader variables
             //
             // Ambient light colour
-            GLint loc_lightcol = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("light_colour"));
+            GLint loc_lightcol = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
             if (loc_lightcol != -1) {
                 glUniform3fv (loc_lightcol, 1, this->light_colour.data());
             }
             // Ambient light intensity
-            GLint loc_ai = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("ambient_intensity"));
+            GLint loc_ai = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
             if (loc_ai != -1) {
                 glUniform1f (loc_ai, this->ambient_intensity);
             }
             // Diffuse light position
-            GLint loc_dp = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_position"));
+            GLint loc_dp = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
             if (loc_dp != -1) {
                 glUniform3fv (loc_dp, 1, this->diffuse_position.data());
             }
             // Diffuse light intensity
-            GLint loc_di = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_intensity"));
+            GLint loc_di = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
@@ -344,22 +344,22 @@ namespace morph {
             TransformMatrix<float> lv_matrix;
             lv_matrix.translate (l_v0);
             lv_matrix.rotate (this->rotation);
-            GLint loc_lv = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("lv_matrix"));
+            GLint loc_lv = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("lv_matrix"));
             if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
             std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
             std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
             morph::gl::Util::checkError (__FILE__, __LINE__);
 #endif
             // Switch to text shader program and set the projection matrix
-            glUseProgram (this->tshaderprog);
-            GLint loc_p = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("p_matrix"));
+            glUseProgram (this->shaders.tprog);
+            GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             // Switch back to the regular shader prog and render the VisualModels.
-            glUseProgram (this->shaderprog);
+            glUseProgram (this->shaders.gprog);
 
             // Set the projection matrix just once
-            loc_p = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("p_matrix"));
+            loc_p = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if (this->showCoordArrows == true) {
@@ -435,9 +435,10 @@ namespace morph {
         }
 
         //! The OpenGL shader program for graphical objects
-        GLuint shaderprog;
+        //GLuint shaderprog;
         //! The text shader program, which uses textures to draw text on quads.
-        GLuint tshaderprog;
+        //GLuint tshaderprog;
+        morph::gl::shaderprogs shaders;
 
         //! The colour of ambient and diffuse light sources
         vec<float> light_colour = {1,1,1};
@@ -797,7 +798,7 @@ namespace morph {
                 {GL_NONE, NULL, NULL },
             };
 
-            this->shaderprog = this->LoadShaders (shaders);
+            this->shaders.gprog = this->LoadShaders (shaders);
 
             // An additional shader is used for text
             ShaderInfo tshaders[] = {
@@ -805,7 +806,7 @@ namespace morph {
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader },
                 {GL_NONE, NULL, NULL }
             };
-            this->tshaderprog = this->LoadShaders (tshaders);
+            this->shaders.tprog = this->LoadShaders (tshaders);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -842,15 +843,14 @@ namespace morph {
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = std::make_unique<CoordArrows>();
-            this->coordArrows->init (this->shaderprog,
-                                     this->tshaderprog,
+            this->coordArrows->init (this->shaders,
                                      this->coordArrowsLength,
                                      this->coordArrowsThickness,
                                      this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel> (this->tshaderprog,
+            this->textModel = std::make_unique<VisualTextModel> (this->shaders.tprog,
                                                                  morph::VisualFont::DVSans,
                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                  this->title);

@@ -14,7 +14,7 @@ namespace morph {
         RodVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, start and end coordinates, radius and a single colour.
-        RodVisual(GLuint sp, const vec<float, 3> _offset,
+        RodVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
                   const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                   const std::array<float, 3> _col)
         {
@@ -22,7 +22,7 @@ namespace morph {
         }
 
         //! Initialise with offset, start and end coordinates, radius and start and end colours.
-        RodVisual(GLuint sp, const vec<float, 3> _offset,
+        RodVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
                   const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                   const std::array<float, 3> _start_col, const std::array<float, 3> _end_col)
         {
@@ -31,12 +31,12 @@ namespace morph {
 
         ~RodVisual () {}
 
-        void init (GLuint sp, const vec<float, 3> _offset,
+        void init (morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
                    const vec<float, 3> _start_coord, const vec<float, 3> _end_coord, const float _radius,
                    const std::array<float, 3> _start_col, const std::array<float, 3> _end_col)
         {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 

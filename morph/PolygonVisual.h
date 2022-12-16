@@ -13,23 +13,23 @@ namespace morph {
     public:
         PolygonVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
 
-        PolygonVisual(GLuint sp, const vec<float, 3> _offset,
+        PolygonVisual(morph::gl::shaderprogs& _shaders, const vec<float, 3> _offset,
                       const vec<float, 3> _position, const vec<float, 3> _vertex,
                       const float _radius, const float _thickness,
                       const std::array<float, 3> _col, const int _n)
         {
-            this->init (sp, _offset, _position, _vertex, _radius, _thickness, _col, _n);
+            this->init (shaders, _offset, _position, _vertex, _radius, _thickness, _col, _n);
         }
 
         virtual ~PolygonVisual () {}
 
-        void init (GLuint sp, const vec<float, 3> _offset,
+        void init (morph::gl::shaderprogs& _shaders, const vec<float, 3> _offset,
                    const vec<float, 3> _position, const vec<float, 3> _vertex,
                    const float _radius, const float _thickness,
                    const std::array<float, 3> _col, const int _n)
         {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -47,7 +47,7 @@ namespace morph {
         }
 
         //! Initialize vertex buffer objects and vertex array object.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             this->vertexPositions.clear();
             this->vertexNormals.clear();

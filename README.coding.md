@@ -205,8 +205,8 @@ public:
 ```
 
 ```TriangleVisual``` derives from ```VisualModel``` and has
-two constructors. The second constructor takes an argument ```GLuint
-sp``` which is the 'shader program' id. You'll see this in all
+two constructors. The second constructor takes an argument ```morph::gl::shaderprogs
+sp``` which is a struct containing the 'shader program' ids. You'll see this in all
 VisualModels; this shader program (and a corresponding text shader
 program id) is a handle that has to be passed down from the
 morph::Visual (which manages the OpenGL context) to all VisualModels.

@@ -23,7 +23,7 @@ namespace morph {
     class QuadsVisual : public VisualDataModel<Flt>
     {
     public:
-        QuadsVisual(GLuint sp,
+        QuadsVisual(morph::gl::shaderprogs& _shaders,
                     const std::vector<std::array<Flt,12>>* _quads,
                     const vec<float> _offset,
                     const std::vector<Flt>* _data,
@@ -32,7 +32,7 @@ namespace morph {
                     const float _hue = 0.0f) {
 
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;

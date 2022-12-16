@@ -19,6 +19,15 @@ typedef GLuint VBOint; // A GLuint is an unsigned int
 namespace morph {
     namespace gl {
 
+        // A container struct for the shader program identifiers used in a morph::Visual
+        struct shaderprogs
+        {
+            //! An OpenGL shader program for graphical objects
+            GLuint gprog = 0;
+            //! A text shader program, which uses textures to draw text on quads.
+            GLuint tprog = 0;
+        };
+
         //! The locations for the position, normal and colour vertex attributes in the
         //! morph::Visual GLSL programs
         enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2, textureLoc = 3 };

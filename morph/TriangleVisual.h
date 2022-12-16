@@ -14,7 +14,7 @@ namespace morph {
         TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, three coordinates and a single colour.
-        TriangleVisual(GLuint sp, const vec<float, 3> _offset,
+        TriangleVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
                        const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                        const std::array<float, 3> _col)
         {
@@ -23,12 +23,12 @@ namespace morph {
 
         virtual ~TriangleVisual () {}
 
-        void init (GLuint sp, const vec<float, 3> _offset,
+        void init (morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
                    const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                    const std::array<float, 3> _col)
         {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->coord1 = _coord1;
@@ -67,7 +67,7 @@ namespace morph {
         }
 
         //! Initialize vertex buffer objects and vertex array object.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             this->vertexPositions.clear();
             this->vertexNormals.clear();

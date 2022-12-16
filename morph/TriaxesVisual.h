@@ -27,10 +27,9 @@ namespace morph {
         //! \param sp shader program id
         //! \param tsp text shader program id
         //! \param _offset The offset within morph::Visual space to place these axes
-        TriaxesVisual (GLuint sp, GLuint tsp, const vec<float> _offset)
+        TriaxesVisual (morph::gl::shaderprogs& _shaders, const vec<float> _offset)
         {
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->x_scale.do_autoscale = true;
@@ -224,7 +223,7 @@ namespace morph {
                 std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->xticks[i]);
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 this->xtick_width = geom.width() > this->xtick_width ? geom.width() : this->xtick_width;
@@ -235,7 +234,7 @@ namespace morph {
 
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
                 std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->yticks[i]);
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
@@ -246,7 +245,7 @@ namespace morph {
 
             for (unsigned int i = 0; i < this->ztick_posns.size(); ++i) {
                 std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->zticks[i]);
-                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+                morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;
                 this->ztick_width = geom.width() > this->ztick_width ? geom.width() : this->ztick_width;
@@ -260,7 +259,7 @@ namespace morph {
         void drawAxisLabels()
         {
             // x axis label (easy)
-            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
             morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
             morph::vec<float> lblpos;
             lblpos = {{0.5f * this->axis_ends[0] - geom.half_width(),
@@ -269,7 +268,7 @@ namespace morph {
             this->texts.push_back (lbl);
 
             // y axis label (have to rotate)
-            lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->ylabel);
 
             // Rotate label if it's long
@@ -293,7 +292,7 @@ namespace morph {
             this->texts.push_back (lbl);
 
             // z axis
-            lbl = new morph::VisualTextModel (this->tshaderprog, this->font, this->fontsize, this->fontres);
+            lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->zlabel);
             lblpos = {{ -(this->axislabelgap+this->ticklabelgap+geom.width()+this->ztick_width),
                         0,

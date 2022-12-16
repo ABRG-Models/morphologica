@@ -31,20 +31,19 @@ namespace morph {
         //! (text). _lengths is the 3 lengths of the coordinate axes, _thickness is a
         //! factor to slim/thicken the axes and _em controls the size of the axis
         //! labels. Set _em to 0.0f to omit the text x/y/z labels.
-        CoordArrows(GLuint sp, GLuint tsp,
+        CoordArrows(morph::gl::shaderprogs& _shaders,
                     const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
         {
-            this->init (sp, tsp, _lengths, _thickness, _em);
+            this->init (_shaders, _lengths, _thickness, _em);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (GLuint sp, GLuint tsp,
+        void init (morph::gl::shaderprogs& _shaders,
                    const vec<float, 3> _lengths, const float _thickness, const float _em)
         {
             // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
+            this->shaders = _shaders;
             this->mv_offset = {0.0, 0.0, 0.0};
             this->lengths = _lengths;
             this->thickness = _thickness;
@@ -80,21 +79,21 @@ namespace morph {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 std::cout << "X text offset: " << toffset << std::endl;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
                                                             morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->x_label));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
                                                             morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->y_label));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                this->texts.push_back (new VisualTextModel (this->tshaderprog,
+                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
                                                             morph::VisualFont::DVSansItalic,
                                                             this->em, 48, toffset,
                                                             this->z_label));

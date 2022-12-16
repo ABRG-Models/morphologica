@@ -69,10 +69,9 @@ namespace morph {
     {
     public:
         //! Simplest constructor. Use this in all new code!
-        HexGridVisual(GLuint sp, GLuint tsp, const HexGrid* _hg, const vec<float> _offset)
+        HexGridVisual(morph::gl::shaderprogs& _shaders, const HexGrid* _hg, const vec<float> _offset)
         {
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->zScale.setParams (1, 0);

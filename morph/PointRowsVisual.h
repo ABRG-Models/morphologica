@@ -30,15 +30,16 @@ namespace morph {
     class PointRowsVisual : public VisualDataModel<Flt>
     {
     public:
-        PointRowsVisual(GLuint sp,
+        PointRowsVisual(morph::gl::shaderprogs& sp,
                         std::vector<vec<float,3>>* _pointrows,
                         const vec<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& cscale,
                         ColourMapType _cmt,
-                        const float _hue = 0.0f) {
+                        const float _hue = 0.0f)
+        {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -55,7 +56,8 @@ namespace morph {
         }
 
         //! Convert datum using our scale into a colour triplet (RGB).
-        std::array<float, 3> datumToColour (Flt datum_in) {
+        std::array<float, 3> datumToColour (Flt datum_in)
+        {
             // Scale the input...
             Flt datum = datum_in * this->scale[0] + this->scale[1];
             datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
@@ -66,10 +68,8 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! surface.
-        void initializeVertices (void) {
-
-            //std::cout << __FUNCTION__ << " called" << std::endl;
-
+        void initializeVertices()
+        {
             unsigned int npoints = this->dataCoords->size();
             unsigned int ndata = this->scalarData->size();
 

@@ -80,16 +80,15 @@ namespace morph {
 
         VisualModel (GLuint sp, const vec<float> _mv_offset)
         {
-            this->shaderprog = sp;
+            this->shaders.gprog = sp;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
             this->model_scaling.setToIdentity();
         }
 
-        VisualModel (GLuint sp, GLuint tsp, const vec<float> _mv_offset)
+        VisualModel (morph::gl::shaderprogs& _shaders, const vec<float> _mv_offset)
         {
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
+            this->shaders = _shaders;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
             this->model_scaling.setToIdentity();
@@ -225,7 +224,7 @@ namespace morph {
             glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
 
             // Ensure the correct program is in play for this VisualModel
-            glUseProgram (this->shaderprog);
+            glUseProgram (this->shaders.gprog);
 
             if (!this->indices.empty()) {
                 // It is only necessary to bind the vertex array object before rendering
@@ -233,14 +232,14 @@ namespace morph {
                 glBindVertexArray (this->vao);
 
                 // Pass this->float to GLSL so the model can have an alpha value.
-                GLint loc_a = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("alpha"));
+                GLint loc_a = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("alpha"));
                 if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
-                GLint loc_v = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("v_matrix"));
+                GLint loc_v = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("v_matrix"));
                 if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
 
                 // Should be able to apply scaling to the model matrix
-                GLint loc_m = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("m_matrix"));
+                GLint loc_m = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("m_matrix"));
                 if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
 
                 if constexpr (debug_render) {
@@ -275,10 +274,10 @@ namespace morph {
                                       const float _fontsize = 0.05,
                                       const int _fontres = 24)
         {
-            if (this->tshaderprog == 0) {
+            if (this->shaders.tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
-            morph::VisualTextModel* tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
+            morph::VisualTextModel* tm = new morph::VisualTextModel (this->shaders.tprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
             this->texts.push_back (tm);
             return tm->getTextGeometry();
@@ -293,10 +292,10 @@ namespace morph {
                                       const float _fontsize = 0.05,
                                       const int _fontres = 24)
         {
-            if (this->tshaderprog == 0) {
+            if (this->shaders.tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
-            tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
+            tm = new morph::VisualTextModel (this->shaders.tprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
             this->texts.push_back (tm);
             return tm->getTextGeometry();
@@ -594,11 +593,8 @@ namespace morph {
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
 
-        //! A copy of the reference to the shader program
-        GLuint shaderprog;
-
-        //! A copy of the reference to the text-specific shader program
-        GLuint tshaderprog;
+        //! A copy of the reference to the shader programs
+        morph::gl::shaderprogs shaders;
 
         /*
          * Compute positions and colours of vertices for the hexes and store in these:
