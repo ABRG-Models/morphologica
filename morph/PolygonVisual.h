@@ -11,14 +11,14 @@ namespace morph {
     class PolygonVisual : public VisualModel
     {
     public:
-        PolygonVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
+        PolygonVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         PolygonVisual(morph::gl::shaderprogs& _shaders, const vec<float, 3> _offset,
                       const vec<float, 3> _position, const vec<float, 3> _vertex,
                       const float _radius, const float _thickness,
                       const std::array<float, 3> _col, const int _n)
         {
-            this->init (shaders, _offset, _position, _vertex, _radius, _thickness, _col, _n);
+            this->init (_shaders, _offset, _position, _vertex, _radius, _thickness, _col, _n);
         }
 
         virtual ~PolygonVisual () {}
