@@ -70,7 +70,11 @@ namespace morph {
             }
 
             // Give the text labels a suitable, visible colour
-            for (auto& t : this->texts) { t->setVisibleOn (bgcolour); }
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) {
+                (*ti)->setVisibleOn (bgcolour);
+                ti++;
+            }
         }
 
         void initAxisLabels()
@@ -79,24 +83,27 @@ namespace morph {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
                 std::cout << "X text offset: " << toffset << std::endl;
-                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
-                                                            morph::VisualFont::DVSansItalic,
-                                                            this->em, 48, toffset,
-                                                            this->x_label));
+                auto vtm1 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                                                               morph::VisualFont::DVSansItalic,
+                                                               this->em, 48, toffset,
+                                                               this->x_label);
+                this->texts.push_back (std::move(vtm1));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
-                                                            morph::VisualFont::DVSansItalic,
-                                                            this->em, 48, toffset,
-                                                            this->y_label));
+                auto vtm2 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                                                               morph::VisualFont::DVSansItalic,
+                                                               this->em, 48, toffset,
+                                                               this->y_label);
+                this->texts.push_back (std::move(vtm2));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                this->texts.push_back (new VisualTextModel (this->shaders.tprog,
-                                                            morph::VisualFont::DVSansItalic,
-                                                            this->em, 48, toffset,
-                                                            this->z_label));
+                auto vtm3 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                                                               morph::VisualFont::DVSansItalic,
+                                                               this->em, 48, toffset,
+                                                               this->z_label);
+                this->texts.push_back (std::move(vtm3));
             }
         }
 

@@ -995,23 +995,23 @@ namespace morph {
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
-            std::vector<morph::VisualTextModel*> legtexts;
+            std::vector<std::unique_ptr<morph::VisualTextModel>> legtexts;
             float text_advance = 0.0f;
             for (size_t dsi = 0; dsi < gd_size; ++dsi) {
                 // Legend text. If all is well, this will be pushed onto the texts
                 // attribute and deleted when the model is deconstructed.
-                legtexts.push_back (new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres));
-                geom.push_back (legtexts.back()->getTextGeometry (this->datastyles[dsi].datalabel));
+                auto ltp = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+                geom.push_back (ltp->getTextGeometry (this->datastyles[dsi].datalabel));
                 if (geom.back().total_advance > text_advance) {
                     text_advance = geom.back().total_advance;
                 }
+                legtexts.push_back (std::move(ltp));
             }
             //std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // If there are no legend texts to show, then clean up and return
             if (text_advance == 0.0f && !legtexts.empty()) {
-                // delete memory pointed to in legtexts
-                for (auto& lt : legtexts) { delete lt; }
+                legtexts.clear();
                 return;
             }
 
@@ -1065,7 +1065,7 @@ namespace morph {
                     }
                 }
                 legtexts[dsi]->setupText (this->datastyles[dsi].datalabel, lpos+toffset+this->mv_offset, this->axiscolour);
-                this->texts.push_back (legtexts[dsi]);
+                this->texts.push_back (std::move(legtexts[dsi]));
             }
         }
 
@@ -1073,7 +1073,7 @@ namespace morph {
         void drawAxisLabels()
         {
             // x axis label (easy)
-            morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+            auto lbl = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
             morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
             morph::vec<float> lblpos;
             if (this->axisstyle == axisstyle::cross) {
@@ -1085,11 +1085,11 @@ namespace morph {
                            -(this->axislabelgap+this->ticklabelgap+geom.height()+this->xtick_label_height), 0}};
             }
             lbl->setupText (this->xlabel, lblpos+this->mv_offset, this->axiscolour);
-            this->texts.push_back (lbl);
+            this->texts.push_back (std::move(lbl));
 
             // y axis label (have to rotate)
-            lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
-            geom = lbl->getTextGeometry (this->ylabel);
+            auto lbl2 = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+            geom = lbl2->getTextGeometry (this->ylabel);
 
             // Rotate label if it's long, but assume NOT rotated first:
             float leftshift = geom.width();
@@ -1112,16 +1112,16 @@ namespace morph {
             if (geom.width() > 2*this->fontsize) {
                 morph::Quaternion<float> leftrot;
                 leftrot.initFromAxisAngle (this->uz, -90.0f);
-                lbl->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
+                lbl2->setupText (this->ylabel, leftrot, lblpos+this->mv_offset, this->axiscolour);
             } else {
-                lbl->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
+                lbl2->setupText (this->ylabel, lblpos+this->mv_offset, this->axiscolour);
             }
-            this->texts.push_back (lbl);
+            this->texts.push_back (std::move(lbl2));
 
             if (this->axisstyle == axisstyle::twinax) {
                 // y2 axis label (have to rotate)
-                lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
-                geom = lbl->getTextGeometry (this->ylabel2);
+                auto lbl3 = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+                geom = lbl3->getTextGeometry (this->ylabel2);
 
                 // Rotate label if it's long and then leftshift? No need if unrotated.
                 float leftshift = 0.0f;
@@ -1137,11 +1137,11 @@ namespace morph {
                 if (geom.width() > 2*this->fontsize) {
                     morph::Quaternion<float> leftrot;
                     leftrot.initFromAxisAngle (this->uz, -90.0f);
-                    lbl->setupText (this->ylabel2, leftrot, lblpos+this->mv_offset, this->axiscolour);
+                    lbl3->setupText (this->ylabel2, leftrot, lblpos+this->mv_offset, this->axiscolour);
                 } else {
-                    lbl->setupText (this->ylabel2, lblpos+this->mv_offset, this->axiscolour);
+                    lbl3->setupText (this->ylabel2, lblpos+this->mv_offset, this->axiscolour);
                 }
-                this->texts.push_back (lbl);
+                this->texts.push_back (std::move(lbl3));
             }
         }
 
@@ -1172,12 +1172,12 @@ namespace morph {
 
                     // Issue: I need the width of the text ss.str() before I can create the
                     // VisualTextModel, so need a static method like this:
-                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+                    auto lbl = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->xtick_label_height = geom.height() > this->xtick_label_height ? geom.height() : this->xtick_label_height;
                     morph::vec<float> lblpos = {(float)this->xtick_posns[i]-geom.half_width(), y_for_xticks-(this->ticklabelgap+geom.height()), 0};
                     lbl->setupText (s, lblpos+this->mv_offset, this->axiscolour);
-                    this->texts.push_back (lbl);
+                    this->texts.push_back (std::move(lbl));
                 }
             }
             if (!this->omit_y_tick_labels) {
@@ -1187,7 +1187,7 @@ namespace morph {
                     if (this->axisstyle == axisstyle::cross && this->yticks[i] == 0) { continue; }
 
                     std::string s = this->graphNumberFormat (this->yticks[i]);
-                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+                    auto lbl = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width = geom.width() > this->ytick_label_width ? geom.width() : this->ytick_label_width;
                     morph::vec<float> lblpos = {x_for_yticks-this->ticklabelgap-geom.width(), (float)this->ytick_posns[i]-geom.half_height(), 0};
@@ -1196,7 +1196,7 @@ namespace morph {
                         clr = this->datastyles[0].policy == stylepolicy::lines ? this->datastyles[0].linecolour : this->datastyles[0].markercolour;
                     }
                     lbl->setupText (s, lblpos+this->mv_offset, clr);
-                    this->texts.push_back (lbl);
+                    this->texts.push_back (std::move(lbl));
                 }
             }
             if (this->axisstyle == axisstyle::twinax && !this->omit_y_tick_labels) {
@@ -1204,7 +1204,7 @@ namespace morph {
                 this->ytick_label_width2 = 0.0f;
                 for (unsigned int i = 0; i < this->ytick_posns2.size(); ++i) {
                     std::string s = this->graphNumberFormat (this->yticks2[i]);
-                    morph::VisualTextModel* lbl = new morph::VisualTextModel (this->shaders.tprog, this->font, this->fontsize, this->fontres);
+                    auto lbl = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, this->font, this->fontsize, this->fontres);
                     morph::TextGeometry geom = lbl->getTextGeometry (s);
                     this->ytick_label_width2 = geom.width() > this->ytick_label_width2 ? geom.width() : this->ytick_label_width2;
                     morph::vec<float> lblpos = {x_for_yticks+this->ticklabelgap, (float)this->ytick_posns2[i]-geom.half_height(), 0};
@@ -1214,7 +1214,7 @@ namespace morph {
 
                     }
                     lbl->setupText (s, lblpos+this->mv_offset, clr);
-                    this->texts.push_back (lbl);
+                    this->texts.push_back (std::move(lbl));
                 }
             }
         }

@@ -146,10 +146,7 @@ namespace morph {
             if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
             GLint loc_m = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("m_matrix"));
             if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, this->viewmatrix.mat.data()); }
-#ifdef __DEBUG__
-            std::cout << "VisualTextModel::render: ("<<txt<<") scenematrix:\n" << scenematrix << std::endl;
-            std::cout << "VisualTextModel::render: ("<<txt<<") model viewmatrix:\n" << viewmatrix << std::endl;
-#endif
+
             glActiveTexture (GL_TEXTURE0);
 
             // It is only necessary to bind the vertex array object before rendering
@@ -317,6 +314,8 @@ namespace morph {
             this->setupText (morph::unicode::fromUtf8 (_txt));
         }
 
+        static constexpr bool debug_textquads = false;
+
         //! With the given text and font size information, create the quads for the text.
         void setupText (const std::basic_string<char32_t>& _txt)
         {
@@ -359,15 +358,15 @@ namespace morph {
                                               xpos+w, ypos+h,   text_epsilon,
                                               xpos+w, ypos,     text_epsilon };
                 text_epsilon -= 10.0f*std::numeric_limits<float>::epsilon();
-#ifdef __DEBUG__
-                std::cout << "Text box added as quad from\n("
-                          << tbox[0] << "," << tbox[1] << "," << tbox[2]
-                          << ") to (" << tbox[3] << "," << tbox[4] << "," << tbox[5]
-                          << ") to (" << tbox[6] << "," << tbox[7] << "," << tbox[8]
-                          << ") to (" << tbox[9] << "," << tbox[10] << "," << tbox[11]
-                          << "). w="<<w<<", h="<<h<<"\n";
-                std::cout << "Texture ID for that character is: " << ci.textureID << std::endl;
-#endif
+                if constexpr (debug_textquads == true) {
+                    std::cout << "Text box added as quad from\n("
+                              << tbox[0] << "," << tbox[1] << "," << tbox[2]
+                              << ") to (" << tbox[3] << "," << tbox[4] << "," << tbox[5]
+                              << ") to (" << tbox[6] << "," << tbox[7] << "," << tbox[8]
+                              << ") to (" << tbox[9] << "," << tbox[10] << "," << tbox[11]
+                              << "). w="<<w<<", h="<<h<<"\n";
+                    std::cout << "Texture ID for that character is: " << ci.textureID << std::endl;
+                }
                 this->quads.push_back (tbox);
                 this->quad_ids.push_back (ci.textureID);
 
@@ -402,12 +401,14 @@ namespace morph {
             for (unsigned int qi = 0; qi < nquads; ++qi) {
 
                 std::array<float, 12> quad = this->quads[qi];
-#ifdef __DEBUG__
-                std::cout << "Quad box from (" << quad[0] << "," << quad[1] << "," << quad[2]
-                          << ") to (" << quad[3] << "," << quad[4] << "," << quad[5]
-                          << ") to (" << quad[6] << "," << quad[7] << "," << quad[8]
-                          << ") to (" << quad[9] << "," << quad[10] << "," << quad[11] << ")" << std::endl;
-#endif
+
+                if constexpr (debug_textquads == true) {
+                    std::cout << "Quad box from (" << quad[0] << "," << quad[1] << "," << quad[2]
+                              << ") to (" << quad[3] << "," << quad[4] << "," << quad[5]
+                              << ") to (" << quad[6] << "," << quad[7] << "," << quad[8]
+                              << ") to (" << quad[9] << "," << quad[10] << "," << quad[11] << ")" << std::endl;
+                }
+
                 this->vertex_push (quad[0], quad[1],  quad[2],  this->vertexPositions); //1
                 this->vertex_push (quad[3], quad[4],  quad[5],  this->vertexPositions); //2
                 this->vertex_push (quad[6], quad[7],  quad[8],  this->vertexPositions); //3

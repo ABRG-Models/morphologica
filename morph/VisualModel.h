@@ -73,7 +73,8 @@ namespace morph {
         static constexpr bool debug_render = false;
 
     public:
-        VisualModel() {
+        VisualModel()
+        {
             this->mv_offset = {0.0, 0.0, 0.0};
             this->model_scaling.setToIdentity();
         }
@@ -97,7 +98,6 @@ namespace morph {
         //! destroy gl buffers in the deconstructor
         virtual ~VisualModel()
         {
-            for (auto& tm : this->texts) { delete (tm); }
             if (this->vbos != nullptr) {
                 glDeleteBuffers (numVBO, this->vbos);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
@@ -174,11 +174,7 @@ namespace morph {
 #endif
         }
 
-        void clearTexts()
-        {
-            for (auto& tm : this->texts) { delete (tm); }
-            this->texts.clear();
-        }
+        void clearTexts() { this->texts.clear(); }
 
         //! Clear out the model, *including text models*
         void clear()
@@ -253,9 +249,11 @@ namespace morph {
                 // Unbind the VAO
                 glBindVertexArray(0);
             }
+            morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Now render any VisualTextModels
-            for (auto t : this->texts) { t->render(); }
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) { (*ti)->render(); ti++; }
 
             glUseProgram (prev_shader);
 
@@ -277,10 +275,10 @@ namespace morph {
             if (this->shaders.tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
-            morph::VisualTextModel* tm = new morph::VisualTextModel (this->shaders.tprog, _font, _fontsize, _fontres);
+            auto tm = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
             tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
-            this->texts.push_back (tm);
-            return tm->getTextGeometry();
+            this->texts.push_back (std::move(tm));
+            return this->texts.back()->getTextGeometry();
         }
 
         //! Add a text label with a passed-in pointer to a VisualTextModel
@@ -295,9 +293,10 @@ namespace morph {
             if (this->shaders.tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
-            tm = new morph::VisualTextModel (this->shaders.tprog, _font, _fontsize, _fontres);
-            tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
-            this->texts.push_back (tm);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
+            tmup->setupText (_text, _toffset+this->mv_offset, _tcolour);
+            this->texts.push_back (std::move(tmup));
+            tm = this->texts.back().get();
             return tm->getTextGeometry();
         }
 
@@ -309,7 +308,8 @@ namespace morph {
         {
             this->scenematrix = sv;
             // For each text model, also set scene matrix
-            for (auto& t : this->texts) { t->setSceneMatrix (sv); }
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) { (*ti)->setSceneMatrix (sv); ti++; }
         }
 
         //! Set a translation into the scene and into any child texts
@@ -319,7 +319,8 @@ namespace morph {
             this->sv_offset = v0;
             this->scenematrix.translate (this->sv_offset);
             this->scenematrix.rotate (this->sv_rotation);
-            for (auto& t : this->texts) { t->setSceneTranslation (v0); }
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) { (*ti)->setSceneTranslation (v0); ti++; }
         }
 
         //! Set a translation (only) into the scene view matrix
@@ -379,15 +380,17 @@ namespace morph {
 
             // When rotating a model that contains texts, we need to rotate the scene
             // for the texts and also inverse-rotate the view of the texts.
-            for (auto& t : this->texts) {
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) {
                 // Rotate the scene. Note this won't work if the VisualModel has a
                 // mv_offset that is away from the origin.
-                t->setSceneRotation (r); // Need this to rotate about mv_offset. BUT the
-                                         // translation is already there in the text,
-                                         // but in the MODEL view.
+                (*ti)->setSceneRotation (r); // Need this to rotate about mv_offset. BUT the
+                                             // translation is already there in the text,
+                                             // but in the MODEL view.
 
                 // Rotate the view of the text an opposite amount, to keep it facing forwards
-                t->setViewRotation (r.invert());
+                (*ti)->setViewRotation (r.invert());
+                ti++;
             }
         }
 
@@ -397,7 +400,8 @@ namespace morph {
             this->mv_rotation.premultiply (r);
             this->viewmatrix.rotate (r);
             std::cout << "VisualModel::addViewRotation: FIXME? or t->addSceneRotation(r)?\n";
-            for (auto& t : this->texts) { t->addViewRotation (r); }
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) { (*ti)->addViewRotation (r); ti++; }
         }
 
         // The alpha attribute accessors
@@ -587,7 +591,7 @@ namespace morph {
         Quaternion<float> sv_rotation;
 
         //! A vector of pointers to text models that should be rendered.
-        std::vector<morph::VisualTextModel*> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel>> texts;
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
