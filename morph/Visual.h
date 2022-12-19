@@ -434,10 +434,9 @@ namespace morph {
             return v0;
         }
 
-        //! The OpenGL shader program for graphical objects
-        //GLuint shaderprog;
-        //! The text shader program, which uses textures to draw text on quads.
-        //GLuint tshaderprog;
+        //! The OpenGL shader programs have an integer ID and are stored in a simple
+        //! struct. There's one for graphical objects and a text shader program, which
+        //! uses textures to draw text on quads.
         morph::gl::shaderprogs shaders;
 
         //! The colour of ambient and diffuse light sources
