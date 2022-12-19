@@ -30,7 +30,7 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(morph::shaderprogs& _shaders, const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
+    NetVisual(morph::gl::shaderprogs& _shaders, const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
     {
         this->nn = _thenet;
         this->shaders = _shaders;
