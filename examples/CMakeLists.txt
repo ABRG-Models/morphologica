@@ -259,7 +259,7 @@ endif(ARMADILLO_FOUND)
 
 # HexGrid::resampleImage uses an omp call that only works on Mac with
 # libomp, so avoid compiling this example on a Mac.
-if(!APPLE)
+if(NOT APPLE)
 add_executable(hexgrid_image hexgrid_image.cpp)
 target_link_libraries(hexgrid_image OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
