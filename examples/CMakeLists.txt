@@ -202,6 +202,13 @@ if(USE_GLEW)
   target_link_libraries(quads GLEW::GLEW)
 endif()
 
+add_executable(quadsmesh quads.cpp)
+target_compile_definitions(quadsmesh PUBLIC MESH=1)
+target_link_libraries(quadsmesh OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(quadsmesh GLEW::GLEW)
+endif()
+
 add_executable(pointrows pointrows.cpp)
 target_link_libraries(pointrows OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
