@@ -9,14 +9,11 @@
 #include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
+#include <morph/loadpng.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
 #include <morph/HexGrid.h>
-
-// Here, I used OpenCV to load a png image, convert it to monochrome and extract the data
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
 
 int main()
 {
@@ -27,19 +24,17 @@ int main()
 
     // Load an image with the help of OpenCV.
     std::string fn = "../examples/bike256.png";
-    cv::Mat img = cv::imread (fn.c_str(), cv::IMREAD_GRAYSCALE);
-    img.convertTo (img, CV_32F);
+
     morph::vvec<float> image_data;
-    image_data.assign(reinterpret_cast<float*>(img.data),
-                      reinterpret_cast<float*>(img.data) + img.total() * img.channels());
-    image_data /= 255.0f;
+    morph::vec<unsigned int, 2> dims = morph::loadpng (fn, image_data);
+
     // This controls how large the photo will be on the HexGrid
     morph::vec<float,2> image_scale = {1.8f, 1.8f};
     // You can shift the photo with an offset if necessary
     morph::vec<float,2> image_offset = {0.0f, 0.0f};
 
     // Here's the HexGrid method that will resample the square pixel grid onto the hex grid
-    morph::vvec<float> hex_image_data = hg.resampleImage (image_data, img.cols, image_scale, image_offset);
+    morph::vvec<float> hex_image_data = hg.resampleImage (image_data, dims[1], image_scale, image_offset);
 
     // Now visualise with a HexGridVisual
     auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, morph::vec<float>({0,0,0}));
