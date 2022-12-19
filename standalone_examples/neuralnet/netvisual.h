@@ -88,9 +88,9 @@ public:
                 }
 
                 // Text label for activation
-                this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
-                                                                   morph::VisualFont::DVSansItalic,
-                                                                   em, 48, nloc+toffset, ss.str()));
+                this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                           morph::VisualFont::DVSansItalic,
+                                                                                           em, 48, nloc+toffset, ss.str())));
                 nloc[0] += this->radiusFixed * 4.0f;
             }
 
@@ -135,9 +135,9 @@ public:
                     morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
 
-                    this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
-                                                                       morph::VisualFont::DVSans,
-                                                                       em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str()));
+                    this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                               morph::VisualFont::DVSans,
+                                                                                               em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str())));
 
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
@@ -145,9 +145,9 @@ public:
                         // Draw bias text
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
-                        this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
-                                                                           morph::VisualFont::DVSans,
-                                                                           em/2, 48, (nloc2+toffsetbias), bb1.str()));
+                        this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                                   morph::VisualFont::DVSans,
+                                                                                                   em/2, 48, (nloc2+toffsetbias), bb1.str())));
                         nloc = *sl; // reset nloc
                         nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;
