@@ -69,7 +69,7 @@ namespace morph {
         }
 
         //! Version with std::array \a _offset
-        QuadsMeshVisual(GLuint sp,
+        QuadsMeshVisual(morph::gl::shaderprogs& _shaders,
                         const std::vector<std::array<Flt,12>>* _quads,
                         const std::array<float, 3> _offset,
                         const std::vector<Flt>* _data,
@@ -79,7 +79,7 @@ namespace morph {
         {
             vec<float> offset_vec;
             offset_vec.set_from(_offset);
-            QuadsVisual<Flt>(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
+            QuadsMeshVisual<Flt>(_shaders, _quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
         ~QuadsMeshVisual() { delete this->dataCoords; }
