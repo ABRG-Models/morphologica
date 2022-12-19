@@ -30,11 +30,10 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, GLuint tsp, const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
+    NetVisual(morph::shaderprogs& _shaders, const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
     {
         this->nn = _thenet;
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = _shaders;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
@@ -89,7 +88,7 @@ public:
                 }
 
                 // Text label for activation
-                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
                                                                    morph::VisualFont::DVSansItalic,
                                                                    em, 48, nloc+toffset, ss.str()));
                 nloc[0] += this->radiusFixed * 4.0f;
@@ -136,7 +135,7 @@ public:
                     morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
 
-                    this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                    this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
                                                                        morph::VisualFont::DVSans,
                                                                        em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str()));
 
@@ -146,7 +145,7 @@ public:
                         // Draw bias text
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
-                        this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
+                        this->texts.push_back (new morph::VisualTextModel (this->shaders.tprog,
                                                                            morph::VisualFont::DVSans,
                                                                            em/2, 48, (nloc2+toffsetbias), bb1.str()));
                         nloc = *sl; // reset nloc

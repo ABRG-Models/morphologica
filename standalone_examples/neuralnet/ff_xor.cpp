@@ -66,21 +66,21 @@ int main (int argc, char** argv)
     morph::Visual v(1920, 1080, "XOR network");
     v.setSceneTrans (-0.738625824,-0.950026929,-3.00000191);
     v.lightingEffects();
-    NetVisual<float>* nv = new NetVisual<float>(v.shaderprog, v.tshaderprog, {0,0,0}, &ff1);
-    nv->finalize(); // Generates the model before adding it to the Visual scene
-    v.addVisualModel (nv);
+    auto nvup = std::make_unique<NetVisual<float>>(v.shaders, morph::vec<float>({0,0,0}), &ff1);
+    nvup->finalize(); // Generates the model before adding it to the Visual scene
+    auto nv = v.addVisualModel (nvup);
 
     // Create a graph to visualise cost vs. epoch
-    morph::GraphVisual<float>* gv = new morph::GraphVisual<float>(v.shaderprog, v.tshaderprog, {1,0.5,0});
+    auto gvup = std::make_unique<morph::GraphVisual<float>>(v.shaders, morph::vec<float>({1,0.5,0}));
     morph::DatasetStyle ds(morph::stylepolicy::lines);
     ds.linecolour =  {1.0, 0.0, 0.0};
     ds.linewidth = 0.015f;
-    gv->xlabel = "Epoch";
-    gv->ylabel = "Cost";
-    gv->setlimits (0, 5000, 0, 0.25); // Sets axes limits
-    gv->prepdata (ds); // prepares data which will be appended to with gv->append()
-    gv->finalize();
-    v.addVisualModel (gv);
+    gvup->xlabel = "Epoch";
+    gvup->ylabel = "Cost";
+    gvup->setlimits (0, 5000, 0, 0.25); // Sets axes limits
+    gvup->prepdata (ds); // prepares data which will be appended to with gv->append()
+    gvup->finalize();
+    auto gv = v.addVisualModel (gvup);
 
     // Used throughout loop as an iterator variable
     unsigned int i = 0;
