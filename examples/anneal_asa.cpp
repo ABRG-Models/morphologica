@@ -317,7 +317,7 @@ void setup_objective_boha()
     hg = new morph::HexGrid(0.01, 2.5, 0);
     hg->setCircularBoundary(1.2f);
     obj_f.resize (hg->num());
-    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
     for (auto h : hg->hexen) {
         obj_f[h.vi] = a*h.x*h.x + b*h.y*h.y - c * std::cos(alpha*h.x) - d * std::cos (gamma * h.y) + c + d;
     }
@@ -336,7 +336,7 @@ F objective_boha (const morph::vvec<F>& params)
 {
     F x = params[0];
     F y = params[1];
-    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
     F fn = a*x*x + b*y*y - c * std::cos(alpha*x) - d * std::cos (gamma * y) + c + d;
     return fn;
 }

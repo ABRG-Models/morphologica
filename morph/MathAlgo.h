@@ -461,7 +461,7 @@ namespace morph {
             if (radius == static_cast<T>(0.0)) {
                 return 1;
             }
-            T circum = (T)morph::TWO_PI_D * radius;
+            T circum = morph::mathconst<T>::two_pi * radius;
             return static_cast<int>(floor (circum / d));
         }
 
@@ -472,22 +472,22 @@ namespace morph {
             if (radius == static_cast<T>(0.0)) {
                 return 1;
             }
-            T circum = static_cast<T>(morph::TWO_PI_D) * radius;
+            T circum = morph::mathconst<T>::two_pi * radius;
             //std::cout << "circum = " << circum << std::endl;
             T rtn = 0;
 #if 1
             // longhand, with a test for a circular arc
-            if (a >= static_cast<T>(morph::TWO_PI_D)) {
+            if (a >= morph::mathconst<T>::two_pi) {
                 rtn = floor (circum / d);
             } else {
-                T proportion = a / static_cast<T>(morph::TWO_PI_D);
+                T proportion = a / morph::mathconst<T>::two_pi;
                 //std::cout << "prop = " << proportion << std::endl;
                 T arclen = circum * proportion;
                 //std::cout << "arclen = " << arclen << std::endl;
                 rtn = floor (arclen / d);
             }
 #else
-            T proportion = a / static_cast<T>(morph::TWO_PI_D);
+            T proportion = a / morph::mathconst<T>::two_pi;
             rtn = floor (circum * proportion / d);
 #endif
             //std::cout << "rtn " << rtn << std::endl;
@@ -497,7 +497,7 @@ namespace morph {
         //! How many dots spaced by d can be placed on circular arc rings with d between them?
         template<typename T>
         static int numDotsOnRings (T minRadius, T maxRadius, T d,
-                                   T a = static_cast<T>(morph::TWO_PI_D)) {
+                                   T a = morph::mathconst<T>::two_pi) {
 
             // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
             // from minRadius to maxRadius. Herein lies the problem!
