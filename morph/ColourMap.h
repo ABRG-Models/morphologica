@@ -81,6 +81,8 @@ namespace morph {
         ColourMap() {}
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->type = _t; }
+        //! Construct with the string name of the type
+        ColourMap (const std::string& _t) { this->type = ColourMap::strToColourMapType (_t); }
 
         //! If s is a string that matches a ColourMapType, return that colour map
         //! type. If string doesn't match, return the default.
