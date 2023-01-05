@@ -174,6 +174,15 @@ namespace morph {
             return rtn;
         }
 
+        //! Return a vector with one additional dimension - setting it to val.
+        vec<S, N+1> plus_one_dim (const S val) const
+        {
+            vec<S, N+1> rtn;
+            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            rtn[N] = val;
+            return rtn;
+        }
+
         //! Return this vec in single precision, float format
         vec<float, N> as_float() const
         {

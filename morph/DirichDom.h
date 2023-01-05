@@ -52,7 +52,7 @@ namespace morph {
         std::pair<Flt, Flt> centre;
 
         //! Return the number of vertices
-        unsigned int numVertices (void) const {
+        unsigned int numVertices() const {
             return this->vertices.size();
         }
 
@@ -73,7 +73,7 @@ namespace morph {
          * Compute the root of the mean of the sum of the squared distances of the edges from the
          * straight line segments that join the vertices of this domain.
          */
-        void compute_edge_deviation (void) {
+        void compute_edge_deviation() {
 
             DirichVtx<Flt> lastvtx = this->vertices.back();
 

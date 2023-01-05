@@ -81,6 +81,8 @@ namespace morph {
         ColourMap() {}
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->type = _t; }
+        //! Construct with the string name of the type
+        ColourMap (const std::string& _t) { this->type = ColourMap::strToColourMapType (_t); }
 
         //! If s is a string that matches a ColourMapType, return that colour map
         //! type. If string doesn't match, return the default.
@@ -598,7 +600,7 @@ namespace morph {
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
         //! Get the hue, in its most saturated form
-        std::array<float, 3> getHueRGB (void) { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
+        std::array<float, 3> getHueRGB() { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
 
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;

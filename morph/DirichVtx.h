@@ -101,7 +101,7 @@ namespace morph {
         bool onBoundary = false;
 
         //! Default constructor
-        DirichVtx (void) {
+        DirichVtx() {
             v.first = std::numeric_limits<Flt>::max();
             v.second = std::numeric_limits<Flt>::max();
         }
@@ -202,7 +202,7 @@ namespace morph {
         }
 
         //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
-        bool unset (void) {
+        bool unset() {
             if (this->v.first == std::numeric_limits<Flt>::max()
                 && this->v.second == std::numeric_limits<Flt>::max()) {
                 return true;

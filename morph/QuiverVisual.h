@@ -56,7 +56,7 @@ namespace morph {
         }
 
         //! Do the computations to initialize the vertices that will represent the Quivers.
-        void initializeVertices (void) {
+        void initializeVertices() {
 
             unsigned int ncoords = this->dataCoords->size();
             unsigned int nquiv = this->vectorData->size();

@@ -144,6 +144,16 @@ namespace morph {
             return rtn;
         }
 
+        //! Return a vector with one additional dimension - setting it to val.
+        vvec<S> plus_one_dim (const S val) const
+        {
+            size_t N = this->size();
+            vvec<S> rtn(N+1);
+            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            rtn[N] = val;
+            return rtn;
+        }
+
         //! Return this vvec in single precision, float format
         vvec<float> as_float() const
         {
