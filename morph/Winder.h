@@ -76,7 +76,7 @@ namespace morph {
             // Do first pixel again to complete the winding:
             T firstpoint = this->boundary.front();
             this->wind (px, firstpoint);
-            double winding_no_d = std::round (this->angle_sum/morph::TWO_PI_D);
+            double winding_no_d = std::round (this->angle_sum/morph::mathconst<double>::two_pi);
             if constexpr (debug_mode == true) { std::cout << "winding_no: " << winding_no_d << std::endl; }
             int winding_no = static_cast<int>(winding_no_d);
             return winding_no;
@@ -153,7 +153,7 @@ namespace morph {
         void wind (const double& raw_angle) {
 
             // Convert the raw angle which has range -pi -> 0 -> +pi into a tansformed angle with range 0->2pi:
-            this->angle = raw_angle >= 0 ? raw_angle : (morph::TWO_PI_D + raw_angle);
+            this->angle = raw_angle >= 0 ? raw_angle : (morph::mathconst<double>::two_pi + raw_angle);
             if constexpr (morph::debug_mode == true) { std::cout << "angle: " << this->angle << "\n"; }
 
             // Set the initial angle.
@@ -165,10 +165,10 @@ namespace morph {
             double delta = double{0.0}; // delta is 'angle change'
             if (this->angle == double{0.0}) {
                 // Special treatment
-                if (this->angle_last > morph::PI_D) {
+                if (this->angle_last > morph::mathconst<double>::pi) {
                     // Clockwise to 0
-                    delta = (morph::TWO_PI_D - this->angle_last);
-                } else if (this->angle_last < morph::PI_D) {
+                    delta = (morph::mathconst<double>::two_pi - this->angle_last);
+                } else if (this->angle_last < morph::mathconst<double>::pi) {
                     // Anti-clockwise to 0
                     delta = -this->angle_last;
                 } else { //angle_last must have been 0.0
@@ -178,12 +178,12 @@ namespace morph {
             } else {
 
                 // Special treatment required ALSO if we crossed the 0 line without being on it.
-                if (this->angle_last > morph::PI_D && this->angle < morph::PI_D) {
+                if (this->angle_last > morph::mathconst<double>::pi && this->angle < morph::mathconst<double>::pi) {
                     // crossed from 2pi side to 0 side: Clockwise
-                    delta = this->angle + (morph::TWO_PI_D - this->angle_last);
-                } else if (this->angle_last < morph::PI_OVER_2_D && this->angle > morph::PI_x3_OVER_2_D) {
+                    delta = this->angle + (morph::mathconst<double>::two_pi - this->angle_last);
+                } else if (this->angle_last < morph::mathconst<double>::pi_over_2 && this->angle > morph::mathconst<double>::three_pi_over_2) {
                     // crossed from 0 side to 2pi side: Anti-clockwise
-                    delta = - this->angle_last - (morph::TWO_PI_D - this->angle);
+                    delta = - this->angle_last - (morph::mathconst<double>::two_pi - this->angle);
                 } else { // Both are > pi or both are < pi.
                     delta = (this->angle - this->angle_last);
                 }

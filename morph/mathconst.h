@@ -5,6 +5,7 @@
 
 namespace morph {
 
+#ifdef DEPRECATED_STUFF
     //! Square root of 3
     const float  SQRT_OF_3_F = 1.732050807568877293527446341505872366942805253810381f;
     const double SQRT_OF_3_D = 1.732050807568877293527446341505872366942805253810381;
@@ -28,7 +29,7 @@ namespace morph {
     //! 2*PI
     const float  TWO_PI_F = 6.283185307179586476925286766559005768394338798750212f;
     const double TWO_PI_D = 6.283185307179586476925286766559005768394338798750212;
-
+#endif
     //! Templated mathematical constants.
     //! Usage example: morph::mathconst<float>::pi_over_2
     //! T defaults to double, so morph::mathconst::pi gives pi in double precision.

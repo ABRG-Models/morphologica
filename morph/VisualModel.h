@@ -721,7 +721,7 @@ namespace morph {
             // only need a single call to glDrawElements.
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
@@ -730,7 +730,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
@@ -740,7 +740,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::TWO_PI_F/(float)segments;
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
@@ -750,7 +750,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                float t = (float)j * morph::TWO_PI_F/(float)segments;
+                float t = (float)j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
@@ -893,7 +893,7 @@ namespace morph {
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
-                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
@@ -902,7 +902,7 @@ namespace morph {
 
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
@@ -912,7 +912,7 @@ namespace morph {
 
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
-                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
@@ -922,7 +922,7 @@ namespace morph {
 
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
-                float t = rotation + (float)j * morph::TWO_PI_F/(float)segments;
+                float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
@@ -1060,7 +1060,7 @@ namespace morph {
             // Polygon vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
-                float t = rotation + j * morph::TWO_PI_F/(float)segments;
+                float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
@@ -1450,7 +1450,7 @@ namespace morph {
 
             // Base ring with normals in direction -v
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
@@ -1461,7 +1461,7 @@ namespace morph {
 
             // Intermediate ring of vertices around/aligned with the base ring with normals in direction c
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
@@ -1472,7 +1472,7 @@ namespace morph {
 
             // Intermediate ring of vertices around the tip with normals direction c
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::TWO_PI_F/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi/(float)segments;
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
@@ -1609,11 +1609,11 @@ namespace morph {
             float r = std::sqrt (w_ * w_ + d_ * d_);
             angles[0] = std::acos (w_ / r);
             angles[1] = angles[0];
-            angles[2] = morph::PI_F - angles[0];
+            angles[2] = morph::mathconst<float>::pi - angles[0];
             angles[3] = angles[2];
-            angles[4] = morph::PI_F + angles[0];
+            angles[4] = morph::mathconst<float>::pi + angles[0];
             angles[5] = angles[4];
-            angles[6] = morph::TWO_PI_F - angles[0];
+            angles[6] = morph::mathconst<float>::two_pi - angles[0];
             angles[7] = angles[6];
             // The normals for the vertices around the line
             std::array<vec<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
@@ -1821,7 +1821,7 @@ namespace morph {
 
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
-                    float t = j * morph::TWO_PI_F/(float)segments;
+                    float t = j * morph::mathconst<float>::two_pi/(float)segments;
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
@@ -1859,7 +1859,7 @@ namespace morph {
 
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
-                    float t = j * morph::TWO_PI_F/(float)segments;
+                    float t = j * morph::mathconst<float>::two_pi/(float)segments;
                     morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);

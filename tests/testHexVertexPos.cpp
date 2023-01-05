@@ -30,7 +30,7 @@ int main()
     cout << "Hex vertex NW: (" << vNW.first << "," << vNW.second << ")" << endl;
 
 
-    float vto_ne = d/(2.0f * morph::SQRT_OF_3_F);
+    float vto_ne = d/(2.0f * morph::mathconst<float>::sqrt_of_3);
     // Test the numbers (non-exhaustive)
     if (vN.first == 0.0f
         && vNE.second == vto_ne

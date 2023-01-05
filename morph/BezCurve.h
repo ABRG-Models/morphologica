@@ -215,19 +215,19 @@ namespace morph
             Flt theta = ang_a - ang_b;
             if constexpr (debug_bezcurve == true) {
                 std::cout << "ang_a = " << ang_a << " rads "
-                          << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (ang_a * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
                 std::cout << "ang_b = " << ang_b << " rads "
-                          << (ang_b * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (ang_b * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
                 std::cout << "theta = " << theta << " rads "
-                          << (theta * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (theta * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
             }
             // phi is the angle that conforms to: theta + 2 phi = pi radians
             // thus 2 phi = pi - theta
             // thus   phi = 1/2(pi - theta)
-            Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - std::abs(theta));
+            Flt phi = 0.5 * (morph::mathconst<Flt>::pi - std::abs(theta));
             if constexpr (debug_bezcurve == true) {
                 std::cout << "phi = " << phi << " rads "
-                          << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (phi * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
             }
 
             // Construct rotn matrix (one for positive rotation, one for negative)
