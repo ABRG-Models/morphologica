@@ -108,6 +108,7 @@ namespace morph {
             VBOint ib = 0;
 
             std::set<vec<float, 6>> lastQuadLines;
+            std::cout << "nquads: " << nquads << std::endl;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
                 // Extract coordinates from this->quads
                 vec<float> q0 = {(*this->quads)[qi][0], (*this->quads)[qi][1], (*this->quads)[qi][2]};
@@ -131,22 +132,28 @@ namespace morph {
                 vec<float, 6> rline3 = { q3[0], q3[1], q3[2], q0[0], q0[1], q0[2] };
 
                 if (!lastQuadLines.empty()) {
+                    std::cout << "Test and draw...\n";
                     // Test each line for the current quad. If it has already been drawn
                     // by the last quad, omit drawing it again.
                     if (lastQuadLines.count(line0) == 0 && lastQuadLines.count(rline0) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line1) == 0 && lastQuadLines.count(rline1) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line2) == 0 && lastQuadLines.count(rline2) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line3) == 0 && lastQuadLines.count(rline3) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
                     }
                     lastQuadLines.clear();
                 } else { // No last quad, so draw all the lines in the current quad
+                    std::cout << "Draw all\n";
                     this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
                     this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
                     this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
