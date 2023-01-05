@@ -8,10 +8,10 @@
 namespace morph {
 
     //! This class creates the vertices for a cylindrical 'rod' in a 3D scene.
-    class RodVisual final : public VisualModel
+    class RodVisual : public VisualModel
     {
     public:
-        RodVisual (void) { this->mv_offset = {0.0, 0.0, 0.0}; }
+        RodVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, start and end coordinates, radius and a single colour.
         RodVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
@@ -54,7 +54,7 @@ namespace morph {
 
         static constexpr bool use_oriented_tube = false;
         //! Initialize vertex buffer objects and vertex array object.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
