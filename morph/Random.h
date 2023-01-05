@@ -133,7 +133,7 @@ namespace morph {
         typename std::uniform_real_distribution<T>::param_type param() const { return dist.param(); }
         void param (const typename std::uniform_real_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
+        T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
         std::vector<T> get (size_t n)
         {
@@ -149,8 +149,8 @@ namespace morph {
         {
             for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min (void) { return this->dist.min(); }
-        T max (void) { return this->dist.max(); }
+        T min() { return this->dist.min(); }
+        T max() { return this->dist.max(); }
         //! Change the max/min of the distribution to be in range [a,b)
         void setparams (T a, T b)
         {
@@ -216,7 +216,7 @@ namespace morph {
         //! Reveal the distribution's param setter
         void param (const typename std::uniform_int_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
+        T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
         std::vector<T> get (size_t n)
         {
@@ -233,9 +233,9 @@ namespace morph {
             for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
-        T min (void) { return this->dist.min(); }
+        T min() { return this->dist.min(); }
         //! max wrapper
-        T max (void) { return this->dist.max(); }
+        T max() { return this->dist.max(); }
         //! Change the max/min of the distribution to range [a,b]
         void setparams (T a, T b)
         {
@@ -263,7 +263,7 @@ namespace morph {
         std::normal_distribution<T> dist;
     public:
         //! Default constructor gives RN generator with mean 0 and standard deviation 1
-        RandNormal (void)
+        RandNormal()
         {
             typename std::normal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
@@ -303,7 +303,7 @@ namespace morph {
         //! Reveal the distribution's param setter
         void param (const typename std::normal_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
+        T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
         std::vector<T> get (size_t n)
         {
@@ -319,8 +319,8 @@ namespace morph {
         {
             for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min (void) { return this->dist.min(); }
-        T max (void) { return this->dist.max(); }
+        T min() { return this->dist.min(); }
+        T max() { return this->dist.max(); }
     };
 
     /*!
@@ -343,7 +343,7 @@ namespace morph {
     public:
         //! Default constructor gives RN generator with mean-of-the-log 0 and standard
         //! deviation-of-the-log 1
-        RandLogNormal (void)
+        RandLogNormal()
         {
             typename std::lognormal_distribution<T>::param_type prms (T{0}, T{1});
             this->dist.param (prms);
@@ -385,7 +385,7 @@ namespace morph {
         //! Reveal the distribution's param setter
         void param (const typename std::lognormal_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
+        T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
         std::vector<T> get (size_t n)
         {
@@ -401,8 +401,8 @@ namespace morph {
         {
             for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
-        T min (void) { return this->dist.min(); }
-        T max (void) { return this->dist.max(); }
+        T min() { return this->dist.min(); }
+        T max() { return this->dist.max(); }
     };
 
     /*!
@@ -426,7 +426,7 @@ namespace morph {
         std::poisson_distribution<T> dist;
     public:
         //! Default constructor gives a Poisson random number generator with mean 0.
-        RandPoisson (void)
+        RandPoisson()
         {
             typename std::poisson_distribution<T>::param_type prms (T{0});
             this->dist.param (prms);
@@ -466,7 +466,7 @@ namespace morph {
         //! Reveal the distribution's param setter
         void param (const typename std::poisson_distribution<T>::param_type& prms) { this->dist.param(prms); }
         //! Get 1 random number from the generator
-        T get (void) { return this->dist (this->generator); }
+        T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
         std::vector<T> get (size_t n)
         {
@@ -483,9 +483,9 @@ namespace morph {
             for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
-        T min (void) { return this->dist.min(); }
+        T min() { return this->dist.min(); }
         //! max wrapper
-        T max (void) { return this->dist.max(); }
+        T max() { return this->dist.max(); }
     };
 
     //! Enumerated class defining groups of characters, such as AlphaNumericUpperCase,

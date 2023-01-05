@@ -30,7 +30,7 @@ namespace morph {
 
     public:
         // Note, we need a Quaternion which has magnitude 1 as the default.
-        Quaternion (void)
+        Quaternion()
             : w(Flt{1})
             , x(Flt{0})
             , y(Flt{0})
@@ -47,9 +47,6 @@ namespace morph {
         alignas(Flt) Flt y;
         alignas(Flt) Flt z;
 
-        //! An "output to stdout" function
-        //void output (void) const { std::cout << this->str() << std::endl; }
-
         //! String output
         std::string str() const
         {
@@ -62,7 +59,7 @@ namespace morph {
          * Renormalize the Quaternion, in case floating point precision errors have
          * caused it to have a magnitude significantly different from 1.
          */
-        void renormalize (void)
+        void renormalize()
         {
             Flt oneovermag = Flt{1} / std::sqrt (w*w + x*x + y*y + z*z);
             this->w *= oneovermag;
@@ -78,7 +75,7 @@ namespace morph {
         const Flt unitThresh = 0.001;
 
         //! Test to see if this Quaternion is a unit Quaternion.
-        bool checkunit (void)
+        bool checkunit()
         {
             bool rtn = true;
             Flt metric = Flt{1} - (w*w + x*x + y*y + z*z);
@@ -210,7 +207,7 @@ namespace morph {
          *  2  6 10 14
          *  3  7 11 15
          */
-        std::array<Flt, 16> rotationMatrix (void) const
+        std::array<Flt, 16> rotationMatrix() const
         {
             std::array<Flt, 16> mat;
             this->rotationMatrix (mat);
@@ -242,7 +239,7 @@ namespace morph {
         }
 
         //! Obtain rotation matrix assuming this IS a unit Quaternion
-        std::array<Flt, 16> unitRotationMatrix (void) const
+        std::array<Flt, 16> unitRotationMatrix() const
         {
             std::array<Flt, 16> mat;
             this->unitRotationMatrix (mat);

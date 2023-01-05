@@ -600,7 +600,7 @@ namespace morph {
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
         //! Get the hue, in its most saturated form
-        std::array<float, 3> getHueRGB (void) { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
+        std::array<float, 3> getHueRGB() { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
 
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;

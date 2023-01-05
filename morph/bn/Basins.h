@@ -86,7 +86,7 @@ namespace morph {
             }
 
             //! An "output for debugging" method
-            void debug (void) const
+            void debug() const
             {
                 std::cout << "----------------------Basin-output-begin---------------------------" << std::endl;
                 std::cout << "Basin of attraction with the attractor:" << std::endl;
@@ -132,7 +132,7 @@ namespace morph {
             /*!
              * Return the set of state to state transitions in this basin of attraction.
              */
-            std::set<unsigned int> getTransitionSet (void) const
+            std::set<unsigned int> getTransitionSet() const
             {
                 std::set<unsigned int> transitions;
                 std::map<state_t, StateNode>::const_iterator mi = this->nodes.begin();
@@ -300,12 +300,12 @@ namespace morph {
             //! attraction.
             std::vector<BasinOfAttraction> basins;
 
-            unsigned int getNumBasins (void) { return this->basins.size(); }
+            unsigned int getNumBasins() { return this->basins.size(); }
 
             //! Holds a list of the sizes of the attractor limit cycles.
             std::vector<unsigned int> attractorSizes;
 
-            double meanAttractorLength (void)
+            double meanAttractorLength()
             {
                 unsigned int sum = 0.0;
                 for (unsigned int i : this->attractorSizes) {
@@ -314,7 +314,7 @@ namespace morph {
                 return (static_cast<double>(sum)/static_cast<double>(attractorSizes.size()));
             }
 
-            unsigned int maxAttractorLength (void)
+            unsigned int maxAttractorLength()
             {
                 unsigned int max = 0;
                 for (unsigned int i : this->attractorSizes) {

@@ -33,11 +33,11 @@ public:
     alignas(Flt) Flt D1 = 0.1;
     alignas(Flt) Flt D2 = 0.1;
 
-    RD_lv (void) : morph::RD_Base<Flt>() {}
-    ~RD_lv (void) {}
+    RD_lv() : morph::RD_Base<Flt>() {}
+    ~RD_lv() {}
 
     //! Perform memory allocations, vector resizes and so on.
-    void allocate (void)
+    void allocate()
     {
         // Always call allocate() from the base class first.
         morph::RD_Base<Flt>::allocate();
@@ -49,7 +49,7 @@ public:
     }
 
     //! Initialise variables and parameters and do any one-time computations
-    void init (void)
+    void init()
     {
         // Initialise u, v with noise
         this->noiseify_vector_variable (this->u, 0.5, 1);
@@ -57,7 +57,7 @@ public:
     }
 
     //! Save the variables to HDF5.
-    void save (void)
+    void save()
     {
         std::stringstream fname;
         fname << this->logpath << "/dat_";
@@ -96,7 +96,7 @@ public:
         }
     }
 
-    void step (void)
+    void step()
     {
         this->stepCount++;
 

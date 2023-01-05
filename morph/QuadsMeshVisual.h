@@ -90,7 +90,7 @@ namespace morph {
         }
 
         //! Initialize the vertices that will represent the Quads.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             unsigned int nquads = this->quads->size();
             unsigned int ndata = this->scalarData->size();

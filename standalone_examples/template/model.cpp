@@ -22,8 +22,7 @@ public:
     }
 
     // step through the model dynamics (logistic map)
-    void step(void){
-
+    void step(){
         // logistic map equation
         x = 4.0*r*x*(1.0-x);
         time++;

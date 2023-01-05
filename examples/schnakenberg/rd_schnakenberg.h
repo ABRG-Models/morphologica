@@ -48,17 +48,17 @@ public:
     /*!
      * Simple constructor; no arguments. Simply call RD_Base constructor.
      */
-    RD_Schnakenberg (void) : morph::RD_Base<Flt>() {}
+    RD_Schnakenberg() : morph::RD_Base<Flt>() {}
 
     /*!
      * Destructor
      */
-    ~RD_Schnakenberg (void) {} // No operation. RD_Base destructor will free HexGrid.
+    ~RD_Schnakenberg() {} // No operation. RD_Base destructor will free HexGrid.
 
     /*!
      * Perform memory allocations, vector resizes and so on.
      */
-    void allocate (void)
+    void allocate()
     {
         // Always call allocate() from the base class first.
         morph::RD_Base<Flt>::allocate();
@@ -73,7 +73,7 @@ public:
      * Initialise variables and parameters. Carry out one-time computations required
      * of the model.
      */
-    void init (void)
+    void init()
     {
         // Initialise A, B with noise
         this->noiseify_vector_variable (this->A, 0.5, 1);
@@ -83,7 +83,7 @@ public:
     /*!
      * Save the variables to HDF5.
      */
-    void save (void)
+    void save()
     {
         std::stringstream fname;
         fname << this->logpath << "/dat_";
@@ -133,7 +133,7 @@ public:
     /*!
      * Simulate one timestep of the model
      */
-    void step (void)
+    void step()
     {
         this->stepCount++;
 

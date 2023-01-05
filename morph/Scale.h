@@ -229,13 +229,13 @@ namespace morph {
             this->type = t;
         }
 
-        void setlog (void)
+        void setlog()
         {
             this->autoscaled = false;
             this->type = ScaleFn::Logarithmic;
         }
 
-        void setlinear (void)
+        void setlinear()
         {
             this->autoscaled = false;
             this->type = ScaleFn::Linear;

@@ -79,7 +79,7 @@ namespace morph {
                 a = v;
             }
 
-            void go (void)
+            void go()
             {
                 if constexpr (verboseout) { if (!minterms.size()) { cout << "\n\tF = 0\n"; } }
 
@@ -232,7 +232,7 @@ namespace morph {
             }
 
             //! Run after go()
-            double complexity (void)
+            double complexity()
             {
                 this->cplexity = 0;
 
@@ -247,7 +247,7 @@ namespace morph {
             }
 
             //! Run after go()
-            string min (void)
+            string min()
             {
                 string s("F = ");
                 bool f = false;

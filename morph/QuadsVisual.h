@@ -29,8 +29,8 @@ namespace morph {
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
-                    const float _hue = 0.0f) {
-
+                    const float _hue = 0.0f)
+        {
             // Set up...
             this->shaders = _shaders;
             this->mv_offset = _offset;
@@ -69,23 +69,23 @@ namespace morph {
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
                     ColourMapType _cmt,
-                    const float _hue = 0.0f) {
+                    const float _hue = 0.0f)
+        {
             vec<float> offset_vec;
             offset_vec.set_from(_offset);
             QuadsVisual(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
-        ~QuadsVisual() {
-            delete this->dataCoords;
-        }
+        ~QuadsVisual() { delete this->dataCoords; }
 
-        virtual void updateCoords (std::vector<vec<Flt>>* _coords) {
+        virtual void updateCoords (std::vector<vec<Flt>>* _coords)
+        {
             throw std::runtime_error ("This won't work.");
         }
 
         //! Initialize the vertices that will represent the Quads.
-        void initializeVertices (void) {
-
+        void initializeVertices()
+        {
             unsigned int nquads = this->quads->size();
             unsigned int ndata = this->scalarData->size();
 
