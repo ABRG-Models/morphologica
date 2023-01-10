@@ -265,6 +265,16 @@ namespace morph {
             }
         }
 
+        //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale()
+        {
+            S min = this->min();
+            vvec<S> shifted = *this - min;
+            S max = shifted.max();
+            *this = shifted / max;
+        }
+
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
