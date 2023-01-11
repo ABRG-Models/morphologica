@@ -7,7 +7,7 @@ int main()
 {
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual");
-    // Create a new GraphVisual with offset within the scene of 0,0,0
+    // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
@@ -17,10 +17,10 @@ int main()
     gv->setdata (x, x.pow(3));
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
-    // Add the GraphVisual OpenGL model to the Visual scene
+    // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
     v.addVisualModel (gv);
     // Render the scene on the screen until user quits with 'x'
     v.keepOpen();
-    // When v goes out of scope, gv will be deallocated
+    // Because v owns the unique_ptr to the GraphVisual, its memory will be deallocated when v goes out of scope.
     return 0;
 }
