@@ -575,7 +575,7 @@ namespace morph {
         TransformMatrix<float> model_scaling;
 
         /*!
-         * The spatial offset of this VisualModel within the morph::Visual 'model
+         * The spatial offset of this VisualModel within the morph::Visual 'scene
          * view'. Note that this is not incorporated into the computation of the
          * vertices, but is instead applied when the object is rendered as part of the
          * model->world transformation - it's applied as a translation in
@@ -599,6 +599,13 @@ namespace morph {
 
         //! A copy of the reference to the shader programs
         morph::gl::shaderprogs shaders;
+
+        //! A unit vector in the x direction
+        morph::vec<float, 3> ux = {1,0,0};
+        //! A unit vector in the y direction
+        morph::vec<float, 3> uy = {0,1,0};
+        //! A unit vector in the z direction
+        morph::vec<float, 3> uz = {0,0,1};
 
         /*
          * Compute positions and colours of vertices for the hexes and store in these:
@@ -863,17 +870,17 @@ namespace morph {
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param ux a vector in the x axis direction for the end face
-         * \param uy a vector in the y axis direction
+         * \param _ux a vector in the x axis direction for the end face
+         * \param _uy a vector in the y axis direction
          * \param colStart The tube starting colour
          * \param colEnd The tube's ending colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
-         * \param rotation A rotation in the ux/uy plane to orient the vertices of the
+         * \param rotation A rotation in the _ux/_uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
         void computeTube (VBOint& idx, vec<float> start, vec<float> end,
-                          vec<float> ux, vec<float> uy,
+                          vec<float> _ux, vec<float> _uy,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12, float rotation = 0.0f)
         {
@@ -882,7 +889,7 @@ namespace morph {
             vec<float> vend = end;
 
             // v is a face normal
-            vec<float> v = uy.cross(ux);
+            vec<float> v = _uy.cross(_ux);
             v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -894,7 +901,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (colStart, this->vertexColors);
@@ -903,7 +910,7 @@ namespace morph {
             // Intermediate, near start cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -913,7 +920,7 @@ namespace morph {
             // Intermediate, near end cap. Normals point in direction c
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 c.renormalize();
                 this->vertex_push (c, this->vertexNormals);
@@ -923,7 +930,7 @@ namespace morph {
             // Bottom cap vertices
             for (int j = 0; j < segments; j++) {
                 float t = rotation + (float)j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
                 this->vertex_push (vend+c, this->vertexPositions);
                 this->vertex_push (v, this->vertexNormals);
                 this->vertex_push (colEnd, this->vertexColors);
@@ -1035,8 +1042,8 @@ namespace morph {
          *
          * \param idx The index into the 'vertex array'
          * \param vstart The centre of the polygon
-         * \param ux a vector in the x axis direction for the end face
-         * \param uy a vector in the y axis direction
+         * \param _ux a vector in the x axis direction for the end face
+         * \param _uy a vector in the y axis direction
          * \param col The polygon colour
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
@@ -1044,12 +1051,12 @@ namespace morph {
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
         void computeFlatPoly (VBOint& idx, vec<float> vstart,
-                              vec<float> ux, vec<float> uy,
+                              vec<float> _ux, vec<float> _uy,
                               std::array<float, 3> col,
                               float r=1.0f, int segments=12, float rotation=0.0f)
         {
             // v is a face normal
-            vec<float> v = uy.cross(ux);
+            vec<float> v = _uy.cross(_ux);
             v.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
@@ -1061,7 +1068,7 @@ namespace morph {
             for (int j = 0; j < segments; j++) {
                 // t is the angle of the segment
                 float t = rotation + j * morph::mathconst<float>::two_pi/(float)segments;
-                vec<float> c = ux * sin(t) * r + uy * cos(t) * r;
+                vec<float> c = _ux * sin(t) * r + _uy * cos(t) * r;
                 this->vertex_push (vstart+c, this->vertexPositions);
                 this->vertex_push (-v, this->vertexNormals);
                 this->vertex_push (col, this->vertexColors);
@@ -1551,11 +1558,11 @@ namespace morph {
 
         //! Compute a line with a single colour
         void computeLine (VBOint& idx, vec<float> start, vec<float> end,
-                          vec<float> uz,
+                          vec<float> _uz,
                           std::array<float, 3> col,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
-            this->computeLine (idx, start, end, uz, col, col, w, thickness, shorten);
+            this->computeLine (idx, start, end, _uz, col, col, w, thickness, shorten);
         }
 
         /*!
@@ -1566,15 +1573,15 @@ namespace morph {
          * \param idx The index into the 'vertex array'
          * \param start The start of the tube
          * \param end The end of the tube
-         * \param uz Dirn of z (up) axis for end face of line. Should be normalized.
+         * \param _uz Dirn of z (up) axis for end face of line. Should be normalized.
          * \param colStart The tube staring colour
          * \param colEnd The tube's ending colour
-         * \param w width of line in ux direction
+         * \param w width of line
          * \param thickness The thickness/depth of the line in uy direction
          * \param shorten An amount by which to shorten the length of the line at each end.
          */
         void computeLine (VBOint& idx, vec<float> start, vec<float> end,
-                          vec<float> uz,
+                          vec<float> _uz,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
         {
@@ -1594,7 +1601,7 @@ namespace morph {
             }
 
             // vv is normal to v and uz
-            vec<float> vv = v.cross(uz);
+            vec<float> vv = v.cross(_uz);
             vv.renormalize();
 
             // Push the central point of the start cap - this is at location vstart
