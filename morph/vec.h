@@ -265,6 +265,15 @@ namespace morph {
             }
         }
 
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale()
+        {
+            _S min = this->min();
+            vec<_S, N> shifted = *this - min;
+            _S max = shifted.max();
+            *this = shifted / max;
+        }
+
         /*!
          * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
          * swapping x and y in a 2D vec.
@@ -278,6 +287,15 @@ namespace morph {
                 }
                 (*this)[N-1] = z_el;
             } // else no op
+        }
+
+        //! Rotate n times
+        void rotate (size_t n)
+        {
+            if (n >= N) { n = n % N; }
+            auto _start = this->begin();
+            std::advance (_start, n);
+            std::rotate (this->begin(), _start, this->end());
         }
 
         //! If N is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
