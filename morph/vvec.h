@@ -265,6 +265,16 @@ namespace morph {
             }
         }
 
+        //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale()
+        {
+            _S min = this->min();
+            vvec<_S> shifted = *this - min;
+            _S max = shifted.max();
+            *this = shifted / max;
+        }
+
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
 
@@ -310,8 +320,8 @@ namespace morph {
         }
 
         /*!
-         * Permute the elements in a rotation. 0->N-1, 1->0, 2->1, etc. Useful for
-         * swapping x and y in a 2D vector.
+         * Permute the elements one time in a rotation. 0->N-1, 1->0, 2->1, etc. Useful
+         * for swapping x and y in a 2D vector.
          */
         void rotate()
         {
@@ -322,6 +332,15 @@ namespace morph {
                 }
                 (*this)[this->size()-1] = z_el;
             } // else no op
+        }
+
+        //! Rotate n times
+        void rotate (size_t n)
+        {
+            if (n >= this->size()) { n = n % this->size(); }
+            auto _start = this->begin();
+            std::advance (_start, n);
+            std::rotate (this->begin(), _start, this->end());
         }
 
         //! If size is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.

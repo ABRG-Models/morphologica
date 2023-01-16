@@ -61,9 +61,9 @@ namespace morph {
             morph::vec<float> pend = this->position;
             pend[2] += this->thickness;
             // Figure out ux, uy from position and vertex. Let ux be like dirn to vertex
-            this->ux = this->vertex - this->position;
-            this->uy = this->ux.cross(this->uz);
-            this->computeTube (idx, this->position, pend, this->ux, this->uy,
+            this->_ux = this->vertex - this->position;
+            this->_uy = this->_ux.cross(this->uz);
+            this->computeTube (idx, this->position, pend, this->_ux, this->_uy,
                                this->col, this->col,
                                this->radius, this->n);
         }
@@ -80,9 +80,8 @@ namespace morph {
         int n = 4;
 
         // Some axes
-        morph::vec<float> ux = {1,0,0};
-        morph::vec<float> uy = {0,1,0};
-        morph::vec<float> uz = {0,0,1};
+        morph::vec<float> _ux = {1,0,0};
+        morph::vec<float> _uy = {0,1,0};
 
         //! The colour of the thing.
         std::array<float, 3> col = {1.0f, 0.0f, 0.0f};

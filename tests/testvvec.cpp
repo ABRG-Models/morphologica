@@ -283,6 +283,20 @@ int main() {
     ddcc = {1.2345234755654907,5.2345232963562812};
     std::cout << "double prec: " << ddcc << " to single: " << ddcc.as_float() << "\n   and back: " << ddcc.as_float().as_double() << std::endl;
 
+    // Rotate
+    vvec<int>vvir = { 1, 2, 3, 4 };
+    vvec<int> vvir1 = vvir;
+    vvir1.rotate();
+    std::cout << vvir << " rotate(): " << vvir1 << std::endl;
+
+    vvec<int> vvir2(vvir);
+    for (size_t n = 0; n < 6; ++n) {
+        vvir2 = vvir;
+        vvir2.rotate (n);
+        std::cout << vvir << " rotate("<<n<<"): " << vvir2 << std::endl;
+    }
+
+
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
 }

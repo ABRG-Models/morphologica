@@ -1302,11 +1302,11 @@ namespace morph {
         }
 
         /*!
-         * Apply single pixel on-centre/off-surround filter by convolving a square
-         * filter, side width with a central peak of side on_width. Central on region
-         * is given the value on_value (distributed amoungst the bits). Off region is
-         * set such that the sum of the filter is 0. The filter for edge pixels is
-         * modified to ensure that the filter sum is always 0.
+         * Apply an on-centre/off-surround filter by convolving the data on this
+         * CartGrid with a filter whose centre is of size one pixel with the value 1,
+         * surrounded by a ring of up to n=8 pixels, set to the value -1/n. The sum of
+         * the filter is thus always 0. n<8 if the central pixel is close to the edge of
+         * the CartGrid.
          */
         template<typename T>
         void oncentre_offsurround (const std::vector<T>& data, std::vector<T>& result)
