@@ -1,4 +1,5 @@
 #include "morph/vvec.h"
+#include "morph/mathconst.h"
 #include <array>
 using morph::vvec;
 using std::cout;
@@ -296,6 +297,18 @@ int main() {
         std::cout << vvir << " rotate("<<n<<"): " << vvir2 << std::endl;
     }
 
+    for (int n = -3; n < 4; ++n) {
+        vvir2 = vvir;
+        vvir2.rotate (n);
+        std::cout << vvir << " rotate("<<n<<"): " << vvir2 << std::endl;
+    }
+
+    vvec<float> vfr(81, 0.0f);
+    vfr.linspace (-morph::mathconst<float>::pi, morph::mathconst<float>::pi, 81);
+    vfr.cos_inplace();
+    std::cout << "PRE: " << vfr << std::endl;
+    vfr.rotate (static_cast<int>(-1));
+    std::cout << "POST: " << vfr << std::endl;
 
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
