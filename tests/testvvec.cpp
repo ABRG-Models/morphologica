@@ -297,10 +297,29 @@ int main() {
         std::cout << vvir << " rotate("<<n<<"): " << vvir2 << std::endl;
     }
 
-    for (int n = -3; n < 4; ++n) {
+    for (int n = -6; n < 7; ++n) {
         vvir2 = vvir;
         vvir2.rotate (n);
         std::cout << vvir << " rotate("<<n<<"): " << vvir2 << std::endl;
+    }
+
+    morph::vvec<int> vr = { 0, 1, 2, 3 };
+    morph::vvec<int> vr2 = vr;
+
+    morph::vvec<int> rot_size_t_correct = { 0, 1, 2, 3, 0, 1, 2 };
+    for (size_t i = 0; i < 7; ++i) {
+        vr2 = vr;
+        vr2.rotate (i);
+        std::cout << vr << " rotate("<<i<<") is " << vr2 << std::endl;
+        if (vr2[0] != rot_size_t_correct[i]) { --rtn; }
+    }
+
+    morph::vvec<int> rot_int_correct = { 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2 };
+    for (int i = -7; i < 7; ++i) {
+        vr2 = vr;
+        vr2.rotate (i);
+        std::cout << vr << " rotate("<<i<<") is " << vr2 << std::endl;
+        if (vr2[0] != rot_int_correct[i+7]) { --rtn; }
     }
 
     vvec<float> vfr(81, 0.0f);
@@ -308,6 +327,7 @@ int main() {
     vfr.cos_inplace();
     std::cout << "PRE: " << vfr << std::endl;
     vfr.rotate (static_cast<int>(-1));
+    if (vfr[0] != -1.0f || vfr[1] != -1.0f) { --rtn; }
     std::cout << "POST: " << vfr << std::endl;
 
     std::cout << "At end, rtn=" << rtn << std::endl;

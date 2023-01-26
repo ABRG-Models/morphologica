@@ -292,9 +292,19 @@ namespace morph {
         //! Rotate n times
         void rotate (size_t n)
         {
-            if (n >= N) { n = n % N; }
+            n %= N;
             auto _start = this->begin();
             std::advance (_start, n);
+            std::rotate (this->begin(), _start, this->end());
+        }
+
+        //! Rotate n times, where n can be negative
+        void rotate (int n)
+        {
+            n %= static_cast<int>(N);
+            size_t _n = n >= 0 ? n : N + n;
+            auto _start = this->begin();
+            std::advance (_start, _n);
             std::rotate (this->begin(), _start, this->end());
         }
 

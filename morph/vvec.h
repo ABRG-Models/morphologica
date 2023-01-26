@@ -343,12 +343,10 @@ namespace morph {
             std::rotate (this->begin(), _start, this->end());
         }
 
-        //! Rotate n times, where n can be negative, but not larger than this->size?
+        //! Rotate n times, where n can be negative
         void rotate (int n)
         {
-            if (std::abs(n) >= this->size()) {
-                throw std::runtime_error ("fix rotation so it can be large and negative");
-            }
+            n %= static_cast<int>(this->size());
             size_t _n = n >= 0 ? n : this->size() + n;
             auto _start = this->begin();
             std::advance (_start, _n);
