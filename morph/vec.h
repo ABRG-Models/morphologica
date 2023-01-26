@@ -289,22 +289,21 @@ namespace morph {
             } // else no op
         }
 
-        //! Rotate n times
-        void rotate (size_t n)
+        //! Templated rotate for integral types T
+        template <typename T=int>
+        void rotate (T n)
         {
-            n %= N;
-            auto _start = this->begin();
-            std::advance (_start, n);
-            std::rotate (this->begin(), _start, this->end());
-        }
+            static_assert (std::numeric_limits<T>::is_integer);
 
-        //! Rotate n times, where n can be negative
-        void rotate (int n)
-        {
-            n %= static_cast<int>(N);
-            size_t _n = n >= 0 ? n : N + n;
+            n %= static_cast<T>(N);
+
             auto _start = this->begin();
-            std::advance (_start, _n);
+            if constexpr (std::numeric_limits<T>::is_signed) {
+                size_t _n = n >= 0 ? n : N + n;
+                std::advance (_start, _n);
+            } else {
+                std::advance (_start, n);
+            }
             std::rotate (this->begin(), _start, this->end());
         }
 
