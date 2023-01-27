@@ -159,5 +159,24 @@ int main() {
     // Can't do this though:
     //  morph::vec<float, 2> v_dc = v_discrete * v_continuous; // will throw compiler error
 
+    morph::vec<int, 4> vr = { 0, 1, 2, 3 };
+    morph::vec<int, 4> vr2 = vr;
+
+    morph::vec<int, 7> rot_size_t_correct = { 0, 1, 2, 3, 0, 1, 2 };
+    for (size_t i = 0; i < 7; ++i) {
+        vr2 = vr;
+        vr2.rotate (i);
+        std::cout << vr << " rotate("<<i<<") is " << vr2 << std::endl;
+        if (vr2[0] != rot_size_t_correct[i]) { --rtn; }
+    }
+
+    morph::vec<int, 14> rot_int_correct = { 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2 };
+    for (int i = -7; i < 7; ++i) {
+        vr2 = vr;
+        vr2.rotate (i);
+        std::cout << vr << " rotate("<<i<<") is " << vr2 << std::endl;
+        if (vr2[0] != rot_int_correct[i+7]) { --rtn; }
+    }
+
     return rtn;
 }
