@@ -731,7 +731,7 @@ namespace morph
 
             // This searches forward to try to find a point which is 'l' further on. If
             // at any point t exceeds 1.0, we have to break out.
-            while (t != Flt{1} && lastnull == false) {
+            while (t < Flt{1} && lastnull == false) {
                 BezCoord<Flt> b = this->computePoint (t, l);
                 rtn.push_back (b);
                 t = rtn.back().t();
