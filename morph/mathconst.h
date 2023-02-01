@@ -36,14 +36,24 @@ namespace morph {
     template <typename T=double>
     struct mathconst
     {
-        static constexpr T sqrt_of_2 = T{1.414213562373095048801688724209698078569671875376948};
-        static constexpr T one_over_root_2 = T{1}/sqrt_of_2;
+        static constexpr T root_2 = T{1.414213562373095048801688724209698078569671875376948};
+        static constexpr T sqrt_of_2 = root_2;
+        static constexpr T one_over_root_2 = T{1}/root_2;
 
-        static constexpr T sqrt_of_3 = T{1.732050807568877293527446341505872366942805253810381};
-        static constexpr T one_over_root_3 = T{1}/sqrt_of_3;
-        static constexpr T two_over_root_3 = T{2}/sqrt_of_3;
-        static constexpr T one_over_2_root_3 = T{1}/(T{2}*sqrt_of_3);
-        static constexpr T root_3_over_2 = sqrt_of_3/T{2};
+        static constexpr T root_3 = T{1.732050807568877293527446341505872366942805253810381};
+        static constexpr T sqrt_of_3 = root_3;
+        static constexpr T one_over_root_3 = T{1}/root_3;
+        static constexpr T two_over_root_3 = T{2}/root_3;
+        static constexpr T one_over_2_root_3 = T{1}/(T{2}*root_3);
+        static constexpr T root_3_over_2 = root_3/T{2};
+
+        static constexpr T root_4 = T{2};
+        static constexpr T root_5 = T{2.236067977499789696409173668731276235440618359612};
+        static constexpr T root_6 = T{2.449489742783178098197284074705891391965947480657};
+        static constexpr T root_7 = T{2.645751311064590590501615753639260425710259183082};
+        static constexpr T root_8 = T{2.828427124746190097603377448419396157139343750754};
+        static constexpr T root_9 = T{3};
+        static constexpr T root_10 = T{3.162277660168379331998893544432718533719555139325};
 
         static constexpr T pi = T{3.141592653589793238462643383279502884197169399375106};
 
