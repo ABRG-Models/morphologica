@@ -178,5 +178,11 @@ int main() {
         if (vr2[0] != rot_int_correct[i+7]) { --rtn; }
     }
 
+    morph::vec<float, 3> formax;
+    formax.set_max();
+    std::cout << "vec<float, 3>::set_max gives: " << formax << std::endl;
+    formax.set_lowest();
+    std::cout << "vec<float, 3>::set_lowest gives: " << formax << std::endl;
+
     return rtn;
 }
