@@ -82,7 +82,6 @@ namespace morph {
             if (this->em > 0.0f) {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                std::cout << "X text offset: " << toffset << std::endl;
                 auto vtm1 = std::make_unique<VisualTextModel> (this->shaders.tprog,
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
