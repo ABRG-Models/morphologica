@@ -726,7 +726,7 @@ namespace morph {
         //! Less than a scalar. Return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
-            auto _element_fails = [rhs](S a, S b) -> S { return a  (b < rhs ? S{0} : S{1}); };
+            auto _element_fails = [rhs](S a, S b) -> S { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
