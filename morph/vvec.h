@@ -277,6 +277,10 @@ namespace morph {
 
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
+        //! Set all elements of the vector to the maximum possible value given type S
+        void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
+        //! Set all elements of the vector to the lowest (i.e. most negative) possible value given type S
+        void set_lowest() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::lowest()); }
 
         /*!
          * Randomize the vector

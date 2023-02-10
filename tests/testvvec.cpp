@@ -330,6 +330,12 @@ int main() {
     if (vfr[0] != -1.0f || vfr[1] != -1.0f) { --rtn; }
     std::cout << "POST: " << vfr << std::endl;
 
+    vvec<float> formax (3, 0.0f);
+    formax.set_max();
+    std::cout << "vvec<float>::set_max gives: " << formax << std::endl;
+    formax.set_lowest();
+    std::cout << "vvec<float>::set_lowest gives: " << formax << std::endl;
+
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
 }
