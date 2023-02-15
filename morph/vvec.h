@@ -1422,6 +1422,15 @@ namespace morph {
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
+        //! Concatentate the vvec<S>& a to the end of *this.
+        void concat (const vvec<S>& a)
+        {
+            this->resize (this->size()+a.size(), S{0});
+            auto iter = this->begin();
+            std::advance (iter, a.size());
+            std::copy (a.begin(), a.end(), iter);
+        }
+
         //! Overload the stream output operator
         friend std::ostream& operator<< <S> (std::ostream& os, const vvec<S>& v);
     };
