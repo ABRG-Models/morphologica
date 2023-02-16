@@ -202,6 +202,22 @@ namespace morph {
             this->reinit_buffers();
         }
 
+        //! For some models it's important to clear the texts when reinitialising. This
+        //! is NOT the same as VisualModel::clear() followed by
+        //! initializeVertices(). For the same effect, you can call clearTexts() then
+        //! reinit().
+        void reinit_with_clearTexts()
+        {
+            this->vertexPositions.clear();
+            this->vertexNormals.clear();
+            this->vertexColors.clear();
+            this->indices.clear();
+            this->clearTexts();
+            this->idx = 0;
+            this->initializeVertices();
+            this->reinit_buffers();
+        }
+
         //! A function to call initialiseVertices and postVertexInit after any necessary
         //! attributes have been set (see, for example, setting the colour maps up in
         //! VisualDataModel).
