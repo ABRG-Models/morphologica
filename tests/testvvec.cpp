@@ -336,6 +336,13 @@ int main() {
     formax.set_lowest();
     std::cout << "vvec<float>::set_lowest gives: " << formax << std::endl;
 
+    vvec<unsigned int> ua = { 3, 4, 5 };
+    vvec<unsigned int> ub = { 30, 40, 50 };
+
+    std::cout << "Before concat(), ua is " << ua << std::endl;
+    ua.concat (ub);
+    std::cout << "After concat(), ua is " << ua << std::endl;
+
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
 }

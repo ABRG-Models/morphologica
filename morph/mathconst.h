@@ -71,6 +71,10 @@ namespace morph {
         static constexpr T pi_over_7 = pi/T{7};
         static constexpr T pi_over_8 = pi/T{8};
         static constexpr T pi_over_9 = pi/T{9};
+        static constexpr T pi_over_10 = pi/T{10};
+        static constexpr T pi_over_16 = pi/T{16};
+        static constexpr T pi_over_18 = pi/T{18};
+        static constexpr T pi_over_32 = pi/T{32};
 
         static constexpr T two_pi   = pi*T{2};
         static constexpr T three_pi = pi*T{3};
