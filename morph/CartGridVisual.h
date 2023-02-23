@@ -190,6 +190,13 @@ namespace morph {
 
             float datum = 0.0f;
 
+            // Compute an offset to ensure that the cartgrid is centred about the mv_offset.
+            float left_lim = -this->cg->width()/2.0f;
+            float bot_lim  = -this->cg->depth()/2.0f;
+            this->centering_offset[0] = left_lim - this->cg->d_x[0];
+            this->centering_offset[1] = bot_lim - this->cg->d_y[0];
+            std::cout << "centering_offset is " << this->centering_offset << std::endl;
+
             morph::vec<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
@@ -211,10 +218,10 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->cg->d_x[ri], this->cg->d_y[ri], datumC, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->cg->d_x[ri], this->cg->d_y[ri], datumC}};
+                vtx_0 = {{this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], datumC}};
 
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
@@ -230,8 +237,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
-                vtx_1 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_1 = {{this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum}};
 
                 // SE vertex
                 //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
@@ -247,8 +254,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
-                vtx_2 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_2 = {{this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum}};
 
 
                 // SW vertex
@@ -262,7 +269,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum, this->vertexPositions);
 
                 // NW vertex
                 //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
@@ -275,7 +282,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -436,6 +443,9 @@ namespace morph {
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
+
+        // A centring offset to make sure that the Cartgrid is centred on this->mv_offset
+        morph::vec<float, 3> centering_offset = { 0, 0, 0 };
     };
 
     //! Extended CartGridVisual class for plotting with individual red, green and blue
