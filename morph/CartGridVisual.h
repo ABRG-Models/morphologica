@@ -190,12 +190,14 @@ namespace morph {
 
             float datum = 0.0f;
 
-            // Compute an offset to ensure that the cartgrid is centred about the mv_offset.
-            float left_lim = -this->cg->width()/2.0f;
-            float bot_lim  = -this->cg->depth()/2.0f;
-            this->centering_offset[0] = left_lim - this->cg->d_x[0];
-            this->centering_offset[1] = bot_lim - this->cg->d_y[0];
-            std::cout << "centering_offset is " << this->centering_offset << std::endl;
+            // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
+            if (this->centralize == true) {
+                float left_lim = -this->cg->width()/2.0f;
+                float bot_lim = -this->cg->depth()/2.0f;
+                this->centering_offset[0] = left_lim - this->cg->d_x[0];
+                this->centering_offset[1] = bot_lim - this->cg->d_y[0];
+                std::cout << "centering_offset is " << this->centering_offset << std::endl;
+            }
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
@@ -418,6 +420,11 @@ namespace morph {
         //! How to render the elements. Triangles are faster.
         CartVisMode cartVisMode = CartVisMode::Triangles;
 
+        // Set this to true to adjust the positions that the CartGridVisual uses to plot
+        // the CartGrid so that the CartGrid is centralised around the
+        // VisualModel::mv_offset.
+        bool centralize = false;
+
     protected:
         //! An overridable function to set the colour of hex hi
         virtual std::array<float, 3> setColour (unsigned int hi)
@@ -444,8 +451,8 @@ namespace morph {
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
 
-        // A centring offset to make sure that the Cartgrid is centred on this->mv_offset
-        morph::vec<float, 3> centering_offset = { 0, 0, 0 };
+        // A centering offset to make sure that the Cartgrid is centred on this->mv_offset
+        morph::vec<float, 3> centering_offset = { 0.0f, 0.0f, 0.0f };
     };
 
     //! Extended CartGridVisual class for plotting with individual red, green and blue
