@@ -10,6 +10,7 @@
 
 #include <morph/nlohmann/json.hpp>
 #include <morph/tools.h>
+#include <morph/vvec.h>
 #include <list>
 #include <fstream>
 #include <sstream>
@@ -365,6 +366,17 @@ namespace morph {
             if (this->root.contains(arrayname)) {
                 rtn = this->root[arrayname];
             }
+            return rtn;
+        }
+        // Get an array of numbers as a morph::vvec.
+        template <typename T>
+        morph::vvec<T> getvvec (const std::string& arrayname) const
+        {
+            nlohmann::json ar;
+            if (this->root.contains(arrayname)) { ar = this->root[arrayname]; }
+            morph::vvec<T> rtn (ar.size(), T{0});
+            size_t i = 0;
+            for (auto el : ar) { rtn[i++] = static_cast<T>(el); }
             return rtn;
         }
 

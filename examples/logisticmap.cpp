@@ -78,11 +78,13 @@ int main (int argc, char** argv)
         gv->twodimensional = false;
         gv->finalize();
 
-        // Add the GraphVisual (as a VisualModel*)
+        // Add the GraphVisual to the morph::Visual scene
         v.addVisualModel (gv);
 
+        // You can render the scene manually like this
         v.render();
 
+        // v.keepOpen() is equivalent to this:
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);
             v.render();
