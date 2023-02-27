@@ -73,6 +73,15 @@ namespace morph {
         //! HexGrid.
         virtual void initializeVertices()
         {
+            // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
+            if (this->centralize == true) {
+                float left_lim = -this->cg->width()/2.0f;
+                float bot_lim = -this->cg->depth()/2.0f;
+                this->centering_offset[0] = left_lim - this->cg->d_x[0];
+                this->centering_offset[1] = bot_lim - this->cg->d_y[0];
+                std::cout << "centering_offset is " << this->centering_offset << std::endl;
+            }
+
             switch (this->cartVisMode) {
             case CartVisMode::Triangles:
             {
@@ -118,7 +127,7 @@ namespace morph {
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
-                this->vertex_push (this->cg->d_x[ri], this->cg->d_y[ri], dcopy[ri], this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], dcopy[ri], this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
@@ -189,15 +198,6 @@ namespace morph {
             float datumNSE = 0.0f;
 
             float datum = 0.0f;
-
-            // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
-            if (this->centralize == true) {
-                float left_lim = -this->cg->width()/2.0f;
-                float bot_lim = -this->cg->depth()/2.0f;
-                this->centering_offset[0] = left_lim - this->cg->d_x[0];
-                this->centering_offset[1] = bot_lim - this->cg->d_y[0];
-                std::cout << "centering_offset is " << this->centering_offset << std::endl;
-            }
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
