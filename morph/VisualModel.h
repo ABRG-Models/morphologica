@@ -218,6 +218,14 @@ namespace morph {
             this->reinit_buffers();
         }
 
+        void reserve_vertices (size_t n_vertices)
+        {
+            this->vertexPositions.reserve (3*n_vertices);
+            this->vertexNormals.reserve (3*n_vertices);
+            this->vertexColors.reserve (3*n_vertices);
+            this->indices.reserve (6*n_vertices);
+        }
+
         //! A function to call initialiseVertices and postVertexInit after any necessary
         //! attributes have been set (see, for example, setting the colour maps up in
         //! VisualDataModel).
@@ -665,16 +673,13 @@ namespace morph {
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
         {
-            vp.push_back (x);
-            vp.push_back (y);
-            vp.push_back (z);
+            vec<float> vec = {x, y, z};
+            std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
         //! Push array of 3 floats onto the vector of floats \a vp
         void vertex_push (const std::array<float, 3>& arr, std::vector<float>& vp)
         {
-            vp.push_back (arr[0]);
-            vp.push_back (arr[1]);
-            vp.push_back (arr[2]);
+            std::copy (arr.begin(), arr.end(), std::back_inserter (vp));
         }
         //! Push morph::vec of 3 floats onto the vector of floats \a vp
         void vertex_push (const vec<float>& vec, std::vector<float>& vp)
