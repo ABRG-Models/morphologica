@@ -1182,8 +1182,8 @@ namespace morph {
                 std::cout << "u: Reduce zNear cutoff plane\n";
                 std::cout << "i: Increase zNear cutoff plane\n";
                 std::cout << "0-9: Select model index (with shift: toggle hide)\n";
-                std::cout << "Left: Decrease opacity of selected model\n";
-                std::cout << "Right: Increase opacity of selected model\n";
+                std::cout << "Shift-Left: Decrease opacity of selected model\n";
+                std::cout << "Shift-Right: Increase opacity of selected model\n";
             }
 
             if (key == GLFW_KEY_L && action == GLFW_PRESS) {
@@ -1273,10 +1273,10 @@ namespace morph {
             }
 
             // Increment/decrement alpha for selected model
-            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
             }
-            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
             }
 
