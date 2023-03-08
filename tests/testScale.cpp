@@ -191,5 +191,16 @@ int main () {
     }
     cout << "];" << endl;;
 
+    // Find scale that will transform -r -> +r to 0->1.
+    Scale<double> d;
+    double rmin = -3.0;
+    double rmax = 5.0;
+    d.compute_autoscale (rmin, rmax);
+    std::cout << "Scale output for rmin: " << d.transform_one (rmin) << std::endl;
+    std::cout << "Scale output for rmin: " << d.transform_one (rmax) << std::endl;
+
+    std::cout << "Inverse Scale output for rmin: " << d.inverse_one (0) << std::endl;
+    std::cout << "Inverse Scale output for rmin: " << d.inverse_one (1) << std::endl;
+
     return rtn;
 }
