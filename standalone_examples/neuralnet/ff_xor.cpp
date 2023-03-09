@@ -8,7 +8,7 @@
 #include <morph/Mnist.h>
 #include <morph/Random.h>
 #include <morph/nn/FeedForwardNet.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <fstream>
 #include <vector>
 #include <utility>
@@ -35,8 +35,8 @@ int main (int argc, char** argv)
     morph::nn::FeedForwardNet<float> ff1(layer_spec);
 
     // The XOR function has 4 possible inputs and 4 correct outputs.
-    std::vector<morph::vVector<float>> ins = {{1, 0}, {0, 1}, {0, 0}, {1, 1}};
-    std::vector<morph::vVector<float>> outs = {{1}, {1}, {0}, {0}};
+    std::vector<morph::vvec<float>> ins = {{1, 0}, {0, 1}, {0, 0}, {1, 1}};
+    std::vector<morph::vvec<float>> outs = {{1}, {1}, {0}, {0}};
 
     // main loop, while m.training_f has values in:
     unsigned int epochs = 5000; // Here, an 'epoch' is a run through each batch of in/outs.
@@ -53,7 +53,7 @@ int main (int argc, char** argv)
     // Accumulate the dC/dw and dC/db values in gradients. for each pair, the first
     // is nabla_w the second is nabla_b. There are as many pairs as there are
     // connections in ff1.
-    std::vector<std::pair<morph::vVector<float>, morph::vVector<float>>> mean_gradients;
+    std::vector<std::pair<morph::vvec<float>, morph::vvec<float>>> mean_gradients;
     // Init mean gradients
     for (auto& c : ff1.connections) {
         mean_gradients.push_back (std::make_pair(c.nabla_ws[0], c.nabla_b));
@@ -66,21 +66,21 @@ int main (int argc, char** argv)
     morph::Visual v(1920, 1080, "XOR network");
     v.setSceneTrans (-0.738625824,-0.950026929,-3.00000191);
     v.lightingEffects();
-    NetVisual<float>* nv = new NetVisual<float>(v.shaderprog, v.tshaderprog, {0,0,0}, &ff1);
-    nv->finalize(); // Generates the model before adding it to the Visual scene
-    v.addVisualModel (nv);
+    auto nvup = std::make_unique<NetVisual<float>>(v.shaders, morph::vec<float>({0,0,0}), &ff1);
+    nvup->finalize(); // Generates the model before adding it to the Visual scene
+    auto nv = v.addVisualModel (nvup);
 
     // Create a graph to visualise cost vs. epoch
-    morph::GraphVisual<float>* gv = new morph::GraphVisual<float>(v.shaderprog, v.tshaderprog, {1,0.5,0});
+    auto gvup = std::make_unique<morph::GraphVisual<float>>(v.shaders, morph::vec<float>({1,0.5,0}));
     morph::DatasetStyle ds(morph::stylepolicy::lines);
     ds.linecolour =  {1.0, 0.0, 0.0};
     ds.linewidth = 0.015f;
-    gv->xlabel = "Epoch";
-    gv->ylabel = "Cost";
-    gv->setlimits (0, 5000, 0, 0.25); // Sets axes limits
-    gv->prepdata (ds); // prepares data which will be appended to with gv->append()
-    gv->finalize();
-    v.addVisualModel (gv);
+    gvup->xlabel = "Epoch";
+    gvup->ylabel = "Cost";
+    gvup->setlimits (0, 5000, 0, 0.25); // Sets axes limits
+    gvup->prepdata (ds); // prepares data which will be appended to with gv->append()
+    gvup->finalize();
+    auto gv = v.addVisualModel (gvup);
 
     // Used throughout loop as an iterator variable
     unsigned int i = 0;
@@ -99,8 +99,8 @@ int main (int argc, char** argv)
         for (unsigned int mb = 0; mb < mini_batch_size; ++mb) {
 
             // Note: NOT stochastic!
-            morph::vVector<float> thein = ins[mb];
-            morph::vVector<float> theout = outs[mb];
+            morph::vvec<float> thein = ins[mb];
+            morph::vvec<float> theout = outs[mb];
 
             ff1.setInput (thein, theout);
             ff1.feedforward();

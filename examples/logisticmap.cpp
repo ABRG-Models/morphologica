@@ -5,8 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/GraphVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -23,9 +22,9 @@ int main (int argc, char** argv)
     v.lightingEffects();
 
     try {
-        morph::vVector<double> absc;
-        morph::vVector<double> ord;
-        morph::GraphVisual<double>* gv = new morph::GraphVisual<double> (v.shaderprog, v.tshaderprog, {0,0,0});
+        morph::vvec<double> absc;
+        morph::vvec<double> ord;
+        auto gv = std::make_unique<morph::GraphVisual<double>>(v.shaders, morph::vec<float>({0,0,0}));
 
         double x = 0.5;
         double x1 = 0.0;
@@ -79,11 +78,13 @@ int main (int argc, char** argv)
         gv->twodimensional = false;
         gv->finalize();
 
-        // Add the GraphVisual (as a VisualModel*)
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        // Add the GraphVisual to the morph::Visual scene
+        v.addVisualModel (gv);
 
+        // You can render the scene manually like this
         v.render();
 
+        // v.keepOpen() is equivalent to this:
         while (v.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);
             v.render();

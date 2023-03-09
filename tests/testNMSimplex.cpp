@@ -3,6 +3,7 @@
  */
 
 #include "morph/NM_Simplex.h"
+#include "morph/vvec.h"
 #include <iostream>
 
 // Here's the Rosenbrock banana function
@@ -16,10 +17,10 @@ FLT banana (FLT x, FLT y) {
 int main()
 {
     // Initialise the vertices
-    morph::vVector<morph::vVector<FLT>> i_vertices;
-    morph::vVector<FLT> v1 = {{ 0.7, 0.0 }};
-    morph::vVector<FLT> v2 = {{ 0.0, 0.6 }};
-    morph::vVector<FLT> v3 = {{ -0.6, -1.0 }};
+    morph::vvec<morph::vvec<FLT>> i_vertices;
+    morph::vvec<FLT> v1 = {{ 0.7, 0.0 }};
+    morph::vvec<FLT> v2 = {{ 0.0, 0.6 }};
+    morph::vvec<FLT> v3 = {{ -0.6, -1.0 }};
     i_vertices.push_back(v1);
     i_vertices.push_back(v2);
     i_vertices.push_back(v3);
@@ -93,7 +94,7 @@ int main()
                   << ","<< simp.vertex_order[2] << std::endl;
 #endif
     }
-    morph::vVector<FLT> thebest = simp.best_vertex();
+    morph::vvec<FLT> thebest = simp.best_vertex();
     FLT bestval = simp.best_value();
     std::cout << "FINISHED! lcount=" << lcount
               << ". Best approximation: (" << thebest

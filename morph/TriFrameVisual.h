@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/ColourMap.h>
 #include <iostream>
 #include <vector>
@@ -35,14 +35,14 @@ namespace morph {
     class TriFrameVisual : public VisualDataModel<Flt>
     {
     public:
-        TriFrameVisual(GLuint sp, const Vector<float, 3> _offset)
+        TriFrameVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset)
         {
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
         }
 
-        void initializeVertices (void)
+        void initializeVertices()
         {
             this->vertexPositions.clear();
             this->vertexNormals.clear();
@@ -69,13 +69,12 @@ namespace morph {
             // Draw tubes
             std::array<float, 3> clr = {0.3f,0.3f,0.3f};
             for (size_t i = 0; i < ncoords; ++i) {
-                morph::Vector<float> v1 = (*this->dataCoords)[i];
+                morph::vec<float> v1 = (*this->dataCoords)[i];
                 size_t e = (i < (ncoords-1) ? i+1 : 0);
-                morph::Vector<float> v2 = (*this->dataCoords)[e];
+                morph::vec<float> v2 = (*this->dataCoords)[e];
                 this->computeTube (idx, this->mv_offset+v1, this->mv_offset+v2,
                                    clr, clr, this->radius, this->tseg);
             }
-
         }
 
         //! tube radius

@@ -8,9 +8,11 @@
 #include <morph/Rect.h>
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/HdfData.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
+#include <morph/Scale.h>
 
 #include <set>
 #include <list>
@@ -32,8 +34,15 @@ namespace morph {
         Boundary // The shape of the arbitrary boundary set with CartGrid::setBoundary
     };
 
+    enum class CartDomainWrap {
+        None,        // No wrapping
+        Horizontal,  // The eastern neighbour of the most eastern element is the most western element on that row
+        Vertical,
+        Both
+    };
+
     /*!
-     * This class is used to build an cartesian grid of rectangular elements.
+     * This class is used to build a Cartesian grid of rectangular elements.
      *
      * It has been developed from HexGrid.h. It looks byzantine in complexity, given
      * than it's 'only' supposed to provide a way to track a rectangular grid. This is
@@ -462,7 +471,8 @@ namespace morph {
 
         //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and creating to x2,y2.
         CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
-                  CartDomainShape shape = CartDomainShape::Rectangle)
+                  CartDomainShape shape = CartDomainShape::Rectangle,
+                  CartDomainWrap wrap = CartDomainWrap::None)
         {
             this->d = d_;
             this->v = v_;
@@ -470,9 +480,9 @@ namespace morph {
             this->y_span = y2 - y1;
             this->z = z_;
             this->domainShape = shape;
+            this->domainWrap = wrap;
 
             // init2 is the non-symmetic initialisation for making arbitrary rectangular grids.
-            std::cout << "call init2("<<x1<<", etc)\n";
             this->init2 (x1, y1, x2, y2);
         }
 
@@ -491,7 +501,7 @@ namespace morph {
             this->init (d_, d_, x_span_, x_span_, z_);
         }
 
-        //! Compute the centroid of the passed in list of Rectes.
+        //! Compute the centroid of the passed in list of Rects.
         std::pair<float, float> computeCentroid (const std::list<Rect>& pRects)
         {
             std::pair<float, float> centroid;
@@ -640,6 +650,91 @@ namespace morph {
             }
         }
 
+        // find the CartGrid position which corresponds to the max value in image_data.
+        morph::vec<float, 2> findmax (const morph::vvec<float>& image_data)
+        {
+            unsigned int idx = image_data.argmax();
+            return morph::vec<float, 2>({this->d_x[idx], this->d_y[idx]});
+        }
+
+        // Create a radial representation of the image_data associated with this
+        // CartGrid, which for this function is assumed to be rectangular. The
+        // representation is taken from the location at view_pos, with an angular offset
+        // of view_angle.
+        void resampleToPolar (const morph::vvec<float>& image_data,
+                              morph::CartGrid& cg_polar, morph::vvec<float>& polar_data,
+                              morph::vec<float, 2> view_pos, float view_angle, morph::ScaleFn radscale = morph::ScaleFn::Linear)
+        {
+            polar_data.zero();
+
+            // distance per pixel in the image. This defines the Gaussian width (sigma) for the resample:
+            morph::vec<float, 2> dist_per_pix = { this->d, this->v };
+            morph::vec<float, 2> params = 1.0f / (2.0f * dist_per_pix * dist_per_pix);
+            float assumecirc = params.mean();
+            morph::vec<float, 2> polar_span = cg_polar.getSpan();
+
+            morph::vec<unsigned int, 2> polar_span_pix = cg_polar.getSpanPix();
+            if (polar_span_pix[0]%2 == 0) {
+                throw std::runtime_error ("Fix cg_polar to have an odd width (so that it runs from -x:0:+x)");
+            }
+
+            // Now now that polar_span in x is symmetric
+            float rad_per_dist = morph::mathconst<float>::two_pi/(polar_span[0]+cg_polar.getd());
+
+            std::list<morph::Rect>::iterator lastrect = this->rects.begin();
+#pragma omp parallel for
+            for (size_t xi = 0; xi < cg_polar.num(); ++xi) { // for each output pixel which is an r/phi pair
+
+                float r = cg_polar.d_y[xi]; // Linear
+                if (radscale == morph::ScaleFn::Logarithmic) {
+                    r = std::log (this->v+cg_polar.d_y[xi]) - std::log(this->v);
+                    r *= 0.4f; // You can play with this factor
+                    //std::cout << "For r linear = " << cg_polar.d_y[xi] << ", log transform is " << r << std::endl;
+                }
+                //float phi = cg_polar.d_x[xi] * rad_per_dist;
+
+                // r and phi in the image frame:
+                float phi_imframe = (cg_polar.d_x[xi] * rad_per_dist) + view_angle;
+                if (phi_imframe > morph::mathconst<float>::pi) { phi_imframe -= morph::mathconst<float>::two_pi; }
+                // x,y in the image frame associated with r,phi in the polar rep:
+                morph::vec<float, 2> abs_xy_imframe = morph::vec<float, 2>({r * std::cos(phi_imframe),
+                                                                            r * std::sin(phi_imframe)}) + view_pos;
+
+                // If abs_xy_imframe is outside the bounds of the image region, then leave value 0 and move on.
+                if (this->isInsideRectangularBoundary (abs_xy_imframe) == false) { continue; }
+
+                // Find pixel nearest abs_xy_imframe
+                //std::list<morph::Rect>::iterator nearest = this->findRectNearest (abs_xy_imframe);
+                // or (if it's faster?):
+                std::list<morph::Rect>::iterator nearest = this->findRectNearPoint (abs_xy_imframe, lastrect);
+                lastrect = nearest;
+
+                // Now sum up contribution from nearest and its neighbours to polar_data[xi].
+
+                // Closest pix
+                std::list<morph::Rect>::iterator curr = nearest;
+                float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
+                float expr = std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
+
+                float contributors = 1.0f;
+                // 8 Neighbours
+                for (unsigned short nn = 0; nn < 8; ++nn) {
+                    if (nearest->has_neighbour(nn)) {
+                        curr = nearest->get_neighbour(nn);
+                        float dd = (abs_xy_imframe - morph::vec<float, 2>({curr->x, curr->y})).length();
+                        // sum according to 2D Gaussian:
+                        expr += std::exp ( -(assumecirc * dd * dd) ) * image_data[curr->vi];
+                        contributors += 1.0f;
+                    }
+                }
+
+                polar_data[xi] = expr / contributors;
+            }
+
+            //polar_data /= polar_data.max(); // renormalise?
+        }
+
+
         /*!
          * This sets a boundary, just as
          * morph::CartGrid::setBoundary(vector<morph::BezCoord<float>& bpoints, bool offset)
@@ -699,27 +794,27 @@ namespace morph {
             // around the edge.
             std::list<morph::Rect>::iterator bpi = this->rects.begin();
             // Head to the south west corner
-            while (bpi->has_nw()) { bpi = bpi->nw; }
-            while (bpi->has_ns()) { bpi = bpi->ns; }
+            while (bpi->has_nw() && !bpi->wraps_w()) { bpi = bpi->nw; }
+            while (bpi->has_ns() && !bpi->wraps_s()) { bpi = bpi->ns; }
             bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             //std::cout << "set flag at start on rect " << bpi->outputCart() << std::endl;
 
-            while (bpi->has_ne()) {
+            while (bpi->has_ne() && !bpi->wraps_e()) {
                 bpi = bpi->ne;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going E on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_nn()) {
+            while (bpi->has_nn() && !bpi->wraps_n()) {
                 bpi = bpi->nn;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going N on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_nw()) {
+            while (bpi->has_nw() && !bpi->wraps_w()) {
                 bpi = bpi->nw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going W on rect " << bpi->outputCart() << std::endl;
             }
-            while (bpi->has_ns() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
+            while (bpi->has_ns() && !bpi->wraps_s() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
                 bpi = bpi->ns;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
                 //std::cout << "set flag going S on rect " << bpi->outputCart() << std::endl;
@@ -787,7 +882,7 @@ namespace morph {
             }
 
             // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
-            for (double phi = 0.0; phi < morph::TWO_PI_D; phi+=delta_phi) {
+            for (double phi = 0.0; phi < morph::mathconst<double>::two_pi; phi+=delta_phi) {
                 float x_pt = static_cast<float>(a * std::cos (phi) + c.first);
                 float y_pt = static_cast<float>(b * std::sin (phi) + c.second);
                 morph::BezCoord<float> b(std::make_pair(x_pt, y_pt));
@@ -872,6 +967,7 @@ namespace morph {
             return ss.str();
         }
 
+#if 0
         /*!
          * Show the coordinates of the vertices of the overall rect grid generated.
          */
@@ -889,6 +985,7 @@ namespace morph {
             }
             return ss.str();
         }
+#endif
 
         /*!
          * Returns the width of the CartGrid (from -x to +x)
@@ -941,6 +1038,17 @@ namespace morph {
          */
         float getv() const { return this->v; }
 
+        //! Get the x_span/y_span
+        morph::vec<float, 2> getSpan() { return morph::vec<float, 2>({this->x_span, this->y_span}); }
+
+        //! Get the x/y span in elements/pixels
+        morph::vec<unsigned int, 2> getSpanPix()
+        {
+            unsigned int _x_pixdist = static_cast<unsigned int>(std::round(this->x_span/this->d));
+            unsigned int _y_pixdist = static_cast<unsigned int>(std::round(this->y_span/this->v));
+            return morph::vec<unsigned int, 2>({ 1+_x_pixdist, 1+_y_pixdist });
+        }
+
         /*!
          * Get the shortest distance from the centre to the perimeter. This is the
          * "short radius".
@@ -963,46 +1071,6 @@ namespace morph {
          * Compute and return the area of one rect in the grid.
          */
         float getRectArea() const { return (this->d * this->v); }
-
-        /*!
-         * Find the minimum value of x' on the CartGrid, where x' is the x axis rotated
-         * by phi degrees.
-         */
-        float getXmin (float phi = 0.0f) const
-        {
-            float xmin = 0.0f;
-            float x_ = 0.0f;
-            bool first = true;
-            for (auto r : this->rects) {
-                x_ = r.x * std::cos (phi) + r.y * std::sin (phi);
-                if (first) {
-                    xmin = x_;
-                    first = false;
-                }
-                xmin = x_ < xmin ? x_ : xmin;
-            }
-            return xmin;
-        }
-
-        /*!
-         * Find the maximum value of x' on the CartGrid, where x' is the x axis rotated
-         * by phi degrees.
-         */
-        float getXmax (float phi = 0.0f) const
-        {
-            float xmax = 0.0f;
-            float x_ = 0.0f;
-            bool first = true;
-            for (auto r : this->rects) {
-                x_ = r.x * std::cos (phi) + r.y * std::sin (phi);
-                if (first) {
-                    xmax = x_;
-                    first = false;
-                }
-                xmax = x_ > xmax ? x_ : xmax;
-            }
-            return xmax;
-        }
 
         /*!
          * Run through all the rects and compute the distance to the nearest boundary
@@ -1067,8 +1135,7 @@ namespace morph {
                     ++ri;
                 }
                 // ri now on bottom row; so travel west
-                while (ri->has_nw() == true) { ri = ri->nw; }
-
+                while (ri->has_nw() == true && !ri->wraps_w()) { ri = ri->nw; }
                 // ri should now be the bottom left rect.
                 blr = ri;
 
@@ -1083,7 +1150,7 @@ namespace morph {
                 this->d_push_back (ri);
 
                 do {
-                    if (ri->has_ne() == false) {
+                    if (ri->has_ne() == false || (ri->has_ne() && ri->wraps_e())) {
                         if (ri->yi == extnts[3]) {
                             // last (i.e. top) row and no neighbour east, so finished.
                             break;
@@ -1099,7 +1166,9 @@ namespace morph {
                         ri = ri->ne;
                         this->d_push_back (ri);
                     }
-                } while (ri->has_ne() == true || ri->has_nn() == true);
+
+                } while ((ri->has_ne() == true && !ri->wraps_e())
+                         || (ri->has_nn() == true && !ri->wraps_n()));
 
             } else { // Boundary
 
@@ -1202,19 +1271,19 @@ namespace morph {
         }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 3>> getCoordinates3()
+        std::vector<morph::vec<float, 3>> getCoordinates3()
         {
-            std::vector<morph::Vector<float, 3>> coords (this->num());
+            std::vector<morph::vec<float, 3>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i], this->z };
             }
             return coords;
         }
 
-        //! Get all the (x,y) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::Vector<float, 2>> getCoordinates2()
+        //! Get all the (x,y) coordinates from the grid and return as vector of vecs
+        std::vector<morph::vec<float, 2>> getCoordinates2()
         {
-            std::vector<morph::Vector<float, 2>> coords (this->num());
+            std::vector<morph::vec<float, 2>> coords (this->num());
             for (unsigned int i = 0; i < this->num(); ++i) {
                 coords[i] = { this->d_x[i], this->d_y[i] };
             }
@@ -1229,6 +1298,121 @@ namespace morph {
         {
             for (auto& rr : this->rects) {
                 rr.unsetFlag (RECT_IS_REGION_BOUNDARY | RECT_INSIDE_REGION);
+            }
+        }
+
+        /*!
+         * Apply an on-centre/off-surround filter by convolving the data on this
+         * CartGrid with a filter whose centre is of size one pixel with the value 1,
+         * surrounded by a ring of up to n=8 pixels, set to the value -1/n. The sum of
+         * the filter is thus always 0. n<8 if the central pixel is close to the edge of
+         * the CartGrid.
+         */
+        template<typename T>
+        void oncentre_offsurround (const std::vector<T>& data, std::vector<T>& result)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+            // For each rect in this CartGrid, compute the convolution kernel
+            for (std::list<Rect>::iterator ri = this->rects.begin(); ri != this->rects.end(); ++ri) {
+                result[ri->vi] = data[ri->vi]; // The 'on' part of the filter
+                T count = T{0};
+                T offpart = T{0};
+                offpart += ri->has_ne()  ? count+=T{1}, data[ri->ne->vi]  : T{0};
+                offpart += ri->has_nne() ? count+=T{1}, data[ri->nne->vi] : T{0};
+                offpart += ri->has_nn()  ? count+=T{1}, data[ri->nn->vi]  : T{0};
+                offpart += ri->has_nnw() ? count+=T{1}, data[ri->nnw->vi] : T{0};
+                offpart += ri->has_nw()  ? count+=T{1}, data[ri->nw->vi]  : T{0};
+                offpart += ri->has_nsw() ? count+=T{1}, data[ri->nsw->vi] : T{0};
+                offpart += ri->has_ns()  ? count+=T{1}, data[ri->ns->vi]  : T{0};
+                offpart += ri->has_nse() ? count+=T{1}, data[ri->nse->vi] : T{0};
+                //std::cout << "subtract " << offpart << "/" << count << std::endl;
+                result[ri->vi] -= offpart/count;
+            }
+        }
+
+        //! Apply a box filter
+        template<typename T>
+        void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+
+            // At each pixel/rect sum up the contributions from a square box of side
+            // boxside. This is symmetric if boxside is odd.
+            //
+            // On either side, walk [(box side - 1) / 2] steps, if boxside is odd.  If
+            // boxside is even, then one walk (right/up) is boxside/2, then other
+            // (left/down) is (boxside/2)-1
+            unsigned int neg_steps = boxside%2==0 ? (boxside/2) - 1 : (boxside-1)/2;
+            unsigned int pos_steps = boxside%2==0 ? (boxside/2) : (boxside-1)/2;
+            T boxa = static_cast<T>(boxside) * static_cast<T>(boxside); // square box area
+
+            // Now can go through the rects
+            std::list<Rect>::iterator ri = this->rects.begin();
+            for (; ri != this->rects.end(); ++ri) {
+                // On each rect, sum up the contributions from neighbours. This is a
+                // naive, slow, but easy to code algorithm. It can be a bit faster if
+                // you keep a track of the sum in the box filter.
+                std::list<Rect>::iterator ri_col = ri;
+                std::list<Rect>::iterator ri_row = ri;
+
+                // First step down to a starting point, without summing
+                unsigned int act_neg_steps = 0;
+                for (unsigned int i = 0; i < neg_steps; ++i) {
+                    if (ri_row->has_ns()) {
+                        ri_row = ri_row->ns;
+                        ++act_neg_steps;
+                    }
+                }
+
+                result[ri->vi] = T{0};
+
+                // Should now be at the bottom of the square.
+                for (unsigned int j = 0; j < (act_neg_steps + 1 + pos_steps); ++j) {
+
+                    ri_col = ri_row; // middle of row
+
+                    result[ri->vi] += data[ri_col->vi]; // add value of middle pixel in row
+
+                    // Step left neg_steps, first, summing
+                    for (unsigned int i = 0; i < neg_steps; ++i) {
+                        if (ri_col->has_nw()) { // May wrap, that's ok
+                            ri_col = ri_col->nw;
+                            result[ri->vi] += data[ri_col->vi];
+                        } // else nothing to add.
+                    }
+                    // Step right pos_steps, summing
+                    ri_col = ri_row; // back to middle
+                    for (unsigned int i = 0; i < pos_steps; ++i) {
+                        if (ri_col->has_ne()) {
+                            ri_col = ri_col->ne;
+                            result[ri->vi] += data[ri_col->vi];
+                        }
+                    }
+
+                    if (ri_row->has_nn()) {
+                        ri_row = ri_row->nn;
+                    } else {
+                        break;
+                    }
+                }
+
+                result[ri->vi] /= boxa;
             }
         }
 
@@ -1327,6 +1511,9 @@ namespace morph {
          */
         CartDomainShape domainShape = CartDomainShape::Rectangle;
 
+        //! Edge wrapping? None, Horizontal, Vertical or Both.
+        CartDomainWrap domainWrap = CartDomainWrap::None;
+
         /*!
          * The list of rects that make up this CartGrid.
          */
@@ -1373,6 +1560,9 @@ namespace morph {
             // Use y_span to determine how many rows
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->v));
+
+            this->x_minmax = {-halfCols * this->d, halfCols * this->d};
+            this->y_minmax = {-halfRows * this->v, halfRows * this->v};
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
@@ -1429,12 +1619,13 @@ namespace morph {
         //! Initialize a non-symmetric rectangular grid.
         void init2 (float x1, float y1, float x2, float y2)
         {
+            this->x_minmax = {x1, x2};
+            this->y_minmax = {y1, y2};
+
             int _xi = std::round(x1/this->d);
             int _xf = std::round(x2/this->d);
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
-
-            std::cout << "xi to xf: "<< _xi << " to " << _xf << std::endl;
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
@@ -1447,9 +1638,9 @@ namespace morph {
             std::vector<std::list<morph::Rect>::iterator>* nextPrevRow = &prevRowOdd;
 
             // Build grid, raster style.
-            for (int yi = _yi; yi <= _yf; ++yi) {
+            for (int yi = _yi; yi <= _yf; ++yi) { // for each row
                 size_t pri = 0;
-                for (int xi = _xi; xi <= _xf; ++xi) {
+                for (int xi = _xi; xi <= _xf; ++xi) { // for each element in row
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
                     auto ri = this->rects.end(); ri--;
@@ -1475,6 +1666,14 @@ namespace morph {
                     ++pri;
                     nextPrevRow->push_back (ri);
                 }
+                // Now row has been created, can complete the wraparound links (if necessary). *nextPrevRow is the current row.
+                if (this->domainWrap == morph::CartDomainWrap::Horizontal || this->domainWrap == morph::CartDomainWrap::Both) {
+                    (*nextPrevRow)[0]->set_nw ((*nextPrevRow)[_xf-_xi]);
+                    (*nextPrevRow)[0]->set_wraps_w();
+                    (*nextPrevRow)[_xf-_xi]->set_ne ((*nextPrevRow)[0]);
+                    (*nextPrevRow)[_xf-_xi]->set_wraps_e();
+                }
+
                 // Swap prevRow and nextPrevRow.
                 std::vector<std::list<morph::Rect>::iterator>* tmp = prevRow;
                 prevRow = nextPrevRow;
@@ -1496,6 +1695,16 @@ namespace morph {
             std::list<morph::Rect>::iterator h = this->findRectNearPoint (point, startFrom);
             h->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             return h;
+        }
+
+        // ASSUMING that the boundary is rectangular, is the point inside the rectangle?
+        bool isInsideRectangularBoundary (const morph::vec<float, 2>& point)
+        {
+            if (point[0] < this->x_minmax[0]) { return false; }
+            if (point[0] > this->x_minmax[1]) { return false; }
+            if (point[1] < this->y_minmax[0]) { return false; }
+            if (point[1] > this->y_minmax[1]) { return false; }
+            return true;
         }
 
         /*!
@@ -1639,6 +1848,52 @@ namespace morph {
             }
 
             return false;
+        }
+
+        std::list<Rect>::iterator findRectNearPoint (const vec<float, 2>& point, std::list<Rect>::iterator startFrom)
+        {
+            bool neighbourNearer = true;
+
+            std::list<morph::Rect>::iterator h = startFrom;
+            float d = h->distanceFrom (point);
+            float d_ = 0.0f;
+
+            while (neighbourNearer == true) {
+
+                neighbourNearer = false;
+                if (h->has_ne() && (d_ = h->ne->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->ne;
+                    neighbourNearer = true;
+
+                } else if (h->has_nne() && (d_ = h->nne->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nne;
+                    neighbourNearer = true;
+
+                } else if (h->has_nnw() && (d_ = h->nnw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nnw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nw() && (d_ = h->nw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nsw() && (d_ = h->nsw->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nsw;
+                    neighbourNearer = true;
+
+                } else if (h->has_nse() && (d_ = h->nse->distanceFrom (point)) < d) {
+                    d = d_;
+                    h = h->nse;
+                    neighbourNearer = true;
+                }
+            }
+
+            return h;
         }
 
         /*!
@@ -2074,6 +2329,24 @@ namespace morph {
             return nearest;
         }
 
+        std::list<Rect>::iterator findRectNearest (const morph::vec<float, 2>& pos)
+        {
+            std::list<morph::Rect>::iterator nearest = this->rects.end();
+            std::list<morph::Rect>::iterator ri = this->rects.begin();
+            float dist = std::numeric_limits<float>::max();
+            while (ri != this->rects.end()) {
+                float dx = pos[0] - ri->x;
+                float dy = pos[1] - ri->y;
+                float dl = std::sqrt (dx*dx + dy*dy);
+                if (dl < dist) {
+                    dist = dl;
+                    nearest = ri;
+                }
+                ++ri;
+            }
+            return nearest;
+        }
+
         //! Assuming a rectangular CartGrid, find bottom left element
         std::list<Rect>::iterator findBottomLeft()
         {
@@ -2117,22 +2390,16 @@ namespace morph {
         //! A boundary to apply to the initial, rectangular grid.
         BezCurvePath<float> boundary;
 
-        /*
-         * Rect references to the rects on the vertices of the rectagonal
-         * grid. Configured during init(). These will become invalid when a new
-         * boundary is applied to the original rectagonal grid. When this occurs,
-         * gridReduced should be set false.
-         */
-        std::list<Rect>::iterator vertexNE;
-        std::list<Rect>::iterator vertexNW;
-        std::list<Rect>::iterator vertexSW;
-        std::list<Rect>::iterator vertexSE;
-
         /*!
          * Set true when a new boundary or domain has been applied. This means that
          * the #vertexNE, #vertexSW, and similar iterators are no longer valid.
          */
         bool gridReduced = false;
+
+    public:
+        // Min/max x and y to record size of domain. Populate during init.
+        morph::vec<float, 2> x_minmax = {0,0};
+        morph::vec<float, 2> y_minmax = {0,0};
     };
 
 } // namespace morph

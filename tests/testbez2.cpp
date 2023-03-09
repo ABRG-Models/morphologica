@@ -32,7 +32,7 @@ int main()
     bound.addCurve(c3);
     bound.addCurve(c4);
 
-    HexGrid* Hgrid = new HexGrid(0.02, 4.0, 0.0, morph::HexDomainShape::Boundary);
+    HexGrid* Hgrid = new HexGrid(0.02f, 4.0f, 0.0f);
     cout << "setBoundary..." << endl;
     Hgrid->setBoundary (bound);
     cout << "Number of hexes is: " << Hgrid->num() << endl;

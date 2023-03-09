@@ -15,7 +15,8 @@
 #include <cmath>
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
+#include <morph/vec.h>
 //#define DEBUG_WITH_COUT 1
 #ifdef DEBUG_WITH_COUT
 #include <iostream>
@@ -411,6 +412,8 @@ namespace morph {
         float x = 0.0f;
         //! Cartesian 'y' coordinate of the centre of the Hex.
         float y = 0.0f;
+        // Getter for (x,y) as a morph::vec
+        morph::vec<float, 2> x_y() { return morph::vec<float, 2>({this->x, this->y}); }
 
         //! Polar coordinates of the centre of the Hex. Public, for direct access by client code.
         float r = 0.0f;
@@ -437,33 +440,34 @@ namespace morph {
         float getSR() const { return this->d/2; }
 
         //! The distance from the centre of the Hex to any of the vertices. This is the "long radius".
+        //! Also the side-length of an edge of the Hex.
         float getLR() const
         {
-            float lr = this->d/morph::SQRT_OF_3_F;
+            float lr = this->d * morph::mathconst<float>::one_over_root_3;
             return lr;
         }
 
         //! Compute and return the area of the hex
-        float getArea() const { return (this->d * this->d * morph::SQRT_OF_3_OVER_2_F); }
+        float getArea() const { return (this->d * this->d * morph::mathconst<float>::root_3_over_2); }
 
         //! The vertical distance between hex centres on adjacent rows.
         float getV() const
         {
-            float v = (this->d*morph::SQRT_OF_3_F)/2.0f;
+            float v = this->d * morph::mathconst<float>::root_3_over_2;
             return v;
         }
 
         //! The vertical distance from the centre of the hex to the "north east" vertex of the hex.
         float getVtoNE() const
         {
-            float v = this->d/(2.0f*morph::SQRT_OF_3_F);
+            float v = this->d * morph::mathconst<float>::one_over_2_root_3;
             return v;
         }
 
         //! Return twice the vertical distance between hex centres on adjacent rows.
         float getTwoV() const
         {
-            float tv = (this->d*morph::SQRT_OF_3_F);
+            float tv = this->d * morph::mathconst<float>::sqrt_of_3;
             return tv;
         }
 

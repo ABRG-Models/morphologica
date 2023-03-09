@@ -10,7 +10,7 @@
 #include "morph/HexGrid.h"
 #include "morph/ReadCurves.h"
 #include "morph/Scale.h"
-#include "morph/Vector.h"
+#include "morph/vec.h"
 
 int main (int argc, char** argv)
 {
@@ -28,7 +28,7 @@ int main (int argc, char** argv)
     std::cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << std::endl;
 
     try {
-        morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+        morph::HexGrid hg(0.01, 3, 0);
         hg.setCircularBoundary (1);
 
         std::cout << hg.extent() << std::endl;
@@ -47,8 +47,8 @@ int main (int argc, char** argv)
         }
         std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-        morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float> (v.shaderprog, v.tshaderprog, &hg, offset);
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
+        auto hgv = std::make_unique<morph::HexGridVisual<float>> (v.shaders, &hg, offset);
         hgv->setScalarData (&data);
         hgv->cm.setType (morph::ColourMapType::Rainbow);
         hgv->zScale.setParams(0,0);

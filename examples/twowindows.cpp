@@ -5,8 +5,8 @@
 #include <morph/ColourMap.h>
 #include <morph/QuiverVisual.h>
 #include <morph/GraphVisual.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <array>
 #include <stdexcept>
@@ -35,16 +35,16 @@ int main (int argc, char** argv)
 
     try {
         // Set up data for the first Visual
-        morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
+        morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
-        std::vector<morph::Vector<float, 3>> coords;
+        std::vector<morph::vec<float, 3>> coords;
         coords.push_back ({0, 0,   0});
         coords.push_back ({1, 1,   0});
         coords.push_back ({2, 0,   0});
         coords.push_back ({1, 0.8, 0});
         coords.push_back ({2, 0.5, 0});
 
-        std::vector<morph::Vector<float, 3>> quivs;
+        std::vector<morph::vec<float, 3>> quivs;
         quivs.push_back ({0.3,   0.4,  0});
         quivs.push_back ({0.1,   0.2,  0.1});
         quivs.push_back ({-0.1,  0,    0});
@@ -55,18 +55,17 @@ int main (int argc, char** argv)
         // need the OpenGL context to be correct, so set it on the first Visual, v with
         // Visual::setCurrent():
         v.setCurrent();
-        unsigned int visId = v.addVisualModel (new morph::QuiverVisual<float> (v.shaderprog, &coords, offset, &quivs, morph::ColourMapType::Cividis));
-
-        std::cout << "Added QuiverVisual with visId " << visId << std::endl;
+        auto qvp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::Cividis);
+        v.addVisualModel (qvp);
 
         // Set up v2 with a graph, switching to the Visual v2's context first:
         v2.setCurrent();
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v2.shaderprog, v2.tshaderprog, {0,0,0});
-        morph::vVector<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
-        morph::vVector<float> y = x.pow(3);
+        auto gv = std::make_unique<morph::GraphVisual<float>> (v2.shaders, morph::vec<float>({0,0,0}));
+        morph::vvec<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+        morph::vvec<float> y = x.pow(3);
         gv->setdata (x, y);
         gv->finalize();
-        v2.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        v2.addVisualModel (gv);
 
         while (v.readyToFinish == false && v2.readyToFinish == false) {
             glfwWaitEventsTimeout (0.018);

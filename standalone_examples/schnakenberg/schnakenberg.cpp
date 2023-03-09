@@ -42,7 +42,7 @@
 # include <morph/ColourMap.h>
 # include <morph/VisualDataModel.h>
 # include <morph/Scale.h>
-# include <morph/Vector.h>
+# include <morph/vec.h>
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const std::string& logpath, const std::string& name,
@@ -56,39 +56,12 @@ void savePngs (const std::string& logpath, const std::string& name,
 }
 #endif
 
-/*!
- * Included for directory manipulation code
- */
+//! Included for directory manipulation code
 #include <morph/tools.h>
 
-/*!
- * A jsoncpp-wrapping class for configuration.
- */
+//! A jsoncpp-wrapping class for configuration.
 #include <morph/Config.h>
 
-/*
- * using directives just before main()
- */
-#ifdef COMPILE_PLOTTING
-using morph::Visual;
-using morph::HexGridVisual;
-using morph::ColourMap;
-using morph::ColourMapType;
-using morph::VisualDataModel;
-using morph::Scale;
-using morph::Vector;
-#endif
-using morph::Config;
-using morph::Tools;
-using std::string;
-using std::stringstream;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::vector;
-using std::chrono::milliseconds;
-using std::chrono::duration_cast;
-using std::chrono::steady_clock;
 
 /*!
  * main(): Run a simulation, using parameters obtained from a JSON file.
@@ -99,17 +72,17 @@ using std::chrono::steady_clock;
 int main (int argc, char **argv)
 {
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " /path/to/params.json" << endl;
+        std::cerr << "Usage: " << argv[0] << " /path/to/params.json" << std::endl;
         return 1;
     }
-    string paramsfile (argv[1]);
+    std::string paramsfile (argv[1]);
 
     /*
      * Set up morph::Config (JSON reader/writer) for reading the parameters
      */
-    Config conf(paramsfile);
+    morph::Config conf(paramsfile);
     if (!conf.ready) {
-        cerr << "Error setting up JSON config: " << conf.emsg << endl;
+        std::cerr << "Error setting up JSON config: " << conf.emsg << std::endl;
         return 1;
     }
 
@@ -118,7 +91,7 @@ int main (int argc, char **argv)
      */
     const unsigned int steps = conf.getUInt ("steps", 1000UL);
     if (steps == 0) {
-        cerr << "Not much point simulating 0 steps! Exiting." << endl;
+        std::cerr << "Not much point simulating 0 steps! Exiting." << std::endl;
         return 1;
     }
     // After how many simulation steps should a log of the simulation data be written?
@@ -127,15 +100,15 @@ int main (int argc, char **argv)
     bool overwrite_logs = conf.getBool ("overwrite_logs", false);
 
     // Handling of log path requires a few lines of code:
-    string logpath = conf.getString ("logpath", "fromfilename");
-    string logbase = "";
+    std::string logpath = conf.getString ("logpath", "fromfilename");
+    std::string logbase = "";
     if (logpath == "fromfilename") {
         // Using json filename as logpath
-        string justfile = paramsfile;
+        std::string justfile = paramsfile;
         // Remove trailing .json and leading directories
-        vector<string> pth = Tools::stringToVector (justfile, "/");
+        std::vector<std::string> pth = morph::Tools::stringToVector (justfile, "/");
         justfile = pth.back();
-        Tools::searchReplace (".json", "", justfile);
+        morph::Tools::searchReplace (".json", "", justfile);
         // Use logbase as the subdirectory into which this should go
         logbase = conf.getString ("logbase", "logs/");
         if (logbase.back() != '/') {
@@ -144,20 +117,20 @@ int main (int argc, char **argv)
         logpath = logbase + justfile;
     }
     if (argc == 3) {
-        string argpath(argv[2]);
-        cerr << "Overriding the config-given logpath " << logpath << " with " << argpath << endl;
+        std::string argpath(argv[2]);
+        std::cerr << "Overriding the config-given logpath " << logpath << " with " << argpath << std::endl;
         logpath = argpath;
         if (overwrite_logs == true) {
-            cerr << "WARNING: You set a command line log path.\n"
-                 << "       : Note that the parameters config permits the program to OVERWRITE LOG\n"
-                 << "       : FILES on each run (\"overwrite_logs\" is set to true)." << endl;
+            std::cerr << "WARNING: You set a command line log path.\n"
+                      << "       : Note that the parameters config permits the program to OVERWRITE LOG\n"
+                      << "       : FILES on each run (\"overwrite_logs\" is set to true)." << std::endl;
         }
     }
 
     // The length of one timestep
     const FLT dt = static_cast<FLT>(conf.getDouble ("dt", 0.00001));
 
-    cout << "steps to simulate: " << steps << endl;
+    std::cout << "steps to simulate: " << steps << std::endl;
 
 #ifdef COMPILE_PLOTTING
     // Parameters from the config that apply only to plotting:
@@ -176,7 +149,7 @@ int main (int argc, char **argv)
 
     // Set up the morph::Visual object which provides the visualization scene (and
     // a GLFW window to show it in)
-    Visual v1 (win_width, win_height, "Schnakenberg RD");
+    morph::Visual v1 (win_width, win_height, "Schnakenberg RD");
     // Set a dark blue background (black is the default). This value has the order
     // 'RGBA', though the A(alpha) makes no difference.
     v1.bgcolour = {conf.getFloat("bgR", 0.2f), conf.getFloat("bgG", 0.2f), conf.getFloat("bgB", 0.2f), 1.0f};
@@ -195,7 +168,7 @@ int main (int argc, char **argv)
     v1.scenetrans_stepsize = 0.5;
 
     // if using plotting, then set up the render clock
-    steady_clock::time_point lastrender = steady_clock::now();
+    std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
 #endif
 
     /*
@@ -239,22 +212,22 @@ int main (int argc, char **argv)
      * Now create a log directory if necessary, and exit on any
      * failures.
      */
-    if (Tools::dirExists (logpath) == false) {
-        Tools::createDir (logpath);
-        if (Tools::dirExists (logpath) == false) {
-            cerr << "Failed to create the logpath directory "
-                 << logpath << " which does not exist."<< endl;
+    if (morph::Tools::dirExists (logpath) == false) {
+        morph::Tools::createDir (logpath);
+        if (morph::Tools::dirExists (logpath) == false) {
+            std::cerr << "Failed to create the logpath directory "
+                      << logpath << " which does not exist."<< std::endl;
             return 1;
         }
     } else {
         // Directory DOES exist. See if it contains a previous run and
         // exit without overwriting to avoid confusion.
         if (overwrite_logs == false
-            && (Tools::fileExists (logpath + "/params.json") == true
-                || Tools::fileExists (logpath + "/positions.h5") == true)) {
-            cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
-                 << "Please clean it out manually, choose another directory or set\n"
-                 << "overwrite_logs to true in your parameters config JSON file." << endl;
+            && (morph::Tools::fileExists (logpath + "/params.json") == true
+                || morph::Tools::fileExists (logpath + "/positions.h5") == true)) {
+            std::cerr << "Seems like a previous simulation was logged in " << logpath << ".\n"
+                      << "Please clean it out manually, choose another directory or set\n"
+                      << "overwrite_logs to true in your parameters config JSON file." << std::endl;
             return 1;
         }
     }
@@ -267,7 +240,7 @@ int main (int argc, char **argv)
     // Before starting the simulation, create the HexGridVisuals.
 
     // Spatial offset, for positioning of HexGridVisuals
-    Vector<float> spatOff;
+    morph::vec<float> spatOff;
     float xzero = 0.0f;
 
     // A. Offset in x direction to the left.
@@ -276,7 +249,7 @@ int main (int argc, char **argv)
     morph::ColourMapType cmt = morph::ColourMap<FLT>::strToColourMapType (conf.getString ("colourmap", "Jet"));
 
     // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.
-    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
     hgv1->setScalarData (&RD.A);
     // Z position scaling - how hilly/bumpy the visual will be.
     hgv1->zScale.setParams (0.2f, 0.0f);
@@ -288,13 +261,13 @@ int main (int argc, char **argv)
                     morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     // "finalize" is required before adding the HexGridVisual to the morph::Visual.
     hgv1->finalize();
-    v1.addVisualModel (hgv1);
+    auto hgv1p = v1.addVisualModel (hgv1);
 
 
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v1.shaderprog, v1.tshaderprog, RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
     hgv2->setScalarData (&RD.B);
     hgv2->zScale.setParams (0.2f, 0.0f);
     hgv2->colourScale.do_autoscale = true;
@@ -302,7 +275,7 @@ int main (int argc, char **argv)
     hgv2->addLabel ("Variable B", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
                     morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
     hgv2->finalize();
-    v1.addVisualModel (hgv2);
+    auto hgv2p = v1.addVisualModel (hgv2);
 #endif
 
     // Start the loop
@@ -315,11 +288,11 @@ int main (int argc, char **argv)
         if ((RD.stepCount % plotevery) == 0) {
             // These two lines update the data for the two hex grids. That leads to
             // the CPU recomputing the OpenGL vertices for the visualizations.
-            hgv1->updateData (&(RD.A));
-            hgv1->clearAutoscaleColour();
+            hgv1p->updateData (&(RD.A));
+            hgv1p->clearAutoscaleColour();
 
-            hgv2->updateData (&(RD.B));
-            hgv2->clearAutoscaleColour();
+            hgv2p->updateData (&(RD.B));
+            hgv2p->clearAutoscaleColour();
 
             if (saveplots) {
                 if (vidframes) {
@@ -333,11 +306,11 @@ int main (int argc, char **argv)
 
         // rendering the graphics. After each simulation step, check if enough time
         // has elapsed for it to be necessary to call v1.render().
-        steady_clock::duration sincerender = steady_clock::now() - lastrender;
-        if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
+        std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
             glfwPollEvents();
             v1.render();
-            lastrender = steady_clock::now();
+            lastrender = std::chrono::steady_clock::now();
         }
 #endif
         // Save data every 'logevery' steps
@@ -355,7 +328,7 @@ int main (int argc, char **argv)
     // results were computed with single precision, if 8, then double
     // precision was used. Also save various parameters from the RD system.
     conf.set ("float_width", (unsigned int)sizeof(FLT));
-    string tnow = Tools::timeNow();
+    std::string tnow = morph::Tools::timeNow();
     conf.set ("sim_ran_at_time", tnow.substr(0,tnow.size()-1));
     conf.set ("hextohex_d", RD.hextohex_d);
     conf.set ("D_A", RD.D_A);
@@ -370,14 +343,14 @@ int main (int argc, char **argv)
     if (argc > 1) { conf.set("argv1", argv[1]); }
 
     // We'll save a copy of the parameters for the simulation in the log directory as params.json
-    const string paramsCopy = logpath + "/params.json";
+    const std::string paramsCopy = logpath + "/params.json";
     conf.write (paramsCopy);
     if (conf.ready == false) {
-        cerr << "Warning: Something went wrong writing a copy of the params.json: " << conf.emsg << endl;
+        std::cerr << "Warning: Something went wrong writing a copy of the params.json: " << conf.emsg << std::endl;
     }
 
 #ifdef COMPILE_PLOTTING
-    cout << "Ctrl-c or press x in graphics window to exit.\n";
+    std::cout << "Ctrl-c or press x in graphics window to exit.\n";
     v1.keepOpen();
 #endif
 

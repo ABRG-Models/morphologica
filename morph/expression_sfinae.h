@@ -85,7 +85,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    // Expression SFINAE approach to testing for ability to access like an array (i.e. std::array, morph::Vector)
+    // Expression SFINAE approach to testing for ability to access like an array (i.e. std::array, morph::vec)
     template<typename T>
     class array_access_possible
     {

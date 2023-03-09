@@ -68,8 +68,8 @@ namespace morph {
         virtual void startedSignal (std::string) {}
         virtual void errorSignal (int) {}
         virtual void processFinishedSignal (std::string) {}
-        virtual void readyReadStandardOutputSignal (void) {}
-        virtual void readyReadStandardErrorSignal (void) {}
+        virtual void readyReadStandardOutputSignal() {}
+        virtual void readyReadStandardErrorSignal() {}
     };
 
     /*!
@@ -115,7 +115,7 @@ namespace morph {
 
     private:
         //! Close any open file descriptors.
-        void closeAllFileDescriptors (void)
+        void closeAllFileDescriptors()
         {
             if (this->parentToChild[PROCESS_WRITING_END] > 0) {
                 DBG ("close parentToChild[PROCESS_WRITING_END]...");
@@ -324,7 +324,7 @@ namespace morph {
         }
 
         //! Send a TERM signal to the process.
-        void terminate (void)
+        void terminate()
         {
             kill (this->pid, 15); // 15 is TERM
             // Now check if the process has gone and kill it with signal 9 (KILL)
@@ -340,7 +340,7 @@ namespace morph {
          * This must be called on a scheduled basis. It checks for any stdout/stderr
          * data and also checks whether the process is still running.
          */
-        void probeProcess (void)
+        void probeProcess()
         {
             // Has the process started?
             if (!this->signalledStart) {
@@ -428,11 +428,11 @@ namespace morph {
         }
 
         //! If the process is running - if pid > 0, return true. Otherwise return false.
-        bool running (void) const { return this->pid > 0 ? true : false; }
+        bool running() const { return this->pid > 0 ? true : false; }
 
         // Accessors
-        pid_t getPid (void) const { return this->pid; }
-        int getError (void) const { return this->error; }
+        pid_t getPid() const { return this->pid; }
+        int getError() const { return this->error; }
         void setError (const int e) { this->error = e; }
 
         //! Setter for the callbacks.
@@ -441,7 +441,7 @@ namespace morph {
         // Slots
 
         // Read stdout pipe, without blocking.
-        std::string readAllStandardOutput (void) const
+        std::string readAllStandardOutput() const
         {
             DBG ("Called");
             std::string s;
@@ -465,7 +465,7 @@ namespace morph {
         }
 
         //! Read stderr pipe without blocking
-        std::string readAllStandardError (void) const
+        std::string readAllStandardError() const
         {
             std::string s;
             int bytes = 0;
@@ -493,7 +493,7 @@ namespace morph {
          */
 #define START_SLEEP_PERIOD 10 // useconds
 #define START_SLEEP_TOTAL 100000000 // useconds
-        bool waitForStarted (void)
+        bool waitForStarted()
         {
             unsigned int i=0;
             // Wait for a total of START_SLEEP_TOTAL plus pauseBeforeStart useconds
@@ -581,14 +581,14 @@ namespace morph {
     class ProcessData
     {
     public:
-        ProcessData (void)
+        ProcessData()
         {
             this->errorNum = -1;
             this->stdOutReady = false;
             this->stdErrReady = false;
         }
 
-        ~ProcessData (void) {};
+        ~ProcessData() {};
 
         //! \brief Set the process finished message for a process
         void setProcessFinishedMsg (const std::string& message) { this->processFinishedMessage = message; }
@@ -600,10 +600,10 @@ namespace morph {
         void setStdErrReady (const bool ready) { this->stdErrReady = ready; }
 
         // Getters
-        std::string getProcessFinishedMsg (void) const { return this->processFinishedMessage; }
-        int getErrorNum (void) const { return this->errorNum; }
-        bool getStdOutReady (void) const { return this->stdOutReady; }
-        bool getStdErrReady (void) const { return this->stdErrReady; }
+        std::string getProcessFinishedMsg() const { return this->processFinishedMessage; }
+        int getErrorNum() const { return this->errorNum; }
+        bool getStdOutReady() const { return this->stdOutReady; }
+        bool getStdErrReady() const { return this->stdErrReady; }
 
     private:
         //! \brief Holds the name of the process that finished

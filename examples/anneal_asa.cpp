@@ -4,8 +4,8 @@
  */
 
 #include <morph/Anneal.h>
-#include <morph/vVector.h>
-#include <morph/Vector.h>
+#include <morph/vvec.h>
+#include <morph/vec.h>
 #include <morph/Config.h>
 #include <morph/Hex.h>
 #include <morph/HexGrid.h>
@@ -24,8 +24,8 @@ typedef double F;
 
 // A global hexgrid for the locations of the objective function
 morph::HexGrid* hg = nullptr;
-// And a vVector to be the data
-morph::vVector<F> obj_f;
+// And a vvec to be the data
+morph::vvec<F> obj_f;
 
 // Set up an objective function. Creates hg and populates obj_f. Note objective has
 // discrete values.
@@ -36,9 +36,9 @@ void setup_objective_boha();
 
 // Return values of the objective function. Params contains coordinates into the
 // HexGrid. Values from obj_f are returned.
-F objective (const morph::vVector<F>& params);
-F objective_boha (const morph::vVector<F>& params);
-F objective_hg (const morph::vVector<F>& params);
+F objective (const morph::vvec<F>& params);
+F objective_boha (const morph::vvec<F>& params);
+F objective_hg (const morph::vvec<F>& params);
 
 int main (int argc, char** argv)
 {
@@ -49,9 +49,9 @@ int main (int argc, char** argv)
 #endif
 
     // Here, our search space is 2D
-    morph::vVector<F> p = { 0.45, 0.45};
+    morph::vvec<F> p = { 0.45, 0.45};
     // These ranges should fall within the hexagonal domain
-    morph::vVector<morph::Vector<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
+    morph::vvec<morph::vec<F,2>> p_rng = {{ {-0.3, 0.3}, {-0.3, 0.3} }};
 
     // Set up the anneal algorithm object
     morph::Anneal<F> anneal(p, p_rng);
@@ -95,8 +95,8 @@ int main (int argc, char** argv)
     v.setSceneTransZ (-3.0f);
     v.lightingEffects (true);
 
-    morph::Vector<float, 3> offset = { 0.0, 0.0, 0.0 };
-    morph::HexGridVisual<F>* hgv = new morph::HexGridVisual<F>(v.shaderprog, v.tshaderprog, hg, offset);
+    morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
+    auto hgv = std::make_unique<morph::HexGridVisual<F>>(v.shaders, hg, offset);
     hgv->setScalarData (&obj_f);
 #ifdef USE_BOHACHEVSKY_FUNCTION
     hgv->addLabel ("Objective: See Bohachevsky et al.", { -0.5f, -0.75f, -0.1f }, morph::colour::black);
@@ -106,33 +106,33 @@ int main (int argc, char** argv)
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    morph::Vector<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
+    morph::vec<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
+    auto cand_up = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.001f, 0.8f, col, 10);
+    auto best_up = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto curr_up = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
     // Fourth object marks the starting place
     col = { .5f, .5f, .5f };
     polypos[2] = objective(p);
-    morph::PolygonVisual* sp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto sp = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
-    v.addVisualModel (candp);
-    v.addVisualModel (bestp);
-    v.addVisualModel (currp);
+    auto candp = v.addVisualModel (cand_up);
+    auto bestp = v.addVisualModel (best_up);
+    auto currp = v.addVisualModel (curr_up);
     v.addVisualModel (sp);
 
     // Add a graph to track T_i and T_cost
-    morph::Vector<float> spatOff = {1.2f, -0.5f, 0.0f};
-    morph::GraphVisual<F>* graph1 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    morph::vec<float> spatOff = {1.2f, -0.5f, 0.0f};
+    auto graph1 = std::make_unique<morph::GraphVisual<F>> (v.shaders, spatOff);
     graph1->twodimensional = true;
     graph1->setlimits (0, 1000, -10, 1);
     graph1->policy = morph::stylepolicy::lines;
@@ -141,10 +141,10 @@ int main (int argc, char** argv)
     graph1->prepdata ("Tparam");
     graph1->prepdata ("Tcost");
     graph1->finalize();
-    v.addVisualModel (graph1);
+    auto graph1p = v.addVisualModel (graph1);
 
     spatOff[0] += 1.1f;
-    morph::GraphVisual<F>* graph2 = new morph::GraphVisual<F> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph2 = std::make_unique<morph::GraphVisual<F>> (v.shaders, spatOff);
     graph2->twodimensional = true;
     graph2->setlimits (0, 1000, -1.0f, 1.0f);
     graph2->policy = morph::stylepolicy::lines;
@@ -154,7 +154,7 @@ int main (int argc, char** argv)
     graph2->prepdata ("f_x_best + .5");
     graph2->prepdata ("f_x_cand");
     graph2->finalize();
-    v.addVisualModel (graph2);
+    auto graph2p = v.addVisualModel (graph2);
 
     v.render();
 #endif
@@ -194,11 +194,11 @@ int main (int argc, char** argv)
         currp->reinit();
 
         // Append to the 2D graph of sums:
-        graph1->append ((float)anneal.steps, std::log(anneal.T_k.mean()), 0);
-        graph1->append ((float)anneal.steps, std::log(anneal.T_cost.mean()), 1);
-        graph2->append ((float)anneal.steps, anneal.f_x-0.2, 0);
-        graph2->append ((float)anneal.steps, anneal.f_x_best, 1);
-        graph2->append ((float)anneal.steps, anneal.f_x_cand+0.2, 2);
+        graph1p->append ((float)anneal.steps, std::log(anneal.T_k.mean()), 0);
+        graph1p->append ((float)anneal.steps, std::log(anneal.T_cost.mean()), 1);
+        graph2p->append ((float)anneal.steps, anneal.f_x-0.2, 0);
+        graph2p->append ((float)anneal.steps, anneal.f_x_best, 1);
+        graph2p->append ((float)anneal.steps, anneal.f_x_cand+0.2, 2);
 
 
         glfwWaitEventsTimeout (0.0166);
@@ -234,13 +234,13 @@ int main (int argc, char** argv)
 // This sets up a noisy 2D objective function with multiple peaks
 void setup_objective()
 {
-    hg = new morph::HexGrid(0.01, 1.5, 0, morph::HexDomainShape::Hexagon);
-    hg->leaveAsHexagon();
+    hg = new morph::HexGrid(0.01, 1.5, 0);
+    hg->setCircularBoundary(1);
     obj_f.resize (hg->num());
 
     // Create 2 Gaussians and sum them as the main features
-    morph::vVector<F> obj_f_a(hg->num(), F{0});
-    morph::vVector<F> obj_f_b(hg->num(), F{0});
+    morph::vvec<F> obj_f_a(hg->num(), F{0});
+    morph::vvec<F> obj_f_b(hg->num(), F{0});
 
     // Now assign an analytical function to the thing - make it a couple of Gaussians
     F sigma = F{0.045};
@@ -274,7 +274,7 @@ void setup_objective()
     for (auto& k : hg->hexen) { obj_f_b[k.vi] *= F{0.01}; }
 
     // Make noise
-    morph::vVector<F> noise(hg->num());
+    morph::vvec<F> noise(hg->num());
     noise.randomize();
     noise *= F{0.2};
 
@@ -286,7 +286,7 @@ void setup_objective()
     sigma = F{0.005};
     one_over_sigma_root_2_pi = F{1} / sigma * F{2.506628275};
     two_sigma_sq = F{2} * sigma * sigma;
-    morph::HexGrid kernel(F{0.01}, F{20}*sigma, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid kernel(F{0.01}, F{20}*sigma, 0);
     kernel.setCircularBoundary (F{6}*sigma);
     std::vector<F> kerneldata (kernel.num(), F{0});
     gauss = F{0};
@@ -299,7 +299,7 @@ void setup_objective()
     for (auto& k : kernel.hexen) { kerneldata[k.vi] /= sum; }
 
     // A vector for the result
-    morph::vVector<F> convolved (hg->num(), F{0});
+    morph::vvec<F> convolved (hg->num(), F{0});
 
     // Call the convolution method from HexGrid:
     hg->convolve (kernel, kerneldata, obj_f, convolved);
@@ -314,16 +314,16 @@ void setup_objective()
 // during the anneal, we'll use the actual function values
 void setup_objective_boha()
 {
-    hg = new morph::HexGrid(0.01, 2.5, 0, morph::HexDomainShape::Hexagon);
-    hg->leaveAsHexagon();
+    hg = new morph::HexGrid(0.01, 2.5, 0);
+    hg->setCircularBoundary(1.2f);
     obj_f.resize (hg->num());
-    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
     for (auto h : hg->hexen) {
         obj_f[h.vi] = a*h.x*h.x + b*h.y*h.y - c * std::cos(alpha*h.x) - d * std::cos (gamma * h.y) + c + d;
     }
 }
 
-F objective (const morph::vVector<F>& params)
+F objective (const morph::vvec<F>& params)
 {
 #ifdef USE_BOHACHEVSKY_FUNCTION
     return objective_boha (params);
@@ -332,16 +332,16 @@ F objective (const morph::vVector<F>& params)
 #endif
 }
 
-F objective_boha (const morph::vVector<F>& params)
+F objective_boha (const morph::vvec<F>& params)
 {
     F x = params[0];
     F y = params[1];
-    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=F{morph::PI_F*3.0}, gamma=F{morph::PI_F*4.0};
+    F a = F{1}, b = F{2}, c=F{0.3}, d=F{0.4}, alpha=morph::mathconst<F>::three_pi, gamma=morph::mathconst<F>::four_pi;
     F fn = a*x*x + b*y*y - c * std::cos(alpha*x) - d * std::cos (gamma * y) + c + d;
     return fn;
 }
 
-F objective_hg (const morph::vVector<F>& params)
+F objective_hg (const morph::vvec<F>& params)
 {
     // Find the hex nearest the coordinate defined by params and return its value
     std::pair<float, float> coord;

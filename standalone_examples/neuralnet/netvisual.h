@@ -14,7 +14,7 @@
 # include <GL3/gl3.h>
 #endif
 #include <morph/VisualModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Scale.h>
 #include <vector>
 #include <array>
@@ -30,11 +30,10 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(GLuint sp, GLuint tsp, const morph::Vector<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
+    NetVisual(morph::gl::shaderprogs& _shaders, const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
     {
         this->nn = _thenet;
-        this->shaderprog = sp;
-        this->tshaderprog = tsp;
+        this->shaders = _shaders;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
@@ -47,11 +46,11 @@ public:
         // For each connection layer, draw lines, with colours indicating weight?
 
         // Draw neurons in a pattern; this position is updated as each is drawn.
-        morph::Vector<float,3> nloc = {0,0,0}; // nloc: "neuron location"
+        morph::vec<float,3> nloc = {0,0,0}; // nloc: "neuron location"
         std::array<float,3> clr = {1,0,0};
 
         // Starting locations for each set of neurons, to help draw connection lines
-        std::vector<morph::Vector<float,3>> startlocs;
+        std::vector<morph::vec<float,3>> startlocs;
 
         // Scaling for colour
         morph::Scale<float> s;
@@ -63,10 +62,10 @@ public:
         morph::ColourMap<float> cm(morph::ColourMapType::Plasma);
 
         float em = 0.04f; // text size
-        morph::Vector<float, 3> toffset = {this->radiusFixed + 0.2f*em, 0, 0};
+        morph::vec<float, 3> toffset = {this->radiusFixed + 0.2f*em, 0, 0};
 
         for (auto nlayer : this->nn->neurons) {
-            // Each nlayer is vVector<T>
+            // Each nlayer is vvec<T>
             nloc[1] += this->radiusFixed * 5.0f;
             nloc[0] = 0.0f;
             nloc[0] -= this->radiusFixed * 2.0f * nlayer.size();
@@ -81,7 +80,7 @@ public:
                     this->computeTube (idx,
                                        (nloc+this->puckthick)*zoom,
                                        (nloc-this->puckthick)*zoom,
-                                       morph::Vector<float,3>({1,0,0}), morph::Vector<float,3>({0,1,0}),
+                                       morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                        clr, clr,
                                        this->radiusFixed*zoom, 16);
                 } else {
@@ -89,36 +88,36 @@ public:
                 }
 
                 // Text label for activation
-                this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
-                                                                   morph::VisualFont::DVSansItalic,
-                                                                   em, 48, nloc+toffset, ss.str()));
+                this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                           morph::VisualFont::DVSansItalic,
+                                                                                           em, 48, nloc+toffset, ss.str())));
                 nloc[0] += this->radiusFixed * 4.0f;
             }
 
         }
 
         // text offsets
-        morph::Vector<float, 3> toffset1 = {em, -em, 0};
-        morph::Vector<float, 3> toffset2 = {em, em, 0};
-        morph::Vector<float, 3> toffsetbias = {0.9f*this->radiusFixed, -0.77f*this->radiusFixed, 0};
+        morph::vec<float, 3> toffset1 = {em, -em, 0};
+        morph::vec<float, 3> toffset2 = {em, em, 0};
+        morph::vec<float, 3> toffsetbias = {0.9f*this->radiusFixed, -0.77f*this->radiusFixed, 0};
 
         // Connections. There should be neurons.size()-1 connection layers.
         // Connection lines from "neuron location" to "neuron location 2" (nloc2)
         float min_weight = -1;
         float max_weight = 1;
         s.compute_autoscale (min_weight, max_weight);
-        morph::Vector<float,3> nloc2 = {0,0,0};
+        morph::vec<float,3> nloc2 = {0,0,0};
         nloc = {0,0,0};
         auto sl = startlocs.begin();
         for (auto cl : this->nn->connections) {
 
-            std::vector<morph::vVector<float>>& ws = cl.ws;
+            std::vector<morph::vvec<float>>& ws = cl.ws;
             nloc = *sl;
             nloc2 = *(++sl); --sl;
 
             for (auto population : ws) { // FeedForwardConn can accept connections from multiple neuron layers.
 
-                // Index into the biases (a vVector of size N in each connection layer, cl)
+                // Index into the biases (a vvec of size N in each connection layer, cl)
                 unsigned int bidx = 0;
 
                 // Set output position
@@ -133,12 +132,12 @@ public:
 
                     std::stringstream ss;
                     ss << std::setprecision(3) << w;
-                    morph::Vector<float,3> nloccross = nloc.cross (nloc2);
+                    morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
 
-                    this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
-                                                                       morph::VisualFont::DVSans,
-                                                                       em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str()));
+                    this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                               morph::VisualFont::DVSans,
+                                                                                               em, 48, ((nloc+nloc2)/2.0f)+toffset, ss.str())));
 
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
@@ -146,9 +145,9 @@ public:
                         // Draw bias text
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
-                        this->texts.push_back (new morph::VisualTextModel (this->tshaderprog,
-                                                                           morph::VisualFont::DVSans,
-                                                                           em/2, 48, (nloc2+toffsetbias), bb1.str()));
+                        this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->shaders.tprog,
+                                                                                                   morph::VisualFont::DVSans,
+                                                                                                   em/2, 48, (nloc2+toffsetbias), bb1.str())));
                         nloc = *sl; // reset nloc
                         nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;
@@ -170,7 +169,7 @@ public:
     //! Zoom the size of the netvisual
     float zoom = float{1};
 
-    morph::Vector<float,3> puckthick = { 0, 0, 0.02 };
+    morph::vec<float,3> puckthick = { 0, 0, 0.02 };
     //! A normal vector, fixed as pointing up
-    morph::Vector<float, 3> uz = {0,0,1};
+    morph::vec<float, 3> uz = {0,0,1};
 };

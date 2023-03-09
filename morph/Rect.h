@@ -12,7 +12,7 @@
 #include <list>
 #include <utility>
 #include <cmath>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/BezCoord.h>
 #include <morph/HdfData.h>
 
@@ -54,6 +54,15 @@
 #define RECT_IS_REGION_BOUNDARY  0x800
 //! Rect is inside the region
 #define RECT_INSIDE_REGION      0x1000
+
+//! Rect wraps horizontally on the East side, so its neighbour east will be the western most Rect on the row
+#define RECT_WRAPS_E 0x2000
+//! Rect wraps horizontally on the West side
+#define RECT_WRAPS_W 0x4000
+//! Rect wraps vertically - that is, if it's on the North side, its neighbour north will be the southern most Rect on the column
+#define RECT_WRAPS_N 0x8000
+#define RECT_WRAPS_S 0x10000
+
 
 //! Four flags for client code to use for its own devices. For an example of use, see DirichDom.h
 #define RECT_USER_FLAG_0    0x10000000
@@ -375,6 +384,13 @@ namespace morph {
             return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
+        float distanceFrom (const morph::vec<float, 2>& cartesianPoint) const
+        {
+            float deltax = cartesianPoint[0] - x;
+            float deltay = cartesianPoint[1] - y;
+            return std::sqrt (deltax*deltax + deltay*deltay);
+        }
+
         //! Compute the distance from another rect to this one.
         float distanceFrom (const Rect& otherRect) const
         {
@@ -420,9 +436,9 @@ namespace morph {
         float z = 0.0f;
 
         //! Get the Cartesian position of this Rect as a fixed size array.
-        morph::Vector<float, 3> position() const
+        morph::vec<float, 3> position() const
         {
-            morph::Vector<float,3> rtn = { { this->x, this->y, this->z } };
+            morph::vec<float,3> rtn = { { this->x, this->y, this->z } };
             return rtn;
         }
 
@@ -610,6 +626,13 @@ namespace morph {
             this->flags |= RECT_HAS_NSE;
         }
 
+        //! Set that this Rect wraps horizontally to the east (wrapping round to the western most element)
+        void set_wraps_e() { this->flags |= RECT_WRAPS_E; }
+        //! Set that this Rect wraps horizontally to the west (wrapping round to the eastern most element)
+        void set_wraps_w() { this->flags |= RECT_WRAPS_W; }
+        void set_wraps_n() { this->flags |= RECT_WRAPS_N; }
+        void set_wraps_s() { this->flags |= RECT_WRAPS_S; }
+
         //! Return true if this Rect has a Neighbour to the East
         bool has_ne() const { return ((this->flags & RECT_HAS_NE) == RECT_HAS_NE); }
         //! Return true if this Rect has a Neighbour to the North East
@@ -627,6 +650,17 @@ namespace morph {
         //! Return true if this Rect has a Neighbour to the South East
         bool has_nse() const { return ((this->flags & RECT_HAS_NSE) == RECT_HAS_NSE); }
 
+        bool wraps_e() const { return ((this->flags & RECT_WRAPS_E) == RECT_WRAPS_E); }
+        bool wraps_w() const { return ((this->flags & RECT_WRAPS_W) == RECT_WRAPS_W); }
+        bool wraps_n() const { return ((this->flags & RECT_WRAPS_N) == RECT_WRAPS_N); }
+        bool wraps_s() const { return ((this->flags & RECT_WRAPS_S) == RECT_WRAPS_S); }
+
+        //! Return true if this Rect has a REAL Neighbour to the East (i.e. ignore wrapping)
+        bool has_real_ne() const { return ((this->flags & (RECT_HAS_NE|RECT_WRAPS_E)) == RECT_HAS_NE); }
+        bool has_real_nn() const { return ((this->flags & (RECT_HAS_NN|RECT_WRAPS_N)) == RECT_HAS_NN); }
+        bool has_real_nw() const { return ((this->flags & (RECT_HAS_NW|RECT_WRAPS_W)) == RECT_HAS_NW); }
+        bool has_real_ns() const { return ((this->flags & (RECT_HAS_NS|RECT_WRAPS_S)) == RECT_HAS_NS); }
+
         //! Set flags to say that this Rect has NO neighbour to East
         void unset_ne() { this->flags ^= RECT_HAS_NE; }
         //! Set flags to say that this Rect has NO neighbour to North East
@@ -643,6 +677,11 @@ namespace morph {
         void unset_ns() { this->flags ^= RECT_HAS_NS; }
         //! Set flags to say that this Rect has NO neighbour to South East
         void unset_nse() { this->flags ^= RECT_HAS_NSE; }
+
+        void unset_wraps_e() { this->flags ^= RECT_WRAPS_E; }
+        void unset_wraps_w() { this->flags ^= RECT_WRAPS_W; }
+        void unset_wraps_n() { this->flags ^= RECT_WRAPS_N; }
+        void unset_wraps_s() { this->flags ^= RECT_WRAPS_S; }
 
         /*!
          * Test if have neighbour at position \a ni.  East: 0, North-East: 1, North: 2,

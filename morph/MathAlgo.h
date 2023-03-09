@@ -10,8 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
-#include <morph/Vector.h>
-#include <morph/MathConst.h>
+#include <morph/vec.h>
+#include <morph/mathconst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
 
@@ -201,9 +201,9 @@ namespace morph {
         //! Algorithm, which uses slopes, taken from
         //! https://www.geeksforgeeks.org/orientation-3-ordered-points/
         template<typename T>
-        static rotation_sense orientation (const morph::Vector<T, 2>& p,
-                                           const morph::Vector<T, 2>& q,
-                                           const morph::Vector<T, 2>& r)
+        static rotation_sense orientation (const morph::vec<T, 2>& p,
+                                           const morph::vec<T, 2>& q,
+                                           const morph::vec<T, 2>& r)
         {
             T val = (q[1] - p[1]) * (r[0] - q[0])  -  (q[0] - p[0]) * (r[1] - q[1]);
             if (val == T{0}) { return rotation_sense::colinear; }
@@ -214,9 +214,9 @@ namespace morph {
         // point q lies on line segment 'pr'. Copied from:
         // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
         template<typename T>
-        static bool onsegment (const morph::Vector<T, 2>& p,
-                               const morph::Vector<T, 2>& q,
-                               const morph::Vector<T, 2>& r)
+        static bool onsegment (const morph::vec<T, 2>& p,
+                               const morph::vec<T, 2>& q,
+                               const morph::vec<T, 2>& r)
         {
             if (q[0] <= std::max(p[0], r[0]) && q[0] >= std::min(p[0], r[0]) &&
                 q[1] <= std::max(p[1], r[1]) && q[1] >= std::min(p[1], r[1])) {
@@ -461,7 +461,7 @@ namespace morph {
             if (radius == static_cast<T>(0.0)) {
                 return 1;
             }
-            T circum = (T)morph::TWO_PI_D * radius;
+            T circum = morph::mathconst<T>::two_pi * radius;
             return static_cast<int>(floor (circum / d));
         }
 
@@ -472,22 +472,22 @@ namespace morph {
             if (radius == static_cast<T>(0.0)) {
                 return 1;
             }
-            T circum = static_cast<T>(morph::TWO_PI_D) * radius;
+            T circum = morph::mathconst<T>::two_pi * radius;
             //std::cout << "circum = " << circum << std::endl;
             T rtn = 0;
 #if 1
             // longhand, with a test for a circular arc
-            if (a >= static_cast<T>(morph::TWO_PI_D)) {
+            if (a >= morph::mathconst<T>::two_pi) {
                 rtn = floor (circum / d);
             } else {
-                T proportion = a / static_cast<T>(morph::TWO_PI_D);
+                T proportion = a / morph::mathconst<T>::two_pi;
                 //std::cout << "prop = " << proportion << std::endl;
                 T arclen = circum * proportion;
                 //std::cout << "arclen = " << arclen << std::endl;
                 rtn = floor (arclen / d);
             }
 #else
-            T proportion = a / static_cast<T>(morph::TWO_PI_D);
+            T proportion = a / morph::mathconst<T>::two_pi;
             rtn = floor (circum * proportion / d);
 #endif
             //std::cout << "rtn " << rtn << std::endl;
@@ -497,7 +497,7 @@ namespace morph {
         //! How many dots spaced by d can be placed on circular arc rings with d between them?
         template<typename T>
         static int numDotsOnRings (T minRadius, T maxRadius, T d,
-                                   T a = static_cast<T>(morph::TWO_PI_D)) {
+                                   T a = morph::mathconst<T>::two_pi) {
 
             // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
             // from minRadius to maxRadius. Herein lies the problem!

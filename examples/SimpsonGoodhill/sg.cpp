@@ -9,6 +9,7 @@
 #include <vector>
 #include <array>
 
+#include <morph/vec.h>
 #include <morph/CartGrid.h>
 #include <morph/Config.h>
 #include <morph/Random.h>
@@ -120,8 +121,8 @@ struct SimpsonGoodhill
             EphA_max =  this->branches[i].EphA > EphA_max ? branches[i].EphA : EphA_max;
             EphA_min =  this->branches[i].EphA < EphA_min ? branches[i].EphA : EphA_min;
             // Set as in the authors' paper - starting at bottom in region x=(0,1), y=(-0.2,0)
-            morph::Vector<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
-            morph::Vector<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
+            morph::vec<T, 3> initpos = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1], 0 };
+            morph::vec<T, 2> initpos2 = { rn_x[ri] + rn_p[2*i], rn_y[ri] + rn_p[2*i+1] };
             this->ax_centroids.p[ri] += initpos / static_cast<T>(bpa);
             this->branches[i].path.clear();
             this->branches[i].path.push_back (initpos2);
@@ -145,27 +146,27 @@ struct SimpsonGoodhill
         this->v->lightingEffects();
 
         // Offset for visuals
-        morph::Vector<float> offset = { -1.5f, -0.5f, 0.0f };
+        morph::vec<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
-        this->bv = new BranchVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->branches);
-        this->bv->EphA_scale.compute_autoscale (EphA_min, EphA_max);
-        this->bv->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
-        this->bv->finalize();
-        v->addVisualModel (this->bv);
+        auto bvup = std::make_unique<BranchVisual<T>> (v->shaders, offset, &this->branches);
+        bvup->EphA_scale.compute_autoscale (EphA_min, EphA_max);
+        bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
+        bvup->finalize();
+        this->bv = v->addVisualModel (bvup);
 
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        this->cv = new NetVisual<T> (v->shaderprog, v->tshaderprog, offset, &this->ax_centroids);
-        this->cv->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
-        this->cv->finalize();
-        v->addVisualModel (this->cv);
+        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, offset, &this->ax_centroids);
+        cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
+        cvup->finalize();
+        this->cv = v->addVisualModel (cvup);
 
         // Show a vis of the retina, to compare positions/colours
         offset[0] += 1.3f;
-        morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v->shaderprog, v->tshaderprog, retina, offset);
+        auto cgv = std::make_unique<morph::CartGridVisual<float>>(v->shaders, retina, offset);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
-        std::vector<morph::Vector<float, 3>> points = this->retina->getCoordinates3();
+        std::vector<morph::vec<float, 3>> points = this->retina->getCoordinates3();
         cgv->setVectorData (&points);
         cgv->cm.setType (morph::ColourMapType::Duochrome);
         cgv->cm.setHueRG();
@@ -175,8 +176,8 @@ struct SimpsonGoodhill
     }
 
     std::vector<T> ephcolourdata;
-    std::vector<morph::Vector<float, 3>> rgcposcolourdata;
-    std::vector<morph::Vector<float, 3>> coords;
+    std::vector<morph::vec<float, 3>> rgcposcolourdata;
+    std::vector<morph::vec<float, 3>> coords;
 
     // Branches per axon
     unsigned int bpa = 8;
@@ -191,9 +192,9 @@ struct SimpsonGoodhill
     // rgcside^2 RGCs, each with bpa axon branches growing.
     morph::CartGrid* retina;
     // Parameters vecto (See Table 2 in the paper)
-    morph::Vector<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
+    morph::vec<T, 4> m = { T{0.02}, T{0.2}, T{0.15}, T{0.1} };
     // The centre coordinate
-    morph::Vector<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
+    morph::vec<T,2> centre = { T{0.5}, T{0.5} }; // FIXME get from CartGrid
     // (rgcside^2 * bpa) branches, as per the paper
     std::vector<branch<T>> branches;
     // Centroid of the branches for each axon

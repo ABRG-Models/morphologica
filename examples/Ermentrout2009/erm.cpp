@@ -20,11 +20,9 @@
 #include <morph/ColourMap.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
-// Alias VisualDataModel<FLT>* as VdmPtr, to neaten code
-typedef morph::VisualDataModel<FLT>* VdmPtr;
 #include <morph/HexGridVisual.h>
 #include <morph/GraphVisual.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/MathAlgo.h>
 
 // Simulation code header
@@ -153,7 +151,7 @@ int main (int argc, char **argv)
     // A z position to place the hexgrid visuals
     float _Z = 0.0f;
 
-    morph::Vector<float, 3> spatOff = {0,0,_Z}; // spatial offset
+    morph::vec<float, 3> spatOff = {0,0,_Z}; // spatial offset
     // Data scaling parameters
     float _m = 0.2;
     float _c = 0.0;
@@ -162,7 +160,7 @@ int main (int argc, char **argv)
 
     // Set up a 3D map of the surface RD.n[0] using a morph::HexGridVisual
     spatOff[0] -= 0.6 * (RD.hg->width());
-    morph::HexGridVisual<FLT>* hgv1 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaders, RD.hg, spatOff);
     hgv1->setSizeScale (myscale, myscale);
     hgv1->setScalarData (&RD.n[0]);
     // You can directly set VisualDataModel::zScale and ::colourScale:
@@ -174,11 +172,11 @@ int main (int argc, char **argv)
     hgv1->addLabel ("n (axon density)", {-0.6f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv1->finalize();
-    v.addVisualModel (hgv1);
+    auto hgv1p = v.addVisualModel (hgv1);
 
     // Set up a 3D map of the surface RD.c[0]
     spatOff[0] *= -1;
-    morph::HexGridVisual<FLT>* hgv2 = new morph::HexGridVisual<FLT> (v.shaderprog, v.tshaderprog, RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v.shaders, RD.hg, spatOff);
     hgv2->setSizeScale (myscale, myscale);
     hgv2->setScalarData (&RD.c[0]);
     hgv2->zScale.setParams (_m/10.0f, _c/10.0f);
@@ -188,11 +186,11 @@ int main (int argc, char **argv)
     hgv2->addLabel ("c (chemoattractant)", {-0.7f, RD.hg->width()/2.0f, 0},
                     morph::colour::white, morph::VisualFont::Vera, 0.12f, 64);
     hgv2->finalize();
-    v.addVisualModel (hgv2);
+    auto hgv2p = v.addVisualModel (hgv2);
 
     // Set up a 2D graph with morph::GraphVisual
     spatOff = {0.5f, -2.0f, 0.0f};
-    morph::GraphVisual<FLT>* graph1 = new morph::GraphVisual<FLT> (v.shaderprog, v.tshaderprog, spatOff);
+    auto graph1 = std::make_unique<morph::GraphVisual<FLT>> (v.shaders, spatOff);
     graph1->setdarkbg(); // colours axes and text
     graph1->twodimensional = true;
     graph1->setlimits (0, steps*RD.get_dt(), 0, conf.getFloat("graph_ymax", 40000.0f));
@@ -202,7 +200,7 @@ int main (int argc, char **argv)
     graph1->prepdata ("n");
     graph1->prepdata ("c");
     graph1->finalize();
-    v.addVisualModel (static_cast<morph::VisualModel*>(graph1));
+    auto graph1p = v.addVisualModel (graph1);
 
     // Set up the render clock
     std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
@@ -219,9 +217,9 @@ int main (int argc, char **argv)
             // Plot n and c
             if (do_autoscale == true) {
                 mm = morph::MathAlgo::maxmin (RD.n[0]);
-                hgv1->colourScale.compute_autoscale (mm.second, mm.first);
+                hgv1p->colourScale.compute_autoscale (mm.second, mm.first);
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
-                hgv2->colourScale.compute_autoscale (mm.second, mm.first);
+                hgv2p->colourScale.compute_autoscale (mm.second, mm.first);
             }
 
             if constexpr (debug_ranges) {
@@ -231,11 +229,11 @@ int main (int argc, char **argv)
                 std::cout << "c range: " << std::abs(mm.second - mm.first) << std::endl;
             }
 
-            hgv1->updateData (&RD.n[0]);
-            hgv2->updateData (&RD.c[0]);
+            hgv1p->updateData (&RD.n[0]);
+            hgv2p->updateData (&RD.c[0]);
             // Append to the 2D graph of sums:
-            graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_n[0], 0);
-            graph1->append ((float)RD.stepCount*RD.get_dt(), RD.sum_c[0], 1);
+            graph1p->append ((float)RD.stepCount*RD.get_dt(), RD.sum_n[0], 0);
+            graph1p->append ((float)RD.stepCount*RD.get_dt(), RD.sum_c[0], 1);
         }
 
          // Save data every 'logevery' steps

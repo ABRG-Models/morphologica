@@ -19,22 +19,12 @@ using morph::ProcessData;
 class TestProcessCallbacks : public ProcessCallbacks
 {
 public:
-    TestProcessCallbacks (ProcessData* p) {
-        this->parent = p;
-    }
+    TestProcessCallbacks (ProcessData* p) { this->parent = p; }
     void startedSignal (std::string msg) {}
-    void errorSignal (int err) {
-        this->parent->setErrorNum (err);
-    }
-    void processFinishedSignal (std::string msg) {
-        this->parent->setProcessFinishedMsg (msg);
-    }
-    void readyReadStandardOutputSignal (void) {
-        this->parent->setStdOutReady (true);
-    }
-    void readyReadStandardErrorSignal (void) {
-        this->parent->setStdErrReady (true);
-    }
+    void errorSignal (int err) { this->parent->setErrorNum (err); }
+    void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
+    void readyReadStandardOutputSignal() { this->parent->setStdOutReady (true); }
+    void readyReadStandardErrorSignal() { this->parent->setStdErrReady (true); }
 private:
     ProcessData* parent;
 };

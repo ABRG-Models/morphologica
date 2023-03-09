@@ -8,7 +8,7 @@
 #include <chrono>
 #include <sstream>
 
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -26,7 +26,7 @@ int main()
     v.addLabel ("0 FPS", {0.33f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a HexGrid to show in the scene
-    morph::HexGrid hg(0.02, 15, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.02, 15, 0);
     hg.setEllipticalBoundary (4, 4);
     std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
     std::stringstream sss;
@@ -44,13 +44,12 @@ int main()
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->finalize();
-    unsigned int gridId = v.addVisualModel (hgv);
-    std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
+    auto hgvp = v.addVisualModel (hgv);
 
     using namespace std::chrono;
     using std::chrono::steady_clock;
@@ -66,7 +65,7 @@ int main()
             data[hi] = std::sin(k*r[hi])/k*r[hi];
         }
 
-        hgv->updateData (&data);
+        hgvp->updateData (&data);
         k += 0.02f;
 
         auto tduration = steady_clock::now() - tstart;

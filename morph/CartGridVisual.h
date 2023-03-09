@@ -12,7 +12,7 @@
 #include <morph/ColourMap.h>
 #include <morph/CartGrid.h>
 #include <morph/MathAlgo.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -56,11 +56,10 @@ namespace morph {
     {
     public:
         //! Single constructor for simplicity
-        CartGridVisual(GLuint sp, GLuint tsp, const CartGrid* _cg, const Vector<float> _offset)
+        CartGridVisual(morph::gl::shaderprogs& _shaders, const CartGrid* _cg, const vec<float> _offset)
         {
             // Set up...
-            this->shaderprog = sp;
-            this->tshaderprog = tsp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             // Defaults for z and colourScale
@@ -72,8 +71,17 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! HexGrid.
-        void initializeVertices()
+        virtual void initializeVertices()
         {
+            // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
+            if (this->centralize == true) {
+                float left_lim = -this->cg->width()/2.0f;
+                float bot_lim = -this->cg->depth()/2.0f;
+                this->centering_offset[0] = left_lim - this->cg->d_x[0];
+                this->centering_offset[1] = bot_lim - this->cg->d_y[0];
+                std::cout << "centering_offset is " << this->centering_offset << std::endl;
+            }
+
             switch (this->cartVisMode) {
             case CartVisMode::Triangles:
             {
@@ -113,17 +121,13 @@ namespace morph {
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
-                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
                 this->colourScale.autoscaled = false;
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
-                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
-                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                          << " and G maxmin: " << maxmin2.first << ","<< maxmin2.second << std::endl;
             }
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
-                this->vertex_push (this->cg->d_x[ri], this->cg->d_y[ri], dcopy[ri], this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], dcopy[ri], this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
@@ -142,6 +146,8 @@ namespace morph {
                     this->indices.push_back (NSW(ri));
                 }
             }
+
+            this->idx = this->vertexPositions.size();
         }
 
         //! Show a set of hexes at the zero?
@@ -158,7 +164,7 @@ namespace morph {
             float vy = 0.5f * dy;
 
             unsigned int nrect = this->cg->num();
-            unsigned int idx = 0;
+            this->idx = 0;
 
             if (this->scalarData != nullptr) {
                 this->dcopy.resize (this->scalarData->size());
@@ -177,15 +183,9 @@ namespace morph {
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
-                std::pair<T,T> maxmin = morph::MathAlgo::maxmin (this->dcolour);
                 this->colourScale.autoscaled = false;
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
                 this->colourScale.transform (this->dcolour3, this->dcolour3);
-                std::pair<T,T> maxmin2 = morph::MathAlgo::maxmin (this->dcolour2);
-                std::pair<T,T> maxmin3 = morph::MathAlgo::maxmin (this->dcolour3);
-                std::cout << "R maxmin: " << maxmin.first << ","<< maxmin.second
-                          << " , G maxmin: " << maxmin2.first << ","<< maxmin2.second
-                          << " , B maxmin: " << maxmin3.first << ","<< maxmin3.second << std::endl;
             }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
@@ -199,7 +199,7 @@ namespace morph {
 
             float datum = 0.0f;
 
-            morph::Vector<float> vtx_0, vtx_1, vtx_2;
+            morph::vec<float> vtx_0, vtx_1, vtx_2;
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
@@ -220,10 +220,10 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->cg->d_x[ri], this->cg->d_y[ri], datumC, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->cg->d_x[ri], this->cg->d_y[ri], datumC}};
+                vtx_0 = {{this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], datumC}};
 
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
@@ -239,8 +239,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
-                vtx_1 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]+vy, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_1 = {{this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum}};
 
                 // SE vertex
                 //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
@@ -256,8 +256,8 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
-                vtx_2 = {{this->cg->d_x[ri]+hx, this->cg->d_y[ri]-vy, datum}};
+                this->vertex_push (this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_2 = {{this->cg->d_x[ri]+hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum}};
 
 
                 // SW vertex
@@ -271,7 +271,7 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]-vy, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx+centering_offset[0], this->cg->d_y[ri]-vy+centering_offset[1], datum, this->vertexPositions);
 
                 // NW vertex
                 //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
@@ -284,16 +284,16 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->cg->d_x[ri]-hx, this->cg->d_y[ri]+vy, datum, this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]-hx+centering_offset[0], this->cg->d_y[ri]+vy+centering_offset[1], datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
                 // HexGridVisual will be coloured the same as the front. To get lighting
                 // effects to look really good, the back of the surface could need the
                 // opposite normal.
-                morph::Vector<float> plane1 = vtx_1 - vtx_0;
-                morph::Vector<float> plane2 = vtx_2 - vtx_0;
-                morph::Vector<float> vnorm = plane2.cross (plane1);
+                morph::vec<float> plane1 = vtx_1 - vtx_0;
+                morph::vec<float> plane2 = vtx_2 - vtx_0;
+                morph::vec<float> vnorm = plane2.cross (plane1);
                 vnorm.renormalize();
                 this->vertex_push (vnorm, this->vertexNormals);
                 this->vertex_push (vnorm, this->vertexNormals);
@@ -309,23 +309,23 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 4 triangles in the hex
-                this->indices.push_back (idx+1);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+2);
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
 
-                this->indices.push_back (idx+2);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+3);
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
 
-                this->indices.push_back (idx+3);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+4);
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
 
-                this->indices.push_back (idx+4);
-                this->indices.push_back (idx);
-                this->indices.push_back (idx+1);
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
 
-                idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
+                this->idx += 5; // 5 vertices (each of 3 floats for x/y/z), 15 indices.
             }
 
 #if 0
@@ -364,9 +364,9 @@ namespace morph {
                     // HexGridVisual will be coloured the same as the front. To get lighting
                     // effects to look really good, the back of the surface could need the
                     // opposite normal.
-                    morph::Vector<float> plane1 = vtx_1 - vtx_0;
-                    morph::Vector<float> plane2 = vtx_2 - vtx_0;
-                    morph::Vector<float> vnorm = plane2.cross (plane1);
+                    morph::vec<float> plane1 = vtx_1 - vtx_0;
+                    morph::vec<float> plane2 = vtx_2 - vtx_0;
+                    morph::vec<float> vnorm = plane2.cross (plane1);
                     vnorm.renormalize();
                     this->vertex_push (vnorm, this->vertexNormals);
                     this->vertex_push (vnorm, this->vertexNormals);
@@ -386,31 +386,31 @@ namespace morph {
                     this->vertex_push (clr, this->vertexColors);
 
                     // Define indices now to produce the 6 triangles in the hex
-                    this->indices.push_back (idx+1);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+2);
+                    this->indices.push_back (this->idx+1);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+2);
 
-                    this->indices.push_back (idx+2);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+3);
+                    this->indices.push_back (this->idx+2);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+3);
 
-                    this->indices.push_back (idx+3);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+4);
+                    this->indices.push_back (this->idx+3);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+4);
 
-                    this->indices.push_back (idx+4);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+5);
+                    this->indices.push_back (this->idx+4);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+5);
 
-                    this->indices.push_back (idx+5);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+6);
+                    this->indices.push_back (this->idx+5);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+6);
 
-                    this->indices.push_back (idx+6);
-                    this->indices.push_back (idx);
-                    this->indices.push_back (idx+1);
+                    this->indices.push_back (this->idx+6);
+                    this->indices.push_back (this->idx);
+                    this->indices.push_back (this->idx+1);
 
-                    idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
+                    this->idx += 7; // 7 vertices (each of 3 floats for x/y/z), 18 indices.
                 }
             }
             // End trial grid
@@ -419,6 +419,11 @@ namespace morph {
 
         //! How to render the elements. Triangles are faster.
         CartVisMode cartVisMode = CartVisMode::Triangles;
+
+        // Set this to true to adjust the positions that the CartGridVisual uses to plot
+        // the CartGrid so that the CartGrid is centralised around the
+        // VisualModel::mv_offset.
+        bool centralize = false;
 
     protected:
         //! An overridable function to set the colour of hex hi
@@ -445,6 +450,9 @@ namespace morph {
         std::vector<float> dcolour;
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
+
+        // A centering offset to make sure that the Cartgrid is centred on this->mv_offset
+        morph::vec<float, 3> centering_offset = { 0.0f, 0.0f, 0.0f };
     };
 
     //! Extended CartGridVisual class for plotting with individual red, green and blue
@@ -458,7 +466,7 @@ namespace morph {
 
         CartGridVisualManual(GLuint sp, GLuint tsp,
                              const morph::CartGrid* _cg,
-                             const morph::Vector<float> _offset)
+                             const morph::vec<float> _offset)
             : morph::CartGridVisual<T>(sp, tsp, _cg, _offset)
         {
             R.resize (this->cg->num(), 0.0f);

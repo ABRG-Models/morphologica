@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -41,12 +41,12 @@ int main()
     // Add some text labels to the scene
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
-    // Create a HexGrid to show in the scene. As HexDomainShape is 'Boundary', hexes
-    // outside the circular boundary will all be discarded.
+    // Create a HexGrid to show in the scene. Hexes outside the circular boundary will
+    // all be discarded.
 #ifdef __WIN__ // HexGrid performance is bad on Windows
-    morph::HexGrid hg(0.03f, 3.0f, 0.0f, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.03f, 3.0f, 0.0f);
 #else
-    morph::HexGrid hg(0.01f, 3.0f, 0.0f, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01f, 3.0f, 0.0f);
 #endif
     hg.setCircularBoundary (0.6f);
     std::cout << "Number of pixels in grid:" << hg.num() << std::endl;
@@ -59,18 +59,14 @@ int main()
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot
     hgv->finalize();
-    unsigned int gridId = v.addVisualModel (hgv);
-    std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
+    v.addVisualModel (hgv);
 
-    while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
-        v.render();
-    }
+    v.keepOpen();
 
     return 0;
 }

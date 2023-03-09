@@ -19,13 +19,14 @@
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
 #include <armadillo>
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <morph/MathAlgo.h>
 #include <morph/NM_Simplex.h>
 #include <random>
 
 #include <morph/BezCoord.h>
 #include <morph/MorphDbg.h>
+#include <morph/vvec.h>
 
 namespace morph
 {
@@ -214,19 +215,19 @@ namespace morph
             Flt theta = ang_a - ang_b;
             if constexpr (debug_bezcurve == true) {
                 std::cout << "ang_a = " << ang_a << " rads "
-                          << (ang_a * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (ang_a * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
                 std::cout << "ang_b = " << ang_b << " rads "
-                          << (ang_b * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (ang_b * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
                 std::cout << "theta = " << theta << " rads "
-                          << (theta * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (theta * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
             }
             // phi is the angle that conforms to: theta + 2 phi = pi radians
             // thus 2 phi = pi - theta
             // thus   phi = 1/2(pi - theta)
-            Flt phi = 0.5 * (static_cast<Flt>(morph::PI_D) - std::abs(theta));
+            Flt phi = 0.5 * (morph::mathconst<Flt>::pi - std::abs(theta));
             if constexpr (debug_bezcurve == true) {
                 std::cout << "phi = " << phi << " rads "
-                          << (phi * 180 / static_cast<Flt>(morph::PI_D)) << " deg" << std::endl;
+                          << (phi * 180 / morph::mathconst<Flt>::pi) << " deg" << std::endl;
             }
 
             // Construct rotn matrix (one for positive rotation, one for negative)
@@ -334,7 +335,7 @@ namespace morph
             arma::Mat<Flt> Copy = this->C;
 
             // Convert the middle rows of C to vector<Flt> to be the first NM vertex
-            morph::vVector<Flt> v0;
+            morph::vvec<Flt> v0;
             int startrow = 2;
             int endrow = 2; // 2 means don't change the angle of the end of the curve
             for (int r = startrow; r < (int)C.n_rows-endrow; ++r) {
@@ -348,7 +349,7 @@ namespace morph
             }
 
             // Make a set of random vertices to init the NM_Simplex algo with.
-            morph::vVector<morph::vVector<Flt>> nm_vertices;
+            morph::vvec<morph::vvec<Flt>> nm_vertices;
 
             // First, push back the existing set of controls as the first NM vertex
             nm_vertices.push_back (v0);
@@ -362,7 +363,7 @@ namespace morph
             Flt propchange = static_cast<Flt>(0.2);
             Flt propchangeov2 = propchange / static_cast<Flt>(2.0);
             for (size_t i = 0; i < v0.size(); ++i) {
-                morph::vVector<Flt> v;
+                morph::vvec<Flt> v;
                 for (size_t j = 0; j<v0.size(); ++j) {
                     // Perturbate v0[j] a bit and add to vector<Flt>
                     Flt v_j = v0[j];
@@ -444,7 +445,7 @@ namespace morph
                 //std::cout << "C:\n" << C;
             }
             std::cout << "NM finished in " << simp.operation_count << " simplex change operations)" << std::endl;
-            morph::vVector<Flt> vP = simp.best_vertex();
+            morph::vvec<Flt> vP = simp.best_vertex();
             Flt min_sos = simp.best_value();
             std::cout << "Best value had objective = " << min_sos << std::endl;
             if (min_sos < startsos) {
@@ -730,7 +731,7 @@ namespace morph
 
             // This searches forward to try to find a point which is 'l' further on. If
             // at any point t exceeds 1.0, we have to break out.
-            while (t != Flt{1} && lastnull == false) {
+            while (t < Flt{1} && lastnull == false) {
                 BezCoord<Flt> b = this->computePoint (t, l);
                 rtn.push_back (b);
                 t = rtn.back().t();

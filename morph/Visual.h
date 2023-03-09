@@ -36,12 +36,13 @@
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/ColourMap.h>
 
 #include <string>
 #include <array>
 #include <vector>
+#include <memory>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -131,7 +132,7 @@ namespace morph {
          * size, caEm.
          */
         Visual (int width, int height, const std::string& _title,
-                const Vector<float, 2> caOffset, const Vector<float> caLength, const float caThickness, const float caEm)
+                const vec<float, 2> caOffset, const vec<float> caLength, const float caThickness, const float caEm)
             : window_w(width)
             , window_h(height)
             , title(_title)
@@ -143,18 +144,9 @@ namespace morph {
             this->init();
         }
 
-        //! Deconstructor deallocates CoordArrows and destroys GLFW windows
+        //! Deconstructor destroys GLFW windows
         virtual ~Visual()
         {
-            delete this->coordArrows;
-            for (unsigned int i = 0; i < this->vm.size(); ++i) {
-                delete this->vm[i];
-            }
-            if (this->textModel != nullptr) {
-                delete this->textModel;
-            }
-            for (auto t : this->texts) { delete t; }
-            this->texts.clear();
             glfwDestroyWindow (this->window);
             morph::VisualResources::deregister();
         }
@@ -163,20 +155,18 @@ namespace morph {
         void saveImage (const std::string& img_filename)
         {
             glfwMakeContextCurrent (this->window);
-            GLubyte* bits; // RGB bits
-            GLubyte* rbits;
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
             int h = viewport[3];
-            bits = new GLubyte[w*h*4];
-            rbits = new GLubyte[w*h*4];
+            auto bits = std::make_unique<GLubyte[]>(w*h*4);
+            auto rbits = std::make_unique<GLubyte[]>(w*h*4);
             glFinish(); // finish all commands of OpenGL
             glPixelStorei (GL_PACK_ALIGNMENT, 1);
             glPixelStorei (GL_PACK_ROW_LENGTH, 0);
             glPixelStorei (GL_PACK_SKIP_ROWS, 0);
             glPixelStorei (GL_PACK_SKIP_PIXELS, 0);
-            glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+            glReadPixels (0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, bits.get());
             for (int i = 0; i < h; ++i) {
                 int rev_line = (h-i-1)*4*w;
                 int for_line = i*4*w;
@@ -184,12 +174,10 @@ namespace morph {
                     rbits[rev_line+j] = bits[for_line+j];
                 }
             }
-            unsigned int error = lodepng::encode (img_filename, rbits, w, h);
+            unsigned int error = lodepng::encode (img_filename, rbits.get(), w, h);
             if (error) {
                 std::cout << "encoder error " << error << ": " << lodepng_error_text (error) << std::endl;
             }
-            delete[] rbits;
-            delete[] bits;
         }
 
         //! Make this Visual the current one, so that when creating/adding a visual
@@ -197,39 +185,45 @@ namespace morph {
         void setCurrent() { glfwMakeContextCurrent (this->window); }
 
         /*!
-         * Add a VisualModel to the scene. The VisualModel* should be a pointer to a
-         * visual model which has been newly allocated by the client code. Do not add
-         * a pointer to the same VisualModel more than once! When this morph::Visual
-         * object goes out of scope, its deconstructor will delete each VisualModel
-         * that it has a pointer for.
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
+         * ownership of the unique_ptr. The index into Visual::vm is returned.
          */
-        unsigned int addVisualModel (VisualModel* model)
+        template <typename T>
+        unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
-            this->vm.push_back (model);
+            std::unique_ptr<VisualModel> vmp = std::move(model);
+            this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
             return rtn;
+        }
+        /*!
+         * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
+         * ownership of the unique_ptr. A non-owning pointer to the model is returned.
+         */
+        template <typename T>
+        T* addVisualModel (std::unique_ptr<T>& model)
+        {
+            std::unique_ptr<VisualModel> vmp = std::move(model);
+            this->vm.push_back (std::move(vmp));
+            return static_cast<T*>(this->vm.back().get());
         }
 
         /*!
          * VisualModel Getter
          *
-         * For the given \a modelId, return a pointer to the visual model.
+         * For the given \a modelId, return a (non-owning) pointer to the visual model.
          *
          * \return VisualModel pointer
          */
-        VisualModel* getVisualModel (unsigned int modelId) { return (this->vm[modelId]); }
+        VisualModel* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
 
         //! Remove the VisualModel with ID \a modelId from the scene.
-        void removeVisualModel (unsigned int modelId)
-        {
-            delete this->vm[modelId];
-            this->vm.erase (this->vm.begin() + modelId);
-        }
+        void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
         //! Add a text label to the scene at a given location. Return the width and
         //! height of the text in a TextGeometry object.
         morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::Vector<float, 3>& _toffset,
+                                      const morph::vec<float, 3>& _toffset,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                                       const float _fontsize = 0.01,
@@ -241,17 +235,18 @@ namespace morph {
 
         //! Add label, using the passed-in pointer. Allows client code to update the text model
         morph::TextGeometry addLabel (const std::string& _text,
-                                      const morph::Vector<float, 3>& _toffset,
+                                      const morph::vec<float, 3>& _toffset,
                                       morph::VisualTextModel*& tm,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                                       const float _fontsize = 0.01,
                                       const int _fontres = 24)
         {
-            if (this->tshaderprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            tm = new morph::VisualTextModel (this->tshaderprog, _font, _fontsize, _fontres);
-            tm->setupText (_text, _toffset, _tcolour);
-            this->texts.push_back (tm);
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
+            tmup->setupText (_text, _toffset, _tcolour);
+            tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
             return tm->getTextGeometry();
         }
 
@@ -282,7 +277,7 @@ namespace morph {
 #else
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
-            glUseProgram (this->shaderprog);
+            glUseProgram (this->shaders.gprog);
 
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
@@ -317,54 +312,54 @@ namespace morph {
             // Lighting shader variables
             //
             // Ambient light colour
-            GLint loc_lightcol = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("light_colour"));
+            GLint loc_lightcol = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
             if (loc_lightcol != -1) {
                 glUniform3fv (loc_lightcol, 1, this->light_colour.data());
             }
             // Ambient light intensity
-            GLint loc_ai = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("ambient_intensity"));
+            GLint loc_ai = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
             if (loc_ai != -1) {
                 glUniform1f (loc_ai, this->ambient_intensity);
             }
             // Diffuse light position
-            GLint loc_dp = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_position"));
+            GLint loc_dp = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
             if (loc_dp != -1) {
                 glUniform3fv (loc_dp, 1, this->diffuse_position.data());
             }
             // Diffuse light intensity
-            GLint loc_di = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("diffuse_intensity"));
+            GLint loc_di = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
             if (loc_di != -1) {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
 
 #if 0
             // A quick-n-dirty attempt to keep the light position fixed in camera space.
-            Vector<float, 2> l_p0_coord = this->coordArrowsOffset;
-            Vector<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
-            Vector<float, 4> l_pp = this->projection * l_point;
+            vec<float, 2> l_p0_coord = this->coordArrowsOffset;
+            vec<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
+            vec<float, 4> l_pp = this->projection * l_point;
             float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-            Vector<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
-            Vector<float, 3> l_v0;
+            vec<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
+            vec<float, 3> l_v0;
             l_v0.set_from (this->invproj * l_p0);
             TransformMatrix<float> lv_matrix;
             lv_matrix.translate (l_v0);
             lv_matrix.rotate (this->rotation);
-            GLint loc_lv = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("lv_matrix"));
+            GLint loc_lv = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("lv_matrix"));
             if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
             std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
             std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
             morph::gl::Util::checkError (__FILE__, __LINE__);
 #endif
             // Switch to text shader program and set the projection matrix
-            glUseProgram (this->tshaderprog);
-            GLint loc_p = glGetUniformLocation (this->tshaderprog, static_cast<const GLchar*>("p_matrix"));
+            glUseProgram (this->shaders.tprog);
+            GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             // Switch back to the regular shader prog and render the VisualModels.
-            glUseProgram (this->shaderprog);
+            glUseProgram (this->shaders.gprog);
 
             // Set the projection matrix just once
-            loc_p = glGetUniformLocation (this->shaderprog, static_cast<const GLchar*>("p_matrix"));
+            loc_p = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
             if (this->showCoordArrows == true) {
@@ -382,7 +377,7 @@ namespace morph {
             TransformMatrix<float> scenetransonly;
             scenetransonly.translate (this->scenetrans);
 
-            typename std::vector<VisualModel*>::iterator vmi = this->vm.begin();
+            auto vmi = this->vm.begin();
             while (vmi != this->vm.end()) {
                 if ((*vmi)->twodimensional == true) {
                     // It's a two-d thing. Now what?
@@ -396,20 +391,20 @@ namespace morph {
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
-            Vector<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
+            vec<float, 3> v0 = this->textPosition ({-0.8f, 0.8f});
             if (this->showTitle == true) {
                 // Render the title text
-                glUseProgram (this->tshaderprog);
                 this->textModel->setSceneTranslation (v0);
                 this->textModel->setVisibleOn (this->bgcolour);
                 this->textModel->render();
             }
 
-            for (auto t : this->texts) {
-                glUseProgram (this->tshaderprog);
-                t->setSceneTranslation (v0);
-                t->setVisibleOn (this->bgcolour);
-                t->render();
+            auto ti = this->texts.begin();
+            while (ti != this->texts.end()) {
+                (*ti)->setSceneTranslation (v0);
+                (*ti)->setVisibleOn (this->bgcolour);
+                (*ti)->render();
+                ++ti;
             }
 
             glfwSwapBuffers (this->window);
@@ -422,34 +417,34 @@ namespace morph {
         }
 
         //! Compute a translation vector for text position, using Visual::text_z.
-        Vector<float, 3> textPosition (Vector<float, 2> p0_coord)
+        vec<float, 3> textPosition (vec<float, 2> p0_coord)
         {
             // For the depth at which a text object lies, use this->text_z.  Use forward
             // projection to determine the correct z coordinate for the inverse
             // projection.
-            Vector<float, 4> point =  { 0.0, 0.0, this->text_z, 1.0 };
-            Vector<float, 4> pp = this->projection * point;
+            vec<float, 4> point =  { 0.0, 0.0, this->text_z, 1.0 };
+            vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
             // Construct the point for the location of the text
-            Vector<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            vec<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
             // Inverse project the point
-            Vector<float, 3> v0;
+            vec<float, 3> v0;
             v0.set_from (this->invproj * p0);
             //tm->setSceneTranslation (v0);
             return v0;
         }
 
-        //! The OpenGL shader program for graphical objects
-        GLuint shaderprog;
-        //! The text shader program, which uses textures to draw text on quads.
-        GLuint tshaderprog;
+        //! The OpenGL shader programs have an integer ID and are stored in a simple
+        //! struct. There's one for graphical objects and a text shader program, which
+        //! uses textures to draw text on quads.
+        morph::gl::shaderprogs shaders;
 
         //! The colour of ambient and diffuse light sources
-        Vector<float> light_colour = {1,1,1};
+        vec<float> light_colour = {1,1,1};
         //! Strength of the ambient light
         float ambient_intensity = 1.0f;
         //! Position of a diffuse light source
-        Vector<float> diffuse_position = {5,5,15};
+        vec<float> diffuse_position = {5,5,15};
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
 
@@ -462,14 +457,14 @@ namespace morph {
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
             // object.
-            Vector<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
-            Vector<float, 4> pp = this->projection * point;
+            vec<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+            vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
             // Construct the point for the location of the coord arrows
-            Vector<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
+            vec<float, 4> p0 = { this->coordArrowsOffset.x(), this->coordArrowsOffset.y(), coord_z, 1.0 };
             // Inverse project
-            Vector<float, 3> v0;
+            vec<float, 3> v0;
             v0.set_from ((this->invproj * p0));
             // Translate the scene for the CoordArrows such that they sit in a single position on the screen
             this->coordArrows->setSceneTranslation (v0);
@@ -532,9 +527,9 @@ namespace morph {
         perspective_type ptype = perspective_type::perspective;
 
         //! Orthographic screen bottom left coordinate (you can change these to encapsulate your models)
-        morph::Vector<float, 2> ortho_bl = { -1.0f, -1.0f };
+        morph::vec<float, 2> ortho_bl = { -1.0f, -1.0f };
         //! Orthographic screen top right coordinate
-        morph::Vector<float, 2> ortho_tr = { 1.0f, 1.0f };
+        morph::vec<float, 2> ortho_tr = { 1.0f, 1.0f };
 
         //! The background colour; white by default.
         std::array<float, 4> bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
@@ -594,10 +589,10 @@ namespace morph {
             this->scenetrans[2] = _z;
             this->scenetrans_default[2] = _z;
         }
-        void setSceneTrans (const morph::Vector<float, 3>& _xyz)
+        void setSceneTrans (const morph::vec<float, 3>& _xyz)
         {
             if (_xyz[2] > 0.0f) {
-                std::cout << "WARNING setSceneTrans(Vector<>&): Normally, the default z value is negative.\n";
+                std::cout << "WARNING setSceneTrans(vec<>&): Normally, the default z value is negative.\n";
             }
             this->setZDefault (_xyz[2]);
             this->scenetrans = _xyz;
@@ -749,7 +744,7 @@ namespace morph {
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
-        std::vector<VisualModel*> vm;
+        std::vector<std::unique_ptr<VisualModel>> vm;
 
     private:
         //! Private initialization, used by constructors.
@@ -802,7 +797,7 @@ namespace morph {
                 {GL_NONE, NULL, NULL },
             };
 
-            this->shaderprog = this->LoadShaders (shaders);
+            this->shaders.gprog = this->LoadShaders (shaders);
 
             // An additional shader is used for text
             ShaderInfo tshaders[] = {
@@ -810,7 +805,7 @@ namespace morph {
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader },
                 {GL_NONE, NULL, NULL }
             };
-            this->tshaderprog = this->LoadShaders (tshaders);
+            this->shaders.tprog = this->LoadShaders (tshaders);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -846,19 +841,18 @@ namespace morph {
             }
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
-            this->coordArrows = new CoordArrows();
-            this->coordArrows->init (this->shaderprog,
-                                     this->tshaderprog,
+            this->coordArrows = std::make_unique<CoordArrows>();
+            this->coordArrows->init (this->shaders,
                                      this->coordArrowsLength,
                                      this->coordArrowsThickness,
                                      this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = new VisualTextModel (this->tshaderprog,
-                                                   morph::VisualFont::DVSans,
-                                                   0.035f, 64, {0.0f, 0.0f, 0.0f},
-                                                   this->title);
+            this->textModel = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                                                                 morph::VisualFont::DVSans,
+                                                                 0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
+                                                                 this->title);
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -1053,12 +1047,12 @@ namespace morph {
 
     protected:
         //! A little model of the coordinate axes.
-        CoordArrows* coordArrows;
+        std::unique_ptr<CoordArrows> coordArrows;
 
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
-        Vector<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
+        vec<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
         //! Length of coordinate arrows. Configurable at morph::Visual construction.
-        Vector<float> coordArrowsLength = {0.1f, 0.1f, 0.1f};
+        vec<float> coordArrowsLength = {0.1f, 0.1f, 0.1f};
         //! A factor used to slim (<1) or thicken (>1) the thickness of the axes of the CoordArrows.
         float coordArrowsThickness = 1.0f;
         //! Text size for x,y,z.
@@ -1066,22 +1060,22 @@ namespace morph {
 
     private:
         //! A VisualTextModel for a title text.
-        VisualTextModel* textModel = nullptr;
+        std::unique_ptr<VisualTextModel> textModel = nullptr;
         //! Text models for labels
-        std::vector<morph::VisualTextModel*> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel>> texts;
 
         /*
          * Variables to manage projection and rotation of the object
          */
 
         //! Current cursor position
-        Vector<float,2> cursorpos = {0.0f, 0.0f};
+        vec<float,2> cursorpos = {0.0f, 0.0f};
 
         //! Holds the translation coordinates for the current location of the entire scene
-        Vector<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
+        vec<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        Vector<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+        vec<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
@@ -1096,10 +1090,10 @@ namespace morph {
         bool translateMode = false;
 
         //! Screen coordinates of the position of the last mouse press
-        Vector<float,2> mousePressPosition = {0.0f, 0.0f};
+        vec<float,2> mousePressPosition = {0.0f, 0.0f};
 
         //! The current rotation axis. World frame?
-        Vector<float> rotationAxis = {0.0f, 0.0f, 0.0f};
+        vec<float> rotationAxis = {0.0f, 0.0f, 0.0f};
 
         //! A rotation quaternion. You could have guessed that, right?
         Quaternion<float> rotation;
@@ -1188,8 +1182,8 @@ namespace morph {
                 std::cout << "u: Reduce zNear cutoff plane\n";
                 std::cout << "i: Increase zNear cutoff plane\n";
                 std::cout << "0-9: Select model index (with shift: toggle hide)\n";
-                std::cout << "Left: Decrease opacity of selected model\n";
-                std::cout << "Right: Increase opacity of selected model\n";
+                std::cout << "Shift-Left: Decrease opacity of selected model\n";
+                std::cout << "Shift-Right: Increase opacity of selected model\n";
             }
 
             if (key == GLFW_KEY_L && action == GLFW_PRESS) {
@@ -1279,10 +1273,10 @@ namespace morph {
             }
 
             // Increment/decrement alpha for selected model
-            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
             }
-            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
             }
 
@@ -1329,17 +1323,17 @@ namespace morph {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
 
-            Vector<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
+            vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
             if (this->rotateMode) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
-                Vector<float, 2> p0_coord = this->mousePressPosition;
+                vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord[0] -= this->window_w/2.0;
                 p0_coord[0] /= this->window_w/2.0;
                 p0_coord[1] -= this->window_h/2.0;
                 p0_coord[1] /= this->window_h/2.0;
-                Vector<float, 2> p1_coord = this->cursorpos;
+                vec<float, 2> p1_coord = this->cursorpos;
                 p1_coord[0] -= this->window_w/2.0;
                 p1_coord[0] /= this->window_w/2.0;
                 p1_coord[1] -= this->window_h/2.0;
@@ -1351,18 +1345,18 @@ namespace morph {
                 // Add the depth at which the object lies.  Use forward projection to determine
                 // the correct z coordinate for the inverse projection. This assumes only one
                 // object.
-                Vector<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-                Vector<float, 4> pp = this->projection * point;
+                vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+                vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
                 // Construct two points for the start and end of the mouse movement
-                Vector<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-                Vector<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+                vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+                vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
 
                 // Apply the inverse projection to get two points in the world frame of
                 // reference for the mouse movement
-                Vector<float, 4> v0 = this->invproj * p0;
-                Vector<float, 4> v1 = this->invproj * p1;
+                vec<float, 4> v0 = this->invproj * p0;
+                vec<float, 4> v1 = this->invproj * p1;
 
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the
                 // world space. Note the swap between x and y
@@ -1382,8 +1376,8 @@ namespace morph {
                 this->rotationAxis.renormalize();
 
                 // Now inverse apply the rotation of the scene to the rotation axis
-                // (Vector<float,3>), so that we rotate the model the right way.
-                Vector<float, 4> tmp_4D = this->invscene * this->rotationAxis;
+                // (vec<float,3>), so that we rotate the model the right way.
+                vec<float, 4> tmp_4D = this->invscene * this->rotationAxis;
                 this->rotationAxis.set_from (tmp_4D); // Set rotationAxis from 4D result
 
                 // Update rotation from the saved position.
@@ -1396,12 +1390,12 @@ namespace morph {
             } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
-                Vector<float, 2> p0_coord = this->mousePressPosition;
+                vec<float, 2> p0_coord = this->mousePressPosition;
                 p0_coord[0] -= this->window_w/2.0;
                 p0_coord[0] /= this->window_w/2.0;
                 p0_coord[1] -= this->window_h/2.0;
                 p0_coord[1] /= this->window_h/2.0;
-                Vector<float, 2> p1_coord = this->cursorpos;
+                vec<float, 2> p1_coord = this->cursorpos;
                 p1_coord[0] -= this->window_w/2.0;
                 p1_coord[0] /= this->window_w/2.0;
                 p1_coord[1] -= this->window_h/2.0;
@@ -1412,16 +1406,16 @@ namespace morph {
                 // Add the depth at which the object lies.  Use forward projection to determine
                 // the correct z coordinate for the inverse projection. This assumes only one
                 // object.
-                Vector<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
-                Vector<float, 4> pp = this->projection * point;
+                vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
+                vec<float, 4> pp = this->projection * point;
                 float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
                 // Construct two points for the start and end of the mouse movement
-                Vector<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
-                Vector<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
+                vec<float, 4> p0 = { p0_coord[0], p0_coord[1], coord_z, 1.0f };
+                vec<float, 4> p1 = { p1_coord[0], p1_coord[1], coord_z, 1.0f };
                 // Apply the inverse projection to get two points in the world frame of reference:
-                Vector<float, 4> v0 = this->invproj * p0;
-                Vector<float, 4> v1 = this->invproj * p1;
+                vec<float, 4> v0 = this->invproj * p0;
+                vec<float, 4> v1 = this->invproj * p1;
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
                 mouseMoveWorld[0] = (v1[0]/v1[3]) - (v0[0]/v0[3]);
                 mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);

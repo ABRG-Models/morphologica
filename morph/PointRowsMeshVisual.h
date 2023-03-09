@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/ColourMap.h>
 #include <iostream>
 #include <vector>
@@ -70,9 +70,9 @@ namespace morph {
     class PointRowsMeshVisual : public VisualDataModel<Flt>
     {
     public:
-        PointRowsMeshVisual(GLuint sp,
-                            std::vector<Vector<float,3>>* _pointrows,
-                            const Vector<float, 3> _offset,
+        PointRowsMeshVisual(morph::gl::shaderprogs& sp,
+                            std::vector<vec<float,3>>* _pointrows,
+                            const vec<float, 3> _offset,
                             const std::vector<Flt>* _data,
                             const Scale<Flt>& cscale,
                             ColourMapType _cmt, // mesh
@@ -84,9 +84,10 @@ namespace morph {
                             const float _hue_sph,
                             const float _sat_sph,
                             const float _val_sph,
-                            const float _radius_sph) {
+                            const float _radius_sph)
+        {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -112,7 +113,8 @@ namespace morph {
         }
 
         //! Convert datum using our scale into a colour triplet (RGB).
-        std::array<float, 3> datumToColour (Flt datum_in) {
+        std::array<float, 3> datumToColour (Flt datum_in)
+        {
             // Scale the input...
             Flt datum = datum_in * this->scale[0] + this->scale[1];
             datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
@@ -122,8 +124,8 @@ namespace morph {
         }
 
         //! Do the computations to initialize the vertices that will represent the surface.
-        void initializeVertices (void) {
-
+        void initializeVertices()
+        {
             unsigned int npoints = this->dataCoords->size();
             unsigned int ndata = this->scalarData->size();
 

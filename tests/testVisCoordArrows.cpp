@@ -4,7 +4,6 @@
 
 #include "morph/Visual.h"
 #include "morph/ColourMap.h"
-#include "morph/Vector.h"
 #include <iostream>
 #include <array>
 #include <stdexcept>

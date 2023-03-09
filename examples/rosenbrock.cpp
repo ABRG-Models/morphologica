@@ -3,7 +3,8 @@
  */
 
 #include <morph/NM_Simplex.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Visual.h>
 #include <morph/TriFrameVisual.h>
 #include <morph/HexGrid.h>
@@ -31,21 +32,21 @@ int main()
     v.lightingEffects (true);
 
     // Initialise the vertices
-    morph::vVector<morph::vVector<FLT>> i_vertices;
-    morph::vVector<FLT> v1 = {{ 0.7, 0.0 }};
-    morph::vVector<FLT> v2 = {{ 0.0, 0.6 }};
-    morph::vVector<FLT> v3 = {{ -0.6, -1.0 }};
+    morph::vvec<morph::vvec<FLT>> i_vertices;
+    morph::vvec<FLT> v1 = {{ 0.7, 0.0 }};
+    morph::vvec<FLT> v2 = {{ 0.0, 0.6 }};
+    morph::vvec<FLT> v3 = {{ -0.6, -1.0 }};
     i_vertices.push_back(v1);
     i_vertices.push_back(v2);
     i_vertices.push_back(v3);
 
     // Add a 'triangle visual' to be visualised as three rods
-    morph::Vector<float> _offset = {0,0,0};
-    morph::TriFrameVisual<FLT>* tfv = new morph::TriFrameVisual<FLT>(v.shaderprog, _offset);
+    morph::vec<float> _offset = {0,0,0};
+    auto tfv = std::make_unique<morph::TriFrameVisual<FLT>>(v.shaders, _offset);
     tfv->radius = 0.01f;
     tfv->sradius = 0.01f;
     std::vector<FLT> tri_values(3, 0);
-    std::vector<morph::Vector<float>> tri_coords(3);
+    std::vector<morph::vec<float>> tri_coords(3);
     tri_coords[0] = { v1[0], v1[1], 0.0 };
     tri_coords[1] = { v2[0], v2[1], 0.0 };
     tri_coords[2] = { v3[0], v3[1], 0.0 };
@@ -53,14 +54,14 @@ int main()
     tfv->setDataCoords (&tri_coords);
     tfv->cm.setType (morph::ColourMapType::Cividis);
     tfv->finalize();
-    v.addVisualModel (tfv);
+    auto tfvp = v.addVisualModel (tfv);
 
     // Check banana function
     FLT test = banana (1.0, 1.0);
     std::cout << "test point on banana function = " << test << " (should be 0).\n";
 
     // Evaluate banana function and plot
-    morph::HexGrid hg (0.01, 10, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg (0.01, 10, 0);
     hg.setCircularBoundary (2.5);
     std::vector<FLT> banana_vals(hg.num(), 0.0f);
     for (size_t i = 0; i < hg.num(); ++i) {
@@ -68,7 +69,7 @@ int main()
     }
     std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
     std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
-    morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT>(v.shaderprog, v.tshaderprog, &hg, _offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(v.shaders, &hg, _offset);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
@@ -127,7 +128,7 @@ int main()
                 tri_coords[i] = { simp.vertices[i][0], simp.vertices[i][1], 0.0 };
                 tri_values[i] = simp.values[i];
             }
-            tfv->reinit();
+            tfvp->reinit();
 
             lastoptstep = std::chrono::steady_clock::now();
         }

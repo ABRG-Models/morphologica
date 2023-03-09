@@ -3,7 +3,7 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/VisualDataModel.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 // basic model class
 template<class Flt>
@@ -22,8 +22,7 @@ public:
     }
 
     // step through the model dynamics (logistic map)
-    void step(void){
-
+    void step(){
         // logistic map equation
         x = 4.0*r*x*(1.0-x);
         time++;
@@ -68,14 +67,12 @@ int main(int argc, char **argv){
         v.scenetrans_stepsize = 0.1;
         v.fov = 50;
 
-        std::vector<unsigned int> grid(1);
-
         // Create storage vectors
         std::vector<float> X(1,0);
         std::vector<float> Y(1,0);
 
-        // add a graph
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, morph::Vector<float>{-graph_offset,-graph_offset,0.0f});
+        // add a graph. make_unique<>() will return a std::unique_ptr<GraphVisual<float>>
+        auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>{-graph_offset,-graph_offset,0.0f});
         morph::DatasetStyle ds;
         ds.linewidth = 0.01;
         ds.linecolour = {0.0, 0.0, 0.0};
@@ -86,7 +83,8 @@ int main(int argc, char **argv){
         gv->setlimits (0,T,0,1);
         gv->setdata (X, Y, ds);
         gv->finalize();
-        grid[0] = v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        // Pass the graph (and ownership of its memory to the morph::Visual. The returned pointer can be used to interact with the GraphVisual
+        morph::GraphVisual<float>* gv_ptr = v.addVisualModel (gv);
 
         // Create a basic model object
         Model<float> M(&conf);
@@ -102,7 +100,7 @@ int main(int argc, char **argv){
             Y.push_back(M.x);
 
             // update the display
-            gv->update (X, Y, 0);
+            gv_ptr->update (X, Y, 0);
 
             // poll gl events and re-render
             std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
@@ -128,4 +126,3 @@ int main(int argc, char **argv){
 
         return 0.;
 }
-

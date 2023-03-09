@@ -5,8 +5,7 @@
 #include <morph/ColourMap.h>
 #include <morph/GraphVisual.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -32,15 +31,15 @@ int main (int argc, char** argv)
     static constexpr bool setup_axes = true;
 
     try {
-        morph::vVector<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
-        morph::vVector<float> data = absc.pow(3);
-        morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
+        morph::vvec<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+        morph::vvec<float> data = absc.pow(3);
+        auto gvup = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
 
         // Here, we change the size of the graph and range of the axes (this is optional
-        gv->setsize (1.33, 1);
+        gvup->setsize (1.33, 1);
 
         if constexpr (change_axes_range) {
-            gv->setlimits (0,1.4,0,1.4);
+            gvup->setlimits (0,1.4,0,1.4);
         }
 
         if constexpr (modify_graph_features) {
@@ -52,32 +51,32 @@ int main (int argc, char** argv)
             ds.markercolour = {0.0, 0.0, 1.0};
             ds.markergap = 0.02;
             // For each dataset added there should be a set of 'datastyles' - linestyle, markerstyle, etc
-            gv->setdata (absc, data, ds);
+            gvup->setdata (absc, data, ds);
             ds.markerstyle = morph::markerstyle::square;
             ds.setcolour ({0.0, 1.0, 0.0});
-            gv->setdata (absc, absc.pow(4), ds);
+            gvup->setdata (absc, absc.pow(4), ds);
         } else {
-            gv->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
+            gvup->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
             // The code here demonstrates how to include unicode characters (ss2 is "superscript 2")
             using morph::unicode;
-            gv->setdata (absc, absc, "y=x");
-            gv->setdata (absc, absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
-            gv->setdata (absc, absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
-            gv->setdata (absc, absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
-            gv->setdata (absc, absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
+            gvup->setdata (absc, absc, "y=x");
+            gvup->setdata (absc, absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
+            gvup->setdata (absc, absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
+            gvup->setdata (absc, absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
+            gvup->setdata (absc, absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
         }
 
         if constexpr (setup_axes) {
-            gv->axiscolour = {0.5, 0.5, 0.5};
-            gv->axislinewidth = 0.01f;
-            gv->axisstyle = morph::axisstyle::box;
-            gv->setthickness (0.001f);
+            gvup->axiscolour = {0.5, 0.5, 0.5};
+            gvup->axislinewidth = 0.01f;
+            gvup->axisstyle = morph::axisstyle::box;
+            gvup->setthickness (0.001f);
         }
 
-        gv->finalize();
+        gvup->finalize();
 
         // Add the GraphVisual (as a VisualModel*)
-        v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+        auto gv = v.addVisualModel (gvup);
 
         float addn = 0.0f;
         size_t rcount = 0;

@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -30,15 +30,16 @@ namespace morph {
     class PointRowsVisual : public VisualDataModel<Flt>
     {
     public:
-        PointRowsVisual(GLuint sp,
-                        std::vector<Vector<float,3>>* _pointrows,
-                        const Vector<float, 3> _offset,
+        PointRowsVisual(morph::gl::shaderprogs& sp,
+                        std::vector<vec<float,3>>* _pointrows,
+                        const vec<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& cscale,
                         ColourMapType _cmt,
-                        const float _hue = 0.0f) {
+                        const float _hue = 0.0f)
+        {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -55,7 +56,8 @@ namespace morph {
         }
 
         //! Convert datum using our scale into a colour triplet (RGB).
-        std::array<float, 3> datumToColour (Flt datum_in) {
+        std::array<float, 3> datumToColour (Flt datum_in)
+        {
             // Scale the input...
             Flt datum = datum_in * this->scale[0] + this->scale[1];
             datum = datum > static_cast<Flt>(1.0) ? static_cast<Flt>(1.0) : datum;
@@ -66,10 +68,8 @@ namespace morph {
 
         //! Do the computations to initialize the vertices that will represent the
         //! surface.
-        void initializeVertices (void) {
-
-            //std::cout << __FUNCTION__ << " called" << std::endl;
-
+        void initializeVertices()
+        {
             unsigned int npoints = this->dataCoords->size();
             unsigned int ndata = this->scalarData->size();
 
@@ -110,7 +110,7 @@ namespace morph {
             //std::cout << "r1: " << r1 << ", r1_e: " << r1_e << std::endl;
             //std::cout << "r2: " << r2 << ", r2_e: " << r2_e << std::endl;
             //std::cout << "prlen is " << prlen << std::endl;
-            morph::Vector<float> v0, v1, v2;
+            morph::vec<float> v0, v1, v2;
             while (r2 != prlen) { // While through all 'rows' - pairs of pointrows
                 //std::cout << "====================================" << std::endl;
                 //std::cout << "  ROW" << std::endl;
@@ -135,12 +135,12 @@ namespace morph {
                 ib++;
 
                 // Let v0 be:
-                morph::Vector<float> vnorm = {0.0f, 0.0f, 1.0f};
+                morph::vec<float> vnorm = {0.0f, 0.0f, 1.0f};
                 if (r1+1 < r1_e) {
                     v0 = (*this->dataCoords)[r1+1];
                     // Compute normal
-                    morph::Vector<float> plane1 = v1 - v0;
-                    morph::Vector<float> plane2 = v2 - v0;
+                    morph::vec<float> plane1 = v1 - v0;
+                    morph::vec<float> plane2 = v2 - v0;
                     vnorm = plane2.cross (plane1);
                     vnorm.renormalize();
                 }
@@ -247,9 +247,9 @@ namespace morph {
                     }
 
                     // Compute normal and push one
-                    morph::Vector<float> plane1 = v1 - v0;
-                    morph::Vector<float> plane2 = v2 - v0;
-                    morph::Vector<float> vnorm = plane2.cross (plane1);
+                    morph::vec<float> plane1 = v1 - v0;
+                    morph::vec<float> plane2 = v2 - v0;
+                    morph::vec<float> vnorm = plane2.cross (plane1);
                     vnorm.renormalize();
                     this->vertex_push (vnorm, this->vertexNormals);
 

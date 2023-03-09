@@ -20,8 +20,8 @@
 #include <bitset>
 #include <sstream>
 #include <stdexcept>
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/tools.h>
 
 #ifdef __WIN__
@@ -322,12 +322,12 @@ namespace morph {
                           || std::is_same<std::decay_t<T>, std::array<long long int, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::array<unsigned int, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::array<unsigned long long int, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<float, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<double, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<int, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<long long int, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<unsigned int, 2>>::value == true
-                          || std::is_same<std::decay_t<T>, morph::Vector<unsigned long long int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<float, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<double, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<long long int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<unsigned int, 2>>::value == true
+                          || std::is_same<std::decay_t<T>, morph::vec<unsigned long long int, 2>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<float, float>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<double, double>>::value == true
                           || std::is_same<std::decay_t<T>, std::pair<int, int>>::value == true
@@ -370,37 +370,37 @@ namespace morph {
 
             if constexpr (std::is_same<std::decay_t<T>, float>::value == true
                           || std::is_same<typename std::decay<T>::type, std::array<float,2>>::value == true
-                          || std::is_same<typename std::decay<T>::type, morph::Vector<float,2>>::value == true
+                          || std::is_same<typename std::decay<T>::type, morph::vec<float,2>>::value == true
                           || std::is_same<typename std::decay<T>::type, std::pair<float, float>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, double>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<double,2>>::value == true
-                                 || std::is_same<typename std::decay<T>::type, morph::Vector<double,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<double,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<double, double>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<int,2>>::value == true
-                                 || std::is_same<typename std::decay<T>::type, morph::Vector<int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<int, int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<unsigned int,2>>::value == true
-                                 || std::is_same<typename std::decay<T>::type, morph::Vector<unsigned int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<unsigned int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<unsigned int, unsigned int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned long long int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<unsigned long long int,2>>::value == true
-                                 || std::is_same<typename std::decay<T>::type, morph::Vector<unsigned long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<unsigned long long int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<unsigned long long int, unsigned long long int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::array<long long int,2>>::value == true
-                                 || std::is_same<typename std::decay<T>::type, morph::Vector<long long int,2>>::value == true
+                                 || std::is_same<typename std::decay<T>::type, morph::vec<long long int,2>>::value == true
                                  || std::is_same<typename std::decay<T>::type, std::pair<long long int, long long int>>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(invals[0]));
 
@@ -488,7 +488,7 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-        //! read_contained_vals for an array<T,N> (and by extension, a morph::Vector<T,N>)
+        //! read_contained_vals for an array<T,N> (and by extension, a morph::vec<T,N>)
         template<typename T, size_t N>
         void read_contained_vals (const char* path, std::array<T, N>& vals)
         {
@@ -530,9 +530,9 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-        //! read_contained_vals for a vVector of Vector<T,N>
+        //! read_contained_vals for a vvec of vec<T,N>
         template<typename T, size_t N>
-        void read_contained_vals (const char* path, morph::vVector<morph::Vector<T, N>>& vals)
+        void read_contained_vals (const char* path, morph::vvec<morph::vec<T, N>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
             if (this->check_dataset_id (dataset_id, path) == -1) { return; }
@@ -577,9 +577,9 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Dclose: ");
         }
 
-        //! read_contained_vals for vVector of identically sized vVectors of scalar types T
+        //! read_contained_vals for vvec of identically sized vvecs of scalar types T
         template<typename T>
-        void read_contained_vals (const char* path, morph::vVector<morph::vVector<T>>& vals)
+        void read_contained_vals (const char* path, morph::vvec<morph::vvec<T>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
             if (this->check_dataset_id (dataset_id, path) == -1) { return; }
@@ -593,7 +593,7 @@ namespace morph {
             }
 
             // Read into a 1D section of memory
-            morph::vVector<T> invals;
+            morph::vvec<T> invals;
             invals.resize(dims[0] * dims[1]);
 
             herr_t status = 0;
@@ -728,7 +728,7 @@ namespace morph {
          * to have created the group for the latter. I don't think templating is
          * worthwhile for these functions. (2020 update: Having discovered expression
          * sfinae and constexpr, I now think templating IS probably useful. See example:
-         * void add_contained_vals (const char*, const std::vector<morph::Vector<T, N>>&)
+         * void add_contained_vals (const char*, const std::vector<morph::vec<T, N>>&)
          */
         template <typename T>
         void add_val (const char* path, const T& val)
@@ -1073,12 +1073,12 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
-        //! add_contained_values for vVectors of vVectors. All vVectors must be same
+        //! add_contained_values for vvecs of vvecs. All vvecs must be same
         //! size. Useful to create data in 'matrix' format, once it is loaded in,
         //! e.g. Octave.
         // FIXME: Outer container could be templated to be vector, list etc.
         template<typename T>
-        void add_contained_vals (const char* path, const morph::vVector<morph::vVector<T>>& vals)
+        void add_contained_vals (const char* path, const morph::vvec<morph::vvec<T>>& vals)
         {
             if (vals.empty()) { return; }
             this->process_groups (path);
@@ -1086,19 +1086,19 @@ namespace morph {
             const size_t N = vals[0].size();
             for (auto v : vals) {
                 if (v.size() != N) {
-                    throw std::runtime_error ("HdfData::add_contained_vals<Container<vVector<T>, Allocator>>: all contained vVectors must be of same size");
+                    throw std::runtime_error ("HdfData::add_contained_vals<Container<vvec<T>, Allocator>>: all contained vvecs must be of same size");
                 }
             }
             hsize_t dim_vecNdcoords[2];
             dim_vecNdcoords[0] = sz;
-            dim_vecNdcoords[1] = N; // N values in each enclosed vVector
+            dim_vecNdcoords[1] = N; // N values in each enclosed vvec
             hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
             // Now determine width of T and select the most suitable data type to pass to open_dataset()
             hid_t dataset_id = 0;
             herr_t status = 0;
 
-            // To output, put all the values in a single vVector.
-            morph::vVector<T> outvals;
+            // To output, put all the values in a single vvec.
+            morph::vvec<T> outvals;
             outvals.reserve (sz*N);
             for (auto v : vals) { outvals.insert (outvals.end(), v.begin(), v.end()); }
 
@@ -1135,7 +1135,7 @@ namespace morph {
                 status = H5Dwrite (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else {
-                throw std::runtime_error ("HdfData::add_contained_vals<vVector<vVector<T>>: Don't know how to store that type");
+                throw std::runtime_error ("HdfData::add_contained_vals<vvec<vvec<T>>: Don't know how to store that type");
             }
             this->handle_error (status, "Error. status after H5Dwrite 7.1: ");
             status = H5Dclose (dataset_id);
@@ -1144,15 +1144,15 @@ namespace morph {
             this->handle_error (status, "Error. status after H5Sclose: ");
         }
 
-        //! add_contained_vals for vector<morph::Vector<T, N>>
+        //! add_contained_vals for vector<morph::vec<T, N>>
         template<typename T, size_t N>
-        void add_contained_vals (const char* path, const std::vector<morph::Vector<T, N>>& vals)
+        void add_contained_vals (const char* path, const std::vector<morph::vec<T, N>>& vals)
         {
             if (vals.empty()) { return; }
             this->process_groups (path);
             hsize_t dim_vecNdcoords[2];
             dim_vecNdcoords[0] = vals.size();
-            dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
+            dim_vecNdcoords[1] = N; // N doubles in each vec<T,N>
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
             // Now determine width of T and select the most suitable data type to pass to open_dataset()
@@ -1206,7 +1206,7 @@ namespace morph {
             this->process_groups (path);
             hsize_t dim_vecNdcoords[2];
             dim_vecNdcoords[0] = vals.size();
-            dim_vecNdcoords[1] = N; // N doubles in each Vector<T,N>
+            dim_vecNdcoords[1] = N; // N doubles in each vec<T,N>
             // Note 2 dims (1st arg, which is rank = 2)
             hid_t dataspace_id = H5Screate_simple (2, dim_vecNdcoords, NULL);
             // Now determine width of T and select the most suitable data type to pass to open_dataset()

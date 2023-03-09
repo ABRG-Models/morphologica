@@ -52,6 +52,18 @@ namespace morph {
      * an integral type, then what? For char/unsigned char then 0-127 or 0-255. When
      * unsigned short then 0-MAX also. What about if unsigned int or larger? Surely not
      * the full range of these? Allow a runtime choice?
+     *
+     * A simple use of a ColourMap might look like this:
+     *
+     * // Instantiate a colourmap which will convert a range of floats from [0,1] into colours from the well known plasma colour map.
+     * morph::ColourMap<float> cm1(morph::ColourMapType::Plasma);
+     *
+     * // Convert floats into colours using the ColourMap::convert function:
+     * std::array<float, 3> clr1 = cm1.convert (0.2f);
+     * std::array<float, 3> clr2 = cm1.convert (0.8f);
+     *
+     * which gives two colours (clr1 and clr2) with one encoding a low value (clr1) and
+     * one encoding a high value (clr2).
      */
     template <typename T>
     class ColourMap
@@ -80,7 +92,9 @@ namespace morph {
         //! Default constructor is required, but need not do anything.
         ColourMap() {}
         //! Construct with a type
-        ColourMap (ColourMapType _t) { this->type = _t; }
+        ColourMap (ColourMapType _t) { this->setType (_t); }
+        //! Construct with the string name of the type
+        ColourMap (const std::string& _t) { this->setType (ColourMap::strToColourMapType (_t)); }
 
         //! If s is a string that matches a ColourMapType, return that colour map
         //! type. If string doesn't match, return the default.
@@ -598,7 +612,7 @@ namespace morph {
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
         //! Get the hue, in its most saturated form
-        std::array<float, 3> getHueRGB (void) { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
+        std::array<float, 3> getHueRGB() { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
 
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;

@@ -8,7 +8,7 @@
  */
 #pragma once
 
-#include <morph/MathConst.h>
+#include <morph/mathconst.h>
 #include <cmath>
 #include <limits>
 #include <utility>
@@ -101,7 +101,7 @@ namespace morph {
         bool onBoundary = false;
 
         //! Default constructor
-        DirichVtx (void) {
+        DirichVtx() {
             v.first = std::numeric_limits<Flt>::max();
             v.second = std::numeric_limits<Flt>::max();
         }
@@ -117,7 +117,7 @@ namespace morph {
             : v(p) {
             // This is half of the shortest possible distance in the y direction between two
             // adjacent Hex vertices.
-            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+            this->threshold = d/(4.0f*morph::mathconst<float>::sqrt_of_3);
         }
 
         /*!
@@ -126,7 +126,7 @@ namespace morph {
          */
         DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id)
             : v(p), f(id) {
-            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+            this->threshold = d/(4.0f*morph::mathconst<float>::sqrt_of_3);
         }
 
         /*!
@@ -136,7 +136,7 @@ namespace morph {
          */
         DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id, const std::pair<Flt, Flt>& oth)
             : v(p), f(id), neighb(oth) {
-            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+            this->threshold = d/(4.0f*morph::mathconst<float>::sqrt_of_3);
         }
 
         /*!
@@ -147,7 +147,7 @@ namespace morph {
         DirichVtx (const std::pair<Flt, Flt>& p, const Flt& d, const Flt& id,
                    const std::pair<Flt, Flt>& oth, const std::list<Hex>::iterator hex)
             : v(p), f(id), neighb(oth), hi(hex) {
-            this->threshold = d/(4.0f*morph::SQRT_OF_3_F);
+            this->threshold = d/(4.0f*morph::mathconst<float>::sqrt_of_3);
         }
 
         //! Comparison operation. Note: Ignores this->vn!
@@ -202,7 +202,7 @@ namespace morph {
         }
 
         //! Is this DirichVtx unset? If its this->v value is (max,max), then yes.
-        bool unset (void) {
+        bool unset() {
             if (this->v.first == std::numeric_limits<Flt>::max()
                 && this->v.second == std::numeric_limits<Flt>::max()) {
                 return true;
@@ -275,7 +275,7 @@ namespace morph {
              * 1. Compute phi, the angle Bi Ai Ai-1 using law of cosines
              */
             Flt phi = this->compute_angle (vn, v, Aim1, 1);
-            Flt theta = morph::PI_F - phi;
+            Flt theta = morph::mathconst<float>::pi - phi;
 
             /*
              * 2. Compute the line P_i wrt to Ai and Ai+1

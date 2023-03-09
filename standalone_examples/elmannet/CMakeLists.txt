@@ -55,11 +55,10 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Add GL defines to the CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL3_PROTOTYPES -DGL_GLEXT_PROTOTYPES")
 
-# Find the libraries which will be needed (just morphologica for this example)
-find_package(morphologica REQUIRED)
-
-# We assume that morphologica got installed in /usr/local.
-include_directories(BEFORE /usr/local/include)
+# We assume that the morphologica tree is 'next to' our .cpp files.
+set(MORPH_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/morphologica" CACHE PATH "The path to morphologica")
+include_directories(BEFORE ${MORPH_INCLUDE_PATH}/include) # Allows GL3/gl3.h to be found
+include_directories(BEFORE ${MORPH_INCLUDE_PATH})         # Allows morph/Header.h to be found
 
 # A single executable, and no links are required for this program.
 add_executable(elman1 elman1.cpp)

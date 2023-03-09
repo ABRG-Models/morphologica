@@ -3,7 +3,8 @@
  */
 
 #include <morph/Anneal.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/Visual.h>
 #include <morph/TriFrameVisual.h>
 #include <morph/HexGrid.h>
@@ -14,7 +15,7 @@
 #include <chrono>
 
 // Here's the Rosenbrock banana function
-FLT banana (morph::vVector<FLT> xy) {
+FLT banana (morph::vvec<FLT> xy) {
     FLT a = 1.0;
     FLT b = 100.0;
     FLT x = xy[0];
@@ -30,9 +31,9 @@ int main()
     std::cout << "test point on banana function = " << test << " (should be 0).\n";
 
     // Initial point and ranges
-    morph::vVector<FLT> p = { 0.5, -0.5};
+    morph::vvec<FLT> p = { 0.5, -0.5};
     std::cout << "Start point on banana function = " << banana(p) << ".\n";
-    morph::vVector<morph::Vector<FLT,2>> p_rng = {{ {-1.1, 1.1}, {-1.1, 1.1} }};
+    morph::vvec<morph::vec<FLT,2>> p_rng = {{ {-1.1, 1.1}, {-1.1, 1.1} }};
 
 #ifdef VISUALISE
     // Set up a visual environment
@@ -43,8 +44,8 @@ int main()
     v.showCoordArrows = true;
     v.lightingEffects (true);
 
-    morph::Vector<float> offset = {0,0,0};
-    morph::HexGrid hg (0.01, 10, 0, morph::HexDomainShape::Boundary);
+    morph::vec<float> offset = {0,0,0};
+    morph::HexGrid hg (0.01, 10, 0);
     hg.setCircularBoundary (2.5);
     std::vector<FLT> banana_vals(hg.num(), 0.0f);
     for (size_t i = 0; i < hg.num(); ++i) {
@@ -52,7 +53,7 @@ int main()
     }
     std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
     std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
-    morph::HexGridVisual<FLT>* hgv = new morph::HexGridVisual<FLT>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(v.shaders, &hg, offset);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
@@ -62,23 +63,23 @@ int main()
     hgv->finalize();
     v.addVisualModel (hgv);
 
-    morph::Vector<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
+    morph::vec<float, 3> polypos = { static_cast<float>(p[0]), static_cast<float>(p[1]), 0.0f };
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    morph::PolygonVisual* candp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.4f, col, 20);
+    auto candup = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    morph::PolygonVisual* bestp = new morph::PolygonVisual(v.shaderprog, offset, polypos, {1,0,0}, 0.001f, 0.8f, col, 10);
+    auto bestup = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    morph::PolygonVisual* currp = new morph::PolygonVisual (v.shaderprog, offset, polypos, {1,0,0}, 0.005f, 0.6f, col, 20);
+    auto currup = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
 
-    v.addVisualModel (candp);
-    v.addVisualModel (bestp);
-    v.addVisualModel (currp);
+    auto candp = v.addVisualModel (candup);
+    auto bestp = v.addVisualModel (bestup);
+    auto currp = v.addVisualModel (currup);
 #endif
 
     morph::Anneal<FLT> anneal(p, p_rng);

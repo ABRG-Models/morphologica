@@ -169,34 +169,6 @@ if(${glfw3_FOUND})
       endif()
     endif(HDF5_FOUND)
 
-    # Test boundary pgram
-    add_executable(testdom_pgram testdom_pgram.cpp)
-    target_link_libraries(testdom_pgram ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_pgram GLEW::GLEW)
-    endif()
-
-    # Test boundary rect
-    add_executable(testdom_rect testdom_rect.cpp)
-    target_link_libraries(testdom_rect ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_rect GLEW::GLEW)
-    endif()
-
-    # Test boundary hex
-    add_executable(testdom_hex testdom_hex.cpp)
-    target_link_libraries(testdom_hex ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_hex GLEW::GLEW)
-    endif()
-
-    # Test boundary bound
-    add_executable(testdom_bound testdom_bound.cpp)
-    target_link_libraries(testdom_bound ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} OpenGL::GL glfw Freetype::Freetype)
-    if(USE_GLEW)
-      target_link_libraries(testdom_bound GLEW::GLEW)
-    endif()
-
     add_executable(testbighexgrid testbighexgrid.cpp)
     target_link_libraries(testbighexgrid OpenGL::GL glfw Freetype::Freetype)
     if(USE_GLEW)
@@ -277,30 +249,42 @@ add_test(testConfig testConfig)
 add_executable(testQuaternion testQuaternion.cpp)
 add_test(testQuaternion testQuaternion)
 
-# testVector.
-add_executable(testVector testVector.cpp)
-add_test(testVector testVector)
+# test morph::vec.
+add_executable(testvec testvec.cpp)
+add_test(testvec testvec)
 
-# testVector elemental operations
-add_executable(testVectorElementOps testVectorElementOps.cpp)
-add_test(testVectorElementOps testVectorElementOps)
+# test morph::vec elemental operations
+add_executable(testvecElementOps testvecElementOps.cpp)
+add_test(testvecElementOps testvecElementOps)
 
-# Test the "Vector made from an std::vector" code (this vVector is better for neural networks)
-add_executable(testvVector testvVector.cpp)
-add_test(testvVector testvVector)
+# Test the "mathematic vector made from an std::vector" code (this vvec is better for neural networks)
+add_executable(testvvec testvvec.cpp)
+add_test(testvvec testvvec)
 
-add_executable(testvVectorOfVectors testvVectorOfVectors.cpp)
-add_test(testvVectorOfVectors testvVectorOfVectors)
+add_executable(testvvecofvecs testvvecofvecs.cpp)
+add_test(testvvecofvecs testvvecofvecs)
 
-# It's possible to modify testVector.cpp to be c++-11 or c++-14 friendly:
-add_executable(testVector14 testVector14.cpp)
-target_compile_features(testVector14 PUBLIC cxx_std_14)
-add_test(testVector14 testVector14)
-add_executable(testVector11 testVector14.cpp)
-target_compile_features(testVector11 PUBLIC cxx_std_11)
-add_test(testVector11 testVector11)
+add_executable(testvvec_convolutions testvvec_convolutions.cpp)
+add_test(testvvec_convolutions testvvec_convolutions)
 
-# Test the Scaling of vectors
+add_executable(testvvec_differentiation testvvec_differentiation.cpp)
+add_test(testvvec_differentiation testvvec_differentiation)
+
+add_executable(testvvec_zerocross testvvec_zerocross.cpp)
+add_test(testvvec_zerocross testvvec_zerocross)
+
+add_executable(testvvec_prune testvvec_prune.cpp)
+add_test(testvvec_prune testvvec_prune)
+
+# It's possible to modify testvec.cpp to be c++-11 or c++-14 friendly:
+add_executable(testvec14 testvec14.cpp)
+target_compile_features(testvec14 PUBLIC cxx_std_14)
+add_test(testvec14 testvec14)
+add_executable(testvec11 testvec14.cpp)
+target_compile_features(testvec11 PUBLIC cxx_std_11)
+add_test(testvec11 testvec11)
+
+# Test the Scaling of vecs
 add_executable(testScaleVector testScaleVector.cpp)
 add_test(testScaleVector testScaleVector)
 
@@ -311,6 +295,10 @@ add_test(testTransformMatrix testTransformMatrix)
 # Test morph::Matrix33 (3x3 matrix)
 add_executable(testMatrix33 testMatrix33.cpp)
 add_test(testMatrix33 testMatrix33)
+
+# Test morph::Matrix22 (2x2 matrix)
+add_executable(testMatrix22 testMatrix22.cpp)
+add_test(testMatrix22 testMatrix22)
 
 # Test Hex::get_vertex_coord()
 add_executable(testHexVertexPos testHexVertexPos.cpp)

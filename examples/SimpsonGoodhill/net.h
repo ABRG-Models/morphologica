@@ -7,12 +7,12 @@
 #include <set>
 #include <array>
 #include <vector>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
-// Comparison for std::set of Vectors
+// Comparison for std::set of vecs
 struct ncmp
 {
-    bool operator() (morph::Vector<size_t, 2> a, morph::Vector<size_t, 2> b) const
+    bool operator() (morph::vec<size_t, 2> a, morph::vec<size_t, 2> b) const
     {
         return a.lexical_lessthan(b);
     }
@@ -38,21 +38,21 @@ struct net
         for (size_t y = 0; y < h-1; ++y) {
             for (size_t x = 0; x < w; ++x) {
                 // Connect down
-                this->c.insert (morph::Vector<size_t, 2>({x+y*w, x+(y+1)*w}));
+                this->c.insert (morph::vec<size_t, 2>({x+y*w, x+(y+1)*w}));
             }
         }
         for (size_t x = 0; x < w-1; ++x) {
             for (size_t y = 0; y < h; ++y) {
                 // Connect right
-                this->c.insert (morph::Vector<size_t, 2>({x+y*w, 1+x+y*w}));
+                this->c.insert (morph::vec<size_t, 2>({x+y*w, 1+x+y*w}));
             }
         }
 
     }
     //! Positions of the vertices of the net
-    std::vector<morph::Vector<T, 3>> p;
+    std::vector<morph::vec<T, 3>> p;
     //! Colours of the vertices of the net
     std::vector<std::array<float, 3>> clr;
     //! Connections of the net. The indices into p that are the ends of line segments
-    std::set<morph::Vector<size_t, 2>, ncmp> c;
+    std::set<morph::vec<size_t, 2>, ncmp> c;
 };

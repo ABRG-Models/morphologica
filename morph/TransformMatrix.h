@@ -9,7 +9,7 @@
 #pragma once
 
 #include <morph/Quaternion.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <cmath>
 #include <array>
 #include <string>
@@ -89,9 +89,9 @@ namespace morph {
         const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
 
         //! Access a given row of the matrix
-        morph::Vector<Flt, 4> row (size_t idx) const
+        morph::vec<Flt, 4> row (size_t idx) const
         {
-            morph::Vector<Flt, 4> r = {0,0,0,0};
+            morph::vec<Flt, 4> r = {0,0,0,0};
             if (idx > 3) { return r; }
             r[0] = this->mat[idx];
             r[1] = this->mat[idx+4];
@@ -101,9 +101,9 @@ namespace morph {
         }
 
         //! Access a given column of the matrix
-        morph::Vector<Flt, 4> col (size_t idx) const
+        morph::vec<Flt, 4> col (size_t idx) const
         {
-            morph::Vector<Flt, 4> c = {0,0,0,0};
+            morph::vec<Flt, 4> c = {0,0,0,0};
             if (idx > 3) { return c; }
             idx *= 4;
             c[0] = this->mat[idx];
@@ -117,8 +117,8 @@ namespace morph {
         //! Compute a morphing transformation to turn simplex(ABCD) into simplex(EFGH). Avoid
         //! reflection. Keep the 'order' of ABC in DEF; if ABC defines a clockwise order
         //! of vertices, then so should DEF.
-        void determineFrom (std::array<Vector<Flt,4>, 4>& abcd,
-                            std::array<Vector<Flt,4>, 4>& efdg)
+        void determineFrom (std::array<vec<Flt,4>, 4>& abcd,
+                            std::array<vec<Flt,4>, 4>& efdg)
         {
             // The transformation is quite simple to determine. abcd defines a triangle
             // as 3 columns of 4-vectors (in homogeneous coordinates); efgh defines a
@@ -129,7 +129,7 @@ namespace morph {
         }
 #endif
         //! Apply translation specified by vector @dv
-        void translate (const Vector<Flt>& dv)
+        void translate (const vec<Flt>& dv)
         {
             this->mat[12] += dv.x();
             this->mat[13] += dv.y();
@@ -898,9 +898,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1
-        Vector<Flt, 4> operator* (const Vector<Flt, 4>& v1) const
+        vec<Flt, 4> operator* (const vec<Flt, 4>& v1) const
         {
-            Vector<Flt, 4> v;
+            vec<Flt, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -921,9 +921,9 @@ namespace morph {
         }
 
         //! Do matrix times vector multiplication, v = mat * v1.
-        Vector<Flt, 4> operator* (const Vector<Flt, 3>& v1) const
+        vec<Flt, 4> operator* (const vec<Flt, 3>& v1) const
         {
-            Vector<Flt, 4> v;
+            vec<Flt, 4> v;
             v[0] = this->mat[0] * v1.x()
                 + this->mat[4] * v1.y()
                 + this->mat[8] * v1.z()
@@ -1044,7 +1044,7 @@ namespace morph {
         }
 
         //! Make an orthographic projection
-        void orthographic (const Vector<Flt, 2>& bl, const Vector<Flt, 2>& tr,
+        void orthographic (const vec<Flt, 2>& bl, const vec<Flt, 2>& tr,
                            const Flt zNear, const Flt zFar)
         {
             if (zNear == zFar) { return; }

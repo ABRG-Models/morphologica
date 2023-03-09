@@ -9,6 +9,7 @@
 #include <morph/Mnist.h>
 #include <morph/Random.h>
 #include <fstream>
+#include <morph/vvec.h>
 #include <morph/nn/FeedForwardNet.h>
 
 int main()
@@ -18,8 +19,8 @@ int main()
     morph::nn::FeedForwardNet<float> ff1(layer_spec);
 
     // Manually set the input and desired output:
-    morph::vVector<float> in = {0.05, 0.0025};
-    morph::vVector<float> out = {0.8, 0.95};
+    morph::vvec<float> in = {0.05, 0.0025};
+    morph::vvec<float> out = {0.8, 0.95};
     ff1.setInput (in, out);
 
     // Manually set up the weights and biases:

@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/HexGridVisual.h>
@@ -44,7 +44,7 @@ int main()
     v.addLabel ("This is a\nmorph::HexGridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a HexGrid to show in the scene
-    morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01, 3, 0);
     hg.setCircularBoundary (0.3);
     std::cout << "Number of hexes in grid:" << hg.num() << std::endl;
 
@@ -55,12 +55,11 @@ int main()
     }
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0, -0.05, 0.0 };
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     hgv->setScalarData (&data);
     hgv->finalize();
-    unsigned int gridId = v.addVisualModel (hgv);
-    std::cout << "Added HexGridVisual with gridId " << gridId << std::endl;
+    v.addVisualModel (hgv);
 
     while (v.readyToFinish == false) {
         glfwWaitEventsTimeout (0.018);

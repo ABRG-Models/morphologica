@@ -11,7 +11,7 @@
 #include <morph/VisualDataModel.h>
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -24,9 +24,9 @@ namespace morph {
     class QuadsMeshVisual : public VisualDataModel<Flt>
     {
     public:
-        QuadsMeshVisual(GLuint sp,
+        QuadsMeshVisual(morph::gl::shaderprogs& _shaders,
                         const std::vector<std::array<Flt,12>>* _quads,
-                        const Vector<float> _offset,
+                        const vec<float> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& _scale,
                         ColourMapType _cmt,
@@ -35,7 +35,7 @@ namespace morph {
                         const float _radius = 0.05f)
         {
             // Set up...
-            this->shaderprog = sp;
+            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
@@ -47,7 +47,7 @@ namespace morph {
             this->quads = _quads;
 
             // From quads, build dataCoords:
-            this->dataCoords = new std::vector<Vector<float>>;
+            this->dataCoords = new std::vector<vec<float>>;
             this->dataCoords->resize (this->quads->size());
             unsigned int qi = 0;
             for (auto q : (*this->quads)) {
@@ -69,7 +69,7 @@ namespace morph {
         }
 
         //! Version with std::array \a _offset
-        QuadsMeshVisual(GLuint sp,
+        QuadsMeshVisual(morph::gl::shaderprogs& _shaders,
                         const std::vector<std::array<Flt,12>>* _quads,
                         const std::array<float, 3> _offset,
                         const std::vector<Flt>* _data,
@@ -77,20 +77,20 @@ namespace morph {
                         ColourMapType _cmt,
                         const float _hue = 0.0f)
         {
-            Vector<float> offset_vec;
+            vec<float> offset_vec;
             offset_vec.set_from(_offset);
-            QuadsVisual<Flt>(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
+            QuadsMeshVisual<Flt>(_shaders, _quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
         ~QuadsMeshVisual() { delete this->dataCoords; }
 
-        virtual void updateCoords (std::vector<Vector<Flt>>* _coords)
+        virtual void updateCoords (std::vector<vec<Flt>>* _coords)
         {
             throw std::runtime_error ("This won't work.");
         }
 
         //! Initialize the vertices that will represent the Quads.
-        void initializeVertices (void)
+        void initializeVertices()
         {
             unsigned int nquads = this->quads->size();
             unsigned int ndata = this->scalarData->size();
@@ -107,46 +107,53 @@ namespace morph {
             // Index buffer index
             VBOint ib = 0;
 
-            std::set<Vector<float, 6>> lastQuadLines;
+            std::set<vec<float, 6>> lastQuadLines;
+            std::cout << "nquads: " << nquads << std::endl;
             for (unsigned int qi = 0; qi < nquads; ++qi) {
                 // Extract coordinates from this->quads
-                Vector<float> q0 = {(*this->quads)[qi][0], (*this->quads)[qi][1], (*this->quads)[qi][2]};
-                Vector<float> q1 = {(*this->quads)[qi][3], (*this->quads)[qi][4], (*this->quads)[qi][5]};
-                Vector<float> q2 = {(*this->quads)[qi][6], (*this->quads)[qi][7], (*this->quads)[qi][8]};
-                Vector<float> q3 = {(*this->quads)[qi][9], (*this->quads)[qi][10], (*this->quads)[qi][11]};
+                vec<float> q0 = {(*this->quads)[qi][0], (*this->quads)[qi][1], (*this->quads)[qi][2]};
+                vec<float> q1 = {(*this->quads)[qi][3], (*this->quads)[qi][4], (*this->quads)[qi][5]};
+                vec<float> q2 = {(*this->quads)[qi][6], (*this->quads)[qi][7], (*this->quads)[qi][8]};
+                vec<float> q3 = {(*this->quads)[qi][9], (*this->quads)[qi][10], (*this->quads)[qi][11]};
                 // Draw a frame from the 4 coordinates
                 std::array<float, 3> clr = this->cm.convert(dcopy[qi]);
 
                 // Check that previous quad didn't include any of these pairs of points
-                Vector<float, 6> line0 = { q1[0], q1[1], q1[2], q0[0], q0[1], q0[2] };
-                Vector<float, 6> rline0 = { q0[0], q0[1], q0[2], q1[0], q1[1], q1[2] };
+                vec<float, 6> line0 = { q1[0], q1[1], q1[2], q0[0], q0[1], q0[2] };
+                vec<float, 6> rline0 = { q0[0], q0[1], q0[2], q1[0], q1[1], q1[2] };
 
-                Vector<float, 6> line1 = { q2[0], q2[1], q2[2], q1[0], q1[1], q1[2] };
-                Vector<float, 6> rline1 = { q1[0], q1[1], q1[2], q2[0], q2[1], q2[2] };
+                vec<float, 6> line1 = { q2[0], q2[1], q2[2], q1[0], q1[1], q1[2] };
+                vec<float, 6> rline1 = { q1[0], q1[1], q1[2], q2[0], q2[1], q2[2] };
 
-                Vector<float, 6> line2 = { q3[0], q3[1], q3[2], q2[0], q2[1], q2[2] };
-                Vector<float, 6> rline2 = { q2[0], q2[1], q2[2], q3[0], q3[1], q3[2] };
+                vec<float, 6> line2 = { q3[0], q3[1], q3[2], q2[0], q2[1], q2[2] };
+                vec<float, 6> rline2 = { q2[0], q2[1], q2[2], q3[0], q3[1], q3[2] };
 
-                Vector<float, 6> line3 = { q0[0], q0[1], q0[2], q3[0], q3[1], q3[2] };
-                Vector<float, 6> rline3 = { q3[0], q3[1], q3[2], q0[0], q0[1], q0[2] };
+                vec<float, 6> line3 = { q0[0], q0[1], q0[2], q3[0], q3[1], q3[2] };
+                vec<float, 6> rline3 = { q3[0], q3[1], q3[2], q0[0], q0[1], q0[2] };
 
                 if (!lastQuadLines.empty()) {
+                    std::cout << "Test and draw...\n";
                     // Test each line for the current quad. If it has already been drawn
                     // by the last quad, omit drawing it again.
                     if (lastQuadLines.count(line0) == 0 && lastQuadLines.count(rline0) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line1) == 0 && lastQuadLines.count(rline1) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line2) == 0 && lastQuadLines.count(rline2) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);
                     }
                     if (lastQuadLines.count(line3) == 0 && lastQuadLines.count(rline3) == 0) {
+                        std::cout << "draw\n";
                         this->computeTube (ib, q3, q0, clr, clr, this->radius, this->tseg);
                     }
                     lastQuadLines.clear();
                 } else { // No last quad, so draw all the lines in the current quad
+                    std::cout << "Draw all\n";
                     this->computeTube (ib, q0, q1, clr, clr, this->radius, this->tseg);
                     this->computeTube (ib, q1, q2, clr, clr, this->radius, this->tseg);
                     this->computeTube (ib, q2, q3, clr, clr, this->radius, this->tseg);

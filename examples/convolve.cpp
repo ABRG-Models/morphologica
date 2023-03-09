@@ -13,7 +13,7 @@
 #include <morph/ReadCurves.h>
 #include <morph/Random.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 
 int main()
 {
@@ -25,7 +25,7 @@ int main()
     v.setSceneTransZ (-3.0f);
 
     // Create an elliptical hexgrid for the input/output domains
-    morph::HexGrid hg(0.01, 3, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid hg(0.01, 3, 0);
     hg.setEllipticalBoundary (0.45, 0.3);
 
     // Populate a vector of floats with data
@@ -40,7 +40,7 @@ int main()
 
     // Create a circular HexGrid to contain the Gaussian convolution kernel
     float sigma = 0.025f;
-    morph::HexGrid kernel(0.01, 20.0f*sigma, 0, morph::HexDomainShape::Boundary);
+    morph::HexGrid kernel(0.01, 20.0f*sigma, 0);
     kernel.setCircularBoundary (6.0f*sigma);
     std::vector<float> kerneldata (kernel.num(), 0.0f);
     // Once-only parts of the calculation of the Gaussian.
@@ -71,43 +71,41 @@ int main()
     std::cout << "Unconvolved sum: " << nonconvolvedSum << ", convolved sum: " << convolvedSum << "\n";
 
     // Visualize the 3 maps
-    morph::Vector<float, 3> offset = { -0.5, 0.0, 0.0 };
-    morph::HexGridVisual<float>* hgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    morph::vec<float, 3> offset = { -0.5, 0.0, 0.0 };
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     hgv->setScalarData (&data);
     hgv->cm.setType(morph::ColourMapType::Viridis);
     hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
     hgv->finalize();
-    unsigned int gridId = v.addVisualModel (hgv);
+    // Get the non-owning pointer to hgv from the addVisualModel call
+    auto hgvp = v.addVisualModel (hgv);
 
     offset[1] += 0.6f;
-    morph::HexGridVisual<float>* kgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &kernel, offset);
+    auto kgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &kernel, offset);
     kgv->setScalarData (&kerneldata);
     kgv->cm.setType(morph::ColourMapType::Viridis);
     kgv->finalize();
-    unsigned int gridId1 = v.addVisualModel (kgv);
-    std::cout << "gridId1 is " << gridId1 << std::endl;
-    // Labels can be added after finalize() and after addVisualModel, and you can use
-    // the gridId to get the pointer as here:
-    v.getVisualModel(gridId1)->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
+    auto kgvp = v.addVisualModel (kgv);
+
+    // Labels can be added after finalize() and after addVisualModel
+    kgvp->addLabel ("Kernel", { 0.1f, 0.14f, 0.01f }, morph::colour::white);
 
     offset[1] -= 0.6f;
     offset[0] += 1.0f;
-    morph::HexGridVisual<float>* rgv = new morph::HexGridVisual<float>(v.shaderprog, v.tshaderprog, &hg, offset);
+    auto rgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
     rgv->setScalarData (&convolved);
     rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();
     rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
-    v.addVisualModel (rgv);
+    auto rgvp = v.addVisualModel (rgv);
 
     // Demonstrate how to divide existing scale by 10:
-    float newGrad = static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->zScale.getParams(0)/10.0;
+    float newGrad = hgvp->zScale.getParams(0)/10.0;
     // Set this in a new zscale object:
     morph::Scale<float> zscale;
     zscale.setParams (newGrad, 0);
-    // And set it back into the visual model. Here's the 'grid id' way:
-    static_cast<morph::VisualDataModel<float>*>(v.getVisualModel(gridId))->updateZScale (zscale);
-    // But if you already have the pointer to hand, this is cleaner:
-    rgv->updateZScale (zscale);
+    // Use the un-owned pointer rgvp:
+    rgvp->updateZScale (zscale);
 
     while (v.readyToFinish == false) {
         glfwWaitEventsTimeout (0.018);

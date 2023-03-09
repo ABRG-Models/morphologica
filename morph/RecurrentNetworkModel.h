@@ -23,7 +23,7 @@
 #include <morph/Random.h>
 #include <morph/Config.h>
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/RecurrentNetworkTools.h>
 #include <morph/RecurrentNetwork.h>
 #include <morph/ReadCurves.h>
@@ -67,7 +67,7 @@ namespace morph {
 
                 // set elliptical domain boundary and allocate memory
 
-                this->hg = new morph::HexGrid (this->hextohex_d, this->hexspan, 0, morph::HexDomainShape::Boundary);
+                this->hg = new morph::HexGrid (this->hextohex_d, this->hexspan, 0);
                 DBG ("Initial hexagonal HexGrid has " << this->hg->num() << " hexes");
                 this->hg->setEllipticalBoundary (ellipseA, ellipseB);
                 // Compute the distances from the boundary
@@ -588,12 +588,13 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-3.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
                 scale.do_autoscale = true;
                 std::vector<float> fFlt;
                 for (unsigned int i=0; i<M[mapIndex].N; i++){ fFlt.push_back (static_cast<float>(F[i])); }
-                v.addVisualModel (new QuadsVisual<float> (v.shaderprog, &M[mapIndex].quads, offset, &fFlt, scale, colourMap));
+                auto qvp = std::make_unique<QuadsVisual<float>> (v.shaders, &M[mapIndex].quads, offset, &fFlt, scale, colourMap);
+                v.addVisualModel (qvp);
                 v.render();
                 v.render();
                 v.saveImage(fname);
@@ -614,13 +615,21 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
                 scale.do_autoscale = true;
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog, v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (v.shaders, domain.hg, offset);
+                hgv1->setScalarData (&fFlt);
+                hgv1->zScale = zscale;
+                hgv1->colourScale = scale;
+                hgv1->cm.setType (colourMap);
+                // How to do a label:
+                //hgv1->addLabel ("My label", { -0.2f, -1.4f, 0.01f }, morph::colour::white, morph::VisualFont::Vera, 0.1f, 48);
+                hgv1->finalize();
+                v.addVisualModel (hgv1);
                 v.render();
                 v.render();
                 v.saveImage(fname);
@@ -642,7 +651,7 @@ namespace morph {
                 v.sceneLocked = false;
                 v.setZDefault(-2.7f);
                 v.setSceneTransXY (0.0f,0.0f);
-                morph::Vector<float, 3> offset  = { 0., 0., 0.0 };
+                morph::vec<float, 3> offset  = { 0., 0., 0.0 };
                 morph::Scale<float> scale;
 
                 if(color_min==color_max){
@@ -655,7 +664,13 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                v.addVisualModel (new HexGridVisual<float> (v.shaderprog,v.tshaderprog, domain.hg, offset, &fFlt, zscale, scale, colourMap));
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (v.shaders, domain.hg, offset);
+                hgv1->setScalarData (&fFlt);
+                hgv1->zScale = zscale;
+                hgv1->colourScale = scale;
+                hgv1->cm.setType (colourMap);
+                hgv1->finalize();
+                v.addVisualModel (hgv1);
                 v.render();
                 v.render();
                 v.saveImage(fname);

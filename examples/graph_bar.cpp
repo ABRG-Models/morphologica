@@ -2,8 +2,7 @@
  * Bargraph example
  */
 
-#include <morph/Vector.h>
-#include <morph/vVector.h>
+#include <morph/vvec.h>
 #include <morph/Random.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
@@ -12,11 +11,11 @@
 int main()
 {
     // Data
-    morph::vVector<float> absc = {1, 2, 3, 4};
-    morph::vVector<float> ord = {1, 1, 4, 2};
+    morph::vvec<float> absc = {1, 2, 3, 4};
+    morph::vvec<float> ord = {1, 1, 4, 2};
 
     morph::Visual v(1024, 768, "Bar graph", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
-    morph::GraphVisual<float>* gv = new morph::GraphVisual<float> (v.shaderprog, v.tshaderprog, {0,0,0});
+    auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
 
 
     morph::DatasetStyle ds(morph::stylepolicy::bar); // Draw a bar graph by creating a bar policy DatasetStyle
@@ -45,7 +44,7 @@ int main()
     gv->xlabel = "Condition";
     gv->ylabel = "Value";
     gv->finalize();
-    v.addVisualModel (static_cast<morph::VisualModel*>(gv));
+    v.addVisualModel (gv);
 
     // Render the graph until user exits
     v.render();

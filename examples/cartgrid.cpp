@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include <morph/Scale.h>
-#include <morph/Vector.h>
+#include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
 #include <morph/CartGridVisual.h>
@@ -58,14 +58,13 @@ int main()
     }
 
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
-    morph::Vector<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    morph::CartGridVisual<float>* cgv = new morph::CartGridVisual<float>(v.shaderprog, v.tshaderprog, &cg, offset);
+    morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
+    auto cgv = std::make_unique<morph::CartGridVisual<float>>(v.shaders, &cg, offset);
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->cm.setType (morph::ColourMapType::Twilight);
     cgv->finalize();
-    unsigned int gridId = v.addVisualModel (cgv);
-    std::cout << "Added CartGridVisual with gridId " << gridId << std::endl;
+    v.addVisualModel (cgv);
 
     while (v.readyToFinish == false) {
         glfwWaitEventsTimeout (0.018);
