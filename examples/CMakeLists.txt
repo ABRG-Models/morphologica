@@ -196,6 +196,12 @@ if(USE_GLEW)
   target_link_libraries(tri GLEW::GLEW)
 endif()
 
+add_executable(rhombo rhombo.cpp)
+target_link_libraries(rhombo OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(rhombo GLEW::GLEW)
+endif()
+
 add_executable(quads quads.cpp)
 target_link_libraries(quads OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)

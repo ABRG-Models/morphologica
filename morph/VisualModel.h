@@ -1155,6 +1155,8 @@ namespace morph {
         }
 
         /*!
+         * Sphere, 1 colour version.
+         *
          * Code for creating a sphere as part of this model. I'll use a sphere at the centre of the arrows.
          *
          * \param idx The index into the 'vertex indices array'
@@ -1164,8 +1166,9 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (VBOint& idx, vec<float> so, std::array<float, 3> sc, float r = 1.0f,
-                            int rings = 10, int segments = 12)
+        void computeSphere (VBOint& idx, vec<float> so,
+                            std::array<float, 3> sc,
+                            float r = 1.0f, int rings = 10, int segments = 12)
         {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
@@ -1290,6 +1293,8 @@ namespace morph {
         } // end of sphere calculation
 
         /*!
+         * Sphere, two colour version.
+         *
          * Code for creating a sphere as part of this model. I'll use a sphere at the
          * centre of the arrows.
          *
