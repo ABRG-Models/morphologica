@@ -79,7 +79,6 @@ namespace morph {
                 float bot_lim = -this->cg->depth()/2.0f;
                 this->centering_offset[0] = left_lim - this->cg->d_x[0];
                 this->centering_offset[1] = bot_lim - this->cg->d_y[0];
-                std::cout << "centering_offset is " << this->centering_offset << std::endl;
             }
 
             switch (this->cartVisMode) {
