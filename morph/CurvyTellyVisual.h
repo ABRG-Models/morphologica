@@ -60,7 +60,7 @@ namespace morph {
             float _x = 0.0f;
             morph::vec<float> vtx_0, vtx_1, vtx_2, vtx_a, vtx_b;
 
-            float divisor = (dx+this->cg->width())/this->angle_to_subtend;
+            float angle_per_distance = this->angle_to_subtend / (dx+this->cg->width());
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
 
@@ -69,10 +69,10 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                _x = -this->cg->d_x[ri]+this->centering_offset[0];
+                _x = -(this->cg->d_x[ri]+this->centering_offset[0]); // why mult by -1? Because -x on CartGrid becomes +angle on CurvyTelly
                 vtx_0 = {
-                    this->radius * std::cos (this->rotoff + _x/divisor),
-                    this->radius * std::sin (this->rotoff + _x/divisor),
+                    this->radius * std::cos (this->rotoff + _x*angle_per_distance),
+                    this->radius * std::sin (this->rotoff + _x*angle_per_distance),
                     this->cg->d_y[ri]+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_0, this->vertexPositions);
@@ -81,8 +81,8 @@ namespace morph {
                 // NE vertex
                 _x += hx;
                 vtx_1 = {
-                    this->radius * std::cos (this->rotoff + _x/divisor),
-                    this->radius * std::sin (this->rotoff + _x/divisor),
+                    this->radius * std::cos (this->rotoff + _x*angle_per_distance),
+                    this->radius * std::sin (this->rotoff + _x*angle_per_distance),
                     this->cg->d_y[ri]+vy+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_1, this->vertexPositions);
@@ -93,10 +93,10 @@ namespace morph {
                 this->vertex_push (vtx_2, this->vertexPositions);
 
                 // SW vertex
-                _x = -this->cg->d_x[ri]-hx+this->centering_offset[0];
+                _x = -(this->cg->d_x[ri]+this->centering_offset[0])-hx;
                 vtx_a = {
-                    this->radius * std::cos (this->rotoff + _x/divisor),
-                    this->radius * std::sin (this->rotoff + _x/divisor),
+                    this->radius * std::cos (this->rotoff + _x*angle_per_distance),
+                    this->radius * std::sin (this->rotoff + _x*angle_per_distance),
                     this->cg->d_y[ri]-vy+this->centering_offset[1] // same as vtx_2[2]
                 };
                 this->vertex_push (vtx_a, this->vertexPositions);
