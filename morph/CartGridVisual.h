@@ -451,7 +451,10 @@ namespace morph {
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
 
-        // A centering offset to make sure that the Cartgrid is centred on this->mv_offset
+        // A centering offset to make sure that the Cartgrid is centred on
+        // this->mv_offset. This is computed so that you *add* centering_offset to each
+        // computed x/y/z position for a rectangle, and this means that the rectangle
+        // will be centered around mv_offset.
         morph::vec<float, 3> centering_offset = { 0.0f, 0.0f, 0.0f };
     };
 
