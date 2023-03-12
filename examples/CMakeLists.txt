@@ -85,6 +85,12 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid GLEW::GLEW)
   endif()
 
+  add_executable(hsvwheel hsvwheel.cpp)
+  target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(hsvwheel GLEW::GLEW)
+  endif()
+
   # ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES}
   add_executable(hexgrid hexgrid.cpp)
   target_link_libraries(hexgrid OpenGL::GL glfw Freetype::Freetype)
