@@ -32,6 +32,7 @@ namespace morph {
         RGB,          // A kind of 'null' colour map that takes R, G and B values and returns as an RGB colour.
                       // Of course, you don't really need a morph::ColourMap to do this, but it can be useful where
                       // the ColourMap is embedded in the workflow, such as in a VisualDataModel.
+        HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
 
@@ -88,6 +89,15 @@ namespace morph {
         float sat3 = 1.0f;
         float val3 = 1.0f;
 
+        // Used by HSV. This allows you to rotate the way the HSV hues appear. If your
+        // two inputs were 'x' and 'y', then this allows you to choose which colour
+        // appears for x=1 and y=0 (i.e. for 0 rads). Give this as a value in radians in
+        // range 0 to 2pi. 0 gives the default, red.
+        T hue_rotation = T{0};
+
+        // Set this true to reverse the direction in which the hues are output
+        bool hue_reverse_direction = false;
+
     public:
         //! Default constructor is required, but need not do anything.
         ColourMap() {}
@@ -109,6 +119,8 @@ namespace morph {
                 cmt = morph::ColourMapType::Trichrome;
             } else if (_s == "duochrome") {
                 cmt = morph::ColourMapType::Duochrome;
+            } else if (_s == "hsv") {
+                cmt = morph::ColourMapType::HSV;
             } else if (_s == "monochromegreen") {
                 cmt = morph::ColourMapType::MonochromeGreen;
             } else if (_s == "monochromeblue") {
@@ -261,10 +273,14 @@ namespace morph {
         //! An overload of convert for DuoChrome ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2)
         {
-            if (this->type != ColourMapType::Duochrome) {
-                throw std::runtime_error ("Set ColourMapType to Duochrome.");
+            if (this->type != ColourMapType::Duochrome && this->type != ColourMapType::HSV) {
+                throw std::runtime_error ("Set ColourMapType to Duochrome or HSV.");
             }
-            return this->duochrome (_datum1, _datum2);
+            if (this->type == ColourMapType::Duochrome) {
+                return this->duochrome (_datum1, _datum2);
+            } else {
+                return this->hsv_2d (_datum1, _datum2);
+            }
         }
 
         //! An overload of convert for TriChrome or RGB ColourMaps
@@ -588,11 +604,11 @@ namespace morph {
             this->sat = _s;
         }
 
-        //! Set just the colour's value (ColourMapType::Fixed only)
+        //! Set just the colour's value (ColourMapType::Fixed/HSV only)
         void setVal (const float& _v)
         {
-            if (this->type != ColourMapType::Fixed) {
-                throw std::runtime_error ("Only ColourMapType::Fixed allows setting of value");
+            if (this->type != ColourMapType::Fixed && this->type != ColourMapType::HSV) {
+                throw std::runtime_error ("Only ColourMapType::Fixed and ColourMapType::HSV allow setting of value");
             }
             this->val = _v;
         }
@@ -613,6 +629,22 @@ namespace morph {
 
         //! Get the hue, in its most saturated form
         std::array<float, 3> getHueRGB() { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
+
+        void setHueRotation (const T rotation_rads)
+        {
+            if (this->type != ColourMapType::HSV) {
+                throw std::runtime_error ("Only ColourMapType::HSV allows setting of hue rotation");
+            }
+            this->hue_rotation = rotation_rads;
+        }
+
+        void setHueReverse (const bool rev)
+        {
+            if (this->type != ColourMapType::HSV) {
+                throw std::runtime_error ("It's only relevant to reverse hue direction for ColourMapType::HSV");
+            }
+            this->hue_reverse_direction = rev;
+        }
 
         //! Format of colours
         ColourOrder order = ColourOrder::RGB;
@@ -719,6 +751,32 @@ namespace morph {
             clr1[1] += clr2[1] + clr3[1];
             clr1[2] += clr2[2] + clr3[2];
             return clr1;
+        }
+
+        /*!
+         * @param datum1 gray value from 0.0 to 1.0
+         * @param datum2 gray value from 0.0 to 1.0
+         *
+         * @returns RGB value in a map, with hue/saturation derived from datum1 and datum2.
+         */
+        std::array<float,3> hsv_2d (T datum1, T datum2)
+        {
+            // Convert _datum1 ('x'), _datum2 ('y') into r, phi. Each datum is expected to have a range [0,1]
+
+            // Get the datums centralised about 0 & scale so that for datum1/2 both equal to 1 we get max saturation
+            datum1 = (datum1 - T{0.5}) * morph::mathconst<T>::root_2;
+            datum2 = (datum2 - T{0.5}) * morph::mathconst<T>::root_2;
+
+            T r_sat = std::sqrt(datum1 * datum1 + datum2 * datum2);
+            r_sat = r_sat > T{1} ? T{1} : r_sat;
+            r_sat = r_sat < T{0} ? T{0} : r_sat;
+
+            T phi_hue = std::atan2 (datum2, datum1) + this->hue_rotation;
+            phi_hue = phi_hue < T{0} ? phi_hue + morph::mathconst<T>::two_pi : phi_hue;
+            phi_hue = phi_hue > morph::mathconst<T>::two_pi ? phi_hue - morph::mathconst<T>::two_pi : phi_hue;
+            phi_hue /= morph::mathconst<T>::two_pi;
+            float phi_hue_f = static_cast<float>(phi_hue);
+            return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-phi_hue_f) : phi_hue_f, static_cast<float>(r_sat), this->val);
         }
 
         //! A pass-through with bounds checking
