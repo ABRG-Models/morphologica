@@ -324,8 +324,9 @@ namespace morph {
         }
 
         /*!
-         * Permute the elements one time in a rotation. 0->N-1, 1->0, 2->1, etc. Useful
-         * for swapping x and y in a 2D vector.
+         * Permute the elements one time in a rotation. This 'rotates left', i.e. in an
+         * N element vvec: 0->N-1, 1->0, 2->1, etc. Useful for swapping x and y in a 2D
+         * vector.
          */
         void rotate()
         {
@@ -338,7 +339,11 @@ namespace morph {
             } // else no op
         }
 
-        //! Templated rotate for integral types T
+        /*!
+         * Templated rotate for integral types T. Rotates 'n steps to the left' so, if
+         * n=1, and the vvec length is N, then element 0->N-1, 1->0, 2->1, etc. To rotate to
+         * the right, you can use -n.
+         */
         template <typename T=int>
         void rotate (T n)
         {
