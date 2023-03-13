@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <morph/tools.h>
+#include <morph/mathconst.h>
 
 namespace morph {
 
