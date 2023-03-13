@@ -65,11 +65,11 @@ namespace morph {
             VBOint idx = 0;
             // Draw a tube. That's it!
             if constexpr (use_oriented_tube == false) {
-                this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
+                this->computeTube (idx, this->start_coord, this->end_coord,
                                    this->start_col, this->end_col, this->radius, 12);
             } else {
                 // Can alternatively use the 'oriented' tube
-                this->computeTube (idx, this->mv_offset+this->start_coord, this->mv_offset+this->end_coord,
+                this->computeTube (idx, this->start_coord, this->end_coord,
                                    {0,1,0}, {0,0,1},
                                    this->start_col, this->end_col, this->radius, 6, morph::mathconst<float>::pi_over_6);
             }
