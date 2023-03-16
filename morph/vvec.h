@@ -1430,9 +1430,10 @@ namespace morph {
         //! Concatentate the vvec<S>& a to the end of *this.
         void concat (const vvec<S>& a)
         {
-            this->resize (this->size()+a.size(), S{0});
+            size_t sz = this->size();
+            this->resize (sz + a.size());
             auto iter = this->begin();
-            std::advance (iter, a.size());
+            std::advance (iter, sz);
             std::copy (a.begin(), a.end(), iter);
         }
 

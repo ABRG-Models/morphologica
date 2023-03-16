@@ -336,12 +336,41 @@ int main() {
     formax.set_lowest();
     std::cout << "vvec<float>::set_lowest gives: " << formax << std::endl;
 
+    // Concat two diff. sized vectors
     vvec<unsigned int> ua = { 3, 4, 5 };
-    vvec<unsigned int> ub = { 30, 40, 50 };
-
+    vvec<unsigned int> ub = { 30, 40, 50, 60 };
+    // Expected result:
+    vvec<unsigned int> uab_cmp = { 3, 4, 5, 30, 40, 50, 60 };
     std::cout << "Before concat(), ua is " << ua << std::endl;
     ua.concat (ub);
-    std::cout << "After concat(), ua is " << ua << std::endl;
+    std::cout << "After concat" << ub << ", ua is " << ua << std::endl;
+    if (uab_cmp != ua) { --rtn; }
+
+    // Concat onto empty vvec
+    ua = {};
+    uab_cmp = { 30, 40, 50, 60 };
+    std::cout << "Before concat(), ua is " << ua << std::endl;
+    ua.concat (ub);
+    std::cout << "After concat" << ub << ", ua is " << ua << std::endl;
+    if (uab_cmp != ua) { --rtn; }
+
+    // Concat empty vvec
+    ua = { 3, 4, 5 };
+    ub = {};
+    uab_cmp = { 3, 4, 5 };
+    std::cout << "Before concat(), ua is " << ua << std::endl;
+    ua.concat (ub);
+    std::cout << "After concat" << ub << ", ua is " << ua << std::endl;
+    if (uab_cmp != ua) { --rtn; }
+
+    // Concat 2 empty vvecs
+    ua = {};
+    ub = {};
+    uab_cmp = {};
+    std::cout << "Before concat(), ua is " << ua << std::endl;
+    ua.concat (ub);
+    std::cout << "After concat" << ub << ", ua is " << ua << std::endl;
+    if (uab_cmp != ua) { --rtn; }
 
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
