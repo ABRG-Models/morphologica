@@ -421,6 +421,41 @@ namespace morph {
         }
 
         /*!
+         * Reduce the length of the vector by the amount dl, if possible. If dl makes the vector
+         * have a negative length, then return a zeroed vector. Enable only for real valued vectors.
+         */
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        vvec<S> shorten (const S dl) const
+        {
+            vvec<S> v = *this;
+            S newlen = this->length() - dl;
+            if (newlen <= S{0}) {
+                v.zero();
+            } else {
+                v *= newlen/this->length();
+            }
+            return v;
+        }
+
+        /*!
+         * Opposite of vvec::shorten. Increase the length of the vector by the amount dl, if
+         * possible. If dl is negative, and makes the vector have a negative length, then return a
+         * zeroed vector. Enable only for real valued vectors.
+         */
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        vvec<S> lengthen (const S dl) const
+        {
+            vvec<S> v = *this;
+            S newlen = this->length() + dl;
+            if (newlen <= S{0}) { // dl could be negative
+                v.zero();
+            } else {
+                v *= newlen/this->length();
+            }
+            return v;
+        }
+
+        /*!
          * Find the squared length of the vector which is the same as the sum of squared
          * elements, if elements are scalar.
          *

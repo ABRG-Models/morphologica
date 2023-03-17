@@ -418,6 +418,36 @@ namespace morph {
             }
         }
 
+        //! Reduce the length of the vector by the amount dl, if possible. If dl makes the vector
+        //! have a negative length, then return a null vector
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        vec<S, N> shorten (const S dl) const
+        {
+            vec<S, N> v = *this;
+            S newlen = this->length() - dl;
+            if (newlen <= S{0}) {
+                v.zero();
+            } else {
+                v *= newlen/this->length();
+            }
+            return v;
+        }
+
+        //! Increase the length of the vector by the amount dl, if possible. If dl makes the vector
+        //! have a negative length, then return a null vector
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        vec<S, N> lengthen (const S dl) const
+        {
+            vec<S, N> v = *this;
+            S newlen = this->length() + dl;
+            if (newlen <= S{0}) { // dl could be negative, so still need to test new length of vector
+                v.zero();
+            } else {
+                v *= newlen/this->length();
+            }
+            return v;
+        }
+
         /*!
          * Find the squared length of the vector.
          *

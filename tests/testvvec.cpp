@@ -372,6 +372,52 @@ int main() {
     std::cout << "After concat" << ub << ", ua is " << ua << std::endl;
     if (uab_cmp != ua) { --rtn; }
 
+    // Test shorten
+    vvec<float> lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    vvec<float> sv = lv.shorten (5.0f);
+    std::cout << "lv: " << lv << " lv.shorten(5.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 3.0f, 4.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.shorten (10.0f);
+    std::cout << "lv: " << lv << " lv.shorten(10.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 0.0f, 0.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.shorten (12.0f);
+    std::cout << "lv: " << lv << " lv.shorten(12.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 0.0f, 0.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.shorten (-5.0f); // shorten -ve lengthens
+    std::cout << "lv: " << lv << " lv.shorten(-5.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 9.0f, 12.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.lengthen (-5.0f); // lengthen -ve shortens
+    std::cout << "lv: " << lv << " lv.lengthen(-5.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 3.0f, 4.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.lengthen (-10.0f);
+    std::cout << "lv: " << lv << " lv.lengthen(-10.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 0.0f, 0.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.lengthen (-12.0f);
+    std::cout << "lv: " << lv << " lv.lengthen(-12.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 0.0f, 0.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.lengthen (5.0f);
+    std::cout << "lv: " << lv << " lv.lengthen(5.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 9.0f, 12.0f })) { --rtn; }
+
+    lv = { 6.0f, 8.0f }; // a 3,4,5 vector
+    sv = lv.lengthen (15.0f);
+    std::cout << "lv: " << lv << " lv.lengthen(15.0f) returns the vector: " << sv << std::endl;
+    if (sv != vvec<float>({ 15.0f, 20.0f })) { --rtn; }
+
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;
 }
