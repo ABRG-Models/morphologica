@@ -429,9 +429,9 @@ namespace morph {
         virtual std::array<float, 3> setColour (unsigned int hi)
         {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
-            if (this->cm.getType() == morph::ColourMapType::RGB) {
+            if (this->cm.numDatums() == 3) {
                 clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi], this->dcolour3[hi]);
-            } else if (this->cm.getType() == morph::ColourMapType::Duochrome) {
+            } else if (this->cm.numDatums() == 2) {
                 // Use vectorData
                 clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
             } else {
