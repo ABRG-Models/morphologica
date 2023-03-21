@@ -33,6 +33,8 @@ namespace morph {
         RGB,          // A kind of 'null' colour map that takes R, G and B values and returns as an RGB colour.
                       // Of course, you don't really need a morph::ColourMap to do this, but it can be useful where
                       // the ColourMap is embedded in the workflow, such as in a VisualDataModel.
+        RGBMono,      // Takes RGB input and outputs a coloured monochrome version (datum varies value)
+        RGBGrey,      // Takes RGB input and outputs a greyscale version
         HSV,          // A special map in which two input numbers are used to compute a hue and a saturation.
         Fixed         // Fixed colour. Should return same colour for any datum. User must set hue, sat, val.
     };
@@ -120,6 +122,12 @@ namespace morph {
                 cmt = morph::ColourMapType::Trichrome;
             } else if (_s == "duochrome") {
                 cmt = morph::ColourMapType::Duochrome;
+            } else if (_s == "rgb") {
+                cmt = morph::ColourMapType::RGB;
+            } else if (_s == "rgbmono") {
+                cmt = morph::ColourMapType::RGBMono;
+            } else if (_s == "rgbgrey") {
+                cmt = morph::ColourMapType::RGBGrey;
             } else if (_s == "hsv") {
                 cmt = morph::ColourMapType::HSV;
             } else if (_s == "monochromegreen") {
@@ -228,6 +236,8 @@ namespace morph {
             case ColourMapType::MonochromeRed:
             case ColourMapType::MonochromeBlue:
             case ColourMapType::MonochromeGreen:
+            case ColourMapType::RGBMono:
+            case ColourMapType::RGBGrey:
             {
                 c = {1.0, 0.0f, 0.0f};
                 break;
@@ -245,6 +255,35 @@ namespace morph {
 
             return c;
         }
+
+        //! How many colour datums does the colour map require?
+        static int numDatums (ColourMapType _t)
+        {
+            int n = 0;
+            switch (_t) {
+            case ColourMapType::Trichrome:
+            case ColourMapType::RGB:
+            case ColourMapType::RGBMono:
+            case ColourMapType::RGBGrey:
+            {
+                n = 3;
+                break;
+            }
+            case ColourMapType::Duochrome:
+            {
+                n = 2;
+                break;
+            }
+            default: // rest are one datum
+            {
+                n = 1;
+                break;
+            }
+            }
+
+            return n;
+        }
+        int numDatums() { return ColourMap::numDatums (this->type); }
 
         //! The maximum number for the range of the datum to convert to a colour. 1 for
         //! floating point variables.
@@ -287,10 +326,29 @@ namespace morph {
         //! An overload of convert for TriChrome or RGB ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
         {
-            if (this->type != ColourMapType::Trichrome && this->type != ColourMapType::RGB) {
-                throw std::runtime_error ("Set ColourMapType to Trichrome or RGB.");
+            if (this->type != ColourMapType::Trichrome
+                && this->type != ColourMapType::RGB
+                && this->type != ColourMapType::RGBMono
+                && this->type != ColourMapType::RGBGrey) {
+                throw std::runtime_error ("Set ColourMapType to Trichrome, RGB, RGBMono or RGBGrey.");
             }
-            return this->type == ColourMapType::Trichrome ? (this->trichrome (_datum1, _datum2, _datum3)) : (this->rgb (_datum1, _datum2, _datum3));
+            std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
+            switch (this->type) {
+            case ColourMapType::Trichrome:
+                clr = this->trichrome (_datum1, _datum2, _datum3);
+                break;
+            case ColourMapType::RGBMono:
+                clr = this->rgb_to_monochrome (_datum1, _datum2, _datum3);
+                break;
+            case ColourMapType::RGBGrey:
+                clr = this->rgb_to_greyscale (_datum1, _datum2, _datum3);
+                break;
+            case ColourMapType::RGB:
+            default:
+                clr = this->rgb (_datum1, _datum2, _datum3);
+                break;
+            }
+            return clr;
         }
 
         //! Convert the scalar datum into an RGB (or BGR) colour
@@ -471,7 +529,7 @@ namespace morph {
             this->hue = 0.0f;
             this->hue2 = 0.6667f;
         }
-        // Set Duochrome to be Blue-red
+        //! Set Duochrome to be Blue-red
         void setHueBR()
         {
             if (this->type != ColourMapType::Duochrome) {
@@ -780,8 +838,8 @@ namespace morph {
             return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-phi_hue_f) : phi_hue_f, static_cast<float>(r_sat), this->val);
         }
 
-        //! A pass-through with bounds checking
-        static std::array<float,3> rgb (float datum1, float datum2, float datum3)
+        //! Bounds-check three datums to be in range [0,1]
+        static void bounds_check_3 (float& datum1, float& datum2, float& datum3)
         {
             datum1 = datum1 > 1.0f ? 1.0f : datum1;
             datum2 = datum2 > 1.0f ? 1.0f : datum2;
@@ -789,8 +847,32 @@ namespace morph {
             datum1 = datum1 < 0.0f ? 0.0f : datum1;
             datum2 = datum2 < 0.0f ? 0.0f : datum2;
             datum3 = datum3 < 0.0f ? 0.0f : datum3;
+        }
+
+        //! A pass-through with bounds checking
+        static std::array<float,3> rgb (float datum1, float datum2, float datum3)
+        {
+            ColourMap::bounds_check_3 (datum1, datum2, datum3);
             std::array<float,3> clr = {datum1, datum2, datum3};
             return clr;
+        }
+
+        //! RGB to monochrome, to display RGB values in monochrome (using this->hue)
+        std::array<float,3> rgb_to_monochrome (float datum1, float datum2, float datum3)
+        {
+            ColourMap::bounds_check_3 (datum1, datum2, datum3);
+            // Get monochrome colour for the mean datum
+            float datum = (datum1 + datum2 + datum3) / 3.0f;
+            return this->monochrome (datum);
+        }
+
+        //! RGB to greyscale, to display RGB values in a greyscale
+        std::array<float,3> rgb_to_greyscale (float datum1, float datum2, float datum3)
+        {
+            ColourMap::bounds_check_3 (datum1, datum2, datum3);
+            // Get greyscale colour for the mean datum
+            float datum = (datum1 + datum2 + datum3) / 3.0f;
+            return greyscale (datum);
         }
 
         /*!
