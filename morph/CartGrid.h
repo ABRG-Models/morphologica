@@ -999,6 +999,13 @@ namespace morph {
             return (xmax - xmin);
         }
 
+        morph::vec<float, 4> get_extents() const
+        {
+            morph::vec<int, 4> extents;
+            extents.set_from (this->findBoundaryExtents());
+            return (extents.as_float() * this->d);
+        }
+
         //! Return the number of elements that the CartGrid is wide
         int widthnum() const
         {
@@ -2265,8 +2272,7 @@ namespace morph {
          */
         std::array<int, 4> findBoundaryExtents() const
         {
-            // Return object contains {ri-left, ri-right, gi-bottom, gi-top, gi at ri-left, gi at ri-right}
-            // i.e. {xmin, xmax, ymin, ymax, gi at xmin, gi at xmax}
+            // Return object
             std::array<int, 4> extents = {{0,0,0,0}};
 
             // Find the furthest left and right rects and the furthest up and down rects.
