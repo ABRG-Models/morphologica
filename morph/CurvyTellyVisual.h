@@ -70,9 +70,11 @@ namespace morph {
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
                 _x = -(this->cg->d_x[ri]+this->centering_offset[0]); // why mult by -1? Because -x on CartGrid becomes +angle on CurvyTelly
+                // For central vertex, reduce radius down:
+                float rprime = this->radius * std::cos (hx*angle_per_distance);
                 vtx_0 = {
-                    this->radius * std::cos (this->rotoff + _x*angle_per_distance),
-                    this->radius * std::sin (this->rotoff + _x*angle_per_distance),
+                    rprime * std::cos (this->rotoff + _x*angle_per_distance),
+                    rprime * std::sin (this->rotoff + _x*angle_per_distance),
                     this->cg->d_y[ri]+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_0, this->vertexPositions);
