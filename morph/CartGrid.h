@@ -72,6 +72,10 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
+        // Width and height of a CartGrid that happens to be of type CartDomainShape::Rectangle.
+        int w_px = -1;
+        int h_px = -1;
+
         /*
          * Neighbour iterators. For use when the stride to the neighbour ne or nw is not
          * constant. On a Cartesian grid, these are necessary if an arbitrary boundary
@@ -1423,6 +1427,74 @@ namespace morph {
             }
         }
 
+        // Apply a box filter. Be fast. Rectangular CartGrids only.
+        template<typename T, int boxside>
+        void boxfilter_f (const std::vector<T>& data, std::vector<T>& result)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+            if (this->domainShape != CartDomainShape::Rectangle) {
+                throw std::runtime_error ("This method requires rectangular CartGrid.");
+            }
+            if (this-
+
+            morph::vec<morph::vec<T, boxside>, boxside/2 > colsums;
+            colsums.zero();
+
+            morph::vvec<T> colsum (this->w_px, T{0});
+            morph::vvec<T> lrow (this->w_px, T{0}); // last row
+
+            std::cout << "w_px = " << this->w_px << ", h_px = " << this->h_px << std::endl;
+
+            // In this version, treat the underlying data as a rectangle.
+            for (int y = -(boxside/2); y < h_px; ++y) {
+
+                T rowsum = y >= 0 ? colsum[0]+colsum[w_px-1]+colsum[w_px-2] : T{0};
+                std::cout << "\ny=" << y << " rowsum init to " << rowsum << std::endl;
+
+                for (int x = 0; x < this->w_px; ++x) {
+
+                    // Update the last row
+                    if ( y >= (boxside-1)) {
+                        std::cout << "Updating last row with data[row " << y-(boxside-1) << "]\n";
+                        lrow[x] = data[(y-(boxside-1))*w_px+x];
+                    }
+
+                    // To row sum, add the top row, and subtract the last row
+                    int dataidx = (y+(boxside/2))*w_px+x;
+                    if (dataidx < (w_px*h_px)) {
+                        std::cout << "colsum["<<x<<"] += data[row " << y+(boxside/2) << ", col " << x << "](" << data[dataidx] <<  ") - lrow["<<x<<"]("<< lrow[x] <<") ";
+                        colsum[x] += data[dataidx] - lrow[x];
+                    } else {
+                        std::cout << "colsum["<<x<<"] -= lrow["<<x<<"]("<< lrow[x] <<") ";
+                        colsum[x] -= lrow[x];
+                    }
+                    std::cout << " => " << colsum[x] << std::endl;
+                    // Compute the sum along the row for result
+                    if (y>=0) {
+                        std::cout << "y>=0 so...            ";
+                        int cycled_idx = x-(boxside/2);
+                        cycled_idx += cycled_idx < 0 ? w_px : 0;
+
+                        int colidx = x+(boxside/2);
+                        std::cout << "rowsum += colsum[" << colidx << "](" << colsum[colidx] << ") - colsum[" << cycled_idx << "](" << colsum[cycled_idx] << ")\n";
+                        rowsum += colsum[x+(boxside/2)] - colsum[cycled_idx];
+
+                        int resultidx = y*w_px+x;
+                        std::cout << "x >= 0, so                                                             data["<<resultidx<< "] = rowsum = " << rowsum << std::endl;
+                        result[resultidx] = rowsum;
+                    }
+                }
+            }
+        }
+
         /*!
          * Using this CartGrid as the domain, convolve the domain data \a data with the
          * kernel data \a kerneldata, which exists on another CartGrid, \a
@@ -1568,6 +1640,11 @@ namespace morph {
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->v));
 
+            if (this->domainShape == CartDomainShape::Rectangle) {
+                this->w_px = 2 * halfRows + 1;
+                this->h_px = 2 * halfCols + 1;
+            }
+
             this->x_minmax = {-halfCols * this->d, halfCols * this->d};
             this->y_minmax = {-halfRows * this->v, halfRows * this->v};
 
@@ -1633,6 +1710,11 @@ namespace morph {
             int _xf = std::round(x2/this->d);
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
+
+            if (this->domainShape == CartDomainShape::Rectangle) {
+                this->w_px = _xf-_xi+1;
+                this->h_px = _yf-_yi+1;
+            }
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
