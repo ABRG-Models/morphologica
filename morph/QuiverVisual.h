@@ -56,8 +56,8 @@ namespace morph {
         }
 
         //! Do the computations to initialize the vertices that will represent the Quivers.
-        void initializeVertices() {
-
+        void initializeVertices()
+        {
             unsigned int ncoords = this->dataCoords->size();
             unsigned int nquiv = this->vectorData->size();
 
@@ -66,18 +66,18 @@ namespace morph {
                 return;
             }
 
-            vec<Flt> zero3 = {0.0,0.0,0.0};
+            vec<Flt> zero3 = { Flt{0}, Flt{0}, Flt{0} };
             std::vector<Flt> lengths;
             for (unsigned int i = 0; i < nquiv; ++i) {
                 lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
             }
             // Auto scale the lengths to get a full range of colours for the lengths.
-            std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, 0.0f, 1.0f);
+            std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, Flt{0}, Flt{1});
 
             // The indices index
             VBOint idx = 0;
 
-            vec<Flt> half = {0.5,0.5,0.5};
+            vec<Flt> half = { Flt{0.5}, Flt{0.5}, Flt{0.5} };
             vec<Flt> vectorData_i, halfquiv;
             vec<float> start, end, coords_i;
             std::array<float, 3> clr;
@@ -109,9 +109,9 @@ namespace morph {
                                     halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
                 // Will need a fixed scale for some visualizations
-                this->computeTube (idx, start, end, clr, clr, lengths[i]/30.0);
+                this->computeTube (idx, start, end, clr, clr, static_cast<float>(lengths[i])/30.0f);
                 // Plus sphere or cone:
-                this->computeSphere (idx, coords_i, clr, lengths[i]/10.0);
+                this->computeSphere (idx, coords_i, clr, static_cast<float>(lengths[i])/10.0f);
                 // Compute a tip for the cone.
                 vec<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
                 vec<float> tip;
@@ -121,7 +121,7 @@ namespace morph {
                                 vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
                 std::transform (end.begin(), end.end(),
                                 halfquiv.begin(), tip.begin(), std::plus<Flt>());
-                this->computeCone (idx, end, tip, -0.1f, clr, lengths[i]/10.0);
+                this->computeCone (idx, end, tip, -0.1f, clr, static_cast<float>(lengths[i])/10.0f);
             }
         }
 
