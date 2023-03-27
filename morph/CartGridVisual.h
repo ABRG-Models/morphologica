@@ -17,29 +17,29 @@
 #include <vector>
 #include <array>
 
-#define NE(hi) (this->cg->d_ne[hi])
-#define HAS_NE(hi) (this->cg->d_ne[hi] == -1 ? false : true)
+#define R_NE(hi) (this->cg->d_ne[hi])
+#define R_HAS_NE(hi) (this->cg->d_ne[hi] == -1 ? false : true)
 
-#define NW(hi) (this->cg->d_nw[hi])
-#define HAS_NW(hi) (this->cg->d_nw[hi] == -1 ? false : true)
+#define R_NW(hi) (this->cg->d_nw[hi])
+#define R_HAS_NW(hi) (this->cg->d_nw[hi] == -1 ? false : true)
 
-#define NNE(hi) (this->cg->d_nne[hi])
-#define HAS_NNE(hi) (this->cg->d_nne[hi] == -1 ? false : true)
+#define R_NNE(hi) (this->cg->d_nne[hi])
+#define R_HAS_NNE(hi) (this->cg->d_nne[hi] == -1 ? false : true)
 
-#define NN(hi) (this->cg->d_nn[hi])
-#define HAS_NN(hi) (this->cg->d_nn[hi] == -1 ? false : true)
+#define R_NN(hi) (this->cg->d_nn[hi])
+#define R_HAS_NN(hi) (this->cg->d_nn[hi] == -1 ? false : true)
 
-#define NNW(hi) (this->cg->d_nnw[hi])
-#define HAS_NNW(hi) (this->cg->d_nnw[hi] == -1 ? false : true)
+#define R_NNW(hi) (this->cg->d_nnw[hi])
+#define R_HAS_NNW(hi) (this->cg->d_nnw[hi] == -1 ? false : true)
 
-#define NSE(hi) (this->cg->d_nse[hi])
-#define HAS_NSE(hi) (this->cg->d_nse[hi] == -1 ? false : true)
+#define R_NSE(hi) (this->cg->d_nse[hi])
+#define R_HAS_NSE(hi) (this->cg->d_nse[hi] == -1 ? false : true)
 
-#define NS(hi) (this->cg->d_ns[hi])
-#define HAS_NS(hi) (this->cg->d_ns[hi] == -1 ? false : true)
+#define R_NS(hi) (this->cg->d_ns[hi])
+#define R_HAS_NS(hi) (this->cg->d_ns[hi] == -1 ? false : true)
 
-#define NSW(hi) (this->cg->d_nsw[hi])
-#define HAS_NSW(hi) (this->cg->d_nsw[hi] == -1 ? false : true)
+#define R_NSW(hi) (this->cg->d_nsw[hi])
+#define R_HAS_NSW(hi) (this->cg->d_nsw[hi] == -1 ? false : true)
 
 namespace morph {
 
@@ -133,16 +133,16 @@ namespace morph {
 
             // Build indices based on neighbour relations in the CartGrid
             for (unsigned int ri = 0; ri < nrect; ++ri) {
-                if (HAS_NNE(ri) && HAS_NE(ri)) {
+                if (R_HAS_NNE(ri) && R_HAS_NE(ri)) {
                     this->indices.push_back (ri);
-                    this->indices.push_back (NNE(ri));
-                    this->indices.push_back (NE(ri));
+                    this->indices.push_back (R_NNE(ri));
+                    this->indices.push_back (R_NE(ri));
                 }
 
-                if (HAS_NW(ri) && HAS_NSW(ri)) {
+                if (R_HAS_NW(ri) && R_HAS_NSW(ri)) {
                     this->indices.push_back (ri);
-                    this->indices.push_back (NW(ri));
-                    this->indices.push_back (NSW(ri));
+                    this->indices.push_back (R_NW(ri));
+                    this->indices.push_back (R_NSW(ri));
                 }
             }
 
@@ -203,16 +203,16 @@ namespace morph {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
-                datumNE =  HAS_NE(ri)  ? dcopy[NE(ri)] : datumC;
-                //std::cout << "NE? " << (HAS_NE(ri) ? "yes\n" : "no\n");
-                datumNN =  HAS_NN(ri)  ? dcopy[NN(ri)] : datumC;
-                datumNW =  HAS_NW(ri)  ? dcopy[NW(ri)] : datumC;
-                //std::cout << "NW? " << (HAS_NW(ri) ? "yes\n" : "no\n");
-                datumNS =  HAS_NS(ri)  ? dcopy[NS(ri)] : datumC;
-                datumNNE = HAS_NNE(ri) ? dcopy[NNE(ri)] : datumC;
-                datumNNW = HAS_NNW(ri) ? dcopy[NNW(ri)] : datumC;
-                datumNSW = HAS_NSW(ri) ? dcopy[NSW(ri)] : datumC;
-                datumNSE = HAS_NSE(ri) ? dcopy[NSE(ri)] : datumC;
+                datumNE =  R_HAS_NE(ri)  ? dcopy[R_NE(ri)] : datumC;
+                //std::cout << "NE? " << (R_HAS_NE(ri) ? "yes\n" : "no\n");
+                datumNN =  R_HAS_NN(ri)  ? dcopy[R_NN(ri)] : datumC;
+                datumNW =  R_HAS_NW(ri)  ? dcopy[R_NW(ri)] : datumC;
+                //std::cout << "NW? " << (R_HAS_NW(ri) ? "yes\n" : "no\n");
+                datumNS =  R_HAS_NS(ri)  ? dcopy[R_NS(ri)] : datumC;
+                datumNNE = R_HAS_NNE(ri) ? dcopy[R_NNE(ri)] : datumC;
+                datumNNW = R_HAS_NNW(ri) ? dcopy[R_NNW(ri)] : datumC;
+                datumNSW = R_HAS_NSW(ri) ? dcopy[R_NSW(ri)] : datumC;
+                datumNSE = R_HAS_NSE(ri) ? dcopy[R_NSE(ri)] : datumC;
 
                 // Use a single colour for each rect, even though rectangle's z
                 // positions are interpolated. Do the _colour_ scaling:
@@ -227,12 +227,12 @@ namespace morph {
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
                 //datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
-                if (HAS_NN(ri) && HAS_NE(ri) && HAS_NNE(ri)) {
+                if (R_HAS_NN(ri) && R_HAS_NE(ri) && R_HAS_NNE(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
-                } else if (HAS_NE(ri)) {
+                } else if (R_HAS_NE(ri)) {
                     // Assume no NN and no NNE
                     datum = 0.5f * (datumC + datumNE);
-                } else if (HAS_NN(ri)) {
+                } else if (R_HAS_NN(ri)) {
                     // Assume no NE and no NNE
                     datum = 0.5f * (datumC + datumNN);
                 } else {
@@ -244,12 +244,12 @@ namespace morph {
                 // SE vertex
                 //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
                 // SE vertex
-                if (HAS_NS(ri) && HAS_NE(ri) && HAS_NSE(ri)) {
+                if (R_HAS_NS(ri) && R_HAS_NE(ri) && R_HAS_NSE(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
-                } else if (HAS_NE(ri)) {
+                } else if (R_HAS_NE(ri)) {
                     // Assume no NS and no NSE
                     datum = 0.5f * (datumC + datumNE);
-                } else if (HAS_NS(ri)) {
+                } else if (R_HAS_NS(ri)) {
                     // Assume no NE and no NSE
                     datum = 0.5f * (datumC + datumNS);
                 } else {
@@ -261,11 +261,11 @@ namespace morph {
 
                 // SW vertex
                 //datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
-                if (HAS_NS(ri) && HAS_NW(ri) && HAS_NSW(ri)) {
+                if (R_HAS_NS(ri) && R_HAS_NW(ri) && R_HAS_NSW(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
-                } else if (HAS_NW(ri)) {
+                } else if (R_HAS_NW(ri)) {
                     datum = 0.5f * (datumC + datumNW);
-                } else if (HAS_NS(ri)) {
+                } else if (R_HAS_NS(ri)) {
                     datum = 0.5f * (datumC + datumNS);
                 } else {
                     datum = datumC;
@@ -274,11 +274,11 @@ namespace morph {
 
                 // NW vertex
                 //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
-                if (HAS_NN(ri) && HAS_NW(ri) && HAS_NNW(ri)) {
+                if (R_HAS_NN(ri) && R_HAS_NW(ri) && R_HAS_NNW(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
-                } else if (HAS_NW(ri)) {
+                } else if (R_HAS_NW(ri)) {
                     datum = 0.5f * (datumC + datumNW);
-                } else if (HAS_NN(ri)) {
+                } else if (R_HAS_NN(ri)) {
                     datum = 0.5f * (datumC + datumNN);
                 } else {
                     datum = datumC;
