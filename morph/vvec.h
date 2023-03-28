@@ -198,56 +198,67 @@ namespace morph {
             for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
-        //! Stream the coordinates of the vector into \a ss as a comma separated list.
-        void str_comma_separated (std::stringstream& ss) const
+        /*!
+         * Stream the coordinates of the vector into \a ss as a comma separated list.
+         *
+         * num_in_line: How many elements to output before inserting a newline
+         */
+        void str_comma_separated (std::stringstream& ss,
+                                  const unsigned int num_in_line=std::numeric_limits<unsigned int>::max()) const
         {
             if (this->empty()) { return; }
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
             bool first = true;
+            unsigned int elementcount = 0;
             for (auto i : *this) {
                 if (first) {
                     ss << i;
                     first = false;
+                    if (elementcount == num_in_line-1) { ss << "\n"; }
                 } else {
-                    ss << "," << i;
+                    ss << "," << (elementcount%num_in_line==0 ? "\n" : "") << i;
                 }
+                ++elementcount;
             }
         }
 
         /*!
          * Create a string representation of the vector
          *
+         * num_in_line: How many elements to output before inserting a newline
+         *
          * \return A 'coordinate format' string such as "(1,1,2)", "(0.2,0.4)" or
          * "(5,4,5,5,40)".
          */
-        std::string str() const
+        std::string str (const unsigned int num_in_line=std::numeric_limits<unsigned int>::max()) const
         {
             std::stringstream ss;
             ss << "(";
-            this->str_comma_separated (ss);
+            this->str_comma_separated (ss, num_in_line);
             ss << ")";
             return ss.str();
         }
 
         //! Output the vector in a form suitable to paste into MATLAB or Octave
-        std::string str_mat() const
+        std::string str_mat (const unsigned int num_in_line=std::numeric_limits<unsigned int>::max()) const
         {
             std::stringstream ss;
             ss << "[";
-            this->str_comma_separated (ss);
+            this->str_comma_separated (ss, num_in_line);
             ss << "]";
             return ss.str();
         }
+
 
         /*!
          * Output the vector in a form suitable to paste into Python, as a numpy vector,
          * assuming you imported numpy as np
          */
-        std::string str_numpy() const
+        std::string str_numpy(const unsigned int num_in_line=std::numeric_limits<unsigned int>::max()) const
         {
             std::stringstream ss;
             ss << "np.array((";
-            this->str_comma_separated (ss);
+            this->str_comma_separated (ss, num_in_line);
             ss << "))";
             return ss.str();
         }
