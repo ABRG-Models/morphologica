@@ -1349,7 +1349,7 @@ namespace morph {
             }
         }
 
-        //! Apply a box filter
+        //! Apply a box filter. SLOOOOOW algorithm.
         template<typename T>
         void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
         {
@@ -1443,53 +1443,93 @@ namespace morph {
             if (this->domainShape != CartDomainShape::Rectangle) {
                 throw std::runtime_error ("This method requires rectangular CartGrid.");
             }
-            if (this-
+            // check w_px >= 2
+            if (this->w_px < 2 || this->h_px < 2) {
+                throw std::runtime_error ("boxfilter_f was not designed for tiny CartGrids");
+            }
 
-            morph::vec<morph::vec<T, boxside>, boxside/2 > colsums;
-            colsums.zero();
+            // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
+            static constexpr T oneover_boxa = T{1} / (static_cast<T>(boxside)*static_cast<T>(boxside));
 
+            static constexpr bool debug_boxfilter_f = false;
+
+            if constexpr (debug_boxfilter_f) {
+                std::cout << "w_px = " << this->w_px << ", h_px = " << this->h_px << std::endl;
+            }
             morph::vvec<T> colsum (this->w_px, T{0});
+            morph::vvec<T> lastcolsum (this->w_px, T{0});
+            T rowsum = T{0};
             morph::vvec<T> lrow (this->w_px, T{0}); // last row
 
-            std::cout << "w_px = " << this->w_px << ", h_px = " << this->h_px << std::endl;
-
             // In this version, treat the underlying data as a rectangle.
-            for (int y = -(boxside/2); y < h_px; ++y) {
+            for (int y = -(boxside/2); y < h_px+(boxside/2); ++y) {
 
-                T rowsum = y >= 0 ? colsum[0]+colsum[w_px-1]+colsum[w_px-2] : T{0};
-                std::cout << "\ny=" << y << " rowsum init to " << rowsum << std::endl;
+                if constexpr (debug_boxfilter_f) { std::cout << "\nYYY  y=" << y << std::endl; }
+
+                rowsum = T{0};
+                if (y>=0) {
+                    // Needs to be a loop from w_px-2 to 0
+                    if constexpr (debug_boxfilter_f) { std::cout << "rowsum init: "; }
+                    for (int i = w_px - 1 - boxside/2; i < this->w_px; ++i) {
+                        rowsum += colsum[i];
+                        if constexpr (debug_boxfilter_f) { std::cout << colsum[i] << "+"; }
+                    }
+                    if constexpr (debug_boxfilter_f) { std::cout << colsum[0]; }
+                    rowsum += colsum[0]; //+ colsum[w_px-1] + colsum[w_px-2];
+                }
+                if constexpr (debug_boxfilter_f) { std::cout << " = " << rowsum << std::endl; }
+
+                // Copy state of colsum
+                std::copy (colsum.begin(), colsum.end(), lastcolsum.begin());
 
                 for (int x = 0; x < this->w_px; ++x) {
 
+                    if constexpr (debug_boxfilter_f) { std::cout << "**** x = " << x << " ****\n"; }
                     // Update the last row
                     if ( y >= (boxside-1)) {
-                        std::cout << "Updating last row with data[row " << y-(boxside-1) << "]\n";
+                        if constexpr (debug_boxfilter_f) { std::cout << "Updating last row with data[row " << y-(boxside-1) << "]\n"; }
                         lrow[x] = data[(y-(boxside-1))*w_px+x];
                     }
 
-                    // To row sum, add the top row, and subtract the last row
+                    // To colsum, add the row at the top of the box, and subtract the row below the bottom of the box
                     int dataidx = (y+(boxside/2))*w_px+x;
                     if (dataidx < (w_px*h_px)) {
-                        std::cout << "colsum["<<x<<"] += data[row " << y+(boxside/2) << ", col " << x << "](" << data[dataidx] <<  ") - lrow["<<x<<"]("<< lrow[x] <<") ";
+                        if constexpr (debug_boxfilter_f) {
+                            std::cout << "colsum["<<x<<"] += data[row " << y+(boxside/2) << ", col " << x
+                                      << "](" << data[dataidx] <<  ") - lrow["<<x<<"]("<< lrow[x] <<") ";
+                        }
                         colsum[x] += data[dataidx] - lrow[x];
                     } else {
-                        std::cout << "colsum["<<x<<"] -= lrow["<<x<<"]("<< lrow[x] <<") ";
+                        if constexpr (debug_boxfilter_f) { std::cout << "colsum["<<x<<"] -= lrow["<<x<<"]("<< lrow[x] <<") "; }
                         colsum[x] -= lrow[x];
                     }
-                    std::cout << " => " << colsum[x] << std::endl;
-                    // Compute the sum along the row for result
-                    if (y>=0) {
-                        std::cout << "y>=0 so...            ";
-                        int cycled_idx = x-(boxside/2);
-                        cycled_idx += cycled_idx < 0 ? w_px : 0;
+                    if constexpr (debug_boxfilter_f) { std::cout << " => " << colsum[x] << std::endl; }
 
-                        int colidx = x+(boxside/2);
-                        std::cout << "rowsum += colsum[" << colidx << "](" << colsum[colidx] << ") - colsum[" << cycled_idx << "](" << colsum[cycled_idx] << ")\n";
-                        rowsum += colsum[x+(boxside/2)] - colsum[cycled_idx];
+                    // Compute the sum along the row for result, once y has got to boxside/2 up
+                    if (y >= boxside/2) {
+                        if constexpr (debug_boxfilter_f) { std::cout << "        y>="<<boxside/2<<" so...        "; }
 
-                        int resultidx = y*w_px+x;
-                        std::cout << "x >= 0, so                                                             data["<<resultidx<< "] = rowsum = " << rowsum << std::endl;
-                        result[resultidx] = rowsum;
+                        int box_left_idx = x-(boxside/2)-1;
+                        box_left_idx += box_left_idx < 0 ? w_px : 0;
+
+                        int box_right_idx = x+(boxside/2);
+                        box_right_idx -= box_right_idx >= w_px ? w_px : 0;
+
+                        if constexpr (debug_boxfilter_f) {
+                            std::cout << "rowsum += boxright: colsum[" << box_right_idx << "](" << lastcolsum[box_right_idx]
+                                      << ") - boxleft: colsum[" << box_left_idx << "](" << lastcolsum[box_left_idx] << ") and is now ";
+                        }
+
+                        rowsum += lastcolsum[box_right_idx] - lastcolsum[box_left_idx];
+
+                        if constexpr (debug_boxfilter_f) { std::cout << rowsum << std::endl; }
+
+                        int resultidx = (y-boxside/2)*w_px + x;
+                        if constexpr (debug_boxfilter_f) {
+                            std::cout << "                x >= 0, so:      data[(row=" << (y-boxside/2) << ")" << resultidx
+                                      << "] = rowsum = " << rowsum << " and /area: " << rowsum*oneover_boxa << std::endl;
+                        }
+                        result[resultidx] = rowsum * oneover_boxa;
                     }
                 }
             }
