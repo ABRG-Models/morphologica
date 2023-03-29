@@ -1459,8 +1459,6 @@ namespace morph {
             // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
             static constexpr T oneover_boxa = T{1} / (static_cast<T>(boxside)*static_cast<T>(boxside));
 
-            static constexpr bool debug_boxfilter_f = false;
-
             morph::vvec<T> colsum (this->w_px, T{0});
             T rowsum = T{0};
             morph::vvec<T> lrow (this->w_px, T{0}); // last row, subtracted from colsum as new data is added to colsum
@@ -1468,8 +1466,7 @@ namespace morph {
             // process data row by row
             for (int y = -(boxside/2); y < h_px+(boxside/2); ++y) {
 
-                if constexpr (debug_boxfilter_f) { std::cout << "\ny=" << y << std::endl; }
-
+                // 1. Accumulate column sums; pull out last row.
                 for (int x = 0; x < this->w_px; ++x) {
                     if ( y >= (boxside/2)+1) {
                         lrow[x] = data[(y-(boxside/2)-1)*w_px+x];
@@ -1480,22 +1477,16 @@ namespace morph {
                     if (dataidx < (w_px*h_px)) { // when we get to the top of the data rectangle, we'll no longer add to colsum
                         colsum[x] += data[dataidx];
                     }
-                    colsum[x] -= lrow[x];
+                    colsum[x] -= lrow[x]; // could get rid of lrow?
                 }
-                if constexpr (debug_boxfilter_f) { std::cout << "After colsum acc. x loop, colsum = " << colsum << " and lrow = " << lrow << "\n"; }
 
-                // Can't init rowsum, until we have accumulated colsums. Init rowsum as the sum of the end col
+                // Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
                 rowsum = T{0};
                 if (y>=0) {
-                    if constexpr (debug_boxfilter_f) { std::cout << "rowsum init: 0"; }
                     for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
-                        int idx = i < 0 ? i+w_px : i;
-                        rowsum += colsum[idx];
-                        if constexpr (debug_boxfilter_f) { std::cout << " +colsum["<< idx <<"]=" << colsum[idx]; }
+                        rowsum += colsum[(i < 0 ? i+w_px : i)]; //int idx = (i < 0 ? i+w_px : i);
                     }
-                    if constexpr (debug_boxfilter_f) { std::cout << " = " << rowsum << std::endl; }
                 }
-                if constexpr (debug_boxfilter_f) { std::cout << "After init rowsum, rowsum: " << rowsum << std::endl; }
 
                 // Compute the sum along the row for result, once y has got to boxside/2 up
                 if (y >= 0 && y < h_px) {
@@ -1503,12 +1494,11 @@ namespace morph {
                     for (int x = 0; x < this->w_px; ++x) {
 
                         int box_left_idx = x-(boxside/2)-1;
-                        box_left_idx += box_left_idx < 0 ? w_px : 0; // does the horizontal wrapping
+                        box_left_idx += box_left_idx < 0 ? w_px : 0; // the ternary does the horizontal wrapping
 
                         int box_right_idx = x+(boxside/2);
                         box_right_idx -= box_right_idx >= w_px ? w_px : 0;
 
-                        if constexpr (debug_boxfilter_f) { std::cout << "Adding to rowsum: +colsum["<<box_right_idx<<"]="<<colsum[box_right_idx]<<" -colsum["<<box_left_idx<<"]="<< colsum[box_left_idx] <<" ...\n"; }
                         rowsum += colsum[box_right_idx] - colsum[box_left_idx];
 
                         if constexpr (onlysum == true) {
