@@ -1461,30 +1461,25 @@ namespace morph {
 
             morph::vvec<T> colsum (this->w_px, T{0});
             T rowsum = T{0};
-            morph::vvec<T> lrow (this->w_px, T{0}); // last row, subtracted from colsum as new data is added to colsum
 
             // process data row by row
             for (int y = -(boxside/2); y < h_px+(boxside/2); ++y) {
 
                 // 1. Accumulate column sums; pull out last row.
                 for (int x = 0; x < this->w_px; ++x) {
-                    if ( y >= (boxside/2)+1) {
-                        lrow[x] = data[(y-(boxside/2)-1)*w_px+x];
-                    }
-
                     // To colsum, add the row at the top of the box, and subtract the row below the bottom of the box
                     int dataidx = (y+(boxside/2))*w_px+x;
                     if (dataidx < (w_px*h_px)) { // when we get to the top of the data rectangle, we'll no longer add to colsum
-                        colsum[x] += data[dataidx];
+                        colsum[x] += data[dataidx]; // This adds the next row to the colsum
                     }
-                    colsum[x] -= lrow[x]; // could get rid of lrow?
+                    colsum[x] -= (y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w_px+x] : T{0}; // This subtracts the last (bottom) row of the colsum
                 }
 
                 // Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
                 rowsum = T{0};
                 if (y>=0) {
                     for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
-                        rowsum += colsum[(i < 0 ? i+w_px : i)]; //int idx = (i < 0 ? i+w_px : i);
+                        rowsum += colsum[(i < 0 ? i+w_px : i)]; // wrapped colsum index is: (i < 0 ? i+w_px : i);
                     }
                 }
 
