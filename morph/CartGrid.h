@@ -1350,7 +1350,7 @@ namespace morph {
         }
 
         //! Apply a box filter. SLOOOOOW algorithm.
-        template<typename T>
+        template<typename T, bool onlysum=false>
         void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
         {
             if (result.size() != this->rects.size()) {
@@ -1423,12 +1423,14 @@ namespace morph {
                     }
                 }
 
-                result[ri->vi] *= oneover_boxa;
+                if constexpr (onlysum == false) {
+                    result[ri->vi] *= oneover_boxa;
+                }
             }
         }
 
-        // Apply a box filter. Be fast. Rectangular CartGrids only.
-        template<typename T, int boxside>
+        // Apply a box filter. Be fast. Rectangular CartGrids only. Test to see if boxside is odd and disallow even (not tested)
+        template<typename T, int boxside, bool onlysum = false>
         void boxfilter_f (const std::vector<T>& data, std::vector<T>& result)
         {
             if (result.size() != this->rects.size()) {
@@ -1449,6 +1451,9 @@ namespace morph {
             // check w_px >= boxside and h_px >= boxside
             if (this->w_px < boxside || this->h_px < boxside) {
                 throw std::runtime_error ("boxfilter_f was not designed for CartGrids smaller than the box filter square");
+            }
+            if constexpr (boxside%2 == 0) {
+                throw std::runtime_error ("boxfilter_f was not designed for even box filter squares (set boxside template param. to an odd value)");
             }
 
             // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
@@ -1479,13 +1484,12 @@ namespace morph {
                 }
                 if constexpr (debug_boxfilter_f) { std::cout << "After colsum acc. x loop, colsum = " << colsum << " and lrow = " << lrow << "\n"; }
 
-                // Can't init rowsum, until we have accumulated colsums.
+                // Can't init rowsum, until we have accumulated colsums. Init rowsum as the sum of the end col
                 rowsum = T{0};
                 if (y>=0) {
-                    // Needs to be a loop from w_px-2 to 0
                     if constexpr (debug_boxfilter_f) { std::cout << "rowsum init: 0"; }
-                    for (int i = w_px + 1 - boxside; i <= this->w_px; ++i) {
-                        int idx = i == w_px ? 0 : i;
+                    for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
+                        int idx = i < 0 ? i+w_px : i;
                         rowsum += colsum[idx];
                         if constexpr (debug_boxfilter_f) { std::cout << " +colsum["<< idx <<"]=" << colsum[idx]; }
                     }
@@ -1504,10 +1508,14 @@ namespace morph {
                         int box_right_idx = x+(boxside/2);
                         box_right_idx -= box_right_idx >= w_px ? w_px : 0;
 
-                        if constexpr (debug_boxfilter_f) { std::cout << "Adding to rowsum: +"<<colsum[box_right_idx]<<" -"<< colsum[box_left_idx] <<" ...\n"; }
+                        if constexpr (debug_boxfilter_f) { std::cout << "Adding to rowsum: +colsum["<<box_right_idx<<"]="<<colsum[box_right_idx]<<" -colsum["<<box_left_idx<<"]="<< colsum[box_left_idx] <<" ...\n"; }
                         rowsum += colsum[box_right_idx] - colsum[box_left_idx];
 
-                        result[y*w_px + x] = rowsum * oneover_boxa;
+                        if constexpr (onlysum == true) {
+                            result[y*w_px + x] = rowsum;
+                        } else {
+                            result[y*w_px + x] = rowsum * oneover_boxa;
+                        }
                     }
                 }
             }
