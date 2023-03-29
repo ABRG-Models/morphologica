@@ -1463,7 +1463,7 @@ namespace morph {
             T rowsum = T{0};
 
             // process data row by row
-            for (int y = -(boxside/2); y < h_px+(boxside/2); ++y) {
+            for (int y = -(boxside/2); y < h_px; ++y) {
 
                 // 1. Accumulate column sums; pull out last row.
                 for (int x = 0; x < this->w_px; ++x) {
