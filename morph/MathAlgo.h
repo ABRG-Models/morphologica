@@ -541,6 +541,82 @@ namespace morph {
             }
         }
 
+        // Do an on-centre, off-surround filtering for a pixel in data and its 8 neighbours
+        template<typename T, int w, bool horz_wrap=true>
+        static void oncentre_offsurround (const morph::vvec<T>& data, morph::vvec<T>& result)
+        {
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the result vector.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+
+            // First, copy data into result - this is the 'on-centre'
+            std::copy (data.begin(), data.end(), result.begin());
+
+            int lastrow_index = static_cast<int>(data.size()) - w;
+
+            // Now go through and subtract the neighbouring values - this is 'off-surround'.
+            int i = 0;
+             // BL pixel
+            if constexpr (horz_wrap) {
+                result[i] -= (data[i+1] + data[i+w-1] + data[w+i+w-1] + data[w+i] + data[w+i+1]) / T{5};
+            } else {
+                result[i] -= (data[i+1] + data[i+w] + data[i+w+1]) / T{3};
+            }
+            ++i;
+            // First row
+            for (; i < w-1; ++i) {
+                result[i] -= (data[i-1]  + data[i+1] + data[i+w-1] + data[i+w] + data[i+w+1]) / T{5};
+            }
+            // BR pixel
+            if constexpr (horz_wrap) {
+                result[i] -= (data[0] + data[i-1] + data[i+w-1] + data[i+w] + data[w]) / T{5};
+            } else {
+                result[i] -= (data[i-1] + data[i+w-1] + data[i+w]) / T{3};
+            }
+            ++i;
+
+            // Intermediate rows
+            for (; i < lastrow_index; ++i) {
+                if (i%w == 0) {             // first column
+                    if constexpr (horz_wrap) {
+                        //                R           'L'            'UL'           U             UR          D             DR        'DL'
+                        result[i] -= (data[i+1] + data[i+w-1] + data[w+i+w-1] + data[w+i] + data[w+i+1] + data[i-w] + data[i-w+1] + data[i-1]) / T{8};
+                    } else {
+                        result[i] -= (data[i+1] + data[i+w] + data[i+w+1] + data[i-w] + data[i-w+1]) / T{5};
+                    }
+                } else if ((i+1)%w == 0)  { // on last column
+                    if constexpr (horz_wrap) {
+                        //                L       'R'            U             'UR'           UL           D            DL         'DR'
+                        result[i] -= (data[i-1] + data[i-w+1] + data[i+w] + data[i+1] + data[i+w-1] + data[i-w] + data[i-w-1] + data[i-w-w+1]) / T{5};
+                    } else {
+                        result[i] -= (data[i-1] + data[i+w] + data[i+w-1] + data[i-w] + data[i-w-1]) / T{5};
+                    }
+                } else {                    // All the rest have 8 neighbours
+                    result[i] -= (data[i-1] + data[i+1] + data[i+w-1] + data[i+w] + data[i+w+1] + data[i-w-1] + data[i-w] + data[i-w+1]) / T{8};
+                }
+            }
+            // TL pixel
+            if constexpr (horz_wrap) {
+                result[i] -= (data[i+1] + data[i-w+1] + data[i-w] + data[i+w-1] + data[i-1]) / T{5};
+            } else {
+                result[i] -= (data[i+1] + data[i-w+1] + data[i-w]) / T{3};
+            }
+            ++i;
+
+            // Top row
+            for (; i < static_cast<int>(data.size())-1; ++i) { // last row
+                result[i] -= (data[i-1] + data[i+1] + data[i-w+1] + data[i-w] + data[i-w-1]) / T{5};
+            }
+            // TR pixel
+            if constexpr (horz_wrap) {
+                result[i] -= (data[i-1] + data[i-w-1] + data[i-w] + data[i-w+1] + data[i-w-w+1]) / T{5};
+            } else {
+                result[i] -= (data[i-1] + data[i-w-1] + data[i-w]) / T{3};
+            }
+        }
 
         /*
          * Functions which help you to arrange dots on circular rings
