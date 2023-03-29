@@ -90,5 +90,19 @@ int main()
         rtn--;
     }
 
+    // A 2D box filter
+    morph::vvec<float> vals = { 1, 2, 3, 2, 1,   4, 5, 6, 7, 4,   7, 4, 2, 1, 4,   8, 8, 6, 8, 3,   9, 8, 3, 2, 1  };
+    morph::vvec<float> filtered (25, 0);
+    morph::vvec<float> expect_result = { 17, 21, 25, 23, 19,  32, 34, 32, 30, 31,  47, 50, 47, 41, 46,  52, 55, 42, 30, 43,  37, 42, 35, 23, 31  };
+    expect_result /= 9.0f;
+    static constexpr int filter_width = 3;
+    static constexpr int data_width = 5;
+    morph::MathAlgo::boxfilter_2d<float, filter_width, data_width> (vals, filtered);
+    if (filtered.sum() != expect_result.sum()) {
+        std::cout << "filtered data: " << filtered << std::endl;
+        std::cout << "expecting    : " << expect_result << std::endl;
+        --rtn;
+    }
+
     return rtn;
 }

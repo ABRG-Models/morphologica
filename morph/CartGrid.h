@@ -72,6 +72,10 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
+        // Width and height of a CartGrid that happens to be of type CartDomainShape::Rectangle.
+        int w_px = -1;
+        int h_px = -1;
+
         /*
          * Neighbour iterators. For use when the stride to the neighbour ne or nw is not
          * constant. On a Cartesian grid, these are necessary if an arbitrary boundary
@@ -1345,8 +1349,8 @@ namespace morph {
             }
         }
 
-        //! Apply a box filter
-        template<typename T>
+        //! Apply a box filter. SLOOOOOW algorithm.
+        template<typename T, bool onlysum=false>
         void boxfilter (const std::vector<T>& data, std::vector<T>& result, unsigned int boxside)
         {
             if (result.size() != this->rects.size()) {
@@ -1367,7 +1371,7 @@ namespace morph {
             // (left/down) is (boxside/2)-1
             unsigned int neg_steps = boxside%2==0 ? (boxside/2) - 1 : (boxside-1)/2;
             unsigned int pos_steps = boxside%2==0 ? (boxside/2) : (boxside-1)/2;
-            T boxa = static_cast<T>(boxside) * static_cast<T>(boxside); // square box area
+            T oneover_boxa = T{1} / (static_cast<T>(boxside) * static_cast<T>(boxside)); // 1/ square box area
 
             // Now can go through the rects
             std::list<Rect>::iterator ri = this->rects.begin();
@@ -1419,7 +1423,81 @@ namespace morph {
                     }
                 }
 
-                result[ri->vi] /= boxa;
+                if constexpr (onlysum == false) {
+                    result[ri->vi] *= oneover_boxa;
+                }
+            }
+        }
+
+        // Apply a box filter. Be fast. Rectangular CartGrids only. Test to see if boxside is odd and disallow even (not tested)
+        template<typename T, int boxside, bool onlysum = false>
+        void boxfilter_f (const std::vector<T>& data, std::vector<T>& result)
+        {
+            if (result.size() != this->rects.size()) {
+                throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The data vector is not the same size as the CartGrid.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+            if (this->domainShape != CartDomainShape::Rectangle) {
+                throw std::runtime_error ("This method requires a rectangular CartGrid.");
+            }
+            if (this->domainWrap != CartDomainWrap::Horizontal) {
+                throw std::runtime_error ("This method ASSUMES the CartGrid is horizontally wrapped.");
+            }
+            // check w_px >= boxside and h_px >= boxside
+            if (this->w_px < boxside || this->h_px < boxside) {
+                throw std::runtime_error ("boxfilter_f was not designed for CartGrids smaller than the box filter square");
+            }
+            if constexpr (boxside%2 == 0) {
+                throw std::runtime_error ("boxfilter_f was not designed for even box filter squares (set boxside template param. to an odd value)");
+            }
+
+            // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
+            static constexpr T oneover_boxa = T{1} / (static_cast<T>(boxside)*static_cast<T>(boxside));
+
+            morph::vvec<T> colsum (this->w_px, T{0});
+            T rowsum = T{0};
+
+            // process data row by row
+            for (int y = -(boxside/2); y < h_px; ++y) {
+
+                // 1. Accumulate column sums; pull out last row.
+                if (y+(boxside/2) < h_px) {
+                    for (int x = 0; x < this->w_px; ++x) {
+                        // Add to the next row from the data array and subtract the last (bottom) row of the colsum
+                        colsum[x] += data[(y+(boxside/2))*w_px+x]  -  ((y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w_px+x] : T{0});
+                    }
+                } else {
+                    for (int x = 0; x < this->w_px; ++x) {
+                        colsum[x] -= (y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w_px+x] : T{0}; // At top of data, only subtract
+                    }
+                }
+
+                rowsum = T{0};
+                if (y>=0) {
+                    // 2. Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
+                    for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
+                        rowsum += colsum[(i < 0 ? i+w_px : i)]; // wrapped colsum index is: (i < 0 ? i+w_px : i);
+                    }
+
+                    // 3. Compute the sum along the row, and write this into result
+                    for (int x = 0; x < this->w_px; ++x) {
+                        int box_left_idx = x-(boxside/2)-1;
+                        box_left_idx += box_left_idx < 0 ? w_px : 0; // the ternary does the horizontal wrapping
+                        int box_right_idx = x+(boxside/2);
+                        box_right_idx -= box_right_idx >= w_px ? w_px : 0;
+                        rowsum += colsum[box_right_idx] - colsum[box_left_idx];
+                        if constexpr (onlysum == true) {
+                            result[y*w_px + x] = rowsum;
+                        } else {
+                            result[y*w_px + x] = rowsum * oneover_boxa;
+                        }
+                    }
+                }
             }
         }
 
@@ -1568,6 +1646,11 @@ namespace morph {
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->v));
 
+            if (this->domainShape == CartDomainShape::Rectangle) {
+                this->w_px = 2 * halfRows + 1;
+                this->h_px = 2 * halfCols + 1;
+            }
+
             this->x_minmax = {-halfCols * this->d, halfCols * this->d};
             this->y_minmax = {-halfRows * this->v, halfRows * this->v};
 
@@ -1633,6 +1716,11 @@ namespace morph {
             int _xf = std::round(x2/this->d);
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
+
+            if (this->domainShape == CartDomainShape::Rectangle) {
+                this->w_px = _xf-_xi+1;
+                this->h_px = _yf-_yi+1;
+            }
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;

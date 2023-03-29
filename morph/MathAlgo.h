@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include <morph/vec.h>
+#include <morph/vvec.h>
 #include <morph/mathconst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
@@ -445,6 +446,68 @@ namespace morph {
                         index = indices[j];
                         indices[j] = indices[jplus];
                         indices[jplus] = index;
+                    }
+                }
+            }
+        }
+
+        // Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
+        // even (not tested). Assume the data in the vvec relates to a rectangle of width w.
+        template<typename T, int boxside, int w, bool onlysum = false>
+        static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T>& result)
+        {
+            if constexpr (boxside%2 == 0) {
+                throw std::runtime_error ("boxfilter_2d was not designed for even box filter squares (set boxside template param. to an odd value)");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The input data vector is not the same size as the result vector.");
+            }
+            if (&data == &result) {
+                throw std::runtime_error ("Pass in separate memory for the result.");
+            }
+
+            // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
+            static constexpr T oneover_boxa = T{1} / (static_cast<T>(boxside)*static_cast<T>(boxside));
+
+            morph::vvec<T> colsum (w, T{0});
+            T rowsum = T{0};
+
+            int h = data.size() / w;
+
+            // process data row by row
+            for (int y = -(boxside/2); y < h; ++y) {
+
+                // 1. Accumulate column sums; pull out last row.
+                if (y+(boxside/2) < h) {
+                    for (int x = 0; x < w; ++x) {
+                        // Add to the next row from the data array and subtract the last (bottom) row of the colsum
+                        colsum[x] += data[(y+(boxside/2))*w+x]  -  ((y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w+x] : T{0});
+                    }
+                } else {
+                    for (int x = 0; x < w; ++x) {
+                        colsum[x] -= (y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w+x] : T{0}; // At top of data, only subtract
+                    }
+                }
+
+                rowsum = T{0};
+                if (y>=0) {
+                    // 2. Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
+                    for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
+                        rowsum += colsum[(i < 0 ? i+w : i)]; // wrapped colsum index is: (i < 0 ? i+w : i);
+                    }
+
+                    // 3. Compute the sum along the row, and write this into result
+                    for (int x = 0; x < w; ++x) {
+                        int box_left_idx = x-(boxside/2)-1;
+                        box_left_idx += box_left_idx < 0 ? w : 0; // the ternary does the horizontal wrapping
+                        int box_right_idx = x+(boxside/2);
+                        box_right_idx -= box_right_idx >= w ? w : 0;
+                        rowsum += colsum[box_right_idx] - colsum[box_left_idx];
+                        if constexpr (onlysum == true) {
+                            result[y*w + x] = rowsum;
+                        } else {
+                            result[y*w + x] = rowsum * oneover_boxa;
+                        }
                     }
                 }
             }
