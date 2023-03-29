@@ -513,6 +513,35 @@ namespace morph {
             }
         }
 
+        // Carry out a simple, 2pixel kernel edge convolution for both vertical and horizontal
+        // edges. The one-d array data is assumed to be rectangular with width w.
+        template<typename T, int w>
+        static void edgeconv_2d (const morph::vvec<T>& data, morph::vvec<T>& v_edges, morph::vvec<T>& h_edges)
+        {
+            if (v_edges.size() != data.size() || h_edges.size() != data.size()) {
+                throw std::runtime_error ("The input data vector is not the same size as the result vectors.");
+            }
+            if (&data == &v_edges || &data == &h_edges) {
+                throw std::runtime_error ("Pass in separate memory for the results.");
+            }
+
+            int lastrow_index = data.size() - w;
+
+            for (int i = 0; i < static_cast<int>(data.size()); ++i) {
+                if ((i+1)%w == 0) { // on last column; do horizontal wrapping
+                    v_edges[i] = -data[i] + data[i-w+1];
+                } else {
+                    v_edges[i] = -data[i] + data[i+1];
+                }
+                if (i > lastrow_index) {
+                    h_edges[i] = T{0};
+                } else {
+                    h_edges[i] = -data[i] + data[i+w];
+                }
+            }
+        }
+
+
         /*
          * Functions which help you to arrange dots on circular rings
          */
