@@ -54,7 +54,7 @@ int main()
         --rtn;
     }
     if (filtered.sum() != filtered_slow.sum()) { --rtn; }
-
+#if 1
     morph::vvec<float> vals8x10 = {
         1, 2, 3, 2, 1, 1, 2, 3, 2, 1,
         4, 5, 6, 7, 4, 4, 5, 6, 7, 4,
@@ -79,7 +79,7 @@ int main()
     std::cout << "\nFast 5x5 Box filter result:\n" << filtered_5x5.str(10) << std::endl;
 
     if (filtered_5x5.sum() != filtered_5x5_slow.sum()) { --rtn; }
-
+#endif
     std::cout << "At end rtn is " << rtn << std::endl;
     return rtn;
 }
