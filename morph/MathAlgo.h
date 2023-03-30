@@ -468,6 +468,8 @@ namespace morph {
 
             // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
             static constexpr T oneover_boxa = T{1} / (static_cast<T>(boxside)*static_cast<T>(boxside));
+            static constexpr int halfbox = boxside / 2;
+            static constexpr int halfbox_p1 = halfbox + 1;
 
             morph::vvec<T> colsum (w, T{0});
             T rowsum = T{0};
@@ -475,34 +477,43 @@ namespace morph {
             int h = data.size() / w;
 
             // process data row by row
-            for (int y = -(boxside/2); y < h; ++y) {
+            for (int y = -halfbox; y < h; ++y) {
 
                 // 1. Accumulate column sums; pull out last row.
-                if (y+(boxside/2) < h) {
-                    for (int x = 0; x < w; ++x) {
-                        // Add to the next row from the data array and subtract the last (bottom) row of the colsum
-                        colsum[x] += data[(y+(boxside/2))*w+x]  -  ((y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w+x] : T{0});
+                if (y+halfbox < h) {
+                    if (y >= halfbox_p1) {
+                        for (int x = 0; x < w; ++x) {
+                            // Add to the next row from the data array and subtract the last (bottom) row of the colsum
+                            colsum[x] += data[(y+halfbox)*w+x]  -  data[(y-halfbox_p1)*w+x];
+                        }
+                    } else {
+                        for (int x = 0; x < w; ++x) {
+                            // Just add to the next row from the data array
+                            colsum[x] += data[(y+halfbox)*w+x];
+                        }
                     }
                 } else {
-                    for (int x = 0; x < w; ++x) {
-                        colsum[x] -= (y >= (boxside/2)+1) ? data[(y-(boxside/2)-1)*w+x] : T{0}; // At top of data, only subtract
-                    }
+                    if (y >= halfbox_p1) {
+                        // Just subtract
+                        for (int x = 0; x < w; ++x) {
+                            colsum[x] -= data[(y-halfbox_p1)*w+x];
+                        }
+                    } // else no op on colsum[x]
                 }
 
                 rowsum = T{0};
                 if (y>=0) {
                     // 2. Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
-                    for (int i = -(1+boxside/2); i < (boxside/2); ++i) {
-                        rowsum += colsum[(i < 0 ? i+w : i)]; // wrapped colsum index is: (i < 0 ? i+w : i);
-                    }
+                    for (int i = -halfbox_p1; i < 0; ++i) { rowsum += colsum[i+w]; }
+                    for (int i = 0; i < halfbox; ++i) { rowsum += colsum[i]; }
 
                     // 3. Compute the sum along the row, and write this into result
+                    int l = -halfbox_p1;
+                    int r = halfbox;
                     for (int x = 0; x < w; ++x) {
-                        int box_left_idx = x-(boxside/2)-1;
-                        box_left_idx += box_left_idx < 0 ? w : 0; // the ternary does the horizontal wrapping
-                        int box_right_idx = x+(boxside/2);
-                        box_right_idx -= box_right_idx >= w ? w : 0;
-                        rowsum += colsum[box_right_idx] - colsum[box_left_idx];
+                        // A modulus where -x modulus w gives always a positive index: (w + (a % w)) % w
+                        rowsum += colsum[(w + (r++ % w)) % w] - colsum[(w + (l++ % w)) % w];
+
                         if constexpr (onlysum == true) {
                             result[y*w + x] = rowsum;
                         } else {
