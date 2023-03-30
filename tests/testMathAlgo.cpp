@@ -102,6 +102,9 @@ int main()
         std::cout << "filtered data: " << filtered << std::endl;
         std::cout << "expecting    : " << expect_result << std::endl;
         --rtn;
+    } else {
+        std::cout << "boxfilter is good\nfiltered data: " << filtered << std::endl;
+        std::cout << "expecting    : " << expect_result << std::endl;
     }
 
     return rtn;
