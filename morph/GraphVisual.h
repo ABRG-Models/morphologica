@@ -14,7 +14,6 @@
 #endif
 #endif
 #include <morph/tools.h>
-#include <morph/VisualDataModel.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
 #include <morph/VisualTextModel.h>
