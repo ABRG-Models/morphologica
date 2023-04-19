@@ -43,7 +43,7 @@ namespace morph {
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }
         void setScalarData (const std::vector<T>* _data) { this->scalarData = _data; }
-        void setVectorData (const std::vector<vec<float>>* _vectors) { this->vectorData = _vectors; }
+        void setVectorData (const std::vector<vec<T>>* _vectors) { this->vectorData = _vectors; }
         void setDataCoords (std::vector<vec<float>>* _coords) { this->dataCoords = _coords; }
 
         void updateZScale (const Scale<T, float>& zscale)
@@ -123,7 +123,7 @@ namespace morph {
         }
 
         //! Update the vector data (for plotting quiver plots)
-        void updateData (const std::vector<vec<float>>* _vectors)
+        void updateData (const std::vector<vec<T>>* _vectors)
         {
             this->vectorData = _vectors;
             this->reinit();
