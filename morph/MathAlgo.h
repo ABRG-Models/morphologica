@@ -597,7 +597,7 @@ namespace morph {
             }
         }
 
-        // Carry out a simple, 2pixel kernel edge convolution for both vertical and horizontal
+        // Carry out a simple, 2 pixel kernel edge convolution for both vertical and horizontal
         // edges. The one-d array data is assumed to be rectangular with width w.
         template<typename T, int w>
         static void edgeconv_2d (const morph::vvec<T>& data, morph::vvec<T>& v_edges, morph::vvec<T>& h_edges)
@@ -617,7 +617,7 @@ namespace morph {
                 } else {
                     v_edges[i] = -data[i] + data[i+1];
                 }
-                if (i > lastrow_index) {
+                if (i >= lastrow_index) { // Then we're on the last row
                     h_edges[i] = T{0};
                 } else {
                     h_edges[i] = -data[i] + data[i+w];
