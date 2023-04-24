@@ -119,9 +119,12 @@ namespace morph {
                     // Could also extract a third colour for Trichrome vs Duochrome
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
-                this->colourScale.transform (this->dcolour, this->dcolour);
-                this->colourScale.autoscaled = false;
-                this->colourScale.transform (this->dcolour2, this->dcolour2);
+                if (this->cm.getType() != morph::ColourMapType::RGB) {
+                    this->colourScale.transform (this->dcolour, this->dcolour);
+                    this->colourScale.autoscaled = false;
+                    this->colourScale.transform (this->dcolour2, this->dcolour2);
+                    this->colourScale.transform (this->dcolour3, this->dcolour3);
+                }
             }
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
