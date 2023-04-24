@@ -625,6 +625,26 @@ namespace morph {
             }
         }
 
+        // fixed sized arrays version
+        template<typename T, int w, int h>
+        static void edgeconv_2d (const morph::vec<T, w*h>& data, morph::vec<T, w*h>& v_edges, morph::vec<T, w*h>& h_edges)
+        {
+            int lastrow_index = (w*h) - w;
+
+            for (int i = 0; i < w*h; ++i) {
+                if ((i+1)%w == 0) { // on last column; do horizontal wrapping
+                    v_edges[i] = -data[i] + data[i-w+1];
+                } else {
+                    v_edges[i] = -data[i] + data[i+1];
+                }
+                if (i >= lastrow_index) {
+                    h_edges[i] = T{0};
+                } else {
+                    h_edges[i] = -data[i] + data[i+w];
+                }
+            }
+        }
+
         // Do an on-centre, off-surround filtering for a pixel in data and its 8 neighbours
         template<typename T, int w, bool horz_wrap=true>
         static void oncentre_offsurround (const morph::vvec<T>& data, morph::vvec<T>& result)
