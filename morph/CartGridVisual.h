@@ -181,10 +181,16 @@ namespace morph {
                     // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
-                this->colourScale.transform (this->dcolour, this->dcolour);
-                this->colourScale.autoscaled = false;
-                this->colourScale.transform (this->dcolour2, this->dcolour2);
-                this->colourScale.transform (this->dcolour3, this->dcolour3);
+
+                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
+                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
+                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
+                if (this->cm.getType() != morph::ColourMapType::RGB) {
+                    this->colourScale.transform (this->dcolour, this->dcolour);
+                    this->colourScale.autoscaled = false;
+                    this->colourScale.transform (this->dcolour2, this->dcolour2);
+                    this->colourScale.transform (this->dcolour3, this->dcolour3);
+                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 already
             }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
