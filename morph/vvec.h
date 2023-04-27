@@ -812,6 +812,26 @@ namespace morph {
             this->swap (pruned);
         }
 
+        // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
+        void threshold_between (const S lower, const S upper) const
+        {
+            vvec<S> rtn(this->size());
+            auto _threshold = [lower, upper](S coord) {
+                return (coord <= lower ? lower : (coord >= upper ? upper : coord));
+            };
+            std::transform (this->begin(), this->end(), rtn.begin(), _threshold);
+            return rtn;
+        }
+
+        // Replace any value that's above upper with upper and any below lower with lower
+        void threshold_between_inplace (const S lower, const S upper) const
+        {
+            for (auto& i : *this) {
+                i = i >= upper ? upper : i;
+                i = i <= lower ? lower : i;
+            }
+        }
+
         /*!
          * Compute the element-wise square root of the vector
          *
