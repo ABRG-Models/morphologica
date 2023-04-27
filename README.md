@@ -13,10 +13,10 @@ morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.
 This quick start shows dependency installation for Linux, because on this platform, it's a single call to apt (or your favourite package manager). If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users.
 
 ```bash
-# Install dependencies for building graph1.cpp (assuming Debian-like OS)
+# Install dependencies for building graph1.cpp and all the other examples (assuming Debian-like OS)
 sudo apt install build-essential cmake git wget  \
                  freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev \
-                 libglfw3-dev libfreetype-dev
+                 libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev
 
 git clone git@github.com:ABRG-Models/morphologica   # Get your copy of the morphologica code
 cd morphologica
