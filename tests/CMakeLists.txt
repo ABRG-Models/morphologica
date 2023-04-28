@@ -279,6 +279,9 @@ add_test(testvvec_prune testvvec_prune)
 add_executable(testvvec_threshold testvvec_threshold.cpp)
 add_test(testvvec_threshold testvvec_threshold)
 
+add_executable(testvvec_rescale testvvec_rescale.cpp)
+add_test(testvvec_rescale testvvec_rescale)
+
 # It's possible to modify testvec.cpp to be c++-11 or c++-14 friendly:
 add_executable(testvec14 testvec14.cpp)
 target_compile_features(testvec14 PUBLIC cxx_std_14)

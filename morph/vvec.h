@@ -286,6 +286,17 @@ namespace morph {
             *this = shifted / max;
         }
 
+        //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_sym()
+        {
+            // First rescale 0-1
+            this->rescale();
+            // Now multiply by 2 and shift
+            auto multshift = [](_S f) { return f * _S{2} - _S{1}; };
+            std::transform (this->begin(), this->end(), this->begin(), multshift);
+        }
+
         //! Zero the vector. Set all coordinates to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
         //! Set all elements of the vector to the maximum possible value given type S

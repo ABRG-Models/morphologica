@@ -8,11 +8,15 @@ int main()
 
     morph::vvec<float> b = a.threshold (-5.0f, 5.0f);
 
+    morph::vvec<float> expct = { 0.0f, 4.0f, -3.0f, 5.0f, -5.0f, -0.0f };
+
     std::cout << a << " thresholded: " << b << std::endl;
 
     a.threshold_inplace (-5, 5);
 
     std::cout << "And thresholded in place: " << a << std::endl;
+
+    if (a != expct || b != expct) { --rtn; }
 
     return rtn;
 }
