@@ -813,7 +813,7 @@ namespace morph {
         }
 
         // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
-        void threshold_between (const S lower, const S upper) const
+        vvec<S> threshold (const S lower, const S upper) const
         {
             vvec<S> rtn(this->size());
             auto _threshold = [lower, upper](S coord) {
@@ -824,7 +824,7 @@ namespace morph {
         }
 
         // Replace any value that's above upper with upper and any below lower with lower
-        void threshold_between_inplace (const S lower, const S upper) const
+        void threshold_inplace (const S lower, const S upper)
         {
             for (auto& i : *this) {
                 i = i >= upper ? upper : i;
@@ -945,7 +945,7 @@ namespace morph {
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
 
         //! Compute the symmetric Gaussian function
-        vvec<S> gauss (const S sigma)
+        vvec<S> gauss (const S sigma) const
         {
             vvec<S> rtn(this->size());
             auto _element = [sigma](S i) { return std::exp (i*i/(S{-2}*sigma*sigma)); };
@@ -955,6 +955,22 @@ namespace morph {
         void gauss_inplace (const S sigma)
         {
             for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
+        }
+
+        //! Replace each element with the generalised logistic function of the element:
+        //! f(x) = [ 1 + exp(xoff - x) ]^-alpha
+        vvec<S> logistic (const S xoff = S{0}, const S alpha = S{1}) const
+        {
+            vvec<S> rtn(this->size());
+            auto _element = [alpha, xoff](S i) { return std::pow((S{1} + std::exp (xoff - i)), -alpha); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _element);
+            return rtn;
+        }
+        void logistic_inplace (const S xoff = S{0}, const S alpha = S{1})
+        {
+            for (auto& i : *this) {
+                i = std::pow((S{1} + std::exp (xoff - i)), -alpha);
+            }
         }
 
         //! Smooth the vector by convolving with a gaussian filter with Gaussian width
