@@ -1169,7 +1169,7 @@ namespace morph {
             if (key == GLFW_KEY_H && action == GLFW_PRESS) {
                 // Help to stdout:
                 std::cout << "h: Output this help to stdout\n";
-                std::cout << "Ctrl-q: Request exit\n";
+                std::cout << "q: Request exit\n";
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
                 std::cout << "t: Toggle mouse rotate mode\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
