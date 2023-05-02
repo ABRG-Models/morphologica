@@ -1153,7 +1153,7 @@ namespace morph {
         virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             // Exit action
-            if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
