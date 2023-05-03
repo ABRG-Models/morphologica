@@ -603,9 +603,10 @@ namespace morph {
             return idx;
         }
 
+        //! Return the min and max values of the vvec
         std::pair<S, S> minmax() const
         {
-            // This is a pair<vvec<S>::iterator, vvec<S>::iterator>
+            // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
             auto mm = std::minmax_element (this->begin(), this->end());
             std::pair<S, S> minmax;
             minmax.first = mm.first == this->end() ? S{0} : *mm.first;
