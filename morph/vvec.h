@@ -280,21 +280,33 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            _S min = this->min();
-            vvec<_S> shifted = *this - min;
-            _S max = shifted.max();
-            *this = shifted / max;
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.first;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
+        }
+
+        //! Rescale the vector elements so that they all lie in the range -1 to 0.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_neg()
+        {
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.second;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_sym()
         {
-            // First rescale 0-1
-            this->rescale();
-            // Now multiply by 2 and shift
-            auto multshift = [](_S f) { return f * _S{2} - _S{1}; };
-            std::transform (this->begin(), this->end(), this->begin(), multshift);
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = (minmax.second - minmax.first) / _S{2};
+            _S g = (minmax.second + minmax.first) / _S{2};
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         //! Zero the vector. Set all coordinates to 0
@@ -589,6 +601,16 @@ namespace morph {
             auto themin = std::min_element (this->begin(), this->end());
             size_t idx = (themin - this->begin());
             return idx;
+        }
+
+        std::pair<S, S> minmax() const
+        {
+            // This is a pair<vvec<S>::iterator, vvec<S>::iterator>
+            auto mm = std::minmax_element (this->begin(), this->end());
+            std::pair<S, S> minmax;
+            minmax.first = mm.first == this->end() ? S{0} : *mm.first;
+            minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+            return minmax;
         }
 
         /*!
