@@ -1,4 +1,5 @@
 #include "morph/vvec.h"
+#include "morph/vec.h"
 #include "morph/mathconst.h"
 #include <array>
 using morph::vvec;
@@ -417,6 +418,20 @@ int main() {
     sv = lv.lengthen (15.0f);
     std::cout << "lv: " << lv << " lv.lengthen(15.0f) returns the vector: " << sv << std::endl;
     if (sv != vvec<float>({ 15.0f, 20.0f })) { --rtn; }
+
+    // Test zeroing
+    vvec<float> vzero = {1,2,3};
+    vzero.zero();
+    std::cout << "After zero, vzero = " << vzero << std::endl;
+    if (vzero.sum() != 0.0f) { --rtn; }
+
+    // What about a vvec of vecs?
+    vvec<morph::vec<int, 2>> vvvec = { {1,2}, {3,4} };
+    std::cout << "Before zero: " << vvvec << " with sum " << vvvec.sum().sum() << std::endl;
+
+    vvvec.zero();
+    if (vvvec.sum().sum() != 0) { --rtn; }
+    std::cout << "After zero: " << vvvec << " with sum " << vvvec.sum().sum() << std::endl;
 
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;

@@ -265,13 +265,37 @@ namespace morph {
             }
         }
 
+        //! Rescale the vector elements so that they all lie in the range 0-1. NOT the same as renormalize.
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            _S min = this->min();
-            vec<_S, N> shifted = *this - min;
-            _S max = shifted.max();
-            *this = shifted / max;
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.first;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
+        }
+
+        //! Rescale the vector elements so that they all lie in the range -1 to 0.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_neg()
+        {
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.second;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
+        }
+
+        //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_sym()
+        {
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = (minmax.second - minmax.first) / _S{2};
+            _S g = (minmax.second + minmax.first) / _S{2};
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         /*!
@@ -541,6 +565,16 @@ namespace morph {
             auto themin = std::min_element (this->begin(), this->end());
             size_t idx = (themin - this->begin());
             return idx;
+        }
+
+        //! Return the min and max values of the vec
+        std::pair<S, S> minmax() const
+        {
+            auto mm = std::minmax_element (this->begin(), this->end());
+            std::pair<S, S> minmax;
+            minmax.first = *mm.first;
+            minmax.second = *mm.second;
+            return minmax;
         }
 
         //! Return true if any element is zero

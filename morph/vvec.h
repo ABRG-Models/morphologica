@@ -280,10 +280,33 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            _S min = this->min();
-            vvec<_S> shifted = *this - min;
-            _S max = shifted.max();
-            *this = shifted / max;
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.first;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
+        }
+
+        //! Rescale the vector elements so that they all lie in the range -1 to 0.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_neg()
+        {
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = minmax.second - minmax.first;
+            _S g = minmax.second;
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
+        }
+
+        //! Rescale the vector elements symetrically about 0 so that they all lie in the range -1 to 1.
+        template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+        void rescale_sym()
+        {
+            std::pair<_S, _S> minmax = this->minmax();
+            _S m = (minmax.second - minmax.first) / _S{2};
+            _S g = (minmax.second + minmax.first) / _S{2};
+            auto rescale_op = [m, g](_S f) { return (f - g)/m; };
+            std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
 
         //! Zero the vector. Set all coordinates to 0
@@ -580,6 +603,17 @@ namespace morph {
             return idx;
         }
 
+        //! Return the min and max values of the vvec
+        std::pair<S, S> minmax() const
+        {
+            // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
+            auto mm = std::minmax_element (this->begin(), this->end());
+            std::pair<S, S> minmax;
+            minmax.first = mm.first == this->end() ? S{0} : *mm.first;
+            minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+            return minmax;
+        }
+
         /*!
          * Return the locations where the function crosses zero. Returned as a float so
          * that it can take intermediate values and also indicate the direction of the
@@ -812,6 +846,26 @@ namespace morph {
             this->swap (pruned);
         }
 
+        // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
+        vvec<S> threshold (const S lower, const S upper) const
+        {
+            vvec<S> rtn(this->size());
+            auto _threshold = [lower, upper](S coord) {
+                return (coord <= lower ? lower : (coord >= upper ? upper : coord));
+            };
+            std::transform (this->begin(), this->end(), rtn.begin(), _threshold);
+            return rtn;
+        }
+
+        // Replace any value that's above upper with upper and any below lower with lower
+        void threshold_inplace (const S lower, const S upper)
+        {
+            for (auto& i : *this) {
+                i = i >= upper ? upper : i;
+                i = i <= lower ? lower : i;
+            }
+        }
+
         /*!
          * Compute the element-wise square root of the vector
          *
@@ -925,7 +979,7 @@ namespace morph {
         void abs_inplace() { for (auto& i : *this) { i = std::abs(i); } }
 
         //! Compute the symmetric Gaussian function
-        vvec<S> gauss (const S sigma)
+        vvec<S> gauss (const S sigma) const
         {
             vvec<S> rtn(this->size());
             auto _element = [sigma](S i) { return std::exp (i*i/(S{-2}*sigma*sigma)); };
@@ -935,6 +989,22 @@ namespace morph {
         void gauss_inplace (const S sigma)
         {
             for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
+        }
+
+        //! Replace each element with the generalised logistic function of the element:
+        //! f(x) = [ 1 + exp(xoff - x) ]^-alpha
+        vvec<S> logistic (const S xoff = S{0}, const S alpha = S{1}) const
+        {
+            vvec<S> rtn(this->size());
+            auto _element = [alpha, xoff](S i) { return std::pow((S{1} + std::exp (xoff - i)), -alpha); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _element);
+            return rtn;
+        }
+        void logistic_inplace (const S xoff = S{0}, const S alpha = S{1})
+        {
+            for (auto& i : *this) {
+                i = std::pow((S{1} + std::exp (xoff - i)), -alpha);
+            }
         }
 
         //! Smooth the vector by convolving with a gaussian filter with Gaussian width

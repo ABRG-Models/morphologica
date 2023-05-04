@@ -69,8 +69,7 @@ namespace morph {
             // Note: VisualModel::finalize() should be called before rendering
         }
 
-        //! Do the computations to initialize the vertices that will represent the
-        //! HexGrid.
+        //! Do the computations to initialize the vertices that will represent the HexGrid.
         virtual void initializeVertices()
         {
             // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
@@ -193,7 +192,7 @@ namespace morph {
                     this->colourScale.autoscaled = false;
                     this->colourScale.transform (this->dcolour2, this->dcolour2);
                     this->colourScale.transform (this->dcolour3, this->dcolour3);
-                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 already
+                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
             }
             float datumC = 0.0f;   // datum at the centre
             float datumNE = 0.0f;  // datum at the hex to the east.
@@ -434,17 +433,23 @@ namespace morph {
         bool centralize = false;
 
     protected:
-        //! An overridable function to set the colour of hex hi
-        virtual std::array<float, 3> setColour (unsigned int hi)
+        //! An overridable function to set the colour of rect ri
+        std::array<float, 3> setColour (unsigned int ri)
         {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
             if (this->cm.numDatums() == 3) {
-                clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi], this->dcolour3[hi]);
+                //if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                if constexpr (std::is_integral<std::decay_t<T>>::value) {
+                    // Differs from above as we divide by 255 to get value in range 0-1
+                    clr = this->cm.convert (this->dcolour[ri]/255.0f, this->dcolour2[ri]/255.0f, this->dcolour3[ri]/255.0f);
+                } else {
+                    clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri], this->dcolour3[ri]);
+                }
             } else if (this->cm.numDatums() == 2) {
                 // Use vectorData
-                clr = this->cm.convert (this->dcolour[hi], this->dcolour2[hi]);
+                clr = this->cm.convert (this->dcolour[ri], this->dcolour2[ri]);
             } else {
-                clr = this->cm.convert (this->dcolour[hi]);
+                clr = this->cm.convert (this->dcolour[ri]);
             }
             return clr;
         }
@@ -464,34 +469,6 @@ namespace morph {
         // computed x/y/z position for a rectangle, and this means that the rectangle
         // will be centered around mv_offset.
         morph::vec<float, 3> centering_offset = { 0.0f, 0.0f, 0.0f };
-    };
-
-    //! Extended CartGridVisual class for plotting with individual red, green and blue
-    //! values (i.e., without a ColourMap).
-    template <class T>
-    class CartGridVisualManual : public morph::CartGridVisual<T>
-    {
-    public:
-        //! Individual colour values for plotting
-        std::vector<float> R, G, B;
-
-        CartGridVisualManual(GLuint sp, GLuint tsp,
-                             const morph::CartGrid* _cg,
-                             const morph::vec<float> _offset)
-            : morph::CartGridVisual<T>(sp, tsp, _cg, _offset)
-        {
-            R.resize (this->cg->num(), 0.0f);
-            G.resize (this->cg->num(), 0.0f);
-            B.resize (this->cg->num(), 0.0f);
-        };
-
-    protected:
-        //! In this manual-colour-setting CartGridVisual we override this:
-        std::array<float, 3> setColour (unsigned int hi) override
-        {
-            std::array<float, 3> clr = {R[hi], G[hi], B[hi]};
-            return clr;
-        }
     };
 
 } // namespace morph
