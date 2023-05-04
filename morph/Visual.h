@@ -1212,7 +1212,9 @@ namespace morph {
             }
 
             if (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
-                std::cout << "Scenetrans is: " << this->scenetrans << ", scene rotation is " << this->rotation << std::endl;
+                std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
+                          << this->scenetrans.x() << "f, " << this->scenetrans.y() << "f, " << this->scenetrans.z() << "f}));"
+                          <<  "\nscene rotation is " << this->rotation << std::endl;
                 std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
                 std::ofstream fout;
                 fout.open ("/tmp/Visual.json", std::ios::out|std::ios::trunc);
