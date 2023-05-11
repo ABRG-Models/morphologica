@@ -230,5 +230,12 @@ int main() {
     std::cout << "lv: " << lv << " lv.lengthen(15.0f) returns the vector: " << sv << std::endl;
     if (sv != morph::vec<float, 2>({ 15.0f, 20.0f })) { --rtn; }
 
+    morph::vec<float> fv1 = { 0.0f,0.0f,0.0f };
+    float vmult = 0.045f;
+    std::cout << "Before multiply 0 vector by " << vmult << " it is " << fv1;
+    fv1 *= vmult;
+    std::cout << " and after: " << fv1 << std::endl;
+    if (fv1 != morph::vec<float>({ 0.0f,0.0f,0.0f })) { --rtn; }
+
     return rtn;
 }
