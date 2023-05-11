@@ -51,8 +51,8 @@ namespace morph {
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
 
-            this->initializeVertices();
-            this->postVertexInit();
+            //this->initializeVertices(); Now require call of finalize();
+            //this->postVertexInit();
         }
 
         //! Do the computations to initialize the vertices that will represent the Quivers.
@@ -74,26 +74,27 @@ namespace morph {
             // Auto scale the lengths to get a full range of colours for the lengths.
             std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, Flt{0}, Flt{1});
 
-            // The indices index
-            VBOint idx = 0;
-
             vec<Flt> half = { Flt{0.5}, Flt{0.5}, Flt{0.5} };
             vec<Flt> vectorData_i, halfquiv;
             vec<float> start, end, coords_i;
             std::array<float, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
+                // If we want fixed length vector arrows, fixed_length should be set > 0.
+                float len = this->fixed_length > 0.0f ? this->fixed_length : static_cast<float>(lengths[i]);
+                // For a fixed length vector, we'll have to scale each of vectorData
+                float vmult = (this->fixed_length > 0.0f && lengths[i] > Flt{0}) ? (this->fixed_length/static_cast<float>(lengths[i])) : 1.0f;
                 coords_i = (*this->dataCoords)[i];
                 vectorData_i = (*this->vectorData)[i];
+                vectorData_i *= vmult; // apply the scaling (vmult may well be 1)
                 clr = this->cm.convert (lengthcolours[i]);
+
                 if (this->qgoes == QuiverGoes::FromCoord) {
                     start = coords_i;
-                    // end = (*this->dataCoords)[i] + (*this->vectorData)[i];
                     std::transform (coords_i.begin(), coords_i.end(),
                                     vectorData_i.begin(), end.begin(), std::plus<Flt>());
 
 
                 } else if (this->qgoes == QuiverGoes::ToCoord) {
-                    // start = (*this->dataCoords)[i] - (*this->vectorData)[i];
                     std::transform (coords_i.begin(), coords_i.end(),
                                     vectorData_i.begin(), start.begin(), std::minus<Flt>());
 
@@ -101,33 +102,32 @@ namespace morph {
                 } else /* if (this->qgoes == QuiverGoes::OnCoord) */ {
                     std::transform (half.begin(), half.end(),
                                     vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
-                    //start = (*this->dataCoords)[i] - 0.5 * (*this->vectorData)[i];
                     std::transform (coords_i.begin(), coords_i.end(),
                                     halfquiv.begin(), start.begin(), std::minus<Flt>());
-                    //end = (*this->dataCoords)[i] + 0.5 * (*this->vectorData)[i];
                     std::transform (coords_i.begin(), coords_i.end(),
                                     halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
                 // Will need a fixed scale for some visualizations
-                this->computeTube (idx, start, end, clr, clr, static_cast<float>(lengths[i])/30.0f);
+                this->computeTube (this->idx, start, end, clr, clr, len/30.0f);
                 // Plus sphere or cone:
-                this->computeSphere (idx, coords_i, clr, static_cast<float>(lengths[i])/10.0f);
+                this->computeSphere (this->idx, coords_i, clr, len/10.0f);
                 // Compute a tip for the cone.
                 vec<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
                 vec<float> tip;
-                // Multiply vectorData_i by a fraction and that's the cone end. Note
-                // reuse of halfquiv variable
+                // Multiply vectorData_i by a fraction and that's the cone end. Note reuse of halfquiv variable
                 std::transform (frac.begin(), frac.end(),
                                 vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
                 std::transform (end.begin(), end.end(),
                                 halfquiv.begin(), tip.begin(), std::plus<Flt>());
-                this->computeCone (idx, end, tip, -0.1f, clr, static_cast<float>(lengths[i])/10.0f);
+                this->computeCone (this->idx, end, tip, -0.1f, clr, len/10.0f);
             }
         }
 
-        //! An enumerated type to say whether we draw quivers with coord at mid point;
-        //! start point or end point
+        //! An enumerated type to say whether we draw quivers with coord at mid point; start point or end point
         QuiverGoes qgoes = QuiverGoes::FromCoord;
+
+        // Setting a fixed length can be useful to focus on the flow of the field.
+        Flt fixed_length = 0.0f;
     };
 
 } // namespace morph
