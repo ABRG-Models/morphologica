@@ -9,6 +9,7 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include <morph/vvec.h>
 
 int main()
 {
@@ -28,6 +29,14 @@ int main()
 
     for (auto d : vdread) {
         std::cout << "Read the number " << d << " from test.h5...\n";
+    }
+
+    // Create a file containing a sequence of floating point numbers
+    {
+        morph::HdfData dseq("dseq.h5");
+        morph::vvec<float> theseq (256, 0.0f);
+        for (int i = 0; i < 256; i++) { theseq[i] = 1.0f * i; }
+        dseq.add_contained_vals ("/theseq", theseq);
     }
 
     return 0;
