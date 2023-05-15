@@ -598,8 +598,13 @@ namespace morph {
         }
 
         // Carry out a simple, 2 pixel kernel edge convolution for both vertical and horizontal
-        // edges. The one-d array data is assumed to be rectangular with width w.
-        template<typename T, int w>
+        // edges. The one-d array data is assumed to be rectangular with width w. I have chosen to
+        // place the edge between element i and element i+1 (or i+w) in edges[i] (it would be
+        // equally sensible to place it in i+1/i+w). I've assumed that the 1D array fills a
+        // rectangle from the bottom left (so it's a right-handed coordinate system).  I have
+        // provided an option to invert edges for either axis, which allows for other assumptions
+        // about the way the 1D array fills a rectangle.
+        template<typename T, int w, bool invert_vert_edges=false, bool invert_horz_edges=false>
         static void edgeconv_2d (const morph::vvec<T>& data, morph::vvec<T>& v_edges, morph::vvec<T>& h_edges)
         {
             if (v_edges.size() != data.size() || h_edges.size() != data.size()) {
@@ -613,34 +618,58 @@ namespace morph {
 
             for (int i = 0; i < static_cast<int>(data.size()); ++i) {
                 if ((i+1)%w == 0) { // on last column; do horizontal wrapping
-                    v_edges[i] = -data[i] + data[i-w+1];
+                    if constexpr (invert_vert_edges == true) {
+                        v_edges[i] =  data[i] - data[i-w+1];
+                    } else {
+                        v_edges[i] = -data[i] + data[i-w+1];
+                    }
                 } else {
-                    v_edges[i] = -data[i] + data[i+1];
+                    if constexpr (invert_vert_edges == true) {
+                        v_edges[i] =  data[i] - data[i+1];
+                    } else {
+                        v_edges[i] = -data[i] + data[i+1];
+                    }
                 }
                 if (i >= lastrow_index) { // Then we're on the last row
                     h_edges[i] = T{0};
                 } else {
-                    h_edges[i] = -data[i] + data[i+w];
+                    if constexpr (invert_horz_edges == true) {
+                        h_edges[i] =  data[i] - data[i+w];
+                    } else {
+                        h_edges[i] = -data[i] + data[i+w];
+                    }
                 }
             }
         }
 
-        // fixed sized arrays version
-        template<typename T, int w, int h>
+        // fixed sized arrays version.
+        template<typename T, int w, int h, bool invert_vert_edges=false, bool invert_horz_edges=false>
         static void edgeconv_2d (const morph::vec<T, w*h>& data, morph::vec<T, w*h>& v_edges, morph::vec<T, w*h>& h_edges)
         {
             int lastrow_index = (w*h) - w;
 
             for (int i = 0; i < w*h; ++i) {
                 if ((i+1)%w == 0) { // on last column; do horizontal wrapping
-                    v_edges[i] = -data[i] + data[i-w+1];
+                    if constexpr (invert_vert_edges == true) {
+                        v_edges[i] =  data[i] - data[i-w+1];
+                    } else {
+                        v_edges[i] = -data[i] + data[i-w+1];
+                    }
                 } else {
-                    v_edges[i] = -data[i] + data[i+1];
+                    if constexpr (invert_vert_edges == true) {
+                        v_edges[i] =  data[i] - data[i+1];
+                    } else {
+                        v_edges[i] = -data[i] + data[i+1];
+                    }
                 }
                 if (i >= lastrow_index) {
                     h_edges[i] = T{0};
                 } else {
-                    h_edges[i] = -data[i] + data[i+w];
+                    if constexpr (invert_horz_edges == true) {
+                        h_edges[i] =  data[i] - data[i+w];
+                    } else {
+                        h_edges[i] = -data[i] + data[i+w];
+                    }
                 }
             }
         }
