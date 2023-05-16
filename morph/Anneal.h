@@ -59,13 +59,12 @@ namespace morph {
      *
      * \tparam T The type for the numbers in the algorithm. Expected to be floating
      * point, so float or double.
+     *
+     * \tparam debug Set true to show some text output
      */
-    template <typename T>
+    template <typename T, bool debug=false>
     class Anneal
     {
-        // Set false to hide text output
-        static constexpr bool debug = false;
-        static constexpr bool debug2 = false;
         // Use a short version of the numeric_limits epsilon
         static constexpr T eps = std::numeric_limits<T>::epsilon();
         // Used in reanneal_test(). A reanneal won't occur within 10 steps of the last reanneal.
