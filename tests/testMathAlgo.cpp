@@ -107,5 +107,45 @@ int main()
         std::cout << "expecting    : " << expect_result << std::endl;
     }
 
+    // 2D edge convolution test
+    morph::vvec<float> edata = { 1.0f, 0.5f, 1.0f,
+                                 0.5f, 1.0f, 0.4f,
+                                 1.0f, 0.5f, 0.9f };
+    morph::vvec<float> hedges (edata.size(), 0);
+    morph::vvec<float> vedges (edata.size(), 0);
+
+    morph::vvec<float> vedges_exp = { -1.0f+0.5f, -0.5f+1.0f, -1.0f+1.0f,
+                                      -0.5f+1.0f, -1.0f+0.4f, -0.4f+0.5f,
+                                      -1.0f+0.5f, -0.5f+0.9f, -0.9f+1.0f };
+    morph::vvec<float> hedges_exp = { -1.0+0.5f, -0.5f+1.0f, -1.0f+0.4f,
+                                      -0.5f+1.0f, -1.0f+0.5f, -0.4f+0.9f,
+                                      0,          0,          0}; // no wrapping in vertical axis so top row of hedges is 0
+
+
+    // Default template
+    morph::MathAlgo::edgeconv_2d<float, 3> (edata, vedges, hedges);
+    std::cout << "vert edges: " << vedges << std::endl;
+    std::cout << "horz edges: " << hedges << std::endl;
+
+    if (vedges != vedges_exp) { --rtn; }
+    if (hedges != hedges_exp) { --rtn; }
+
+    // Test version which inverts vertical edges
+    constexpr bool invert_vert_edges = true;
+    morph::MathAlgo::edgeconv_2d<float, 3, invert_vert_edges> (edata, vedges, hedges);
+    if (vedges != -vedges_exp) { --rtn; }
+    if (hedges != hedges_exp) { --rtn; }
+
+    // Test version which inverts horizontal edges
+    constexpr bool invert_horz_edges = true;
+    morph::MathAlgo::edgeconv_2d<float, 3, false, invert_horz_edges> (edata, vedges, hedges);
+    if (vedges != vedges_exp) { --rtn; }
+    if (hedges != -hedges_exp) { --rtn; }
+
+    // Test version which inverts vertical and horizontal edges
+    morph::MathAlgo::edgeconv_2d<float, 3, invert_vert_edges, invert_horz_edges> (edata, vedges, hedges);
+    if (vedges != -vedges_exp) { --rtn; }
+    if (hedges != -hedges_exp) { --rtn; }
+
     return rtn;
 }

@@ -1379,9 +1379,9 @@ namespace morph {
          * \return A new data vvec containing the resampled (and renormalised) hex pixel values
          */
         morph::vvec<float> resampleImage (const morph::vvec<float>& image_data,
-                                             const unsigned int image_pixelwidth,
-                                             const morph::vec<float, 2>& image_scale,
-                                             const morph::vec<float, 2>& image_offset)
+                                          const unsigned int image_pixelwidth,
+                                          const morph::vec<float, 2>& image_scale,
+                                          const morph::vec<float, 2>& image_offset)
         {
             unsigned int csz = image_data.size();
             morph::vec<unsigned int, 2> image_pixelsz = {image_pixelwidth, csz / image_pixelwidth};
@@ -1677,8 +1677,8 @@ namespace morph {
         /*!
          * Find the intersection point between two line segments. The first segment runs
          * from position _p1 to _q1 and the second from position _p2 to _q2. If no
-         * intersect, return object should contain the minimum representation of a
-         * float.
+         * intersect, return object should contain float's not-a-number value.
+         *
          * See https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
          */
         vec<float, 2> intersection (const vec<float, 2> _p1, const vec<float, 2> _q1,
