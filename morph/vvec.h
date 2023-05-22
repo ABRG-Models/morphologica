@@ -603,14 +603,31 @@ namespace morph {
             return idx;
         }
 
-        //! Return the min and max values of the vvec
+        //! Return the min and max values of the vvec, ignoring any not-a-number elements. If you
+        //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
+        //! the rest of the numbers
+        template<bool test_for_nans = false>
         std::pair<S, S> minmax() const
         {
-            // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
-            auto mm = std::minmax_element (this->begin(), this->end());
             std::pair<S, S> minmax;
-            minmax.first = mm.first == this->end() ? S{0} : *mm.first;
-            minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+            if constexpr (test_for_nans) {
+                if (this->has_nan()) {
+                    // Deal with non-numbers by removing them
+                    morph::vvec<S> sans_nans = this->prune_nan();
+                    auto mm = std::minmax_element (sans_nans.begin(), sans_nans.end());
+                    minmax.first = mm.first == sans_nans.end() ? S{0} : *mm.first;
+                    minmax.second = mm.second == sans_nans.end() ? S{0} : *mm.second;
+                } else {
+                    auto mm = std::minmax_element (this->begin(), this->end());
+                    minmax.first = mm.first == this->end() ? S{0} : *mm.first;
+                    minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+                }
+            } else { // no testing for nans
+                // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
+                auto mm = std::minmax_element (this->begin(), this->end());
+                minmax.first = mm.first == this->end() ? S{0} : *mm.first;
+                minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+            }
             return minmax;
         }
 
@@ -844,6 +861,28 @@ namespace morph {
             vvec<S> pruned;
             for (auto& i : *this) { if (i >= S{0}) { pruned.push_back(i); } }
             this->swap (pruned);
+        }
+
+        //! Return a vvec which is a copy of *this for which NaN elements have been removed
+        vvec<S> prune_nan() const
+        {
+            static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
+            vvec<S> rtn;
+            for (auto& i : *this) { if (!std::isnan(i)) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_nan_inplace()
+        {
+            static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
+            vvec<S> pruned;
+            for (auto& i : *this) { if (!std::isnan(i)) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
+
+        void replace_nan_with (const S replacement)
+        {
+            static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
+            for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
         // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
