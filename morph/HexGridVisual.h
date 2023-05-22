@@ -224,7 +224,10 @@ namespace morph {
             this->dcolour.resize (this->datasize);
 
             if (this->scalarData != nullptr) {
+                // What do these scaling operations do to any NaNs in scalarData? They should remain
+                // NaN. Then in dcopy, might want to make them 0.
                 this->zScale.transform (*(this->scalarData), dcopy);
+                dcopy.replace_nan_with (0.0f);
                 this->colourScale.transform (*(this->scalarData), dcolour);
             }
 
@@ -989,7 +992,7 @@ namespace morph {
         const HexGrid* hg;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
-        std::vector<float> dcopy;
+        morph::vvec<float> dcopy;
         //! A copy of the scalarData, scaled to be a colour value
         std::vector<float> dcolour;
     };
