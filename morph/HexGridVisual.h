@@ -227,7 +227,7 @@ namespace morph {
                 // What do these scaling operations do to any NaNs in scalarData? They should remain
                 // NaN. Then in dcopy, might want to make them 0.
                 this->zScale.transform (*(this->scalarData), dcopy);
-                dcopy.replace_nan_with (0.0f);
+                dcopy.replace_nan_with (this->zScale.transform_one(0.0f));
                 this->colourScale.transform (*(this->scalarData), dcolour);
             }
 
