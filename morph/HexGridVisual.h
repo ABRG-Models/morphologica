@@ -380,19 +380,19 @@ namespace morph {
                 // marked, then three of the vertices are given the colour black,
                 // marking the hex out visually.
                 this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
+                if (this->markedHexes.count(hi) || std::isnan(dcolour[hi])) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
                     this->vertex_push (clr, this->vertexColors);
                 }
                 this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
+                if (this->markedHexes.count(hi) || std::isnan(dcolour[hi])) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
                     this->vertex_push (clr, this->vertexColors);
                 }
                 this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
+                if (this->markedHexes.count(hi) || std::isnan(dcolour[hi])) {
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
                     this->vertex_push (clr, this->vertexColors);
