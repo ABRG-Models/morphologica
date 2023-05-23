@@ -202,5 +202,19 @@ int main () {
     std::cout << "Inverse Scale output for rmin: " << d.inverse_one (0) << std::endl;
     std::cout << "Inverse Scale output for rmin: " << d.inverse_one (1) << std::endl;
 
+    // Testing what happens to a NaN (after scaling should be nan)
+    Scale<float> snan;
+    snan.do_autoscale = true;
+    vector<float> vfnan = {1,2,3,4,5,std::numeric_limits<float>::quiet_NaN(),9,18};
+    vector<float> resultnan(vfnan);
+    snan.transform (vfnan, resultnan);
+    cout << "NaN containing data: Unscaled/scaled: ";
+    for (unsigned int i = 0; i < vfnan.size(); ++i) {
+        cout << vfnan[i]<<"/"<<resultnan[i]<<", ";
+    }
+    cout << endl;
+    // Fifth element should be NaN still:
+    if (!std::isnan(resultnan[5])) { --rtn; }
+
     return rtn;
 }
