@@ -57,6 +57,8 @@ int main (int argc, char** argv)
             }
         }
         auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
+        vmp->quiver_length_gain = 0.2f; // Scale the length of the quivers on screen
+        vmp->quiver_thickness_gain = 0.1f; // Scale thickness of the quivers
         vmp->finalize();
         v.addVisualModel (vmp);
 
