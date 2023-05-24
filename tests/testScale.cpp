@@ -158,19 +158,38 @@ int main () {
     }
 
     // Log scaling
+    std::cout << "Log scaling...\n";
     Scale<double, float> ls;
     ls.do_autoscale = true;
     ls.setlog();
 
-    list<double> loggy;
+    morph::vvec<double> loggy;
     loggy.push_back (0.01);
+    loggy.push_back (0.05);
+    loggy.push_back (0.1);
+    loggy.push_back (0.5);
     loggy.push_back (1.0);
+    loggy.push_back (5.0);
+    loggy.push_back (10.0);
+    loggy.push_back (50.0);
+    loggy.push_back (0.0); // what if loggy contains a zero? Scale falls over.
 
-    list<float> loggyout(loggy.size());
+    morph::vvec<float> loggyout(loggy.size());
+    try {
+        ls.transform (loggy, loggyout);
+        --rtn; // shouldn't get  here
+        std::cout << "Unexpected: Log morph::Scale given\n  " << loggy << ",\ntransforms it to\n  " << loggyout << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "Caught expected error: " << e.what() << std::endl;
+    }
+
+    // Replace the offending 0 with a quiet NaN (NaNs are ok to be transformed; they come out still as NaNs)
+    loggy.back() = std::numeric_limits<double>::quiet_NaN();
     ls.transform (loggy, loggyout);
+    std::cout << "Log morph::Scale given\n  " << loggy << ",\ntransforms it to\n  " << loggyout << std::endl;
 
     // That will have set the autoscale. now carry out inverse transform
-    vector<float> range;
+    morph::vvec<float> range;
     range.push_back (0);
     range.push_back (0.2);
     range.push_back (0.4);
@@ -178,8 +197,10 @@ int main () {
     range.push_back (0.8);
     range.push_back (1.0);
 
-    vector<double> rangeout(range.size());
+    morph::vvec<double> rangeout(range.size());
     ls.inverse (range, rangeout);
+
+    std::cout << "Log morph::Scale given\n  " << range << ",\n inverse transforms it to\n  " << rangeout << std::endl;
 
     auto li = range.begin();
     auto lio = rangeout.begin();

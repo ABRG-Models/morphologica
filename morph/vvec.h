@@ -885,6 +885,11 @@ namespace morph {
             for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
+        void search_replace (const S searchee, const S replacement)
+        {
+            for (auto& i : *this) { if (i == searchee) { i = replacement; } }
+        }
+
         // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
         vvec<S> threshold (const S lower, const S upper) const
         {

@@ -229,7 +229,7 @@ namespace morph {
             case ColourMapType::GreyscaleInv:
             {
                 // The 'inverted' greyscale tends to white for maximum signal
-                c = {1.0, 0.0f, 0.0f};
+                c = {1.0, 1.0f, 1.0f};
                 break;
             }
             case ColourMapType::Monochrome:

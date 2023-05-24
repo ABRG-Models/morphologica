@@ -379,25 +379,37 @@ namespace morph {
                 // Usually seven vertices with the same colour, but if the hex is
                 // marked, then three of the vertices are given the colour black,
                 // marking the hex out visually.
-                this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
+                if (std::isnan(dcolour[hi])) {
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (blkclr, this->vertexColors);
+                    this->vertex_push (blkclr, this->vertexColors);
+                    this->vertex_push (blkclr, this->vertexColors);
+                    this->vertex_push (blkclr, this->vertexColors);
+                    this->vertex_push (blkclr, this->vertexColors);
                     this->vertex_push (blkclr, this->vertexColors);
                 } else {
                     this->vertex_push (clr, this->vertexColors);
-                }
-                this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
-                    this->vertex_push (blkclr, this->vertexColors);
-                } else {
+                    if (this->markedHexes.count(hi)) {
+                        this->vertex_push (blkclr, this->vertexColors);
+                    } else {
+                        this->vertex_push (clr, this->vertexColors);
+                    }
+
+                    this->vertex_push (clr, this->vertexColors);
+
+                    if (this->markedHexes.count(hi)) {
+                        this->vertex_push (blkclr, this->vertexColors);
+                    } else {
+                        this->vertex_push (clr, this->vertexColors);
+                    }
+                    this->vertex_push (clr, this->vertexColors);
+                    if (this->markedHexes.count(hi)) {
+                        this->vertex_push (blkclr, this->vertexColors);
+                    } else {
+                        this->vertex_push (clr, this->vertexColors);
+                    }
                     this->vertex_push (clr, this->vertexColors);
                 }
-                this->vertex_push (clr, this->vertexColors);
-                if (this->markedHexes.count(hi)) {
-                    this->vertex_push (blkclr, this->vertexColors);
-                } else {
-                    this->vertex_push (clr, this->vertexColors);
-                }
-                this->vertex_push (clr, this->vertexColors);
 
                 // Define indices now to produce the 6 triangles in the hex
                 this->indices.push_back (this->idx+1);

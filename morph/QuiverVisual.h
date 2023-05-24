@@ -12,6 +12,8 @@
 #include <morph/MathAlgo.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
+#include <morph/vvec.h>
+#include <morph/colour.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -51,9 +53,11 @@ namespace morph {
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
 
-            //this->initializeVertices(); Now require call of finalize();
-            //this->postVertexInit();
+            this->length_scale.do_autoscale = true;
         }
+
+        // Call before initializeVertices() to scale quiver lengths logarithmically
+        void setlog() { this->length_scale.setlog(); }
 
         //! Do the computations to initialize the vertices that will represent the Quivers.
         void initializeVertices()
@@ -67,59 +71,81 @@ namespace morph {
             }
 
             vec<Flt> zero3 = { Flt{0}, Flt{0}, Flt{0} };
-            std::vector<Flt> lengths;
+            vvec<Flt> dlengths;
+            // Compute the lengths of each vector
             for (unsigned int i = 0; i < nquiv; ++i) {
-                lengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
+                dlengths.push_back (MathAlgo::distance<Flt, 3> (zero3, (*this->vectorData)[i]));
             }
-            // Auto scale the lengths to get a full range of colours for the lengths.
-            std::vector<Flt> lengthcolours = MathAlgo::autoscale (lengths, Flt{0}, Flt{1});
+
+            // Linearly scale the dlengths to generate colours
+            morph::Scale<Flt> lcscale;
+            lcscale.do_autoscale = true;
+            vvec<Flt> lengthcolours(dlengths);
+            lcscale.transform (dlengths, lengthcolours);
+
+            // Now scale the lengths for their size on screen. Do this with a linear or log scaling.
+
+            // (if log) First replace zeros with NaNs so that log transform will work.
+            if (this->length_scale.getType() == morph::ScaleFn::Logarithmic) {
+                dlengths.search_replace (Flt{0}, std::numeric_limits<Flt>::quiet_NaN());
+            }
+
+            // Transform data lengths into "nrmlzedlengths"
+            vvec<float> nrmlzedlengths (dlengths.size(), this->fixed_length);
+            if (this->fixed_length == 0.0f) {
+                this->length_scale.transform (dlengths, nrmlzedlengths);
+            }
+
+            // Find the scaling factor to scale real lengths into screen lengths, which are the
+            // normalized lengths multiplied by a user-settable quiver_length_gain.
+            vvec<float> lfactor = nrmlzedlengths/dlengths * this->quiver_length_gain;
 
             vec<Flt> half = { Flt{0.5}, Flt{0.5}, Flt{0.5} };
             vec<Flt> vectorData_i, halfquiv;
             vec<float> start, end, coords_i;
             std::array<float, 3> clr;
             for (unsigned int i = 0; i < ncoords; ++i) {
-                // If we want fixed length vector arrows, fixed_length should be set > 0.
-                float len = this->fixed_length > 0.0f ? this->fixed_length : static_cast<float>(lengths[i]);
-                // For a fixed length vector, we'll have to scale each of vectorData
-                float vmult = (this->fixed_length > 0.0f && lengths[i] > Flt{0}) ? (this->fixed_length/static_cast<float>(lengths[i])) : 1.0f;
+
                 coords_i = (*this->dataCoords)[i];
+
+                float len = nrmlzedlengths[i] * this->quiver_length_gain;
+
+                if ((std::isnan(dlengths[i]) || dlengths[i] == Flt{0}) && this->show_zero_vectors) {
+                    // NaNs denote zero vectors when the lengths have been log scaled. Use the colour maps 'nan' colour to show the zero vector
+                    this->computeSphere (this->idx, coords_i, zero_vector_colour, this->zero_vector_marker_size * quiver_thickness_gain);
+                    continue;
+                }
+
                 vectorData_i = (*this->vectorData)[i];
-                vectorData_i *= vmult; // apply the scaling (vmult may well be 1)
+                vectorData_i *= lfactor[i];
+
                 clr = this->cm.convert (lengthcolours[i]);
 
                 if (this->qgoes == QuiverGoes::FromCoord) {
                     start = coords_i;
-                    std::transform (coords_i.begin(), coords_i.end(),
-                                    vectorData_i.begin(), end.begin(), std::plus<Flt>());
-
+                    std::transform (coords_i.begin(), coords_i.end(), vectorData_i.begin(), end.begin(), std::plus<Flt>());
 
                 } else if (this->qgoes == QuiverGoes::ToCoord) {
-                    std::transform (coords_i.begin(), coords_i.end(),
-                                    vectorData_i.begin(), start.begin(), std::minus<Flt>());
-
+                    std::transform (coords_i.begin(), coords_i.end(), vectorData_i.begin(), start.begin(), std::minus<Flt>());
                     end = coords_i;
                 } else /* if (this->qgoes == QuiverGoes::OnCoord) */ {
-                    std::transform (half.begin(), half.end(),
-                                    vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
-                    std::transform (coords_i.begin(), coords_i.end(),
-                                    halfquiv.begin(), start.begin(), std::minus<Flt>());
-                    std::transform (coords_i.begin(), coords_i.end(),
-                                    halfquiv.begin(), end.begin(), std::plus<Flt>());
+                    std::transform (half.begin(), half.end(), vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), start.begin(), std::minus<Flt>());
+                    std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
                 // Will need a fixed scale for some visualizations
-                this->computeTube (this->idx, start, end, clr, clr, len/30.0f);
+                this->computeTube (this->idx, start, end, clr, clr, len*quiver_thickness_gain);
+
                 // Plus sphere or cone:
-                this->computeSphere (this->idx, coords_i, clr, len/10.0f);
+                this->computeSphere (this->idx, coords_i, clr, len*quiver_thickness_gain*2.0f);
+
                 // Compute a tip for the cone.
-                vec<Flt> frac = { Flt{0.2}, Flt{0.2}, Flt{0.2} };
+                vec<Flt> frac = { Flt{0.4}, Flt{0.4}, Flt{0.4} };
                 vec<float> tip;
                 // Multiply vectorData_i by a fraction and that's the cone end. Note reuse of halfquiv variable
-                std::transform (frac.begin(), frac.end(),
-                                vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
-                std::transform (end.begin(), end.end(),
-                                halfquiv.begin(), tip.begin(), std::plus<Flt>());
-                this->computeCone (this->idx, end, tip, -0.1f, clr, len/10.0f);
+                std::transform (frac.begin(), frac.end(), vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
+                std::transform (end.begin(), end.end(), halfquiv.begin(), tip.begin(), std::plus<Flt>());
+                this->computeCone (this->idx, end, tip, -0.1f, clr, len*quiver_thickness_gain*2.0f);
             }
         }
 
@@ -128,6 +154,27 @@ namespace morph {
 
         // Setting a fixed length can be useful to focus on the flow of the field.
         Flt fixed_length = 0.0f;
+
+        // Allows user to linearly scale the size of the quivers that are plotted. Set before
+        // calling finalize()
+        float quiver_length_gain = 1.0f;
+
+        // Allows user to scale the thickness of the quivers.
+        float quiver_thickness_gain = 0.05f;
+
+        // If true, show a marker indicating the location of zero vectors
+        bool show_zero_vectors = false;
+
+        // User can choose a colour
+        std::array<float, 3> zero_vector_colour = morph::colour::crimson;
+
+        // User can choose size of zero vector markers (which are spheres)
+        float zero_vector_marker_size = 0.05f;
+
+        // The input vectors are scaled in length to the range [0, 1], which is then modified by the
+        // user using quiver_length_gain. This scaling can be made logarithmic by calling
+        // QuiverVisual::setlog() before calling finalize().
+        morph::Scale<Flt, float> length_scale;
     };
 
 } // namespace morph
