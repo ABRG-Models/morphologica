@@ -87,7 +87,7 @@ namespace morph {
             this->centre_horz = _centre_horz;
         }
 
-        float fontsize = 0.1;
+        float fontsize = 0.1f;
         int fontres = 24;
         bool centre_horz = false;
         std::array<float, 3> colour = morph::colour::black;
