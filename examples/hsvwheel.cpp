@@ -81,12 +81,15 @@ int main()
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
 
+    // TextFeatures is a nice way to specify font size, colour (and other things) for your addLabel() calls. See VisualTextModel.h.
+    morph::TextFeatures tf (0.5f, morph::colour::white);
+
     // Grid 1
     float hue_rotn = 0.0f;
     auto hsv_vis = std::make_unique<SquareGridVisual>(v.shaders, offset, hue_rotn);
     //
     std::string lbl("hue rotation = 0");
-    hsv_vis->addLabel (lbl, morph::vec<float>({0,-1,0}), morph::colour::white, morph::VisualFont::DVSans, 0.5f, 24);
+    hsv_vis->addLabel (lbl, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis->finalize();
     v.addVisualModel (hsv_vis);
@@ -98,7 +101,7 @@ int main()
     using morph::unicode;
     std::string lbl2("hue rotation = ");
     lbl2 += std::to_string (hue_rotn/morph::mathconst<float>::pi) + unicode::toUtf8(unicode::pi);
-    hsv_vis2->addLabel (lbl2, morph::vec<float>({0,-1,0}), morph::colour::white, morph::VisualFont::DVSans, 0.5f, 24);
+    hsv_vis2->addLabel (lbl2, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis2->finalize();
     v.addVisualModel (hsv_vis2);
@@ -108,7 +111,7 @@ int main()
     auto hsv_vis3 = std::make_unique<SquareGridVisual>(v.shaders, offset, hue_rotn, true);
     //
     std::string lbl3("hue rotation = 0; direction reversed");
-    hsv_vis3->addLabel (lbl3, morph::vec<float>({0,-1,0}), morph::colour::white, morph::VisualFont::DVSans, 0.5f, 24);
+    hsv_vis3->addLabel (lbl3, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis3->finalize();
     v.addVisualModel (hsv_vis3);

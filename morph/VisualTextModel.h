@@ -24,6 +24,7 @@
 #include <morph/unicode.h>
 #include <morph/VisualFace.h>
 #include <morph/VisualResources.h>
+#include <morph/colour.h>
 #include <vector>
 #include <array>
 #include <map>
@@ -55,6 +56,43 @@ namespace morph {
         float height() { return this->max_bearingy; }
         //! Half the max_bearingy
         float half_height() { return this->max_bearingy * 0.5f; }
+    };
+
+    // A way to bundle up font size, colour, etc into a single object. Constructors chosen for max convenience.
+    struct TextFeatures
+    {
+        TextFeatures(){};
+        TextFeatures (const float _fontsize,
+                      const int _fontres,
+                      const bool _centre_horz,
+                      const std::array<float, 3> _colour,
+                      morph::VisualFont _font)
+            : fontsize(_fontsize), fontres(_fontres), centre_horz(_centre_horz), colour(_colour), font(_font) {}
+
+        TextFeatures (const float _fontsize, const bool _centre_horz = false)
+            : fontsize(_fontsize)
+        {
+            this->centre_horz = _centre_horz;
+        }
+
+        TextFeatures (const float _fontsize, const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
+            : fontsize(_fontsize), colour(_colour)
+        {
+            this->centre_horz = _centre_horz;
+        }
+
+        TextFeatures (const float _fontsize, const int _fontres, const std::array<float, 3> _colour = morph::colour::black, const bool _centre_horz = false)
+            : fontsize(_fontsize), fontres(_fontres), colour(_colour)
+        {
+            this->centre_horz = _centre_horz;
+        }
+
+        float fontsize = 0.1f;
+        int fontres = 24;
+        bool centre_horz = false;
+        std::array<float, 3> colour = morph::colour::black;
+        morph::VisualFont font = morph::VisualFont::DVSans;
+        // also things like rotate, centre_vert, etc
     };
 
     /*!
@@ -102,6 +140,22 @@ namespace morph {
             this->setupText (_txt);
         }
 
+        //! A more compact version of VisualTextModel(GLuint, VisualFont, float, int, const
+        //! vec<float>, const string&, array<float, 3>), which takes a TextFeatures object
+        VisualTextModel (GLuint tsp, const morph::vec<float> _mv_offset, const std::string& _txt, morph::TextFeatures tfeatures)
+        {
+            this->tshaderprog = tsp;
+            this->mv_offset = _mv_offset;
+            this->viewmatrix.rotate (this->mv_rotation);
+            this->viewmatrix.translate (this->mv_offset);
+            this->m_width = tfeatures.fontsize;
+            this->fontpixels = tfeatures.fontres;
+            this->fontscale = this->m_width/(float)this->fontpixels;
+            this->clr_text = tfeatures.colour;
+            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, glfwGetCurrentContext());
+            this->setupText (_txt);
+        }
+
         /*!
          * Construct with given text shader program id, \a tsp, font \a _font, font
          * scaling factor \a fscale. After this constructor, the method
@@ -115,6 +169,16 @@ namespace morph {
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
             this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, glfwGetCurrentContext());
+        }
+
+        //! A more compact version of the VisualTextModel(GLuint, VisualFont, float, int), taking a TextFeatures object.
+        VisualTextModel (GLuint tsp, morph::TextFeatures tfeatures)
+        {
+            this->tshaderprog = tsp;
+            this->m_width = tfeatures.fontsize;
+            this->fontpixels = tfeatures.fontres;
+            this->fontscale = this->m_width/(float)this->fontpixels;
+            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, glfwGetCurrentContext());
         }
 
         virtual ~VisualTextModel()
