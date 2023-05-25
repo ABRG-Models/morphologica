@@ -286,9 +286,59 @@ namespace morph {
 
     public:
 
-        //! Add a text label to the model at location (within the model coordinates)
-        //! toffset. Return the text geometry of the added label so caller can place
-        //! associated text correctly.
+        //! Add a text label to the model at location (within the model coordinates) toffset. Return
+        //! the text geometry of the added label so caller can place associated text correctly.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      const morph::TextFeatures& tfeatures)
+        {
+            if (this->shaders.tprog == 0) {
+                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
+            }
+
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, tfeatures);
+
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn+this->mv_offset, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset+this->mv_offset, tfeatures.colour);
+            }
+
+            this->texts.push_back (std::move(tmup));
+            return this->texts.back()->getTextGeometry();
+        }
+
+        //! Add a text label, with given offset _toffset and the specified features. The reference
+        //! to a pointer, tm, allows client code to change the text of the VisualTextModel as necessary.
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      morph::VisualTextModel*& tm,
+                                      const morph::TextFeatures& tfeatures)
+        {
+            if (this->shaders.tprog == 0) {
+                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
+            }
+
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, tfeatures);
+
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn+this->mv_offset, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset+this->mv_offset, tfeatures.colour);
+            }
+
+            this->texts.push_back (std::move(tmup));
+            tm = this->texts.back().get();
+            return this->texts.back()->getTextGeometry();
+        }
+
+        //! Deprecated argument format. Prefer the versions that take TextFeatures, rather than multiple args.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
@@ -296,16 +346,11 @@ namespace morph {
                                       const float _fontsize = 0.05,
                                       const int _fontres = 24)
         {
-            if (this->shaders.tprog == 0) {
-                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
-            }
-            auto tm = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
-            tm->setupText (_text, _toffset+this->mv_offset, _tcolour);
-            this->texts.push_back (std::move(tm));
-            return this->texts.back()->getTextGeometry();
+            morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
+            return addLabel (_text, _toffset, tfeat);
         }
 
-        //! Add a text label with a passed-in pointer to a VisualTextModel
+        //! Deprecated argument format. Prefer the versions that take TextFeatures, rather than multiple args.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
                                       morph::VisualTextModel*& tm,
@@ -314,14 +359,8 @@ namespace morph {
                                       const float _fontsize = 0.05,
                                       const int _fontres = 24)
         {
-            if (this->shaders.tprog == 0) {
-                throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
-            }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
-            tmup->setupText (_text, _toffset+this->mv_offset, _tcolour);
-            this->texts.push_back (std::move(tmup));
-            tm = this->texts.back().get();
-            return tm->getTextGeometry();
+            morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
+            return addLabel (_text, _toffset, tm, tfeat);
         }
 
         //! Setter for the viewmatrix
