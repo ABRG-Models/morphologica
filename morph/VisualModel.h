@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <memory>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
