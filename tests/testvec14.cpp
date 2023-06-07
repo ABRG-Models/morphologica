@@ -38,13 +38,13 @@ int main() {
     // Test comparison
     cout << "vi == vi3? " << (vi == vi3 ? "yes" : "no") << endl;
     // Test cross product (3D only
-    vec<double, 3> a; a[0] = 1;
-    vec<double, 3> b; b[1] = 1;
+    vec<double, 3> a{}; a[0] = 1;
+    vec<double, 3> b{}; b[1] = 1;
     vec<double, 3> c = a.cross(b);
     cout << a << " cross " << b << "=" << c << endl;
     // Test dot product
-    vec<int, 2> vv1; vv1[0]=1; vv1[1]=1;
-    vec<int, 2> vv2; vv2[0]=2; vv2[1]=2;
+    vec<int, 2> vv1{}; vv1[0]=1; vv1[1]=1;
+    vec<int, 2> vv2{}; vv2[0]=2; vv2[1]=2;
     int dp = vv1.dot (vv2);
     cout << vv1 << "." << vv2 << " = " << dp << endl;
 #if 0 // No good:

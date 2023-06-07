@@ -28,6 +28,7 @@
 #include <array>
 #include <cmath>
 #include <sstream>
+#include <memory>
 
 namespace morph {
 

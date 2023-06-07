@@ -636,7 +636,7 @@ namespace morph {
          */
         vec<S, N> pow (const S& p) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto raise_to_p = [p](S coord) -> S { return static_cast<S>(std::pow(coord, p)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
@@ -649,7 +649,7 @@ namespace morph {
         vec<S, N> pow (const vec<_S, N>& p) const
         {
             auto pi = p.begin();
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto raise_to_p = [pi](S coord) mutable -> S { return static_cast<S>(std::pow(coord, (*pi++))); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
@@ -664,7 +664,7 @@ namespace morph {
         //! Return the signum of the vec, with signum(0)==0
         vec<S, N> signum() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto _signum = [](S coord) -> S { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
@@ -674,7 +674,7 @@ namespace morph {
         //! Return the floor of the vec
         vec<S, N> floor() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto _floor = [](S coord) -> S { return (std::floor(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
@@ -684,7 +684,7 @@ namespace morph {
         //! Return the floor-or-ceiling of the vector's elements - i.e. apply std::trunc
         vec<S, N> trunc() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto _trunc = [](S coord) -> S { return (std::trunc(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
             return rtn;
@@ -694,7 +694,7 @@ namespace morph {
         //! Return the ceiling of the vec
         vec<S, N> ceil() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto _ceil = [](S coord) -> S { return (std::ceil(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
@@ -708,7 +708,7 @@ namespace morph {
          */
         vec<S, N> sqrt() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto sqrt_element = [](S coord) -> S { return static_cast<S>(std::sqrt(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
@@ -723,7 +723,7 @@ namespace morph {
          */
         vec<S, N> sq() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto sq_element = [](S coord) -> S { return (coord * coord); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
@@ -738,7 +738,7 @@ namespace morph {
          */
         vec<S, N> log() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto log_element = [](S coord) -> S { return static_cast<S>(std::log(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
@@ -753,7 +753,7 @@ namespace morph {
          */
         vec<S, N> log10() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto log_element = [](S coord) -> S { return static_cast<S>(std::log10(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
@@ -768,7 +768,7 @@ namespace morph {
          */
         vec<S, N> exp() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto exp_element = [](S coord) -> S { return static_cast<S>(std::exp(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
             return rtn;
@@ -783,7 +783,7 @@ namespace morph {
          */
         vec<S, N> abs() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto abs_element = [](S coord) -> S { return static_cast<S>(std::abs(coord)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
@@ -884,7 +884,7 @@ namespace morph {
          */
         vec<S, N> operator-() const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), rtn.begin(), std::negate<S>());
             return rtn;
         }
@@ -922,7 +922,7 @@ namespace morph {
         template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
         vec<S, _N> cross (const vec<_S, _N>& v) const
         {
-            vec<S, _N> vrtn;
+            vec<S, _N> vrtn{};
             vrtn[0] = (*this)[1] * v.z() - (*this)[2] * v.y();
             vrtn[1] = (*this)[2] * v.x() - (*this)[0] * v.z();
             vrtn[2] = (*this)[0] * v.y() - (*this)[1] * v.x();
@@ -958,7 +958,7 @@ namespace morph {
         template<typename _S=S>
         vec<S, N> operator* (const vec<_S, N>& v) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn = {};
             auto vi = v.begin();
             auto mult_by_s = [vi](S lhs) mutable -> S { return lhs * static_cast<S>(*vi++); };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
@@ -987,7 +987,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vec<S, N> operator* (const _S& s) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto mult_by_s = [s](S coord) { return coord * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
@@ -1016,7 +1016,7 @@ namespace morph {
         template<typename _S=S>
         vec<S, N> operator/ (const vec<_S, N>& v) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             std::transform (this->begin(), this->end(), v.begin(), rtn.begin(), std::divides<S>());
             return rtn;
         }
@@ -1054,7 +1054,7 @@ namespace morph {
         template<typename _S=S>
         vec<S, N> operator+ (const vec<_S, N>& v) const
         {
-            vec<S, N> vrtn;
+            vec<S, N> vrtn{};
             auto vi = v.begin();
             auto add_v = [vi](S a) mutable { return a + (*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), add_v);
@@ -1074,7 +1074,7 @@ namespace morph {
         template<typename _S=S>
         vec<S, N> operator- (const vec<_S, N>& v) const
         {
-            vec<S, N> vrtn;
+            vec<S, N> vrtn{};
             auto vi = v.begin();
             auto subtract_v = [vi](S a) mutable { return a - (*vi++); };
             std::transform (this->begin(), this->end(), vrtn.begin(), subtract_v);
@@ -1094,7 +1094,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vec<S, N> operator+ (const _S& s) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
@@ -1112,7 +1112,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         vec<S, N> operator- (const _S& s) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
@@ -1129,7 +1129,7 @@ namespace morph {
         //! Addition which should work for any member type that implements the + operator
         vec<S, N> operator+ (const S& s) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto add_s = [s](S coord) { return coord + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
@@ -1145,7 +1145,7 @@ namespace morph {
         //! Subtraction which should work for any member type that implements the - operator
         vec<S, N> operator- (const S& s) const
         {
-            vec<S, N> rtn;
+            vec<S, N> rtn{};
             auto subtract_s = [s](S coord) { return coord - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
