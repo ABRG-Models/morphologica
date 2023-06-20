@@ -11,15 +11,16 @@ int main()
     using morph::unicode;
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Logistic functions");
+    v.addLabel ("Change logistic function parameters in ../examples/graph_logist2.json", morph::vec<float>({0,0,0}));
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({-0.5f,-0.5f,0.0f}));
-    // Params
-    morph::Config conf ("logistic2.json");
-    double ofst = conf.get<double> ("ofst", 1.0);
-    double alpha = conf.get<double> ("alpha", 1.0);
-    double x0 = conf.get<double> ("x0", 0.0);
-    double x1 = conf.get<double> ("x1", 1.0);
-    double m = conf.get<double> ("m", 1.0);
+    // Params are read from a JSON file
+    morph::Config conf ("../examples/graph_logist2.json");
+    double ofst = conf.get<double> ("ofst", 4.0);
+    double alpha = conf.get<double> ("alpha", 10.0);
+    double x0 = conf.get<double> ("x0", -10.0);
+    double x1 = conf.get<double> ("x1", 10.0);
+    double m = conf.get<double> ("m", 12.0);
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
