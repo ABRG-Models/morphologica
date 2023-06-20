@@ -184,6 +184,12 @@ if(USE_GLEW)
   target_link_libraries(graph_logist GLEW::GLEW)
 endif()
 
+add_executable(graph_logist2 graph_logist2.cpp)
+target_link_libraries(graph_logist2 OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(graph_logist2 GLEW::GLEW)
+endif()
+
 add_executable(linregr linregr.cpp)
 target_link_libraries(linregr OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
