@@ -134,18 +134,22 @@ namespace morph {
                     std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
 
+                // How thick to draw the quiver arrows? Can scale by length (default) or keep
+                // constant (set fixed_quiver_thickness > 0)
+                float quiv_thick = this->fixed_quiver_thickness ? this->fixed_quiver_thickness : len*quiver_thickness_gain;
+
                 // The right way to draw an arrow.
                 vec<float> arrow_line = end - start;
                 vec<float> cone_start = arrow_line.shorten (len*quiver_arrowhead_prop);
                 cone_start += start;
-                this->computeTube (this->idx, start, cone_start, clr, clr, len*quiver_thickness_gain);
+                this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick);
                 float conelen = (end-cone_start).length();
                 if (arrow_line.length() > conelen) {
-                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, len*quiver_thickness_gain*2.0f, 20);
+                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, 20);
                 }
 
                 // Plus a sphere on the coordinate:
-                this->computeSphere (this->idx, coords_i, clr, len*quiver_thickness_gain*2.0f);
+                this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f);
             }
         }
 
@@ -158,6 +162,10 @@ namespace morph {
         // Allows user to linearly scale the size of the quivers that are plotted. Set before
         // calling finalize()
         float quiver_length_gain = 1.0f;
+
+        // If 0, then quiver thickness is scaled by quiver length. Otherwise, the quiver arrowshaft
+        // tubes have radius = fixed_quiver_thickness * quiver_thickness_gain.
+        float fixed_quiver_thickness = 0.0f;
 
         // Allows user to scale the thickness of the quivers.
         float quiver_thickness_gain = 0.05f;
