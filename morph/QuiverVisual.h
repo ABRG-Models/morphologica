@@ -111,7 +111,7 @@ namespace morph {
                 float len = nrmlzedlengths[i] * this->quiver_length_gain;
 
                 if ((std::isnan(dlengths[i]) || dlengths[i] == Flt{0}) && this->show_zero_vectors) {
-                    // NaNs denote zero vectors when the lengths have been log scaled. Use the colour maps 'nan' colour to show the zero vector
+                    // NaNs denote zero vectors when the lengths have been log scaled.
                     this->computeSphere (this->idx, coords_i, zero_vector_colour, this->zero_vector_marker_size * quiver_thickness_gain);
                     continue;
                 }
@@ -133,19 +133,19 @@ namespace morph {
                     std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), start.begin(), std::minus<Flt>());
                     std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
-                // Will need a fixed scale for some visualizations
-                this->computeTube (this->idx, start, end, clr, clr, len*quiver_thickness_gain);
 
-                // Plus sphere or cone:
+                // The right way to draw an arrow.
+                vec<float> arrow_line = end - start;
+                vec<float> cone_start = arrow_line.shorten (len*quiver_arrowhead_prop);
+                cone_start += start;
+                this->computeTube (this->idx, start, cone_start, clr, clr, len*quiver_thickness_gain);
+                float conelen = (end-cone_start).length();
+                if (arrow_line.length() > conelen) {
+                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, len*quiver_thickness_gain*2.0f, 20);
+                }
+
+                // Plus a sphere on the coordinate:
                 this->computeSphere (this->idx, coords_i, clr, len*quiver_thickness_gain*2.0f);
-
-                // Compute a tip for the cone.
-                vec<Flt> frac = { Flt{0.4}, Flt{0.4}, Flt{0.4} };
-                vec<float> tip;
-                // Multiply vectorData_i by a fraction and that's the cone end. Note reuse of halfquiv variable
-                std::transform (frac.begin(), frac.end(), vectorData_i.begin(), halfquiv.begin(), std::multiplies<Flt>());
-                std::transform (end.begin(), end.end(), halfquiv.begin(), tip.begin(), std::plus<Flt>());
-                this->computeCone (this->idx, end, tip, -0.1f, clr, len*quiver_thickness_gain*2.0f);
             }
         }
 
@@ -162,6 +162,9 @@ namespace morph {
         // Allows user to scale the thickness of the quivers.
         float quiver_thickness_gain = 0.05f;
 
+        // What proportion of the arrow length should the arrowhead length be?
+        float quiver_arrowhead_prop = 0.25f;
+
         // If true, show a marker indicating the location of zero vectors
         bool show_zero_vectors = false;
 
@@ -173,7 +176,8 @@ namespace morph {
 
         // The input vectors are scaled in length to the range [0, 1], which is then modified by the
         // user using quiver_length_gain. This scaling can be made logarithmic by calling
-        // QuiverVisual::setlog() before calling finalize().
+        // QuiverVisual::setlog() before calling finalize(). The scaling can be ignored by calling
+        // QuiverVisual::length_scale.compute_autoscale (0, 1); before finalize().
         morph::Scale<Flt, float> length_scale;
     };
 
