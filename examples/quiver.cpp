@@ -57,16 +57,13 @@ int main (int argc, char** argv)
             }
         }
         auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
-        vmp->quiver_length_gain = 0.2f; // Scale the length of the quivers on screen
-        vmp->quiver_thickness_gain = 0.1f; // Scale thickness of the quivers
+        vmp->quiver_length_gain = 0.4f; // Scale the length of the quivers on screen
+        vmp->quiver_thickness_gain = 0.05f; // Scale thickness of the quivers
+        // vmp->fixed_quiver_thickness = 0.003f; // Also possible to request a fixed thickness
         vmp->finalize();
         v.addVisualModel (vmp);
 
-        v.render();
-        while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
-            v.render();
-        }
+        v.keepOpen();
 
     } catch (const std::exception& e) {
         std::cerr << "Caught exception: " << e.what() << std::endl;
