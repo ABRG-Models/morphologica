@@ -263,6 +263,9 @@ namespace morph {
             }
         }
 
+        //! Wrapper around the glfw polling function
+        void poll() { glfwPollEvents(); }
+
         //! Render the scene
         void render()
         {
@@ -1213,7 +1216,15 @@ namespace morph {
 
             if (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
-                          << this->scenetrans.x() << "f, " << this->scenetrans.y() << "f, " << this->scenetrans.z() << "f}));"
+                          << this->scenetrans.x()
+                          << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
+                          << "f, "
+                          << this->scenetrans.y()
+                          << (this->scenetrans.y()/std::round(this->scenetrans.y()) == 1.0f ? ".0" : "")
+                          << "f, "
+                          << this->scenetrans.z()
+                          << (this->scenetrans.z()/std::round(this->scenetrans.z()) == 1.0f ? ".0" : "")
+                          << "f}));"
                           <<  "\nscene rotation is " << this->rotation << std::endl;
                 std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
                 std::ofstream fout;
