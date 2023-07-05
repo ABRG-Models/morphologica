@@ -19,7 +19,7 @@ int main()
     gv->finalize();
     // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
     v.addVisualModel (gv);
-    // Render the scene on the screen until user quits with 'x'
+    // Render the scene on the screen until user quits with 'Ctrl-q'
     v.keepOpen();
     // Because v owns the unique_ptr to the GraphVisual, its memory will be deallocated when v goes out of scope.
     return 0;

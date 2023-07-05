@@ -1156,25 +1156,25 @@ namespace morph {
         virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             // Exit action
-            if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
 
-            if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_T && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 this->rotateModMode = !this->rotateModMode;
             }
 
-            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL)&& action == GLFW_PRESS) {
+            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
             }
 
-            if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 // Help to stdout:
-                std::cout << "h: Output this help to stdout\n";
-                std::cout << "q: Request exit\n";
+                std::cout << "Ctrl-h: Output this help to stdout\n";
+                std::cout << "Ctrl-q: Request exit\n";
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
-                std::cout << "t: Toggle mouse rotate mode\n";
+                std::cout << "Ctrl-t: Toggle mouse rotate mode\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
                 std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";

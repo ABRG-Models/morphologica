@@ -44,7 +44,7 @@ int main()
     gv2->finalize();
     v.addVisualModel (gv2);
 
-    // Render the scene on the screen until user quits with 'x'
+    // Render the scene on the screen until user quits with 'Ctrl-q'
     v.keepOpen();
     return 0;
 }

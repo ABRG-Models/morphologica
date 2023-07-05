@@ -219,7 +219,7 @@ int main (int argc, char** argv)
               << " vs. " << obj_f.min() << ", the true obj_f.min().\n"
               << "Final error: " <<  anneal.f_x_best - obj_f.min() << "\n";
 
-    std::cout << "(You can close the window with 'x' or take a snapshot with 's'. 'h' for other help).\n";
+    std::cout << "(You can close the window with 'Ctrl-q' or take a snapshot with 'Ctrl-s'. 'Ctrl-h' for other help).\n";
 
     v.keepOpen();
 #else
