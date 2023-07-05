@@ -10,7 +10,11 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
+#ifdef QT_SOMETHING
+# include <qtstuff>
+#else
+# include <GLFW/glfw3.h>
+#endif
 #include <iostream>
 #include <utility>
 #include <tuple>
@@ -24,6 +28,14 @@
 
 namespace morph {
 
+#ifdef QT_SOMETHING
+    using win_t = Qwindow;
+    static constexpr bool using_qt = true;
+#else
+    using win_t = GLFWwindow;
+    static constexpr bool using_qt = false;
+#endif
+
     //! Singleton resource class for morph::Visual scenes.
     class VisualResources
     {
@@ -32,30 +44,41 @@ namespace morph {
         //! The deconstructor is never called for a singleton.
         ~VisualResources() {}
 
+        void qt_init()
+        {
+            if constexpr (using_qt == true) {
+                // stuff
+            }
+        }
+
         void glfw_init()
         {
-            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
+            if constexpr (using_qt == false) {
+                if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
-            // Set up error callback
-            glfwSetErrorCallback (morph::VisualResources::errorCallback);
+                // Set up error callback
+                glfwSetErrorCallback (morph::VisualResources::errorCallback);
 
-            // See https://www.glfw.org/docs/latest/monitor_guide.html
-            GLFWmonitor* primary = glfwGetPrimaryMonitor();
-            float xscale, yscale;
-            glfwGetMonitorContentScale(primary, &xscale, &yscale);
+                // See https://www.glfw.org/docs/latest/monitor_guide.html
+                GLFWmonitor* primary = glfwGetPrimaryMonitor();
+                float xscale, yscale;
+                glfwGetMonitorContentScale(primary, &xscale, &yscale);
 
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+                glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+                glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
 #ifdef __OSX__
-            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+                glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+                glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-            // Tell glfw that we'd like to do anti-aliasing.
-            glfwWindowHint (GLFW_SAMPLES, 4);
+                // Tell glfw that we'd like to do anti-aliasing.
+                glfwWindowHint (GLFW_SAMPLES, 4);
+            }
         }
 
         void init()
         {
+            // One of these will be a no-op
+            this->qt_init();
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
         }
@@ -69,7 +92,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int, GLFWwindow*>, morph::gl::VisualFace*> faces;
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::win_t*>, morph::gl::VisualFace*> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -78,7 +101,7 @@ namespace morph {
         }
 
         //! FreeType library object, public for access by client code?
-        std::map<GLFWwindow*, FT_Library> freetypes;
+        std::map<morph::win_t*, FT_Library> freetypes;
 
     public:
 
@@ -88,7 +111,7 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (GLFWwindow* _window)
+        void freetype_init (morph::win_t* _window)
         {
             FT_Library freetype = (FT_Library)0;
             try {
@@ -148,18 +171,22 @@ namespace morph {
             // We're done with freetype, so clear those up
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
-            // Shut down GLFW
-            glfwTerminate();
+            if constexpr (using_qt == true) {
+                // Qt cleanup?
+            } else {
+                // Shut down GLFW
+                glfwTerminate();
+            }
 
             // Note: static deregister() will delete self
         }
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, GLFWwindow* _win)
+        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::win_t* _win)
         {
             morph::gl::VisualFace* rtn = nullptr;
-            std::tuple<morph::VisualFont, unsigned int, GLFWwindow*> key = std::make_tuple(font, fontpixels, _win);
+            auto key = std::make_tuple(font, fontpixels, _win);
             try {
                 rtn = this->faces.at (key);
             } catch (const std::out_of_range& e) {

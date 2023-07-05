@@ -2,7 +2,7 @@
  * \file
  *
  * Awesome graphics code for high performance graphing and visualisation. Uses modern
- * OpenGL and the library GLFW for window management.
+ * OpenGL and the library GLFW for window management (or Qt).
  *
  * Created by Seb James on 2019/05/01
  *
@@ -18,10 +18,16 @@
 #endif
 
 #include <morph/VisualModel.h>
-#include <morph/VisualTextModel.h>
+#include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
+
+#ifdef QT_SOMETHING
+// Qt includes here...
+#else
 // Include glfw3 AFTER VisualModel
-#include <GLFW/glfw3.h>
+# include <GLFW/glfw3.h>
+#endif
+
 // For GLuint and GLenum (though redundant, as already included in VisualModel
 #ifndef USE_GLEW
 #ifdef __OSX__
@@ -31,7 +37,7 @@
 #endif
 #endif
 
-#include <morph/VisualResources.h>
+#include <morph/VisualResources.h> // Has Qt/GLFW code choices inside
 #include <morph/nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
@@ -147,14 +153,19 @@ namespace morph {
         //! Deconstructor destroys GLFW windows
         virtual ~Visual()
         {
-            glfwDestroyWindow (this->window);
+            // Note: morph::using_qt defined in VisualResources
+            if constexpr (using_qt == true) {
+                // Qt deconstruction?
+            } else {
+                glfwDestroyWindow (this->window);
+            }
             morph::VisualResources::deregister();
         }
 
         //! Take a screenshot of the window
         void saveImage (const std::string& img_filename)
         {
-            glfwMakeContextCurrent (this->window);
+            this->setCurrent();
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
@@ -182,7 +193,15 @@ namespace morph {
 
         //! Make this Visual the current one, so that when creating/adding a visual
         //! model, the vao ids relate to the correct OpenGL context.
-        void setCurrent() { glfwMakeContextCurrent (this->window); }
+        void setCurrent()
+        {
+            if constexpr (using_qt == true) {
+                // Qt make context current
+                throw std::runtime_error ("writeme: make Qt OpenGL context current");
+            } else {
+                glfwMakeContextCurrent (this->window);
+            }
+        }
 
         /*!
          * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
@@ -272,7 +291,7 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
-            glfwMakeContextCurrent (this->window);
+            this->setCurrent();
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
@@ -757,23 +776,28 @@ namespace morph {
             this->resources = morph::VisualResources::i();
             morph::VisualResources::register_visual();
 
-            this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
-            if (!this->window) {
-                // Window or OpenGL context creation failed
-                throw std::runtime_error("GLFW window creation failed!");
+            if constexpr (using_qt == true) {
+                // Qt setup here
+            } else {
+                this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
+
+                if (!this->window) {
+                    // Window or OpenGL context creation failed
+                    throw std::runtime_error("GLFW window creation failed!");
+                }
+                // now associate "this" object with mWindow object
+                glfwSetWindowUserPointer (this->window, this);
+
+                // Set up callbacks
+                glfwSetKeyCallback (this->window, key_callback_dispatch);
+                glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
+                glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
+                glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
+                glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
+                glfwSetScrollCallback (this->window, scroll_callback_dispatch);
+
+                glfwMakeContextCurrent (this->window);
             }
-            // now associate "this" object with mWindow object
-            glfwSetWindowUserPointer (this->window, this);
-
-            // Set up callbacks
-            glfwSetKeyCallback (this->window, key_callback_dispatch);
-            glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
-            glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
-            glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
-            glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
-            glfwSetScrollCallback (this->window, scroll_callback_dispatch);
-
-            glfwMakeContextCurrent (this->window);
 
             // Now make sure that Freetype is set up
             this->resources->freetype_init (this->window);
@@ -1032,7 +1056,7 @@ namespace morph {
 
     private:
         //! The window (and OpenGL context) for this Visual
-        GLFWwindow* window;
+        win_t* window;
 
         //! Pointer to the singleton GLFW and Freetype resources object
         morph::VisualResources* resources = nullptr;
@@ -1114,6 +1138,11 @@ namespace morph {
 
         Quaternion<float> savedRotation;
 
+#ifdef QT_SOMETHING
+        // Add Qt callback code as necessary
+#endif
+
+#ifndef QT_SOMETHING
         /*
          * GLFW callback dispatch functions
          */
@@ -1512,6 +1541,9 @@ namespace morph {
         virtual void key_callback_extra (GLFWwindow* _window, int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
         virtual void mouse_button_callback_extra (GLFWwindow* _window, int button, int action, int mods) {}
+
+#endif // GLFW-specific callback functions
+
     };
 
 } // namespace morph
