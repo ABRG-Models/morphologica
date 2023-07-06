@@ -263,6 +263,9 @@ namespace morph {
             }
         }
 
+        //! Wrapper around the glfw polling function
+        void poll() { glfwPollEvents(); }
+
         //! Render the scene
         void render()
         {
@@ -1153,25 +1156,25 @@ namespace morph {
         virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             // Exit action
-            if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
 
-            if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_T && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 this->rotateModMode = !this->rotateModMode;
             }
 
-            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL)&& action == GLFW_PRESS) {
+            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
             }
 
-            if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+            if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 // Help to stdout:
-                std::cout << "h: Output this help to stdout\n";
-                std::cout << "q: Request exit\n";
+                std::cout << "Ctrl-h: Output this help to stdout\n";
+                std::cout << "Ctrl-q: Request exit\n";
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
-                std::cout << "t: Toggle mouse rotate mode\n";
+                std::cout << "Ctrl-t: Toggle mouse rotate mode\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
                 std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";
@@ -1213,7 +1216,15 @@ namespace morph {
 
             if (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
-                          << this->scenetrans.x() << "f, " << this->scenetrans.y() << "f, " << this->scenetrans.z() << "f}));"
+                          << this->scenetrans.x()
+                          << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
+                          << "f, "
+                          << this->scenetrans.y()
+                          << (this->scenetrans.y()/std::round(this->scenetrans.y()) == 1.0f ? ".0" : "")
+                          << "f, "
+                          << this->scenetrans.z()
+                          << (this->scenetrans.z()/std::round(this->scenetrans.z()) == 1.0f ? ".0" : "")
+                          << "f}));"
                           <<  "\nscene rotation is " << this->rotation << std::endl;
                 std::cout << "Writing scene trans/rotation into /tmp/Visual.json... ";
                 std::ofstream fout;
