@@ -124,6 +124,12 @@ if(USE_GLEW)
   target_link_libraries(scatter GLEW::GLEW)
 endif()
 
+add_executable(scatter_dynamic scatter_dynamic.cpp)
+target_link_libraries(scatter_dynamic OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(scatter_dynamic GLEW::GLEW)
+endif()
+
 add_executable(duochrome duochrome.cpp)
 target_link_libraries(duochrome OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
