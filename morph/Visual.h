@@ -21,8 +21,9 @@
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
 
-#ifdef QT_SOMETHING
+#ifdef USING_QT
 // Qt includes here...
+# include <morph/qt/qwindow.h>
 #else
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
@@ -196,8 +197,7 @@ namespace morph {
         void setCurrent()
         {
             if constexpr (using_qt == true) {
-                // Qt make context current
-                throw std::runtime_error ("writeme: make Qt OpenGL context current");
+                //this->window->setContext();
             } else {
                 glfwMakeContextCurrent (this->window);
             }
@@ -301,6 +301,11 @@ namespace morph {
 #endif
             glUseProgram (this->shaders.gprog);
 
+            if constexpr (using_qt == true) {
+                // Update window_w and window_h from this->window?
+                //this->window_w = this->window->width();
+                //this->window_h = this->window->height();
+            }
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
@@ -778,6 +783,22 @@ namespace morph {
 
             if constexpr (using_qt == true) {
                 // Qt setup here
+                QSurfaceFormat format;
+                format.setDepthBufferSize (4);
+                format.setSamples (24);
+                format.setVersion (4, 1);
+                format.setRenderableType (QSurfaceFormat::OpenGL);
+                format.setProfile (QSurfaceFormat::CoreProfile);
+                this->window = new morph::qt::qwindow; // equivalent of GLFW window?
+                this->window->setFormat (format); // could go in QOpenGLWin constructor
+
+                // set size?
+                // this->window->setPerspective(); // this only sets the 3D perspective. The qwindow has access to width and height.
+
+                // Wire up callbacks? How to tell window to pass back a render call?
+
+                this->window->show();
+
             } else {
                 this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
 
@@ -1138,11 +1159,11 @@ namespace morph {
 
         Quaternion<float> savedRotation;
 
-#ifdef QT_SOMETHING
+#ifdef USING_QT
         // Add Qt callback code as necessary
 #endif
 
-#ifndef QT_SOMETHING
+#ifndef USING_QT
         /*
          * GLFW callback dispatch functions
          */

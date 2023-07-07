@@ -10,8 +10,8 @@
 
 #pragma once
 
-#ifdef QT_SOMETHING
-# include <qtstuff>
+#ifdef USING_QT
+# include <morph/qt/qwindow.h>
 #else
 # include <GLFW/glfw3.h>
 #endif
@@ -28,8 +28,8 @@
 
 namespace morph {
 
-#ifdef QT_SOMETHING
-    using win_t = Qwindow;
+#ifdef USING_QT
+    using win_t = morph::qt::qwindow;
     static constexpr bool using_qt = true;
 #else
     using win_t = GLFWwindow;
