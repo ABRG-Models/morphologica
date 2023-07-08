@@ -82,7 +82,7 @@ namespace morph {
             if (this->em > 0.0f) {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                auto vtm1 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                auto vtm1 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->x_label);
@@ -90,7 +90,7 @@ namespace morph {
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                auto vtm2 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                auto vtm2 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->y_label);
@@ -98,7 +98,7 @@ namespace morph {
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                auto vtm3 = std::make_unique<VisualTextModel> (this->shaders.tprog,
+                auto vtm3 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->z_label);

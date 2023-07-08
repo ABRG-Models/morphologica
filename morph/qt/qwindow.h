@@ -26,16 +26,16 @@ namespace morph {
         class qwindow : public morph::qt::OpenGLWindow
         {
         public:
-            qwindow();
-            ~qwindow();
+            qwindow() {}
+            ~qwindow() {}
 
             // Gets called on a mouse press. This needs to call the callbacks...
-            void mousePressEvent (QMouseEvent *e) override;
+            void mousePressEvent (QMouseEvent *e) override
             {
                 // Save mouse press position. What's localPos() return type?
                 mousePressPosition = QVector2D(e->localPos());
             }
-            void mouseReleaseEvent (QMouseEvent *e) override;
+            void mouseReleaseEvent (QMouseEvent *e) override
             {
                 // Mouse release position - mouse press position
                 QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
@@ -48,7 +48,7 @@ namespace morph {
                 // Nothing to do? This is all init in Visual.
             }
 
-            void render() override;
+            void render() override {}
             //void setPerspective (int w, int h); // may need to handle this? GLFW did that for me before.
 
         private:

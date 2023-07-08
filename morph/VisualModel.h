@@ -297,7 +297,10 @@ namespace morph {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, tfeatures);
+            if (this->window == nullptr) {
+                throw std::runtime_error ("Can't add a VisualTextModel until the window has been set for this VisualModel.");
+            }
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -323,7 +326,10 @@ namespace morph {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, tfeatures);
+            if (this->window == nullptr) {
+                throw std::runtime_error ("Can't add a VisualTextModel until the window has been set for this VisualModel.");
+            }
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -629,6 +635,15 @@ namespace morph {
             this->model_scaling[5] = yscl;
         }
 
+        //! Setter for the window pointer.
+        void setWindow (morph::win_t* _window)
+        {
+            if (this->window != nullptr) {
+                throw std::runtime_error ("We're not expecting VisualModels to move from window to window...");
+            }
+            this->window = _window;
+        }
+
     protected:
 
         //! The model-specific view matrix.
@@ -709,6 +724,9 @@ namespace morph {
         float alpha = 1.0f;
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
+
+        // A pointer to the window that this VisualModel lives in.
+        morph::win_t* window = nullptr;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)

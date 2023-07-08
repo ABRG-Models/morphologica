@@ -71,7 +71,7 @@ namespace morph {
             virtual void render (QPainter *painter) { Q_UNUSED (painter); }
             virtual void render()
             {
-                // Somehow call back to Visual::render()
+                std::cout << "Somehow call back to Visual::render()\n";
             }
 
             virtual void initialize() {} // no-op
@@ -95,7 +95,7 @@ namespace morph {
 
             void renderNow()
             {
-                // std::cout << "OpenGLWindow::renderNow() called" << std::endl;
+                std::cout << "OpenGLWindow::renderNow() called" << std::endl;
                 if (!isExposed()) { return; }
                 bool needsInitialize = false;
                 if (!m_context) {
@@ -107,7 +107,7 @@ namespace morph {
                 }
                 m_context->makeCurrent(this);
                 if (needsInitialize) {
-                    // std::cout << "OpenGLWindow::renderNow() : NeedsInitialize" << std::endl;
+                    std::cout << "OpenGLWindow::renderNow() : NeedsInitialize" << std::endl;
                     initializeOpenGLFunctions();
                     initialize();
                 }
