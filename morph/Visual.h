@@ -154,12 +154,11 @@ namespace morph {
         //! Deconstructor destroys GLFW windows
         virtual ~Visual()
         {
-            // Note: morph::using_qt defined in VisualResources
-            if constexpr (using_qt == true) {
-                // Qt deconstruction?
-            } else {
-                glfwDestroyWindow (this->window);
-            }
+#ifdef USING_QT
+            // Qt deconstruction?
+#else
+            glfwDestroyWindow (this->window);
+#endif
             morph::VisualResources::deregister();
         }
 
@@ -196,11 +195,11 @@ namespace morph {
         //! model, the vao ids relate to the correct OpenGL context.
         void setCurrent()
         {
-            if constexpr (using_qt == true) {
-                //this->window->setContext();
-            } else {
-                glfwMakeContextCurrent (this->window);
-            }
+#ifdef USING_QT
+            this->window->setContext();
+#else
+            glfwMakeContextCurrent (this->window);
+#endif
         }
 
         /*!
@@ -210,6 +209,8 @@ namespace morph {
         template <typename T>
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
+            // Record in the model which window it lives in (so it can pass this to VisualTextModels)
+            model->window = this->window;
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
@@ -222,6 +223,8 @@ namespace morph {
         template <typename T>
         T* addVisualModel (std::unique_ptr<T>& model)
         {
+            // Record in the model which window it lives in (so it can pass this to VisualTextModels)
+            model->window = this->window;
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             return static_cast<T*>(this->vm.back().get());
@@ -262,7 +265,7 @@ namespace morph {
                                       const int _fontres = 24)
         {
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, _font, _fontsize, _fontres);
             tmup->setupText (_text, _toffset, _tcolour);
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
@@ -276,14 +279,22 @@ namespace morph {
          */
         void keepOpen()
         {
+#ifdef USING_QT
+            return; // We'll not use/need keepOpen() when we're working within Qt.
+#else
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
+#endif
         }
 
         //! Wrapper around the glfw polling function
-        void poll() { glfwPollEvents(); }
+        void poll() {
+#ifndef USING_QT
+            glfwPollEvents();
+#endif
+        }
 
         //! Render the scene
         void render()
@@ -301,11 +312,11 @@ namespace morph {
 #endif
             glUseProgram (this->shaders.gprog);
 
-            if constexpr (using_qt == true) {
-                // Update window_w and window_h from this->window?
-                //this->window_w = this->window->width();
-                //this->window_h = this->window->height();
-            }
+#ifdef USING_QT
+            // Update window_w and window_h from this->window?
+            this->window_w = this->window->width();
+            this->window_h = this->window->height();
+#endif
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
 
@@ -434,7 +445,11 @@ namespace morph {
                 ++ti;
             }
 
+#ifdef USING_QT
+            throw std::runtime_error ("How to swap buffers in Qt?");
+#else
             glfwSwapBuffers (this->window);
+#endif
 
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderend = steady_clock::now();
@@ -781,44 +796,40 @@ namespace morph {
             this->resources = morph::VisualResources::i();
             morph::VisualResources::register_visual();
 
-            if constexpr (using_qt == true) {
-                // Qt setup here
-                QSurfaceFormat format;
-                format.setDepthBufferSize (4);
-                format.setSamples (24);
-                format.setVersion (4, 1);
-                format.setRenderableType (QSurfaceFormat::OpenGL);
-                format.setProfile (QSurfaceFormat::CoreProfile);
-                this->window = new morph::qt::qwindow; // equivalent of GLFW window?
-                this->window->setFormat (format); // could go in QOpenGLWin constructor
+#ifdef USING_QT
+            // setup the qt window here
+            QSurfaceFormat format;
+            format.setDepthBufferSize (4);
+            format.setSamples (24);
+            format.setVersion (4, 1);
+            format.setRenderableType (QSurfaceFormat::OpenGL);
+            format.setProfile (QSurfaceFormat::CoreProfile);
+            this->window = new morph::qt::qwindow; // equivalent of GLFW window?
+            this->window->setFormat (format); // could go in QOpenGLWin constructor
+            // set size?
+            // this->window->setPerspective(); // this only sets the 3D perspective. The qwindow has access to width and height.
 
-                // set size?
-                // this->window->setPerspective(); // this only sets the 3D perspective. The qwindow has access to width and height.
-
-                // Wire up callbacks? How to tell window to pass back a render call?
-
-                this->window->show();
-
-            } else {
-                this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
-
-                if (!this->window) {
-                    // Window or OpenGL context creation failed
-                    throw std::runtime_error("GLFW window creation failed!");
-                }
-                // now associate "this" object with mWindow object
-                glfwSetWindowUserPointer (this->window, this);
-
-                // Set up callbacks
-                glfwSetKeyCallback (this->window, key_callback_dispatch);
-                glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
-                glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
-                glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
-                glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
-                glfwSetScrollCallback (this->window, scroll_callback_dispatch);
-
-                glfwMakeContextCurrent (this->window);
+            // Wire up callbacks? How to tell window to pass back a render call?
+            this->window->show();
+#else
+            this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
+            if (!this->window) {
+                // Window or OpenGL context creation failed
+                throw std::runtime_error("GLFW window creation failed!");
             }
+            // now associate "this" object with mWindow object
+            glfwSetWindowUserPointer (this->window, this);
+
+            // Set up callbacks
+            glfwSetKeyCallback (this->window, key_callback_dispatch);
+            glfwSetMouseButtonCallback (this->window, mouse_button_callback_dispatch);
+            glfwSetCursorPosCallback (this->window, cursor_position_callback_dispatch);
+            glfwSetWindowSizeCallback (this->window, window_size_callback_dispatch);
+            glfwSetWindowCloseCallback (this->window, window_close_callback_dispatch);
+            glfwSetScrollCallback (this->window, scroll_callback_dispatch);
+
+            glfwMakeContextCurrent (this->window);
+#endif
 
             // Now make sure that Freetype is set up
             this->resources->freetype_init (this->window);
@@ -835,9 +846,10 @@ namespace morph {
             }
 #endif
 
+#ifndef USING_QT
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
-
+#endif
             // Load up the shaders
             ShaderInfo shaders[] = {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
@@ -897,7 +909,7 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel> (this->shaders.tprog,
+            this->textModel = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
                                                                  morph::VisualFont::DVSans,
                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                  this->title);
@@ -1077,7 +1089,7 @@ namespace morph {
 
     private:
         //! The window (and OpenGL context) for this Visual
-        win_t* window;
+        morph::win_t* window;
 
         //! Pointer to the singleton GLFW and Freetype resources object
         morph::VisualResources* resources = nullptr;
@@ -1565,6 +1577,6 @@ namespace morph {
 
 #endif // GLFW-specific callback functions
 
-    };
+};
 
 } // namespace morph

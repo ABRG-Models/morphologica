@@ -30,10 +30,10 @@ namespace morph {
 
 #ifdef USING_QT
     using win_t = morph::qt::qwindow;
-    static constexpr bool using_qt = true;
+//    static constexpr bool using_qt = true;
 #else
     using win_t = GLFWwindow;
-    static constexpr bool using_qt = false;
+//    static constexpr bool using_qt = false;
 #endif
 
     //! Singleton resource class for morph::Visual scenes.
@@ -44,43 +44,43 @@ namespace morph {
         //! The deconstructor is never called for a singleton.
         ~VisualResources() {}
 
+#ifdef USING_QT
         void qt_init()
         {
-            if constexpr (using_qt == true) {
-                // stuff
-            }
+            // Any per-program qt init could go here.
         }
-
+#else
         void glfw_init()
         {
-            if constexpr (using_qt == false) {
-                if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
+            if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
-                // Set up error callback
-                glfwSetErrorCallback (morph::VisualResources::errorCallback);
+            // Set up error callback
+            glfwSetErrorCallback (morph::VisualResources::errorCallback);
 
-                // See https://www.glfw.org/docs/latest/monitor_guide.html
-                GLFWmonitor* primary = glfwGetPrimaryMonitor();
-                float xscale, yscale;
-                glfwGetMonitorContentScale(primary, &xscale, &yscale);
+            // See https://www.glfw.org/docs/latest/monitor_guide.html
+            GLFWmonitor* primary = glfwGetPrimaryMonitor();
+            float xscale, yscale;
+            glfwGetMonitorContentScale(primary, &xscale, &yscale);
 
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
 #ifdef __OSX__
-                glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-                glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-                // Tell glfw that we'd like to do anti-aliasing.
-                glfwWindowHint (GLFW_SAMPLES, 4);
-            }
+            // Tell glfw that we'd like to do anti-aliasing.
+            glfwWindowHint (GLFW_SAMPLES, 4);
         }
-
+#endif
         void init()
         {
+#ifdef USING_QT
             // One of these will be a no-op
             this->qt_init();
+#else
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
+#endif
         }
 
         //! A pointer returned to the single instance of this class
@@ -171,12 +171,13 @@ namespace morph {
             // We're done with freetype, so clear those up
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
-            if constexpr (using_qt == true) {
+
+#ifdef USING_QT
                 // Qt cleanup?
-            } else {
+#else
                 // Shut down GLFW
                 glfwTerminate();
-            }
+#endif
 
             // Note: static deregister() will delete self
         }
