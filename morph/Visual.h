@@ -446,7 +446,7 @@ namespace morph {
             }
 
 #ifdef USING_QT
-            throw std::runtime_error ("How to swap buffers in Qt?");
+            this->window->swapBuffers();
 #else
             glfwSwapBuffers (this->window);
 #endif
@@ -798,19 +798,14 @@ namespace morph {
 
 #ifdef USING_QT
             // setup the qt window here
-            QSurfaceFormat format;
-            format.setDepthBufferSize (4);
-            format.setSamples (24);
-            format.setVersion (4, 1);
-            format.setRenderableType (QSurfaceFormat::OpenGL);
-            format.setProfile (QSurfaceFormat::CoreProfile);
-            this->window = new morph::qt::qwindow; // equivalent of GLFW window?
-            this->window->setFormat (format); // could go in QOpenGLWin constructor
+            this->window = new morph::qt::qwindow;
+
+            //this->window->setFormat (format); // could go in QOpenGLWin constructor
             // set size?
             // this->window->setPerspective(); // this only sets the 3D perspective. The qwindow has access to width and height.
 
             // Wire up callbacks? How to tell window to pass back a render call?
-            this->window->show();
+            ///this->window->show();
 #else
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
