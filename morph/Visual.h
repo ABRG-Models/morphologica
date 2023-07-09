@@ -101,6 +101,15 @@ namespace morph {
         orthographic
     };
 
+    //! Window pointer can be to either a Qt window or a GLFW window, depending on how
+    //! we're being compiled. This is held so that window can be shut down at the end of a
+    //! Visual object's existence.
+#ifdef USING_QT
+    using win_t = morph::qt::qwindow;
+#else
+    using win_t = GLFWwindow;
+#endif
+
     /*!
      * Visual 'scene' class
      *
@@ -166,7 +175,7 @@ namespace morph {
         //! Take a screenshot of the window
         void saveImage (const std::string& img_filename)
         {
-            this->setCurrent();
+            this->setContext();
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
@@ -194,13 +203,26 @@ namespace morph {
 
         //! Make this Visual the current one, so that when creating/adding a visual
         //! model, the vao ids relate to the correct OpenGL context.
-        void setCurrent()
+        void setContext()
         {
 #ifdef USING_QT
             this->window->setContext();
 #else
             glfwMakeContextCurrent (this->window);
 #endif
+        }
+
+        /*!
+         * Set up the passed-in VisualModel with functions that need access to Visual
+         * attributes.
+         */
+        template <typename T>
+        void bindmodel (std::unique_ptr<T>& model)
+        {
+            model->set_parent (this);
+            model->get_shaderprogs = &morph::Visual::get_shaderprogs;
+            model->get_gprog = &morph::Visual::get_gprog;
+            model->get_tprog = &morph::Visual::get_tprog;
         }
 
         /*!
@@ -262,7 +284,7 @@ namespace morph {
                                       const int _fontres = 24)
         {
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, _font, _fontsize, _fontres);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this, this->shaders.tprog, _font, _fontsize, _fontres);
             tmup->setupText (_text, _toffset, _tcolour);
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
@@ -294,14 +316,8 @@ namespace morph {
 #endif
         }
 
-        morph::win_t* getWindow() { return this->window; }
-
-        //! Setter for the window pointer
-        void setWindow (morph::win_t* _win)
-        {
-            if (this->window != nullptr) { throw std::runtime_error ("morph::Visual: Can't *change* window"); }
-            this->window = _win;
-        }
+        //! A callback function
+        static void callback_render (morph::Visual* _v) { _v->render(); };
 
         //! Render the scene
         void render()
@@ -309,7 +325,7 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
-            this->setCurrent();
+            this->setContext();
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
@@ -323,6 +339,8 @@ namespace morph {
             // Update window_w and window_h from this->window?
             this->window_w = this->window->width();
             this->window_h = this->window->height();
+
+            std::cout << "Visual::render(): Window width: " << window_w << std::endl;
 #endif
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
@@ -487,6 +505,11 @@ namespace morph {
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
         morph::gl::shaderprogs shaders;
+
+        // These static functions will be set as callbacks in each VisualModel object.
+        static morph::gl::shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
+        static GLuint get_gprog (morph::Visual* _v) { return _v->shaders.gprog; };
+        static GLuint get_tprog (morph::Visual* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
         vec<float> light_colour = {1,1,1};
@@ -805,7 +828,9 @@ namespace morph {
 
 #ifdef USING_QT
             // Callback setup all lives in qwindow
-            this->window = new morph::qt::qwindow;
+            this->window = new morph::qt::qwindow (this);
+            this->window->callback_render = &morph::Visual::callback_render;
+            this->window->show();
 #else
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -827,8 +852,7 @@ namespace morph {
 #endif
 
             // Now make sure that Freetype is set up
-            this->resources->freetype_init (this->window);
-            std::cout << "freetype_init done\n";
+            this->resources->freetype_init (this);
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
@@ -898,14 +922,17 @@ namespace morph {
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = std::make_unique<CoordArrows>();
-            this->coordArrows->init (this->window, this->shaders,
-                                     this->coordArrowsLength,
+            // For CoordArrows, because we don't add via Visual::addVisualModel(), we
+            // have to set the get_shaderprogs function here:
+            this->bindmodel (this->coordArrows);
+            // And NOW we can proceed to init:
+            this->coordArrows->init (this->coordArrowsLength,
                                      this->coordArrowsThickness,
                                      this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
+            this->textModel = std::make_unique<VisualTextModel> (this, this->shaders.tprog,
                                                                  morph::VisualFont::DVSans,
                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                  this->title);
@@ -1573,6 +1600,8 @@ namespace morph {
 
 #endif // GLFW-specific callback functions
 
-};
+    };
+
+
 
 } // namespace morph

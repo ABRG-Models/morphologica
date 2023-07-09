@@ -108,11 +108,12 @@ namespace morph {
          * scaling factor \a fscale and a spatial \a _mv_offset (model view offset). The
          * text to be displayed is \a txt.
          */
-        VisualTextModel (morph::win_t* w_ptr, GLuint tsp,
+        VisualTextModel (morph::Visual* _vis, GLuint tsp,
                          morph::VisualFont visualfont, float _m_width, int _fontpixels,
                          const morph::vec<float> _mv_offset, const std::string& _txt,
                          std::array<float, 3> _clr = {0,0,0})
         {
+            this->parentVis = _vis;
             this->tshaderprog = tsp;
 
             // This is set with the model view offset of the parent model PLUS the
@@ -136,15 +137,16 @@ namespace morph {
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, w_ptr);
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, this->parentVis);
             this->setupText (_txt);
         }
 
         //! A more compact version of VisualTextModel(GLuint, VisualFont, float, int, const
         //! vec<float>, const string&, array<float, 3>), which takes a TextFeatures object
-        VisualTextModel (morph::win_t* w_ptr, GLuint tsp, const morph::vec<float> _mv_offset, const std::string& _txt, morph::TextFeatures tfeatures)
+        VisualTextModel (morph::Visual* _vis, GLuint tsp, const morph::vec<float> _mv_offset, const std::string& _txt, morph::TextFeatures tfeatures)
         {
-            this->tshaderprog = tsp;
+            this->parentVis = _vis;
+            this->tshaderprog = tsp; // Fixme: Could be obtained from parentVis via friends/callbacks?
             this->mv_offset = _mv_offset;
             this->viewmatrix.rotate (this->mv_rotation);
             this->viewmatrix.translate (this->mv_offset);
@@ -152,7 +154,7 @@ namespace morph {
             this->fontpixels = tfeatures.fontres;
             this->fontscale = this->m_width/(float)this->fontpixels;
             this->clr_text = tfeatures.colour;
-            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, w_ptr);
+            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
             this->setupText (_txt);
         }
 
@@ -162,23 +164,25 @@ namespace morph {
          * getTextGeometry() can be called, prior to calling this->setupText (_txt,
          * position, clr);
          */
-        VisualTextModel (morph::win_t* w_ptr, GLuint tsp, morph::VisualFont visualfont, float _m_width, int _fontpixels)
+        VisualTextModel (morph::Visual* _vis, GLuint tsp, morph::VisualFont visualfont, float _m_width, int _fontpixels)
         {
+            this->parentVis = _vis;
             this->tshaderprog = tsp;
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, w_ptr);
+            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, this->parentVis);
         }
 
         //! A more compact version of the VisualTextModel(GLuint, VisualFont, float, int), taking a TextFeatures object.
-        VisualTextModel (morph::win_t* w_ptr, GLuint tsp, morph::TextFeatures tfeatures)
+        VisualTextModel (morph::Visual* _vis, GLuint tsp, morph::TextFeatures tfeatures)
         {
+            this->parentVis = _vis;
             this->tshaderprog = tsp;
             this->m_width = tfeatures.fontsize;
             this->fontpixels = tfeatures.fontres;
             this->fontscale = this->m_width/(float)this->fontpixels;
-            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, w_ptr);
+            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
         }
 
         virtual ~VisualTextModel()
@@ -567,6 +571,8 @@ namespace morph {
         std::array<float, 3> clr_text = {0.0f, 0.0f, 0.0f};
         //! Line spacing, in multiples of the height of an 'h'
         float line_spacing = 1.4f;
+        //! Parent Visual
+        morph::Visual* parentVis = nullptr;
     protected:
         //! A face for this text
         morph::gl::VisualFace* face = nullptr;

@@ -28,13 +28,8 @@
 
 namespace morph {
 
-#ifdef USING_QT
-    using win_t = morph::qt::qwindow;
-//    static constexpr bool using_qt = true;
-#else
-    using win_t = GLFWwindow;
-//    static constexpr bool using_qt = false;
-#endif
+    // Pointers to morph::Visual are used to index font faces
+    class Visual;
 
     //! Singleton resource class for morph::Visual scenes.
     class VisualResources
@@ -92,7 +87,7 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int, morph::win_t*>, morph::gl::VisualFace*> faces;
+        std::map<std::tuple<morph::VisualFont, unsigned int, morph::Visual*>, morph::gl::VisualFace*> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -101,21 +96,21 @@ namespace morph {
         }
 
         //! FreeType library object, public for access by client code?
-        std::map<morph::win_t*, FT_Library> freetypes;
+        std::map<morph::Visual*, FT_Library> freetypes;
 
     public:
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
-        //! create one FT_Library for each OpenGL context (i.e. one for each GLFW
+        //! create one FT_Library for each OpenGL context (i.e. one for each morph::Visual
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::win_t* _window)
+        void freetype_init (morph::Visual* _vis)
         {
             FT_Library freetype = (FT_Library)0;
             try {
-                freetype = this->freetypes.at (_window);
+                freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range& e) {
                 // Use of gl calls here may make it neat to set up GL/GLFW here in VisualResources.
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
@@ -125,7 +120,7 @@ namespace morph {
                 } else {
                     //std::cout << "Initialized freetype which has value: "
                     //          << (unsigned long long int)freetype << std::endl;
-                    this->freetypes[_window] = freetype;
+                    this->freetypes[_vis] = freetype;
                 }
             }
         }
@@ -184,14 +179,14 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::win_t* _win)
+        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::Visual* _vis)
         {
             morph::gl::VisualFace* rtn = nullptr;
-            auto key = std::make_tuple(font, fontpixels, _win);
+            auto key = std::make_tuple(font, fontpixels, _vis);
             try {
                 rtn = this->faces.at (key);
             } catch (const std::out_of_range& e) {
-                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetypes.at(_win));
+                this->faces[key] = new morph::gl::VisualFace (font, fontpixels, this->freetypes.at(_vis));
                 rtn = this->faces.at (key);
             }
             return rtn;
