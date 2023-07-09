@@ -31,20 +31,15 @@ namespace morph {
         //! (text). _lengths is the 3 lengths of the coordinate axes, _thickness is a
         //! factor to slim/thicken the axes and _em controls the size of the axis
         //! labels. Set _em to 0.0f to omit the text x/y/z labels.
-        CoordArrows (morph::win_t* _window, morph::gl::shaderprogs& _shaders,
-                     const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
+        CoordArrows (const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
         {
-            this->init (_window, _shaders, _lengths, _thickness, _em);
+            this->init (_lengths, _thickness, _em);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (morph::win_t* _window, morph::gl::shaderprogs& _shaders,
-                   const vec<float, 3> _lengths, const float _thickness, const float _em)
+        void init (const vec<float, 3> _lengths, const float _thickness, const float _em)
         {
-            // Set up...
-            this->window = _window;
-            this->shaders = _shaders;
             this->mv_offset = {0.0, 0.0, 0.0};
             this->lengths = _lengths;
             this->thickness = _thickness;
@@ -83,7 +78,7 @@ namespace morph {
             if (this->em > 0.0f) {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                auto vtm1 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
+                auto vtm1 = std::make_unique<VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->x_label);
@@ -91,7 +86,7 @@ namespace morph {
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                auto vtm2 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
+                auto vtm2 = std::make_unique<VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->y_label);
@@ -99,7 +94,7 @@ namespace morph {
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                auto vtm3 = std::make_unique<VisualTextModel> (this->window, this->shaders.tprog,
+                auto vtm3 = std::make_unique<VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
                                                                morph::VisualFont::DVSansItalic,
                                                                this->em, 48, toffset,
                                                                this->z_label);

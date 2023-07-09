@@ -32,6 +32,7 @@
 #include <iterator>
 #include <string>
 #include <memory>
+#include <functional>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
@@ -80,17 +81,8 @@ namespace morph {
             this->model_scaling.setToIdentity();
         }
 
-        VisualModel (GLuint sp, const vec<float> _mv_offset)
+        VisualModel (const vec<float> _mv_offset)
         {
-            this->shaders.gprog = sp;
-            this->mv_offset = _mv_offset;
-            this->viewmatrix.translate (this->mv_offset);
-            this->model_scaling.setToIdentity();
-        }
-
-        VisualModel (morph::gl::shaderprogs& _shaders, const vec<float> _mv_offset)
-        {
-            this->shaders = _shaders;
             this->mv_offset = _mv_offset;
             this->viewmatrix.translate (this->mv_offset);
             this->model_scaling.setToIdentity();
@@ -245,7 +237,7 @@ namespace morph {
             glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
 
             // Ensure the correct program is in play for this VisualModel
-            glUseProgram (this->shaders.gprog);
+            glUseProgram (this->get_shaderprogs(this->parentVis).gprog);
 
             if (!this->indices.empty()) {
                 // It is only necessary to bind the vertex array object before rendering
@@ -253,14 +245,14 @@ namespace morph {
                 glBindVertexArray (this->vao);
 
                 // Pass this->float to GLSL so the model can have an alpha value.
-                GLint loc_a = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("alpha"));
+                GLint loc_a = glGetUniformLocation (this->get_shaderprogs(this->parentVis).gprog, static_cast<const GLchar*>("alpha"));
                 if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
-                GLint loc_v = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("v_matrix"));
+                GLint loc_v = glGetUniformLocation (this->get_shaderprogs(this->parentVis).gprog, static_cast<const GLchar*>("v_matrix"));
                 if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
 
                 // Should be able to apply scaling to the model matrix
-                GLint loc_m = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("m_matrix"));
+                GLint loc_m = glGetUniformLocation (this->get_shaderprogs(this->parentVis).gprog, static_cast<const GLchar*>("m_matrix"));
                 if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
 
                 if constexpr (debug_render) {
@@ -293,14 +285,11 @@ namespace morph {
                                       const morph::vec<float, 3>& _toffset,
                                       const morph::TextFeatures& tfeatures)
         {
-            if (this->shaders.tprog == 0) {
+            if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            if (this->window == nullptr) {
-                throw std::runtime_error ("Can't add a VisualTextModel until the window has been set for this VisualModel.");
-            }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -322,14 +311,11 @@ namespace morph {
                                       morph::VisualTextModel*& tm,
                                       const morph::TextFeatures& tfeatures)
         {
-            if (this->shaders.tprog == 0) {
+            if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            if (this->window == nullptr) {
-                throw std::runtime_error ("Can't add a VisualTextModel until the window has been set for this VisualModel.");
-            }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->window, this->shaders.tprog, tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -635,13 +621,21 @@ namespace morph {
             this->model_scaling[5] = yscl;
         }
 
-        //! Setter for the window pointer.
-        void setWindow (morph::win_t* _window)
+    public:
+        // A function that will be runtime defined to get_shaderprogs from a pointer to
+        // Visual (saving a boilerplate argument and avoiding that killer circular
+        // dependency at the cost of one line of boilerplate in client programs)
+        std::function<morph::gl::shaderprogs(morph::Visual*)> get_shaderprogs;
+        // Get the graphics shader prog id
+        std::function<GLuint(morph::Visual*)> get_gprog;
+        // Get the text shader prog id
+        std::function<GLuint(morph::Visual*)> get_tprog;
+
+        // Setter for the parent pointer, parentVis
+        void set_parent (morph::Visual* _vis)
         {
-            if (this->window != nullptr) {
-                throw std::runtime_error ("We're not expecting VisualModels to move from window to window...");
-            }
-            this->window = _window;
+            if (this->parentVis != nullptr) { throw std::runtime_error ("VisualModel: Set the parent pointer once only!"); }
+            this->parentVis = _vis;
         }
 
     protected:
@@ -675,9 +669,6 @@ namespace morph {
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
-
-        //! A copy of the reference to the shader programs
-        morph::gl::shaderprogs shaders;
 
         //! A unit vector in the x direction
         morph::vec<float, 3> ux = {1,0,0};
@@ -725,8 +716,8 @@ namespace morph {
         //! If true, then calls to VisualModel::render should return
         bool hide = false;
 
-        // A pointer to the window that this VisualModel lives in.
-        morph::win_t* window = nullptr;
+        // The morph::Visual in which this model exists.
+        morph::Visual* parentVis = nullptr;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)

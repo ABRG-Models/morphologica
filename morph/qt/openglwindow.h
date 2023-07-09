@@ -80,6 +80,7 @@ namespace morph {
         public slots:
             void renderLater()
             {
+                std::cout << "OpenGLWindow::renderLater() called" << std::endl;
                 if (!m_update_pending) {
                     m_update_pending = true;
                     QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));

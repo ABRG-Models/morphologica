@@ -72,7 +72,8 @@ int main()
 
     // Visualize the 3 maps
     morph::vec<float, 3> offset = { -0.5, 0.0, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+    v.bindmodel (hgv);
     hgv->setScalarData (&data);
     hgv->cm.setType(morph::ColourMapType::Viridis);
     hgv->addLabel ("Input", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
