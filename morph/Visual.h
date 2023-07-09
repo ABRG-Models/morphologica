@@ -151,11 +151,12 @@ namespace morph {
             this->init();
         }
 
-        //! Deconstructor destroys GLFW windows
+        //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
         virtual ~Visual()
         {
 #ifdef USING_QT
-            // Qt deconstruction?
+            // Qt deconstruction
+            if (this->window != nullptr) { delete this->window; }
 #else
             glfwDestroyWindow (this->window);
 #endif
@@ -209,8 +210,6 @@ namespace morph {
         template <typename T>
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
-            // Record in the model which window it lives in (so it can pass this to VisualTextModels)
-            model->setWindow (this->window);
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
@@ -223,8 +222,6 @@ namespace morph {
         template <typename T>
         T* addVisualModel (std::unique_ptr<T>& model)
         {
-            // Record in the model which window it lives in (so it can pass this to VisualTextModels)
-            model->setWindow (this->window);
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             return static_cast<T*>(this->vm.back().get());
@@ -296,6 +293,8 @@ namespace morph {
             glfwPollEvents();
 #endif
         }
+
+        morph::win_t* getWindow() { return this->window; }
 
         //! Setter for the window pointer
         void setWindow (morph::win_t* _win)
@@ -805,15 +804,8 @@ namespace morph {
             morph::VisualResources::register_visual();
 
 #ifdef USING_QT
-            // setup the qt window here
+            // Callback setup all lives in qwindow
             this->window = new morph::qt::qwindow;
-
-            //this->window->setFormat (format); // could go in QOpenGLWin constructor
-            // set size?
-            // this->window->setPerspective(); // this only sets the 3D perspective. The qwindow has access to width and height.
-
-            // Wire up callbacks? How to tell window to pass back a render call?
-            ///this->window->show();
 #else
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -836,6 +828,7 @@ namespace morph {
 
             // Now make sure that Freetype is set up
             this->resources->freetype_init (this->window);
+            std::cout << "freetype_init done\n";
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
@@ -905,7 +898,7 @@ namespace morph {
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = std::make_unique<CoordArrows>();
-            this->coordArrows->init (this->shaders,
+            this->coordArrows->init (this->window, this->shaders,
                                      this->coordArrowsLength,
                                      this->coordArrowsThickness,
                                      this->coordArrowsEm);

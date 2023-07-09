@@ -31,18 +31,19 @@ namespace morph {
         //! (text). _lengths is the 3 lengths of the coordinate axes, _thickness is a
         //! factor to slim/thicken the axes and _em controls the size of the axis
         //! labels. Set _em to 0.0f to omit the text x/y/z labels.
-        CoordArrows(morph::gl::shaderprogs& _shaders,
-                    const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
+        CoordArrows (morph::win_t* _window, morph::gl::shaderprogs& _shaders,
+                     const vec<float, 3> _lengths, const float _thickness = 1.0f, const float _em = 0.02f)
         {
-            this->init (_shaders, _lengths, _thickness, _em);
+            this->init (_window, _shaders, _lengths, _thickness, _em);
         }
 
         virtual ~CoordArrows () {}
 
-        void init (morph::gl::shaderprogs& _shaders,
+        void init (morph::win_t* _window, morph::gl::shaderprogs& _shaders,
                    const vec<float, 3> _lengths, const float _thickness, const float _em)
         {
             // Set up...
+            this->window = _window;
             this->shaders = _shaders;
             this->mv_offset = {0.0, 0.0, 0.0};
             this->lengths = _lengths;
