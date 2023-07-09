@@ -10,12 +10,11 @@
 
 #pragma once
 
+#include <functional>
 #include <morph/qt/openglwindow.h>
-
 #include <QVector2D>
 #include <QMouseEvent>
 
-#include <functional>
 
 namespace morph {
 
@@ -27,7 +26,7 @@ namespace morph {
         class qwindow : public morph::qt::OpenGLWindow
         {
         public:
-            qwindow(morph::Visual* _v) : morph::qt::OpenGLWindow(nullptr) { this->v = _v;}
+            qwindow (morph::Visual* _v) : morph::qt::OpenGLWindow(nullptr) { this->v = _v;}
             ~qwindow() {}
 
             // Gets called on a mouse press. This needs to call the callbacks...
@@ -44,18 +43,13 @@ namespace morph {
 
             // Plus keyboard events...
 
-            // The render event
-            void render() override {
-                std::cout << "qwindow::render()\n";
-                //this->setContext(); //render callback will do this
-                callback_render (this->v);
-            }
-
+            // The render event just calls back to Visual::render()
+            void render() override { callback_render (this->v); }
             std::function<void(morph::Visual*)> callback_render;
 
         private:
-            QVector2D mousePressPosition;
             morph::Visual* v;
+            QVector2D mousePressPosition;
         };
 
     } // namespace qt
