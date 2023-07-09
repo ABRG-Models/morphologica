@@ -210,7 +210,7 @@ namespace morph {
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
             // Record in the model which window it lives in (so it can pass this to VisualTextModels)
-            model->window = this->window;
+            model->setWindow (this->window);
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
@@ -224,7 +224,7 @@ namespace morph {
         T* addVisualModel (std::unique_ptr<T>& model)
         {
             // Record in the model which window it lives in (so it can pass this to VisualTextModels)
-            model->window = this->window;
+            model->setWindow (this->window);
             std::unique_ptr<VisualModel> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             return static_cast<T*>(this->vm.back().get());
@@ -290,10 +290,18 @@ namespace morph {
         }
 
         //! Wrapper around the glfw polling function
-        void poll() {
+        void poll()
+        {
 #ifndef USING_QT
             glfwPollEvents();
 #endif
+        }
+
+        //! Setter for the window pointer
+        void setWindow (morph::win_t* _win)
+        {
+            if (this->window != nullptr) { throw std::runtime_error ("morph::Visual: Can't *change* window"); }
+            this->window = _win;
         }
 
         //! Render the scene
@@ -1084,7 +1092,7 @@ namespace morph {
 
     private:
         //! The window (and OpenGL context) for this Visual
-        morph::win_t* window;
+        morph::win_t* window = nullptr;
 
         //! Pointer to the singleton GLFW and Freetype resources object
         morph::VisualResources* resources = nullptr;
