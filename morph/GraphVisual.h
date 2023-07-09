@@ -173,8 +173,9 @@ namespace morph {
     {
     public:
         //! Constructor which sets just the shader programs and the model view offset
-        GraphVisual(morph::gl::shaderprogs& _shaders, const vec<float> _offset)
+        GraphVisual(morph::win_t* _window, morph::gl::shaderprogs& _shaders, const vec<float> _offset)
         {
+            this->window = _window;
             this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
