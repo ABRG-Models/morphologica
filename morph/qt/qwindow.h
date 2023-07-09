@@ -1,32 +1,31 @@
 /*
- * Qt compatibility for morphologica
+ * Qt compatibility for morphologica.
+ *
+ * This extends the morph::qt::OpenGLWindow base class to add the handling of mouse,
+ * window resize and key-press events.
+ *
+ * Author: Seb James
+ * Date: July 2023
  */
 
 #pragma once
 
 #include <morph/qt/openglwindow.h>
 
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLContext>
-//#include <QtGui/QOpenGLBuffer>
-//#include <QtGui/QOpenGLVertexArrayObject>
-
-//#include <QMatrix4x4>
-//#include <QQuaternion>
 #include <QVector2D>
 #include <QMouseEvent>
-//#include <QBasicTimer>
 
 #include <vector>
 
 namespace morph {
     namespace qt {
 
-        // An OpenGL enabled window that knows how to render via morphologica.
+        // An OpenGL enabled window that knows how to render via morphologica and can communicate events
         class qwindow : public morph::qt::OpenGLWindow
         {
         public:
-            qwindow() {}
+            qwindow() : morph::qt::OpenGLWindow(nullptr) {}
+
             ~qwindow() {}
 
             // Gets called on a mouse press. This needs to call the callbacks...
@@ -38,22 +37,16 @@ namespace morph {
             void mouseReleaseEvent (QMouseEvent *e) override
             {
                 // Mouse release position - mouse press position
-                QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
+                // QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
             }
 
             // Plus keyboard events...
 
-            void initialize() override
-            {
-                // Nothing to do? This is all init in Visual.
-            }
-
-            void render() override {}
-            //void setPerspective (int w, int h); // may need to handle this? GLFW did that for me before.
+            // The render event
+            void render() override { std::cout << "qwindow::render()\n"; }
 
         private:
             QVector2D mousePressPosition;
-            // Visual* parent_vis; // urgh upcoming circular deps...
         };
 
     } // namespace qt
