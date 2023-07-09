@@ -62,7 +62,6 @@ namespace morph {
                 m_context->makeCurrent (offsurface);
                 // Now we can initializeOpenGLFunctions(). This will then allow morph::Visual to compile shaders.
                 initializeOpenGLFunctions();
-                std::cout << "OpenGLWindow::initialize() returning\n";
             }
 
             // The 'animating' feature is unlikely to be required with morphologica, but leave it for now
@@ -75,6 +74,7 @@ namespace morph {
             // Set the context to this window
             void setContext() { m_context->makeCurrent (this); }
 
+            // Swap OpenGL buffers
             void swapBuffers() { m_context->swapBuffers (this); }
 
         public slots:
@@ -89,9 +89,8 @@ namespace morph {
 
             void renderNow()
             {
-                std::cout << "OpenGLWindow::renderNow() called" << std::endl;
                 if (!isExposed()) { return; }
-                this->render(); // Should call back to Visual::render()
+                this->render();
                 if (m_animating) { renderLater(); }
             }
 
