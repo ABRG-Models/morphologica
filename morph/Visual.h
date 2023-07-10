@@ -24,6 +24,8 @@
 #ifdef USING_QT
 // Qt includes here...
 # include <morph/qt/qwindow.h>
+#elif defined USING_MORPHWIDGET
+# include <morph/qt/morphwidget.h>
 #else
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
@@ -105,8 +107,13 @@ namespace morph {
     //! we're being compiled. This is held so that window can be shut down at the end of a
     //! Visual object's existence.
 #ifdef USING_QT
+    // A dedicated Qt window
     using win_t = morph::qt::qwindow;
+#elif defined USING_MORPHWIDGET
+    // The window is actually a widget within a wider Qt system
+    using win_t = morph::qt::morphwidget;
 #else
+    // The default is to use a nice simple GLFW window
     using win_t = GLFWwindow;
 #endif
 
@@ -130,6 +137,9 @@ namespace morph {
     class Visual
     {
     public:
+        // Default constructor is used when incorporating Visual inside a QWidget
+        Visual() { this->init(); /* may have to wait */ }
+
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So,
          * this creates a new window and a new OpenGL context.
@@ -163,8 +173,7 @@ namespace morph {
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
         virtual ~Visual()
         {
-#ifdef USING_QT
-            // Qt deconstruction
+#if defined USING_QT or defined USING_MORPHWIDGET
             if (this->window != nullptr) { delete this->window; }
 #else
             glfwDestroyWindow (this->window);
@@ -205,7 +214,7 @@ namespace morph {
         //! model, the vao ids relate to the correct OpenGL context.
         void setContext()
         {
-#ifdef USING_QT
+#if defined USING_QT or defined USING_MORPHWIDGET
             this->window->setContext();
 #else
             glfwMakeContextCurrent (this->window);
@@ -298,7 +307,7 @@ namespace morph {
          */
         void keepOpen()
         {
-#ifdef USING_QT
+#if defined USING_QT or defined USING_MORPHWIDGET
             return; // We'll not use/need keepOpen() when we're working within Qt.
 #else
             while (this->readyToFinish == false) {
@@ -311,7 +320,7 @@ namespace morph {
         //! Wrapper around the glfw polling function
         void poll()
         {
-#ifndef USING_QT
+#if not defined USING_QT and not defined USING_MORPHWIDGET
             glfwPollEvents();
 #endif
         }
@@ -335,7 +344,7 @@ namespace morph {
 #endif
             glUseProgram (this->shaders.gprog);
 
-#ifdef USING_QT
+#if defined USING_QT or defined USING_MORPHWIDGET
             // Update window_w and window_h from this->window?
             this->window_w = this->window->width();
             this->window_h = this->window->height();
@@ -470,7 +479,7 @@ namespace morph {
                 ++ti;
             }
 
-#ifdef USING_QT
+#if defined USING_QT or defined USING_MORPHWIDGET
             this->window->swapBuffers();
 #else
             glfwSwapBuffers (this->window);
@@ -819,18 +828,18 @@ namespace morph {
         std::vector<std::unique_ptr<VisualModel>> vm;
 
     private:
-        //! Private initialization, used by constructors.
-        void init()
-        {
-            // VisualResources provides font management and GLFW management.
-            this->resources = morph::VisualResources::i();
-            morph::VisualResources::register_visual();
 
-#ifdef USING_QT
+        void initwindow()
+        {
+#if defined USING_QT
             // Callback setup all lives in qwindow
             this->window = new morph::qt::qwindow (this);
             this->window->callback_render = &morph::Visual::callback_render;
             this->window->show();
+#elif defined USING_MORPHWIDGET
+            this->window = new morph::qt::morphwidget (this);
+            this->window->callback_render = &morph::Visual::callback_render;
+            //this->window->show(); // app does this
 #else
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -850,9 +859,19 @@ namespace morph {
 
             glfwMakeContextCurrent (this->window);
 #endif
+        }
 
+        //! Private initialization, used by constructors.
+        void init()
+        {
+            // VisualResources provides font management and GLFW management.
+            this->resources = morph::VisualResources::i();
+            morph::VisualResources::register_visual();
             // Now make sure that Freetype is set up
             this->resources->freetype_init (this);
+
+            // Set up the window that will present the OpenGL graphics
+            this->initwindow();
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
@@ -866,7 +885,7 @@ namespace morph {
             }
 #endif
 
-#ifndef USING_QT
+#if not defined USING_QT and not defined USING_MORPH_WIDGET
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
 #endif
@@ -926,9 +945,7 @@ namespace morph {
             // have to set the get_shaderprogs function here:
             this->bindmodel (this->coordArrows);
             // And NOW we can proceed to init:
-            this->coordArrows->init (this->coordArrowsLength,
-                                     this->coordArrowsThickness,
-                                     this->coordArrowsEm);
+            this->coordArrows->init (this->coordArrowsLength, this->coordArrowsThickness, this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
@@ -1118,9 +1135,9 @@ namespace morph {
         morph::VisualResources* resources = nullptr;
 
         //! Current window width
-        int window_w;
+        int window_w = 640;
         //! Current window height
-        int window_h;
+        int window_h = 480;
 
         //! The title for the Visual. Used in window title and if saving out 3D model or png image.
         std::string title = "morph::Visual";
@@ -1194,11 +1211,11 @@ namespace morph {
 
         Quaternion<float> savedRotation;
 
-#ifdef USING_QT
+#if defined USING_QT
         // Add Qt callback code as necessary
-#endif
-
-#ifndef USING_QT
+#elif defined USING_MORPHWIDGET
+        // Add Qt callback code as necessary
+#else
         /*
          * GLFW callback dispatch functions
          */
@@ -1601,7 +1618,5 @@ namespace morph {
 #endif // GLFW-specific callback functions
 
     };
-
-
 
 } // namespace morph
