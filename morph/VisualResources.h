@@ -12,6 +12,8 @@
 
 #ifdef USING_QT
 # include <morph/qt/qwindow.h>
+#elif defined USING_MORPHWIDGET
+// nothing
 #else
 # include <GLFW/glfw3.h>
 #endif
@@ -44,6 +46,8 @@ namespace morph {
         {
             // Any per-program qt init could go here.
         }
+#elif USING_MORPHWIDGET
+        // No init function required
 #else
         void glfw_init()
         {
@@ -72,6 +76,8 @@ namespace morph {
 #ifdef USING_QT
             // One of these will be a no-op
             this->qt_init();
+#elif defined USING_MORPHWIDGET
+            // No init required
 #else
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
@@ -118,8 +124,8 @@ namespace morph {
                 if (FT_Init_FreeType (&freetype)) {
                     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
                 } else {
-                    //std::cout << "Initialized freetype which has value: "
-                    //          << (unsigned long long int)freetype << std::endl;
+                    std::cout << "Initialized freetype which has value: "
+                              << (unsigned long long int)freetype << std::endl;
                     this->freetypes[_vis] = freetype;
                 }
             }
@@ -168,10 +174,12 @@ namespace morph {
 
 
 #ifdef USING_QT
-                // Qt cleanup?
+            // Qt cleanup?
+#elif defined USING_MORPHWIDGET
+            // Nothing
 #else
-                // Shut down GLFW
-                glfwTerminate();
+            // Shut down GLFW
+            glfwTerminate();
 #endif
 
             // Note: static deregister() will delete self
