@@ -142,19 +142,24 @@ namespace morph {
                 vec<float> arrow_line = end - start;
                 vec<float> cone_start = arrow_line.shorten (len*quiver_arrowhead_prop);
                 cone_start += start;
-                this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick);
+                this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick, shapesides);
                 float conelen = (end-cone_start).length();
                 if (arrow_line.length() > conelen) {
-                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, 20);
+                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, shapesides);
                 }
 
                 // Plus a sphere on the coordinate:
-                this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f);
+                this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
             }
         }
 
         //! An enumerated type to say whether we draw quivers with coord at mid point; start point or end point
         QuiverGoes qgoes = QuiverGoes::FromCoord;
+
+        // How many sides to an arrow/cone/sphere? Increase for smoother arrow
+        // objects. Decrease to ease the load on your CPU and GPU. 12 is a reasonable
+        // compromise. You can set this before calling finalize().
+        int shapesides = 12;
 
         // Setting a fixed length can be useful to focus on the flow of the field.
         Flt fixed_length = 0.0f;
@@ -164,7 +169,7 @@ namespace morph {
         float quiver_length_gain = 1.0f;
 
         // If 0, then quiver thickness is scaled by quiver length. Otherwise, the quiver arrowshaft
-        // tubes have radius = fixed_quiver_thickness * quiver_thickness_gain.
+        // tubes have radius = fixed_quiver_thickness * quiver_thickness_gain. Try small values like 0.01f.
         float fixed_quiver_thickness = 0.0f;
 
         // Allows user to scale the thickness of the quivers.

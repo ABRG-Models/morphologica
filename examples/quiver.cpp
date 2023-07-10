@@ -60,6 +60,9 @@ int main (int argc, char** argv)
         vmp->quiver_length_gain = 0.4f; // Scale the length of the quivers on screen
         vmp->quiver_thickness_gain = 0.05f; // Scale thickness of the quivers
         // vmp->fixed_quiver_thickness = 0.003f; // Also possible to request a fixed thickness
+        vmp->shapesides = 24; // Default is 12, this makes the graphics look nicer - it
+                              // controls how many triangles go into each cone, rod and
+                              // sphere in the quivers.
         vmp->finalize();
         v.addVisualModel (vmp);
 
