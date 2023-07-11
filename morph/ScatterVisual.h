@@ -29,9 +29,8 @@ namespace morph {
     class ScatterVisual : public VisualDataModel<Flt>
     {
     public:
-        ScatterVisual(morph::gl::shaderprogs& _shaders, const vec<float> _offset)
+        ScatterVisual(const vec<float> _offset)
         {
-            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->zScale.setParams (1, 0);

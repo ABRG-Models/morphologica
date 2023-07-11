@@ -237,7 +237,7 @@ namespace morph {
             glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
 
             // Ensure the correct program is in play for this VisualModel
-            glUseProgram (this->get_gprog());
+            glUseProgram (this->get_gprog(this->parentVis));
 
             if (!this->indices.empty()) {
                 // It is only necessary to bind the vertex array object before rendering
@@ -245,14 +245,14 @@ namespace morph {
                 glBindVertexArray (this->vao);
 
                 // Pass this->float to GLSL so the model can have an alpha value.
-                GLint loc_a = glGetUniformLocation (this->get_gprog(), static_cast<const GLchar*>("alpha"));
+                GLint loc_a = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("alpha"));
                 if (loc_a != -1) { glUniform1f (loc_a, this->alpha); }
 
-                GLint loc_v = glGetUniformLocation (this->get_gprog(), static_cast<const GLchar*>("v_matrix"));
+                GLint loc_v = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("v_matrix"));
                 if (loc_v != -1) { glUniformMatrix4fv (loc_v, 1, GL_FALSE, this->scenematrix.mat.data()); }
 
                 // Should be able to apply scaling to the model matrix
-                GLint loc_m = glGetUniformLocation (this->get_gprog(), static_cast<const GLchar*>("m_matrix"));
+                GLint loc_m = glGetUniformLocation (this->get_gprog(this->parentVis), static_cast<const GLchar*>("m_matrix"));
                 if (loc_m != -1) { glUniformMatrix4fv (loc_m, 1, GL_FALSE, (this->model_scaling * this->viewmatrix).mat.data()); }
 
                 if constexpr (debug_render) {
