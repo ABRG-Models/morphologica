@@ -2,7 +2,8 @@
  * \file
  *
  * Awesome graphics code for high performance graphing and visualisation. Uses modern
- * OpenGL and the library GLFW for window management (or Qt).
+ * OpenGL and the library GLFW for window management (or can be owned by a widget such
+ * as a QOpenGLWidget).
  *
  * Created by Seb James on 2019/05/01
  *
