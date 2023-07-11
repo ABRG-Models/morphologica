@@ -2,10 +2,11 @@
 
 #include <QtWidgets/QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
+#include <QMouseEvent>
 
 #define USING_MORPHWIDGET 1
+namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
-
 #include <iostream>
 
 namespace morph {
@@ -24,9 +25,9 @@ namespace morph {
             }
 
         protected:
+
             void initializeGL() override
             {
-                std::cout << "viswidget initializeGL\n";
                 QSurfaceFormat format;
                 format.setDepthBufferSize (4);
                 format.setSamples (24);
@@ -38,17 +39,29 @@ namespace morph {
                 v.init (this);
             }
 
-            void resizeGL (int w, int h) override
+            void resizeGL (int w, int h) override { v.set_winsize (w, h); }
+
+            void paintGL() override { v.render(); }
+
+            void mousePressEvent (QMouseEvent* event)
             {
-                std::cout << "viswidget resizeGL\n";
-                v.set_winsize (w, h);
+                v.set_cursorpos (event->x(), event->y());
+                int b = event->button() & Qt::LeftButton ? 1 : 0;
+                v.mouse_button_callback (b, 1);
             }
 
-            void paintGL() override
+            void mouseMoveEvent (QMouseEvent* event)
             {
-                std::cout << "viswidget paintGL\n";
-                makeCurrent();
-                v.render();
+                if (v.cursor_position_callback (event->x(), event->y())) {
+                    this->update();
+                }
+            }
+
+            void mouseReleaseEvent (QMouseEvent* event)
+            {
+                v.set_cursorpos (event->x(), event->y());
+                int b = event->button() & Qt::LeftButton ? 1 : 0;
+                v.mouse_button_callback (b, 0);
             }
         };
     } // qt

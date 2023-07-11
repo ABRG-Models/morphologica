@@ -25,7 +25,7 @@
 // Qt includes here...
 # include <morph/qt/qwindow.h>
 #elif defined USING_MORPHWIDGET
-# include <morph/qt/viswidget.h>
+// Hopefully no need to include anything about the windows
 #else
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
@@ -107,11 +107,11 @@ namespace morph {
     //! we're being compiled. This is held so that window can be shut down at the end of a
     //! Visual object's existence.
 #if defined USING_QT
-    // A dedicated Qt window
+    // morph::Visual manages a dedicated Qt window
     using win_t = morph::qt::qwindow;
 #elif defined USING_MORPHWIDGET
-    // The window is actually a widget within a wider Qt system
-    using win_t = QOpenGLWidget; // or morph::qt::viswidget;
+    // The window is a widget within a wider Qt system. We are owned by the
+    // widget. win_t should be defined (with a using win_t = something line) externally.
 #else
     // The default is to use a nice simple GLFW window
     using win_t = GLFWwindow;
@@ -176,7 +176,7 @@ namespace morph {
 #if defined USING_QT
             if (this->window != nullptr) { delete this->window; }
 #elif defined USING_MORPHWIDGET
-            // No deconstruction to do
+            // No deconstruction of windows to do
 #else
             glfwDestroyWindow (this->window);
 #endif
@@ -226,7 +226,8 @@ namespace morph {
 #if defined USING_QT
             this->window->setContext();
 #elif defined USING_MORPHWIDGET
-            this->window->makeCurrent();
+            // In this case (Visual is owned), the windowing system is responsible for
+            // setting context first.
 #else
             glfwMakeContextCurrent (this->window);
 #endif
@@ -335,6 +336,8 @@ namespace morph {
             glfwPollEvents();
 #endif
         }
+
+        void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
         //! A callback function
         static void callback_render (morph::Visual* _v) { _v->render(); };
@@ -491,7 +494,7 @@ namespace morph {
 #if defined USING_QT
             this->window->swapBuffers();
 #elif defined USING_MORPHWIDGET
-            // ?
+            // Swap buffers is not our responsibility in this mode
 #else
             glfwSwapBuffers (this->window);
 #endif
@@ -850,10 +853,7 @@ namespace morph {
             this->window->callback_render = &morph::Visual::callback_render;
             this->window->show();
 #elif defined USING_MORPHWIDGET
-            // viswidget owns the morph::Visual, so may not need this
-            // this->window = new morph::qt::morphwidget (this);
-            // this->window->callback_render = &morph::Visual::callback_render;
-            // this->window->show(); // app does this
+            // viswidget owns the morph::Visual, so nothing to do
 #else
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
@@ -1228,51 +1228,58 @@ namespace morph {
         Quaternion<float> savedRotation;
 
 #if defined USING_QT
-        // Add Qt callback code as necessary
+        // Add Qt callback dispatch code if necessary
 #elif defined USING_MORPHWIDGET
-        // Add Qt callback code as necessary
+        // No callback dispatch code required if Visual object is owned
 #else
         /*
          * GLFW callback dispatch functions
          */
-
+    private:
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->key_callback (_window, key, scancode, action, mods);
+            if (self->key_callback (key, scancode, action, mods)) {
+                self->render();
+            }
         }
         static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->mouse_button_callback (_window, button, action, mods);
+            self->mouse_button_callback (button, action, mods);
         }
         static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->cursor_position_callback (_window, x, y);
+            if (self->cursor_position_callback (x, y)) {
+                self->render();
+            }
         }
         static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->window_size_callback (_window, width, height);
+            if (self->window_size_callback (width, height)) {
+                self->render();
+            }
         }
         static void window_close_callback_dispatch (GLFWwindow* _window)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->window_close_callback (_window);
+            self->window_close_callback();
         }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->scroll_callback (_window, xoffset, yoffset);
+            if (self->scroll_callback (xoffset, yoffset)) {
+                self->render();
+            }
         }
 
-        /*
-         * GLFW callback handlers
-         */
-
-        virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
+        // The key_callback handler is very GLFW specific...
+        virtual bool key_callback (int key, int scancode, int action, int mods)
         {
+            bool needs_render = false;
+
             // Exit action
             if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
                 std::cout << "User requested exit.\n";
@@ -1420,7 +1427,7 @@ namespace morph {
                 Quaternion<float> rt;
                 this->rotation = rt;
 
-                this->render();
+                needs_render = true;
             }
 
             if (!this->sceneLocked && key == GLFW_KEY_O && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
@@ -1446,15 +1453,27 @@ namespace morph {
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
 
-            this->key_callback_extra (_window, key, scancode, action, mods);
+            this->key_callback_extra (key, scancode, action, mods);
+
+            return needs_render;
         }
 
-        virtual void cursor_position_callback (GLFWwindow* _window, double x, double y)
+#endif // GLFW-specific callback dispatch functions
+
+    public:
+
+        /*
+         * Generic callback handlers
+         */
+
+        virtual bool cursor_position_callback (double x, double y)
         {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
 
             vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
+
+            bool needs_render = false;
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
             if (this->rotateMode) {
@@ -1516,7 +1535,7 @@ namespace morph {
                 Quaternion<float> rotationQuaternion;
                 rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
                 this->rotation.premultiply (rotationQuaternion); // combines rotations
-                this->render(); // updates viewproj; uses this->rotation
+                needs_render = true;
 
             } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
 
@@ -1556,11 +1575,13 @@ namespace morph {
                 // HexGridVisual" mode, to adjust relative positions.
                 this->scenetrans[0] += mouseMoveWorld[0];
                 this->scenetrans[1] -= mouseMoveWorld[1];
-                this->render(); // updates viewproj; uses this->scenetrans
+                needs_render = true; // updates viewproj; uses this->scenetrans
             }
+
+            return needs_render;
         }
 
-        virtual void mouse_button_callback (GLFWwindow* _window, int button, int action, int mods)
+        virtual void mouse_button_callback (int button, int action, int mods = 0)
         {
             // If the scene is locked, then ignore the mouse movements
             if (this->sceneLocked) { return; }
@@ -1579,30 +1600,23 @@ namespace morph {
                 this->invscene = this->scene.invert();
             }
 
-#if 0
-            if (action == 0 && button == 0) {
-                // This is release of the rotation button
-                this->mousePressPosition = this->cursorpos;
-            }
-#endif
-
             if (button == 0) { // Primary button means rotate
                 this->rotateMode = (action == 1);
             } else if (button == 1) { // Secondary button means translate
                 this->translateMode = (action == 1);
             }
 
-            this->mouse_button_callback_extra (_window, button, action, mods);
+            this->mouse_button_callback_extra (button, action, mods);
         }
 
-        virtual void window_size_callback (GLFWwindow* _window, int width, int height)
+        virtual bool window_size_callback (int width, int height)
         {
             this->window_w = width;
             this->window_h = height;
-            this->render();
+            return true; // needs_render
         }
 
-        virtual void window_close_callback (GLFWwindow* _window)
+        virtual void window_close_callback()
         {
             if (this->preventWindowCloseWithButton == false) {
                 std::cout << "User requested exit\n";
@@ -1612,9 +1626,9 @@ namespace morph {
             }
         }
 
-        virtual void scroll_callback (GLFWwindow* _window, double xoffset, double yoffset)
+        virtual bool scroll_callback (double xoffset, double yoffset)
         {
-            if (this->sceneLocked) { return; }
+            if (this->sceneLocked) { return false; }
             // x and y can be +/- 1
             this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
             if (this->translateMode) {
@@ -1623,16 +1637,13 @@ namespace morph {
             } else {
                 this->scenetrans[2] += yoffset * this->scenetrans_stepsize;
             }
-            this->render();
+            return true; // needs_render
         }
 
         //! Extra key callback handling, making it easy for client programs to implement their own actions
-        virtual void key_callback_extra (GLFWwindow* _window, int key, int scancode, int action, int mods) {}
+        virtual void key_callback_extra (int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
-        virtual void mouse_button_callback_extra (GLFWwindow* _window, int button, int action, int mods) {}
-
-#endif // GLFW-specific callback functions
-
+        virtual void mouse_button_callback_extra (int button, int action, int mods) {}
     };
 
 } // namespace morph
