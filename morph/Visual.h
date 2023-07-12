@@ -335,6 +335,8 @@ namespace morph {
         {
 #if not defined USING_QT and not defined USING_MORPHWIDGET
             glfwPollEvents();
+#else
+            throw std::runtime_error ("poll() isn't relevant in this mode");
 #endif
         }
 
@@ -342,6 +344,8 @@ namespace morph {
         {
 #if not defined USING_QT and not defined USING_MORPHWIDGET
             glfwWaitEventsTimeout (timeout);
+#else
+            throw std::runtime_error ("waitevents() isn't relevant in this mode");
 #endif
         }
 
