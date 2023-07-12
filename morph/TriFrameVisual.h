@@ -35,9 +35,8 @@ namespace morph {
     class TriFrameVisual : public VisualDataModel<Flt>
     {
     public:
-        TriFrameVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset)
+        TriFrameVisual(const vec<float, 3> _offset)
         {
-            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
         }

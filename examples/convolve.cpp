@@ -82,7 +82,8 @@ int main()
     auto hgvp = v.addVisualModel (hgv);
 
     offset[1] += 0.6f;
-    auto kgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &kernel, offset);
+    auto kgv = std::make_unique<morph::HexGridVisual<float>>(&kernel, offset);
+    v.bindmodel (kgv);
     kgv->setScalarData (&kerneldata);
     kgv->cm.setType(morph::ColourMapType::Viridis);
     kgv->finalize();
@@ -93,7 +94,8 @@ int main()
 
     offset[1] -= 0.6f;
     offset[0] += 1.0f;
-    auto rgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+    auto rgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+    v.bindmodel (rgv);
     rgv->setScalarData (&convolved);
     rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();
@@ -109,7 +111,7 @@ int main()
     rgvp->updateZScale (zscale);
 
     while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
+        v.waitevents (0.018);
         v.render();
     }
 

@@ -103,7 +103,7 @@ int main (int argc, char** argv)
 
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

@@ -45,9 +45,9 @@ struct SimpsonGoodhill
     void vis(unsigned int stepnum)
     {
         if (this->goslow == true) {
-            glfwWaitEventsTimeout (0.1); // to add artificial slowing
+            v.waitevents (0.1); // to add artificial slowing
         } else {
-            glfwPollEvents();
+            v.poll();
         }
         this->bv->reinit();
         this->cv->reinit();
@@ -149,7 +149,8 @@ struct SimpsonGoodhill
         morph::vec<float> offset = { -1.5f, -0.5f, 0.0f };
 
         // Visualise the branches with a custom VisualModel
-        auto bvup = std::make_unique<BranchVisual<T>> (v->shaders, offset, &this->branches);
+        auto bvup = std::make_unique<BranchVisual<T>> (offset, &this->branches);
+        v->bindmodel (bvup);
         bvup->EphA_scale.compute_autoscale (EphA_min, EphA_max);
         bvup->addLabel ("Branches", {0.0f, 1.1f, 0.0f});
         bvup->finalize();
@@ -157,14 +158,16 @@ struct SimpsonGoodhill
 
         // Centroids of branches viewed with a NetVisual
         offset[0] += 1.3f;
-        auto cvup = std::make_unique<NetVisual<T>> (v->shaders, offset, &this->ax_centroids);
+        auto cvup = std::make_unique<NetVisual<T>> (offset, &this->ax_centroids);
+        v->bindmodel (cvup);
         cvup->addLabel ("Axon centroids", {0.0f, 1.1f, 0.0f});
         cvup->finalize();
         this->cv = v->addVisualModel (cvup);
 
         // Show a vis of the retina, to compare positions/colours
         offset[0] += 1.3f;
-        auto cgv = std::make_unique<morph::CartGridVisual<float>>(v->shaders, retina, offset);
+        auto cgv = std::make_unique<morph::CartGridVisual<float>>(retina, offset);
+        v->bindmodel (cgv);
         cgv->cartVisMode = morph::CartVisMode::RectInterp;
         std::vector<morph::vec<float, 3>> points = this->retina->getCoordinates3();
         cgv->setVectorData (&points);

@@ -252,7 +252,8 @@ int main (int argc, char **argv)
     // A. Offset in x direction to the left.
     xzero -= 0.5*RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    auto uvm = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
+    auto uvm = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    v1.bindmodel (uvm);
     uvm->setScalarData (&(RD.u));
     uvm->zScale.setParams (0.2f, 0.0f);
     uvm->addLabel ("Population u", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
@@ -263,7 +264,8 @@ int main (int argc, char **argv)
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    auto vvm = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
+    auto vvm = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    v1.bindmodel (vvm);
     vvm->setScalarData (&(RD.v));
     vvm->zScale.setParams (0.2f, 0.0f);
     vvm->addLabel ("Population v", { -0.2f, RD.ellipse_b*-1.4f, 0.01f },
@@ -302,7 +304,7 @@ int main (int argc, char **argv)
         // has elapsed for it to be necessary to call v1.render().
         steady_clock::duration sincerender = steady_clock::now() - lastrender;
         if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
-            glfwPollEvents();
+            v1.poll();
             v1.render();
             lastrender = steady_clock::now();
         }

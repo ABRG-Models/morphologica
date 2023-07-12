@@ -338,6 +338,13 @@ namespace morph {
 #endif
         }
 
+        void waitevents (const double& timeout)
+        {
+#if not defined USING_QT and not defined USING_MORPHWIDGET
+            glfwWaitEventsTimeout (timeout);
+#endif
+        }
+
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
         //! A callback function

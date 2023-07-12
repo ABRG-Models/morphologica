@@ -10,7 +10,8 @@ int main()
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Logistic functions");
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({-0.5f,-0.5f,0.0f}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({-0.5f,-0.5f,0.0f}));
+    v.bindmodel (gv);
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):

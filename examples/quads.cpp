@@ -58,15 +58,19 @@ int main (int argc, char** argv)
         std::vector<float> data = {0.1, 0.2, 0.5, 0.95};
 
 #ifdef MESH
-        auto qmv = std::make_unique<morph::QuadsMeshVisual<float>> (v.shaders, &surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma);
+        auto qmv = std::make_unique<morph::QuadsMeshVisual<float>> (&surfBoxes, offset, &data, scale, morph::ColourMapType::Plasma);
+        v.bindmodel (qmv);
+        qmv->finalize();
         v.addVisualModel (qmv);
 #else
-        auto qv = std::make_unique<morph::QuadsVisual<float>> (v.shaders, &surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome);
+        auto qv = std::make_unique<morph::QuadsVisual<float>> (&surfBoxes, offset, &data, scale, morph::ColourMapType::Monochrome);
+        v.bindmodel (qv);
+        qv->finalize();
         v.addVisualModel (qv);
 #endif
 
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

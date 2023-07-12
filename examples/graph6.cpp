@@ -9,7 +9,8 @@ int main()
 {
     morph::Visual v(1024, 768, "Continuous redrawing of GraphVisual");
 
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
 
     morph::vvec<double> x;
     x.linspace (-morph::mathconst<double>::pi, morph::mathconst<double>::pi, 100);
@@ -23,7 +24,7 @@ int main()
 
     while (v.readyToFinish == false) {
         dx += 0.01;
-        glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
+        v.waitevents (0.01667); // 16.67 ms ~ 60 Hz
         gvp->update (x, (x+dx).sin(), 0);
         v.render();
     }

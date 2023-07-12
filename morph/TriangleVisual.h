@@ -14,32 +14,26 @@ namespace morph {
         TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
         //! Initialise with offset, three coordinates and a single colour.
-        TriangleVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
+        TriangleVisual(const vec<float, 3> _offset,
                        const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                        const std::array<float, 3> _col)
         {
-            this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
+            this->init (_offset, _coord1, _coord2, _coord3, _col);
         }
 
         virtual ~TriangleVisual () {}
 
-        void init (morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
+        void init (const vec<float, 3> _offset,
                    const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                    const std::array<float, 3> _col)
         {
             // Set up...
-            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->coord1 = _coord1;
             this->coord2 = _coord2;
             this->coord3 = _coord3;
             this->col = _col;
-
-            // Initialize the vertices that will represent the object
-            this->initializeVertices();
-
-            this->postVertexInit();
         }
 
         //! Compute a triangle from 3 arbitrary corners
@@ -74,12 +68,10 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
 
-            // The indices index
-            VBOint idx = 0;
             // Draw a triangle. That's it.
-            this->computeTriangle (idx, this->coord1, this->coord2, this->coord3, this->col);
+            this->computeTriangle (this->idx, this->coord1, this->coord2, this->coord3, this->col);
 
-            std::cout << "idx now has value: " << idx << std::endl;
+            std::cout << "idx now has value: " << this->idx << std::endl;
             std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
         }
 

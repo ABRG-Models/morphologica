@@ -23,7 +23,8 @@ int main()
 
     // Visualise data and linear fit
     morph::Visual v(1024, 768, "Linear regression", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);
-    auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
 
     // The first dataset shows the data points
     morph::DatasetStyle ds(morph::stylepolicy::markers);
@@ -47,7 +48,7 @@ int main()
     // Render the graph until user exits
     v.render();
     while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
+        v.waitevents (0.018);
         v.render();
     }
 

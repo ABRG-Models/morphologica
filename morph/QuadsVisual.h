@@ -23,8 +23,7 @@ namespace morph {
     class QuadsVisual : public VisualDataModel<Flt>
     {
     public:
-        QuadsVisual(morph::gl::shaderprogs& _shaders,
-                    const std::vector<std::array<Flt,12>>* _quads,
+        QuadsVisual(const std::vector<std::array<Flt,12>>* _quads,
                     const vec<float> _offset,
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
@@ -32,7 +31,6 @@ namespace morph {
                     const float _hue = 0.0f)
         {
             // Set up...
-            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
@@ -57,14 +55,10 @@ namespace morph {
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
         }
 
         //! Version with std::array \a _offset
-        QuadsVisual(GLuint sp,
-                    const std::vector<std::array<Flt,12>>* _quads,
+        QuadsVisual(const std::vector<std::array<Flt,12>>* _quads,
                     const std::array<float, 3> _offset,
                     const std::vector<Flt>* _data,
                     const Scale<Flt>& _scale,
@@ -73,7 +67,7 @@ namespace morph {
         {
             vec<float> offset_vec;
             offset_vec.set_from(_offset);
-            QuadsVisual(sp, _quads, offset_vec, _data, _scale, _cmt, _hue);
+            QuadsVisual(_quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
         ~QuadsVisual() { delete this->dataCoords; }

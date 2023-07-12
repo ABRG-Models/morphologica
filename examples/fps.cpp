@@ -45,7 +45,8 @@ int main()
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+    v.bindmodel (hgv);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->finalize();
@@ -57,7 +58,7 @@ int main()
     auto tstart = steady_clock::now();
     unsigned int fcount = 0;
     while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.00001);
+        v.waitevents (0.00001);
         if (k > 8.0f) { k = 1.0f; }
 
 #pragma omp parallel for shared(r,k,data)

@@ -56,13 +56,14 @@ int main()
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0, -0.05, 0.0 };
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+    v.bindmodel (hgv);
     hgv->setScalarData (&data);
     hgv->finalize();
     v.addVisualModel (hgv);
 
     while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
+        v.waitevents (0.018);
         v.render();
     }
 

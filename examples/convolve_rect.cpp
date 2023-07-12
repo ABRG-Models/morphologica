@@ -69,7 +69,8 @@ int main()
     morph::Visual v(800,600,"Convolution window");
 
     morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-    auto cgv = std::make_unique<morph::CartGridVisual<float>>(v.shaders, &cg, offset);
+    auto cgv = std::make_unique<morph::CartGridVisual<float>>(&cg, offset);
+    v.bindmodel (cgv);
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->cm.setType (morph::ColourMapType::GreyscaleInv);
@@ -80,7 +81,8 @@ int main()
     v.addVisualModel (cgv);
 
     offset = { 0.0f, -0.3f, 0.0f };
-    auto cgvk = std::make_unique<morph::CartGridVisual<float>>(v.shaders, &kernel, offset);
+    auto cgvk = std::make_unique<morph::CartGridVisual<float>>(&kernel, offset);
+    v.bindmodel (cgvk);
     cgvk->cartVisMode = morph::CartVisMode::RectInterp;
     cgvk->setScalarData (&kdata);
     cgvk->cm.setType (morph::ColourMapType::GreyscaleInv);
@@ -91,7 +93,8 @@ int main()
     v.addVisualModel (cgvk);
 
     offset = { 0.0f, -1.3f, 0.0f };
-    auto cgvr = std::make_unique<morph::CartGridVisual<float>>(v.shaders, &cg, offset);
+    auto cgvr = std::make_unique<morph::CartGridVisual<float>>(&cg, offset);
+    v.bindmodel (cgvr);
     cgvr->cartVisMode = morph::CartVisMode::RectInterp;
     cgvr->setScalarData (&convolved);
     cgvr->cm.setType (morph::ColourMapType::GreyscaleInv);

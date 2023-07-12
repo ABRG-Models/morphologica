@@ -54,7 +54,7 @@ int main (int argc, char** argv)
         size_t idx = 0;
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             // Slowly update the content of the graph
             if (rcount++ % 20 == 0 && idx < absc.size()) {
                 // Append to dataset 0

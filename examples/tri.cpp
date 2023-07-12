@@ -30,12 +30,14 @@ int main (int argc, char** argv)
 
         morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
-        auto tv = std::make_unique<morph::TriangleVisual> (v.shaders, offset, c1, c2, c3, colour1);
+        auto tv = std::make_unique<morph::TriangleVisual> (offset, c1, c2, c3, colour1);
+        v.bindmodel (tv);
+        tv->finalize();
         v.addVisualModel (tv);
 
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

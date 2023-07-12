@@ -83,7 +83,7 @@ int main (int argc, char** argv)
         size_t rcount = 0;
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             // Don't update this fast. That's crazy!
             if ((rcount++)%20 == 0) {
                 gv->update (absc, absc.pow(2)*addn, 1);
