@@ -56,6 +56,7 @@ namespace morph {
                 v.set_cursorpos (event->x(), event->y());
                 int b = event->button() & Qt::LeftButton ? 1 : 0;
                 v.mouse_button_callback (b, 1);
+                event->accept();
             }
 
             void mouseMoveEvent (QMouseEvent* event)
@@ -63,6 +64,7 @@ namespace morph {
                 if (v.cursor_position_callback (event->x(), event->y())) {
                     this->update();
                 }
+                event->accept();
             }
 
             void mouseReleaseEvent (QMouseEvent* event)
@@ -70,6 +72,7 @@ namespace morph {
                 v.set_cursorpos (event->x(), event->y());
                 int b = event->button() & Qt::LeftButton ? 1 : 0;
                 v.mouse_button_callback (b, 0);
+                event->accept();
             }
 
             void wheelEvent (QWheelEvent* event)
@@ -77,6 +80,7 @@ namespace morph {
                 QPoint numSteps = event->angleDelta() / 120;
                 v.scroll_callback (numSteps.x(), numSteps.y());
                 this->update();
+                event->accept();
             }
         };
     } // qt
