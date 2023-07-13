@@ -10,11 +10,7 @@
 
 #pragma once
 
-#ifdef USING_QT
-# include <morph/qt/qwindow.h>
-#elif defined USING_MORPHWIDGET
-// nothing
-#else
+#ifndef OWNED_MODE
 # include <GLFW/glfw3.h>
 #endif
 #include <iostream>
@@ -41,14 +37,7 @@ namespace morph {
         //! The deconstructor is never called for a singleton.
         ~VisualResources() {}
 
-#ifdef USING_QT
-        void qt_init()
-        {
-            // Any per-program qt init could go here.
-        }
-#elif USING_MORPHWIDGET
-        // No init function required
-#else
+#ifndef OWNED_MODE
         void glfw_init()
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
@@ -73,12 +62,7 @@ namespace morph {
 #endif
         void init()
         {
-#ifdef USING_QT
-            // One of these will be a no-op
-            this->qt_init();
-#elif defined USING_MORPHWIDGET
-            // No init required
-#else
+#ifndef OWNED_MODE
             // The initial init only does glfw. Have to wait until later for Freetype init
             this->glfw_init();
 #endif
@@ -171,12 +155,7 @@ namespace morph {
             // We're done with freetype, so clear those up
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
-
-#ifdef USING_QT
-            // Qt cleanup?
-#elif defined USING_MORPHWIDGET
-            // Nothing
-#else
+#ifndef OWNED_MODE
             // Shut down GLFW
             glfwTerminate();
 #endif

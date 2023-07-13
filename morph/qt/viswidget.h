@@ -4,7 +4,8 @@
 #include <QOpenGLFunctions_4_1_Core>
 #include <QMouseEvent>
 
-#define USING_MORPHWIDGET 1
+// Visual is going to be owned by the QOpenGLWidget
+#define OWNED_MODE 1
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
 #include <iostream>

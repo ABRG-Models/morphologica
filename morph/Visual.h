@@ -22,12 +22,7 @@
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
 
-#ifdef USING_QT
-// Qt includes here...
-# include <morph/qt/qwindow.h>
-#elif defined USING_MORPHWIDGET
-// Hopefully no need to include anything about the windows
-#else
+#ifndef OWNED_MODE
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
 #endif
@@ -104,18 +99,11 @@ namespace morph {
         orthographic
     };
 
-    //! Window pointer can be to either a Qt window or a GLFW window, depending on how
-    //! we're being compiled. This is held so that window can be shut down at the end of a
-    //! Visual object's existence.
-#if defined USING_QT
-    // morph::Visual manages a dedicated Qt window
-    using win_t = morph::qt::qwindow;
-#elif defined USING_MORPHWIDGET
-    // The window is a widget within a wider Qt system. We are owned by the
-    // widget. win_t should be defined (with a using win_t = something line) externally.
-#else
-    // The default is to use a nice simple GLFW window
+#ifndef OWNED_MODE
+    // The default is to use a GLFW window which is owned by morph::Visual.
     using win_t = GLFWwindow;
+    // else: The window is a widget within a wider Qt system. We are owned by the
+    // widget. win_t should be defined (with a using win_t = something line) externally.
 #endif
 
     /*!
@@ -174,11 +162,7 @@ namespace morph {
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
         virtual ~Visual()
         {
-#if defined USING_QT
-            if (this->window != nullptr) { delete this->window; }
-#elif defined USING_MORPHWIDGET
-            // No deconstruction of windows to do
-#else
+#ifndef OWNED_MODE
             glfwDestroyWindow (this->window);
 #endif
             morph::VisualResources::deregister();
@@ -224,12 +208,7 @@ namespace morph {
         //! model, the vao ids relate to the correct OpenGL context.
         void setContext()
         {
-#if defined USING_QT
-            this->window->setContext();
-#elif defined USING_MORPHWIDGET
-            // In this case (Visual is owned), the windowing system is responsible for
-            // setting context first.
-#else
+#ifndef OWNED_MODE
             glfwMakeContextCurrent (this->window);
 #endif
         }
@@ -320,9 +299,7 @@ namespace morph {
          */
         void keepOpen()
         {
-#if defined USING_QT or defined USING_MORPHWIDGET
-            return; // We'll not use/need keepOpen() when we're working within Qt.
-#else
+#ifndef OWNED_MODE
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
@@ -333,19 +310,19 @@ namespace morph {
         //! Wrapper around the glfw polling function
         void poll()
         {
-#if not defined USING_QT and not defined USING_MORPHWIDGET
-            glfwPollEvents();
-#else
+#ifdef OWNED_MODE
             throw std::runtime_error ("poll() isn't relevant in this mode");
+#else
+            glfwPollEvents();
 #endif
         }
 
         void waitevents (const double& timeout)
         {
-#if not defined USING_QT and not defined USING_MORPHWIDGET
-            glfwWaitEventsTimeout (timeout);
-#else
+#ifdef OWNED_MODE
             throw std::runtime_error ("waitevents() isn't relevant in this mode");
+#else
+            glfwWaitEventsTimeout (timeout);
 #endif
         }
 
@@ -370,20 +347,8 @@ namespace morph {
 #endif
             glUseProgram (this->shaders.gprog);
 
-#if defined USING_QT
-            // Update window_w and window_h from this->window?
-            this->window_w = this->window->width();
-            this->window_h = this->window->height();
-#endif
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
-
-#if 0 // An alternative to the above, using glfw to get the framebuffer size (see
-      // https://www.glfw.org/docs/latest/window_guide.html#window_fbsize)
-            int fb_width, fb_height;
-            glfwGetFramebufferSize (window, &fb_width, &fb_height);
-            glViewport(0, 0, fb_width, fb_height);
-#endif
 
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
@@ -428,24 +393,6 @@ namespace morph {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
 
-#if 0
-            // A quick-n-dirty attempt to keep the light position fixed in camera space.
-            vec<float, 2> l_p0_coord = this->coordArrowsOffset;
-            vec<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
-            vec<float, 4> l_pp = this->projection * l_point;
-            float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-            vec<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
-            vec<float, 3> l_v0;
-            l_v0.set_from (this->invproj * l_p0);
-            TransformMatrix<float> lv_matrix;
-            lv_matrix.translate (l_v0);
-            lv_matrix.rotate (this->rotation);
-            GLint loc_lv = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("lv_matrix"));
-            if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
-            std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
-            std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
             // Switch to text shader program and set the projection matrix
             glUseProgram (this->shaders.tprog);
             GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
@@ -503,11 +450,7 @@ namespace morph {
                 ++ti;
             }
 
-#if defined USING_QT
-            this->window->swapBuffers();
-#elif defined USING_MORPHWIDGET
-            // Swap buffers is not our responsibility in this mode
-#else
+#ifndef OWNED_MODE
             glfwSwapBuffers (this->window);
 #endif
 
@@ -859,14 +802,7 @@ namespace morph {
 
         void initwindow()
         {
-#if defined USING_QT
-            // Callback setup all lives in qwindow
-            this->window = new morph::qt::qwindow (this);
-            this->window->callback_render = &morph::Visual::callback_render;
-            this->window->show();
-#elif defined USING_MORPHWIDGET
-            // viswidget owns the morph::Visual, so nothing to do
-#else
+#ifndef OWNED_MODE
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
@@ -913,7 +849,7 @@ namespace morph {
             }
 #endif
 
-#if not defined USING_QT and not defined USING_MORPHWIDGET
+#ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
 #endif
@@ -1239,11 +1175,7 @@ namespace morph {
 
         Quaternion<float> savedRotation;
 
-#if defined USING_QT
-        // Add Qt callback dispatch code if necessary
-#elif defined USING_MORPHWIDGET
-        // No callback dispatch code required if Visual object is owned
-#else
+#ifndef OWNED_MODE
         /*
          * GLFW callback dispatch functions
          */

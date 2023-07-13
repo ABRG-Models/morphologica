@@ -45,9 +45,9 @@ struct SimpsonGoodhill
     void vis(unsigned int stepnum)
     {
         if (this->goslow == true) {
-            v.waitevents (0.1); // to add artificial slowing
+            v->waitevents (0.1); // to add artificial slowing
         } else {
-            v.poll();
+            v->poll();
         }
         this->bv->reinit();
         this->cv->reinit();
