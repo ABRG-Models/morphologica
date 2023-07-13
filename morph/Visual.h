@@ -835,12 +835,12 @@ namespace morph {
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
             morph::VisualResources::register_visual();
-            // Now make sure that Freetype is set up
-            std::cout << "freetype_init()...\n";
-            this->resources->freetype_init (this);
 
             // Set up the window that will present the OpenGL graphics
             this->initwindow();
+
+            // Now make sure that Freetype is set up
+            this->resources->freetype_init (this);
 
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
