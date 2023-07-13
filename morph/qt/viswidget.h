@@ -1,14 +1,17 @@
 #pragma once
 
+#include <iostream>
+
 #include <QtWidgets/QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
 #include <QMouseEvent>
+#include <QWheelEvent>
 
 // Visual is going to be owned by the QOpenGLWidget
 #define OWNED_MODE 1
+// Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
-#include <iostream>
 
 namespace morph {
     namespace qt {
@@ -40,7 +43,11 @@ namespace morph {
                 v.init (this);
             }
 
-            void resizeGL (int w, int h) override { v.set_winsize (w, h); }
+            void resizeGL (int w, int h) override
+            {
+                v.set_winsize (w, h);
+                this->update();
+            }
 
             void paintGL() override { v.render(); }
 
@@ -63,6 +70,13 @@ namespace morph {
                 v.set_cursorpos (event->x(), event->y());
                 int b = event->button() & Qt::LeftButton ? 1 : 0;
                 v.mouse_button_callback (b, 0);
+            }
+
+            void wheelEvent (QWheelEvent* event)
+            {
+                QPoint numSteps = event->angleDelta() / 120;
+                v.scroll_callback (numSteps.x(), numSteps.y());
+                this->update();
             }
         };
     } // qt
