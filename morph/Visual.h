@@ -22,6 +22,11 @@
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
 
+// "OWNED_MODE" means that the morph::Visual is owned by a windowing system of some
+// sort. Initially, that's going to be a QOpenGLWidget, but it could be other windowing
+// systems that can provide an OpenGL context for morph::Visual to render
+// into. Otherwise, if OWNED_MODE is not defined, we include glfw3 headers and Visual
+// owns a Window provided by glfw.
 #ifndef OWNED_MODE
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
@@ -36,7 +41,7 @@
 #endif
 #endif
 
-#include <morph/VisualResources.h> // Has Qt/GLFW code choices inside
+#include <morph/VisualResources.h>
 #include <morph/nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
