@@ -21,6 +21,7 @@
 #include <morph/VisualModel.h>
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
+#include <morph/keys.h>
 
 // "OWNED_MODE" means that the morph::Visual is owned by a windowing system of some
 // sort. Initially, that's going to be a QOpenGLWidget, but it could be other windowing
@@ -1224,26 +1225,37 @@ namespace morph {
             }
         }
 
-        // The key_callback handler is very GLFW specific...
-        virtual bool key_callback (int key, int scancode, int action, int mods)
+#endif // GLFW-specific callback dispatch functions
+
+    public:
+
+        /*
+         * Generic callback handlers
+         */
+
+        using keyaction = morph::keyaction;
+        using keymod = morph::keymod;
+        using key = morph::key;
+        // The key_callback handler uses GLFW codes, but they're in a morph header (keys.h)
+        virtual bool key_callback (int _key, int scancode, int action, int mods)
         {
             bool needs_render = false;
 
             // Exit action
-            if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
 
-            if (key == GLFW_KEY_T && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::T && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->rotateModMode = !this->rotateModMode;
             }
 
-            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
             }
 
-            if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 // Help to stdout:
                 std::cout << "Ctrl-h: Output this help to stdout\n";
                 std::cout << "Ctrl-q: Request exit\n";
@@ -1263,12 +1275,12 @@ namespace morph {
                 std::cout << "Shift-Right: Increase opacity of selected model\n";
             }
 
-            if (key == GLFW_KEY_L && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::L && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->sceneLocked = this->sceneLocked ? false : true;
                 std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
             }
 
-            if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::S && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::string fname (this->title);
                 morph::Tools::stripFileSuffix (fname);
                 fname += ".png";
@@ -1279,7 +1291,7 @@ namespace morph {
             }
 
             // Save gltf 3D file
-            if (key == GLFW_KEY_M && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::M && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::string gltffile = this->title;
                 morph::Tools::stripFileSuffix (gltffile);
                 gltffile += ".gltf";
@@ -1288,7 +1300,7 @@ namespace morph {
                 std::cout << "Saved 3D file '" << gltffile << "'\n";
             }
 
-            if (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::Z && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
                           << this->scenetrans.x()
                           << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
@@ -1319,56 +1331,56 @@ namespace morph {
             }
 
             // Set selected model
-            if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+            if (_key == key::F1 && action == keyaction::PRESS) {
                 this->selectedVisualModel = 0;
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
+            } else if (_key == key::F2 && action == keyaction::PRESS) {
                 if (this->vm.size() > 1) { this->selectedVisualModel = 1; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            } else if (_key == key::F3 && action == keyaction::PRESS) {
                 if (this->vm.size() > 2) { this->selectedVisualModel = 2; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F4 && action == GLFW_PRESS) {
+            } else if (_key == key::F4 && action == keyaction::PRESS) {
                 if (this->vm.size() > 3) { this->selectedVisualModel = 3; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
+            } else if (_key == key::F5 && action == keyaction::PRESS) {
                 if (this->vm.size() > 4) { this->selectedVisualModel = 4; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F6 && action == GLFW_PRESS) {
+            } else if (_key == key::F6 && action == keyaction::PRESS) {
                 if (this->vm.size() > 5) { this->selectedVisualModel = 5; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F7 && action == GLFW_PRESS) {
+            } else if (_key == key::F7 && action == keyaction::PRESS) {
                 if (this->vm.size() > 6) { this->selectedVisualModel = 6; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F8 && action == GLFW_PRESS) {
+            } else if (_key == key::F8 && action == keyaction::PRESS) {
                 if (this->vm.size() > 7) { this->selectedVisualModel = 7; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F9 && action == GLFW_PRESS) {
+            } else if (_key == key::F9 && action == keyaction::PRESS) {
                 if (this->vm.size() > 8) { this->selectedVisualModel = 8; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F10 && action == GLFW_PRESS) {
+            } else if (_key == key::F10 && action == keyaction::PRESS) {
                 if (this->vm.size() > 9) { this->selectedVisualModel = 9; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
             }
 
             // Toggle hide model if the shift key is down
-            if ((key == GLFW_KEY_F10 || key == GLFW_KEY_F1 || key == GLFW_KEY_F2 || key == GLFW_KEY_F3
-                 || key == GLFW_KEY_F4 || key == GLFW_KEY_F5 || key == GLFW_KEY_F6
-                 || key == GLFW_KEY_F7 || key == GLFW_KEY_F8 || key == GLFW_KEY_F9)
-                && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
+            if ((_key == key::F10 || _key == key::F1 || _key == key::F2 || _key == key::F3
+                 || _key == key::F4 || _key == key::F5 || _key == key::F6
+                 || _key == key::F7 || _key == key::F8 || _key == key::F9)
+                && action == keyaction::PRESS && (mods & keymod::SHIFT)) {
                 this->vm[this->selectedVisualModel]->toggleHide();
             }
 
             // Increment/decrement alpha for selected model
-            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
+            if (_key == key::LEFT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
             }
-            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
+            if (_key == key::RIGHT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
             }
 
             // Reset view to default
-            if (!this->sceneLocked && key == GLFW_KEY_A && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::A && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
@@ -1379,41 +1391,33 @@ namespace morph {
                 needs_render = true;
             }
 
-            if (!this->sceneLocked && key == GLFW_KEY_O && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::O && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->fov -= 2;
                 if (this->fov < 1.0) {
                     this->fov = 2.0;
                 }
                 std::cout << "FOV reduced to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_P && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::P && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->fov += 2;
                 if (this->fov > 179.0) {
                     this->fov = 178.0;
                 }
                 std::cout << "FOV increased to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_U && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::U && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->zNear /= 2;
                 std::cout << "zNear reduced to " << this->zNear << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_I && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::I && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
 
-            this->key_callback_extra (key, scancode, action, mods);
+            this->key_callback_extra (_key, scancode, action, mods);
 
             return needs_render;
         }
-
-#endif // GLFW-specific callback dispatch functions
-
-    public:
-
-        /*
-         * Generic callback handlers
-         */
 
         virtual bool cursor_position_callback (double x, double y)
         {
