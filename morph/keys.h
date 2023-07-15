@@ -1,3 +1,5 @@
+#pragma once
+
 // Key codes, mods and actions. These are chosen to match GLFW definitions so that Qt
 // key codes can be passed in to morph::Visual. The names mostly match. GLFW_KEY_A is
 // equivalent to morph::key::A with the exception of the numeric keys. GLFW_KEY_0 is

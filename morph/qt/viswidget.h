@@ -14,6 +14,8 @@
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
 
+#include <morph/qt/keycodes.h>
+
 namespace morph {
     namespace qt {
 
@@ -96,6 +98,21 @@ namespace morph {
                 QPoint numSteps = event->angleDelta() / 120;
                 v.scroll_callback (numSteps.x(), numSteps.y());
                 this->update();
+                event->accept();
+            }
+
+            // Keyboard events...
+            void keyPressEvent (QKeyEvent* event)
+            {
+                int mflg = event->modifiers();
+                int mods = 0;
+                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::CONTROL; }
+                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::SHIFT; }
+                int morph_keycode = morph::qt::qtkey_to_morphkey (event->key());
+                // Could be keyaction::REPEAT in GLFW
+                if (v.key_callback (morph_keycode, 0, morph::keyaction::PRESS, mods)) {
+                    this->update();
+                }
                 event->accept();
             }
         };

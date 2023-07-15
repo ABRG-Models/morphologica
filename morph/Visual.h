@@ -1247,6 +1247,7 @@ namespace morph {
 
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
+                needs_render = true;
             }
 
             if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
