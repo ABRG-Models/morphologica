@@ -168,6 +168,7 @@ namespace morph {
     // windowing system will switch left and right for left handed mouse mode.
     struct mousebutton
     {
+        static constexpr int unhandled = -1;
         static constexpr int primary   = 0;
         static constexpr int secondary = 1;
         static constexpr int left      = 0;

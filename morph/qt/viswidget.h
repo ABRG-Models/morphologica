@@ -60,8 +60,12 @@ namespace morph {
             void mousePressEvent (QMouseEvent* event)
             {
                 v.set_cursorpos (event->x(), event->y());
-                int b = event->button() & Qt::LeftButton ? 1 : 0;
-                v.mouse_button_callback (b, 1);
+                int bflg = event->button();
+                int b =  morph::mousebutton::unhandled;
+                b = bflg & Qt::LeftButton ? morph::mousebutton::left : b;
+                b = bflg & Qt::RightButton ? morph::mousebutton::right : b;
+                int mods = 0; // writeme
+                v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
                 event->accept();
             }
 

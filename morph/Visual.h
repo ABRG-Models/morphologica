@@ -176,7 +176,6 @@ namespace morph {
 
         void init (morph::win_t* ctx)
         {
-            std::cout << "Visual::init(win_t*)\n";
             this->window = ctx;
             this->init();
         }
@@ -1535,9 +1534,6 @@ namespace morph {
             // If the scene is locked, then ignore the mouse movements
             if (this->sceneLocked) { return; }
 
-            // button is the button number, action is either key press (1) or key release (0)
-            // std::cout << "button: " << button << " action: " << (action==1?("press"):("release")) << std::endl;
-
             // Record the position at which the button was pressed
             if (action == keyaction::PRESS) { // Button down
                 this->mousePressPosition = this->cursorpos;
@@ -1549,12 +1545,14 @@ namespace morph {
                 this->invscene = this->scene.invert();
             }
 
-            if (button == morph::mousebutton::primary) { // Primary button means rotate
+            if (button == morph::mousebutton::left) { // Primary button means rotate
                 // if mods:
                 this->rotateModMode = (mods & keymod::CONTROL) ? true : false;
-                this->rotateMode = (action == 1);
-            } else if (button == morph::mousebutton::secondary) { // Secondary button means translate
-                this->translateMode = (action == 1);
+                this->rotateMode = (action == keyaction::PRESS);
+                this->translateMode = false;
+            } else if (button == morph::mousebutton::right) { // Secondary button means translate
+                this->rotateMode = false;
+                this->translateMode = (action == keyaction::PRESS);
             }
 
             this->mouse_button_callback_extra (button, action, mods);
