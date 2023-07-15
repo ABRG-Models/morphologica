@@ -61,10 +61,13 @@ namespace morph {
             {
                 v.set_cursorpos (event->x(), event->y());
                 int bflg = event->button();
-                int b =  morph::mousebutton::unhandled;
+                int b = morph::mousebutton::unhandled;
                 b = bflg & Qt::LeftButton ? morph::mousebutton::left : b;
                 b = bflg & Qt::RightButton ? morph::mousebutton::right : b;
-                int mods = 0; // writeme
+                int mflg = event->modifiers();
+                int mods = 0;
+                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::CONTROL; }
+                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::SHIFT; }
                 v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
                 event->accept();
             }
@@ -80,8 +83,11 @@ namespace morph {
             void mouseReleaseEvent (QMouseEvent* event)
             {
                 v.set_cursorpos (event->x(), event->y());
-                int b = event->button() & Qt::LeftButton ? 1 : 0;
-                v.mouse_button_callback (b, 0);
+                int bflg = event->button();
+                int b =  morph::mousebutton::unhandled;
+                b = bflg & Qt::LeftButton ? morph::mousebutton::left : b;
+                b = bflg & Qt::RightButton ? morph::mousebutton::right : b;
+                v.mouse_button_callback (b, morph::keyaction::RELEASE);
                 event->accept();
             }
 
