@@ -163,4 +163,15 @@ namespace morph {
         static constexpr int REPEAT  = 2;
 
     };
+
+    // Mouse buttons. left is really 'primary' and right is 'secondary' because
+    // windowing system will switch left and right for left handed mouse mode.
+    struct mousebutton
+    {
+        static constexpr int primary   = 0;
+        static constexpr int secondary = 1;
+        static constexpr int left      = 0;
+        static constexpr int right     = 1;
+        static constexpr int middle    = 2;
+    };
 }

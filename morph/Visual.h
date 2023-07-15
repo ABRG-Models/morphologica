@@ -832,7 +832,6 @@ namespace morph {
         //! Private initialization, used by constructors.
         void init()
         {
-            std::cout << "Visual::init()\n";
             // VisualResources provides font management and GLFW management.
             this->resources = morph::VisualResources::i();
             morph::VisualResources::register_visual();
@@ -1247,10 +1246,6 @@ namespace morph {
                 this->readyToFinish = true;
             }
 
-            if (_key == key::T && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
-                this->rotateModMode = !this->rotateModMode;
-            }
-
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
             }
@@ -1258,9 +1253,10 @@ namespace morph {
             if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 // Help to stdout:
                 std::cout << "Ctrl-h: Output this help to stdout\n";
+                std::cout << "Mouse-primary: rotate mode (use Ctrl to change axis)\n";
+                std::cout << "Mouse-secondary: translate mode\n";
                 std::cout << "Ctrl-q: Request exit\n";
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
-                std::cout << "Ctrl-t: Toggle mouse rotate mode\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
                 std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";
@@ -1543,7 +1539,7 @@ namespace morph {
             // std::cout << "button: " << button << " action: " << (action==1?("press"):("release")) << std::endl;
 
             // Record the position at which the button was pressed
-            if (action == 1) { // Button down
+            if (action == keyaction::PRESS) { // Button down
                 this->mousePressPosition = this->cursorpos;
                 // Save the rotation at the start of the mouse movement
                 this->savedRotation = this->rotation;
@@ -1553,9 +1549,11 @@ namespace morph {
                 this->invscene = this->scene.invert();
             }
 
-            if (button == 0) { // Primary button means rotate
+            if (button == morph::mousebutton::primary) { // Primary button means rotate
+                // if mods:
+                this->rotateModMode = (mods & keymod::CONTROL) ? true : false;
                 this->rotateMode = (action == 1);
-            } else if (button == 1) { // Secondary button means translate
+            } else if (button == morph::mousebutton::secondary) { // Secondary button means translate
                 this->translateMode = (action == 1);
             }
 
