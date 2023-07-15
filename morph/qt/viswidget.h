@@ -4,6 +4,7 @@
 
 #include <QtWidgets/QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
+#include <QSurfaceFormat>
 #include <QMouseEvent>
 #include <QWheelEvent>
 
@@ -25,21 +26,26 @@ namespace morph {
 
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
-                setUpdateBehavior (QOpenGLWidget::NoPartialUpdate);
+                // You have to set the format in the constructor
+                QSurfaceFormat format;
+                format.setDepthBufferSize (4);
+                format.setSamples (4);
+                format.setStencilBufferSize (8);
+                format.setVersion (4, 1);
+                format.setProfile (QSurfaceFormat::CoreProfile);
+                this->setFormat (format);
+                this->setUpdateBehavior (QOpenGLWidget::NoPartialUpdate);
             }
 
         protected:
 
             void initializeGL() override
             {
-                QSurfaceFormat format;
-                format.setDepthBufferSize (4);
-                format.setSamples (24);
-                format.setStencilBufferSize (8);
-                format.setVersion (4, 1);
-                format.setProfile (QSurfaceFormat::CoreProfile);
-                this->setFormat (format);
+                // Make sure we can call gl functions
                 initializeOpenGLFunctions();
+                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
+                glEnable (GL_MULTISAMPLE);
+                // Initialise morph::Visual
                 v.init (this);
             }
 
