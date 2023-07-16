@@ -14,7 +14,7 @@
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = QOpenGLWidget; }
 #include <morph/Visual.h>
-
+// We need to be able to convert from Qt keycodes to morph keycodes
 #include <morph/qt/keycodes.h>
 
 namespace morph {
@@ -28,7 +28,7 @@ namespace morph {
             morph::Visual v;
 
             // A callback to build the models. Defined by your Qt code at runtime.
-            std::function<void(morph::Visual*)> buildmodels;
+            std::function<void(morph::Visual*)> buildmodels = nullptr;
 
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
@@ -48,16 +48,14 @@ namespace morph {
 
             void initializeGL() override
             {
-                std::cout << "initializeGL called\n";
                 // Make sure we can call gl functions
                 initializeOpenGLFunctions();
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 glEnable (GL_MULTISAMPLE);
                 // Initialise morph::Visual
                 v.init (this);
-
-                std::cout << "Call buildmodels callback\n";
-                this->buildmodels (&v);
+                // If client code has defined buildmodels, call it here
+                if ((this->buildmodels == nullptr) == false) { this->buildmodels (&this->v); }
             }
 
             void resizeGL (int w, int h) override
