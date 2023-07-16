@@ -100,6 +100,7 @@ int main()
     rgv->cm.setType(morph::ColourMapType::Viridis);
     rgv->finalize();
     rgv->addLabel ("Output", { -0.3f, -0.45f, 0.01f }, morph::colour::white);
+    rgv->finalize();
     auto rgvp = v.addVisualModel (rgv);
 
     // Demonstrate how to divide existing scale by 10:
