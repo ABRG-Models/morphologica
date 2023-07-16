@@ -132,8 +132,9 @@ namespace morph {
     class Visual
     {
     public:
-        // Default constructor is used when incorporating Visual inside a QWidget
-        Visual() { /* init() call has to wait */ }
+        // Default constructor is used when incorporating Visual inside a QWidget.
+        // We call the init_resources() init_gl() call has to wait
+        Visual() { this->init_resources(); }
 
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So,
@@ -144,7 +145,8 @@ namespace morph {
             , window_h(height)
             , title(_title)
         {
-            this->init();
+            this->init_resources();
+            this->init_gl();
         }
 
         /*!
@@ -162,7 +164,8 @@ namespace morph {
             , coordArrowsThickness(caThickness)
             , coordArrowsEm(caEm)
         {
-            this->init();
+            this->init_resources();
+            this->init_gl();
         }
 
         //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
@@ -174,10 +177,31 @@ namespace morph {
             morph::VisualResources::deregister();
         }
 
+        // Public init that is given a context (window or widget) and then sets up the
+        // shaders. Assumes program init has been done and only calls init_gl.
         void init (morph::win_t* ctx)
         {
             this->window = ctx;
-            this->init();
+            this->init_gl();
+        }
+
+        // Do one-time init of the Visual's resources. This gets/creates the
+        // VisualResources, registers this visual with resources, calls init_window for
+        // any glfw stuff that needs to happen, and lastly initializes the freetype
+        // code.
+        void init_resources()
+        {
+            // VisualResources provides font management and GLFW management.
+            this->resources = morph::VisualResources::i();
+            morph::VisualResources::register_visual();
+
+            // Set up the window that will present the OpenGL graphics. No-op in
+            // Qt-managed Visual, but this has to happen BEFORE the call to
+            // resources->freetype_init()
+            this->init_window();
+
+            // Now make sure that Freetype is set up
+            this->resources->freetype_init (this);
         }
 
         //! Take a screenshot of the window
@@ -805,7 +829,7 @@ namespace morph {
 
     private:
 
-        void initwindow()
+        void init_window()
         {
 #ifndef OWNED_MODE
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
@@ -828,19 +852,11 @@ namespace morph {
 #endif
         }
 
-        //! Private initialization, used by constructors.
-        void init()
+        // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any
+        // external state from json, and set up the coordinate arrows and any
+        // VisualTextModels that will be required to render the Visual.
+        void init_gl()
         {
-            // VisualResources provides font management and GLFW management.
-            this->resources = morph::VisualResources::i();
-            morph::VisualResources::register_visual();
-
-            // Set up the window that will present the OpenGL graphics
-            this->initwindow();
-
-            // Now make sure that Freetype is set up
-            this->resources->freetype_init (this);
-
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
             GLenum error = glGetError();

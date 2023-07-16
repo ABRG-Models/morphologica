@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Helper to load PNG images into morph::vvec<morph::vec<float>> format and similar.
  *

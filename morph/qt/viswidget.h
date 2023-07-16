@@ -37,6 +37,7 @@ namespace morph {
                 format.setProfile (QSurfaceFormat::CoreProfile);
                 this->setFormat (format);
                 this->setUpdateBehavior (QOpenGLWidget::NoPartialUpdate);
+                this->setFocusPolicy (Qt::StrongFocus); // ensure keyPressEvents reach us
             }
 
         protected:

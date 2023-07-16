@@ -99,7 +99,8 @@ namespace morph {
             }
         }
 
-        //! Common code to call after the vertices have been set up.
+        bool postVertexInitRequired = false;
+        //! Common code to call after the vertices have been set up. GL has to have been initialised.
         void postVertexInit()
         {
             // Do gl memory allocation of vertex array once only
@@ -140,6 +141,7 @@ namespace morph {
             glBindVertexArray(0);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 #endif
+            this->postVertexInitRequired = false;
         }
 
         //! Initialize vertex buffer objects and vertex array object. Empty for 'text only' VisualModels.
@@ -149,6 +151,7 @@ namespace morph {
         //! vertexPositions/Colors/Normals and indices before calling this method.
         void reinit_buffers()
         {
+            if (this->postVertexInitRequired == true) { this->postVertexInit(); }
             morph::gl::Util::checkError (__FILE__, __LINE__);
             // Now re-set up the VBOs
 #ifdef CAREFULLY_UNBIND_AND_REBIND // Experimenting with better buffer binding.
@@ -225,13 +228,16 @@ namespace morph {
         void finalize()
         {
             this->initializeVertices();
-            this->postVertexInit();
+            this->postVertexInitRequired = true;
         }
 
         //! Render the VisualModel
         virtual void render()
         {
             if (this->hide == true) { return; }
+
+            // Execute post-vertex init at render, as GL should be available.
+            if (this->postVertexInitRequired == true) { this->postVertexInit(); }
 
             GLint prev_shader;
             glGetIntegerv (GL_CURRENT_PROGRAM, &prev_shader);
