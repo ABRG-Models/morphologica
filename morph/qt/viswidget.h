@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 
 #include <QtWidgets/QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
@@ -26,6 +27,9 @@ namespace morph {
             // inside the widget.
             morph::Visual v;
 
+            // A callback to build the models. Defined by your Qt code at runtime.
+            std::function<void(morph::Visual*)> buildmodels;
+
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
                 // You have to set the format in the constructor
@@ -44,12 +48,16 @@ namespace morph {
 
             void initializeGL() override
             {
+                std::cout << "initializeGL called\n";
                 // Make sure we can call gl functions
                 initializeOpenGLFunctions();
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 glEnable (GL_MULTISAMPLE);
                 // Initialise morph::Visual
                 v.init (this);
+
+                std::cout << "Call buildmodels callback\n";
+                this->buildmodels (&v);
             }
 
             void resizeGL (int w, int h) override
