@@ -132,9 +132,10 @@ namespace morph {
     class Visual
     {
     public:
-        // Default constructor is used when incorporating Visual inside a QWidget.
-        // We call the init_resources() init_gl() call has to wait
-        Visual() { this->init_resources(); }
+        // Default constructor is used when incorporating Visual inside a QWidget.  We
+        // have to wait on calling init functions until an OpenGL environment is
+        // gauranteed to exist.
+        Visual() { }
 
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So,
@@ -178,10 +179,11 @@ namespace morph {
         }
 
         // Public init that is given a context (window or widget) and then sets up the
-        // shaders. Assumes program init has been done and only calls init_gl.
+        // VisualResource, shaders and so on.
         void init (morph::win_t* ctx)
         {
             this->window = ctx;
+            this->init_resources();
             this->init_gl();
         }
 
