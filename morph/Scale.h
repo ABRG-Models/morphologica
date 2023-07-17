@@ -38,7 +38,6 @@
 
 #pragma once
 
-
 #include <stdexcept>
 #include <cmath>
 #include <morph/MathAlgo.h>
