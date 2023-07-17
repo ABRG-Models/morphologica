@@ -38,6 +38,7 @@
 
 #pragma once
 
+
 #include <stdexcept>
 #include <cmath>
 #include <morph/MathAlgo.h>
@@ -437,6 +438,7 @@ namespace morph {
         //! \param p1 The first parameter
         void setParams (S p0, S p1)
         {
+            this->do_autoscale = false;
             this->params.resize (2, S{0});
             this->params[0] = p0;
             this->params[1] = p1;
