@@ -81,7 +81,15 @@ namespace morph {
             morph::Scale<Flt> lcscale;
             lcscale.do_autoscale = true;
             vvec<Flt> lengthcolours(dlengths);
-            lcscale.transform (dlengths, lengthcolours);
+
+            if (this->scalarData == nullptr || this->scalarData->size() == 0) {
+                lcscale.transform (dlengths, lengthcolours);
+            } else {
+                // We have scalarData, use these for the colours
+                vvec<Flt> sdata (this->scalarData->size());
+                std::copy (this->scalarData->begin(), this->scalarData->end(), sdata.begin());
+                lcscale.transform  (sdata, lengthcolours);
+            }
 
             // Now scale the lengths for their size on screen. Do this with a linear or log scaling.
 
