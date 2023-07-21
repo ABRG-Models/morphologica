@@ -31,14 +31,14 @@ namespace morph {
         //! do_autoscale set true).
         void clearAutoscale()
         {
-            this->zScale.autoscaled = false;
-            this->colourScale.autoscaled = false;
-            this->vectorScale.autoscaled = false;
+            if (this->zScale.do_autoscale == true) { this->zScale.reset(); }
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            if (this->vectorScale.do_autoscale == true) { this->vectorScale.reset(); }
         }
 
-        void clearAutoscaleZ() { this->zScale.autoscaled = false; }
-        void clearAutoscaleColour() { this->colourScale.autoscaled = false; }
-        void clearAutoscaleVector() { this->vectorScale.autoscaled = false; }
+        void clearAutoscaleZ() { if (this->zScale.do_autoscale == true) { this->zScale.reset(); } }
+        void clearAutoscaleColour() { if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); } }
+        void clearAutoscaleVector() { if (this->vectorScale.do_autoscale == true) { this->vectorScale.reset(); } }
 
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
         void setCScale (const Scale<T, float>& cscale) { this->colourScale = cscale; }

@@ -47,9 +47,9 @@ int main () {
 
     // Different data, but extend max a bit. The result should now span >0,1
     // range. This shows that the autoscaling is carried out once only by the Scale
-    // object. To autoscale again with vf2, set s.autoscaled=false
+    // object. To autoscale again with vf2, call s.reset()
     vector<float> vf2 = {1,2,3,4,5,8,9,32};
-    //s.autoscaled = false;   // would force re-autoscale when transform(vf2) next called
+    //s.reset()   // would force re-autoscale when transform(vf2) next called
     //s.autoscale_from (vf2); // will immediately autoscale from vf2.
     s.transform (vf2, result);
     cout << "2nd data: Unscaled/scaled: ";
