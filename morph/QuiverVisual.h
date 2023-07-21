@@ -78,17 +78,20 @@ namespace morph {
             }
 
             // Linearly scale the dlengths to generate colours
-            morph::Scale<Flt> lcscale;
-            lcscale.do_autoscale = true;
             vvec<Flt> lengthcolours(dlengths);
 
+            // Make sure we can do an autoscale if the scaling was not already set
+            if (!this->colourScale.ready()) { this->colourScale.do_autoscale = true; }
+
+            // Set the colours based on either length of the vectors or values in
+            // this->scalarData:
             if (this->scalarData == nullptr || this->scalarData->size() == 0) {
-                lcscale.transform (dlengths, lengthcolours);
+                this->colourScale.transform (dlengths, lengthcolours);
             } else {
                 // We have scalarData, use these for the colours
                 vvec<Flt> sdata (this->scalarData->size());
                 std::copy (this->scalarData->begin(), this->scalarData->end(), sdata.begin());
-                lcscale.transform  (sdata, lengthcolours);
+                this->colourScale.transform  (sdata, lengthcolours);
             }
 
             // Now scale the lengths for their size on screen. Do this with a linear or log scaling.
