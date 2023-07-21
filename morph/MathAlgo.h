@@ -824,6 +824,23 @@ namespace morph {
             return n_dots;
         }
 
+        template<typename T>
+        static T scale_0_to_almost_2pi (const T angle_rad)
+        {
+            T _angle = angle_rad;
+            // Place _angle in bounds. If <0, then add 2pi. If above 2pi, subtract 2pi.
+            if (_angle < 0.0f) {
+                int multiples = static_cast<int>(std::floor(-_angle / morph::mathconst<T>::two_pi));
+                _angle += morph::mathconst<T>::two_pi + multiples * morph::mathconst<T>::two_pi;
+            } else {
+                int multiples = static_cast<int>(std::floor(_angle / morph::mathconst<T>::two_pi));
+                _angle -= multiples * morph::mathconst<T>::two_pi;
+            }
+            // If angle is indistinguishably close to 2pi, then set it to 0
+            _angle = std::abs(_angle - morph::mathconst<T>::two_pi) < std::numeric_limits<T>::epsilon() ? 0.0f : _angle;
+            return _angle;
+        }
+
     }; // struct MathAlgo
 
 } // namespace morph
