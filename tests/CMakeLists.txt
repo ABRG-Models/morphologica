@@ -279,6 +279,9 @@ add_test(testvvec_prune testvvec_prune)
 add_executable(testvvec_threshold testvvec_threshold.cpp)
 add_test(testvvec_threshold testvvec_threshold)
 
+add_executable(testvvec_elementcompare testvvec_elementcompare.cpp)
+add_test(testvvec_elementcompare testvvec_elementcompare)
+
 add_executable(testvvec_rescale testvvec_rescale.cpp)
 add_test(testvvec_rescale testvvec_rescale)
 
