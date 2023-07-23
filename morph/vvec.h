@@ -336,7 +336,7 @@ namespace morph {
          *
          * Randomly set the elements of the vector. Coordinates are set to random
          * numbers drawn from a uniform distribution between \a min and \a
-         * max. Strictly, the range is [min, max)
+         * max. Strictly, the range is [min, max) (including min, not including max)
          */
         void randomize (S min, S max)
         {
@@ -1176,6 +1176,57 @@ namespace morph {
                     (*this)[i] = difn;
                 }
             }
+        }
+
+        // Element-wise greater-than-or-equal comparison. Put 1 in each element of a
+        // return vvec for which *this is >= val, else 0.
+        vvec<S> element_compare_gteq (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] >= val ? S{1} : S{0};
+            }
+            return comparison;
+        }
+        vvec<S> element_compare_gt (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] > val ? S{1} : S{0};
+            }
+            return comparison;
+        }
+        vvec<S> element_compare_lt (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] < val ? S{1} : S{0};
+            }
+            return comparison;
+        }
+        vvec<S> element_compare_lte (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] <= val ? S{1} : S{0};
+            }
+            return comparison;
+        }
+        vvec<S> element_compare_eq (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] == val ? S{1} : S{0};
+            }
+            return comparison;
+        }
+        vvec<S> element_compare_neq (const S val) const
+        {
+            vvec<S> comparison(this->size(), S{0});
+            for (unsigned int i = 0; i < this->size(); ++i) {
+                comparison[i] = (*this)[i] != val ? S{1} : S{0};
+            }
+            return comparison;
         }
 
         //! Less than a scalar. Return true if every element is less than the scalar

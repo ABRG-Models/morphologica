@@ -58,7 +58,7 @@ namespace morph {
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
                 this->colourScale.transform (this->dcolour, this->dcolour);
-                this->colourScale.autoscaled = false;
+                this->colourScale.reset();
                 this->colourScale.transform (this->dcolour2, this->dcolour2);
                 this->colourScale.transform (this->dcolour3, this->dcolour3);
             } else {

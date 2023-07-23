@@ -223,8 +223,8 @@ namespace morph {
                 this->clear_graph_data();
                 this->graphDataCoords.clear();
                 this->pendingAppended = true; // as the graph will be re-drawn
-                this->ord1_scale.autoscaled = false;
-                this->ord2_scale.autoscaled = false;
+                this->ord1_scale.reset();
+                this->ord2_scale.reset();
                 this->setlimits_x (this->datamin_x, this->datamax_x*2.0f);
                 if (!this->ord1.empty()) {
                     this->setdata (this->absc1, this->ord1, this->ds_ord1);
@@ -485,9 +485,9 @@ namespace morph {
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
             if (ds.axisside == morph::axisside::left) {
-                if (this->ord1_scale.autoscaled == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+                if (this->ord1_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
             } else {
-                if (this->ord2_scale.autoscaled == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+                if (this->ord2_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
             }
 
             if (dsize > 0) {
@@ -628,7 +628,7 @@ namespace morph {
         //! Setter for the dataaxisdist attribute
         void setdataaxisdist (float proportion)
         {
-            if (this->ord1_scale.autoscaled == true) {
+            if (this->ord1_scale.ready()) {
                 throw std::runtime_error ("Have already scaled the data, can't set the dataaxisdist now.\n"
                                           "Hint: call GraphVisual::setdataaxisdist() BEFORE GraphVisual::setdata() or ::setlimits()");
             }
@@ -638,7 +638,7 @@ namespace morph {
         //! Set the graph size, in model units.
         void setsize (float _width, float _height)
         {
-            if (this->ord1_scale.autoscaled == true) {
+            if (this->ord1_scale.ready()) {
                 throw std::runtime_error ("Have already scaled the data, can't set the scale now.\n"
                                           "Hint: call GraphVisual::setsize() BEFORE GraphVisual::setdata() or ::setlimits()");
             }

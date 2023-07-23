@@ -44,8 +44,8 @@ int main()
     // If you need to reset the scaling in s (our Scale object), then you can do this:
     s.autoscale_from (vf2); // will immediately autoscale from the container of values vf2.
 
-    // OR you can do this, which forces autoscale when s.transform() is next called.
-    s.autoscaled = false;
+    // OR you can do this, which forces autoscale when s.transform() is next called (as long as s.do_autoscale is true).
+    s.reset();
 
     // Use this method to set the scaling if you know min and max of the range of
     // your input data:

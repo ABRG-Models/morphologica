@@ -42,6 +42,7 @@
 #include <cmath>
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
+#include <morph/vvec.h>
 
 namespace morph {
 
@@ -98,7 +99,7 @@ namespace morph {
          * \brief Transform a container of scalars or vectors.
          *
          * This uses the scaling parameters \b params (ScaleImpl::params) to scale the input \a
-         * data. If #do_autoscale is true and #autoscaled is false, then the parameters are computed
+         * data. If #do_autoscale is true and this->ready() is false, then the parameters are computed
          * from the input \a data.
          *
          * \param data The input data
@@ -130,7 +131,7 @@ namespace morph {
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
             }
-            if (this->do_autoscale == true && this->autoscaled == false) {
+            if (this->do_autoscale == true && !this->ready()) {
                 this->autoscale_from<Container> (data); // not const
             }
             typename Container<TT, Allocator>::const_iterator di = data.begin();
@@ -155,7 +156,7 @@ namespace morph {
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
             }
-            if (this->do_autoscale == true && this->autoscaled == false) {
+            if (this->do_autoscale == true && !this->ready()) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
             }
             typename Container<ST, OAllocator>::const_iterator di = data.begin();
@@ -205,9 +206,6 @@ namespace morph {
             this->compute_autoscale (mm.second, mm.first);
         }
 
-        //! If true, then the parameters (ScaleImpl::params) have been set by autoscaling
-        bool autoscaled = false;
-
         //! Set to true to make the Scale object compute autoscaling when data is available, i.e. on
         //! the first call to #transform.
         bool do_autoscale = false;
@@ -215,8 +213,8 @@ namespace morph {
         // Set type for transformations/autoscaling
         void setType (ScaleFn t)
         {
-            // Reset autoscaled, because any autoscaling will need to be re-computed
-            this->autoscaled = false;
+            // Reset, because any autoscaling will need to be re-computed
+            this->reset();
             this->type = t;
         }
 
@@ -224,17 +222,19 @@ namespace morph {
 
         void setlog()
         {
-            this->autoscaled = false;
+            this->reset();
             this->type = ScaleFn::Logarithmic;
         }
 
         void setlinear()
         {
-            this->autoscaled = false;
+            this->reset();
             this->type = ScaleFn::Linear;
         }
 
         virtual bool ready() const = 0;
+
+        virtual void reset() = 0;
 
     protected:
         /*!
@@ -250,14 +250,21 @@ namespace morph {
      * A default implementation base class for Scale which is used when the number type of \a T is a
      * vector such as std::array or morph::vec.
      *
+     * FIXME: Rename ntype, because T is 'input number type' and S is 'output number
+     * type' with type meaning machine number type. ntype would be better as vector_scalar or similar.
+     *
      * \tparam ntype The 'number type' as contained in number_type::value. 1 for vectors, 0 for
      * scalars. Default is 0. This class is active if ntype is 0. There is a specialization of this
      * class which is active if ntype is 1. Other values of ntype would activate this default
      * implementation.
      *
-     * \tparam T The type of the number to be scaled. Should be some scalar type such as int,
-     * double, etc or a type which can contain a vector such as std::array, morph::vec or
-     * std::vector. It is from the type \a T that ntype is determined.
+     * \tparam T The type of the number to be scaled. Should be some scalar type such as
+     * int, double, etc or a type which can contain a vector such as std::array,
+     * morph::vec or std::vector. It is from the type \a T that ntype is
+     * determined. From T, the element type, T_el is derived.
+     *
+     * \tparam S The output number type. From S is derived the type of the output
+     * elements, S_el.
      *
      * \sa ScaleImplBase
      */
@@ -322,8 +329,6 @@ namespace morph {
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
                 this->params[1] = static_cast<S_el>(imin_len); // this->range_min - (this->params[0] * imin_len);
             }
-
-            this->autoscaled = true;
         }
 
         //! Set params for a two parameter scaling
@@ -342,8 +347,14 @@ namespace morph {
         //! \return The specified element of #params
         S_el getParams (size_t idx) { return this->params[idx]; }
 
+        //! Get all the params
+        morph::vvec<S_el> getParams() { return this->params; }
+
         //! The Scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
+
+        //! Reset the Scaling by emptying params
+        void reset() { this->params.clear(); }
 
     private:
         //! Compute vector length
@@ -363,7 +374,7 @@ namespace morph {
 
         //! The parameters for the scaling. For linear scaling, this will contain two scalar
         //! values. Note the type is the output element type
-        std::vector<S_el> params;
+        morph::vvec<S_el> params;
     };
 
     /*!
@@ -429,7 +440,6 @@ namespace morph {
             } else {
                 throw std::runtime_error ("Unknown scaling");
             }
-            this->autoscaled = true;
         }
 
         //! Set params for a two parameter scaling
@@ -446,15 +456,22 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        T getParams (size_t idx) { return this->params[idx]; }
+        S getParams (size_t idx) { return this->params[idx]; }
+
+        //! Get all the params
+        morph::vvec<S> getParams() { return this->params; }
 
         //! The Scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
+
+        //! Reset the Scaling by emptying params
+        void reset() { this->params.clear(); }
 
     private:
         //! Linear transform for scalar type; y = mx + c
         S transform_one_linear (const T& datum) const
         {
+            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
             return (datum * this->params[0] + this->params[1]);
         }
 
@@ -467,6 +484,7 @@ namespace morph {
         //! The inverse linear transform; x = (y-c)/m
         T inverse_one_linear (const S& datum) const
         {
+            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
             return ((datum-this->params[1])/this->params[0]);
         }
 
@@ -505,7 +523,7 @@ namespace morph {
         }
 
         //! The parameters for the scaling. If linear, this will contain two scalar values.
-        std::vector<S> params;
+        morph::vvec<S> params;
     };
 
     /*!
@@ -524,7 +542,7 @@ namespace morph {
      *   std::vector<float> result(vf);
      *   s.transform (vf, result);
      *
-     * \tparam T The type of the numbers (or vectors) that will be scaled.
+     * \tparam T Input number type. The type of the numbers (or vectors) that will be scaled.
      *
      * \tparam S The type of the output numbers (or for vectors, their elements). Defaults to be the
      * same type as T, but when scaling integers, may well be a different type such as float or

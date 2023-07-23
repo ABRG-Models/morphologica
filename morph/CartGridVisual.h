@@ -120,7 +120,7 @@ namespace morph {
                 }
                 if (this->cm.getType() != morph::ColourMapType::RGB) {
                     this->colourScale.transform (this->dcolour, this->dcolour);
-                    this->colourScale.autoscaled = false;
+                    this->colourScale.reset();
                     this->colourScale.transform (this->dcolour2, this->dcolour2);
                     this->colourScale.transform (this->dcolour3, this->dcolour3);
                 }
@@ -192,7 +192,7 @@ namespace morph {
                 // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
                 if (this->cm.getType() != morph::ColourMapType::RGB) {
                     this->colourScale.transform (this->dcolour, this->dcolour);
-                    this->colourScale.autoscaled = false;
+                    this->colourScale.reset();
                     this->colourScale.transform (this->dcolour2, this->dcolour2);
                     this->colourScale.transform (this->dcolour3, this->dcolour3);
                 } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already

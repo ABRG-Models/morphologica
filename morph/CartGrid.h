@@ -72,6 +72,16 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
+        morph::vvec<morph::vec<float, 3>> getCoords()
+        {
+            morph::vvec<morph::vec<float, 3>> rtn (d_x.size(), {0,0,0});
+            for (unsigned int i = 0; i < d_x.size(); ++i) {
+                rtn[i][0] = d_x[i];
+                rtn[i][1] = d_y[i];
+            }
+            return rtn;
+        }
+
         // Width and height of a CartGrid that happens to be of type CartDomainShape::Rectangle.
         int w_px = -1;
         int h_px = -1;
