@@ -211,16 +211,9 @@ namespace morph {
             S num = std::ceil((stop - start) / increment);
             if (num > S{0}) {
                 this->resize (static_cast<size_t>(num));
-#if 1
                 for (size_t i = 0; i < static_cast<size_t>(num); ++i) {
                     (*this)[i] = start + increment*static_cast<S>(i);
                 }
-#else
-                size_t j = 0;
-                for (S i = start; i < stop; i += increment) {
-                    (*this)[j++] = i;
-                }
-#endif
             } // else vector should now be empty, just like Python does it
         }
 
