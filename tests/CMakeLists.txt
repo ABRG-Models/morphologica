@@ -285,6 +285,9 @@ add_test(testvvec_elementcompare testvvec_elementcompare)
 add_executable(testvvec_rescale testvvec_rescale.cpp)
 add_test(testvvec_rescale testvvec_rescale)
 
+add_executable(testarange testarange.cpp)
+add_test(testarange testarange)
+
 # It's possible to modify testvec.cpp to be c++-11 or c++-14 friendly:
 add_executable(testvec14 testvec14.cpp)
 target_compile_features(testvec14 PUBLIC cxx_std_14)

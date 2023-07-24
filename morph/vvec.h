@@ -199,6 +199,32 @@ namespace morph {
         }
 
         /*!
+         * Similar to numpy's arange. Set a linear sequence from start to stop with the given step
+         * size. Again, odd results may be obtained with integer types for S.
+         */
+        template <typename _S=S, typename _S2=S>
+        void arange (const _S start, const _S2 stop, const _S2 increment)
+        {
+            this->clear();
+            this->resize(0);
+            // Figure out how many elements given the increment:
+            S num = std::ceil((stop - start) / increment);
+            if (num > S{0}) {
+                this->resize (static_cast<size_t>(num));
+#if 1
+                for (size_t i = 0; i < static_cast<size_t>(num); ++i) {
+                    (*this)[i] = start + increment*static_cast<S>(i);
+                }
+#else
+                size_t j = 0;
+                for (S i = start; i < stop; i += increment) {
+                    (*this)[j++] = i;
+                }
+#endif
+            } // else vector should now be empty, just like Python does it
+        }
+
+        /*!
          * Stream the coordinates of the vector into \a ss as a comma separated list.
          *
          * num_in_line: How many elements to output before inserting a newline
