@@ -24,19 +24,19 @@ int main()
     std::cout << "Third example: " << x << std::endl;
     if (std::abs((x - x_ex3).longest()) >= std::numeric_limits<double>::epsilon()) { --rtn; }
 
-    // x = np.arange(2, -2, 0.27)
-    morph::vvec<double> x_ex4 = {}; // empty
+    // x = np.arange(2, -2, 0.27) (should be empty)
+    morph::vvec<double> x_ex4 = {};
     x.arange (2.0, -2.0, 0.27);
     std::cout << "Fourth example: " << x << std::endl;
     if (!x.empty()) { --rtn; }
 
-    // x = np.arange(-2, 2, -0.27) should be empty
+    // x = np.arange(-2, 2, -0.27) (should be empty)
     morph::vvec<double> x_ex5 = {};
     x.arange (-2.0, 2.0, -0.27);
     std::cout << "Fifth example: " << x << std::endl;
     if (!x.empty()) { --rtn; }
 
-    // x = np.arange(1, -1, -0.2) should be empty
+    // x = np.arange(1, -1, -0.2) (decreasing sequence)
     morph::vvec<double> x_ex6 = { 1.0,  0.8,  0.6, 0.4, 0.2,  0.0, -0.2, -0.4, -0.6, -0.8 };
     x.arange (1.0, -1.0, -0.2);
     std::cout << "Sixth example: " << x << std::endl;
@@ -47,6 +47,13 @@ int main()
     x.arange (-2.0, 1.2, 0.3);
     std::cout << "Seventh example: " << x << std::endl;
     if (std::abs((x - x_ex7).longest()) >= std::numeric_limits<double>::epsilon()) { --rtn; }
+
+    // x = np.arange(1, 3, 2.1) (increment greater than gap)
+    morph::vvec<double> x_ex8 = { 1.0 };
+    x.arange (1.0, 3.0, 2.1);
+    std::cout << "Eighth example: " << x << std::endl;
+    if (std::abs((x - x_ex8).longest()) >= std::numeric_limits<double>::epsilon()) { --rtn; }
+
 
     if (rtn == 0) { std::cout << "Success\n"; }
     return rtn;
