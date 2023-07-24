@@ -3,13 +3,10 @@
 #include <cmath>
 
 #include "morph/Visual.h"
-#include "morph/VisualDataModel.h"
 #include "morph/HexGridVisual.h"
 #include "morph/ColourMap.h"
 #include "morph/tools.h"
 #include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
-#include "morph/Scale.h"
 #include "morph/vec.h"
 
 int main (int argc, char** argv)
