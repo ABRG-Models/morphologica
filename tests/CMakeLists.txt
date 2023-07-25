@@ -353,6 +353,10 @@ add_test(testWinder testWinder)
 add_executable(testRandString testRandString.cpp)
 add_test(testRandString testRandString)
 
+# Test bootstrapping
+add_executable(testbootstrap testbootstrap.cpp)
+add_test(testbootstrap testbootstrap)
+
 # Neural nets
 
 # Test morph::nn::ElmanNet

@@ -282,6 +282,13 @@ if(USE_GLEW)
   target_link_libraries(randvec GLEW::GLEW)
 endif()
 
+# Demo of morph's bootstrap implementation
+add_executable(bootstrap bootstrap.cpp)
+target_link_libraries(bootstrap OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(bootstrap GLEW::GLEW)
+endif()
+
 add_executable(rng rng.cpp)
 target_link_libraries(rng)
 
