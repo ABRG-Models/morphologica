@@ -52,6 +52,26 @@ namespace morph {
             return bootstrap<T>::error_of_mean (vdata, B);
         }
 
+        // Compute a bootstapped standard error of the SD of the data with B resamples
+        static T error_of_std (const morph::vvec<T>& data, const unsigned int B)
+        {
+            std::vector<morph::vvec<T>> resamples;
+            morph::bootstrap<T>::resample_with_replacement (data, resamples, B);
+            morph::vvec<T> r_std (B, T{0});
+            for (unsigned int i = 0; i < B; ++i) {
+                r_std[i] = resamples[i].std();
+            }
+            // Standard error of the statistic is the standard deviation of the resampled statistic
+            return r_std.std();
+        }
+        // std::vector version of error_of_std
+        static T error_of_std (const std::vector<T>& data, const unsigned int B)
+        {
+            morph::vvec<T> vdata;
+            vdata.set_from (data);
+            return bootstrap<T>::error_of_std (vdata, B);
+        }
+
         // Compute a bootstrapped two sample t statistic as per algorithm 16.2
         // in Efron & Tibshirani.
         // zdata is treatment; ydata is control. B is the number of bootstrap samples to make
