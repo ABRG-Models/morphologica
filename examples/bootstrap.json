@@ -1,0 +1,11 @@
+{
+    "num_resamples": 1024,
+    "chosen_significance_level": 0.01,
+
+    "dist1_mean": 5,
+    "dist1_sigma": 1,
+    "dist1_n": 1000,
+    "dist2_mean": 5.2,
+    "dist2_sigma": 1,
+    "dist2_n": 1000
+}
