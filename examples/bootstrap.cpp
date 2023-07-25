@@ -61,14 +61,6 @@ int main()
         gv->addLabel (bslbl, morph::vec<float>({1.1, 0.42, 0}), morph::TextFeatures(0.05f));
     }
 
-#if 0
-    // You can swap things of different sizes:
-    morph::vvec<int> a = { 1, 2, 3, 4, 5, 6, 7 };
-    morph::vvec<int> b = { 3, 2, 1 };
-    std::swap (a, b);
-    std::cout << "a: " << a << " and b: " << b << std::endl;
-#endif
-
     // Bootstrapped t-test
     double dist2_mean = conf.get<double>("dist2_mean", 5.0);
     double dist2_sigma = conf.get<double>("dist2_sigma", 2.0);
@@ -109,13 +101,13 @@ int main()
         std::stringstream signif;
         if (asl[0] < asl[1]) {
             signif << "Discard the null hypothesis with significance level " << sig_level << ".\n"
-                   << "The (low) probability the distributions are the same is less than the min. ASL\n"
+                   << "The (low) probability the distributions have the same mean is less than the min. ASL\n"
                    << "The min. possible ASL that can be measured with " << num_resamples << " resamples is " << asl[1];
         } else if (asl[0] < sig_level) {
             signif << "Discard the null hypothesis with signficance level " << sig_level
-                   << ".\nThe low probability the distributions are the same is " << asl[0];
+                   << ".\nThe low probability the distributions have the same mean is " << asl[0];
         } else {
-            signif << "Can't discard the null hypothesis that the distributions are the same.\n"
+            signif << "Can't discard the null hypothesis that the distributions have the same mean.\n"
                    << "Significance level: " << sig_level << ", ASL: " << asl[0] << std::endl;;
         }
         gv2->addLabel (signif.str(), morph::vec<float>({0.0, -0.27, 0}), morph::TextFeatures(0.05f));
