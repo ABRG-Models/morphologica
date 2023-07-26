@@ -515,6 +515,19 @@ namespace morph {
             this->init (d_, d_, x_span_, x_span_, z_);
         }
 
+        //! Compute centre of mass of the passed in variable, defined across this CartGrid
+        template<typename F = float>
+        morph::vec<float, 2> centre_of_mass (morph::vvec<F>& data)
+        {
+            morph::vec<float, 2> com = {0,0};
+            for (unsigned int i = 0; i < this->num(); ++i) {
+                com[0] += d_x[i] * data[i];
+                com[1] += d_y[i] * data[i];
+            }
+            com /= this->num();
+            return com;
+        }
+
         //! Compute the centroid of the passed in list of Rects.
         std::pair<float, float> computeCentroid (const std::list<Rect>& pRects)
         {
