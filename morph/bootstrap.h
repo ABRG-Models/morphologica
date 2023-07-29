@@ -1,5 +1,8 @@
 /*
- * Bootstrapping stats
+ * Compute statistics using the bootstrap method.
+ *
+ * Author: Seb James
+ * Date: July 2023
  */
 
 #pragma once
@@ -94,21 +97,22 @@ namespace morph {
         // Spiking Neural Network Model of the Basal Ganglia on SpiNNaker," in IEEE Transactions on
         // Cognitive and Developmental Systems, vol. 10, no. 3, pp. 823-836, Sept. 2018, doi:
         // 10.1109/TCDS.2018.2797426.
-        static morph::vec<T, 2> ttest_equalityofmeans (const morph::vvec<T>& _zdata, const morph::vvec<T>& _ydata, const unsigned int B)
+        static morph::vec<T, 2> ttest_equalityofmeans (const morph::vvec<T>& _zdata,
+                                                       const morph::vvec<T>& _ydata, const unsigned int B)
         {
             // Ensure that the group which we name zdata is the larger one.
-            morph::vvec<T> ydata = _ydata;
             morph::vvec<T> zdata = _zdata;
+            morph::vvec<T> ydata = _ydata;
             if (_zdata.mean() <= _ydata.mean()) { std::swap (ydata, zdata); }
 
             unsigned int n = zdata.size();
             unsigned int m = ydata.size();
 
-            T ymean = ydata.mean();
             T zmean = zdata.mean();
+            T ymean = ydata.mean();
             if constexpr (debug_bstrap) {
-                std::cout << "y mean: " << ymean << std::endl;
                 std::cout << "z mean: " << zmean << std::endl;
+                std::cout << "y mean: " << ymean << std::endl;
             }
 
             // combine the data as if they were drawn from a single distribution
@@ -160,10 +164,6 @@ namespace morph {
             morph::vvec<T> zvariances (B, T{0});
             morph::vvec<T> yvariances (B, T{0});
             for (unsigned int i = 0; i < B; ++i) {
-                if constexpr (debug_bstrap) {
-                    //std::cout << "zstar[i] of size " << zstar[i].size() << " and content: " << zstar[i] << std::endl;
-                    //std::cout << "zstar[i]-zstarmeans[i] = " << (zstar[i]-zstarmeans[i]) << std::endl;
-                }
                 zvariances[i] = (zstar[i]-zstarmeans[i]).pow(2).sum() / (n-1);
                 yvariances[i] = (ystar[i]-ystarmeans[i]).pow(2).sum() / (m-1);
             }
@@ -190,7 +190,8 @@ namespace morph {
             return morph::vec<T, 2> ({asl, minasl});
         }
         // std::vector version of ttest_equalityofmeans()
-        static morph::vec<T, 2> ttest_equalityofmeans (const std::vector<T>& _zdata, const std::vector<T>& _ydata, const unsigned int B)
+        static morph::vec<T, 2> ttest_equalityofmeans (const std::vector<T>& _zdata,
+                                                       const std::vector<T>& _ydata, const unsigned int B)
         {
             morph::vvec<T> vzdata;
             vzdata.set_from (_zdata);
