@@ -27,8 +27,8 @@ namespace morph {
             // inside the widget.
             morph::Visual v;
 
-            // A callback to build the models. Defined by your Qt code at runtime.
-            std::function<void(morph::Visual*)> buildmodels = nullptr;
+            // In your Qt code, build VisualModels that should be added to the scene and add them to this.
+            std::vector<std::unique_ptr<morph::VisualModel>> newvisualmodels;
 
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
@@ -54,8 +54,6 @@ namespace morph {
                 glEnable (GL_MULTISAMPLE);
                 // Initialise morph::Visual
                 v.init (this);
-                // If client code has defined buildmodels, call it here
-                if ((this->buildmodels == nullptr) == false) { this->buildmodels (&this->v); }
             }
 
             void resizeGL (int w, int h) override
@@ -64,7 +62,18 @@ namespace morph {
                 this->update();
             }
 
-            void paintGL() override { v.render(); }
+            void paintGL() override
+            {
+                if (!this->newvisualmodels.empty()) {
+                    // Now we iterate through newvisualmodels, finalize them and add them to morph::Visual
+                    for (unsigned int i = 0; i < newvisualmodels.size(); ++i) {
+                        this->newvisualmodels[i]->finalize();
+                        this->v.addVisualModel (this->newvisualmodels[i]);
+                    }
+                    this->newvisualmodels.clear();
+                }
+                v.render();
+            }
 
             void mousePressEvent (QMouseEvent* event)
             {
