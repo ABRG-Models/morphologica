@@ -303,6 +303,18 @@ namespace morph {
             this->reinit();
         }
 
+        //! update() overload that accepts vvec of coords
+        void update (const morph::vvec<morph::vec<Flt, 2>>& _coords, const size_t data_idx)
+        {
+            std::vector<Flt> absc (_coords.size(), Flt{0});
+            std::vector<Flt> ord (_coords.size(), Flt{0});
+            for (unsigned int i = 0; i < _coords.size(); ++i) {
+                absc[i] = _coords[i][0];
+                ord[i] = _coords[i][1];
+            }
+            this->update (absc, ord, data_idx);
+        }
+
         //! Set marker and colours in ds, according the 'style policy'
         void setstyle (morph::DatasetStyle& ds, std::array<float, 3> col, morph::markerstyle ms)
         {
@@ -447,6 +459,20 @@ namespace morph {
             this->setdata (_abscissae, _data, ds);
         }
 
+        //! setdata overload that accepts vvec of coords (as morph::vec<Flt, 2>)
+        void setdata (const morph::vvec<morph::vec<Flt, 2>>& _coords,
+                      const std::string name = "", const morph::axisside axisside = morph::axisside::left)
+        {
+            // Split coords into two vectors then call setdata() overload
+            std::vector<Flt> absc (_coords.size(), Flt{0});
+            std::vector<Flt> ord (_coords.size(), Flt{0});
+            for (unsigned int i = 0; i < _coords.size(); ++i) {
+                absc[i] = _coords[i][0];
+                ord[i] = _coords[i][1];
+            }
+            this->setdata (absc, ord, name, axisside);
+        }
+
         //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
         //! style. The locations of the markers for each dataset are computed and stored
         //! in this->graohDataCoords, one vector for each dataset.
@@ -509,6 +535,19 @@ namespace morph {
                     (*this->graphDataCoords[didx])[i][2] = Flt{0};
                 }
             }
+        }
+
+        //! setdata overload that accepts vvec of coords (as morph::vec<Flt, 2>)
+        void setdata (const morph::vvec<morph::vec<Flt, 2>>& _coords, const DatasetStyle& ds)
+        {
+            // Split coords into two vectors then call setdata() overload
+            std::vector<Flt> absc (_coords.size(), Flt{0});
+            std::vector<Flt> ord (_coords.size(), Flt{0});
+            for (unsigned int i = 0; i < _coords.size(); ++i) {
+                absc[i] = _coords[i][0];
+                ord[i] = _coords[i][1];
+            }
+            this->setdata (absc, ord, ds);
         }
 
         //! Special setdata for a morph::histo object
