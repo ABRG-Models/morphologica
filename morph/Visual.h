@@ -1260,12 +1260,13 @@ namespace morph {
         {
             bool needs_render = false;
 
+#ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
             if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
-
+#endif
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
                 needs_render = true;
@@ -1276,7 +1277,9 @@ namespace morph {
                 std::cout << "Ctrl-h: Output this help to stdout\n";
                 std::cout << "Mouse-primary: rotate mode (use Ctrl to change axis)\n";
                 std::cout << "Mouse-secondary: translate mode\n";
+#ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
                 std::cout << "Ctrl-q: Request exit\n";
+#endif
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
