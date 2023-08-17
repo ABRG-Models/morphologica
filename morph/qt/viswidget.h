@@ -29,6 +29,10 @@ namespace morph {
 
             // In your Qt code, build VisualModels that should be added to the scene and add them to this.
             std::vector<std::unique_ptr<morph::VisualModel>> newvisualmodels;
+            std::vector<morph::VisualModel*> model_ptrs;
+
+            // if >-1, then that model needs a reinit.
+            int needs_reinit = -1;
 
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {
@@ -68,9 +72,13 @@ namespace morph {
                     // Now we iterate through newvisualmodels, finalize them and add them to morph::Visual
                     for (unsigned int i = 0; i < newvisualmodels.size(); ++i) {
                         this->newvisualmodels[i]->finalize();
-                        this->v.addVisualModel (this->newvisualmodels[i]);
+                        this->model_ptrs.push_back (this->v.addVisualModel (this->newvisualmodels[i]));
                     }
                     this->newvisualmodels.clear();
+                }
+                if (this->needs_reinit > -1) {
+                    this->model_ptrs[this->needs_reinit]->reinit();
+                    this->needs_reinit = -1;
                 }
                 v.render();
             }
