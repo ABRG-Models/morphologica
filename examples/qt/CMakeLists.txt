@@ -29,9 +29,15 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 set(MORPH_LIBS_GL OpenGL::GL glfw Freetype::Freetype)
 set(MORPH_LIBS_CORE ${HDF5_C_LIBRARIES})
 
-# Original example program - draws the graph1 example
-add_subdirectory (app1)
-# An empty MainWindow based Qt desktop application
+# Just about the simplest possible Qt morphologica program - draws the
+# graph1 example in the applications single QWidget
+add_subdirectory (qtgraph1)
+
+# A more useful MainWindow based Qt desktop application example that
+# shows a HexGrid in a QWidget that has been laid out using QCreator's
+# designer.
 add_subdirectory (app2)
-# An empty QtWidget based Qt desktop application
-#add_subdirectory (app3)
+
+# A MainWindow based Qt desktop application that shows a dynamic
+# surface. Equivalent to examples/fps.cpp
+add_subdirectory (qtfps)
