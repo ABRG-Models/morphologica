@@ -94,3 +94,5 @@ void MainWindow::on_pushButton_clicked()
     // Change the graphlocn so that the next graph shows up in a different place
     this->graphlocn[1] += 1.2f;
 }
+
+void MainWindow::on_actionQuit_triggered() { close(); }

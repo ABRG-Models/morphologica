@@ -33,6 +33,10 @@ namespace morph {
 
             // if >-1, then that model needs a reinit.
             int needs_reinit = -1;
+            void set_model_needs_reinit (int model_idx, bool reinit_required = true)
+            {
+                this->needs_reinit = reinit_required ? model_idx : -1;
+            }
 
             viswidget (QWidget* parent = 0) : QOpenGLWidget(parent)
             {

@@ -35,8 +35,14 @@ MainWindow::MainWindow(QWidget *parent)
                                          }
                                          this->k += 0.02f;
                                          if (this->k > 8.0f) { this->k = 1.0f; }
-                                         // Somehow access the pointer for the model. Like this:
-                                         static_cast<morph::qt::viswidget*>(this->p_vw)->needs_reinit = 0;
+                                         // Access the pointer for the viswidget and set
+                                         // needs_reinit to the index of the model that requires
+                                         // reinitialization. When paintGL is called (and a GL
+                                         // context is available) the morphologica OpenGL model will
+                                         // be rebuilt.
+                                         static_cast<morph::qt::viswidget*>(this->p_vw)->set_model_needs_reinit (0);
+                                         // Call the OpenGLWidget's update method. This will cause a
+                                         // call to viswidget::paintGL()
                                          this->p_vw->update();
                                      });
     timer->start();
@@ -90,26 +96,4 @@ void MainWindow::viswidget_init()
     this->p_vw = vw;
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    std::cout << "Adding a GraphVisual...\n";
-
-    auto gv = std::make_unique<morph::GraphVisual<double>> (this->graphlocn);
-    // Bind the new (Graph)VisualModel to the morph::Visual associated with the viswidget
-    static_cast<morph::qt::viswidget*>(this->p_vw)->v.bindmodel (gv);
-
-    gv->twodimensional = false;
-    morph::vvec<double> x;
-    x.linspace (-1.5, 1.5, 25);
-    gv->setdata (x, x.pow(2));
-
-    // Cast and add
-    std::unique_ptr<morph::VisualModel> vmp = std::move (gv);
-    static_cast<morph::qt::viswidget*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
-
-    // request a render, otherwise it won't appear until user interacts with window
-    this->p_vw->update();
-
-    // Change the graphlocn so that the next graph shows up in a different place
-    this->graphlocn[1] += 1.2f;
-}
+void MainWindow::on_actionQuit_triggered() { close(); }
