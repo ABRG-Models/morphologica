@@ -729,6 +729,40 @@ namespace morph {
         template <typename _S=S>
         void min_elementwise_inplace (const _S& val) { for (auto& i : *this) { i = std::min (i, val); } }
 
+        //! Find first element matching argument
+        template <typename _S=S>
+        size_t find_first_of (const _S& val) const
+        {
+            size_t i = 0;
+            for (i = 0; i < this->size(); i++) {
+                if ((*this)[i] == val) { break; }
+            }
+            return i;
+        }
+        
+        //! Find last element matching argument
+        template <typename _S=S>
+        size_t find_last_of (const _S& val) const
+        {
+            size_t i = 0;
+            for (i = this->size()-1; i >= 0; i--) {
+                if ((*this)[i] == val) { break; }
+            }
+            return i;
+        }
+
+        //! Find all elements matching argument
+        template <typename _S=S>
+        morph::vvec<size_t> find (const _S& val) const
+        {
+            morph::vvec<size_t> indicies;
+            size_t i = 0;
+            for (i = 0; i < this->size(); i++) {
+                if ((*this)[i] == val) { indicies.push_back(i); }
+            }
+            return indicies;
+        }
+
         //! Return true if any element is zero
         bool has_zero() const
         {
