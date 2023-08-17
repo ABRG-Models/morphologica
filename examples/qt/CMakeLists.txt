@@ -31,13 +31,13 @@ set(MORPH_LIBS_CORE ${HDF5_C_LIBRARIES})
 
 # Just about the simplest possible Qt morphologica program - draws the
 # graph1 example in the applications single QWidget
-add_subdirectory (qtgraph1)
+add_subdirectory (graph1)
 
 # A more useful MainWindow based Qt desktop application example that
 # shows a HexGrid in a QWidget that has been laid out using QCreator's
 # designer.
-add_subdirectory (app2)
+add_subdirectory (hexgrid)
 
 # A MainWindow based Qt desktop application that shows a dynamic
 # surface. Equivalent to examples/fps.cpp
-add_subdirectory (qtfps)
+add_subdirectory (fps)
