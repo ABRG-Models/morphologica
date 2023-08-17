@@ -138,7 +138,11 @@ morph::vec<float, 3> c3 = { 0.0, 0.3, 0 };
 morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
 // Now create the VisualModel as a std::unique_ptr<morph::TriangleVisual>
-auto tv = std::make_unique<morph::TriangleVisual> (v.shaderprog, offset, c1, c2, c3, colour1)
+auto tv = std::make_unique<morph::TriangleVisual> (offset, c1, c2, c3, colour1);
+// You have to call this bindmodel function for any VisualModel-derived object.
+// It registers your morph::Visual as the parent of your model and sets some callbacks
+// so that the model can access the shader programs.
+v.bindmodel (tv);
 
 // You'll pass ownership of 'tv' to the visual scene like this:
 v.addVisualModel (tv);
@@ -195,11 +199,11 @@ public:
     TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
 
     //! Initialise with offset, three coordinates and a single colour.
-    TriangleVisual(GLuint sp, const vec<float, 3> _offset,
+    TriangleVisual(const vec<float, 3> _offset,
                    const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
                    const std::array<float, 3> _col)
     {
-        this->init (sp, _offset, _coord1, _coord2, _coord3, _col);
+        this->init (_offset, _coord1, _coord2, _coord3, _col);
     }
 ...
 ```
@@ -217,12 +221,10 @@ convention in other VisualModel-based classes in which I attempt to
 minimise the number of arguments passed to the constructor.
 
 ```c++
-void init (GLuint sp, const vec<float, 3> _offset,
+void init (const vec<float, 3> _offset,
            const vec<float, 3> _coord1, const vec<float, 3> _coord2, const vec<float, 3> _coord3,
            const std::array<float, 3> _col)
 {
-    // Keep a copy of the shader program handle/id - common to all VisualModels
-    this->shaderprog = sp;
     // Keep a copy of the offset of this Visual model within the scene - common to all VisualModels
     this->mv_offset = _offset;
     // Set this offset into the VisualModel's viewmatrix - common to all VisualModels
@@ -285,12 +287,11 @@ void initializeVertices (void)
     this->vertexColors.clear();
     this->indices.clear();
 
-    // The indices index. Passed by reference to 'drawing' functions like computeTriangle here.
-    VBOint idx = 0;
+    // this->idx is the indices index. Passed by reference to 'drawing' functions like computeTriangle here.
     // Draw a triangle. That's it.
-    this->computeTriangle (idx, this->coord1, this->coord2, this->coord3, this->col);
+    this->computeTriangle (this->idx, this->coord1, this->coord2, this->coord3, this->col);
 
-    std::cout << "idx now has value: " << idx << std::endl;
+    std::cout << "this->idx now has value: " << this->idx << std::endl;
     std::cout << "vertexPositions has size " <<  this->vertexPositions.size()<< std::endl;
 }
 ```
