@@ -40,7 +40,9 @@ int main()
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual");
     // Create a new GraphVisual object with offset within the scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    // Boilerplate bindmodel function call - do this for every model you add to a Visual
+    v.bindmodel (gv);
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
