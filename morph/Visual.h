@@ -23,11 +23,14 @@
 #include <morph/VisualCommon.h>
 #include <morph/keys.h>
 
-// "OWNED_MODE" means that the morph::Visual is owned by a windowing system of some
-// sort. Initially, that's going to be a QOpenGLWidget, but it could be other windowing
-// systems that can provide an OpenGL context for morph::Visual to render
-// into. Otherwise, if OWNED_MODE is not defined, we include glfw3 headers and Visual
-// owns a Window provided by glfw.
+// Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
+//
+// "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
+// present, that can only be a QOpenGLWidget, but it could in principle be any other window drawing
+// system that's able to provide an OpenGL context for morph::Visual to render into.
+//
+// Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
+// morph::Visual is the owner of a Window provided by GLFW.
 #ifndef OWNED_MODE
 // Include glfw3 AFTER VisualModel
 # include <GLFW/glfw3.h>
