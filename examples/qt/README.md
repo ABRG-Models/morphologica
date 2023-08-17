@@ -1,3 +1,2 @@
-Development of Qt compatibility in morphologica
-
-clone/link morphologica in this directory, then cmake build.
+This folder contains examples showing how to use morphologica to draw
+OpenGL graphics in a Qt widget.
