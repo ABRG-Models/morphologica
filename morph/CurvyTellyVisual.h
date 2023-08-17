@@ -28,8 +28,8 @@ namespace morph {
         float frame_width = 0.01f;
 
         // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
-        CurvyTellyVisual(morph::gl::shaderprogs& _shaders, const morph::CartGrid* _cg, const morph::vec<float> _offset)
-            : morph::CartGridVisual<T>(_shaders, _cg, _offset) { this->centralize = true; }
+        CurvyTellyVisual(const morph::CartGrid* _cg, const morph::vec<float> _offset)
+            : morph::CartGridVisual<T>(_cg, _offset) { this->centralize = true; }
 
         void drawcurvygrid()
         {

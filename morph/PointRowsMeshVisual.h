@@ -70,8 +70,7 @@ namespace morph {
     class PointRowsMeshVisual : public VisualDataModel<Flt>
     {
     public:
-        PointRowsMeshVisual(morph::gl::shaderprogs& sp,
-                            std::vector<vec<float,3>>* _pointrows,
+        PointRowsMeshVisual(std::vector<vec<float,3>>* _pointrows,
                             const vec<float, 3> _offset,
                             const std::vector<Flt>* _data,
                             const Scale<Flt>& cscale,
@@ -87,7 +86,6 @@ namespace morph {
                             const float _radius_sph)
         {
             // Set up...
-            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -107,9 +105,6 @@ namespace morph {
             this->cm_sph.setType (_cmt_sph);
             if (_cmt_sph == ColourMapType::Monochrome) { this->cm_sph.setHue (_hue_sph); }
             if (_cmt_sph == ColourMapType::Fixed) { this->cm_sph.setHSV (_hue_sph, _sat_sph, _val_sph); }
-
-            this->initializeVertices();
-            this->postVertexInit();
         }
 
         //! Convert datum using our scale into a colour triplet (RGB).

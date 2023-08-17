@@ -76,7 +76,8 @@ int main(int argc, char** argv)
         morph::Visual v(1600, 1000, "Your SVG defined boundary");
         v.lightingEffects();
         morph::vec<float, 3> offset = { 0.0f, -0.0f, 0.0f };
-        auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+        auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+        v.bindmodel (hgv);
         // Set up data for the HexGridVisual and colour hexes according to their state as being boundary/inside/domain, etc
         vector<float> colours (hg.num(), 0.0f);
         static constexpr float cl_boundary_and_in = 0.9f;
@@ -105,7 +106,7 @@ int main(int argc, char** argv)
         hgv->finalize();
         v.addVisualModel (hgv);
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

@@ -53,14 +53,17 @@ int main (int argc, char** argv)
 
         // NB: Before adding VisualModel, and before creating a new QuiverVisual, we
         // need the OpenGL context to be correct, so set it on the first Visual, v with
-        // Visual::setCurrent():
-        v.setCurrent();
-        auto qvp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::Cividis);
+        // Visual::setContext():
+        v.setContext();
+        auto qvp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::Cividis);
+        v.bindmodel (qvp);
+        qvp->finalize();
         v.addVisualModel (qvp);
 
         // Set up v2 with a graph, switching to the Visual v2's context first:
-        v2.setCurrent();
-        auto gv = std::make_unique<morph::GraphVisual<float>> (v2.shaders, morph::vec<float>({0,0,0}));
+        v2.setContext();
+        auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+        v2.bindmodel (gv);
         morph::vvec<float> x =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
         morph::vvec<float> y = x.pow(3);
         gv->setdata (x, y);
@@ -68,7 +71,7 @@ int main (int argc, char** argv)
         v2.addVisualModel (gv);
 
         while (v.readyToFinish == false && v2.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
             v2.render();
         }

@@ -56,7 +56,8 @@ int main (int argc, char** argv)
                 k++;
             }
         }
-        auto vmp = std::make_unique<morph::QuiverVisual<float>>(v.shaders, &coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
+        auto vmp = std::make_unique<morph::QuiverVisual<float>>(&coords, offset, &quivs, morph::ColourMapType::MonochromeGreen);
+        v.bindmodel (vmp);
         vmp->quiver_length_gain = 0.4f; // Scale the length of the quivers on screen
         vmp->quiver_thickness_gain = 0.05f; // Scale thickness of the quivers
         // vmp->fixed_quiver_thickness = 0.003f; // Also possible to request a fixed thickness

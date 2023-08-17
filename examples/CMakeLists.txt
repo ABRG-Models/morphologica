@@ -12,6 +12,9 @@ add_subdirectory(schnakenberg)
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 
+# Examples showing how to use morphologica with Qt
+add_subdirectory(qt)
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 

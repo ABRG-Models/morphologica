@@ -43,7 +43,8 @@ int main (int argc, char** argv)
             }
         }
 
-        auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
+        auto sv = std::make_unique<morph::ScatterVisual<float>> (offset);
+        v.bindmodel (sv);
         sv->setDataCoords (&points);
         sv->setScalarData (&data);
         // Set the vector data to the coordinates - we'll visualize duochrome based on x and y
@@ -58,7 +59,7 @@ int main (int argc, char** argv)
 
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

@@ -29,12 +29,9 @@ template <typename Flt>
 class BranchVisual : public morph::VisualModel
 {
 public:
-    BranchVisual(morph::gl::shaderprogs& sp,
-                 const morph::vec<float, 3> _offset,
-                 std::vector<branch<Flt>>* _branches)
+    BranchVisual(const morph::vec<float, 3> _offset, std::vector<branch<Flt>>* _branches)
     {
         this->branches = _branches;
-        this->shaders = sp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
@@ -43,7 +40,6 @@ public:
 
     void initializeVertices()
     {
-        VBOint idx = 0;
         // For each branch, draw lines for the path history and a sphere for teh current
         // location, with a second colour for the EphA expression.
         for (auto b : *this->branches) {
@@ -58,11 +54,11 @@ public:
                 last[1] = b.path[i-1][1];
                 cur[0] = b.path[i][0];
                 cur[1] = b.path[i][1];
-                this->computeFlatLineRnd (idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
+                this->computeFlatLineRnd (this->idx, last, cur, this->uz, clr, this->linewidth, 0.0f, true, false);
             }
             // Finally, a sphere at the last location. Tune number of rings (second last
             // arg) in sphere to change size of clr2 disc at top
-            this->computeSphere (idx, cur, clr, clr2, this->radiusFixed, 14, 12);
+            this->computeSphere (this->idx, cur, clr, clr2, this->radiusFixed, 14, 12);
         }
     }
 

@@ -50,17 +50,21 @@ int main (int argc, char** argv)
         points.push_back ({ 2, 4,   0.1 }); data.push_back(points.back()[2]);
 
 #ifdef MESH
-        auto prmv = std::make_unique<morph::PointRowsMeshVisual<float>>(v.shaders, &points, offset, &data, scale, morph::ColourMapType::Twilight,
+        auto prmv = std::make_unique<morph::PointRowsMeshVisual<float>>(&points, offset, &data, scale, morph::ColourMapType::Twilight,
                                                                         0.0f, 1.0f, 1.0f, 0.04f, morph::ColourMapType::Jet, 0.0f, 1.0f, 1.0f, 0.1f);
+        v.bindmodel (prmv);
+        prmv->finalize();
         v.addVisualModel (prmv);
 #else
-        auto prv = std::make_unique<morph::PointRowsVisual<float>>(v.shaders, &points, offset, &data, scale, morph::ColourMapType::Twilight);
+        auto prv = std::make_unique<morph::PointRowsVisual<float>>(&points, offset, &data, scale, morph::ColourMapType::Twilight);
+        v.bindmodel (prv);
+        prv->finalize();
         v.addVisualModel (prv);
 #endif
 
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

@@ -20,8 +20,8 @@ namespace morph {
         VisualDataModel()
             : morph::VisualModel::VisualModel() {}
 
-        VisualDataModel (GLuint sp, const vec<float> _offset)
-            : morph::VisualModel::VisualModel (sp, _offset) {}
+        VisualDataModel (const vec<float> _offset)
+            : morph::VisualModel::VisualModel (_offset) {}
 
         //! Deconstructor should *not* deallocate data - client code should do that
         ~VisualDataModel() {}

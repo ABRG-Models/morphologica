@@ -59,7 +59,8 @@ int main()
 
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    auto cgv = std::make_unique<morph::CartGridVisual<float>>(v.shaders, &cg, offset);
+    auto cgv = std::make_unique<morph::CartGridVisual<float>>(&cg, offset);
+    v.bindmodel (cgv);
     cgv->cartVisMode = morph::CartVisMode::RectInterp;
     cgv->setScalarData (&data);
     cgv->cm.setType (morph::ColourMapType::Twilight);
@@ -67,7 +68,7 @@ int main()
     v.addVisualModel (cgv);
 
     while (v.readyToFinish == false) {
-        glfwWaitEventsTimeout (0.018);
+        v.waitevents (0.018);
         v.render();
     }
 

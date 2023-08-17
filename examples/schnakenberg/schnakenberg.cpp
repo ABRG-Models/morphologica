@@ -276,7 +276,8 @@ int main (int argc, char **argv)
     morph::ColourMapType cmt = morph::ColourMap<FLT>::strToColourMapType (conf.getString ("colourmap", "Jet"));
 
     // Create a new HexGridVisual then set its parameters (zScale, colourScale, etc.
-    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
+    auto hgv1 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    v1.bindmodel (hgv1);
     hgv1->setScalarData (&RD.A);
     // Z position scaling - how hilly/bumpy the visual will be.
     hgv1->zScale.setParams (0.2f, 0.0f);
@@ -294,7 +295,8 @@ int main (int argc, char **argv)
     // B. Offset in x direction to the right.
     xzero += RD.hg->width();
     spatOff = { xzero, 0.0, 0.0 };
-    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (v1.shaders, RD.hg, spatOff);
+    auto hgv2 = std::make_unique<morph::HexGridVisual<FLT>> (RD.hg, spatOff);
+    v1.bindmodel (hgv2);
     hgv2->setScalarData (&RD.B);
     hgv2->zScale.setParams (0.2f, 0.0f);
     hgv2->colourScale.do_autoscale = true;
@@ -335,7 +337,7 @@ int main (int argc, char **argv)
         // has elapsed for it to be necessary to call v1.render().
         steady_clock::duration sincerender = steady_clock::now() - lastrender;
         if (duration_cast<milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
-            glfwPollEvents();
+            v1.poll();
             v1.render();
             lastrender = steady_clock::now();
         }

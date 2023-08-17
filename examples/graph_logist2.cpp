@@ -13,7 +13,8 @@ int main()
     morph::Visual v(1024, 768, "Logistic functions");
     v.addLabel ("Change logistic function parameters in ../examples/graph_logist2.json", morph::vec<float>({0,0,0}));
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({-0.5f,-0.5f,0.0f}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({-0.5f,-0.5f,0.0f}));
+    v.bindmodel (gv);
     // Params are read from a JSON file
     morph::Config conf ("../examples/graph_logist2.json");
     double ofst = conf.get<double> ("ofst", 4.0);
@@ -36,7 +37,8 @@ int main()
     // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
     v.addVisualModel (gv);
 
-    auto gv2 = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({1.0f,-0.5f,0.0f}));
+    auto gv2 = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({1.0f,-0.5f,0.0f}));
+    v.bindmodel (gv2);
     morph::vvec<double> x2;
     x2.linspace (0, 1, 100);
     gv2->setlimits (0,1,0,1);

@@ -42,7 +42,8 @@ int main()
 
     // Add a 'triangle visual' to be visualised as three rods
     morph::vec<float> _offset = {0,0,0};
-    auto tfv = std::make_unique<morph::TriFrameVisual<FLT>>(v.shaders, _offset);
+    auto tfv = std::make_unique<morph::TriFrameVisual<FLT>>(_offset);
+    v.bindmodel (tfv);
     tfv->radius = 0.01f;
     tfv->sradius = 0.01f;
     std::vector<FLT> tri_values(3, 0);
@@ -69,7 +70,8 @@ int main()
     }
     std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
     std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
-    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(v.shaders, &hg, _offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(&hg, _offset);
+    v.bindmodel (hgv);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
@@ -135,7 +137,7 @@ int main()
 
         std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
         if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) { // 17 is about 60 Hz
-            glfwPollEvents();
+            v.poll();
             v.render();
             lastrender = std::chrono::steady_clock::now();
         }

@@ -12,10 +12,10 @@ namespace morph {
     {
     public:
         //! Initialise with offset, three edges and a single colour.
-        RhomboVisual(morph::gl::shaderprogs& sp, const vec<float, 3> _offset,
+        RhomboVisual(const vec<float, 3> _offset,
                      const vec<float, 3> _edge1, const vec<float, 3> _edge2, const vec<float, 3> _edge3,
                      const std::array<float, 3> _col)
-            : VisualModel(sp, _offset)
+            : VisualModel(_offset)
             , edge1 (_edge1) , edge2 (_edge2) , edge3 (_edge3), col (_col) {}
 
         //! Initialize vertex buffer objects and vertex array object.

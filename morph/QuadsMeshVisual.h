@@ -24,8 +24,7 @@ namespace morph {
     class QuadsMeshVisual : public VisualDataModel<Flt>
     {
     public:
-        QuadsMeshVisual(morph::gl::shaderprogs& _shaders,
-                        const std::vector<std::array<Flt,12>>* _quads,
+        QuadsMeshVisual(const std::vector<std::array<Flt,12>>* _quads,
                         const vec<float> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& _scale,
@@ -35,7 +34,6 @@ namespace morph {
                         const float _radius = 0.05f)
         {
             // Set up...
-            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             this->colourScale = _scale;
@@ -63,14 +61,10 @@ namespace morph {
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
             if (_cmt == ColourMapType::Fixed) { this->cm.setSat (_sat); }
-
-            this->initializeVertices();
-            this->postVertexInit();
         }
 
         //! Version with std::array \a _offset
-        QuadsMeshVisual(morph::gl::shaderprogs& _shaders,
-                        const std::vector<std::array<Flt,12>>* _quads,
+        QuadsMeshVisual(const std::vector<std::array<Flt,12>>* _quads,
                         const std::array<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& _scale,
@@ -79,7 +73,7 @@ namespace morph {
         {
             vec<float> offset_vec;
             offset_vec.set_from(_offset);
-            QuadsMeshVisual<Flt>(_shaders, _quads, offset_vec, _data, _scale, _cmt, _hue);
+            QuadsMeshVisual<Flt>(_quads, offset_vec, _data, _scale, _cmt, _hue);
         }
 
         ~QuadsMeshVisual() { delete this->dataCoords; }

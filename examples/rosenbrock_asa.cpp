@@ -53,7 +53,8 @@ int main()
     }
     std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
     std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
-    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(v.shaders, &hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(&hg, offset);
+    v.bindmodel (hgv);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
     hgv->cm.setType (morph::ColourMapType::Viridis);
     hgv->setScalarData (&banana_vals);
@@ -67,15 +68,21 @@ int main()
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    auto candup = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
+    auto candup = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
+    v.bindmodel (candup);
+    candup->finalize();
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    auto bestup = std::make_unique<morph::PolygonVisual>(v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
+    auto bestup = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
+    v.bindmodel (bestup);
+    bestup->finalize();
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    auto currup = std::make_unique<morph::PolygonVisual> (v.shaders, offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto currup = std::make_unique<morph::PolygonVisual> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    v.bindmodel (currup);
+    currup->finalize();
 
     auto candp = v.addVisualModel (candup);
     auto bestp = v.addVisualModel (bestup);
@@ -126,7 +133,7 @@ int main()
                             static_cast<float>(anneal.x[1]),
                             static_cast<float>(anneal.f_x - FLT{0.15}) };
         currp->reinit();
-        glfwWaitEventsTimeout (0.0166);
+        v.waitevents (0.0166);
         v.render();
 #endif
         anneal.step();

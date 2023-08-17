@@ -24,7 +24,8 @@ int main (int argc, char** argv)
     try {
         morph::vvec<double> absc;
         morph::vvec<double> ord;
-        auto gv = std::make_unique<morph::GraphVisual<double>>(v.shaders, morph::vec<float>({0,0,0}));
+        auto gv = std::make_unique<morph::GraphVisual<double>>(morph::vec<float>({0,0,0}));
+        v.bindmodel (gv);
 
         double x = 0.5;
         double x1 = 0.0;
@@ -86,7 +87,7 @@ int main (int argc, char** argv)
 
         // v.keepOpen() is equivalent to this:
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             v.render();
         }
 

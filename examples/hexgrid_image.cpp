@@ -37,7 +37,8 @@ int main()
     morph::vvec<float> hex_image_data = hg.resampleImage (image_data, dims[1], image_scale, image_offset);
 
     // Now visualise with a HexGridVisual
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, morph::vec<float>({0,0,0}));
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, morph::vec<float>({0,0,0}));
+    v.bindmodel (hgv);
 
     // Set the image data as the scalar data for the HexGridVisual
     hgv->setScalarData (&hex_image_data);

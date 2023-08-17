@@ -2,7 +2,8 @@
  * \file
  *
  * Awesome graphics code for high performance graphing and visualisation. Uses modern
- * OpenGL and the library GLFW for window management.
+ * OpenGL and the library GLFW for window management (or can be owned by a widget such
+ * as a QOpenGLWidget).
  *
  * Created by Seb James on 2019/05/01
  *
@@ -18,10 +19,23 @@
 #endif
 
 #include <morph/VisualModel.h>
-#include <morph/VisualTextModel.h>
+#include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
+#include <morph/keys.h>
+
+// Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
+//
+// "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
+// present, that can only be a QOpenGLWidget, but it could in principle be any other window drawing
+// system that's able to provide an OpenGL context for morph::Visual to render into.
+//
+// Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
+// morph::Visual is the owner of a Window provided by GLFW.
+#ifndef OWNED_MODE
 // Include glfw3 AFTER VisualModel
-#include <GLFW/glfw3.h>
+# include <GLFW/glfw3.h>
+#endif
+
 // For GLuint and GLenum (though redundant, as already included in VisualModel
 #ifndef USE_GLEW
 #ifdef __OSX__
@@ -94,6 +108,13 @@ namespace morph {
         orthographic
     };
 
+#ifndef OWNED_MODE
+    // The default is to use a GLFW window which is owned by morph::Visual.
+    using win_t = GLFWwindow;
+    // else: The window is a widget within a wider Qt system. We are owned by the
+    // widget. win_t should be defined (with a using win_t = something line) externally.
+#endif
+
     /*!
      * Visual 'scene' class
      *
@@ -114,6 +135,11 @@ namespace morph {
     class Visual
     {
     public:
+        // Default constructor is used when incorporating Visual inside a QWidget.  We
+        // have to wait on calling init functions until an OpenGL environment is
+        // gauranteed to exist.
+        Visual() { }
+
         /*!
          * Construct a new visualiser. The rule is 1 window to one Visual object. So,
          * this creates a new window and a new OpenGL context.
@@ -123,7 +149,8 @@ namespace morph {
             , window_h(height)
             , title(_title)
         {
-            this->init();
+            this->init_resources();
+            this->init_gl();
         }
 
         /*!
@@ -141,20 +168,51 @@ namespace morph {
             , coordArrowsThickness(caThickness)
             , coordArrowsEm(caEm)
         {
-            this->init();
+            this->init_resources();
+            this->init_gl();
         }
 
-        //! Deconstructor destroys GLFW windows
+        //! Deconstructor destroys GLFW/Qt window and deregisters access to VisualResources
         virtual ~Visual()
         {
+#ifndef OWNED_MODE
             glfwDestroyWindow (this->window);
+#endif
             morph::VisualResources::deregister();
+        }
+
+        // Public init that is given a context (window or widget) and then sets up the
+        // VisualResource, shaders and so on.
+        void init (morph::win_t* ctx)
+        {
+            this->window = ctx;
+            this->init_resources();
+            this->init_gl();
+        }
+
+        // Do one-time init of the Visual's resources. This gets/creates the
+        // VisualResources, registers this visual with resources, calls init_window for
+        // any glfw stuff that needs to happen, and lastly initializes the freetype
+        // code.
+        void init_resources()
+        {
+            // VisualResources provides font management and GLFW management.
+            this->resources = morph::VisualResources::i();
+            morph::VisualResources::register_visual();
+
+            // Set up the window that will present the OpenGL graphics. No-op in
+            // Qt-managed Visual, but this has to happen BEFORE the call to
+            // resources->freetype_init()
+            this->init_window();
+
+            // Now make sure that Freetype is set up
+            this->resources->freetype_init (this);
         }
 
         //! Take a screenshot of the window
         void saveImage (const std::string& img_filename)
         {
-            glfwMakeContextCurrent (this->window);
+            this->setContext();
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
@@ -182,7 +240,25 @@ namespace morph {
 
         //! Make this Visual the current one, so that when creating/adding a visual
         //! model, the vao ids relate to the correct OpenGL context.
-        void setCurrent() { glfwMakeContextCurrent (this->window); }
+        void setContext()
+        {
+#ifndef OWNED_MODE
+            glfwMakeContextCurrent (this->window);
+#endif
+        }
+
+        /*!
+         * Set up the passed-in VisualModel with functions that need access to Visual
+         * attributes.
+         */
+        template <typename T>
+        void bindmodel (std::unique_ptr<T>& model)
+        {
+            model->set_parent (this);
+            model->get_shaderprogs = &morph::Visual::get_shaderprogs;
+            model->get_gprog = &morph::Visual::get_gprog;
+            model->get_tprog = &morph::Visual::get_tprog;
+        }
 
         /*!
          * Add a VisualModel to the scene as a unique_ptr. The Visual object takes
@@ -243,7 +319,7 @@ namespace morph {
                                       const int _fontres = 24)
         {
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->shaders.tprog, _font, _fontsize, _fontres);
+            auto tmup = std::make_unique<morph::VisualTextModel> (this, this->shaders.tprog, _font, _fontsize, _fontres);
             tmup->setupText (_text, _toffset, _tcolour);
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
@@ -257,14 +333,37 @@ namespace morph {
          */
         void keepOpen()
         {
+#ifndef OWNED_MODE
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
+#endif
         }
 
         //! Wrapper around the glfw polling function
-        void poll() { glfwPollEvents(); }
+        void poll()
+        {
+#ifdef OWNED_MODE
+            throw std::runtime_error ("poll() isn't relevant in this mode");
+#else
+            glfwPollEvents();
+#endif
+        }
+
+        void waitevents (const double& timeout)
+        {
+#ifdef OWNED_MODE
+            throw std::runtime_error ("waitevents() isn't relevant in this mode");
+#else
+            glfwWaitEventsTimeout (timeout);
+#endif
+        }
+
+        void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
+
+        //! A callback function
+        static void callback_render (morph::Visual* _v) { _v->render(); };
 
         //! Render the scene
         void render()
@@ -272,7 +371,7 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
-            glfwMakeContextCurrent (this->window);
+            this->setContext();
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
@@ -284,13 +383,6 @@ namespace morph {
 
             // Can't do this in a new thread:
             glViewport (0, 0, this->window_w * retinaScale, this->window_h * retinaScale);
-
-#if 0 // An alternative to the above, using glfw to get the framebuffer size (see
-      // https://www.glfw.org/docs/latest/window_guide.html#window_fbsize)
-            int fb_width, fb_height;
-            glfwGetFramebufferSize (window, &fb_width, &fb_height);
-            glViewport(0, 0, fb_width, fb_height);
-#endif
 
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
@@ -335,24 +427,6 @@ namespace morph {
                 glUniform1f (loc_di, this->diffuse_intensity);
             }
 
-#if 0
-            // A quick-n-dirty attempt to keep the light position fixed in camera space.
-            vec<float, 2> l_p0_coord = this->coordArrowsOffset;
-            vec<float, 4> l_point =  { 0.0, 0.0, -13.0, 1.0 };
-            vec<float, 4> l_pp = this->projection * l_point;
-            float l_coord_z = l_pp[2]/l_pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
-            vec<float, 4> l_p0 = { l_p0_coord.x(), l_p0_coord.y(), l_coord_z, 1.0 };
-            vec<float, 3> l_v0;
-            l_v0.set_from (this->invproj * l_p0);
-            TransformMatrix<float> lv_matrix;
-            lv_matrix.translate (l_v0);
-            lv_matrix.rotate (this->rotation);
-            GLint loc_lv = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("lv_matrix"));
-            if (loc_lv != -1) { glUniformMatrix4fv (loc_lv, 1, GL_FALSE, lv_matrix.mat.data()); }
-            std::cout << "lv_matrix:\n" << lv_matrix.str() << std::endl;
-            std::cout << "p_matrix:\n" << this->projection.str() << std::endl;
-            morph::gl::Util::checkError (__FILE__, __LINE__);
-#endif
             // Switch to text shader program and set the projection matrix
             glUseProgram (this->shaders.tprog);
             GLint loc_p = glGetUniformLocation (this->shaders.tprog, static_cast<const GLchar*>("p_matrix"));
@@ -410,7 +484,9 @@ namespace morph {
                 ++ti;
             }
 
+#ifndef OWNED_MODE
             glfwSwapBuffers (this->window);
+#endif
 
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderend = steady_clock::now();
@@ -441,6 +517,11 @@ namespace morph {
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
         morph::gl::shaderprogs shaders;
+
+        // These static functions will be set as callbacks in each VisualModel object.
+        static morph::gl::shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
+        static GLuint get_gprog (morph::Visual* _v) { return _v->shaders.gprog; };
+        static GLuint get_tprog (morph::Visual* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
         vec<float> light_colour = {1,1,1};
@@ -744,19 +825,18 @@ namespace morph {
             fout.close();
         }
 
+        void set_winsize (int _w, int _h) { this->window_w = _w; this->window_h = _h; }
+
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
         std::vector<std::unique_ptr<VisualModel>> vm;
 
     private:
-        //! Private initialization, used by constructors.
-        void init()
-        {
-            // VisualResources provides font management and GLFW management.
-            this->resources = morph::VisualResources::i();
-            morph::VisualResources::register_visual();
 
+        void init_window()
+        {
+#ifndef OWNED_MODE
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
@@ -774,10 +854,14 @@ namespace morph {
             glfwSetScrollCallback (this->window, scroll_callback_dispatch);
 
             glfwMakeContextCurrent (this->window);
+#endif
+        }
 
-            // Now make sure that Freetype is set up
-            this->resources->freetype_init (this->window);
-
+        // Initialize OpenGL shaders, set some flags (Alpha, Anti-aliasing), read in any
+        // external state from json, and set up the coordinate arrows and any
+        // VisualTextModels that will be required to render the Visual.
+        void init_gl()
+        {
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
             GLenum error = glGetError();
@@ -790,9 +874,10 @@ namespace morph {
             }
 #endif
 
+#ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
-
+#endif
             // Load up the shaders
             ShaderInfo shaders[] = {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
@@ -845,14 +930,15 @@ namespace morph {
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
             this->coordArrows = std::make_unique<CoordArrows>();
-            this->coordArrows->init (this->shaders,
-                                     this->coordArrowsLength,
-                                     this->coordArrowsThickness,
-                                     this->coordArrowsEm);
+            // For CoordArrows, because we don't add via Visual::addVisualModel(), we
+            // have to set the get_shaderprogs function here:
+            this->bindmodel (this->coordArrows);
+            // And NOW we can proceed to init:
+            this->coordArrows->init (this->coordArrowsLength, this->coordArrowsThickness, this->coordArrowsEm);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel> (this->shaders.tprog,
+            this->textModel = std::make_unique<VisualTextModel> (this, this->shaders.tprog,
                                                                  morph::VisualFont::DVSans,
                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                  this->title);
@@ -1032,15 +1118,15 @@ namespace morph {
 
     private:
         //! The window (and OpenGL context) for this Visual
-        GLFWwindow* window;
+        morph::win_t* window = nullptr;
 
         //! Pointer to the singleton GLFW and Freetype resources object
         morph::VisualResources* resources = nullptr;
 
         //! Current window width
-        int window_w;
+        int window_w = 640;
         //! Current window height
-        int window_h;
+        int window_h = 480;
 
         //! The title for the Visual. Used in window title and if saving out 3D model or png image.
         std::string title = "morph::Visual";
@@ -1114,67 +1200,87 @@ namespace morph {
 
         Quaternion<float> savedRotation;
 
+#ifndef OWNED_MODE
         /*
          * GLFW callback dispatch functions
          */
-
+    private:
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->key_callback (_window, key, scancode, action, mods);
+            if (self->key_callback (key, scancode, action, mods)) {
+                self->render();
+            }
         }
         static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->mouse_button_callback (_window, button, action, mods);
+            self->mouse_button_callback (button, action, mods);
         }
         static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->cursor_position_callback (_window, x, y);
+            if (self->cursor_position_callback (x, y)) {
+                self->render();
+            }
         }
         static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->window_size_callback (_window, width, height);
+            if (self->window_size_callback (width, height)) {
+                self->render();
+            }
         }
         static void window_close_callback_dispatch (GLFWwindow* _window)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->window_close_callback (_window);
+            self->window_close_callback();
         }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
             Visual* self = static_cast<Visual*>(glfwGetWindowUserPointer (_window));
-            self->scroll_callback (_window, xoffset, yoffset);
+            if (self->scroll_callback (xoffset, yoffset)) {
+                self->render();
+            }
         }
 
+#endif // GLFW-specific callback dispatch functions
+
+    public:
+
         /*
-         * GLFW callback handlers
+         * Generic callback handlers
          */
 
-        virtual void key_callback (GLFWwindow* _window, int key, int scancode, int action, int mods)
+        using keyaction = morph::keyaction;
+        using keymod = morph::keymod;
+        using key = morph::key;
+        // The key_callback handler uses GLFW codes, but they're in a morph header (keys.h)
+        virtual bool key_callback (int _key, int scancode, int action, int mods)
         {
+            bool needs_render = false;
+
+#ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
-            if (key == GLFW_KEY_Q && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "User requested exit.\n";
                 this->readyToFinish = true;
             }
-
-            if (key == GLFW_KEY_T && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
-                this->rotateModMode = !this->rotateModMode;
-            }
-
-            if (!this->sceneLocked && key == GLFW_KEY_C  && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+#endif
+            if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->showCoordArrows = !this->showCoordArrows;
+                needs_render = true;
             }
 
-            if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 // Help to stdout:
                 std::cout << "Ctrl-h: Output this help to stdout\n";
+                std::cout << "Mouse-primary: rotate mode (use Ctrl to change axis)\n";
+                std::cout << "Mouse-secondary: translate mode\n";
+#ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
                 std::cout << "Ctrl-q: Request exit\n";
+#endif
                 std::cout << "Ctrl-l: Toggle the scene lock\n";
-                std::cout << "Ctrl-t: Toggle mouse rotate mode\n";
                 std::cout << "Ctrl-c: Toggle coordinate arrows\n";
                 std::cout << "Ctrl-s: Take a snapshot\n";
                 std::cout << "Ctrl-m: Save 3D models in .gltf format (open in e.g. blender)\n";
@@ -1189,12 +1295,12 @@ namespace morph {
                 std::cout << "Shift-Right: Increase opacity of selected model\n";
             }
 
-            if (key == GLFW_KEY_L && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::L && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->sceneLocked = this->sceneLocked ? false : true;
                 std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
             }
 
-            if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::S && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::string fname (this->title);
                 morph::Tools::stripFileSuffix (fname);
                 fname += ".png";
@@ -1205,7 +1311,7 @@ namespace morph {
             }
 
             // Save gltf 3D file
-            if (key == GLFW_KEY_M && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::M && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::string gltffile = this->title;
                 morph::Tools::stripFileSuffix (gltffile);
                 gltffile += ".gltf";
@@ -1214,7 +1320,7 @@ namespace morph {
                 std::cout << "Saved 3D file '" << gltffile << "'\n";
             }
 
-            if (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (_key == key::Z && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
                           << this->scenetrans.x()
                           << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
@@ -1245,56 +1351,56 @@ namespace morph {
             }
 
             // Set selected model
-            if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+            if (_key == key::F1 && action == keyaction::PRESS) {
                 this->selectedVisualModel = 0;
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
+            } else if (_key == key::F2 && action == keyaction::PRESS) {
                 if (this->vm.size() > 1) { this->selectedVisualModel = 1; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            } else if (_key == key::F3 && action == keyaction::PRESS) {
                 if (this->vm.size() > 2) { this->selectedVisualModel = 2; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F4 && action == GLFW_PRESS) {
+            } else if (_key == key::F4 && action == keyaction::PRESS) {
                 if (this->vm.size() > 3) { this->selectedVisualModel = 3; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
+            } else if (_key == key::F5 && action == keyaction::PRESS) {
                 if (this->vm.size() > 4) { this->selectedVisualModel = 4; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F6 && action == GLFW_PRESS) {
+            } else if (_key == key::F6 && action == keyaction::PRESS) {
                 if (this->vm.size() > 5) { this->selectedVisualModel = 5; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F7 && action == GLFW_PRESS) {
+            } else if (_key == key::F7 && action == keyaction::PRESS) {
                 if (this->vm.size() > 6) { this->selectedVisualModel = 6; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F8 && action == GLFW_PRESS) {
+            } else if (_key == key::F8 && action == keyaction::PRESS) {
                 if (this->vm.size() > 7) { this->selectedVisualModel = 7; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F9 && action == GLFW_PRESS) {
+            } else if (_key == key::F9 && action == keyaction::PRESS) {
                 if (this->vm.size() > 8) { this->selectedVisualModel = 8; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (key == GLFW_KEY_F10 && action == GLFW_PRESS) {
+            } else if (_key == key::F10 && action == keyaction::PRESS) {
                 if (this->vm.size() > 9) { this->selectedVisualModel = 9; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
             }
 
             // Toggle hide model if the shift key is down
-            if ((key == GLFW_KEY_F10 || key == GLFW_KEY_F1 || key == GLFW_KEY_F2 || key == GLFW_KEY_F3
-                 || key == GLFW_KEY_F4 || key == GLFW_KEY_F5 || key == GLFW_KEY_F6
-                 || key == GLFW_KEY_F7 || key == GLFW_KEY_F8 || key == GLFW_KEY_F9)
-                && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
+            if ((_key == key::F10 || _key == key::F1 || _key == key::F2 || _key == key::F3
+                 || _key == key::F4 || _key == key::F5 || _key == key::F6
+                 || _key == key::F7 || _key == key::F8 || _key == key::F9)
+                && action == keyaction::PRESS && (mods & keymod::SHIFT)) {
                 this->vm[this->selectedVisualModel]->toggleHide();
             }
 
             // Increment/decrement alpha for selected model
-            if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
+            if (_key == key::LEFT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
             }
-            if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT) && (mods & GLFW_MOD_SHIFT)) {
+            if (_key == key::RIGHT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
             }
 
             // Reset view to default
-            if (!this->sceneLocked && key == GLFW_KEY_A && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::A && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
@@ -1302,41 +1408,45 @@ namespace morph {
                 Quaternion<float> rt;
                 this->rotation = rt;
 
-                this->render();
+                needs_render = true;
             }
 
-            if (!this->sceneLocked && key == GLFW_KEY_O && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::O && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->fov -= 2;
                 if (this->fov < 1.0) {
                     this->fov = 2.0;
                 }
                 std::cout << "FOV reduced to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_P && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::P && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->fov += 2;
                 if (this->fov > 179.0) {
                     this->fov = 178.0;
                 }
                 std::cout << "FOV increased to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_U && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::U && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->zNear /= 2;
                 std::cout << "zNear reduced to " << this->zNear << std::endl;
             }
-            if (!this->sceneLocked && key == GLFW_KEY_I && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS) {
+            if (!this->sceneLocked && _key == key::I && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
 
-            this->key_callback_extra (_window, key, scancode, action, mods);
+            this->key_callback_extra (_key, scancode, action, mods);
+
+            return needs_render;
         }
 
-        virtual void cursor_position_callback (GLFWwindow* _window, double x, double y)
+        virtual bool cursor_position_callback (double x, double y)
         {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
 
             vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
+
+            bool needs_render = false;
 
             // This is "rotate the scene" model. Will need "rotate one visual" mode.
             if (this->rotateMode) {
@@ -1398,7 +1508,7 @@ namespace morph {
                 Quaternion<float> rotationQuaternion;
                 rotationQuaternion.initFromAxisAngle (this->rotationAxis, rotamount);
                 this->rotation.premultiply (rotationQuaternion); // combines rotations
-                this->render(); // updates viewproj; uses this->rotation
+                needs_render = true;
 
             } else if (this->translateMode) { // allow only rotate OR translate for a single mouse movement
 
@@ -1438,20 +1548,19 @@ namespace morph {
                 // HexGridVisual" mode, to adjust relative positions.
                 this->scenetrans[0] += mouseMoveWorld[0];
                 this->scenetrans[1] -= mouseMoveWorld[1];
-                this->render(); // updates viewproj; uses this->scenetrans
+                needs_render = true; // updates viewproj; uses this->scenetrans
             }
+
+            return needs_render;
         }
 
-        virtual void mouse_button_callback (GLFWwindow* _window, int button, int action, int mods)
+        virtual void mouse_button_callback (int button, int action, int mods = 0)
         {
             // If the scene is locked, then ignore the mouse movements
             if (this->sceneLocked) { return; }
 
-            // button is the button number, action is either key press (1) or key release (0)
-            // std::cout << "button: " << button << " action: " << (action==1?("press"):("release")) << std::endl;
-
             // Record the position at which the button was pressed
-            if (action == 1) { // Button down
+            if (action == keyaction::PRESS) { // Button down
                 this->mousePressPosition = this->cursorpos;
                 // Save the rotation at the start of the mouse movement
                 this->savedRotation = this->rotation;
@@ -1461,30 +1570,27 @@ namespace morph {
                 this->invscene = this->scene.invert();
             }
 
-#if 0
-            if (action == 0 && button == 0) {
-                // This is release of the rotation button
-                this->mousePressPosition = this->cursorpos;
-            }
-#endif
-
-            if (button == 0) { // Primary button means rotate
-                this->rotateMode = (action == 1);
-            } else if (button == 1) { // Secondary button means translate
-                this->translateMode = (action == 1);
+            if (button == morph::mousebutton::left) { // Primary button means rotate
+                // if mods:
+                this->rotateModMode = (mods & keymod::CONTROL) ? true : false;
+                this->rotateMode = (action == keyaction::PRESS);
+                this->translateMode = false;
+            } else if (button == morph::mousebutton::right) { // Secondary button means translate
+                this->rotateMode = false;
+                this->translateMode = (action == keyaction::PRESS);
             }
 
-            this->mouse_button_callback_extra (_window, button, action, mods);
+            this->mouse_button_callback_extra (button, action, mods);
         }
 
-        virtual void window_size_callback (GLFWwindow* _window, int width, int height)
+        virtual bool window_size_callback (int width, int height)
         {
             this->window_w = width;
             this->window_h = height;
-            this->render();
+            return true; // needs_render
         }
 
-        virtual void window_close_callback (GLFWwindow* _window)
+        virtual void window_close_callback()
         {
             if (this->preventWindowCloseWithButton == false) {
                 std::cout << "User requested exit\n";
@@ -1494,9 +1600,9 @@ namespace morph {
             }
         }
 
-        virtual void scroll_callback (GLFWwindow* _window, double xoffset, double yoffset)
+        virtual bool scroll_callback (double xoffset, double yoffset)
         {
-            if (this->sceneLocked) { return; }
+            if (this->sceneLocked) { return false; }
             // x and y can be +/- 1
             this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
             if (this->translateMode) {
@@ -1505,13 +1611,13 @@ namespace morph {
             } else {
                 this->scenetrans[2] += yoffset * this->scenetrans_stepsize;
             }
-            this->render();
+            return true; // needs_render
         }
 
         //! Extra key callback handling, making it easy for client programs to implement their own actions
-        virtual void key_callback_extra (GLFWwindow* _window, int key, int scancode, int action, int mods) {}
+        virtual void key_callback_extra (int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
-        virtual void mouse_button_callback_extra (GLFWwindow* _window, int button, int action, int mods) {}
+        virtual void mouse_button_callback_extra (int button, int action, int mods) {}
     };
 
 } // namespace morph

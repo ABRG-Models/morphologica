@@ -44,7 +44,8 @@ int main()
         std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
         morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-        auto hgv = std::make_unique<morph::HexGridVisual<float>> (v.shaders, &hg, offset);
+        auto hgv = std::make_unique<morph::HexGridVisual<float>> (&hg, offset);
+        v.bindmodel (hgv);
         hgv->hexVisMode = morph::HexVisMode::Triangles; // Triangles faster to render than the default hexes
         hgv->setScalarData (&data);
         hgv->zScale.setParams (0.1f, 0.0f);

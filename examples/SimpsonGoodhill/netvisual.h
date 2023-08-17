@@ -28,20 +28,18 @@ template <typename Flt>
 class NetVisual : public morph::VisualModel
 {
 public:
-    NetVisual(morph::gl::shaderprogs& sp, const morph::vec<float, 3> _offset, net<Flt>* _locations)
+    NetVisual(const morph::vec<float, 3> _offset, net<Flt>* _locations)
     {
         this->locations = _locations;
-        this->shaders = sp;
         this->mv_offset = _offset;
         this->viewmatrix.translate (this->mv_offset);
     }
 
     void initializeVertices()
     {
-        VBOint idx = 0;
         // Spheres at the net vertices
         for (unsigned int i = 0; i < this->locations->p.size(); ++i) {
-            this->computeSphere (idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
+            this->computeSphere (this->idx, this->locations->p[i], this->locations->clr[i], this->radiusFixed, 14, 12);
         }
         // Connections
         for (auto c : this->locations->c) {
@@ -49,7 +47,7 @@ public:
             morph::vec<Flt, 3> c2 = this->locations->p[c[1]];
             std::array<float, 3> clr1 = this->locations->clr[c[0]];
             std::array<float, 3> clr2 = this->locations->clr[c[1]];
-            this->computeLine (idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/Flt{4});
+            this->computeLine (this->idx, c1, c2, this->uz, clr1, clr2, this->linewidth, this->linewidth/Flt{4});
         }
     }
 

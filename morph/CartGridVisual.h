@@ -56,10 +56,9 @@ namespace morph {
     {
     public:
         //! Single constructor for simplicity
-        CartGridVisual(morph::gl::shaderprogs& _shaders, const CartGrid* _cg, const vec<float> _offset)
+        CartGridVisual(const CartGrid* _cg, const vec<float> _offset)
         {
             // Set up...
-            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
             // Defaults for z and colourScale

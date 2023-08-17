@@ -3,12 +3,10 @@
 #include <cmath>
 
 #include "morph/Visual.h"
-#include "morph/VisualDataModel.h"
 #include "morph/HexGridVisual.h"
 #include "morph/ColourMap.h"
 #include "morph/tools.h"
 #include "morph/HexGrid.h"
-#include "morph/ReadCurves.h"
 #include "morph/vec.h"
 
 int main (int argc, char** argv)
@@ -47,7 +45,8 @@ int main (int argc, char** argv)
         std::cout << "Created " << data.size() << " floats in data" << std::endl;
 
         morph::vec<float, 3> offset = { 0.0f, 0.0f, 0.0f };
-        auto hgv = std::make_unique<morph::HexGridVisual<float>>(v.shaders, &hg, offset);
+        auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
+        v.bindmodel (hgv);
         hgv->setScalarData (&data);
         hgv->cm.setType (morph::ColourMapType::Magma);
         hgv->zScale.setParams (0.0f, 0.0f);

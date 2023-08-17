@@ -25,7 +25,8 @@ int main (int argc, char** argv)
     morph::vec<float, 3> offset = { 0.0, 0.0, 0.0 };
 
     // Do the initial set up of the ScatterVisual object
-    auto sv = std::make_unique<morph::ScatterVisual<float>> (v.shaders, offset);
+    auto sv = std::make_unique<morph::ScatterVisual<float>> (offset);
+    v.bindmodel (sv);
     morph::vvec<morph::vec<float, 3>> points(20*20);
     morph::vvec<float> data(20*20);
     sv->setDataCoords (&points);
@@ -66,7 +67,7 @@ int main (int argc, char** argv)
         // model using the now changed content of 'points' and 'data'
         svp->reinit();
 
-        glfwWaitEventsTimeout (0.016);
+        v.waitevents (0.016);
         v.render();
     }
 

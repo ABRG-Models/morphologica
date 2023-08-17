@@ -12,8 +12,8 @@
 // In this example, I'll create a special visual to show hsv colours.
 struct SquareGridVisual : public morph::VisualModel
 {
-    SquareGridVisual(morph::gl::shaderprogs& _shaders, const morph::vec<float> _offset, const float hue_rotn = 0.0f, const bool rev = false)
-        : morph::VisualModel (_shaders, _offset)
+    SquareGridVisual(const morph::vec<float> _offset, const float hue_rotn = 0.0f, const bool rev = false)
+        : morph::VisualModel (_offset)
     {
         // In the constructor set up the colour map
         this->colourMap.setType (morph::ColourMapType::HSV);
@@ -86,7 +86,8 @@ int main()
 
     // Grid 1
     float hue_rotn = 0.0f;
-    auto hsv_vis = std::make_unique<SquareGridVisual>(v.shaders, offset, hue_rotn);
+    auto hsv_vis = std::make_unique<SquareGridVisual>(offset, hue_rotn);
+    v.bindmodel (hsv_vis);
     //
     std::string lbl("hue rotation = 0");
     hsv_vis->addLabel (lbl, morph::vec<float>({0,-1,0}), tf);
@@ -96,7 +97,8 @@ int main()
 
     offset[0] = -14.0f;
     hue_rotn = -morph::mathconst<float>::pi_over_2;
-    auto hsv_vis2 = std::make_unique<SquareGridVisual>(v.shaders, offset, hue_rotn);
+    auto hsv_vis2 = std::make_unique<SquareGridVisual>(offset, hue_rotn);
+    v.bindmodel (hsv_vis2);
     //
     using morph::unicode;
     std::string lbl2("hue rotation = ");
@@ -108,7 +110,8 @@ int main()
 
     offset[0] = 14.0f;
     hue_rotn = 0.0f;
-    auto hsv_vis3 = std::make_unique<SquareGridVisual>(v.shaders, offset, hue_rotn, true);
+    auto hsv_vis3 = std::make_unique<SquareGridVisual>(offset, hue_rotn, true);
+    v.bindmodel (hsv_vis3);
     //
     std::string lbl3("hue rotation = 0; direction reversed");
     hsv_vis3->addLabel (lbl3, morph::vec<float>({0,-1,0}), tf);

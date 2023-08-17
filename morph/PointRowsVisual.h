@@ -30,8 +30,7 @@ namespace morph {
     class PointRowsVisual : public VisualDataModel<Flt>
     {
     public:
-        PointRowsVisual(morph::gl::shaderprogs& sp,
-                        std::vector<vec<float,3>>* _pointrows,
+        PointRowsVisual(std::vector<vec<float,3>>* _pointrows,
                         const vec<float, 3> _offset,
                         const std::vector<Flt>* _data,
                         const Scale<Flt>& cscale,
@@ -39,7 +38,6 @@ namespace morph {
                         const float _hue = 0.0f)
         {
             // Set up...
-            this->shaders = sp;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 
@@ -50,9 +48,6 @@ namespace morph {
 
             this->cm.setHue (_hue);
             this->cm.setType (_cmt);
-
-            this->initializeVertices();
-            this->postVertexInit();
         }
 
         //! Convert datum using our scale into a colour triplet (RGB).
@@ -85,7 +80,6 @@ namespace morph {
             // First, need to know which set of points form two, adjacent rows. An assumption we'll
             // accept: The rows are listed in slice-order and the points in each row are listed in
             // position-along-the-curve order.
-            unsigned int ib = 0;
 
             size_t r1 = 0;
             size_t r1_e = 0;
@@ -124,15 +118,15 @@ namespace morph {
                 this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                 this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
                 //this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->indices.push_back (ib);
-                ib++;
+                this->indices.push_back (this->idx);
+                this->idx++;
                 // Start vertex 2
                 v2 = (*this->dataCoords)[r2];
                 this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
                 this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
                 //this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
-                this->indices.push_back (ib);
-                ib++;
+                this->indices.push_back (this->idx);
+                this->idx++;
 
                 // Let v0 be:
                 morph::vec<float> vnorm = {0.0f, 0.0f, 1.0f};
@@ -176,12 +170,12 @@ namespace morph {
                     bool must_be_r1n = false;
                     bool must_be_r2n = false;
                     if (r1n > r1_e) {
-                        // Can't add this one, only r2n is possible
+                        // Can't add this one, only r2n is possthis->idxle
                         must_be_r2n = true;
                         completed_end_tri = true;
                     }
                     if (r2n > r2_e) {
-                        // Can't add this one, only r1n is possible and must be at end of row
+                        // Can't add this one, only r1n is possthis->idxle and must be at end of row
                         must_be_r1n = true;
                         completed_end_tri = true;
                     }
@@ -233,8 +227,8 @@ namespace morph {
                         v0 = (*this->dataCoords)[r1];
                         this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                         this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
-                        this->indices.push_back (ib);
-                        ib++;
+                        this->indices.push_back (this->idx);
+                        this->idx++;
 
                     } else {
                         // r2 vertex is next
@@ -242,8 +236,8 @@ namespace morph {
                         v0 = (*this->dataCoords)[r2];
                         this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
                         this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
-                        this->indices.push_back (ib);
-                        ib++;
+                        this->indices.push_back (this->idx);
+                        this->idx++;
                     }
 
                     // Compute normal and push one
@@ -263,15 +257,15 @@ namespace morph {
                     this->vertex_push ((*this->dataCoords)[r1], this->vertexPositions);
                     this->vertex_push (this->cm.convert(dcopy[r1]), this->vertexColors);
                     this->vertex_push (vnorm, this->vertexNormals);
-                    this->indices.push_back (ib);
-                    ib++;
+                    this->indices.push_back (this->idx);
+                    this->idx++;
 
                     v2 = (*this->dataCoords)[r2];
                     this->vertex_push ((*this->dataCoords)[r2], this->vertexPositions);
                     this->vertex_push (this->cm.convert(dcopy[r2]), this->vertexColors);
                     this->vertex_push (vnorm, this->vertexNormals);
-                    this->indices.push_back (ib);
-                    ib++;
+                    this->indices.push_back (this->idx);
+                    this->idx++;
                 }
 
                 // On to the next rows:
@@ -282,7 +276,7 @@ namespace morph {
 
                 //std::cout << "Next r1 is: " << r1 << std::endl;
                 //std::cout << "Next r2 is: " << r2 << std::endl;
-                //std::cout << "ib is now " << ib << std::endl;
+                //std::cout << "this->idx is now " << this->idx << std::endl;
                 if (r2 == prlen) {
                     //std::cout << "No more rows, break." << std::endl;
                     break;

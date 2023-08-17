@@ -36,14 +36,12 @@ namespace morph {
     class QuiverVisual : public VisualDataModel<Flt>
     {
     public:
-        QuiverVisual(morph::gl::shaderprogs& _shaders,
-                     std::vector<vec<float>>* _coords,
+        QuiverVisual(std::vector<vec<float>>* _coords,
                      const vec<float> _offset,
                      const std::vector<vec<Flt,3>>* _quivers,
                      ColourMapType _cmt,
                      const float _hue = 0.0f) {
             // Set up...
-            this->shaders = _shaders;
             this->mv_offset = _offset;
             this->viewmatrix.translate (this->mv_offset);
 

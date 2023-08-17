@@ -24,7 +24,8 @@ int main()
 
     // Graph x and y
     morph::Visual v(1024, 768, "1D convolutions with morph::vvec");
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
     gv->setdata (x, y, "raw");
     gv->setdata (x, y2, "smth");
     gv->finalize();

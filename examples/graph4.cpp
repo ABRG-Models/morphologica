@@ -25,7 +25,8 @@ int main (int argc, char** argv)
         morph::vvec<float> absc =  {-1.0, -.9, -.8, -.7, -.6, -.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0};
         morph::vvec<float> data = absc.pow(3);
         morph::vvec<float> data2 = absc.pow(5);
-        auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>({0,0,0}));
+        auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
+        v.bindmodel (gv);
 
         // Optionally change the size of the graph and range of the axes
         gv->setsize (1.33, 1);
@@ -53,7 +54,7 @@ int main (int argc, char** argv)
         size_t idx = 0;
         v.render();
         while (v.readyToFinish == false) {
-            glfwWaitEventsTimeout (0.018);
+            v.waitevents (0.018);
             // Slowly update the content of the graph
             if (rcount++ % 20 == 0 && idx < absc.size()) {
                 // Append to dataset 0
