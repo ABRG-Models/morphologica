@@ -11,7 +11,8 @@ int main()
     morph::Visual v(1024, 768, "Coordinates in GraphVisual");
     v.setSceneTrans (morph::vec<float,3>({-0.458656f, -0.428112f, -2.5f}));
 
-    auto gv = std::make_unique<morph::GraphVisual<double>> (v.shaders, morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    v.bindmodel (gv);
 
     // Choose marker policy for this graph
     gv->policy = morph::stylepolicy::markers;
