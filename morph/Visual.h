@@ -296,6 +296,20 @@ namespace morph {
         //! Remove the VisualModel with ID \a modelId from the scene.
         void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
+        //! Remove the VisualModel whose pointer matches the VisualModel* modelPtr
+        void removeVisualModel (VisualModel* modelPtr)
+        {
+            unsigned int modelId = 0;
+            bool found_model = false;
+            for (modelId = 0; modelId < this->vm.size(); ++modelId) {
+                if (this->vm[modelId].get() == modelPtr) {
+                    found_model = true;
+                    break;
+                }
+            }
+            if (found_model == true) { this->vm.erase (this->vm.begin() + modelId); }
+        }
+
         //! Add a text label to the scene at a given location. Return the width and
         //! height of the text in a TextGeometry object.
         morph::TextGeometry addLabel (const std::string& _text,

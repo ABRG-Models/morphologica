@@ -52,6 +52,7 @@ int main (int argc, char** argv)
 
         auto qvp = std::make_unique<morph::QuiverVisual<float>> (&coords, offset, &quivs, morph::ColourMapType::Cividis);
         v.bindmodel (qvp);
+        qvp->finalize();
         unsigned int visId = v.addVisualModelId (qvp);
         cout << "Added Visual with visId " << visId << endl;
 
@@ -75,11 +76,10 @@ int main (int argc, char** argv)
         sv->colourScale = scale;
         sv->cm.setType (morph::ColourMapType::Plasma);
         sv->finalize();
-        unsigned int visId_s = v.addVisualModelId (sv);
-        cout << "Added Visual with visId " << visId_s << endl;
+        morph::ScatterVisual<float>* visPtr = v.addVisualModel (sv);
 
         v.render();
-        // 10 seconds of viewing
+        // 10 seconds of viewing the quivers
         if (holdVis == true) {
             for (size_t ti = 0; ti < (size_t)std::round(10.0/0.018); ++ti) {
                 glfwWaitEventsTimeout(0.018);
@@ -87,7 +87,19 @@ int main (int argc, char** argv)
             }
         }
 
+        std::cout << "Remove model " << visId << " (the quivers)" << std::endl;
         v.removeVisualModel (visId);
+
+        // 10 seconds of viewing the remaining scatter plot
+        if (holdVis == true) {
+            for (size_t ti = 0; ti < (size_t)std::round(10.0/0.018); ++ti) {
+                glfwWaitEventsTimeout(0.018);
+                v.render();
+            }
+        }
+
+        std::cout << "Remove scatter model with a pointer" << std::endl;
+        v.removeVisualModel (visPtr);
 
         v.render();
         if (holdVis == true) {
