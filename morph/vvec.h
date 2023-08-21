@@ -739,7 +739,7 @@ namespace morph {
             }
             return i;
         }
-        
+
         //! Find last element matching argument
         template <typename _S=S>
         size_t find_last_of (const _S& val) const
@@ -751,16 +751,16 @@ namespace morph {
             return i;
         }
 
-        //! Find all elements matching argument
+        //! Find all elements matching argument, returning a vvec containing the indices.
         template <typename _S=S>
         morph::vvec<size_t> find (const _S& val) const
         {
-            morph::vvec<size_t> indicies;
+            morph::vvec<size_t> indices;
             size_t i = 0;
             for (i = 0; i < this->size(); i++) {
-                if ((*this)[i] == val) { indicies.push_back(i); }
+                if ((*this)[i] == val) { indices.push_back(i); }
             }
-            return indicies;
+            return indices;
         }
 
         //! Return true if any element is zero
