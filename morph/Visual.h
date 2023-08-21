@@ -57,6 +57,7 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -1268,8 +1269,7 @@ namespace morph {
 #ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
             if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
-                std::cout << "User requested exit.\n";
-                this->readyToFinish = true;
+                this->quit_callback();
             }
 #endif
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
@@ -1598,8 +1598,7 @@ namespace morph {
         virtual void window_close_callback()
         {
             if (this->preventWindowCloseWithButton == false) {
-                std::cout << "User requested exit\n";
-                this->readyToFinish = true;
+                this->quit_callback();
             } else {
                 std::cout << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
             }
@@ -1623,6 +1622,22 @@ namespace morph {
         virtual void key_callback_extra (int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
         virtual void mouse_button_callback_extra (int button, int action, int mods) {}
+
+        //! A callback that client code can set so that it knows when user has signalled to
+        //! morph::Visual that it's quit time.
+        std::function<void()> external_quit_callback;
+
+    protected:
+        //! Our internal quit callback function
+        void quit_callback()
+        {
+            std::cout << "User requested exit.\n";
+            // Just set our 'readyToFinish' flag to true
+            this->readyToFinish = true;
+            // Call any external callback that's been set by client code
+            if (this->external_quit_callback) { this->external_quit_callback(); }
+        }
+
     };
 
 } // namespace morph
