@@ -1269,7 +1269,7 @@ namespace morph {
 #ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
             if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
-                this->quit_callback();
+                this->signal_to_quit();
             }
 #endif
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
@@ -1598,7 +1598,7 @@ namespace morph {
         virtual void window_close_callback()
         {
             if (this->preventWindowCloseWithButton == false) {
-                this->quit_callback();
+                this->signal_to_quit();
             } else {
                 std::cout << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
             }
@@ -1628,16 +1628,16 @@ namespace morph {
         std::function<void()> external_quit_callback;
 
     protected:
-        //! Our internal quit callback function
-        void quit_callback()
+        //! This internal quit function sets a 'readyToFinish' flag that your code can respond
+        //! to, and calls an external callback function that you may have set up.
+        void signal_to_quit()
         {
             std::cout << "User requested exit.\n";
-            // Just set our 'readyToFinish' flag to true
+            // 1. Set our 'readyToFinish' flag to true
             this->readyToFinish = true;
-            // Call any external callback that's been set by client code
+            // 2. Call any external callback that's been set by client code
             if (this->external_quit_callback) { this->external_quit_callback(); }
         }
-
     };
 
 } // namespace morph
