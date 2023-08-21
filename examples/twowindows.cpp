@@ -60,6 +60,9 @@ int main (int argc, char** argv)
         qvp->finalize();
         v.addVisualModel (qvp);
 
+        // Explicitly release context of the v Visual object, before calling setContext for the v2 object.
+        v.releaseContext();
+
         // Set up v2 with a graph, switching to the Visual v2's context first:
         v2.setContext();
         auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));

@@ -247,6 +247,14 @@ namespace morph {
 #endif
         }
 
+        //! Release the OpenGL context
+        void releaseContext()
+        {
+#ifndef OWNED_MODE
+            glfwMakeContextCurrent (nullptr);
+#endif
+        }
+
         /*!
          * Set up the passed-in VisualModel with functions that need access to Visual
          * attributes.
