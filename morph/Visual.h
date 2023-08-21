@@ -212,7 +212,9 @@ namespace morph {
         //! Take a screenshot of the window
         void saveImage (const std::string& img_filename)
         {
+#ifndef OWNED_MODE
             this->setContext();
+#endif
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
@@ -238,22 +240,14 @@ namespace morph {
             }
         }
 
+#ifndef OWNED_MODE
         //! Make this Visual the current one, so that when creating/adding a visual
         //! model, the vao ids relate to the correct OpenGL context.
-        void setContext()
-        {
-#ifndef OWNED_MODE
-            glfwMakeContextCurrent (this->window);
-#endif
-        }
+        void setContext() { glfwMakeContextCurrent (this->window); }
 
         //! Release the OpenGL context
-        void releaseContext()
-        {
-#ifndef OWNED_MODE
-            glfwMakeContextCurrent (nullptr);
+        void releaseContext() { glfwMakeContextCurrent (nullptr); }
 #endif
-        }
 
         /*!
          * Set up the passed-in VisualModel with functions that need access to Visual
@@ -348,6 +342,7 @@ namespace morph {
             return tm->getTextGeometry();
         }
 
+#ifndef OWNED_MODE
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window open,
          * and responsive, while displaying the result of a simulation. FIXME: This
@@ -355,32 +350,17 @@ namespace morph {
          */
         void keepOpen()
         {
-#ifndef OWNED_MODE
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
-#endif
         }
 
         //! Wrapper around the glfw polling function
-        void poll()
-        {
-#ifdef OWNED_MODE
-            throw std::runtime_error ("poll() isn't relevant in this mode");
-#else
-            glfwPollEvents();
+        void poll() { glfwPollEvents(); }
+        //! A wait-for-events with a timeout wrapper
+        void waitevents (const double& timeout) { glfwWaitEventsTimeout (timeout); }
 #endif
-        }
-
-        void waitevents (const double& timeout)
-        {
-#ifdef OWNED_MODE
-            throw std::runtime_error ("waitevents() isn't relevant in this mode");
-#else
-            glfwWaitEventsTimeout (timeout);
-#endif
-        }
 
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
@@ -393,7 +373,10 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
+
+#ifndef OWNED_MODE
             this->setContext();
+#endif
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
