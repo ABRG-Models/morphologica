@@ -72,9 +72,41 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
+        //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
+        std::vector<morph::vec<float, 3>> getCoordinates3()
+        {
+            std::vector<morph::vec<float, 3>> coords (this->num());
+            for (unsigned int i = 0; i < this->num(); ++i) {
+                coords[i] = { this->d_x[i], this->d_y[i], this->z };
+            }
+            return coords;
+        }
+
+        //! Get all the (x,y) coordinates from the grid and return as vector of vecs
+        std::vector<morph::vec<float, 2>> getCoordinates2()
+        {
+            std::vector<morph::vec<float, 2>> coords (this->num());
+            for (unsigned int i = 0; i < this->num(); ++i) {
+                coords[i] = { this->d_x[i], this->d_y[i] };
+            }
+            return coords;
+        }
+
+        // A get-the-coordinates function that returns a vvec of vec<float, 3>s
         morph::vvec<morph::vec<float, 3>> getCoords()
         {
             morph::vvec<morph::vec<float, 3>> rtn (d_x.size(), {0,0,0});
+            for (unsigned int i = 0; i < d_x.size(); ++i) {
+                rtn[i][0] = d_x[i];
+                rtn[i][1] = d_y[i];
+            }
+            return rtn;
+        }
+
+        // A get-the-coordinates function that returns a vvec of vec<float, 2>s
+        morph::vvec<morph::vec<float, 2>> getCoords2D()
+        {
+            morph::vvec<morph::vec<float, 2>> rtn (d_x.size(), {0,0});
             for (unsigned int i = 0; i < d_x.size(); ++i) {
                 rtn[i][0] = d_x[i];
                 rtn[i][1] = d_y[i];
@@ -1302,26 +1334,6 @@ namespace morph {
             }
 
             return theRegion;
-        }
-
-        //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
-        std::vector<morph::vec<float, 3>> getCoordinates3()
-        {
-            std::vector<morph::vec<float, 3>> coords (this->num());
-            for (unsigned int i = 0; i < this->num(); ++i) {
-                coords[i] = { this->d_x[i], this->d_y[i], this->z };
-            }
-            return coords;
-        }
-
-        //! Get all the (x,y) coordinates from the grid and return as vector of vecs
-        std::vector<morph::vec<float, 2>> getCoordinates2()
-        {
-            std::vector<morph::vec<float, 2>> coords (this->num());
-            for (unsigned int i = 0; i < this->num(); ++i) {
-                coords[i] = { this->d_x[i], this->d_y[i] };
-            }
-            return coords;
         }
 
         /*!

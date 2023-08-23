@@ -57,6 +57,7 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -212,7 +213,9 @@ namespace morph {
         //! Take a screenshot of the window
         void saveImage (const std::string& img_filename)
         {
+#ifndef OWNED_MODE
             this->setContext();
+#endif
             GLint viewport[4]; // current viewport
             glGetIntegerv (GL_VIEWPORT, viewport);
             int w = viewport[2];
@@ -238,14 +241,14 @@ namespace morph {
             }
         }
 
+#ifndef OWNED_MODE
         //! Make this Visual the current one, so that when creating/adding a visual
         //! model, the vao ids relate to the correct OpenGL context.
-        void setContext()
-        {
-#ifndef OWNED_MODE
-            glfwMakeContextCurrent (this->window);
+        void setContext() { glfwMakeContextCurrent (this->window); }
+
+        //! Release the OpenGL context
+        void releaseContext() { glfwMakeContextCurrent (nullptr); }
 #endif
-        }
 
         /*!
          * Set up the passed-in VisualModel with functions that need access to Visual
@@ -340,6 +343,7 @@ namespace morph {
             return tm->getTextGeometry();
         }
 
+#ifndef OWNED_MODE
         /*!
          * Keep on rendering until readToFinish is set true. Used to keep a window open,
          * and responsive, while displaying the result of a simulation. FIXME: This
@@ -347,32 +351,17 @@ namespace morph {
          */
         void keepOpen()
         {
-#ifndef OWNED_MODE
             while (this->readyToFinish == false) {
                 glfwWaitEventsTimeout (0.01667); // 16.67 ms ~ 60 Hz
                 this->render();
             }
-#endif
         }
 
         //! Wrapper around the glfw polling function
-        void poll()
-        {
-#ifdef OWNED_MODE
-            throw std::runtime_error ("poll() isn't relevant in this mode");
-#else
-            glfwPollEvents();
+        void poll() { glfwPollEvents(); }
+        //! A wait-for-events with a timeout wrapper
+        void waitevents (const double& timeout) { glfwWaitEventsTimeout (timeout); }
 #endif
-        }
-
-        void waitevents (const double& timeout)
-        {
-#ifdef OWNED_MODE
-            throw std::runtime_error ("waitevents() isn't relevant in this mode");
-#else
-            glfwWaitEventsTimeout (timeout);
-#endif
-        }
 
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
@@ -385,7 +374,10 @@ namespace morph {
 #ifdef PROFILE_RENDER
             steady_clock::time_point renderstart = steady_clock::now();
 #endif
+
+#ifndef OWNED_MODE
             this->setContext();
+#endif
 
 #ifdef __OSX__
             // https://stackoverflow.com/questions/35715579/opengl-created-window-size-twice-as-large
@@ -1277,8 +1269,7 @@ namespace morph {
 #ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
             if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
-                std::cout << "User requested exit.\n";
-                this->readyToFinish = true;
+                this->signal_to_quit();
             }
 #endif
             if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
@@ -1607,8 +1598,7 @@ namespace morph {
         virtual void window_close_callback()
         {
             if (this->preventWindowCloseWithButton == false) {
-                std::cout << "User requested exit\n";
-                this->readyToFinish = true;
+                this->signal_to_quit();
             } else {
                 std::cout << "Ignoring user request to exit (Visual::preventWindowCloseWithButton)\n";
             }
@@ -1632,6 +1622,22 @@ namespace morph {
         virtual void key_callback_extra (int key, int scancode, int action, int mods) {}
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
         virtual void mouse_button_callback_extra (int button, int action, int mods) {}
+
+        //! A callback that client code can set so that it knows when user has signalled to
+        //! morph::Visual that it's quit time.
+        std::function<void()> external_quit_callback;
+
+    protected:
+        //! This internal quit function sets a 'readyToFinish' flag that your code can respond
+        //! to, and calls an external callback function that you may have set up.
+        void signal_to_quit()
+        {
+            std::cout << "User requested exit.\n";
+            // 1. Set our 'readyToFinish' flag to true
+            this->readyToFinish = true;
+            // 2. Call any external callback that's been set by client code
+            if (this->external_quit_callback) { this->external_quit_callback(); }
+        }
     };
 
 } // namespace morph
