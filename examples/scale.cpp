@@ -11,6 +11,7 @@
 #include <array>
 #include <iostream>
 #include <morph/Scale.h>
+#include <morph/vvec.h>
 
 int main()
 {
@@ -19,6 +20,8 @@ int main()
     // You can scale a set of numbers to the range 0->1: First create a Scale
     // object. This scales numbers of type float into scaled numbers also of type float.
     morph::Scale<float> s;
+
+    std::cout << "Auto-scaling\n------------------\n";
     // Set it to autoscale the next time its transform method is called
     s.do_autoscale = true;
     // Create a vector of numbers
@@ -47,9 +50,37 @@ int main()
     // OR you can do this, which forces autoscale when s.transform() is next called (as long as s.do_autoscale is true).
     s.reset();
 
-    // Use this method to set the scaling if you know min and max of the range of
-    // your input data:
+    // Manually setting the scaling
+    std::cout << "Manual scaling\n------------------\n";
+    // Use this method to set the scaling if you know min and max of the range of your input
+    // data. This computes the scaling parameters given an assumption of a min of 1 and a max of 32:
     s.compute_autoscale (1.0f, 32.0f);
+
+    morph::vvec<float> vv1 = {1,2,3,4,5,8,9,32};
+    morph::vvec<float> vvresult(vv1);
+    s.transform (vv1, vvresult);
+    std::cout << "With Scale::compute_autoscale (1, 32), " << vv1 << " scales to: " << vvresult << "\n";
+
+    // To compute a scale which transforms every number to 1, you can do this:
+    s.setParams(0, 1); // For a linear morph::Scale, the parameters are gradient, offset
+    s.transform (vv1, vvresult);
+    std::cout << "With Scale::setParams(0,1) " << vv1 << " scales to: " << vvresult << "\n";
+
+    // To set a scaling which doubles every number and adds 1:
+    s.setParams(2, 1);
+    s.transform (vv1, vvresult);
+    std::cout << "With Scale::setParams(2,1) " << vv1 << " scales to: " << vvresult << "\n";
+
+    // To compute a scale which transforms every number to 0, you can do this:
+    s.setParams(0, 0);
+    s.transform (vv1, vvresult);
+    std::cout << "With Scale::setParams(0,0) " << vv1 << " scales to: " << vvresult << "\n";
+
+    // DON'T try to use compute autoscale to allow you to scale any number to zero. Here's what you
+    // get with compute_autoscale (0,0)
+    s.compute_autoscale (0.0f, 0.0f);
+    s.transform (vv1, vvresult);
+    std::cout << "With Scale::compute_autoscale(0,0) " << vv1 << " scales to: " << vvresult << "\n";
 
     // You can scale numbers between two different number types.
     morph::Scale<int,float> si;
@@ -63,6 +94,7 @@ int main()
     }
 
     //  You can scale arrays of numbers!
+    std::cout << "Scaling arrays\n------------------\n";
     morph::Scale<std::array<float,4>> s2;
     s2.do_autoscale = true;
     std::vector<std::array<float,4>> vaf;
@@ -91,6 +123,8 @@ int main()
 
 
     // Log scaling
+    std::cout << "Log scaling\n------------------\n";
+
     morph::Scale<double, float> ls;
     ls.do_autoscale = true;
     ls.setlog();
