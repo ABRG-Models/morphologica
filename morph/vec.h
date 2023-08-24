@@ -948,6 +948,19 @@ namespace morph {
         }
 
         /*!
+         * Set a two dimensional angle in radians (only for N=2). Preserve length, unless vector
+         * length is 0, in which case set as unit vector.
+         */
+        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        void set_angle (const _S _ang)
+        {
+            S l = this->length();
+            (*this)[0] = std::cos (_ang);
+            (*this)[1] = std::sin (_ang);
+            (*this) *= l > S{0} ? l : S{1};
+        }
+
+        /*!
          * operator* gives the Hadamard product.
          *
          * Hadamard product - elementwise multiplication. If the vectors are of
