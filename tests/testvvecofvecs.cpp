@@ -67,6 +67,12 @@ int main()
     std::cout << "  (vvec of vecs) / (vvec of scalars): " << vV2 << std::endl;
     if (vV2[2][0] != 2.0f) { --rtn; }
 
+    // You can .zero() a vvec of vecs:
+    morph::vvec<morph::vec<float, 2>> vV3 = { {1.0f, 1.0f}, {2.0f, 2.0f} };
+    std::cout << "Before zero: " << vV3 << std::endl;
+    vV3.zero();
+    std::cout << "After zero: " << vV3 << std::endl;
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
