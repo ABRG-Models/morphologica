@@ -270,6 +270,7 @@ namespace morph {
                 break;
             }
             case ColourMapType::Duochrome:
+            case ColourMapType::HSV:
             {
                 n = 2;
                 break;
@@ -310,7 +311,7 @@ namespace morph {
             return rm;
         }
 
-        //! An overload of convert for DuoChrome ColourMaps
+        //! An overload of convert for DuoChrome and HSV ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2)
         {
             if (this->type != ColourMapType::Duochrome && this->type != ColourMapType::HSV) {
@@ -487,6 +488,88 @@ namespace morph {
 
         //! Getter for type, the ColourMapType of this ColourMap.
         ColourMapType getType() const { return this->type; }
+
+        //! Getter for type, the ColourMapType of this ColourMap, returning as a human-readable string
+        std::string getTypeStr() const
+        {
+            std::string _s("unknown");
+
+            switch (this->type) {
+            case morph::ColourMapType::Fixed:
+                _s =  "fixed";
+                break;
+            case morph::ColourMapType::Trichrome:
+                _s =  "trichrome";
+                break;
+            case morph::ColourMapType::Duochrome:
+                _s =  "duochrome";
+                break;
+            case morph::ColourMapType::RGB:
+                _s =  "rgb";
+                break;
+            case morph::ColourMapType::RGBMono:
+                _s =  "rgbmono";
+                break;
+            case morph::ColourMapType::RGBGrey:
+                _s =  "rgbgrey";
+                break;
+            case morph::ColourMapType::HSV:
+                _s =  "hsv";
+                break;
+            case morph::ColourMapType::MonochromeGreen:
+                _s =  "monochromegreen";
+                break;
+            case morph::ColourMapType::MonochromeBlue:
+                _s =  "monochromeblue";
+                break;
+            case morph::ColourMapType::MonochromeRed:
+                _s =  "monochromered";
+                break;
+            case morph::ColourMapType::Monochrome:
+                _s =  "monochrome";
+                break;
+            case morph::ColourMapType::Greyscale:
+                _s =  "greyscale";
+                break;
+            case morph::ColourMapType::GreyscaleInv:
+                _s =  "greyscaleinv";
+                break;
+            case morph::ColourMapType::Twilight:
+                _s =  "twilight";
+                break;
+            case morph::ColourMapType::Cividis:
+                _s =  "cividis";
+                break;
+            case morph::ColourMapType::Viridis:
+                _s =  "viridis";
+                break;
+            case morph::ColourMapType::Plasma:
+                _s =  "plasma";
+                break;
+            case morph::ColourMapType::Inferno:
+                _s =  "inferno";
+                break;
+            case morph::ColourMapType::Magma:
+                _s =  "magma";
+                break;
+            case morph::ColourMapType::RainbowZeroWhite:
+                _s =  "rainbowzerowhite";
+                break;
+            case morph::ColourMapType::RainbowZeroBlack:
+                _s =  "rainbowzeroblack";
+                break;
+            case morph::ColourMapType::Rainbow:
+                _s =  "rainbow";
+                break;
+            case morph::ColourMapType::Jet:
+                _s =  "jet";
+                break;
+            default:
+                break;
+            }
+
+            return _s;
+        }
 
         //! Setter for type, the ColourMapType of this ColourMap.
         void setType (const ColourMapType& tp)
