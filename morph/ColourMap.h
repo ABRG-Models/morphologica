@@ -107,7 +107,7 @@ namespace morph {
         //! Construct with a type
         ColourMap (ColourMapType _t) { this->setType (_t); }
         //! Construct with the string name of the type
-        ColourMap (const std::string& _t) { this->setType (ColourMap::strToColourMapType (_t)); }
+        ColourMap (const std::string& _t) { this->setType (_t); }
 
         //! If s is a string that matches a ColourMapType, return that colour map
         //! type. If string doesn't match, return the default.
@@ -164,6 +164,134 @@ namespace morph {
                 cmt = morph::ColourMapType::Jet;
             }
             return cmt;
+        }
+
+        //! Return a string representation of the ColourMapType _t
+        static std::string colourMapTypeToStr (const ColourMapType _t)
+        {
+            std::string s("unknown");
+            switch (_t) {
+            case morph::ColourMapType::Fixed:
+            {
+                s = "fixed";
+                break;
+            }
+            case morph::ColourMapType::Trichrome:
+            {
+                s = "trichrome";
+                break;
+            }
+            case morph::ColourMapType::Duochrome:
+            {
+                s = "duochrome";
+                break;
+            }
+            case morph::ColourMapType::RGB:
+            {
+                s = "rgb";
+                break;
+            }
+            case morph::ColourMapType::RGBMono:
+            {
+                s = "rgbmono";
+                break;
+            }
+            case morph::ColourMapType::RGBGrey:
+            {
+                s = "rgbgrey";
+                break;
+            }
+            case morph::ColourMapType::HSV:
+            {
+                s = "hsv";
+                break;
+            }
+            case morph::ColourMapType::MonochromeGreen:
+            {
+                s = "monochromegreen";
+                break;
+            }
+            case morph::ColourMapType::MonochromeBlue:
+            {
+                s = "monochromeblue";
+                break;
+            }
+            case morph::ColourMapType::MonochromeRed:
+            {
+                s = "monochromered";
+                break;
+            }
+            case morph::ColourMapType::Monochrome:
+            {
+                s = "monochrome";
+                break;
+            }
+            case morph::ColourMapType::Greyscale:
+            {
+                s = "greyscale";
+                break;
+            }
+            case morph::ColourMapType::GreyscaleInv:
+            {
+                s = "greyscaleinv";
+                break;
+            }
+            case morph::ColourMapType::Twilight:
+            {
+                s = "twilight";
+                break;
+            }
+            case morph::ColourMapType::Cividis:
+            {
+                s = "cividis";
+                break;
+            }
+            case morph::ColourMapType::Viridis:
+            {
+                s = "viridis";
+                break;
+            }
+            case morph::ColourMapType::Plasma:
+            {
+                s = "plasma";
+                break;
+            }
+            case morph::ColourMapType::Inferno:
+            {
+                s = "inferno";
+                break;
+            }
+            case morph::ColourMapType::Magma:
+            {
+                s = "magma";
+                break;
+            }
+            case morph::ColourMapType::RainbowZeroWhite:
+            {
+                s = "rainbowzerowhite";
+                break;
+            }
+            case morph::ColourMapType::RainbowZeroBlack:
+            {
+                s = "rainbowzeroblack";
+                break;
+            }
+            case morph::ColourMapType::Rainbow:
+            {
+                s = "rainbow";
+                break;
+            }
+            case morph::ColourMapType::Jet:
+            {
+                s = "jet";
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
+            return s;
         }
 
         //! Return the colour that represents not-a-number
@@ -336,18 +464,26 @@ namespace morph {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
             switch (this->type) {
             case ColourMapType::Trichrome:
+            {
                 clr = this->trichrome (_datum1, _datum2, _datum3);
                 break;
+            }
             case ColourMapType::RGBMono:
+            {
                 clr = this->rgb_to_monochrome (_datum1, _datum2, _datum3);
                 break;
+            }
             case ColourMapType::RGBGrey:
+            {
                 clr = this->rgb_to_greyscale (_datum1, _datum2, _datum3);
                 break;
+            }
             case ColourMapType::RGB:
             default:
+            {
                 clr = this->rgb (_datum1, _datum2, _datum3);
                 break;
+            }
             }
             return clr;
         }
@@ -490,86 +626,7 @@ namespace morph {
         ColourMapType getType() const { return this->type; }
 
         //! Getter for type, the ColourMapType of this ColourMap, returning as a human-readable string
-        std::string getTypeStr() const
-        {
-            std::string _s("unknown");
-
-            switch (this->type) {
-            case morph::ColourMapType::Fixed:
-                _s =  "fixed";
-                break;
-            case morph::ColourMapType::Trichrome:
-                _s =  "trichrome";
-                break;
-            case morph::ColourMapType::Duochrome:
-                _s =  "duochrome";
-                break;
-            case morph::ColourMapType::RGB:
-                _s =  "rgb";
-                break;
-            case morph::ColourMapType::RGBMono:
-                _s =  "rgbmono";
-                break;
-            case morph::ColourMapType::RGBGrey:
-                _s =  "rgbgrey";
-                break;
-            case morph::ColourMapType::HSV:
-                _s =  "hsv";
-                break;
-            case morph::ColourMapType::MonochromeGreen:
-                _s =  "monochromegreen";
-                break;
-            case morph::ColourMapType::MonochromeBlue:
-                _s =  "monochromeblue";
-                break;
-            case morph::ColourMapType::MonochromeRed:
-                _s =  "monochromered";
-                break;
-            case morph::ColourMapType::Monochrome:
-                _s =  "monochrome";
-                break;
-            case morph::ColourMapType::Greyscale:
-                _s =  "greyscale";
-                break;
-            case morph::ColourMapType::GreyscaleInv:
-                _s =  "greyscaleinv";
-                break;
-            case morph::ColourMapType::Twilight:
-                _s =  "twilight";
-                break;
-            case morph::ColourMapType::Cividis:
-                _s =  "cividis";
-                break;
-            case morph::ColourMapType::Viridis:
-                _s =  "viridis";
-                break;
-            case morph::ColourMapType::Plasma:
-                _s =  "plasma";
-                break;
-            case morph::ColourMapType::Inferno:
-                _s =  "inferno";
-                break;
-            case morph::ColourMapType::Magma:
-                _s =  "magma";
-                break;
-            case morph::ColourMapType::RainbowZeroWhite:
-                _s =  "rainbowzerowhite";
-                break;
-            case morph::ColourMapType::RainbowZeroBlack:
-                _s =  "rainbowzeroblack";
-                break;
-            case morph::ColourMapType::Rainbow:
-                _s =  "rainbow";
-                break;
-            case morph::ColourMapType::Jet:
-                _s =  "jet";
-                break;
-            default:
-                break;
-            }
-
-            return _s;
-        }
+        std::string getTypeStr() const { return ColourMap::colourMapTypeToStr (this->type); }
 
         //! Setter for type, the ColourMapType of this ColourMap.
         void setType (const ColourMapType& tp)
@@ -602,6 +659,9 @@ namespace morph {
             }
             }
         }
+
+        //! Setter that takes a string representation of the colour map type
+        void setType (const std::string& ts) { this->setType (ColourMap::strToColourMapType (ts)); }
 
         //! Set Duochrome to be Red-blue
         void setHueRB()
