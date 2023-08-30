@@ -841,6 +841,18 @@ namespace morph {
         template<typename _S=S>
         bool length_lessthan (const vec<_S, N>& rhs) const { return this->length() < rhs.length(); }
 
+        //! Length less-than-or-equal
+        template<typename _S=S>
+        bool length_lte (const vec<_S, N>& rhs) const { return this->length() <= rhs.length(); }
+
+        //! Length greater-than
+        template<typename _S=S>
+        bool length_gtrthan (const vec<_S, N>& rhs) const { return this->length() > rhs.length(); }
+
+        //! Length greater-than-or-equal
+        template<typename _S=S>
+        bool length_gte (const vec<_S, N>& rhs) const { return this->length() >= rhs.length(); }
+
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
         bool operator< (const vec<_S, N>& rhs) const

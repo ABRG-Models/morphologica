@@ -73,6 +73,19 @@ int main()
     vV3.zero();
     std::cout << "After zero: " << vV3 << std::endl;
 
+    // Test we can find max, min, longest, shortest of a vvec of vecs
+    morph::vvec<morph::vec<double, 3>> vvshrt = { {-0,-0,6.78819124e-05}, {-0,1.78819124e-05,1.78819124e-05}, {0,6.78819124e-05,0}, {0,2,0}, {7.34092391e-05,0,0}, {6.78819124e-05,0,0}, {-6.78819124e-05,-0,0} };
+
+    std::cout << "vvshrt max: " << vvshrt.max()   << " at index " << vvshrt.argmax() << std::endl;
+    std::cout << "vvshrt longest: " << vvshrt.longest()  << " at index " << vvshrt.arglongest() << std::endl;
+    std::cout << "vvshrt shortest: " << vvshrt.shortest() << " at index " << vvshrt.argshortest() << std::endl;
+    std::cout << "vvshrt min: " << vvshrt.min() << " at index " << vvshrt.argmin() << std::endl;
+
+    if (vvshrt.argmin() != 1) { --rtn; }
+    if (vvshrt.argshortest() != 1) { --rtn; }
+    if (vvshrt.argmax() != 3) { --rtn; }
+    if (vvshrt.arglongest() != 3) { --rtn; }
+
     std::cout << "rtn: " << rtn << std::endl;
     return rtn;
 }
