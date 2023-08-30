@@ -1062,7 +1062,8 @@ namespace morph {
         {
             morph::vec<int, 4> extents;
             extents.set_from (this->findBoundaryExtents());
-            return (extents.as_float() * this->d);
+            morph::vec<float, 4> extents_mult = { this->d, this->d, this->v, this->v };
+            return (extents.as_float() * extents_mult);
         }
 
         //! Return the number of elements that the CartGrid is wide
