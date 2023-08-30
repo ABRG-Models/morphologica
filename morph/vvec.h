@@ -268,7 +268,6 @@ namespace morph {
             return ss.str();
         }
 
-
         /*!
          * Output the vector in a form suitable to paste into Python, as a numpy vector,
          * assuming you imported numpy as np
@@ -539,6 +538,7 @@ namespace morph {
         }
 
         //! Return the value of the longest component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S longest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
@@ -547,7 +547,12 @@ namespace morph {
             return rtn;
         }
 
+        // For a vvec of vecs, longest() should return the same as max()
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        S longest() const { return this->max(); }
+
         //! Return the index of the longest component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t arglongest() const
         {
             size_t idx = 0;
@@ -563,7 +568,12 @@ namespace morph {
             return idx;
         }
 
+        // For a vvec of vecs, arglongest() should return then same as argmax()
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        size_t arglongest() const { return this->argmax(); }
+
         //! Return the value of the shortest component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S shortest() const
         {
             auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
@@ -572,10 +582,19 @@ namespace morph {
             return rtn;
         }
 
+        //! A version of shortest for vvec of vecs
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        S shortest() const
+        {
+            auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
+            return theshortest == this->end() ? S{0} : *theshortest;
+        }
+
         /*!
          * Return the index of the shortest component of the vector. If this is a vector
          * of vectors, then return the index of the shortest vector.
          */
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argshortest() const
         {
             size_t idx = 0;
@@ -592,14 +611,35 @@ namespace morph {
             return idx;
         }
 
+        //! vvec of vecs version of argshortest
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        size_t argshortest() const
+        {
+            auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
+            size_t idx = (theshortest - this->begin());
+            return idx;
+        }
+
         //! Return the value of the maximum (most positive) component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S max() const
         {
             auto themax = std::max_element (this->begin(), this->end());
             return themax == this->end() ? S{0} : *themax;
         }
 
+        //! Return the max lengthed element of the vvec. Intended for use with a vvec of vecs
+        //! (morph::vvec<morph::vec<T, N>>). Note that the enclosed non-scalar thing must have
+        //! function length_lessthan (as morph::vec does).
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        S max() const
+        {
+            auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
+            return themax == this->end() ? S{0} : *themax;
+        }
+
         //! Return the index of the maximum (most positive) component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
@@ -607,20 +647,39 @@ namespace morph {
             return idx;
         }
 
+        //! vvec of vecs version of argmax returns the index of the maximum length morph::vec
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        size_t argmax() const
+        {
+            auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
+            size_t idx = (themax - this->begin());
+            return idx;
+        }
+
         //! Return the value of the minimum (smallest or most negative) component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S min() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             return themin == this->end() ? S{0} : *themin;
         }
 
+        //! For a vvec of vecs, min() is shortest()
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        S min() const { return this->shortest(); }
+
         //! Return the index of the minimum (smallest or most negative) component of the vector.
+        template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
             size_t idx = (themin - this->begin());
             return idx;
         }
+
+        //! For a vvec of vecs, argmin() is argshortest()
+        template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
+        size_t argmin() const { return this->argshortest(); }
 
         //! Return the min and max values of the vvec, ignoring any not-a-number elements. If you
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
@@ -1347,6 +1406,33 @@ namespace morph {
                 throw std::runtime_error ("length based comparison: rhs dims should equal vvec's dims");
             }
             return this->length() < rhs.length();
+        }
+
+        template<typename _S=S>
+        bool length_lte (const vvec<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("length based comparison: rhs dims should equal vvec's dims");
+            }
+            return this->length() <= rhs.length();
+        }
+
+        template<typename _S=S>
+        bool length_gtrthan (const vvec<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("length based comparison: rhs dims should equal vvec's dims");
+            }
+            return this->length() > rhs.length();
+        }
+
+        template<typename _S=S>
+        bool length_gte (const vvec<_S>& rhs) const
+        {
+            if (rhs.size() != this->size()) {
+                throw std::runtime_error ("length based comparison: rhs dims should equal vvec's dims");
+            }
+            return this->length() >= rhs.length();
         }
 
         //! Return true if each element of *this is less than its counterpart in rhs.

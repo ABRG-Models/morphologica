@@ -829,7 +829,14 @@ namespace morph {
          * The default comparison for std::set is the operator<. The definition here
          * applied to !comp(a,b) && !comp(b,a) will suggest that two different vecs
          * are equal even when they're not and so your std::sets will fail to insert
-         * unique vecs
+         * unique vecs.
+         *
+         * This can also be an issue with using a morph::vec as a key to an std::map. So similarly
+         * do something like this to create a map with a key type morph::vec<int, 2> and a value
+         * type std::string:
+         *
+         *    auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
+         *    std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
          */
         template<typename _S=S>
         bool lexical_lessthan (const vec<_S, N>& rhs) const
@@ -840,6 +847,18 @@ namespace morph {
         //! Another way to compare vectors would be by length.
         template<typename _S=S>
         bool length_lessthan (const vec<_S, N>& rhs) const { return this->length() < rhs.length(); }
+
+        //! Length less-than-or-equal
+        template<typename _S=S>
+        bool length_lte (const vec<_S, N>& rhs) const { return this->length() <= rhs.length(); }
+
+        //! Length greater-than
+        template<typename _S=S>
+        bool length_gtrthan (const vec<_S, N>& rhs) const { return this->length() > rhs.length(); }
+
+        //! Length greater-than-or-equal
+        template<typename _S=S>
+        bool length_gte (const vec<_S, N>& rhs) const { return this->length() >= rhs.length(); }
 
         //! Return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>

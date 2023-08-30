@@ -133,12 +133,12 @@ namespace morph {
             }
             if (this->do_autoscale == true && !this->ready()) {
                 this->autoscale_from<Container> (data); // not const
+            } else if (this->do_autoscale == false && !this->ready()) {
+                throw std::runtime_error ("ScaleImplBase::transform(): Params are not set and do_autoscale is set false. Can't transform.");
             }
             typename Container<TT, Allocator>::const_iterator di = data.begin();
             typename Container<ST, OAllocator>::iterator oi = output.begin();
-            while (di != data.end()) {
-                *oi++ = this->transform_one (*di++);
-            }
+            while (di != data.end()) { *oi++ = this->transform_one (*di++); }
         }
 
         /*!
@@ -156,14 +156,12 @@ namespace morph {
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
             }
-            if (this->do_autoscale == true && !this->ready()) {
+            if (!this->ready()) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
             }
             typename Container<ST, OAllocator>::const_iterator di = data.begin();
             typename Container<TT, Allocator>::iterator oi = output.begin();
-            while (di != data.end()) {
-                *oi++ = this->inverse_one (*di++);
-            }
+            while (di != data.end()) { *oi++ = this->inverse_one (*di++); }
         }
 
         /*!

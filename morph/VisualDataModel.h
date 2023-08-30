@@ -33,11 +33,18 @@ namespace morph {
         {
             if (this->zScale.do_autoscale == true) { this->zScale.reset(); }
             if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            if (this->colourScale2.do_autoscale == true) { this->colourScale2.reset(); }
+            if (this->colourScale3.do_autoscale == true) { this->colourScale3.reset(); }
             if (this->vectorScale.do_autoscale == true) { this->vectorScale.reset(); }
         }
 
         void clearAutoscaleZ() { if (this->zScale.do_autoscale == true) { this->zScale.reset(); } }
-        void clearAutoscaleColour() { if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); } }
+        void clearAutoscaleColour()
+        {
+            if (this->colourScale.do_autoscale == true) { this->colourScale.reset(); }
+            if (this->colourScale2.do_autoscale == true) { this->colourScale2.reset(); }
+            if (this->colourScale3.do_autoscale == true) { this->colourScale3.reset(); }
+        }
         void clearAutoscaleVector() { if (this->vectorScale.do_autoscale == true) { this->vectorScale.reset(); } }
 
         void setZScale (const Scale<T, float>& zscale) { this->zScale = zscale; }
@@ -146,9 +153,11 @@ namespace morph {
         //! A Scaling function for the colour map. Perhaps a Scale class contains a
         //! colour map? If not, then this scale might well be autoscaled. Applied to scalarData.
         Scale<T, float> colourScale;
-        // scale for second colour (when used with vectorData)
+        //! Scale for second colour (when used with vectorData). This is used if the ColourMap cm is
+        //! ColourMapType::DuoChrome of ColourMapType::HSV.
         Scale<T, float> colourScale2;
-        // scale for third colour (when used with vectorData)
+        //! Scale for third colour (when used with vectorData). Use if ColourMap cm is
+        //! ColourMapType::TriChrome.
         Scale<T, float> colourScale3;
 
         //! A scale to scale (or autoscale) scalarData. This might be used to set z
