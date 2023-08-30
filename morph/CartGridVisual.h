@@ -64,6 +64,8 @@ namespace morph {
             // Defaults for z and colourScale
             this->zScale.setParams (1, 0);
             this->colourScale.do_autoscale = true;
+            this->colourScale2.do_autoscale = true;
+            this->colourScale3.do_autoscale = true;
             this->cg = _cg;
             // Note: VisualModel::finalize() should be called before rendering
         }
@@ -119,8 +121,8 @@ namespace morph {
                 }
                 if (this->cm.getType() != morph::ColourMapType::RGB) {
                     this->colourScale.transform (this->dcolour, this->dcolour);
-                    this->colourScale.transform (this->dcolour2, this->dcolour2);
-                    this->colourScale.transform (this->dcolour3, this->dcolour3);
+                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
                 }
             }
 
@@ -190,8 +192,11 @@ namespace morph {
                 // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
                 if (this->cm.getType() != morph::ColourMapType::RGB) {
                     this->colourScale.transform (this->dcolour, this->dcolour);
-                    this->colourScale.transform (this->dcolour2, this->dcolour2);
-                    this->colourScale.transform (this->dcolour3, this->dcolour3);
+                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
+                    // transform their second colour/axis,
+                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                    // Similarly for Triple axis maps
+                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
                 } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
             }
             float datumC = 0.0f;   // datum at the centre
