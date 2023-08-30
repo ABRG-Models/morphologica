@@ -94,6 +94,26 @@ namespace morph {
                 break;
             }
             }
+
+            if (this->showborder == true) {
+                // Draw around the outside. This is *panorama* specific.
+                morph::vec<float, 4> cg_extents = this->cg->get_extents(); // {xmin, xmax, ymin, ymax}
+                float bthick    = this->cg->getd() * this->border_thickness;
+                float bz = this->cg->getd() / 10.0f;
+                float half_bthick = bthick/2.0f;
+                float left  = cg_extents[0] - half_bthick - (this->cg->getd()/2.0f) + this->centering_offset[0];
+                float right = cg_extents[1] + half_bthick + (this->cg->getd()/2.0f) + this->centering_offset[0];
+                float bot   = cg_extents[2] - half_bthick - (this->cg->getv()/2.0f) + this->centering_offset[1];
+                float top   = cg_extents[3] + half_bthick + (this->cg->getv()/2.0f) + this->centering_offset[1];
+                morph::vec<float> lb = {{left, bot, bz}}; // z?
+                morph::vec<float> lt = {{left, top, bz}};
+                morph::vec<float> rt = {{right, top, bz}};
+                morph::vec<float> rb = {{right, bot, bz}};
+                this->computeTube (this->idx, lb, lt, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (this->idx, lt, rt, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (this->idx, rt, rb, this->border_colour, this->border_colour, bthick, 12);
+                this->computeTube (this->idx, rb, lb, this->border_colour, this->border_colour, bthick, 12);
+            }
         }
 
         // Initialize vertex buffer objects and vertex array object.
@@ -432,10 +452,17 @@ namespace morph {
         //! How to render the elements. Triangles are faster.
         CartVisMode cartVisMode = CartVisMode::Triangles;
 
-        // Set this to true to adjust the positions that the CartGridVisual uses to plot
-        // the CartGrid so that the CartGrid is centralised around the
-        // VisualModel::mv_offset.
+        //! Set this to true to adjust the positions that the CartGridVisual uses to plot
+        //! the CartGrid so that the CartGrid is centralised around the
+        //! VisualModel::mv_offset.
         bool centralize = false;
+
+        //! Set true to draw a border around the outside
+        bool showborder = false;
+        //! The colour for the border
+        std::array<float, 3> border_colour = morph::colour::grey80;
+        //! The border thickness in multiples of a pixel in the CartGrid
+        float border_thickness = 0.33f;
 
     protected:
         //! An overridable function to set the colour of rect ri
