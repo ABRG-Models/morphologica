@@ -253,6 +253,12 @@ add_test(testQuaternion testQuaternion)
 add_executable(testvec testvec.cpp)
 add_test(testvec testvec)
 
+add_executable(testvec_asmapkey testvec_asmapkey.cpp)
+add_test(testvec_asmapkey testvec_asmapkey)
+
+add_executable(testarray_asmapkey testarray_asmapkey.cpp)
+add_test(testarray_asmapkey testarray_asmapkey)
+
 # test morph::vec elemental operations
 add_executable(testvecElementOps testvecElementOps.cpp)
 add_test(testvecElementOps testvecElementOps)
