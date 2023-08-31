@@ -14,7 +14,7 @@
 #include <morph/mathconst.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
-#include <morph/GraphVisual.h> // Maybe share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
+#include <morph/GraphVisual.h> // share some features from GraphVisual
 
 namespace morph {
 
@@ -44,8 +44,6 @@ namespace morph {
     {
     public:
         //! Constructor
-        //! \param sp shader program id
-        //! \param tsp text shader program id
         //! \param _offset The offset within morph::Visual space to place these axes
         ColourBarVisual (const vec<float> _offset)
         {
@@ -61,6 +59,7 @@ namespace morph {
             this->twodimensional = true;
         }
 
+        //! Set the colour of the frame, ticks and text
         void setColour (const std::array<float, 3>& c)
         {
             this->tf.colour = c;
