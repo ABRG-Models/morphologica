@@ -1077,7 +1077,7 @@ namespace morph {
             idx += nverts;
         } // end computeTube with ux/uy vectors for faces
 
-        //! Compute a Quad from 4 arbitrary corners
+        //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
         void computeFlatQuad (VBOint& idx,
                               vec<float> c1, vec<float> c2,
                               vec<float> c3, vec<float> c4,
