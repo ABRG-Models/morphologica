@@ -1,5 +1,7 @@
 #
-# Qt setup
+# Qt setup. This CMakeLists.txt is processed only if the top-level
+# find_package (Qt5... call found the Qt5 development libraries. With
+# tweaks, I would expect this to work ok with Qt6, too.
 #
 
 # setup for qt packages (see http://www.kdab.com/using-cmake-with-qt-5/)
@@ -12,7 +14,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 COMPONENTS Gui Core Widgets REQUIRED)
+# We already did find_package at the top level
+# find_package(Qt5 COMPONENTS Gui Core Widgets REQUIRED)
 
 #
 # All the library finding is now done. It's time to compile the program.
