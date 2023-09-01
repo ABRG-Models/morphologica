@@ -138,6 +138,11 @@ make
 sudo make install
 ```
 
+#### Qt5
+
+If present, the Qt5 components Core, Gui and Widgets components are used to compile some example Qt morphologica programs. I've not tested this on Mac.
+
+
 ### Common manual dependency builds
 
 Whether or not you used mac ports to install hdf5 and
