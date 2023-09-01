@@ -121,6 +121,7 @@ namespace morph {
         //! Initialize as a minimal, triangled surface
         void initializeVerticesTris()
         {
+            this->idx = 0;
             unsigned int nrect = this->cg->num();
 
             if (this->scalarData != nullptr) {
@@ -148,7 +149,8 @@ namespace morph {
 
             for (unsigned int ri = 0; ri < nrect; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
-                this->vertex_push (this->cg->d_x[ri]+centering_offset[0], this->cg->d_y[ri]+centering_offset[1], dcopy[ri], this->vertexPositions);
+                this->vertex_push (this->cg->d_x[ri]+centering_offset[0],
+                                   this->cg->d_y[ri]+centering_offset[1], dcopy[ri], this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
@@ -168,7 +170,7 @@ namespace morph {
                 }
             }
 
-            this->idx = this->vertexPositions.size();
+            this->idx += nrect;
         }
 
         //! Show a set of hexes at the zero?
