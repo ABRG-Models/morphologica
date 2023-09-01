@@ -452,6 +452,15 @@ namespace morph {
             }
         }
 
+        //! An overload of convert for HSV ColourMaps only
+        std::array<float, 3> convert_angular (T _angle, T _radius)
+        {
+            if (this->type != ColourMapType::HSV) {
+                throw std::runtime_error ("Set ColourMapType to HSV to use ColourMap::convert_angular().");
+            }
+            return this->hsv_anglerad (_angle, _radius);
+        }
+
         //! An overload of convert for TriChrome or RGB ColourMaps
         std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
         {
@@ -979,6 +988,21 @@ namespace morph {
             phi_hue /= morph::mathconst<T>::two_pi;
             float phi_hue_f = static_cast<float>(phi_hue);
             return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-phi_hue_f) : phi_hue_f, static_cast<float>(r_sat), this->val);
+        }
+
+        /*!
+         * Return the colour from the hsv map with the given angle and radius. Takes
+         * hue_rotation and hue_reverse_direction into account.
+         */
+        std::array<float,3> hsv_anglerad (T angle_hue, T radius_sat)
+        {
+            T phi_hue = angle_hue + this->hue_rotation;
+            phi_hue = phi_hue < T{0} ? phi_hue + morph::mathconst<T>::two_pi : phi_hue;
+            phi_hue = phi_hue > morph::mathconst<T>::two_pi ? phi_hue - morph::mathconst<T>::two_pi : phi_hue;
+            phi_hue /= morph::mathconst<T>::two_pi;
+            float phi_hue_f = static_cast<float>(phi_hue);
+            float radius_sat_f = radius_sat > T{1} ? 1.0f : static_cast<float>(radius_sat);
+            return ColourMap::hsv2rgb (this->hue_reverse_direction ? (1.0f-phi_hue_f) : phi_hue_f, radius_sat_f, this->val);
         }
 
         //! Bounds-check three datums to be in range [0,1]

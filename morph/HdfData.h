@@ -1385,7 +1385,7 @@ namespace morph {
             // Resize the Mat
             vals.create ((int)dims[0], matcols, cv_type);
 
-            herr_t status;
+            herr_t status = herr_t{0};
             switch (cv_type) {
             case CV_8UC1:
             case CV_8UC2:
@@ -1529,8 +1529,8 @@ namespace morph {
 
             hid_t dataspace_id = H5Screate_simple (2, dim_mat, NULL);
 
-            hid_t dataset_id;
-            herr_t status;
+            hid_t dataset_id = hid_t{0};
+            herr_t status = herr_t{0};
 
             int cv_type = vals.type();
 

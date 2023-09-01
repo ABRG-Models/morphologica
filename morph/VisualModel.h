@@ -2273,6 +2273,54 @@ namespace morph {
             }
 
         } // end computeFlatDashedLine
+
+        // Compute a flat line circle outline
+        void computeFlatCircleLine (VBOint& idx, vec<float> centre, vec<float> norm, float radius,
+                                    float linewidth, std::array<float, 3> col, int segments = 128)
+        {
+            // circle in a plane defined by a point (v0 = vstart or vend) and a normal
+            // (v) can be found: Choose random vector vr. A vector inplane = vr ^ v. The
+            // unit in-plane vector is inplane.normalise. Can now use that vector in the
+            // plan to define a point on the circle. Note that this starting point on
+            // the circle is at a random position, which means that this version of
+            // computeTube is useful for tubes that have quite a few segments.
+            vec<float> rand_vec;
+            rand_vec.randomize();
+            vec<float> inplane = rand_vec.cross(norm);
+            inplane.renormalize();
+            vec<float> norm_x_inplane = norm.cross(inplane);
+
+            float half_lw = linewidth / 2.0f;
+            float r_in = radius-half_lw;
+            float r_out = radius+half_lw;
+            // Inner ring at radius radius-linewidth/2 with normals in direction norm;
+            // Outer ring at radius radius+linewidth/2 with normals also in direction norm
+            for (int j = 0; j < segments; j++) {
+                float t = j * morph::mathconst<float>::two_pi/static_cast<float>(segments);
+                vec<float> c_in = inplane * sin(t) * r_in + norm_x_inplane * cos(t) * r_in;
+                this->vertex_push (centre+c_in, this->vertexPositions);
+                this->vertex_push (norm, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+                vec<float> c_out = inplane * sin(t) * r_out + norm_x_inplane * cos(t) * r_out;
+                this->vertex_push (centre+c_out, this->vertexPositions);
+                this->vertex_push (norm, this->vertexNormals);
+                this->vertex_push (col, this->vertexColors);
+            }
+            // Added 2*segments vertices to vertexPositions
+
+            // After creating vertices, push all the indices.
+            for (int j = 0; j < segments; j++) {
+                int jn = (segments + ((j+1) % segments)) % segments;
+                this->indices.push_back (idx+(2*j));
+                this->indices.push_back (idx+(2*jn));
+                this->indices.push_back (idx+(2*jn+1));
+                this->indices.push_back (idx+(2*j));
+                this->indices.push_back (idx+(2*jn+1));
+                this->indices.push_back (idx+(2*j+1));
+            }
+            idx += 2 * segments; // nverts
+
+        } // end computeFlatCircle
     };
 
 } // namespace morph

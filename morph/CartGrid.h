@@ -561,11 +561,13 @@ namespace morph {
         morph::vec<float, 2> centre_of_mass (morph::vvec<F>& data)
         {
             morph::vec<float, 2> com = {0,0};
+            F datasum = F{0};
             for (unsigned int i = 0; i < this->num(); ++i) {
                 com[0] += d_x[i] * data[i];
                 com[1] += d_y[i] * data[i];
+                datasum += data[i];
             }
-            com /= this->num();
+            com /= datasum;
             return com;
         }
 

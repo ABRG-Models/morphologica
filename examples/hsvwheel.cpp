@@ -8,6 +8,7 @@
 
 #include <morph/Visual.h>
 #include <morph/ColourMap.h>
+#include <morph/HSVWheelVisual.h>
 
 // In this example, I'll create a special visual to show hsv colours.
 struct SquareGridVisual : public morph::VisualModel
@@ -93,7 +94,21 @@ int main()
     hsv_vis->addLabel (lbl, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis->finalize();
-    v.addVisualModel (hsv_vis);
+    auto hsv_visp = v.addVisualModel (hsv_vis);
+
+    // HSVWHeel for Grid1
+    morph::vec<float, 3> woffset = offset;
+    woffset[0] += 5.5f;
+    woffset[1] -= 6.0f;
+    auto hsvw_vis = std::make_unique<morph::HSVWheelVisual<float>>(woffset);
+    v.bindmodel (hsvw_vis);
+    hsvw_vis->setColour (morph::colour::white);
+    hsvw_vis->radius = 3.5f;
+    hsvw_vis->tf.fontsize = 0.4f;
+    hsvw_vis->twodimensional = false;
+    hsvw_vis->cm = hsv_visp->colourMap;
+    hsvw_vis->finalize();
+    v.addVisualModel (hsvw_vis);
 
     offset[0] = -14.0f;
     hue_rotn = -morph::mathconst<float>::pi_over_2;
@@ -106,7 +121,24 @@ int main()
     hsv_vis2->addLabel (lbl2, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis2->finalize();
-    v.addVisualModel (hsv_vis2);
+    auto hsv_vis2p = v.addVisualModel (hsv_vis2);
+
+    // HSVwheel
+    woffset = offset;
+    woffset[0] += 5.5f;
+    woffset[1] -= 6.0f;
+    hsvw_vis = std::make_unique<morph::HSVWheelVisual<float>>(woffset);
+    v.bindmodel (hsvw_vis);
+    hsvw_vis->setFrameColour (morph::colour::teal);
+    hsvw_vis->setTextColour (morph::colour::white);
+    hsvw_vis->framelinewidth = 0.1f;
+    hsvw_vis->radius = 3.5f;
+    hsvw_vis->tf.fontsize = 0.4f;
+    hsvw_vis->twodimensional = false;
+    hsvw_vis->cm = hsv_vis2p->colourMap;
+    hsvw_vis->finalize();
+    v.addVisualModel (hsvw_vis);
+
 
     offset[0] = 14.0f;
     hue_rotn = 0.0f;
@@ -117,8 +149,22 @@ int main()
     hsv_vis3->addLabel (lbl3, morph::vec<float>({0,-1,0}), tf);
     //
     hsv_vis3->finalize();
-    v.addVisualModel (hsv_vis3);
+    auto hsv_vis3p = v.addVisualModel (hsv_vis3);
 
+    woffset = offset;
+    woffset[0] += 5.5f;
+    woffset[1] -= 6.0f;
+    hsvw_vis = std::make_unique<morph::HSVWheelVisual<float>>(woffset);
+    v.bindmodel (hsvw_vis);
+    hsvw_vis->setColour (morph::colour::white);
+    hsvw_vis->labels = {"Fwds", "FL", "Left", "BL", "Back", "BR", "Right", "FR"};
+    hsvw_vis->framelinewidth = 0.2f;
+    hsvw_vis->radius = 3.5f;
+    hsvw_vis->tf.fontsize = 0.4f;
+    hsvw_vis->twodimensional = false;
+    hsvw_vis->cm = hsv_vis3p->colourMap;
+    hsvw_vis->finalize();
+    v.addVisualModel (hsvw_vis);
 
     v.keepOpen();
     return 0;
