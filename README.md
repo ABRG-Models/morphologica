@@ -132,7 +132,7 @@ useful. Examples include:
 
 * **[morph::HexGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/HexGrid.h)** and **[morph::CartGrid](https://github.com/ABRG-Models/morphologica/blob/main/morph/CartGrid.h)**: classes for running simulations on hexagonal or Cartesian
 grids (managing all the neighbour relationships between elements and
-allowing you to specific various boundary shapes for your domain)
+allowing you to specific various boundary shapes for your domain). See also **[morph::ColourBarVisual](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourBarVisual.h)** to draw colour bars for your **[morph::ColourMap](https://github.com/ABRG-Models/morphologica/blob/main/morph/ColourMap.h)** of choice.
 
 * **[morph::vec](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h)** and **[morph::vvec](https://github.com/ABRG-Models/morphologica/blob/main/morph/vvec.h)**: Cool mathematical vector classes - these are like std::vector and std::array but they also sport maths methods. [vvec usage example](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvvec.cpp).
 
