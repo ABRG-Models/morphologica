@@ -104,7 +104,7 @@ sudo make install
 Hierarchical data format is a standard format for saving binary
 data. morph::HdfData wraps the HDF5 API and hence HDF5 is a required
 dependency to build all of the morphologica tests and is required if
-you are going to use HdfData. Build version 1.10.x.
+you are going to use morph::HdfData. Build version 1.10.x.
 
 ```sh
 mkdir -p ~/src

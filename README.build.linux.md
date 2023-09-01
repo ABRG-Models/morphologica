@@ -12,7 +12,7 @@ program and a C++ compiler which can compile c++-17 code.
 
 ## *Required*: Install dependencies
 
-morphologica code depends on OpenGL, Freetype and glfw3. Armadillo and HDF5 are optional dependencies which you may need. Armadillo is required if you use the BezCurve class or any of the classes HexGrid/ReadCurve/CartGrid (which all use BezCurvePath and hence BezCurve). HDF5 is required if you use the HdfData wrapper class.
+morphologica code depends on OpenGL, Freetype and glfw3. Armadillo and HDF5 are optional dependencies which you may need. Armadillo is required if you use the BezCurve class or any of the classes HexGrid/ReadCurve/CartGrid (which all use BezCurvePath and hence BezCurve). HDF5 is required if you use the HdfData wrapper class, or if you want to compile HexGrid/CartGrid with built-in save() and load() functions.
 
 ### Package-managed dependencies for Ubuntu/Debian
 
