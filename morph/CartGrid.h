@@ -9,10 +9,15 @@
 #include <morph/BezCurvePath.h>
 #include <morph/BezCoord.h>
 #include <morph/mathconst.h>
-#include <morph/HdfData.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Scale.h>
+
+// If the CartGrid::save and CartGrid::load methods are required, define
+// CARTGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
+# include <morph/HdfData.h>
+#endif
 
 #include <set>
 #include <list>
@@ -244,6 +249,7 @@ namespace morph {
             this->d_flags.clear();
         }
 
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
         /*!
          * Save this CartGrid (and all the rects in it) into the HDF5 file at the
          * location \a path.
@@ -489,12 +495,15 @@ namespace morph {
                 }
             }
         }
+#endif // CARTGRID_COMPILE_LOAD_AND_SAVE
 
         //! Default constructor creates symmetric grid centered about 0,0.
         CartGrid(): d(1.0f), v(1.0f), x_span(1.0f), y_span(1.0f), z(0.0f) {}
 
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
         //! Construct then load from file.
         CartGrid (const std::string& path) : d(1.0f), v(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
+#endif
 
         //! Construct the a symmetric, centered grid with a square element distance of \a d_ and square size length x_span.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
