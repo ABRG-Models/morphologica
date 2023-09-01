@@ -1,4 +1,7 @@
+// include HexGrid with the optional load() and save() methods
+#define HEXGRID_COMPILE_LOAD_AND_SAVE 1
 #include <morph/HexGrid.h>
+
 #include <morph/ReadCurves.h>
 #include <morph/tools.h>
 #include <morph/ColourMap.h>

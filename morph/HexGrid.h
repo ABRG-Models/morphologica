@@ -15,9 +15,14 @@
 #include <morph/BezCoord.h>
 #include <morph/mathconst.h>
 #include <morph/MathAlgo.h>
-#include <morph/HdfData.h>
 #include <morph/debug.h>
 #include <morph/Matrix22.h>
+
+// If the HexGrid::save and HexGrid::load methods are required, define
+// HEXGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
+# include <morph/HdfData.h>
+#endif
 
 #include <set>
 #include <list>
@@ -208,6 +213,7 @@ namespace morph {
             this->d_flags.clear();
         }
 
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
         /*!
          * Save this HexGrid (and all the Hexes in it) into the HDF5 file at the
          * location @path.
@@ -423,17 +429,19 @@ namespace morph {
                 }
             }
         }
+#endif // HEXGRID_COMPILE_LOAD_AND_SAVE
 
         /*!
          * Default constructor
          */
         HexGrid(): d(1.0f), x_span(1.0f), z(0.0f) {}
 
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
         /*!
          * Construct then load from file.
          */
         HexGrid (const std::string& path) : d(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
-
+#endif
         /*!
          * Construct the hexagonal hex grid with a hex to hex distance of @a d_
          * (centre to centre) and approximate diameter of @a x_span_. Set z to @a z_
