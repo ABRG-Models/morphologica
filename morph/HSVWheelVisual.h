@@ -79,28 +79,31 @@ namespace morph {
             this->ticklabelheight = 0.0f;
             this->ticklabelwidth = 0.0f;
 
-            if (this->tick_posns.empty()) {
-                // Auto-fill tick_posns based on ticks size.
+            if (this->label_angles.empty()) {
+                // Auto-fill label_angles based on labels size.
                 // example order for 4: mc::pi_over_2, mc::pi, mc::three_pi_over_2, 0.0f
-                this->tick_posns.resize (this->ticks.size());
-                for (unsigned int i = 0; i < this->ticks.size(); ++i) {
+                this->label_angles.resize (this->labels.size());
+                for (unsigned int i = 0; i < this->labels.size(); ++i) {
                     // North is pi/2, so that's the start:
-                    this->tick_posns[i] = mc::pi_over_2 + i * (mc::two_pi / this->ticks.size());
+                    this->label_angles[i] = mc::pi_over_2 + i * (mc::two_pi / this->labels.size());
                     // Rescale any that exceed 2pi:
-                    this->tick_posns[i] = this->tick_posns[i] < F{0} ? this->tick_posns[i] + mc::two_pi : this->tick_posns[i];
-                    this->tick_posns[i] = this->tick_posns[i] > mc::two_pi ? this->tick_posns[i] - mc::two_pi : this->tick_posns[i];
+                    this->label_angles[i] = this->label_angles[i] < F{0} ? this->label_angles[i] + mc::two_pi : this->label_angles[i];
+                    this->label_angles[i] = this->label_angles[i] > mc::two_pi ? this->label_angles[i] - mc::two_pi : this->label_angles[i];
                 }
             }
 
-            for (unsigned int i = 0; i < this->tick_posns.size(); ++i) {
-                std::string s = this->ticks[i];
+            for (unsigned int i = 0; i < this->label_angles.size(); ++i) {
+                std::string s = this->labels[i];
                 auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                 this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;
+                // Dep. on angle, the additional gap for the text will need to be based on different aspects of the text geometry
+                float geom_gap = std::abs(std::cos(label_angles[i]) * geom.half_width()) + std::abs(std::sin(label_angles[i]) * geom.half_height());
+                float lbl_r = this->radius + this->framelinewidth + this->ticklabelgap + geom_gap;
                 morph::vec<float> lblpos = {
-                    (this->radius + this->framelinewidth + this->ticklabelgap + 0.5f*(geom.half_width() + geom.half_height())) * std::cos (tick_posns[i]) - geom.half_width(),
-                    (this->radius + this->framelinewidth + this->ticklabelgap + 0.5f*(geom.half_width() + geom.half_height())) * std::sin (tick_posns[i]) - geom.half_height(),
+                    lbl_r * std::cos (label_angles[i]) - geom.half_width(),
+                    lbl_r * std::sin (label_angles[i]) - geom.half_height(),
                     this->z
                 };
                 lbl->setupText (s, lblpos+this->mv_offset, this->tf.colour);
@@ -162,10 +165,10 @@ namespace morph {
         std::array<float, 3> framecolour = morph::colour::black;
         //! The line width of the frame
         float framelinewidth = 0.01f;
-        //! The tick strings  that should be displayed. Order the elements anti-clockwise, starting from the 'north' element.
-        std::deque<std::string> ticks = {"N", "W", "S", "E"};
-        //! The positions, as angles for the ticks/tick labels. If empty, these will be auto-computed
-        std::deque<F> tick_posns = { /*mc::pi_over_2, mc::pi, mc::three_pi_over_2, 0.0f*/ };
+        //! The label strings  that should be displayed. Order the elements anti-clockwise, starting from the 'north' element.
+        std::deque<std::string> labels = {"N", "W", "S", "E"};
+        //! The positions, as angles for the labels. If empty, these will be auto-computed
+        std::deque<F> label_angles = { /*mc::pi_over_2, mc::pi, mc::three_pi_over_2, 0.0f*/ };
         // Stores all the text features for this ColourBar (font, colour, font size, font res)
         morph::TextFeatures tf;
         //! Gap to x axis tick labels. Gets auto-set

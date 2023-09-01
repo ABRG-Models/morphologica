@@ -157,7 +157,7 @@ int main()
     hsvw_vis = std::make_unique<morph::HSVWheelVisual<float>>(woffset);
     v.bindmodel (hsvw_vis);
     hsvw_vis->setColour (morph::colour::white);
-    hsvw_vis->ticks = {"Fwds", "FL", "Left", "BL", "Back", "BR", "Right", "FR"};
+    hsvw_vis->labels = {"Fwds", "FL", "Left", "BL", "Back", "BR", "Right", "FR"};
     hsvw_vis->framelinewidth = 0.2f;
     hsvw_vis->radius = 3.5f;
     hsvw_vis->tf.fontsize = 0.4f;
