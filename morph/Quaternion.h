@@ -155,6 +155,9 @@ namespace morph {
             return qinv;
         }
 
+        //! Return the magnitude of the Quaternion
+        Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
+
         //! Reset to a zero rotation
         void reset()
         {
