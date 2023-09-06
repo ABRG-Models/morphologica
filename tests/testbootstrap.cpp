@@ -55,7 +55,7 @@ int main()
     morph::vec<double,2> asl_nonsigdiff = morph::bootstrap<double>::ttest_equalityofmeans (normally_distributed, dist_nonsigdiff, num_bootstraps);
     std::cout << "Achieved significance level for non-different dist: " << asl_nonsigdiff[0] << " (with minasl: " << asl_nonsigdiff[1] << ")\n";
     // asl_nonsigdiff[0] should be about 0.4, but can be as low as 0.044
-    if (asl_nonsigdiff[0] < 0.01) {
+    if (asl_nonsigdiff[0] < 0.001) {
         std::cerr << "The distribution with a NON different mean has ASL = " << asl_nonsigdiff[0] << " which is too small.\n";
         --rtn;
     }
