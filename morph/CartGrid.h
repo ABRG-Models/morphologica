@@ -531,7 +531,7 @@ namespace morph {
                   CartDomainWrap wrap = CartDomainWrap::None)
         {
             if constexpr (debug_cartgrid) {
-                std::cout << "CartGrid constructor (x1,y1 to x2,y2 version) called\n";
+                std::cout << "CartGrid constructor (x1,y1 to x2,y2 version) called. 0x" << (unsigned long long int)this << "\n";
             }
             this->d = d_;
             this->v = v_;
@@ -2493,6 +2493,7 @@ namespace morph {
          */
         void renumberVectorIndices()
         {
+            if constexpr (debug_cartgrid) { std::cout << __FUNCTION__ << " called\n"; }
             unsigned int vi = 0;
             this->vrects.clear();
             auto ri = this->rects.begin();
