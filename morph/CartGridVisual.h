@@ -96,7 +96,7 @@ namespace morph {
             }
 
             if (this->showborder == true) {
-                // Draw around the outside. This is *panorama* specific.
+                // Draw around the outside.
                 morph::vec<float, 4> cg_extents = this->cg->get_extents(); // {xmin, xmax, ymin, ymax}
                 float bthick    = this->cg->getd() * this->border_thickness;
                 float bz = this->cg->getd() / 10.0f;

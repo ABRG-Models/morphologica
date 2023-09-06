@@ -14,7 +14,11 @@
 #include <utility>
 #include <cmath>
 #include <morph/BezCoord.h>
-#include <morph/HdfData.h>
+// If the HexGrid::save and HexGrid::load methods are required, define
+// HEXGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
+# include <morph/HdfData.h>
+#endif
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 //#define DEBUG_WITH_COUT 1
@@ -133,9 +137,10 @@ namespace morph {
             this->computeLocation();
         }
 
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
         //! Construct using the passed in HDF5 file and path.
         Hex (HdfData& h5data, const std::string& h5path) { this->load (h5data, h5path); }
-
+#endif
         //! Comparison operation to enable use of set<Hex>
         bool operator< (const Hex& rhs) const
         {
@@ -164,6 +169,7 @@ namespace morph {
             return false;
         }
 
+#ifdef HEXGRID_COMPILE_LOAD_AND_SAVE
         /*!
          * Save the data for this Hex into the already open HdfData object @h5data in the path
          * @h5path.
@@ -230,7 +236,7 @@ namespace morph {
             h5data.read_val (dpath.c_str(), flgs);
             this->flags = flgs;
         }
-
+#endif
         /*!
          * Produce a string containing information about this hex, showing grid location in
          * dimensionless r,g (but not b) units. Also show nearest neighbours.

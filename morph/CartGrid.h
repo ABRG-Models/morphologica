@@ -62,6 +62,7 @@ namespace morph {
     class alignas(8) CartGrid
     {
     public:
+        static constexpr bool debug_cartgrid = false;
         /*
          * Domain attributes
          * -----------------
@@ -529,6 +530,9 @@ namespace morph {
                   CartDomainShape shape = CartDomainShape::Rectangle,
                   CartDomainWrap wrap = CartDomainWrap::None)
         {
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid constructor (x1,y1 to x2,y2 version) called\n";
+            }
             this->d = d_;
             this->v = v_;
             this->x_span = x2 - x1;
@@ -858,6 +862,7 @@ namespace morph {
          *
          * Works only on the initial layout of rects.
          */
+        static constexpr bool debugSetBoundary = false;
         void setBoundaryOnOuterEdge()
         {
             // From centre head to boundary, then mark boundary and walk
@@ -867,27 +872,36 @@ namespace morph {
             while (bpi->has_nw() && !bpi->wraps_w()) { bpi = bpi->nw; }
             while (bpi->has_ns() && !bpi->wraps_s()) { bpi = bpi->ns; }
             bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-            //std::cout << "set flag at start on rect " << bpi->outputCart() << std::endl;
-
+            if constexpr (debugSetBoundary) {
+                std::cout << "set flag at start on rect " << bpi->outputCart() << std::endl;
+            }
             while (bpi->has_ne() && !bpi->wraps_e()) {
                 bpi = bpi->ne;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-                //std::cout << "set flag going E on rect " << bpi->outputCart() << std::endl;
+                if constexpr (debugSetBoundary) {
+                    std::cout << "set flag going E on rect " << bpi->outputCart() << std::endl;
+                }
             }
             while (bpi->has_nn() && !bpi->wraps_n()) {
                 bpi = bpi->nn;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-                //std::cout << "set flag going N on rect " << bpi->outputCart() << std::endl;
+                if constexpr (debugSetBoundary) {
+                    std::cout << "set flag going N on rect " << bpi->outputCart() << std::endl;
+                }
             }
             while (bpi->has_nw() && !bpi->wraps_w()) {
                 bpi = bpi->nw;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-                //std::cout << "set flag going W on rect " << bpi->outputCart() << std::endl;
+                if constexpr (debugSetBoundary) {
+                    std::cout << "set flag going W on rect " << bpi->outputCart() << std::endl;
+                }
             }
             while (bpi->has_ns() && !bpi->wraps_s() && bpi->ns->testFlags(RECT_IS_BOUNDARY) == false) {
                 bpi = bpi->ns;
                 bpi->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
-                //std::cout << "set flag going S on rect " << bpi->outputCart() << std::endl;
+                if constexpr (debugSetBoundary) {
+                    std::cout << "set flag going S on rect " << bpi->outputCart() << std::endl;
+                }
             }
 
             // Check that the boundary is contiguous, starting from SW corner and
@@ -1063,6 +1077,9 @@ namespace morph {
         float width() const
         {
             // {ximin, ximax, yimin, yimax}
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::width(): calling findBoundaryExtents()\n";
+            }
             std::array<int, 4> extents = this->findBoundaryExtents();
             float xmin = this->d * float(extents[0]);
             float xmax = this->d * float(extents[1]);
@@ -1072,6 +1089,9 @@ namespace morph {
         morph::vec<float, 4> get_extents() const
         {
             morph::vec<int, 4> extents;
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::get_extents(): calling findBoundaryExtents()\n";
+            }
             extents.set_from (this->findBoundaryExtents());
             morph::vec<float, 4> extents_mult = { this->d, this->d, this->v, this->v };
             return (extents.as_float() * extents_mult);
@@ -1081,6 +1101,9 @@ namespace morph {
         int widthnum() const
         {
             // {ximin, ximax, yimin, yimax}
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::widthnum(): calling findBoundaryExtents()\n";
+            }
             std::array<int, 4> extents = this->findBoundaryExtents();
             int wn = std::abs(extents[0]) + std::abs(extents[1]) + 1;
             return wn;
@@ -1091,6 +1114,9 @@ namespace morph {
          */
         float depth() const
         {
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::depth(): calling findBoundaryExtents()\n";
+            }
             std::array<int, 4> extents = this->findBoundaryExtents();
             float ymin = this->v * float(extents[2]);
             float ymax = this->v * float(extents[3]);
@@ -1101,6 +1127,9 @@ namespace morph {
         int depthnum() const
         {
             // {ximin, ximax, yimin, yimax}
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::depthnum(): calling findBoundaryExtents()\n";
+            }
             std::array<int, 4> extents = this->findBoundaryExtents();
             int dn = std::abs(extents[2]) + std::abs(extents[3]) + 1;
             return dn;
@@ -1188,6 +1217,9 @@ namespace morph {
          */
         void populate_d_vectors()
         {
+            if constexpr (debug_cartgrid) {
+                std::cout << "CartGrid::populate_d_vectors(): calling findBoundaryExtents()\n";
+            }
             std::array<int, 4> extnts = this->findBoundaryExtents();
             this->populate_d_vectors (extnts);
         }
@@ -1705,6 +1737,9 @@ namespace morph {
         //! Initialize a non-symmetric rectangular grid.
         void init2 (float x1, float y1, float x2, float y2)
         {
+            if constexpr (debug_cartgrid) {
+                std::cout << __FUNCTION__ << " called for ("<<x1<<","<<y1<<") to ("<<x2<<","<<y2<<")\n";
+            }
             this->x_minmax = {x1, x2};
             this->y_minmax = {y1, y2};
 
@@ -1770,6 +1805,9 @@ namespace morph {
                 prevRow = nextPrevRow;
                 nextPrevRow = tmp;
                 nextPrevRow->clear();
+            }
+            if constexpr (debug_cartgrid) {
+                std::cout << "init2() end: emplaced " << vi << " rects\n";
             }
         }
 
@@ -2356,6 +2394,9 @@ namespace morph {
          */
         std::array<int, 4> findBoundaryExtents() const
         {
+            if constexpr (debug_cartgrid) {
+                std::cout << "Called for CartGrid 0x" << (unsigned long long int)this << std::endl;
+            }
             // Return object
             std::array<int, 4> extents = {{0,0,0,0}};
 
