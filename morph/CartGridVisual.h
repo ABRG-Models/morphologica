@@ -59,7 +59,8 @@ namespace morph {
         CartGridVisual(const CartGrid* _cg, const vec<float> _offset)
         {
             // Set up...
-            this->mv_offset = _offset;
+            morph::vec<float> pixel_offset = { _cg->getd()/2.0f, _cg->getv()/2.0f, 0.0f };
+            this->mv_offset = _offset + pixel_offset;
             this->viewmatrix.translate (this->mv_offset);
             // Defaults for z and colourScale
             this->zScale.setParams (1, 0);
@@ -98,7 +99,7 @@ namespace morph {
             if (this->showborder == true) {
                 // Draw around the outside.
                 morph::vec<float, 4> cg_extents = this->cg->get_extents(); // {xmin, xmax, ymin, ymax}
-                float bthick    = this->cg->getd() * this->border_thickness;
+                float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : this->cg->getd() * this->border_thickness;
                 float bz = this->cg->getd() / 10.0f;
                 float half_bthick = bthick/2.0f;
                 float left  = cg_extents[0] - half_bthick - (this->cg->getd()/2.0f) + this->centering_offset[0];
@@ -465,6 +466,8 @@ namespace morph {
         std::array<float, 3> border_colour = morph::colour::grey80;
         //! The border thickness in multiples of a pixel in the CartGrid
         float border_thickness = 0.33f;
+        //! If you need to override the pixels-relationship to the border thickness, set it here
+        float border_thickness_fixed = 0.0f;
 
     protected:
         //! An overridable function to set the colour of rect ri
