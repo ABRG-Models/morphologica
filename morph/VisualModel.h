@@ -93,7 +93,6 @@ namespace morph {
         {
             if (this->vbos != nullptr) {
                 glDeleteBuffers (numVBO, this->vbos);
-                morph::gl::Util::checkError (__FILE__, __LINE__);
                 delete[] this->vbos;
                 glDeleteVertexArrays (1, &this->vao);
             }

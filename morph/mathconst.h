@@ -67,5 +67,8 @@ namespace morph {
         // multiplier to convert degrees to radians
         static constexpr T deg2rad  = two_pi/T{360};
         static constexpr T rad2deg  = T{360}/two_pi;
+
+        static constexpr T pi_over_360 = pi/T{360};
+        static constexpr T two_pi_over_360 = two_pi/T{360};
     };
 }

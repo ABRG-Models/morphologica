@@ -1,9 +1,12 @@
 /*!
  * A Quaternion class for computing rotations in the visualization classes
  * (morph::Visual, morph::HexGridVisual, etc).
+ *
+ * This Quaternion class adopts the Hamiltonian convention - w,x,y,z.
  */
 #pragma once
 
+#include <morph/mathconst.h>
 #include <morph/vec.h>
 #include <cmath>
 #include <array>
@@ -22,12 +25,6 @@ namespace morph {
     template <typename Flt>
     class Quaternion
     {
-    private:
-        const Flt oneOver360   = 0.00277777777778;
-        const Flt pi           = 3.14159265358979;
-        const Flt piOver360    = 0.00872664625997;
-        const Flt twoPiOver360 = 0.01745329251994;
-
     public:
         // Note, we need a Quaternion which has magnitude 1 as the default.
         Quaternion()
@@ -88,7 +85,7 @@ namespace morph {
         //! Initialize the Quaternion from the given axis and angle *in degrees*
         void initFromAxisAngle (const vec<Flt>& axis, const Flt& angle)
         {
-            Flt a = piOver360 * angle; // angle/2 converted to rads
+            Flt a = morph::mathconst<Flt>::pi_over_360 * angle; // angle/2 converted to rads
             Flt s = std::sin(a);
             Flt c = std::cos(a);
             vec<Flt> ax = axis;
@@ -112,7 +109,7 @@ namespace morph {
         }
 
         //! Overload * operator. q1 is 'this->'
-        Quaternion<Flt> operator* (const Quaternion<Flt>& q2)
+        Quaternion<Flt> operator* (const Quaternion<Flt>& q2) const
         {
             Quaternion<Flt> q;
             q.w = this->w * q2.w - this->x * q2.x - this->y * q2.y - this->z * q2.z;
@@ -122,13 +119,44 @@ namespace morph {
             return q;
         }
 
-        //! Invert the rotation represented by this Quaternion and return the result
+        //! Overload / operator. q1 is 'this->', so this is q = q1 / q2
+        Quaternion<Flt> operator/ (const Quaternion<Flt>& q2) const
+        {
+            Quaternion<Flt> q;
+            Flt denom = (w*w + x*x + y*y + z*z);
+            q.w = (this->w * q2.w + this->x * q2.x + this->y * q2.y + this->z * q2.z) / denom;
+            q.x = (this->w * q2.x - this->x * q2.w - this->y * q2.z + this->z * q2.y) / denom;
+            q.y = (this->w * q2.y + this->x * q2.z - this->y * q2.w - this->z * q2.x) / denom;
+            q.z = (this->w * q2.z - this->x * q2.y + this->y * q2.x - this->z * q2.w) / denom;
+            return q;
+        }
+
+        //! Invert the rotation represented by this Quaternion and return the result.
         Quaternion<Flt> invert() const
         {
             Quaternion<Flt> qi = *this;
             qi.w = -this->w;
             return qi;
         }
+
+        //! Conjugate of the Quaternion. This happens to give a quaternion representing the same
+        //! rotation as that returned by invert() because -q represents an quivalent rotation to q.
+        Quaternion<Flt> conjugate() const
+        {
+            Quaternion<Flt> qconj (this->w, -this->x, -this->y, -this->z);
+            return qconj;
+        }
+
+        //! Compute the multiplicative inverse 1/q
+        Quaternion<Flt> inverse() const
+        {
+            Quaternion<Flt> qconj = this->conjugate();
+            Quaternion<Flt> qinv = qconj / (*this * qconj);
+            return qinv;
+        }
+
+        //! Return the magnitude of the Quaternion
+        Flt magnitude() const { return std::sqrt (w*w + x*x + y*y + z*z); }
 
         //! Reset to a zero rotation
         void reset()

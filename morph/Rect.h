@@ -14,7 +14,9 @@
 #include <cmath>
 #include <morph/vec.h>
 #include <morph/BezCoord.h>
-#include <morph/HdfData.h>
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
+# include <morph/HdfData.h>
+#endif
 
 /*
  * Flags
@@ -138,9 +140,10 @@ namespace morph {
             this->computeLocation();
         }
 
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
         //! Construct using the passed in HDF5 file and path.
         Rect (HdfData& h5data, const std::string& h5path) { this->load (h5data, h5path); }
-
+#endif
         //! Comparison operation to enable use of set<Rect>
         bool operator< (const Rect& rhs) const
         {
@@ -154,6 +157,7 @@ namespace morph {
             return false;
         }
 
+#ifdef CARTGRID_COMPILE_LOAD_AND_SAVE
         /*!
          * Save the data for this Rect into the already open HdfData object \a h5data in
          * the path \a h5path.
@@ -220,6 +224,7 @@ namespace morph {
             h5data.read_val (dpath.c_str(), flgs);
             this->flags = flgs;
         }
+#endif
 
         /*!
          * Produce a string containing information about this rect, showing grid
@@ -407,7 +412,7 @@ namespace morph {
          * re-set the vi indices after creating a grid of Rect elements and then pruning
          * down.
          */
-        unsigned int vi;
+        unsigned int vi = 0;
 
         /*!
          * This is the index into the d_ vectors in CartGrid which can be used to find
