@@ -430,4 +430,8 @@ if(ARMADILLO_FOUND)
   # Test Cartesian (rectangular) grid
   add_executable(testcartgrid testcartgrid.cpp)
   add_test(testcartgrid testcartgrid)
+  
+  # Test shiftIndicies function
+  add_executable(testCartGridShiftIndicies testCartGridShiftIndicies.cpp)
+  add_test(testCartGridShiftIndicies testCartGridShiftIndicies)
 endif()

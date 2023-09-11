@@ -77,6 +77,42 @@ namespace morph {
          */
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
+        
+        //! Shift the supplied indices by the integer amounts supplied and return a vector of new indicies. Only for rectangular cartgrids.
+        morph::vvec<int> shiftIndicies(morph::vvec<int>& inds, int x_shift, int y_shift)
+        {
+            std::cout << "inds: " << inds << std::endl;
+
+            int w = this->widthnum();
+            int h = this->depthnum();
+            std::cout << "width: " << w << std::endl;
+            std::cout << "height: " << h << std::endl;
+
+            morph::vvec<int> newIndicies;
+
+            for (unsigned int i = 0; i < inds.size(); i++){
+                std::cout << "index number: " << inds[i] << std::endl;
+                int orig_row = d_yi[inds[i]];
+                std::cout << "original row: " << orig_row << std::endl;   
+                int orig_col = d_xi[inds[i]];
+                std::cout << "original column: " << orig_col << std::endl;
+                int x_moved = orig_col + x_shift;
+                std::cout << "x_moved: " << x_moved << std::endl;
+                if (x_moved > w || x_moved < 0){ 
+                    std::cout << "X out of range" << std::endl;
+                    continue; 
+                    }
+                int y_moved = orig_row + y_shift;
+                std::cout << "y_moved: " << y_moved << std::endl;
+                if (y_moved > h || y_moved < 0){ 
+                    std::cout << "Y out of range" << std::endl;
+                    continue; 
+                    }
+                newIndicies.push_back(inds[i] + x_shift + w * y_shift);
+                std::cout << "New Indicies: " << newIndicies << std::endl;
+            }
+            return newIndicies;
+        }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
         std::vector<morph::vec<float, 3>> getCoordinates3()
