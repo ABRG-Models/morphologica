@@ -250,6 +250,33 @@ namespace morph {
             std::string s1 = morph::unicode::toUtf8(c);
             s += s1;
         }
+
+        // Helper to return the subscript for the given num (expected to be in range 0-9)
+        static std::string subs (int num)
+        {
+            std::string rtn ("x");
+            if (num < 0 || num > 9) { return rtn; }
+            rtn = unicode::toUtf8 (unicode::subs0 + (static_cast<char32_t>(num)));
+            return rtn;
+        }
+
+        // Helper to return the superscript for the given num (expected to be in range 0-9)
+        static std::string ss (int num)
+        {
+            std::string rtn ("x");
+            if (num < 0 || num > 9) { return rtn; }
+            // Can't just add num to ss0, like for subscripts, because they're not in order
+            if (num == 1) {
+                rtn = unicode::toUtf8 (unicode::ss1);
+            } else if (num == 2) {
+                rtn = unicode::toUtf8 (unicode::ss2);
+            } else if (num == 3) {
+                rtn = unicode::toUtf8 (unicode::ss3);
+            } else { // From ss4 to ss9 and for ss0, we can:
+                rtn = unicode::toUtf8 (unicode::ss0 + (static_cast<char32_t>(num)));
+            }
+            return rtn;
+        }
     };
 
 } // namespace morph
