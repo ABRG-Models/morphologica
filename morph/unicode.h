@@ -130,6 +130,24 @@ namespace morph {
         static constexpr char32_t ssleftbracket = 0x207d;
         static constexpr char32_t ssrightbracket = 0x207e;
 
+        // Subscripts
+        static constexpr char32_t subs0 = 0x2080;
+        static constexpr char32_t subs1 = 0x2081;
+        static constexpr char32_t subs2 = 0x2082;
+        static constexpr char32_t subs3 = 0x2083;
+        static constexpr char32_t subs4 = 0x2084;
+        static constexpr char32_t subs5 = 0x2085;
+        static constexpr char32_t subs6 = 0x2086;
+        static constexpr char32_t subs7 = 0x2087;
+        static constexpr char32_t subs8 = 0x2088;
+        static constexpr char32_t subs9 = 0x2089;
+
+        static constexpr char32_t subsplus = 0x208a;
+        static constexpr char32_t subsminus = 0x208b;
+        static constexpr char32_t subsequals = 0x208c;
+        static constexpr char32_t subsleftbracket = 0x208d;
+        static constexpr char32_t subsrightbracket = 0x208e;
+
         // Comparison
         static constexpr char32_t lessthaneq = 0x2264;
         static constexpr char32_t greaterthaneq = 0x2265;
