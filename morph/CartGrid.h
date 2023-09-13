@@ -77,41 +77,80 @@ namespace morph {
          */
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
-        
-        //! Shift the supplied indices by the integer amounts supplied and return a vector of new indicies. Only for rectangular cartgrids.
-        morph::vvec<int> shiftIndicies(morph::vvec<int>& inds, int x_shift, int y_shift)
-        {
-            std::cout << "inds: " << inds << std::endl;
 
+        //! Shift the supplied coordinates by the metric amounts supplied (to the nearest existing coordintate in the cartgrid) and return a vector of new coordinates. Only for rectangular cartgrids.
+        morph::vvec<morph::vec<float, 2>> shiftCoords(morph::vvec<morph::vec<float, 2>>& cds, float x_shift, float y_shift)
+        {
+            std::array<int, 4> extents = this->findBoundaryExtents();
+            float xmin = this->d * float(extents[0]);
+            float xmax = this->d * float(extents[1]);
+            float ymin = this->v * float(extents[2]);
+            float ymax = this->v * float(extents[3]);
+
+            float x_step = this->d * std::round(x_shift/this->d);    // find nearest x value in this->coords to x_shift
+            float y_step = this->v * std::round(y_shift/this->v);    // find nearest y value in this->coords to y_shift
+            
+            morph::vvec<morph::vec<float, 2>> new_coords;
+            morph::vec<float, 2> ctmp;
+            for (auto c : cds){
+                ctmp[0] = c[0] + x_step;
+                if (ctmp[0] > xmax || ctmp[0] < xmin) { continue; }
+                ctmp[1] = c[1] + y_step;
+                if (ctmp[1] > ymax || ctmp[1] < ymin) { continue; }
+                new_coords.push_back(ctmp);
+            }
+            return new_coords;
+        }
+
+        //! Shift the supplied indices by the metric (float) amounts supplied and return a vector of new indicies. Only for rectangular cartgrids.
+        morph::vvec<int> shiftIndiciesByMetric(morph::vvec<int>& inds, float x_shift, float y_shift)
+        {
+            static constexpr bool debug_function = false;
             int w = this->widthnum();
             int h = this->depthnum();
-            std::cout << "width: " << w << std::endl;
-            std::cout << "height: " << h << std::endl;
 
-            morph::vvec<int> newIndicies;
+
+            int x_step = int(std::round(x_shift/this->d));    // Find the number of rects in x_shift
+            if constexpr(debug_function){
+                std::cout << "delta x  : " << this->d << std::endl;
+                std::cout << "x shift input : " << x_shift << std::endl;
+                std::cout << "x step output: " << x_step << std::endl;
+            }
+            int y_step = int(std::round(y_shift/this->v));    // Find the number of rects in y_shift
+            if constexpr(debug_function){
+                std::cout << "delta y  : " << this->v << std::endl;
+                std::cout << "y shift input : " << y_shift << std::endl;
+                std::cout << "y step output: " << y_step << std::endl;
+            }
+            morph::vvec<int> new_indicies;
+            int d_xi_max  = d_xi[d_xi.size()-1];
+            int d_xi_min = d_xi[0];            
+            int d_yi_max  = d_yi[d_yi.size()-1];
+            int d_yi_min = d_yi[0];
+            if constexpr(debug_function){
+                std::cout << "d_xi_min : " << d_xi_min << std::endl;
+                std::cout << "d_xi_max : " << d_xi_max << std::endl;
+                std::cout << "d_yi_min : " << d_yi_min << std::endl;
+                std::cout << "d_yi_max : " << d_yi_max << std::endl;
+            }
 
             for (unsigned int i = 0; i < inds.size(); i++){
-                std::cout << "index number: " << inds[i] << std::endl;
                 int orig_row = d_yi[inds[i]];
-                std::cout << "original row: " << orig_row << std::endl;   
                 int orig_col = d_xi[inds[i]];
-                std::cout << "original column: " << orig_col << std::endl;
-                int x_moved = orig_col + x_shift;
-                std::cout << "x_moved: " << x_moved << std::endl;
-                if (x_moved > w || x_moved < 0){ 
-                    std::cout << "X out of range" << std::endl;
-                    continue; 
-                    }
-                int y_moved = orig_row + y_shift;
-                std::cout << "y_moved: " << y_moved << std::endl;
-                if (y_moved > h || y_moved < 0){ 
-                    std::cout << "Y out of range" << std::endl;
-                    continue; 
-                    }
-                newIndicies.push_back(inds[i] + x_shift + w * y_shift);
-                std::cout << "New Indicies: " << newIndicies << std::endl;
+                int x_moved = orig_col + x_step;
+                if (x_moved > d_xi_max || x_moved < d_xi_min){ continue; }
+                int y_moved = orig_row + y_step;
+                if (y_moved > d_yi_max || y_moved < d_yi_min){ continue; }
+                new_indicies.push_back((x_moved-d_xi_min) + w * (y_moved-d_yi_min));
+                if constexpr(debug_function){
+                    std::cout << "inds [i] : " << inds[i] << std::endl;
+                    std::cout << "orig_row    d_yi[inds[i]] : " << d_yi[inds[i]] << std::endl;
+                    std::cout << "orig col.   d_xi[inds[i]] : " << d_xi[inds[i]] << std::endl;
+                    std::cout << "x moved : " << x_moved << std::endl;
+                    std::cout << "y moved : " << y_moved << std::endl;
+                }
             }
-            return newIndicies;
+            return new_indicies;
         }
 
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
