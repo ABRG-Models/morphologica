@@ -1025,27 +1025,32 @@ namespace morph {
         //! Draw the graph legend, above the graph, rather than inside it (so much simpler!)
         void drawLegend()
         {
-            size_t gd_size = this->graphDataCoords.size();
-            //std::cout << "In drawLegend(); gd_size = " << gd_size << std::endl;
+            size_t num_legends_max = this->graphDataCoords.size();
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
-            std::vector<std::unique_ptr<morph::VisualTextModel>> legtexts;
+            std::map<size_t, std::unique_ptr<morph::VisualTextModel>> legtexts;
+
+            morph::vvec<size_t> ds_indices; // dataset indices.
+
             float text_advance = 0.0f;
-            for (size_t dsi = 0; dsi < gd_size; ++dsi) {
-                // Legend text. If all is well, this will be pushed onto the texts
-                // attribute and deleted when the model is deconstructed.
+            int num_legends = 0;
+            for (size_t dsi = 0; dsi < num_legends_max; ++dsi) {
+                // If no label, then draw no legend. Thus the effective num_legends may be smaller
+                // than num_legends_max.
+                if (this->datastyles[dsi].datalabel.empty()) { continue; }
+                // Legend text. If all is well, this will be pushed onto the texts attribute and
+                // deleted when the model is deconstructed.
                 auto ltp = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
                 geom.push_back (ltp->getTextGeometry (this->datastyles[dsi].datalabel));
-                if (geom.back().total_advance > text_advance) {
-                    text_advance = geom.back().total_advance;
-                }
-                legtexts.push_back (std::move(ltp));
+                if (geom.back().total_advance > text_advance) { text_advance = geom.back().total_advance; }
+                legtexts[dsi] = std::move(ltp);
+                ds_indices.push_back (dsi);
+                ++num_legends;
             }
-            //std::cout << "Legend text advance is: " << text_advance << std::endl;
 
             // If there are no legend texts to show, then clean up and return
             if (text_advance == 0.0f && !legtexts.empty()) {
@@ -1056,34 +1061,32 @@ namespace morph {
             // Adjust the text offset by the last entry in geom
             if (!geom.empty()) { toffset[1] -= geom.back().height()/2.0f; }
 
-            // What's our legend grid arrangement going to be? Each column will advance by the text_advance, some space and the size of the marker
+            // What's our legend grid arrangement going to be? Each column will advance by the
+            // text_advance, some space and the size of the marker
             float col_advance = 2 * toffset[0] + text_advance;
             if (!datastyles.empty()) { col_advance += this->datastyles[0].markersize; }
-            //std::cout << "Legend col advance is: " << col_advance << std::endl;
             int max_cols = static_cast<int>((1.0f - this->dataaxisdist) / col_advance);
-            //std::cout << "max_cols: " << max_cols << std::endl;
             if (max_cols < 1) { max_cols = 1; }
-            //std::cout << "max_cols after check it's 1 or more: " << max_cols << std::endl;
-            int num_cols = static_cast<int>(gd_size) <= max_cols ? static_cast<int>(gd_size) : max_cols;
-            //std::cout << "gd_size is " << gd_size << " num_cols is " << num_cols << std::endl;
-            int num_rows = (int)gd_size;
+            int num_cols = num_legends <= max_cols ? num_legends : max_cols;
+            int num_rows = num_legends;
             if (num_cols != 0) {
-                num_rows = ((int)gd_size / num_cols);
-                num_rows += (int)gd_size % num_cols ? 1 : 0;
+                num_rows = (num_legends / num_cols);
+                num_rows += num_legends % num_cols ? 1 : 0;
             }
-            //std::cout << "num_rows = " << num_rows << std::endl;
 
             // Label position
             morph::vec<float> lpos = {this->dataaxisdist, 0.0f, 0.0f};
-            for (int dsi = 0; dsi < (int)gd_size; ++dsi) {
-
+            int cur_entry = 0;
+            for (auto _dsi : ds_indices) {
+                int dsi = static_cast<int>(_dsi);
+                // Compute the row and column for this legend entry
                 if (num_cols == 0) { throw std::runtime_error ("GraphVisual::drawLegend: Why is num_cols 0?"); }
-                int col = dsi % num_cols;
-                int row = (num_rows-1) - (dsi / num_cols);
-                //std::cout << "Dataset " << dsi << " will be on row " << row << " and col " << col << std::endl;
+                int col = cur_entry % num_cols;
+                int row = (num_rows-1) - (cur_entry / num_cols);
+                ++cur_entry;
 
-                lpos[0] = this->dataaxisdist + ((float)col * col_advance);
-                lpos[1] = this->height + 1.5f*this->fontsize + (float)(row)*2.0f*this->fontsize;
+                lpos[0] = this->dataaxisdist + (static_cast<float>(col) * col_advance);
+                lpos[1] = this->height + 1.5f*this->fontsize + static_cast<float>(row)*2.0f*this->fontsize;
                 // Legend line/marker
                 if (this->datastyles[dsi].showlines == true && this->datastyles[dsi].markerstyle != markerstyle::bar) {
                     // draw short line at lpos (rounded ends)

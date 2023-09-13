@@ -506,12 +506,18 @@ namespace morph {
         CartGrid (const std::string& path) : d(1.0f), v(1.0f), x_span(1.0f), z(0.0f) { this->load (path); }
 #endif
 
-        //! Construct the a symmetric, centered grid with a square element distance of \a d_ and square size length x_span.
+        //! Construct the a symmetric, centered grid with a square element distance of \a d_ and
+        //! square size length x_span. The number of elements will be computed. If x_ and x_span_ do
+        //! not permit a symmetric, zero-centred grid to be created, an error will be thrown.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         : CartGrid (d_, d_, x_span_, x_span_, z_, shape) {}
 
-        //! Construct a grid with rectangular element width d_, height v_ but still symmetric and centred.
+        //! Construct a grid with rectangular element width d_, height v_ but still symmetric and
+        //! centred. x_span_ is the distance from the centre of the left-most element to the centre
+        //! of the right-most element. Similar for y_span_. The number of elements will be
+        //! calculated based on d_, v_, x_span_ and y_span_. If the passed values do not permit a
+        //! symmetric, zero-centred grid to be created an error will be thrown.
         CartGrid (float d_, float v_, float x_span_, float y_span_, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle)
         {
@@ -522,10 +528,30 @@ namespace morph {
             this->z = z_;
             this->domainShape = shape;
 
+            // Test we can make a symmetric grid, if not throw an error
+            float halfX = this->x_span/2.0f;
+            int halfCols = std::abs(std::ceil(halfX/this->d));
+            if (static_cast<float>(halfCols)*this->d != halfX) {
+                std::stringstream ee;
+                ee << "CartGrid: Cannot make a symmetric, zero-centred CartGrid with choices for d_ ("
+                   << d_ << ") and x_span_ (" << x_span_ << ") because halfCols=" << halfCols << " and halfX=" << halfX;
+                throw std::runtime_error (ee.str());
+            }
+            float halfY = this->y_span/2.0f;
+            int halfRows = std::abs(std::ceil(halfY/this->v));
+            if (static_cast<float>(halfRows)*this->v != halfY) {
+                std::stringstream ee;
+                ee << "CartGrid: Cannot make a symmetric, zero-centred CartGrid with choices for v_ ("
+                   << v_ << ") and y_span_ (" << y_span_ << ") because halfRows=" << halfRows << " and halfY=" << halfY;
+                throw std::runtime_error (ee.str());
+            }
+
             this->init();
         }
 
-        //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and creating to x2,y2.
+        //! Construct with rectangular element width d_, height v_ starting at location x1,y1 and
+        //! creating to x2,y2. The number of elements that need to be created will be determined
+        //! from these. This is a non-symmetric constructor.
         CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
                   CartDomainShape shape = CartDomainShape::Rectangle,
                   CartDomainWrap wrap = CartDomainWrap::None)

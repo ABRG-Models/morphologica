@@ -130,6 +130,24 @@ namespace morph {
         static constexpr char32_t ssleftbracket = 0x207d;
         static constexpr char32_t ssrightbracket = 0x207e;
 
+        // Subscripts
+        static constexpr char32_t subs0 = 0x2080;
+        static constexpr char32_t subs1 = 0x2081;
+        static constexpr char32_t subs2 = 0x2082;
+        static constexpr char32_t subs3 = 0x2083;
+        static constexpr char32_t subs4 = 0x2084;
+        static constexpr char32_t subs5 = 0x2085;
+        static constexpr char32_t subs6 = 0x2086;
+        static constexpr char32_t subs7 = 0x2087;
+        static constexpr char32_t subs8 = 0x2088;
+        static constexpr char32_t subs9 = 0x2089;
+
+        static constexpr char32_t subsplus = 0x208a;
+        static constexpr char32_t subsminus = 0x208b;
+        static constexpr char32_t subsequals = 0x208c;
+        static constexpr char32_t subsleftbracket = 0x208d;
+        static constexpr char32_t subsrightbracket = 0x208e;
+
         // Comparison
         static constexpr char32_t lessthaneq = 0x2264;
         static constexpr char32_t greaterthaneq = 0x2265;
@@ -231,6 +249,33 @@ namespace morph {
         {
             std::string s1 = morph::unicode::toUtf8(c);
             s += s1;
+        }
+
+        // Helper to return the subscript for the given num (expected to be in range 0-9)
+        static std::string subs (int num)
+        {
+            std::string rtn ("x");
+            if (num < 0 || num > 9) { return rtn; }
+            rtn = unicode::toUtf8 (unicode::subs0 + (static_cast<char32_t>(num)));
+            return rtn;
+        }
+
+        // Helper to return the superscript for the given num (expected to be in range 0-9)
+        static std::string ss (int num)
+        {
+            std::string rtn ("x");
+            if (num < 0 || num > 9) { return rtn; }
+            // Can't just add num to ss0, like for subscripts, because they're not in order
+            if (num == 1) {
+                rtn = unicode::toUtf8 (unicode::ss1);
+            } else if (num == 2) {
+                rtn = unicode::toUtf8 (unicode::ss2);
+            } else if (num == 3) {
+                rtn = unicode::toUtf8 (unicode::ss3);
+            } else { // From ss4 to ss9 and for ss0, we can:
+                rtn = unicode::toUtf8 (unicode::ss0 + (static_cast<char32_t>(num)));
+            }
+            return rtn;
         }
     };
 
