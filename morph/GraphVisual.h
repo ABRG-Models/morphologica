@@ -271,7 +271,7 @@ namespace morph {
             size_t dsize = _data.size();
 
             if (_abscissae.size() != dsize) {
-                throw std::runtime_error ("updatedata: size mismatch");
+                throw std::runtime_error ("update: size mismatch");
             }
 
             if (data_idx >= this->graphDataCoords.size()) {
@@ -312,6 +312,18 @@ namespace morph {
                 ord[i] = _coords[i][1];
             }
             this->update (absc, ord, data_idx);
+        }
+
+        //! update() overload that allows you also to set the data label
+        void update (const std::vector<Flt>& _abscissae,
+                     const std::vector<Flt>& _data, std::string datalabel, const size_t data_idx)
+        {
+            if (data_idx >= this->datastyles.size()) {
+                std::cout << "Can't add change data label at graphDataCoords index " << data_idx << std::endl;
+                return;
+            }
+            this->datastyles[data_idx].datalabel = datalabel;
+            this->update (_abscissae, _data, data_idx);
         }
 
         //! Set marker and colours in ds, according the 'style policy'
