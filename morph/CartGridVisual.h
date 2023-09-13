@@ -135,12 +135,15 @@ namespace morph {
                 this->dcolour.resize (this->vectorData->size());
                 this->dcolour2.resize (this->vectorData->size());
                 this->dcolour3.resize (this->vectorData->size());
+                std::vector<float> veclens(dcopy);
                 for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    veclens[i] = (*this->vectorData)[i].length();
                     this->dcolour[i] = (*this->vectorData)[i][0];
                     this->dcolour2[i] = (*this->vectorData)[i][1];
                     // Could also extract a third colour for Trichrome vs Duochrome
                     this->dcolour3[i] = (*this->vectorData)[i][2];
                 }
+                this->zScale.transform (veclens, this->dcopy);
                 if (this->cm.getType() != morph::ColourMapType::RGB) {
                     this->colourScale.transform (this->dcolour, this->dcolour);
                     this->colourScale2.transform (this->dcolour2, this->dcolour2);
