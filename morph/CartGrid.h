@@ -81,11 +81,11 @@ namespace morph {
         //! Shift the supplied coordinates by the metric amounts supplied (to the nearest existing coordintate in the cartgrid) and return a vector of new coordinates. Only for rectangular cartgrids.
         morph::vvec<morph::vec<float, 2>> shiftCoords(morph::vvec<morph::vec<float, 2>>& cds, float x_shift, float y_shift)
         {
-            std::array<int, 4> extents = this->findBoundaryExtents();
-            float xmin = this->d * float(extents[0]);
-            float xmax = this->d * float(extents[1]);
-            float ymin = this->v * float(extents[2]);
-            float ymax = this->v * float(extents[3]);
+            // std::array<int, 4> extents = this->findBoundaryExtents();
+            // float xmin = this->d * float(extents[0]);
+            // float xmax = this->d * float(extents[1]);
+            // float ymin = this->v * float(extents[2]);
+            // float ymax = this->v * float(extents[3]);
 
             float x_step = this->d * std::round(x_shift/this->d);    // find nearest x value in this->coords to x_shift
             float y_step = this->v * std::round(y_shift/this->v);    // find nearest y value in this->coords to y_shift
@@ -94,9 +94,9 @@ namespace morph {
             morph::vec<float, 2> ctmp;
             for (auto c : cds){
                 ctmp[0] = c[0] + x_step;
-                if (ctmp[0] > xmax || ctmp[0] < xmin) { continue; }
+                if (ctmp[0] > this->x_minmax[1] || ctmp[0] < this->x_minmax[0]) { continue; }
                 ctmp[1] = c[1] + y_step;
-                if (ctmp[1] > ymax || ctmp[1] < ymin) { continue; }
+                if (ctmp[1] > this->y_minmax[1] || ctmp[1] < this->y_minmax[0]) { continue; }
                 new_coords.push_back(ctmp);
             }
             return new_coords;
@@ -123,29 +123,20 @@ namespace morph {
                 std::cout << "y step output: " << y_step << std::endl;
             }
             morph::vvec<int> new_indicies;
-            int d_xi_max  = d_xi[d_xi.size()-1];
-            int d_xi_min = d_xi[0];            
-            int d_yi_max  = d_yi[d_yi.size()-1];
-            int d_yi_min = d_yi[0];
-            if constexpr(debug_function){
-                std::cout << "d_xi_min : " << d_xi_min << std::endl;
-                std::cout << "d_xi_max : " << d_xi_max << std::endl;
-                std::cout << "d_yi_min : " << d_yi_min << std::endl;
-                std::cout << "d_yi_max : " << d_yi_max << std::endl;
-            }
 
             for (unsigned int i = 0; i < inds.size(); i++){
                 int orig_row = d_yi[inds[i]];
                 int orig_col = d_xi[inds[i]];
                 int x_moved = orig_col + x_step;
-                if (x_moved > d_xi_max || x_moved < d_xi_min){ continue; }
+                if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]){ continue; }
                 int y_moved = orig_row + y_step;
-                if (y_moved > d_yi_max || y_moved < d_yi_min){ continue; }
-                new_indicies.push_back((x_moved-d_xi_min) + w * (y_moved-d_yi_min));
+                if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]){ continue; }
+                new_indicies.push_back((x_moved - this->xi_minmax[0]) + w * (y_moved - yi_minmax[0]));
+                
                 if constexpr(debug_function){
-                    std::cout << "inds [i] : " << inds[i] << std::endl;
-                    std::cout << "orig_row    d_yi[inds[i]] : " << d_yi[inds[i]] << std::endl;
-                    std::cout << "orig col.   d_xi[inds[i]] : " << d_xi[inds[i]] << std::endl;
+                    std::cout << "inds[i] : " << inds[i] << std::endl;
+                    std::cout << "orig_row: " << orig_row << std::endl;
+                    std::cout << "orig_col: " << orig_col << std::endl;
                     std::cout << "x moved : " << x_moved << std::endl;
                     std::cout << "y moved : " << y_moved << std::endl;
                 }
@@ -215,6 +206,9 @@ namespace morph {
 
         alignas(8) std::vector<int> d_xi;
         alignas(8) std::vector<int> d_yi;
+
+        morph::vec<int, 2> xi_minmax; 
+        morph::vec<int, 2> yi_minmax; 
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside boundary", "has
@@ -1362,6 +1356,10 @@ namespace morph {
                     ri++;
                 }
             }
+            // Create vectors containing the min and max x and y indicies.
+            //  Bottom left elelment is d_xi[0] and top right is represeented by d_yi[last]
+            this->xi_minmax = {d_xi[0], d_xi[d_xi.size()-1]};
+            this->yi_minmax = {d_yi[0], d_yi[d_yi.size()-1]};
 
             this->populate_d_neighbours();
         }
