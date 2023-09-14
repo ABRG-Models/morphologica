@@ -1135,6 +1135,12 @@ namespace morph {
             return wn;
         }
 
+        //! A faster widthnum function which only works if your CartGrid is rectangular
+        int widthnum_rectangular() const
+        {
+            return 1 + static_cast<int>(std::round(this->x_span / this->d));
+        }
+
         /*!
          * Returns the 'depth' of the CartGrid (from -y to +y)
          */
@@ -1159,6 +1165,12 @@ namespace morph {
             std::array<int, 4> extents = this->findBoundaryExtents();
             int dn = std::abs(extents[2]) + std::abs(extents[3]) + 1;
             return dn;
+        }
+
+        //! Faster depthnum function which only works if CartGrid is rectangular
+        int depthnum_rectangular() const
+        {
+            return 1 + static_cast<int>(std::round(this->y_span / this->v));
         }
 
         /*!
