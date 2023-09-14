@@ -431,15 +431,15 @@ if(ARMADILLO_FOUND)
   add_executable(testcartgrid testcartgrid.cpp)
   add_test(testcartgrid testcartgrid)
   
-  # Test shiftIndiciesByIndex function
-  add_executable(testCartGridShiftIndiciesByIndex testCartGridShiftIndiciesByIndex.cpp)
-  add_test(testCartGridShiftIndiciesByIndex testCartGridShiftIndiciesByIndex)
-  
   # Test shiftIndicies function
   add_executable(testCartGridShiftCoords testCartGridShiftCoords.cpp)
   add_test(testCartGridShiftCoords testCartGridShiftCoords)
   
     # Test shiftIndicies function
   add_executable(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric.cpp)
-  add_test(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric)
+  add_test(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric)    
+  
+  # Test shiftIndicies function
+  add_executable(profileTestCartGridShiftIndiciesByMetric profileTestCartGridShiftIndiciesByMetric.cpp)
+  
 endif()

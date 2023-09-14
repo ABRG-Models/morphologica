@@ -106,22 +106,24 @@ namespace morph {
         morph::vvec<int> shiftIndiciesByMetric(morph::vvec<int>& inds, float x_shift, float y_shift)
         {
             static constexpr bool debug_function = false;
-            int w = this->widthnum();
-            int h = this->depthnum();
-
+            int w = 1 + this->x_span/this->d;
 
             int x_step = int(std::round(x_shift/this->d));    // Find the number of rects in x_shift
+
             if constexpr(debug_function){
                 std::cout << "delta x  : " << this->d << std::endl;
                 std::cout << "x shift input : " << x_shift << std::endl;
                 std::cout << "x step output: " << x_step << std::endl;
             }
+
             int y_step = int(std::round(y_shift/this->v));    // Find the number of rects in y_shift
+            
             if constexpr(debug_function){
                 std::cout << "delta y  : " << this->v << std::endl;
                 std::cout << "y shift input : " << y_shift << std::endl;
                 std::cout << "y step output: " << y_step << std::endl;
             }
+
             morph::vvec<int> new_indicies;
 
             for (unsigned int i = 0; i < inds.size(); i++){
@@ -129,10 +131,9 @@ namespace morph {
                 int orig_col = d_xi[inds[i]];
                 int x_moved = orig_col + x_step;
                 if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]){ continue; }
-                int y_moved = orig_row + y_step;
+                int y_moved = (orig_row + y_step);
                 if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]){ continue; }
                 new_indicies.push_back((x_moved - this->xi_minmax[0]) + w * (y_moved - yi_minmax[0]));
-                
                 if constexpr(debug_function){
                     std::cout << "inds[i] : " << inds[i] << std::endl;
                     std::cout << "orig_row: " << orig_row << std::endl;
