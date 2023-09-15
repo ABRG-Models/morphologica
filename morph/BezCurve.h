@@ -360,8 +360,8 @@ namespace morph
             std::uniform_real_distribution<Flt> dis(Flt{0}, Flt{1});
 
             // Add some more vertices:
-            Flt propchange = static_cast<Flt>(0.2);
-            Flt propchangeov2 = propchange / static_cast<Flt>(2.0);
+            Flt propchange = Flt{0.2};
+            Flt propchangeov2 = propchange / Flt{2};
             for (size_t i = 0; i < v0.size(); ++i) {
                 morph::vvec<Flt> v;
                 for (size_t j = 0; j<v0.size(); ++j) {
@@ -390,7 +390,7 @@ namespace morph
             // then two other vertices at the first domain vertex (v) and its neighbour (vn).
             NM_Simplex<Flt> simp (nm_vertices);
             // Set a termination threshold for the SD of the vertices of the simplex
-            simp.termination_threshold = static_cast<Flt>(0.00001);//2.0 * std::numeric_limits<Flt>::epsilon();
+            simp.termination_threshold = Flt{0.00001};//2.0 * std::numeric_limits<Flt>::epsilon();
             // Set an operation limit, in case the above threshold can't be reached
             simp.too_many_operations = 1000;
 
@@ -483,7 +483,7 @@ namespace morph
             // Can now compare points and curvePoints.
             if (curvePoints.size() != points.size()) {
                 std::cout << "Can't optimize" << std::endl;
-                return static_cast<Flt>(-1.0);
+                return Flt{-1};
             }
             Flt sos = Flt{0};
             for (size_t i = 0; i < points.size(); ++i) {
@@ -674,9 +674,9 @@ namespace morph
                 for (int j = 0; j <= i; ++j) {
                     Flt binom = static_cast<Flt>(BezCurve::binomial_lookup(i, j));
                     Q(i,j) = sign * binom * std::pow(z, j) * std::pow (zp, i-j);
-                    sign = sign > Flt{0} ? static_cast<Flt>(-1.0) : Flt{1};
+                    sign = sign > Flt{0} ? Flt{-1} : Flt{1};
                 }
-                sign0 = sign0 > Flt{0} ? static_cast<Flt>(-1.0) : Flt{1};
+                sign0 = sign0 > Flt{0} ? Flt{-1} : Flt{1};
             }
             C1 = Q * this->C;
             // Shift rows then flip
@@ -1103,7 +1103,7 @@ namespace morph
             Flt dtmax = Flt{1} - t;
 
             // First guess for dt. Arb. units in parameter space.
-            Flt dt = dtmin + (dtmax-dtmin)/static_cast<Flt>(2.0);
+            Flt dt = dtmin + (dtmax-dtmin)/Flt{2};
 
             BezCoord<Flt> b1 = this->computePoint (t);
 
@@ -1122,7 +1122,7 @@ namespace morph
 
             // On every call, compute a threshold. lthresh is a percentage, so compute
             // the absolute threshold, lt as a percentage of l.
-            Flt lt = this->lthresh * static_cast<Flt>(0.01) * l;
+            Flt lt = this->lthresh * Flt{0.01} * l;
 
             // Do a binary search to find the value of dt which gives a b2 that is l
             // further on
@@ -1142,7 +1142,7 @@ namespace morph
                     } else { // dl < l
                         dtmin = dt;
                     }
-                    dt = dtmin + (dtmax-dtmin)/static_cast<Flt>(2.0);
+                    dt = dtmin + (dtmax-dtmin)/Flt{2};
                 }
             }
 
@@ -1167,7 +1167,7 @@ namespace morph
             Flt dtmax = Flt{1} - t;
 
             // First guess for dt. Arb. units in parameter space.
-            Flt dt = dtmin + (dtmax-dtmin)/static_cast<Flt>(2.0);
+            Flt dt = dtmin + (dtmax-dtmin)/Flt{2};
 
             BezCoord<Flt> b1 = this->computePoint (t);
 
@@ -1185,7 +1185,7 @@ namespace morph
             }
 
             // How close we need to be to the target x for a given choice of dt.
-            Flt lt = this->lthresh * static_cast<Flt>(0.01) * x;
+            Flt lt = this->lthresh * Flt{0.01} * x;
 
             // Do a binary search to find the value of dt
             BezCoord<Flt> b2 (true);
@@ -1207,7 +1207,7 @@ namespace morph
                         dtmin = dt;
                     }
                     lastdt = dt;
-                    dt = dtmin + (dtmax-dtmin)/static_cast<Flt>(2.0);
+                    dt = dtmin + (dtmax-dtmin)/Flt{2};
                 }
             }
 
@@ -1297,7 +1297,7 @@ namespace morph
                 for (r = 0; r < mp-i; ++r) { // r is row
                     Flt element = static_cast<Flt>(BezCurve::binomial_lookup (m, i))
                         * static_cast<Flt>(BezCurve::binomial_lookup (m-i, m-i-r))
-                        * std::pow (Flt{-1}, static_cast<Flt>(m-i-r)); // arg 1 was: -static_cast<Flt>(1.0)
+                        * std::pow (Flt{-1}, static_cast<Flt>(m-i-r));
                     // Ensure the matrix is inverted 'm-i', not just 'i'
                     this->M(m-i, r) = element;
                 }
