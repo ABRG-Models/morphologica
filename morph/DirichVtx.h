@@ -106,13 +106,6 @@ namespace morph {
             v[1] = std::numeric_limits<Flt>::max();
         }
 
-        //! Construct with passed in float pair, using default threshold
-#if 0
-        DirichVtx (const std::pair<float, Flt>& p)
-        {
-            morph::vec<Flt, 2> _p = { static_cast<Flt>(p[0]), p[1] };
-        }
-#endif
         /*!
          * Construct with passed in Flt coord, set the threshold on the basis of being passed in
          * the Hex to Hex distance d.

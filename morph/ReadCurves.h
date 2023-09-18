@@ -13,7 +13,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <utility>
 #ifdef __WIN__
 # include <rapidxml-1.13/rapidxml.hpp>
 #else
