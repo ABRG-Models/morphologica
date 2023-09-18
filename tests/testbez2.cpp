@@ -1,6 +1,6 @@
 #include "morph/HexGrid.h"
 #include "morph/BezCurve.h"
-#include <utility>
+#include "morph/vec.h"
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -14,10 +14,10 @@ int main()
 {
     int rtn = -1;
 
-    pair<float,float> v1 = make_pair (-0.28f, 0.0f);
-    pair<float,float> v2 = make_pair (0.28f, 0.0f);
-    pair<float,float> v3 = make_pair (0.28f, 0.45f);
-    pair<float,float> v4 = make_pair (-0.28f, 0.45f);
+    morph::vec<float, 2> v1 = {-0.28f, 0.0f};
+    morph::vec<float, 2> v2 = {0.28f, 0.0f};
+    morph::vec<float, 2> v3 = {0.28f, 0.45f};
+    morph::vec<float, 2> v4 = {-0.28f, 0.45f};
 
     morph::BezCurve<float> c1(v1,v2);
     morph::BezCurve<float> c2(v2,v3);

@@ -16,10 +16,10 @@ int main()
     morph::vvec<float> ord = { 1, 3, 2, 3, 5 }; // y
 
     // Fit y = mx + c
-    std::pair<float, float> mc = morph::MathAlgo::linregr (absc, ord);
-    std::cout << "Linear regression coefficients: gradient=" << mc.first << ", offset=" << mc.second << std::endl;
+    morph::vec<float, 2> mc = morph::MathAlgo::linregr (absc, ord);
+    std::cout << "Linear regression coefficients: gradient=" << mc[0] << ", offset=" << mc[1] << std::endl;
     // Create fit data points for visualisation:
-    morph::vvec<float> fit = (absc * mc.first) + mc.second;
+    morph::vvec<float> fit = (absc * mc[0]) + mc[1];
 
     // Visualise data and linear fit
     morph::Visual v(1024, 768, "Linear regression", {-0.8,-0.8}, {.1,.1,.1}, 1.0f, 0.01f);

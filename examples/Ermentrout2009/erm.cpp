@@ -211,7 +211,7 @@ int main (int argc, char **argv)
     // Start the loop
     bool doing = true;
     static constexpr bool debug_ranges = false;
-    std::pair<FLT, FLT> mm; // maxmin
+    morph::vec<FLT, 2> mm; // maxmin
     while (doing) {
         // Step the model:
         RD.step();
@@ -220,16 +220,16 @@ int main (int argc, char **argv)
             // Plot n and c
             if (do_autoscale == true) {
                 mm = morph::MathAlgo::maxmin (RD.n[0]);
-                hgv1p->colourScale.compute_autoscale (mm.second, mm.first);
+                hgv1p->colourScale.compute_autoscale (mm[1], mm[0]);
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
-                hgv2p->colourScale.compute_autoscale (mm.second, mm.first);
+                hgv2p->colourScale.compute_autoscale (mm[1], mm[0]);
             }
 
             if constexpr (debug_ranges) {
                 mm = morph::MathAlgo::maxmin (RD.n[0]);
-                std::cout << "n range: " << std::abs(mm.second - mm.first) << std::endl;
+                std::cout << "n range: " << std::abs(mm[1] - mm[0]) << std::endl;
                 mm = morph::MathAlgo::maxmin (RD.c[0]);
-                std::cout << "c range: " << std::abs(mm.second - mm.first) << std::endl;
+                std::cout << "c range: " << std::abs(mm[1] - mm[0]) << std::endl;
             }
 
             hgv1p->updateData (&RD.n[0]);

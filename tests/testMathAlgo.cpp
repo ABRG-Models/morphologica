@@ -82,9 +82,9 @@ int main()
     }
 
     vector<float> vf = {0.1f, 0.2f, 0.9f, -0.4f};
-    pair<float, float> mmvf = MathAlgo::maxmin (vf);
-    cout << "vector has max: " << mmvf.first << " and min/lowest: " << mmvf.second << endl;
-    if (mmvf.first == 0.9f && mmvf.second == -0.4f) {
+    morph::vec<float, 2> mmvf = MathAlgo::maxmin (vf);
+    cout << "vector has max: " << mmvf[0] << " and min/lowest: " << mmvf[1] << endl;
+    if (mmvf[0] == 0.9f && mmvf[1] == -0.4f) {
         cout << "Max/min correct" << endl;
     } else {
         rtn--;

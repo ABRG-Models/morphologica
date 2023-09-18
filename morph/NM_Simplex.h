@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <utility>
 #include <vector>
 #include <iostream>
 #include <morph/MathAlgo.h>
@@ -146,17 +145,17 @@ namespace morph {
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! Special constructor for 3 vertices in 2 dimensions
-        NM_Simplex (const std::pair<T, T>& v0,
-                    const std::pair<T, T>& v1, const std::pair<T, T>& v2)
+        NM_Simplex (const morph::vec<T, 2>& v0,
+                    const morph::vec<T, 2>& v1, const morph::vec<T, 2>& v2)
         {
             this->n = 2;
             this->allocate();
-            this->vertices[0][0] = v0.first;
-            this->vertices[0][1] = v0.second;
-            this->vertices[1][0] = v1.first;
-            this->vertices[1][1] = v1.second;
-            this->vertices[2][0] = v2.first;
-            this->vertices[2][1] = v2.second;
+            this->vertices[0][0] = v0[0];
+            this->vertices[0][1] = v0[1];
+            this->vertices[1][0] = v1[0];
+            this->vertices[1][1] = v1[1];
+            this->vertices[2][0] = v2[0];
+            this->vertices[2][1] = v2[1];
             this->state = NM_Simplex_State::NeedToComputeThenOrder;
         }
         //! General constructor for n dimensional simplex

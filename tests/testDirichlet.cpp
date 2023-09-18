@@ -111,9 +111,7 @@ int main()
 
         array<float,3> cl_c = morph::ColourMap<float>::jetcolour (0.98);
         for (auto verti : vertices) {
-            vec<float,3> posn = {0, 0, 0.002};
-            posn[0] = verti.v.first;
-            posn[1] = verti.v.second;
+            vec<float,3> posn = verti.v.plus_one_dim (0.002);
             vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
             auto pvp = std::make_unique<morph::PolygonVisual> (offset, posn, vtx, sz/8.0f, 0.002f, cl_c, 60);
             v.bindmodel (pvp);
@@ -128,9 +126,7 @@ int main()
             for (auto dom_inner : dom_outer.vertices) {
                 // Draw the paths
                 for (auto path : dom_inner.pathto_next) {
-                    vec<float,3> posn = {{0,0,0}};
-                    posn[0] = path.first;
-                    posn[1] = path.second;
+                    vec<float,3> posn = path.plus_one_dim (0.0);
                     vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
                     auto pvp = std::make_unique<morph::PolygonVisual> (offset, posn, vtx, sz/16.0f, 0.002f, cl_d, 6);
                     v.bindmodel (pvp);
@@ -138,9 +134,7 @@ int main()
                     v.addVisualModel (pvp);
                 }
                 for (auto path : dom_inner.pathto_neighbour) {
-                    vec<float,3> posn = {{0,0,0}};
-                    posn[0] = path.first;
-                    posn[1] = path.second;
+                    vec<float,3> posn = path.plus_one_dim (0.0);
                     vec<float,3> vtx = posn + vec<float, 3>({1,0,0});
                     auto pvp = std::make_unique<morph::PolygonVisual> (offset, posn, vtx, sz/16.0f, 0.002f, cl_e, 6);
                     v.bindmodel (pvp);
@@ -151,7 +145,7 @@ int main()
         }
 
         // Draw small hex at boundary centroid.
-        vec<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
+        vec<float,3> centroid = {hg.boundaryCentroid[0], hg.boundaryCentroid[1], 0.0f};
         vec<float,3> centroidv = centroid + vec<float,3> ({ 0.0f, 1.0f, 0.0f });
         auto pvp = std::make_unique<morph::PolygonVisual> (morph::vec<float>({0,0,0}), centroid, centroidv, sz/16.0f, 0.01f, morph::vec<float>({0,0,1}), 10);
         v.bindmodel (pvp);

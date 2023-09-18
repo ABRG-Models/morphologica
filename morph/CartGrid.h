@@ -274,7 +274,7 @@ namespace morph {
             cgdata.add_val ("/d_growthbuffer_horz", d_growthbuffer_horz);
             cgdata.add_val ("/d_growthbuffer_vert", d_growthbuffer_vert);
 
-            // pair<float,float>
+            // morph::vec<float, 2>
             cgdata.add_contained_vals ("/boundaryCentroid", boundaryCentroid);
 
             // Don't save BezCurvePath boundary - limit this to the ability to
@@ -349,6 +349,7 @@ namespace morph {
             cgdata.read_contained_vals ("/d_nw", this->d_nw);
             cgdata.read_contained_vals ("/d_nsw", this->d_nsw);
             cgdata.read_contained_vals ("/d_nse", this->d_nse);
+            cgdata.read_contained_vals ("/d_flags", this->d_flags);
 
             // Assume a boundary has been applied so set this true. Also, the CartGrid::save method doesn't
             // save CartGrid::vertexE, etc
@@ -610,17 +611,14 @@ namespace morph {
         }
 
         //! Compute the centroid of the passed in list of Rects.
-        std::pair<float, float> computeCentroid (const std::list<Rect>& pRects)
+        morph::vec<float, 2> computeCentroid (const std::list<Rect>& pRects)
         {
-            std::pair<float, float> centroid;
-            centroid.first = 0;
-            centroid.second = 0;
-            for (auto r : pRects) { // fixme replace with MathAlgo centroiding code
-                centroid.first += r.x;
-                centroid.second += r.y;
+            morph::vec<float, 2> centroid = { 0.0f, 0.0f };
+            for (auto r : pRects) {
+                centroid[0] += r.x;
+                centroid[1] += r.y;
             }
-            centroid.first /= pRects.size();
-            centroid.second /= pRects.size();
+            centroid /= pRects.size();
             return centroid;
         }
 
@@ -730,7 +728,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
+                this->boundaryCentroid = { 0.0f, 0.0f };
                 bpi = bpoints.begin();
             }
 
@@ -867,7 +865,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
+                this->boundaryCentroid = { 0.0f, 0.0f };
                 bpi = bpoints.begin();
             }
 
@@ -985,7 +983,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated ellipse
          */
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
-                                                     const std::pair<float, float> c = std::make_pair(0.0, 0.0))
+                                                     const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             // Compute the points on the boundary using the parametric elliptical formula and
             // half of the rect to rect spacing as the angular step size. Return as bpoints.
@@ -1003,9 +1001,8 @@ namespace morph {
 
             // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
             for (double phi = 0.0; phi < morph::mathconst<double>::two_pi; phi+=delta_phi) {
-                float x_pt = static_cast<float>(a * std::cos (phi) + c.first);
-                float y_pt = static_cast<float>(b * std::sin (phi) + c.second);
-                morph::BezCoord<float> b(std::make_pair(x_pt, y_pt));
+                morph::vec<float, 2> xy_pt = { static_cast<float>(a * std::cos (phi) + c[0]), static_cast<float>(b * std::sin (phi) + c[1]) };
+                morph::BezCoord<float> b(xy_pt);
                 bpoints.push_back (b);
             }
 
@@ -1039,7 +1036,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setEllipticalBoundary (const float a, const float b,
-                                    const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                    const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, b, c);
             this->setBoundary (bpoints, offset);
@@ -1052,7 +1049,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setCircularBoundary (const float a,
-                                  const std::pair<float, float> c = std::make_pair(0.0, 0.0), bool offset=true)
+                                  const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
@@ -1340,7 +1337,7 @@ namespace morph {
          * \return a vector of iterators to the Rects that make up the region.
          */
         std::vector<std::list<Rect>::iterator> getRegion (BezCurvePath<float>& p,
-                                                          std::pair<float, float>& regionCentroid,
+                                                          morph::vec<float, 2>& regionCentroid,
                                                           bool applyOriginalBoundaryCentroid = true)
         {
             p.computePoints (this->d/2.0f, true);
@@ -1352,7 +1349,7 @@ namespace morph {
          * The overload of getRegion that does all the work on a vector of coordinates
          */
         std::vector<std::list<Rect>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints,
-                                                          std::pair<float, float>& regionCentroid,
+                                                          morph::vec<float, 2>& regionCentroid,
                                                           bool applyOriginalBoundaryCentroid = true)
         {
             // First clear all region boundary flags, as we'll be defining a new region boundary
@@ -1372,8 +1369,7 @@ namespace morph {
                 }
 
                 // Subtract originalBoundaryCentroid from region centroid so that region centroid is translated
-                regionCentroid.first = regionCentroid.first - this->originalBoundaryCentroid.first;
-                regionCentroid.second = regionCentroid.second - this->originalBoundaryCentroid.second;
+                regionCentroid -= this->originalBoundaryCentroid;
             }
 
             // Now find the rects on the boundary of the region
@@ -1682,13 +1678,13 @@ namespace morph {
          * is expressed in the CartGrid will have a (2D) centroid of roughly
          * (0,0). Hence, this is usually roughly (0,0).
          */
-        std::pair<float, float> boundaryCentroid;
+        morph::vec<float, 2> boundaryCentroid = { 0.0f, 0.0f };
 
         /*!
          * Holds the centroid of the boundary before all points on the boundary were
          * translated so that the centroid of the boundary would be 0,0
          */
-        std::pair<float, float> originalBoundaryCentroid;
+        morph::vec<float, 2> originalBoundaryCentroid = { 0.0f, 0.0f };
 
     private:
         /*!
@@ -2491,33 +2487,14 @@ namespace morph {
          * Find the Rect in the Rect grid which is closest to the x,y position given by
          * pos.
          */
-        std::list<Rect>::iterator findRectNearest (const std::pair<float, float>& pos)
-        {
-            std::list<morph::Rect>::iterator nearest = this->rects.end();
-            std::list<morph::Rect>::iterator ri = this->rects.begin();
-            float dist = std::numeric_limits<float>::max();
-            while (ri != this->rects.end()) {
-                float dx = pos.first - ri->x;
-                float dy = pos.second - ri->y;
-                float dl = std::sqrt (dx*dx + dy*dy);
-                if (dl < dist) {
-                    dist = dl;
-                    nearest = ri;
-                }
-                ++ri;
-            }
-            return nearest;
-        }
-
         std::list<Rect>::iterator findRectNearest (const morph::vec<float, 2>& pos)
         {
             std::list<morph::Rect>::iterator nearest = this->rects.end();
             std::list<morph::Rect>::iterator ri = this->rects.begin();
             float dist = std::numeric_limits<float>::max();
             while (ri != this->rects.end()) {
-                float dx = pos[0] - ri->x;
-                float dy = pos[1] - ri->y;
-                float dl = std::sqrt (dx*dx + dy*dy);
+                morph::vec<float, 2> dx = { pos[0] - ri->x, pos[1] - ri->y };
+                float dl = dx.length();
                 if (dl < dist) {
                     dist = dl;
                     nearest = ri;

@@ -22,10 +22,10 @@ namespace morph {
             this->proportions.resize(n, T{0});
 
             // For each coordinate, add it to a hex
-            for (const morph::vec<T>& datum : data) {
+            for (const morph::vec<T, 3>& datum : data) {
                 if (datum[2] < 0.0f) { continue; }
                 // if datum is in a hex hi, then counts[hi->vg] += T{1};
-                auto hi = hg->findHexNearest (std::make_pair(datum[0], datum[1]));
+                auto hi = hg->findHexNearest (datum.less_one_dim());
 
                 // dist from hi to datum:
                 morph::vec<T> hipos = { hi->x, hi->y, 0 };

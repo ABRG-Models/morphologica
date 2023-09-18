@@ -43,13 +43,13 @@ int main() {
 
     // Test with morph::BezCoord, which has x() and y() methods
     std::vector<morph::BezCoord<float>> vbezc;
-    vbezc.push_back (morph::BezCoord<float>(std::pair(0.0f,0.0f)));
-    vbezc.push_back (morph::BezCoord<float>(std::pair(1000.0f,0.0f)));
-    vbezc.push_back (morph::BezCoord<float>(std::pair(1000.0f,1000.0f)));
-    vbezc.push_back (morph::BezCoord<float>(std::pair(0.0f,1000.0f)));
-    vbezc.push_back (morph::BezCoord<float>(std::pair(0.0f,0.0f)));
+    vbezc.push_back (morph::BezCoord<float>(morph::vec<float,2>({0.0f,0.0f})));
+    vbezc.push_back (morph::BezCoord<float>(morph::vec<float,2>({1000.0f,0.0f})));
+    vbezc.push_back (morph::BezCoord<float>(morph::vec<float,2>({1000.0f,1000.0f})));
+    vbezc.push_back (morph::BezCoord<float>(morph::vec<float,2>({0.0f,1000.0f})));
+    vbezc.push_back (morph::BezCoord<float>(morph::vec<float,2>({0.0f,0.0f})));
     morph::Winder w2(vbezc);
-    int wn2 = w2.wind (morph::BezCoord<float>(std::pair(500.0f,500.0f)));
+    int wn2 = w2.wind (morph::BezCoord<float>(morph::vec<float,2>({500.0f,500.0f})));
     cout << "Winding number = " << wn2 << endl;
     if (wn2 != 1) {
         --rtn;
