@@ -49,7 +49,7 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static std::pair<T,T> maxmin (const Container<T, Allocator>& vec) {
+        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& vec) {
             return MathImpl<number_type<T>::value>::maxmin (vec);
         }
 
@@ -87,16 +87,16 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static std::pair<T,T> meansos (const Container<T, Allocator>& values)
+        static morph::vec<T, 2> meansos (const Container<T, Allocator>& values)
         {
-            std::pair<T,T> meansos = {T{0},T{0}};
+            morph::vec<T, 2> meansos = {T{0},T{0}};
             if (values.empty()) { return meansos; }
-            for (T val : values) { meansos.first += val; }
-            meansos.first /= values.size();
+            for (T val : values) { meansos[0] += val; }
+            meansos[0] /= values.size();
 
             for (T val : values) {
                 // Add up sum of squared deviations
-                meansos.second += ((val-meansos.first)*(val-meansos.first));
+                meansos[1] += ((val-meansos[0])*(val-meansos[0]));
             }
 
             return meansos;
@@ -113,11 +113,11 @@ namespace morph {
             if (x.size() != y.size()) {
                 throw std::runtime_error ("covariance: both number arrays to be same size.");
             }
-            std::pair<T,T> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
-            std::pair<T,T> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
+            morph::vec<T, 2> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
+            morph::vec<T, 2> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
             T cov = T{0};
             for (size_t i = 0; i < x.size(); ++i) {
-                cov += ((x[i] - ms_x.first) * (y[i] - ms_y.first));
+                cov += ((x[i] - ms_x[0]) * (y[i] - ms_y[0]));
             }
             return cov;
         }
@@ -141,19 +141,19 @@ namespace morph {
         }
 
         //! Linear regression. Return slope (first) and offset (second) (m and c from 'y
-        //! = mx + c') in an std::pair
+        //! = mx + c') in an vec<T, 2>
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static std::pair<T,T> linregr (const Container<T, Allocator>& x,
+        static morph::vec<T, 2> linregr (const Container<T, Allocator>& x,
                                        const Container<T, Allocator>& y)
         {
-            std::pair<T,T> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
-            std::pair<T,T> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
-            T cov_xy = MathAlgo::covariance<Container, T, Allocator> (x, ms_x.first, y, ms_y.first);
-            T m = cov_xy / ms_x.second;
-            T c = ms_y.first - (m * ms_x.first);
-            return std::make_pair (m, c);
+            morph::vec<T, 2> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
+            morph::vec<T, 2> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
+            T cov_xy = MathAlgo::covariance<Container, T, Allocator> (x, ms_x[0], y, ms_y[0]);
+            T m = cov_xy / ms_x[1];
+            T c = ms_y[0] - (m * ms_x[0]);
+            return morph::vec<T, 2> ({m, c});
         }
 
         //! Compute distance from p1 to p2 (ND)
@@ -181,18 +181,18 @@ namespace morph {
 
         //! Compute distance from p1 to p2 (2D, see BezCurve.h for use)
         template<typename T>
-        static T distance (const std::pair<T, T> p1, const std::pair<T, T> p2) {
-            T xdiff = p2.first-p1.first;
-            T ydiff = p2.second-p1.second;
+        static T distance (const morph::vec<T, 2> p1, const morph::vec<T, 2> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
             T dist = std::sqrt (xdiff*xdiff + ydiff*ydiff);
             return dist;
         }
 
         //! Compute squared distance from p1 to p2 (2D, see BezCurve.h for use)
         template<typename T>
-        static T distance_sq (const std::pair<T, T> p1, const std::pair<T, T> p2) {
-            T xdiff = p2.first-p1.first;
-            T ydiff = p2.second-p1.second;
+        static T distance_sq (const morph::vec<T, 2> p1, const morph::vec<T, 2> p2) {
+            T xdiff = p2[0]-p1[0];
+            T ydiff = p2[1]-p1[1];
             T dist_sq = xdiff*xdiff + ydiff*ydiff;
             return dist_sq;
         }
@@ -249,33 +249,33 @@ namespace morph {
 
         //! Centroid of a set of 2D coordinates @points.
         template<typename T>
-        static std::pair<T,T> centroid2D (const std::vector<std::pair<T,T>> points) {
-            std::pair<T,T> centroid;
-            centroid.first = static_cast<T>(0);
-            centroid.second = static_cast<T>(0);
+        static morph::vec<T, 2> centroid2D (const std::vector<morph::vec<T, 2>> points) {
+            morph::vec<T, 2> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
             for (auto p : points) {
-                centroid.first += p.first;
-                centroid.second += p.second;
+                centroid[0] += p[0];
+                centroid[1] += p[1];
             }
-            centroid.first /= points.size();
-            centroid.second /= points.size();
+            centroid[0] /= points.size();
+            centroid[1] /= points.size();
             return centroid;
         }
 
         //! Centroid of a set of 2D coordinates @points, assumed to be in order
         //! x1,y1,x2,y2,etc
         template<typename T>
-        static std::pair<T,T> centroid2D (const std::vector<T> points) {
-            std::pair<T,T> centroid;
-            centroid.first = static_cast<T>(0);
-            centroid.second = static_cast<T>(0);
+        static morph::vec<T, 2> centroid2D (const std::vector<T> points) {
+            morph::vec<T, 2> centroid;
+            centroid[0] = static_cast<T>(0);
+            centroid[1] = static_cast<T>(0);
             size_t psz = points.size();
             for (size_t i = 0; i < psz-1; i+=2) {
-                centroid.first += points[i];
-                centroid.second += points[i+1];
+                centroid[0] += points[i];
+                centroid[1] += points[i+1];
             }
-            centroid.first /= (psz/2);
-            centroid.second /= (psz/2);
+            centroid[0] /= (psz/2);
+            centroid[1] /= (psz/2);
             return centroid;
         }
 

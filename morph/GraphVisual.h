@@ -600,8 +600,8 @@ namespace morph {
         //! Compute the scaling of ord1_scale and abscissa_scale according to the scalingpolicies
         void compute_scaling (const std::vector<Flt>& _abscissae, const std::vector<Flt>& _data, const morph::axisside axisside)
         {
-            std::pair<Flt, Flt> data_maxmin = morph::MathAlgo::maxmin (_data);
-            std::pair<Flt, Flt> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);
+            morph::vec<Flt, 2> data_maxmin = morph::MathAlgo::maxmin (_data);
+            morph::vec<Flt, 2> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);
             if (axisside == morph::axisside::left) {
                 this->setsize (this->width, this->height);
             }
@@ -615,18 +615,18 @@ namespace morph {
             }
             case morph::scalingpolicy::manual_min:
             {
-                this->abscissa_scale.compute_autoscale (this->datamin_x, absc_maxmin.first);
+                this->abscissa_scale.compute_autoscale (this->datamin_x, absc_maxmin[0]);
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
-                this->abscissa_scale.compute_autoscale (absc_maxmin.second, this->datamax_x);
+                this->abscissa_scale.compute_autoscale (absc_maxmin[1], this->datamax_x);
                 break;
             }
             case morph::scalingpolicy::autoscale:
             default:
             {
-                this->abscissa_scale.compute_autoscale (absc_maxmin.second, absc_maxmin.first);
+                this->abscissa_scale.compute_autoscale (absc_maxmin[1], absc_maxmin[0]);
                 break;
             }
             }
@@ -645,18 +645,18 @@ namespace morph {
             case morph::scalingpolicy::manual_min:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin.first);
+                    this->ord1_scale.compute_autoscale (this->datamin_y, data_maxmin[0]);
                 } else {
-                    this->ord2_scale.compute_autoscale (this->datamin_y2, data_maxmin.first);
+                    this->ord2_scale.compute_autoscale (this->datamin_y2, data_maxmin[0]);
                 }
                 break;
             }
             case morph::scalingpolicy::manual_max:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (data_maxmin.second, this->datamax_y);
+                    this->ord1_scale.compute_autoscale (data_maxmin[1], this->datamax_y);
                 } else {
-                    this->ord2_scale.compute_autoscale (data_maxmin.second, this->datamax_y2);
+                    this->ord2_scale.compute_autoscale (data_maxmin[1], this->datamax_y2);
                 }
                 break;
             }
@@ -664,9 +664,9 @@ namespace morph {
             default:
             {
                 if (axisside == morph::axisside::left) {
-                    this->ord1_scale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                    this->ord1_scale.compute_autoscale (data_maxmin[1], data_maxmin[0]);
                 } else {
-                    this->ord2_scale.compute_autoscale (data_maxmin.second, data_maxmin.first);
+                    this->ord2_scale.compute_autoscale (data_maxmin[1], data_maxmin[0]);
                 }
                 break;
             }

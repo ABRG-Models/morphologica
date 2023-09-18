@@ -14,7 +14,6 @@
 # include <GLFW/glfw3.h>
 #endif
 #include <iostream>
-#include <utility>
 #include <tuple>
 #include <set>
 #include <stdexcept>
@@ -144,11 +143,6 @@ namespace morph {
         void deconstruct()
         {
             // Clean up the faces, which is a map:
-            // std::map<
-            //          std::pair<morph::VisualFont, unsigned int>,
-            //          morph::gl::VisualFace*
-            //         > faces;
-            // (want to delete the morph::gl::VisualFace)
             for (auto& f : this->faces) { delete f.second; }
             this->faces.clear();
 
