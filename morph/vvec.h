@@ -298,9 +298,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            std::pair<_S, _S> minmax = this->minmax();
-            _S m = minmax.second - minmax.first;
-            _S g = minmax.first;
+            vvec<_S> minmax = this->minmax();
+            _S m = minmax[1] - minmax[0];
+            _S g = minmax[0];
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -309,9 +309,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_neg()
         {
-            std::pair<_S, _S> minmax = this->minmax();
-            _S m = minmax.second - minmax.first;
-            _S g = minmax.second;
+            vvec<_S> minmax = this->minmax();
+            _S m = minmax[1] - minmax[0];
+            _S g = minmax[1];
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -320,9 +320,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_sym()
         {
-            std::pair<_S, _S> minmax = this->minmax();
-            _S m = (minmax.second - minmax.first) / _S{2};
-            _S g = (minmax.second + minmax.first) / _S{2};
+            vvec<_S> minmax = this->minmax();
+            _S m = (minmax[1] - minmax[0]) / _S{2};
+            _S g = (minmax[1] + minmax[0]) / _S{2};
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -685,26 +685,26 @@ namespace morph {
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
         //! the rest of the numbers
         template<bool test_for_nans = false>
-        std::pair<S, S> minmax() const
+        vvec<S> minmax() const
         {
-            std::pair<S, S> minmax;
+            vvec<S> minmax(2);
             if constexpr (test_for_nans) {
                 if (this->has_nan()) {
                     // Deal with non-numbers by removing them
                     morph::vvec<S> sans_nans = this->prune_nan();
                     auto mm = std::minmax_element (sans_nans.begin(), sans_nans.end());
-                    minmax.first = mm.first == sans_nans.end() ? S{0} : *mm.first;
-                    minmax.second = mm.second == sans_nans.end() ? S{0} : *mm.second;
+                    minmax[0] = mm.first == sans_nans.end() ? S{0} : *mm.first;
+                    minmax[1] = mm.second == sans_nans.end() ? S{0} : *mm.second;
                 } else {
                     auto mm = std::minmax_element (this->begin(), this->end());
-                    minmax.first = mm.first == this->end() ? S{0} : *mm.first;
-                    minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+                    minmax[0] = mm.first == this->end() ? S{0} : *mm.first;
+                    minmax[1] = mm.second == this->end() ? S{0} : *mm.second;
                 }
             } else { // no testing for nans
                 // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
                 auto mm = std::minmax_element (this->begin(), this->end());
-                minmax.first = mm.first == this->end() ? S{0} : *mm.first;
-                minmax.second = mm.second == this->end() ? S{0} : *mm.second;
+                minmax[0] = mm.first == this->end() ? S{0} : *mm.first;
+                minmax[1] = mm.second == this->end() ? S{0} : *mm.second;
             }
             return minmax;
         }

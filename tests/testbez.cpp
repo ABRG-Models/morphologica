@@ -13,15 +13,11 @@ int main()
     int rtn = -1;
 
     // Make some control points
-    pair<float,float> i, f, c1, c2;
-    i.first = 1;
-    i.second = 1;
-    c1.first = 5;
-    c1.second = 5;
-    c2.first = 2;
-    c2.second = -4;
-    f.first = 10;
-    f.second = 1;
+    morph::vec<float, 2> i, f, c1, c2;
+    i = {1,1};
+    c1 = {5,5};
+    c2 = {2,-4};
+    f = {10,1};
 
     // Make a cubic curve
     BezCurve<float> cc(i, f, c1, c2);
@@ -57,10 +53,10 @@ int main()
 
     std::ofstream f2;
     f2.open ("tests/ctrl.csv", std::ios::trunc|std::ios::out);
-    f2 << i.first << "," << i.second << endl;
-    f2 << c1.first << "," << c1.second << endl;
-    f2 << c2.first << "," << c2.second << endl;
-    f2 << f.first << "," << f.second << endl;
+    f2 << i << endl;
+    f2 << c1 << endl;
+    f2 << c2 << endl;
+    f2 << f << endl;
     f2.close();
 
     return rtn;

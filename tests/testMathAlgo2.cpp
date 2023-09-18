@@ -21,13 +21,13 @@ int main()
     vf.push_back (1.1);
     vf.push_back (1.2);
     cout << "double functions" << endl;
-    pair<double, double> vfmm = MathAlgo::maxmin (vf);
-    cout << "max/min: " << vfmm.first << "/" << vfmm.second << endl;
+    vec<double, 2> vfmm = MathAlgo::maxmin (vf);
+    cout << "max/min: " << vfmm[0] << "/" << vfmm[1] << endl;
 
     vector<double> autoscaled = MathAlgo::autoscale (vf, 0.0, 1.0);
-    pair<double, double> vfmm2 = MathAlgo::maxmin (autoscaled);
-    cout << "after autoscale, max/min: " << vfmm2.first << "/" << vfmm2.second << endl;
-    if (vfmm2.first != 1.0 || vfmm2.second != 0.0) {
+    vec<double, 2> vfmm2 = MathAlgo::maxmin (autoscaled);
+    cout << "after autoscale, max/min: " << vfmm2[0] << "/" << vfmm2[1] << endl;
+    if (vfmm2[0] != 1.0 || vfmm2[1] != 0.0) {
         rtn--;
     }
 
@@ -45,14 +45,14 @@ int main()
     vv3.push_back (v2);
     vv3.push_back (v3);
     cout << "array<double,3> functions" << endl;
-    pair<array<double,3>, array<double,3> > vv3mm = MathAlgo::maxmin (vv3);
-    cout << "max/min: (" << vv3mm.first[0] << ","
-         << vv3mm.first[1] << "," << vv3mm.first[2] << ")/(" << vv3mm.second[0] << ","
-         << vv3mm.second[1] << "," << vv3mm.second[2] << ")" << endl;
-    if (abs(vv3mm.first[2] - 2.1) > 0.0000001
-        || abs(vv3mm.second[2] - 1.0) > 0.0000001) {
-        cout << "vv3mm.first[2] is " << vv3mm.first[2] << " not 2.1 OR" << endl;
-        cout << "vv3mm.second[2] is " << vv3mm.second[2] << " not 1.0" << endl;
+    vec<array<double,3>, 2 > vv3mm = MathAlgo::maxmin (vv3);
+    cout << "max/min: (" << vv3mm[0][0] << ","
+         << vv3mm[0][1] << "," << vv3mm[0][2] << ")/(" << vv3mm[1][0] << ","
+         << vv3mm[1][1] << "," << vv3mm[1][2] << ")" << endl;
+    if (abs(vv3mm[0][2] - 2.1) > 0.0000001
+        || abs(vv3mm[1][2] - 1.0) > 0.0000001) {
+        cout << "vv3mm[0][2] is " << vv3mm[0][2] << " not 2.1 OR" << endl;
+        cout << "vv3mm[1][2] is " << vv3mm[1][2] << " not 1.0" << endl;
         --rtn;
     }
 
@@ -72,14 +72,14 @@ int main()
     vvf.push_back (vf2);
     vvf.push_back (vf3);
     cout << "vector<float> functions" << endl;
-    pair<vector<float>, vector<float> > vvfmm = MathAlgo::maxmin (vvf);
+    vec<vector<float>, 2 > vvfmm = MathAlgo::maxmin (vvf);
     cout << "max: (";
-    for (auto i : vvfmm.first) {
+    for (auto i : vvfmm[0]) {
         cout << i << " ";
     }
     cout << ")\n";
     cout << "min: (";
-    for (auto i : vvfmm.second) {
+    for (auto i : vvfmm[1]) {
         cout << i << " ";
     }
     cout << ")\n";
@@ -104,8 +104,8 @@ int main()
     li.push_back(2);
     li.push_back(1);
     li.push_back(7);
-    pair<int,int> limm = MathAlgo::maxmin (li);
-    cout << "max/min: " << limm.first << "," << limm.second << endl;
+    vec<int,2> limm = MathAlgo::maxmin (li);
+    cout << "max/min: " << limm[0] << "," << limm[1] << endl;
 
     deque<list<float>> qf;
     list<float> lv1 = {1,1}; // Hmm. list<float> has no [] operators.

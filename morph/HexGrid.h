@@ -231,7 +231,7 @@ namespace morph {
             hgdata.add_val ("/d_growthbuffer_horz", d_growthbuffer_horz);
             hgdata.add_val ("/d_growthbuffer_vert", d_growthbuffer_vert);
 
-            // pair<float,float>
+            // morph::vec<float, 2>
             hgdata.add_contained_vals ("/boundaryCentroid", boundaryCentroid);
 
             // Don't save BezCurvePath boundary - limit this to the ability to
@@ -308,6 +308,7 @@ namespace morph {
             hgdata.read_contained_vals ("/d_nw", this->d_nw);
             hgdata.read_contained_vals ("/d_nsw", this->d_nsw);
             hgdata.read_contained_vals ("/d_nse", this->d_nse);
+            hgdata.read_contained_vals ("/d_flags", this->d_flags);
 
             // Assume a boundary has been applied so set this true. Also, the HexGrid::save method doesn't
             // save HexGrid::vertexE, etc
@@ -472,17 +473,14 @@ namespace morph {
         /*!
          * Compute the centroid of the passed in list of Hexes.
          */
-        std::pair<float, float> computeCentroid (const std::list<Hex>& pHexes)
+        morph::vec<float, 2> computeCentroid (const std::list<Hex>& pHexes)
         {
-            std::pair<float, float> centroid;
-            centroid.first = 0;
-            centroid.second = 0;
+            morph::vec<float, 2> centroid = {0,0};
             for (auto h : pHexes) {
-                centroid.first += h.x;
-                centroid.second += h.y;
+                centroid[0] += h.x;
+                centroid[1] += h.y;
             }
-            centroid.first /= pHexes.size();
-            centroid.second /= pHexes.size();
+            centroid /= pHexes.size();
             return centroid;
         }
 
@@ -490,14 +488,14 @@ namespace morph {
          * Find the Hex in the Hex grid which is closest to the x,y position given by
          * pos.
          */
-        std::list<Hex>::iterator findHexNearest (const std::pair<float, float>& pos)
+        std::list<Hex>::iterator findHexNearest (const morph::vec<float, 2>& pos)
         {
             std::list<morph::Hex>::iterator nearest = this->hexen.end();
             std::list<morph::Hex>::iterator hi = this->hexen.begin();
             float dist = std::numeric_limits<float>::max();
             while (hi != this->hexen.end()) {
-                float dx = pos.first - hi->x;
-                float dy = pos.second - hi->y;
+                float dx = pos[0] - hi->x;
+                float dy = pos[1] - hi->y;
                 float dl = std::sqrt (dx*dx + dy*dy);
                 if (dl < dist) {
                     dist = dl;
@@ -608,7 +606,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
+                this->boundaryCentroid = {0.0f, 0.0f};
                 bpi = bpoints.begin();
             }
 
@@ -657,7 +655,7 @@ namespace morph {
                 // Copy the centroid
                 this->originalBoundaryCentroid = this->boundaryCentroid;
                 // Zero out the centroid, as the boundary is now centred on 0,0
-                this->boundaryCentroid = std::make_pair (0.0f, 0.0f);
+                this->boundaryCentroid = {0.0f, 0.0f};
                 bpi = bpoints.begin();
             }
 
@@ -766,7 +764,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated rectangle
          */
         std::vector<BezCoord<float>> rectangleCompute (const float x, const float y,
-                                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
+                                                       const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             std::vector<morph::BezCoord<float>> bpoints;
             throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
@@ -784,38 +782,38 @@ namespace morph {
          */
         std::vector<BezCoord<float>> parallelogramCompute (const int re, const int gne,
                                                            const int rw, const int gsw,
-                                                           const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
+                                                           const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            // To to bottom left first
-            float x = c.first - (rw * this->d + gsw * this->d/2.0f);
-            float y = c.second - gsw * this->v;
+            // Go to bottom left first
+            morph::vec<float, 2> xy = {-(rw * this->d + gsw * this->d/2.0f), -gsw * this->v};
+            xy += c;
 
             // 'Draw' bottom
             for (int i = 0; i < 2*(rw+re); ++i) {
-                morph::BezCoord<float> b(std::make_pair(x, y));
+                morph::BezCoord<float> b(xy);
                 bpoints.push_back (b);
-                x += this->d/2.0f;
+                xy[0] += this->d/2.0f;
             }
             // Right
             for (int i = 0; i < 2*(gsw+gne); ++i) {
-                morph::BezCoord<float> b(std::make_pair(x, y));
+                morph::BezCoord<float> b(xy);
                 bpoints.push_back (b);
-                x += this->d/4.0f;
-                y += this->v/2.0f;
+                xy[0] += this->d/4.0f;
+                xy[1] += this->v/2.0f;
             }
             // Top
             for (int i = 0; i < 2*(rw+re); ++i) {
-                morph::BezCoord<float> b(std::make_pair(x, y));
+                morph::BezCoord<float> b(xy);
                 bpoints.push_back (b);
-                x -= this->d/2.0f;
+                xy[0] -= this->d/2.0f;
             }
             // Left
             for (int i = 0; i < 2*(gsw+gne); ++i) {
-                morph::BezCoord<float> b(std::make_pair(x, y));
+                morph::BezCoord<float> b(xy);
                 bpoints.push_back (b);
-                x -= this->d/4.0f;
-                y -= this->v/2.0f;
+                xy[0] -= this->d/4.0f;
+                xy[1] -= this->v/2.0f;
             }
 
             return bpoints;
@@ -829,7 +827,7 @@ namespace morph {
          * \return A vector of the coordinates of points on the generated ellipse
          */
         std::vector<BezCoord<float>> ellipseCompute (const float a, const float b,
-                                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f))
+                                                     const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             // Compute the points on the boundary using the parametric elliptical formula and
             // half of the hex to hex spacing as the angular step size. Return as bpoints.
@@ -847,9 +845,12 @@ namespace morph {
 
             // Loop around phi, computing x and y of the elliptical boundary and filling up bpoints
             for (double phi = 0.0; phi < morph::mathconst<double>::two_pi; phi+=delta_phi) {
-                float x_pt = static_cast<float>(a * std::cos (phi) + c.first);
-                float y_pt = static_cast<float>(b * std::sin (phi) + c.second);
-                morph::BezCoord<float> b(std::make_pair(x_pt, y_pt));
+                morph::vec<float, 2> xy_pt = {
+                    static_cast<float>(a * std::cos (phi)),
+                    static_cast<float>(b * std::sin (phi))
+                };
+                xy_pt += c;
+                morph::BezCoord<float> b(xy_pt);
                 bpoints.push_back (b);
             }
 
@@ -885,7 +886,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setEllipticalBoundary (const float a, const float b,
-                                    const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
+                                    const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, b, c);
             this->setBoundary (bpoints, offset);
@@ -898,7 +899,7 @@ namespace morph {
          * \param offset determines if boundary is recentred or remains in place
          */
         void setCircularBoundary (const float a,
-                                  const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
+                                  const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
@@ -908,7 +909,7 @@ namespace morph {
          * Set up a rectangular boundary of width x and height y.
          */
         void setRectangularBoundary (const float x, const float y,
-                                     const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
+                                     const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = rectangleCompute (x, y, c);
             this->setBoundary (bpoints, offset);
@@ -918,7 +919,7 @@ namespace morph {
          * Set up a parallelogram boundary extending r hexes to the E and g hexes to the NE
          */
         void setParallelogramBoundary (const int r, const int g,
-                                       const std::pair<float, float> c = std::make_pair(0.0f, 0.0f), bool offset=true)
+                                       const morph::vec<float, 2> c = {0.0f, 0.0f}, bool offset=true)
         {
             std::vector<morph::BezCoord<float>> bpoints = parallelogramCompute (r, g, r, g, c);
             this->setBoundary (bpoints, offset);
@@ -1149,7 +1150,7 @@ namespace morph {
          *
          * \return a vector of iterators to the Hexes that make up the region.
          */
-        std::vector<std::list<Hex>::iterator> getRegion (BezCurvePath<float>& p, std::pair<float, float>& regionCentroid,
+        std::vector<std::list<Hex>::iterator> getRegion (BezCurvePath<float>& p, morph::vec<float, 2>& regionCentroid,
                                                          bool applyOriginalBoundaryCentroid = true)
         {
             p.computePoints (this->d/2.0f, true);
@@ -1160,7 +1161,7 @@ namespace morph {
         /*!
          * The overload of getRegion that does all the work on a vector of coordinates
          */
-        std::vector<std::list<Hex>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints, std::pair<float, float>& regionCentroid,
+        std::vector<std::list<Hex>::iterator> getRegion (std::vector<BezCoord<float>>& bpoints, morph::vec<float, 2>& regionCentroid,
                                                          bool applyOriginalBoundaryCentroid = true)
         {
             // First clear all region boundary flags, as we'll be defining a new region boundary
@@ -1180,8 +1181,7 @@ namespace morph {
                 }
 
                 // Subtract originalBoundaryCentroid from region centroid so that region centroid is translated
-                regionCentroid.first = regionCentroid.first - this->originalBoundaryCentroid.first;
-                regionCentroid.second = regionCentroid.second - this->originalBoundaryCentroid.second;
+                regionCentroid -= this->originalBoundaryCentroid;
             }
 
             // Now find the hexes on the boundary of the region
@@ -2779,13 +2779,13 @@ namespace morph {
          * is expressed in the HexGrid will have a (2D) centroid of roughly
          * (0,0). Hence, this is usually roughly (0,0).
          */
-        std::pair<float, float> boundaryCentroid;
+        morph::vec<float, 2> boundaryCentroid = {0.0f, 0.0f};
 
         /*!
          * Holds the centroid of the boundary before all points on the boundary were
          * translated so that the centroid of the boundary would be 0,0
          */
-        std::pair<float, float> originalBoundaryCentroid;
+        morph::vec<float, 2> originalBoundaryCentroid = {0.0f, 0.0f};
 
     private:
         /*!

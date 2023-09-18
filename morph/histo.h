@@ -3,10 +3,10 @@
  */
 #pragma once
 
+#include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/MathAlgo.h>
 #include <memory>
-#include <utility>
 
 namespace morph {
 
@@ -24,9 +24,9 @@ namespace morph {
             this->datacount = static_cast<T>(data.size());
 
             // Compute bin widths from range of data and n.
-            std::pair<T,T> maximini = morph::MathAlgo::maxmin (data);
-            this->max = maximini.first;
-            this->min = maximini.second;
+            morph::vec<T, 2> maximini = morph::MathAlgo::maxmin (data);
+            this->max = maximini[0];
+            this->min = maximini[1];
             this->range = max - min;
             this->binwidth = this->range / n;
             for (size_t i = 0; i < n; ++i) {

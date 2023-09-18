@@ -13,7 +13,6 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <utility>
 #include <sstream>
 #include <morph/DirichVtx.h>
 #include <morph/NM_Simplex.h>
@@ -49,18 +48,17 @@ namespace morph {
         Flt edge_deviation = 0.0;
 
         //! The best centre for the domain. Called P in Honda 1983.
-        std::pair<Flt, Flt> centre;
+        morph::vec<Flt, 2> centre = { Flt{0}, Flt{0} };
 
         //! Return the number of vertices
-        unsigned int numVertices() const {
-            return this->vertices.size();
-        }
+        unsigned int numVertices() const { return this->vertices.size(); }
 
         /*!
          * Compute the perpendicular distance from point p to the line defined by points a and b.
          */
-        static Flt compute_distance_to_line (const std::pair<Flt, Flt>& p,
-                                             const std::pair<Flt, Flt>& a, const std::pair<Flt, Flt>& b) {
+        static Flt compute_distance_to_line (const morph::vec<Flt, 2>& p,
+                                             const morph::vec<Flt, 2>& a, const morph::vec<Flt, 2>& b)
+        {
             // Find angle between Ai--Pi and Ai--p
             Flt angle = DirichVtx<Flt>::compute_angle (p, a, b, 1);
             // And distance from p to Ai
@@ -73,15 +71,15 @@ namespace morph {
          * Compute the root of the mean of the sum of the squared distances of the edges from the
          * straight line segments that join the vertices of this domain.
          */
-        void compute_edge_deviation() {
-
+        void compute_edge_deviation()
+        {
             DirichVtx<Flt> lastvtx = this->vertices.back();
 
             Flt d2sum = 0.0;
             Flt dcount = 0.0;
             for (DirichVtx<Flt> vtx : this->vertices) {
                 // vtx.v is the current coord, lastvtx.v is the prev coord. These mark the two ends of the line.
-                for (std::pair<Flt, Flt> xi : vtx.pathto_next) {
+                for (morph::vec<Flt, 2> xi : vtx.pathto_next) {
                     // Find perp. distance from xi to x0-x1 line.
                     Flt dist = DirichDom<Flt>::compute_distance_to_line (xi, vtx.v, lastvtx.v);
                     dist *= dist;
@@ -106,15 +104,15 @@ namespace morph {
          * means we go around the boundary, marking hexes in straight lines in all possible inward
          * directions from each boundary hex. Simples.
          */
-        void compute_area (HexGrid* hg, const std::vector<Flt>& f) {
-
+        void compute_area (HexGrid* hg, const std::vector<Flt>& f)
+        {
             // Start at one of the vertices. Follow the edge of one vertex, counting/marking hexes
             // as you go. Continue around the perimeter until you get back to the start. Now fill in
             // the region (with 'laser beams') until all hexes in the domain are marked.
 
             // Find a coordinate that is situated on the border of the domain
             typename std::list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
-            std::pair<Flt, Flt> firstborder = dv->pathto_next.front();
+            morph::vec<Flt, 2> firstborder = dv->pathto_next.front();
 
             // Now find a hex in hg that a) has this coordinate on it as a vertex and b) has the
             // correct ID. This will be the first hex on the boundary.
@@ -311,12 +309,14 @@ namespace morph {
         }
 
         //! This is the objective function for the gradient descent. Put it in DirichDom
-        Flt compute_sos (const Flt& x, const Flt& y) const {
+        Flt compute_sos (const Flt& x, const Flt& y) const
+        {
             typename std::list<DirichVtx<Flt>>::const_iterator dv = this->vertices.begin();
             Flt sos = 0.0;
+            morph::vec<Flt, 2> xy = {x, y};
             while (dv != this->vertices.end()) {
                 // Compute sum of square distances to the lines.
-                Flt dist = dv->compute_distance_to_line (std::make_pair(x, y));
+                Flt dist = dv->compute_distance_to_line (xy);
                 sos += dist * dist;
                 ++dv;
             }
@@ -327,14 +327,13 @@ namespace morph {
          * Take a set of Dirichlet vertices defining exactly one Dirichlet domain and compute a
          * metric for the Dirichlet-ness of the vertices after Honda1983.
          */
-        Flt dirichlet_analyse_single_domain (std::pair<Flt, Flt>& P) {
-
+        Flt dirichlet_analyse_single_domain (morph::vec<Flt, 2>& P)
+        {
             typename std::list<DirichVtx<Flt>>::iterator dv = this->vertices.begin();
             typename std::list<DirichVtx<Flt>>::iterator dvnext = dv;
             typename std::list<DirichVtx<Flt>>::iterator dvprev = this->vertices.end();
 
-            Flt mean_x = 0.0;
-            Flt mean_y = 0.0;
+            morph::vec<Flt, 2> Pi_best;
 
             // Compute Pi lines for each vertex in the domain, and also (for later use) the mean
             // position of the vertices.
@@ -345,7 +344,7 @@ namespace morph {
                     dvnext = this->vertices.begin();
                 }
 
-                std::pair<Flt, Flt> Aim1;
+                morph::vec<Flt, 2> Aim1;
                 if (dvprev == this->vertices.end()) {
                     dvprev--;
                     Aim1 = dvprev->v;
@@ -357,8 +356,7 @@ namespace morph {
 
                 // Reset dv back one now we figured out dvnext and dvprev
                 dv--;
-                mean_x += dv->v.first;
-                mean_y += dv->v.second;
+                Pi_best += dv->v;
                 dv->compute_line_to_centre (Aim1, dvnext->v);
                 ++dv;
             }
@@ -371,9 +369,8 @@ namespace morph {
 
             // Start out with a simplex with a vertex at the centroid of the domain vertices, and
             // then two other vertices at the first domain vertex (v) and its neighbour (vn).
-            std::pair<Flt, Flt> Pi_best;
-            Pi_best.first = mean_x / this->vertices.size();
-            Pi_best.second = mean_y / this->vertices.size();
+            Pi_best /= this->vertices.size();
+
             NM_Simplex<Flt> simp (Pi_best, this->vertices.begin()->v, this->vertices.begin()->vn);
             // Set a termination threshold for the SD of the vertices of the simplex
             simp.termination_threshold = 2.0 * std::numeric_limits<Flt>::epsilon();
@@ -411,8 +408,8 @@ namespace morph {
             // We now have a P and a metric
 
             // Write P into the ref in the arg
-            P.first = vP[0];
-            P.second = vP[1];
+            P[0] = vP[0];
+            P[1] = vP[1];
             this->centre = P;
 
             // Return the metric. In Honda 1983, this is $\Delta_j$
@@ -424,7 +421,8 @@ namespace morph {
         }
 
         //! Save this domain data in HdfData& @data under path @pathroot
-        void save (HdfData& data, const std::string& pathroot) const {
+        void save (HdfData& data, const std::string& pathroot) const
+        {
             std::string p("");
             p = pathroot + "/f";
             data.add_val (p.c_str(), this->f);

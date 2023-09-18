@@ -10,7 +10,6 @@
 
 #include <string>
 #include <list>
-#include <utility>
 #include <cmath>
 #include <morph/vec.h>
 #include <morph/BezCoord.h>
@@ -371,10 +370,10 @@ namespace morph {
          * by \a cartesianPoint to the centre of this Rect.
          */
         template <typename LFlt>
-        float distanceFrom (const std::pair<LFlt, LFlt> cartesianPoint) const
+        float distanceFrom (const morph::vec<LFlt, 2> cartesianPoint) const
         {
-            float deltax = cartesianPoint.first - x;
-            float deltay = cartesianPoint.second - y;
+            float deltax = cartesianPoint[0] - x;
+            float deltay = cartesianPoint[1] - y;
             return std::sqrt (deltax*deltax + deltay*deltay);
         }
 
@@ -839,38 +838,38 @@ namespace morph {
          * definitions RECT_VERTEX_POS_N, etc to pass in a human-readable label for the
          * vertex.
          */
-        std::pair<float, float> get_vertex_coord (unsigned short ni) const
+        morph::vec<float, 2> get_vertex_coord (unsigned short ni) const
         {
-            std::pair<float, float> rtn = {0.0f, 0.0f};
+            morph::vec<float, 2> rtn = { 0.0f, 0.0f };
             switch (ni) {
             case RECT_VERTEX_POS_NE:
             {
-                rtn.first = this->x + this->getSR();
-                rtn.second = this->y + this->getVtoNE();
+                rtn[0] = this->x + this->getSR();
+                rtn[1] = this->y + this->getVtoNE();
                 break;
             }
             case RECT_VERTEX_POS_NW:
             {
-                rtn.first = this->x - this->getSR();
-                rtn.second = this->y + this->getVtoNE();
+                rtn[0] = this->x - this->getSR();
+                rtn[1] = this->y + this->getVtoNE();
                 break;
             }
             case RECT_VERTEX_POS_SW:
             {
-                rtn.first = this->x - this->getSR();
-                rtn.second = this->y - this->getVtoNE();
+                rtn[0] = this->x - this->getSR();
+                rtn[1] = this->y - this->getVtoNE();
                 break;
             }
             case RECT_VERTEX_POS_SE:
             {
-                rtn.first = this->x + this->getSR();
-                rtn.second = this->y - this->getVtoNE();
+                rtn[0] = this->x + this->getSR();
+                rtn[1] = this->y - this->getVtoNE();
                 break;
             }
             default:
             {
-                rtn.first = -1.0f;
-                rtn.second = -1.0f;
+                rtn[0] = -1.0f;
+                rtn[1] = -1.0f;
                 break;
             }
             }
@@ -882,12 +881,10 @@ namespace morph {
          * the overload of get_vertex_coord which accepts a single, unsigned short
          * argument.
          */
-        std::pair<float, float> get_vertex_coord (unsigned int ni) const
+        morph::vec<float, 2> get_vertex_coord (unsigned int ni) const
         {
-            std::pair<float, float> rtn = {-2.0f, -2.0f};
-            if (ni > 3) {
-                return rtn;
-            }
+            morph::vec<float, 2>  rtn = { -2.0f, -2.0f };
+            if (ni > 3) { return rtn; }
             rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
             return rtn;
         }
@@ -897,15 +894,15 @@ namespace morph {
          * the overload of get_vertex_coord which accepts a single, unsigned short
          * argument.
          */
-        std::pair<float, float> get_vertex_coord (int ni) const
+        morph::vec<float, 2> get_vertex_coord (int ni) const
         {
-            std::pair<float, float> rtn = {-3.0f, -3.0f};
+            morph::vec<float, 2> rtn = { -3.0f, -3.0f };
             if (ni > 3) {
-                rtn.first = -4.0f;
+                rtn[0] = -4.0f;
                 return rtn;
             }
             if (ni < 0) {
-                rtn.second = -4.0f;
+                rtn[1] = -4.0f;
                 return rtn;
             }
             rtn = this->get_vertex_coord (static_cast<unsigned short> (ni));
@@ -919,12 +916,12 @@ namespace morph {
          * RectGrid.
          */
         template <typename LFlt>
-        bool compare_vertex_coord (int ni, std::pair<LFlt, LFlt>& coord) const
+        bool compare_vertex_coord (int ni, morph::vec<LFlt, 2>& coord) const
         {
-            std::pair<float, float> vc = this->get_vertex_coord (ni);
+            morph::vec<float, 2> vc = this->get_vertex_coord (ni);
             float sr_thresh = this->getSR()/100.0f;
-            if (std::abs(vc.first - coord.first) < sr_thresh
-                && std::abs(vc.second - coord.second) < sr_thresh) {
+            if (std::abs(vc[0] - coord[0]) < sr_thresh
+                && std::abs(vc[1] - coord[1]) < sr_thresh) {
                 return true;
             }
             return false;
@@ -932,7 +929,7 @@ namespace morph {
 
         //! Return true if the Rect contains the vertex at \a coord
         template <typename LFlt>
-        bool contains_vertex (std::pair<LFlt, LFlt>& coord) const
+        bool contains_vertex (morph::vec<LFlt, 2>& coord) const
         {
             // check each of my vertices, if any match coord, then return true.
             bool rtn = false;
@@ -952,11 +949,11 @@ namespace morph {
          * RectGrid.
          */
         template <typename LFlt>
-        bool compare_coord (std::pair<LFlt, LFlt>& coord) const
+        bool compare_coord (morph::vec<LFlt, 2>& coord) const
         {
             float sr_thresh = this->getSR()/100.0f;
-            if (std::abs(this->x - coord.first) < sr_thresh
-                && std::abs(this->y - coord.second) < sr_thresh) {
+            if (std::abs(this->x - coord[0]) < sr_thresh
+                && std::abs(this->y - coord[1]) < sr_thresh) {
                 return true;
             }
             return false;

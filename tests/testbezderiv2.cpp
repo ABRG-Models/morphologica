@@ -32,16 +32,17 @@ using namespace cv;
 #define M_C1 Scalar(238,121,159) // mediumpurple2
 #define M_C2 Scalar(238,58,178) // darkorchid2
 
-void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<pair<FLT,FLT>>& w, Scalar linecolour) {
+void draw (Mat& pImg, BezCurvePath<FLT>& bcp, morph::vvec<morph::vec<FLT, 2>>& v,
+           morph::vvec<morph::vec<FLT, 2>>& w, Scalar linecolour) {
 
     // Add the control points in similar colours
     list<BezCurve<FLT>> theCurves = bcp.curves;
     size_t j = 0;
     for (auto curv : theCurves) {
         Scalar linecol = j%2 ? M_BLUE : M_GREEN;
-        vector<pair<FLT,FLT>> ctrls = curv.getControls();
+        morph::vvec<morph::vec<FLT, 2>> ctrls = curv.getControls();
         for (size_t cc = 0; cc<ctrls.size(); ++cc) {
-            Point p1(ctrls[cc].first, ctrls[cc].second);
+            Point p1(ctrls[cc][0], ctrls[cc][1]);
             circle (pImg, p1, 5, linecol, 2);
             if (cc==0 || cc==ctrls.size()-1) {
                 circle (pImg, p1, 2, M_BLACK, -1);
@@ -49,23 +50,23 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp, vector<pair<FLT,FLT>>& v, vector<p
                 circle (pImg, p1, 2, M_WHITE, -1);
             }
         }
-        Point ps(ctrls[0].first, ctrls[0].second);
-        Point pe(ctrls[1].first, ctrls[1].second);
+        Point ps(ctrls[0][0], ctrls[0][1]);
+        Point pe(ctrls[1][0], ctrls[1][1]);
         line (pImg, ps, pe, linecolour, 1);
-        Point ps2(ctrls[ctrls.size()-2].first, ctrls[ctrls.size()-2].second);
-        Point pe2(ctrls[ctrls.size()-1].first, ctrls[ctrls.size()-1].second);
+        Point ps2(ctrls[ctrls.size()-2][0], ctrls[ctrls.size()-2][1]);
+        Point pe2(ctrls[ctrls.size()-1][0], ctrls[ctrls.size()-1][1]);
         line (pImg, ps2, pe2, linecolour, 1);
         j++;
     }
 
     // User controls
     for (unsigned int i = 0; i < v.size(); ++i) {
-        Point p1(v[i].first, v[i].second);
+        Point p1(v[i][0], v[i][1]);
         circle (pImg, p1, 2, M_BLACK, -1);
     }
 
     for (unsigned int i = 0; i < w.size(); ++i) {
-        Point p1(w[i].first, w[i].second);
+        Point p1(w[i][0], w[i][1]);
         circle (pImg, p1, 2, M_BLACK, -1);
     }
 
@@ -120,21 +121,24 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     int rtn = 0;
-    vector<pair<FLT,FLT>> v;
-    v.push_back (make_pair (90,730));  //730
-    v.push_back (make_pair (140,620)); //620
-    v.push_back (make_pair (200,530)); //530
-    v.push_back (make_pair (270,380)); //380
-    v.push_back (make_pair (350,200)); //200
-    v.push_back (make_pair (430,100)); //100
 
-    vector<pair<FLT,FLT>> w;
-    w.push_back (v.back());
-    w.push_back (make_pair (530,120));
-    w.push_back (make_pair (610,200));
-    w.push_back (make_pair (760,380));
-    w.push_back (make_pair (840,600));
-    w.push_back (make_pair (980,700));
+    morph::vvec<morph::vec<FLT, 2>> v = {
+        {90,730},
+        {140,620},
+        {200,530},
+        {270,380},
+        {350,200},
+        {430,100}
+    };
+
+    morph::vvec<morph::vec<FLT, 2>> w = {
+        v.back(),
+        {530,120},
+        {610,200},
+        {760,380},
+        {840,600},
+        {980,700}
+    };
 
     // First the analytical fit
     BezCurve<FLT> cv1;

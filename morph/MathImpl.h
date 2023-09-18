@@ -17,12 +17,12 @@
 #include <vector>
 #include <limits>
 #include <cmath>
-#include <utility>
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
 #include <type_traits>
 #include <memory>
+#include <morph/vec.h>
 #include <morph/mathconst.h>
 #include <morph/expression_sfinae.h>
 
@@ -49,14 +49,13 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static std::pair<T, T> maxmin (const Container<T, Allocator>& values) {
-
+        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& values)
+        {
             // Example to get the type of the container T.
             // See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
             using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
-            T vmax = std::numeric_limits<T>::min();
-            T vmin = std::numeric_limits<T>::max();
+            morph::vec<T, 2> vmaxmin = { std::numeric_limits<T>::min(), std::numeric_limits<T>::max() };
             T_el maxlen = 0;
             T_el minlen = std::numeric_limits<T_el>::max();
 
@@ -71,23 +70,23 @@ namespace morph {
 
                 if (vlen > maxlen) {
                     maxlen = vlen;
-                    vmax = v;
+                    vmaxmin[0] = v;
                 }
                 if (vlen < minlen) {
                     minlen = vlen;
-                    vmin = v;
+                    vmaxmin[1] = v;
                 }
             }
 
-            return std::make_pair (vmax, vmin);
+            return vmaxmin;
         }
 
         //! common vector centroid implementation
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static T centroid (const Container<T, Allocator>& coords) {
-
+        static T centroid (const Container<T, Allocator>& coords)
+        {
             T _centroid(*coords.begin());
 
             // If T has a .x and a .y as member attributes, assume it's a 2D point (e.g. cv::Point)
@@ -145,8 +144,8 @@ namespace morph {
                    typename T,
                    typename Allocator=std::allocator<T>,
                    typename S > // S is a scalar
-        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-
+        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max)
+        {
             // S and T_el should be the same type. Could put this line as default for
             // typename S above, but what to do for the
             using T_el=std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
@@ -154,13 +153,13 @@ namespace morph {
             // FIXME: Check S and T_el are same? What's the correct templating approach?
 
             // autoscale vectors (with fixed size vector aka std::array)
-            std::pair<T,T> mm = MathImpl<0>::maxmin (values);
+            morph::vec<T, 2> mm = MathImpl<0>::maxmin (values);
 
             // For simplicity with types, avoid using MathAlgo::distance here and
             // write the code out longhand.
             T_el sos = static_cast<T_el>(0);
-            typename T::const_iterator vi = mm.first.begin();
-            while (vi != mm.first.end()) {
+            typename T::const_iterator vi = mm[0].begin();
+            while (vi != mm[0].end()) {
                 const T_el val = *vi;
                 sos += (val * val);
                 ++vi;
@@ -168,8 +167,8 @@ namespace morph {
             T_el max_v = std::sqrt (sos); // max length vector
 
             sos = static_cast<T_el>(0);
-            vi = mm.second.begin();
-            while (vi != mm.second.end()) {
+            vi = mm[1].begin();
+            while (vi != mm[1].end()) {
                 const T_el val = *vi;
                 sos += (val * val);
                 ++vi;
@@ -238,40 +237,28 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static std::pair<T, T> maxmin (const Container<T, Allocator>& values) {
-            T vmax = std::numeric_limits<T>::lowest();
-            T vmin = std::numeric_limits<T>::max();
+        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& values)
+        {
+            morph::vec<T, 2> vmaxmin = { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max() };
             for (auto v : values) {
-                vmax = v > vmax ? v : vmax;
-                vmin = v < vmin ? v : vmin;
+                vmaxmin[0] = v > vmaxmin[0] ? v : vmaxmin[0];
+                vmaxmin[1] = v < vmaxmin[1] ? v : vmaxmin[1];
             }
-            return std::make_pair (vmax, vmin);
+            return vmaxmin;
         }
 
-#if 0
-        //! Scalar centroid implementation. This throws runtime exception. Really it'd
-        //! be better to omit it to give a compiler error.
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static T centroid (const Container<T, Allocator>& coords) {
-            throw std::runtime_error ("Call this with Container<T>& coords where T is a vector/array type");
-            // OR, FIXME: Do the most natural thing for a container of scalars - find the mean!
-        }
-#endif
         //! Scalar autoscale implementation
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T>,
                    typename S > // FIXME: Check T==S?
-        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max) {
-            std::pair<T,T> mm = MathImpl<1>::maxmin (values);
-            T min_v = mm.second;
-            T max_v = mm.first;
-            T scale_v = (range_max - range_min) / (max_v - min_v);
+        static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max)
+        {
+            morph::vec<T, 2> mm = MathImpl<1>::maxmin (values);
+            T scale_v = (range_max - range_min) / (mm[0] - mm[1]);
             std::vector<T> norm_v(values.size());
             for (unsigned int i = 0; i<values.size(); ++i) {
-                norm_v[i] = std::min (std::max (((values[i]) - min_v) * scale_v, static_cast<T>(0.0)), static_cast<T>(1.0));
+                norm_v[i] = std::min (std::max (((values[i]) - mm[1]) * scale_v, static_cast<T>(0.0)), static_cast<T>(1.0));
             }
             return norm_v;
         }

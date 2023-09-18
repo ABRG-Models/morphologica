@@ -354,9 +354,8 @@ F objective_boha (const morph::vvec<F>& params)
 F objective_hg (const morph::vvec<F>& params)
 {
     // Find the hex nearest the coordinate defined by params and return its value
-    std::pair<float, float> coord;
-    coord.first = static_cast<float>(params[0]);
-    coord.second = static_cast<float>(params[1]);
+    morph::vvec<float> _params = params.as_float();
+    morph::vec<float, 2> coord = { _params[0], _params[1] };
     std::list<morph::Hex>::iterator hn = hg->findHexNearest (coord);
     return obj_f[hn->vi];
 }

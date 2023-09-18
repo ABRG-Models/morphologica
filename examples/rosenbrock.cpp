@@ -68,8 +68,8 @@ int main()
     for (size_t i = 0; i < hg.num(); ++i) {
         banana_vals[i] = banana (hg.d_x[i], hg.d_y[i]);
     }
-    std::pair<FLT, FLT> mm = morph::MathAlgo::maxmin(banana_vals);
-    std::cout << "Banana surface max/min: " << mm.first << "," << mm.second << std::endl;
+    morph::vec<FLT, 2> mm = morph::MathAlgo::maxmin(banana_vals);
+    std::cout << "Banana surface max/min: " << mm[0] << "," << mm[1] << std::endl;
     auto hgv = std::make_unique<morph::HexGridVisual<FLT>>(&hg, _offset);
     v.bindmodel (hgv);
     hgv->hexVisMode = morph::HexVisMode::Triangles;
