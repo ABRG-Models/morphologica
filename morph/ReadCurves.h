@@ -118,12 +118,12 @@ namespace morph
         /*!
          * Get the scaling in mm per SVG unit.
          */
-        float getScale_mmpersvg() const { return (lineToMillimetres.second/lineToMillimetres.first); }
+        float getScale_mmpersvg() const { return (lineToMillimetres[1]/lineToMillimetres[0]); }
 
         /*!
          * Get the scaling in SVG units per mm.
          */
-        float getScale_svgpermm() const { return (lineToMillimetres.first/lineToMillimetres.second); }
+        float getScale_svgpermm() const { return (lineToMillimetres[0]/lineToMillimetres[1]); }
 
         /*!
          * A key-value list of coordinates, obtained from reading any circles in the SVG. The ID of
@@ -131,7 +131,7 @@ namespace morph
          * scheme up so that I could incorporate a set of coordinates marking out structures in the
          * cortex (specifically, barrels).
          */
-        std::map<std::string, std::pair<float, float>> circles;
+        std::map<std::string, morph::vec<float, 2>> circles;
 
     private:
 
@@ -286,7 +286,7 @@ namespace morph
                     cy = std::atof (_attr->value());
                 }
                 if (gotx && goty) {
-                    this->circles[circ_id] = std::make_pair(cx, cy);
+                    this->circles[circ_id] = morph::vec<float,2>({cx, cy});
                 }
 
             } // else failed to get circ_id
@@ -376,8 +376,8 @@ namespace morph
                 dl = this->linePath.getEndToEnd();
                 // Having found the length of the line from the <line> or
                 // <path>, compute lineToMillimetres
-                this->lineToMillimetres.first = 1;
-                this->lineToMillimetres.second = dl > 0.0f ? mmf/dl : 1.0f;
+                this->lineToMillimetres[0] = 1;
+                this->lineToMillimetres[1] = dl > 0.0f ? mmf/dl : 1.0f;
             }
         }
 
@@ -476,18 +476,18 @@ namespace morph
             // As we parse through the path, we have to keep track of the
             // current coordinate position, as curves are specified from the
             // position at the end of the previous curve.
-            std::pair<float, float> currentCoordinate = std::make_pair (0.0f, 0.0f);
+            morph::vec<float, 2> currentCoordinate = {0.0f, 0.0f};
 
             // The first coordinate of the path. Can be required with a Z
             // command.
-            std::pair<float, float> firstCoordinate = std::make_pair (0.0f, 0.0f);
+            morph::vec<float, 2> firstCoordinate = {0.0f, 0.0f};
 
             // The last Bezier control points, c2, especially may be required
             // in a shortcut Bezier command (s or S), hence declaring these
             // outside the scope of the while loop.
-            std::pair<float, float> c1; // Control point 1
-            std::pair<float, float> c2; // Control point 2
-            std::pair<float, float> f;  // Final point of curve
+            morph::vec<float, 2> c1; // Control point 1
+            morph::vec<float, 2> c2; // Control point 2
+            morph::vec<float, 2> f;  // Final point of curve
 
             // A list of SVG command characters
             const char* svgCmds = "mMcCsSqQtTzZlLhHvV";
@@ -526,10 +526,9 @@ namespace morph
                         }
                         for (unsigned int i = 0; i<v.size(); i+=2) {
                             if (cmd == 'l') { // delta coordinates
-                                f = std::make_pair (currentCoordinate.first + v[i],
-                                                    currentCoordinate.second + v[i+1]);
+                                f = { currentCoordinate[0] + v[i], currentCoordinate[1] + v[i+1] };
                             } else {
-                                f = std::make_pair (v[i], v[i+1]);
+                                f = { v[i], v[i+1] };
                             }
                             morph::BezCurve<float> c(currentCoordinate, f);
                             curves.addCurve (c);
@@ -553,10 +552,9 @@ namespace morph
                         }
                         for (unsigned int i = 0; i<v.size(); ++i) {
                             if (cmd == 'h') { // delta coordinates
-                                f = std::make_pair (currentCoordinate.first + v[i],
-                                                    currentCoordinate.second);
+                                f = { currentCoordinate[0] + v[i], currentCoordinate[1] };
                             } else {
-                                f = std::make_pair (v[i], currentCoordinate.second);
+                                f = { v[i], currentCoordinate[1] };
                             }
                             morph::BezCurve<float> c(currentCoordinate, f);
                             curves.addCurve (c);
@@ -581,14 +579,13 @@ namespace morph
                         for (unsigned int i = 0; i<v.size(); ++i) {
                             if (cmd == 'v') { // delta coordinates
                                 if (v[i] != 0.0f) {
-                                    f = std::make_pair (currentCoordinate.first,
-                                                        currentCoordinate.second + v[i]);
+                                    f = { currentCoordinate[0], currentCoordinate[1] + v[i] };
                                     morph::BezCurve<float> c(currentCoordinate, f);
                                     curves.addCurve (c);
                                     currentCoordinate = f;
                                 }
                             } else {
-                                f = std::make_pair (currentCoordinate.first, v[i]);
+                                f = { currentCoordinate[0], v[i] };
                                 morph::BezCurve<float> c(currentCoordinate, f);
                                 curves.addCurve (c);
                                 currentCoordinate = f;
@@ -612,10 +609,9 @@ namespace morph
                         }
 
                         if (cmd == 'm') { // delta coordinates
-                            currentCoordinate = std::make_pair (currentCoordinate.first + v[0],
-                                                                currentCoordinate.second + v[1]);
+                            currentCoordinate = { currentCoordinate[0] + v[0], currentCoordinate[1] + v[1] };
                         } else {
-                            currentCoordinate = std::make_pair (v[0], v[1]);
+                            currentCoordinate = { v[0], v[1] };
                         }
                         firstCoordinate = currentCoordinate;
                         curves.initialCoordinate = currentCoordinate;
@@ -626,10 +622,9 @@ namespace morph
                             // pairs of commands implies linetos.
                             for (unsigned int i = 2; i<v.size(); i+=2) {
                                 if (cmd == 'm') { // delta coordinates
-                                    f = std::make_pair (currentCoordinate.first + v[i],
-                                                        currentCoordinate.second + v[i+1]);
+                                    f = { currentCoordinate[0] + v[i], currentCoordinate[1] + v[i+1] };
                                 } else {
-                                    f = std::make_pair (v[i], v[i+1]);
+                                    f = { v[i], v[i+1] };
                                 }
                                 morph::BezCurve<float> c(currentCoordinate, f);
                                 curves.addCurve (c);
@@ -655,13 +650,13 @@ namespace morph
                             throw std::runtime_error (ee.str());
                         }
                         if (cmd == 'c') { // delta coordinates
-                            c1 = std::make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                            c2 = std::make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
-                            f = std::make_pair(currentCoordinate.first + v[4], currentCoordinate.second + v[5]);
+                            c1 = { currentCoordinate[0] + v[0], currentCoordinate[1] + v[1] };
+                            c2 = { currentCoordinate[0] + v[2], currentCoordinate[1] + v[3] };
+                            f = { currentCoordinate[0] + v[4], currentCoordinate[1] + v[5] };
                         } else { // 'C', so absolute coordinates were given
-                            c1 = std::make_pair (v[0],v[1]);
-                            c2 = std::make_pair (v[2],v[3]);
-                            f = std::make_pair (v[4],v[5]);
+                            c1 = { v[0],v[1] };
+                            c2 = { v[2],v[3] };
+                            f = { v[4],v[5] };
                         }
                         morph::BezCurve<float> c(currentCoordinate, f, c1, c2);
                         curves.addCurve (c);
@@ -683,15 +678,14 @@ namespace morph
                             throw std::runtime_error ("Unexpected size of SVG path S command (expected 4 numbers)");
                         }
                         // c2 and currentCoordinate are stored locally in abs. coordinates:
-                        c1.first = 2 * currentCoordinate.first - c2.first;
-                        c1.second = 2 * currentCoordinate.second - c2.second;
+                        c1 = (currentCoordinate * 2) - c2;
                         if (d[p1] == 's') { // delta coordinates
                             // Deltas are determined from the currentCoordinate
-                            c2 = std::make_pair(currentCoordinate.first + v[0], currentCoordinate.second + v[1]);
-                            f = std::make_pair(currentCoordinate.first + v[2], currentCoordinate.second + v[3]);
+                            c2 = { currentCoordinate[0] + v[0], currentCoordinate[1] + v[1] };
+                            f =  { currentCoordinate[0] + v[2], currentCoordinate[1]  + v[3] };
                         } else { // 'S', so absolute coordinates were given
-                            c2 = std::make_pair (v[0],v[1]);
-                            f = std::make_pair (v[2],v[3]);
+                            c2 = { v[0], v[1] };
+                            f =  { v[2], v[3] };
                         }
                         morph::BezCurve<float> c(currentCoordinate, f, c1, c2);
                         curves.addCurve (c);
@@ -783,12 +777,12 @@ namespace morph
 
             // Now do something with x1,y1,x2,y2: Create a BezCurve object then add this
             // to this->linePath
-            std::pair<float,float> p1;
-            p1.first = static_cast<float>(std::atof (x1.c_str()));
-            p1.second = static_cast<float>(std::atof (y1.c_str()));
-            std::pair<float,float> p2;
-            p2.first = static_cast<float>(std::atof (x2.c_str()));
-            p2.second = static_cast<float>(std::atof (y2.c_str()));
+            morph::vec<float, 2> p1;
+            p1[0] = static_cast<float>(std::atof (x1.c_str()));
+            p1[1] = static_cast<float>(std::atof (y1.c_str()));
+            morph::vec<float, 2> p2;
+            p2[0] = static_cast<float>(std::atof (x2.c_str()));
+            p2[1] = static_cast<float>(std::atof (y2.c_str()));
             morph::BezCurve<float> linecurve (p1, p2);
             this->linePath.reset();
             this->linePath.initialCoordinate = p1;
@@ -803,19 +797,18 @@ namespace morph
          */
         void setScale()
         {
-            if (this->lineToMillimetres.second == 0.0f) {
+            if (this->lineToMillimetres[1] == 0.0f) {
                 throw std::runtime_error ("Failed to obtain scaling from the scale bar.");
             }
-            this->corticalPath.setScale (this->lineToMillimetres.second);
+            this->corticalPath.setScale (this->lineToMillimetres[1]);
             typename std::list<morph::BezCurvePath<float>>::iterator ei = this->enclosedRegions.begin();
             while (ei != this->enclosedRegions.end()) {
-                ei->setScale (this->lineToMillimetres.second);
+                ei->setScale (this->lineToMillimetres[1]);
                 ++ei;
             }
             // Scale the centre points of the circles:
             for (auto& c : this->circles) {
-                c.second.first *= this->lineToMillimetres.second;
-                c.second.second *= this->lineToMillimetres.second;
+                c.second *= this->lineToMillimetres[1];
             }
         }
 
@@ -840,10 +833,10 @@ namespace morph
         BezCurvePath<float> linePath;
 
         /*!
-         * lineToMillimetres.first is the length of the line in the units of the SVG
+         * lineToMillimetres[0] is the length of the line in the units of the SVG
          * file. lineToMillimeteres.second is the length in mm that the line represents.
          */
-        std::pair<float, float> lineToMillimetres;
+        morph::vec<float, 2> lineToMillimetres;
 
         /*!
          * Set to true once a line was found to set lineToMillimetres.

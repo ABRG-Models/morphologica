@@ -349,6 +349,7 @@ namespace morph {
             cgdata.read_contained_vals ("/d_nw", this->d_nw);
             cgdata.read_contained_vals ("/d_nsw", this->d_nsw);
             cgdata.read_contained_vals ("/d_nse", this->d_nse);
+            cgdata.read_contained_vals ("/d_flags", this->d_flags);
 
             // Assume a boundary has been applied so set this true. Also, the CartGrid::save method doesn't
             // save CartGrid::vertexE, etc

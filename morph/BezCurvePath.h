@@ -38,7 +38,7 @@ namespace morph
         std::string name = "";
 
         //! The initial coordinate for the BezCurvePath.
-        std::pair<Flt, Flt> initialCoordinate = std::make_pair (Flt{0}, Flt{0});
+        morph::vec<Flt, 2> initialCoordinate = { Flt{0}, Flt{0} };
 
         //! A list of the BezCurves that make up the full BezCurvePath.
         std::list<BezCurve<Flt>> curves;
@@ -71,7 +71,7 @@ namespace morph
         void reset()
         {
             this->curves.clear();
-            this->initialCoordinate = std::make_pair (Flt{0}, Flt{0});
+            this->initialCoordinate.zero();
             this->scale = Flt{1};
             this->name = "";
         }
@@ -80,8 +80,7 @@ namespace morph
         void setScale (const Flt s)
         {
             this->scale = s;
-            this->initialCoordinate.first = this->initialCoordinate.first * this->scale;
-            this->initialCoordinate.second = this->initialCoordinate.second * this->scale;
+            this->initialCoordinate *= this->scale;
             typename std::list<BezCurve<Flt>>::iterator i = this->curves.begin();
             while (i != this->curves.end()) {
                 i->setScale (this->scale);
@@ -147,47 +146,36 @@ namespace morph
         }
 
         /*!
-         * Compute the as-the-crow-flies distance from the initial
-         * coordinate of this BezCurvePath to the final
-         * coordinate. Uses the scale factor.
+         * Compute the as-the-crow-flies distance from the initial coordinate of this
+         * BezCurvePath to the final coordinate. Uses the scale factor.
          */
         Flt getEndToEnd() const
         {
-            // Distance from this->initialCoordinate to:
-            if (this->curves.empty()) {
-                return Flt{0};
-            }
-            std::pair<Flt,Flt> cend = this->curves.back().getFinalPointScaled();
-            Flt dx = cend.first - initialCoordinate.first;
-            Flt dy = cend.second - initialCoordinate.second;
-            return std::sqrt (dx * dx + dy * dy);
+            // Distance from this->initialCoordinate to final point:
+            if (this->curves.empty()) { return Flt{0}; }
+            morph::vec<Flt, 2> cend = this->curves.back().getFinalPointScaled();
+            return (cend - initialCoordinate).length();
         }
 
         //! Compute & return the centroid of the passed in set of positions.
-        static std::pair<Flt,Flt> getCentroid (const std::vector<BezCoord<Flt>>& points)
+        static morph::vec<Flt, 2> getCentroid (const std::vector<BezCoord<Flt>>& points)
         {
-            Flt c_x = Flt{0};
-            Flt c_y = Flt{0};
+            morph::vec<Flt, 2> c = {Flt{0}, Flt{0}};
             for (const BezCoord<Flt>& i : points) {
-                c_x += i.x();
-                c_y += i.y();
+                c += i.coord;
             }
-            c_x = c_x / points.size();
-            c_y = c_y / points.size();
-
-            return std::make_pair (c_x, c_y);
+            c /= points.size();
+            return c;
         }
 
         /*!
-         * Crunch the numbers to generate the coordinates for the
-         * path, doing the right thing between curves (skipping
-         * remaining, then advancing step-remaining into the next
-         * curve and so on).
+         * Crunch the numbers to generate the coordinates for the path, doing the right
+         * thing between curves (skipping remaining, then advancing step-remaining into
+         * the next curve and so on).
          *
-         * If invertY is true, then multiply all the y values in the
-         * coordinates by -1. SVG is encoded in a left hand coordinate
-         * system, so if you're going to plot the BezCoord points in a
-         * right hand system, set invertY to true.
+         * If invertY is true, then multiply all the y values in the coordinates by
+         * -1. SVG is encoded in a left hand coordinate system, so if you're going to
+         * plot the BezCoord points in a right hand system, set invertY to true.
          */
         void computePoints (Flt step, bool invertY = false)
         {

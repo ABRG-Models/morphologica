@@ -151,7 +151,7 @@ int main()
         }
 
         // Draw small hex at boundary centroid.
-        vec<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
+        vec<float,3> centroid = {hg.boundaryCentroid[0], hg.boundaryCentroid[1], 0.0f};
         vec<float,3> centroidv = centroid + vec<float,3> ({ 0.0f, 1.0f, 0.0f });
         auto pvp = std::make_unique<morph::PolygonVisual> (morph::vec<float>({0,0,0}), centroid, centroidv, sz/16.0f, 0.01f, morph::vec<float>({0,0,1}), 10);
         v.bindmodel (pvp);

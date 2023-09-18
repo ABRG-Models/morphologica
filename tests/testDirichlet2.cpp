@@ -157,7 +157,7 @@ int main()
         }
 
         // Draw small hex at boundary centroid.
-        vec<float,3> centroid = {hg.boundaryCentroid.first, hg.boundaryCentroid.second, 0.0f};
+        vec<float,3> centroid = {hg.boundaryCentroid[0], hg.boundaryCentroid[1], 0.0f};
         vec<float,3> centroidv = centroid + vec<float,3> ({ 0.0f, 1.0f, 0.0f });
         vec<float,3> zeros = {0,0,0};
         vec<float,3> ux = {1,0,0};

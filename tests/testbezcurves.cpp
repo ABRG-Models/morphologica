@@ -15,25 +15,16 @@ int main()
     int rtn = -1;
 
     // Make some control points
-    pair<float,float> i, f, c1, c2;
-    i.first = 1.0f;
-    i.second = 1.0f;
-    c1.first = 5.0f;
-    c1.second = 5.0f;
-    c2.first = 2.0f;
-    c2.second = -4.0f;
-    f.first = 10.0f;
-    f.second = 1.0f;
+    morph::vec<float, 2> i, f, c1, c2;
+    i = {1,1};
+    c1 = {5,5};
+    c2 = {2,-4};
+    f = {10,1};
     // Make a cubic curve
     BezCurve<float> cc3(i, f, c1, c2);
 
     // Make a second quartic curve.
-    vector<pair<float, float>> quart;
-    quart.push_back (f);
-    quart.push_back (make_pair(10.0f,10.0f));
-    quart.push_back (make_pair(10.0f,0.0f));
-    quart.push_back (make_pair(12.0f,-5.0f));
-    quart.push_back (make_pair(14.0f,0.0f));
+    morph::vvec<morph::vec<float, 2>> quart = {f, {10.0f,10.0f}, {10.0f,0.0f},  {12.0f,-5.0f},  {14.0f,0.0f}};
     BezCurve<float> cc4(quart);
 
     // Put em in a BezCurvePath

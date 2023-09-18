@@ -18,26 +18,19 @@ int main()
     int rtn = -1;
 
     // Make some control points
-    pair<float,float> p1_i, p1_f, p1_c1, p1_c2;
-    p1_i.first = 1;
-    p1_i.second = 1;
-    p1_c1.first = 5;
-    p1_c1.second = 5;
-    p1_c2.first = 2;
-    p1_c2.second = -4;
-    p1_f.first = 10;
-    p1_f.second = 1;
+    morph::vec<float, 2> p1_i, p1_f, p1_c1, p1_c2;
+    p1_i = {1,1};
+    p1_c1 = {5,5};
+    p1_c2 = {2,-4};
+    p1_f = {10,1};
 
     // Make a cubic curve
     BezCurve<float> cc1(p1_i, p1_f, p1_c1, p1_c2);
 
-    pair<float,float> p2_f, p2_c1, p2_c2;
-    p2_c1.first = 15;
-    p2_c1.second = 2;
-    p2_c2.first = 16;
-    p2_c2.second = 5;
-    p2_f.first = 20;
-    p2_f.second = 3;
+    morph::vec<float, 2> p2_f, p2_c1, p2_c2;
+    p2_c1 = {15,2};
+    p2_c2 = {16,5};
+    p2_f = {20,3};
 
     BezCurve<float> cc2(p1_f, p2_f, p2_c1, p2_c2);
 
@@ -59,8 +52,8 @@ int main()
     --ai; // Step back to final null coordinate
     cout << "Remaining: " << ai->getRemaining() << endl;
     --ai; // Once more to last non-null coordinate
-    cout << "Last element: " << ai->getCoord().first << endl;
-    pair<float,float> last_of_cc1 = ai->getCoord();
+    cout << "Last element: " << ai->coord << endl;
+    morph::vec<float, 2> last_of_cc1 = ai->coord;
 
     float firstl = steplen - a.back().getRemaining();
     vector<BezCoord<float>> b = cc2.computePoints (steplen, firstl);
@@ -77,21 +70,14 @@ int main()
     --ai; // Step back to final null coordinate
     cout << "Remaining: " << ai->getRemaining() << endl;
     --ai; // Once more to last non-null coordinate
-    cout << "Last element: " << ai->getCoord().first << endl;
-    pair<float,float> first_of_cc2 = b.front().getCoord();
+    cout << "Last element: " << ai->coord << endl;
 
     // Now determine the Cartesian distance between last of cc1 and
     // first of cc2
-    float dx = first_of_cc2.first - last_of_cc1.first;
-    float dy = first_of_cc2.second - last_of_cc1.second;
+    float d = (b.front().coord - last_of_cc1).length();
+    cout << "Distance between adjoining curves: " << d  << endl;
 
-    float d = sqrt (dx*dx + dy* dy);
-
-    cout << "Distance between adjoining curves: " << d << endl;
-
-    if (steplen - d < 0.02) {
-        rtn = 0;
-    }
+    if (steplen - d < 0.02) { rtn = 0; }
 
     return rtn;
 }

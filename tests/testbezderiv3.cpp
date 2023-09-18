@@ -48,7 +48,7 @@ using namespace cv;
 #define M_FIT M_C2
 
 void draw (Mat& pImg, BezCurvePath<FLT>& bcp,
-           vector<pair<FLT,FLT>>& v,
+           morph::vvec<morph::vec<FLT, 2>>& v,
            Scalar linecolfit, int sz, bool drawuserctrl = true)
 {
     unsigned int nFit = 200;
@@ -78,10 +78,10 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp,
     size_t j = 1;
     for (auto curv : theCurves) {
         Scalar linecol = linecolfit; //j%2 ? linecolfit1 : linecolfit2;
-        vector<pair<FLT,FLT>> ctrls = curv.getControls();
+        morph::vvec<morph::vec<FLT, 2>> ctrls = curv.getControls();
         // Draw the control points
         for (size_t cc = 0; cc<ctrls.size(); ++cc) {
-            Point p1(ctrls[cc].first, ctrls[cc].second);
+            Point p1(ctrls[cc][0], ctrls[cc][1]);
             circle (pImg, p1, sz, linecol, 2);
 #if 0
             if (cc==0 || cc==ctrls.size()-1) {
@@ -92,18 +92,18 @@ void draw (Mat& pImg, BezCurvePath<FLT>& bcp,
 #endif
         }
         // Draw in the lines to the control points
-        Point ps(ctrls[0].first, ctrls[0].second);
-        Point pe(ctrls[1].first, ctrls[1].second);
+        Point ps(ctrls[0][0], ctrls[0][1]);
+        Point pe(ctrls[1][0], ctrls[1][1]);
         line (pImg, ps, pe, linecol, lw/2);
-        Point ps2(ctrls[ctrls.size()-2].first, ctrls[ctrls.size()-2].second);
-        Point pe2(ctrls[ctrls.size()-1].first, ctrls[ctrls.size()-1].second);
+        Point ps2(ctrls[ctrls.size()-2][0], ctrls[ctrls.size()-2][1]);
+        Point pe2(ctrls[ctrls.size()-1][0], ctrls[ctrls.size()-1][1]);
         line (pImg, ps2, pe2, linecol, lw/2);
         j++;
     }
     if (drawuserctrl) {
         // The user control points
         for (unsigned int i = 0; i < v.size(); ++i) {
-            Point p1(v[i].first, v[i].second);
+            Point p1(v[i][0], v[i][1]);
             circle (pImg, p1, sz/2, linecolfit, -1);
         }
     }
@@ -122,19 +122,22 @@ int main (int argc, char** argv)
     cout << "NB: Provide a cmd line arg (anything) to see the graphical window for this program" << endl;
 
     int rtn = 0;
-    vector<pair<FLT,FLT>> v;
     FLT fac = 3.4;
     FLT xoff = -400.0;
-    v.push_back (make_pair (xoff+fac*200,fac*500));
-    v.push_back (make_pair (xoff+fac*300,fac*450));
-    v.push_back (make_pair (xoff+fac*400,fac*400));
-    v.push_back (make_pair (xoff+fac*450,fac*300));
 
-    vector<pair<FLT,FLT>> w;
-    w.push_back (v.back());
-    w.push_back (make_pair (xoff+fac*440,fac*180));
-    w.push_back (make_pair (xoff+fac*580,fac*30));
-    w.push_back (make_pair (xoff+fac*630,fac*20));
+    morph::vvec<morph::vec<FLT, 2>> v = {
+        {xoff+fac*200,fac*500 },
+        {xoff+fac*300,fac*450 },
+        {xoff+fac*400,fac*400 },
+        {xoff+fac*450,fac*300 }
+    };
+
+    morph::vvec<morph::vec<FLT, 2>> w = {
+        v.back(),
+        {xoff+fac*440,fac*180 },
+        {xoff+fac*580,fac*30 },
+        {xoff+fac*630,fac*20 }
+    };
 
     // First the analytical fit
     BezCurve<FLT> cv1;
@@ -168,7 +171,7 @@ int main (int argc, char** argv)
     bcp.addCurve (cv1);
     bcp.addCurve (cv2);
 
-    vector<pair<FLT,FLT>> vw (v);
+    morph::vvec<morph::vec<FLT, 2>> vw (v);
     vw.insert (vw.end(), w.begin(), w.end());
     draw (frame, bcp, vw, M_FIT, 16, false);
 
