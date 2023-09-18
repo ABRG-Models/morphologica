@@ -2779,13 +2779,13 @@ namespace morph {
          * is expressed in the HexGrid will have a (2D) centroid of roughly
          * (0,0). Hence, this is usually roughly (0,0).
          */
-        morph::vec<float, 2> boundaryCentroid;
+        morph::vec<float, 2> boundaryCentroid = {0.0f, 0.0f};
 
         /*!
          * Holds the centroid of the boundary before all points on the boundary were
          * translated so that the centroid of the boundary would be 0,0
          */
-        morph::vec<float, 2> originalBoundaryCentroid;
+        morph::vec<float, 2> originalBoundaryCentroid = {0.0f, 0.0f};
 
     private:
         /*!
