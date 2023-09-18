@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
+#include <morph/range.h>
 
 namespace morph {
 
@@ -298,9 +299,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            vvec<_S> minmax = this->minmax();
-            _S m = minmax[1] - minmax[0];
-            _S g = minmax[0];
+            morph::range<_S> r = this->minmax();
+            _S m = r.max - r.min;
+            _S g = r.min;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -309,9 +310,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_neg()
         {
-            vvec<_S> minmax = this->minmax();
-            _S m = minmax[1] - minmax[0];
-            _S g = minmax[1];
+            morph::range<_S> r = this->minmax();
+            _S m = r.max - r.min;
+            _S g = r.max;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -320,9 +321,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_sym()
         {
-            vvec<_S> minmax = this->minmax();
-            _S m = (minmax[1] - minmax[0]) / _S{2};
-            _S g = (minmax[1] + minmax[0]) / _S{2};
+            morph::range<_S> r = this->minmax();
+            _S m = (r.max - r.min) / _S{2};
+            _S g = (r.max + r.min) / _S{2};
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -685,28 +686,28 @@ namespace morph {
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
         //! the rest of the numbers
         template<bool test_for_nans = false>
-        vvec<S> minmax() const
+        morph::range<S> minmax() const
         {
-            vvec<S> minmax(2);
+            morph::range<S> r;
             if constexpr (test_for_nans) {
                 if (this->has_nan()) {
                     // Deal with non-numbers by removing them
                     morph::vvec<S> sans_nans = this->prune_nan();
-                    auto mm = std::minmax_element (sans_nans.begin(), sans_nans.end());
-                    minmax[0] = mm.first == sans_nans.end() ? S{0} : *mm.first;
-                    minmax[1] = mm.second == sans_nans.end() ? S{0} : *mm.second;
+                    auto mme = std::minmax_element (sans_nans.begin(), sans_nans.end());
+                    r.min = mme.first == sans_nans.end() ? S{0} : *mme.first;
+                    r.max = mme.second == sans_nans.end() ? S{0} : *mme.second;
                 } else {
-                    auto mm = std::minmax_element (this->begin(), this->end());
-                    minmax[0] = mm.first == this->end() ? S{0} : *mm.first;
-                    minmax[1] = mm.second == this->end() ? S{0} : *mm.second;
+                    auto mme = std::minmax_element (this->begin(), this->end());
+                    r.min = mme.first == this->end() ? S{0} : *mme.first;
+                    r.max = mme.second == this->end() ? S{0} : *mme.second;
                 }
             } else { // no testing for nans
                 // minmax_element returns pair<vvec<S>::iterator, vvec<S>::iterator>
-                auto mm = std::minmax_element (this->begin(), this->end());
-                minmax[0] = mm.first == this->end() ? S{0} : *mm.first;
-                minmax[1] = mm.second == this->end() ? S{0} : *mm.second;
+                auto mme = std::minmax_element (this->begin(), this->end());
+                r.min = mme.first == this->end() ? S{0} : *mme.first;
+                r.max = mme.second == this->end() ? S{0} : *mme.second;
             }
-            return minmax;
+            return r;
         }
 
         /*!

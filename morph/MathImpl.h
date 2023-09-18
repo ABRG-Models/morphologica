@@ -23,6 +23,7 @@
 #include <type_traits>
 #include <memory>
 #include <morph/vec.h>
+#include <morph/range.h>
 #include <morph/mathconst.h>
 #include <morph/expression_sfinae.h>
 
@@ -49,13 +50,13 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& values)
+        static morph::range<T> maxmin (const Container<T, Allocator>& values)
         {
             // Example to get the type of the container T.
             // See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
             using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
-            morph::vec<T, 2> vmaxmin = { std::numeric_limits<T>::min(), std::numeric_limits<T>::max() };
+            morph::range<T> r (std::numeric_limits<T>::max(), std::numeric_limits<T>::min());
             T_el maxlen = 0;
             T_el minlen = std::numeric_limits<T_el>::max();
 
@@ -63,22 +64,20 @@ namespace morph {
 
                 // (Vector version compares sqrt (v[0]*v[0] + v[1]*v[1] +...))
                 T_el vlen = 0;
-                for (auto vi : v) {
-                    vlen += vi*vi;
-                }
+                for (auto vi : v) { vlen += vi*vi; }
                 vlen = std::sqrt(vlen);
 
                 if (vlen > maxlen) {
                     maxlen = vlen;
-                    vmaxmin[0] = v;
+                    r.max = v;
                 }
                 if (vlen < minlen) {
                     minlen = vlen;
-                    vmaxmin[1] = v;
+                    r.min = v;
                 }
             }
 
-            return vmaxmin;
+            return r;
         }
 
         //! common vector centroid implementation
@@ -153,13 +152,13 @@ namespace morph {
             // FIXME: Check S and T_el are same? What's the correct templating approach?
 
             // autoscale vectors (with fixed size vector aka std::array)
-            morph::vec<T, 2> mm = MathImpl<0>::maxmin (values);
+            morph::range<T> r = MathImpl<0>::maxmin (values);
 
             // For simplicity with types, avoid using MathAlgo::distance here and
             // write the code out longhand.
             T_el sos = static_cast<T_el>(0);
-            typename T::const_iterator vi = mm[0].begin();
-            while (vi != mm[0].end()) {
+            typename T::const_iterator vi = r.max.begin();
+            while (vi != r.max.end()) {
                 const T_el val = *vi;
                 sos += (val * val);
                 ++vi;
@@ -167,8 +166,8 @@ namespace morph {
             T_el max_v = std::sqrt (sos); // max length vector
 
             sos = static_cast<T_el>(0);
-            vi = mm[1].begin();
-            while (vi != mm[1].end()) {
+            vi = r.min.begin();
+            while (vi != r.min.end()) {
                 const T_el val = *vi;
                 sos += (val * val);
                 ++vi;
@@ -237,14 +236,14 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& values)
+        static morph::range<T> maxmin (const Container<T, Allocator>& values)
         {
-            morph::vec<T, 2> vmaxmin = { std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max() };
+            morph::range<T> r (std::numeric_limits<T>::max(), std::numeric_limits<T>::lowest());
             for (auto v : values) {
-                vmaxmin[0] = v > vmaxmin[0] ? v : vmaxmin[0];
-                vmaxmin[1] = v < vmaxmin[1] ? v : vmaxmin[1];
+                r.max = v > r.max ? v : r.max;
+                r.min = v < r.min ? v : r.min;
             }
-            return vmaxmin;
+            return r;
         }
 
         //! Scalar autoscale implementation
@@ -254,11 +253,11 @@ namespace morph {
                    typename S > // FIXME: Check T==S?
         static Container<T, Allocator> autoscale (const Container<T, Allocator>& values, S range_min, S range_max)
         {
-            morph::vec<T, 2> mm = MathImpl<1>::maxmin (values);
-            T scale_v = (range_max - range_min) / (mm[0] - mm[1]);
+            morph::range<T> r = MathImpl<1>::maxmin (values);
+            T scale_v = (range_max - range_min) / (r.max - r.min);
             std::vector<T> norm_v(values.size());
             for (unsigned int i = 0; i<values.size(); ++i) {
-                norm_v[i] = std::min (std::max (((values[i]) - mm[1]) * scale_v, static_cast<T>(0.0)), static_cast<T>(1.0));
+                norm_v[i] = std::min (std::max (((values[i]) - r.min) * scale_v, T{0}), T{1});
             }
             return norm_v;
         }

@@ -3,6 +3,7 @@
 #include <queue>
 #include <list>
 #include "morph/vec.h"
+#include "morph/range.h"
 
 using namespace morph;
 using namespace std;
@@ -21,13 +22,13 @@ int main()
     vf.push_back (1.1);
     vf.push_back (1.2);
     cout << "double functions" << endl;
-    vec<double, 2> vfmm = MathAlgo::maxmin (vf);
-    cout << "max/min: " << vfmm[0] << "/" << vfmm[1] << endl;
+    morph::range<double> vfmm = MathAlgo::maxmin (vf);
+    cout << "range: " << vfmm << endl;
 
     vector<double> autoscaled = MathAlgo::autoscale (vf, 0.0, 1.0);
-    vec<double, 2> vfmm2 = MathAlgo::maxmin (autoscaled);
-    cout << "after autoscale, max/min: " << vfmm2[0] << "/" << vfmm2[1] << endl;
-    if (vfmm2[0] != 1.0 || vfmm2[1] != 0.0) {
+    morph::range<double> vfmm2 = MathAlgo::maxmin (autoscaled);
+    cout << "after autoscale, range: " << vfmm2 << endl;
+    if (vfmm2.max != 1.0 || vfmm2.min != 0.0) {
         rtn--;
     }
 
@@ -45,14 +46,14 @@ int main()
     vv3.push_back (v2);
     vv3.push_back (v3);
     cout << "array<double,3> functions" << endl;
-    vec<array<double,3>, 2 > vv3mm = MathAlgo::maxmin (vv3);
-    cout << "max/min: (" << vv3mm[0][0] << ","
-         << vv3mm[0][1] << "," << vv3mm[0][2] << ")/(" << vv3mm[1][0] << ","
-         << vv3mm[1][1] << "," << vv3mm[1][2] << ")" << endl;
-    if (abs(vv3mm[0][2] - 2.1) > 0.0000001
-        || abs(vv3mm[1][2] - 1.0) > 0.0000001) {
-        cout << "vv3mm[0][2] is " << vv3mm[0][2] << " not 2.1 OR" << endl;
-        cout << "vv3mm[1][2] is " << vv3mm[1][2] << " not 1.0" << endl;
+    morph::range<array<double,3>> vv3mm = MathAlgo::maxmin (vv3);
+    cout << "max/min: (" << vv3mm.max[0] << ","
+         << vv3mm.max[1] << "," << vv3mm.max[2] << ")/(" << vv3mm.min[0] << ","
+         << vv3mm.min[1] << "," << vv3mm.min[2] << ")" << endl;
+    if (abs(vv3mm.max[2] - 2.1) > 0.0000001
+        || abs(vv3mm.min[2] - 1.0) > 0.0000001) {
+        cout << "vv3mm.max[2] is " << vv3mm.max[2] << " not 2.1 OR" << endl;
+        cout << "vv3mm.min[2] is " << vv3mm.min[2] << " not 1.0" << endl;
         --rtn;
     }
 
@@ -72,14 +73,14 @@ int main()
     vvf.push_back (vf2);
     vvf.push_back (vf3);
     cout << "vector<float> functions" << endl;
-    vec<vector<float>, 2 > vvfmm = MathAlgo::maxmin (vvf);
+    morph::range<vector<float>> vvfmm = MathAlgo::maxmin (vvf);
     cout << "max: (";
-    for (auto i : vvfmm[0]) {
+    for (auto i : vvfmm.max) {
         cout << i << " ";
     }
     cout << ")\n";
     cout << "min: (";
-    for (auto i : vvfmm[1]) {
+    for (auto i : vvfmm.min) {
         cout << i << " ";
     }
     cout << ")\n";
@@ -104,8 +105,8 @@ int main()
     li.push_back(2);
     li.push_back(1);
     li.push_back(7);
-    vec<int,2> limm = MathAlgo::maxmin (li);
-    cout << "max/min: " << limm[0] << "," << limm[1] << endl;
+    morph::range<int> limm = MathAlgo::maxmin (li);
+    cout << "max/min: " << limm.max << "," << limm.min << endl;
 
     deque<list<float>> qf;
     list<float> lv1 = {1,1}; // Hmm. list<float> has no [] operators.

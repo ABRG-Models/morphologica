@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <functional>
 #include <morph/Random.h>
+#include <morph/range.h>
 
 namespace morph {
 
@@ -269,9 +270,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale()
         {
-            vec<_S, 2> minmax = this->minmax();
-            _S m = minmax[1] - minmax[0];
-            _S g = minmax[0];
+            morph::range<_S> r = this->minmax();
+            _S m = r.max - r.min;
+            _S g = r.min;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -280,9 +281,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_neg()
         {
-            vec<_S, 2> minmax = this->minmax();
-            _S m = minmax[1] - minmax[0];
-            _S g = minmax[1];
+            morph::range<_S> r = this->minmax();
+            _S m = r.max - r.min;
+            _S g = r.max;
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -291,9 +292,9 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
         void rescale_sym()
         {
-            vec<_S, 2> minmax = this->minmax();
-            _S m = (minmax[1] - minmax[0]) / _S{2};
-            _S g = (minmax[1] + minmax[0]) / _S{2};
+            morph::range<_S> r = this->minmax();
+            _S m = (r.max - r.min) / _S{2};
+            _S g = (r.max + r.min) / _S{2};
             auto rescale_op = [m, g](_S f) { return (f - g)/m; };
             std::transform (this->begin(), this->end(), this->begin(), rescale_op);
         }
@@ -568,10 +569,10 @@ namespace morph {
         }
 
         //! Return the min and max values of the vec
-        vec<S, 2> minmax() const
+        morph::range<S> minmax() const
         {
             auto mm = std::minmax_element (this->begin(), this->end());
-            return vec<S, 2>({ *mm.first, *mm.second });
+            return morph::range<S>(*mm.first, *mm.second);
         }
 
         //! Return true if any element is zero

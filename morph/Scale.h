@@ -200,8 +200,8 @@ namespace morph {
                    typename Allocator=std::allocator<TT> >
         void autoscale_from (const Container<TT, Allocator>& data)
         {
-            morph::vec<TT, 2> mm = MathAlgo::maxmin (data);
-            this->compute_autoscale (mm[1], mm[0]);
+            morph::range<TT> mm = MathAlgo::maxmin (data);
+            this->compute_autoscale (mm.min, mm.max);
         }
 
         //! Set to true to make the Scale object compute autoscaling when data is available, i.e. on

@@ -11,6 +11,7 @@
 #include <memory>
 #include <morph/vec.h>
 #include <morph/vvec.h>
+#include <morph/range.h>
 #include <morph/mathconst.h>
 #include <morph/number_type.h>
 #include <morph/MathImpl.h>
@@ -48,7 +49,7 @@ namespace morph {
         template < template <typename, typename> typename Container,
                    typename T,
                    typename Allocator=std::allocator<T> >
-        static morph::vec<T, 2> maxmin (const Container<T, Allocator>& vec) {
+        static morph::range<T> maxmin (const Container<T, Allocator>& vec) {
             return MathImpl<number_type<T>::value>::maxmin (vec);
         }
 
