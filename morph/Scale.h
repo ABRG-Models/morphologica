@@ -278,10 +278,10 @@ namespace morph {
 
         //! minimum for autoscaling. After autoscaling, the minimum value of the scaled values
         //! should be have this value.
-        S_el range_min = 0.0;
+        S_el range_min = S_el{0};
         //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled values should
         //! be have this value.
-        S_el range_max = 1.0;
+        S_el range_max = S_el{1};
 
         //! Transform a single (math) vector T into a (math) vector S
         virtual S transform_one (const T& datum) const
@@ -398,10 +398,10 @@ namespace morph {
     public:
         //! minimum for autoscaling. After autoscaling, the minimum value of the scaled values
         //! should be have this value.
-        S range_min = 0.0;
+        S range_min = S{0};
         //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled values should
         //! be have this value.
-        S range_max = 1.0;
+        S range_max = S{1};
 
         virtual S transform_one (const T& datum) const
         {
@@ -500,7 +500,7 @@ namespace morph {
             this->params.resize (2, S{0});
             if (input_min == input_max) {
                 this->params[0] = T{0};
-                this->params[1] = (this->range_max - this->range_min) / S{2.0};
+                this->params[1] = (this->range_max - this->range_min) / S{2};
             } else {
                 // m = rise/run
                 this->params[0] = (this->range_max - this->range_min) / static_cast<S>(input_max - input_min);
