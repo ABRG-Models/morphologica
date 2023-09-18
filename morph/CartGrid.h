@@ -6,8 +6,16 @@
 #pragma once
 
 #include <morph/Rect.h>
-#include <morph/BezCurvePath.h>
-#include <morph/BezCoord.h>
+
+// CartGrid contains carried over code (from HexGrid) which allows for the imposition of
+// arbitrary boundaries, specified as Bezier curves. This brings in a link dependency on
+// libarma. To use a CartGrid with an arbitrary boundary, define
+// CARTGRID_COMPILE_WITH_BEZCURVES
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
+# include <morph/BezCurvePath.h>
+# include <morph/BezCoord.h>
+#endif
+
 #include <morph/mathconst.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
@@ -661,7 +669,7 @@ namespace morph {
 
             this->populate_d_vectors();
         }
-
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Sets boundary to \a p, then runs the code to discard rects lying outside
          * this boundary. Finishes up by calling morph::CartGrid::discardOutside.
@@ -749,6 +757,7 @@ namespace morph {
                 throw std::runtime_error ("Use CartDomainShape::Boundary when setting a boundary");
             }
         }
+#endif // CARTGRID_COMPILE_WITH_BEZCURVES
 
         // find the CartGrid position which corresponds to the max value in image_data.
         morph::vec<float, 2> findmax (const morph::vvec<float>& image_data)
@@ -834,7 +843,7 @@ namespace morph {
             //polar_data /= polar_data.max(); // renormalise?
         }
 
-
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * This sets a boundary, just as
          * morph::CartGrid::setBoundary(vector<morph::BezCoord<float>& bpoints, bool offset)
@@ -880,6 +889,7 @@ namespace morph {
                 }
             }
         }
+#endif
 
         /*!
          * Set all the outer rects as being "boundary" rects. This makes it possible to
@@ -966,7 +976,7 @@ namespace morph {
             return brects_concrete;
         }
 
-
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Compute a set of coordinates arranged on an ellipse
          * \param a first elliptical radius
@@ -1047,6 +1057,7 @@ namespace morph {
             std::vector<morph::BezCoord<float>> bpoints = ellipseCompute (a, a, c);
             this->setBoundary (bpoints, offset);
         }
+#endif
 
         /*!
          * \brief Accessor for the size of rects.
@@ -1076,26 +1087,6 @@ namespace morph {
             }
             return ss.str();
         }
-
-#if 0
-        /*!
-         * Show the coordinates of the vertices of the overall rect grid generated.
-         */
-        std::string extent() const
-        {
-            std::stringstream ss;
-            if (gridReduced == false) {
-                ss << "Grid vertices: \n"
-                   << "      NW: (" << this->vertexNW->x << "," << this->vertexNW->y << ") "
-                   << "      NE: (" << this->vertexNE->x << "," << this->vertexNE->y << ")\n"
-                   << "      SW: (" << this->vertexSW->x << "," << this->vertexSW->y << ") "
-                   << "      SE: (" << this->vertexSE->x << "," << this->vertexSE->y << ")";
-            } else {
-                ss << "Initial grid vertices are no longer valid.";
-            }
-            return ss.str();
-        }
-#endif
 
         /*!
          * Returns the width of the CartGrid (from -x to +x)
@@ -1329,6 +1320,7 @@ namespace morph {
             this->populate_d_neighbours();
         }
 
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Get a vector of Rect pointers for all rects that are inside/on the path
          * defined by the BezCurvePath \a p, thus this gets a 'region of rects'. The Rect
@@ -1417,6 +1409,7 @@ namespace morph {
 
             return theRegion;
         }
+#endif
 
         /*!
          * For every rect in rects, unset the flags RECT_IS_REGION_BOUNDARY and
@@ -1849,6 +1842,7 @@ namespace morph {
             }
         }
 
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Starting from \a startFrom, and following nearest-neighbour relations, find
          * the closest Rect in rects to the coordinate point \a point, and set its
@@ -1863,6 +1857,7 @@ namespace morph {
             h->setFlag (RECT_IS_BOUNDARY | RECT_INSIDE_BOUNDARY);
             return h;
         }
+#endif
 
         // ASSUMING that the boundary is rectangular, is the point inside the rectangle?
         bool isInsideRectangularBoundary (const morph::vec<float, 2>& point)
@@ -1876,7 +1871,7 @@ namespace morph {
 
         /*!
          * Determine whether the boundary is contiguous. Whilst doing so, populate a
-         * list<Rect> containing just the boundary Rectes.
+         * list<Rect> containing just the boundary Rects.
          */
         bool boundaryContiguous()
         {
@@ -1934,6 +1929,7 @@ namespace morph {
             return rtn;
         }
 
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Set the rect closest to point as being on the region boundary. Region
          * boundaries are supposed to be temporary, so that client code can find a
@@ -1941,6 +1937,19 @@ namespace morph {
          * information for later use.
          */
         std::list<Rect>::iterator setRegionBoundary (const BezCoord<float>& point, std::list<Rect>::iterator startFrom)
+        {
+            std::list<morph::Rect>::iterator h = this->findRectNearPoint (point, startFrom);
+            h->setFlag (RECT_IS_REGION_BOUNDARY | RECT_INSIDE_REGION);
+            return h;
+        }
+#endif
+        /*!
+         * Set the rect closest to point as being on the region boundary. Region
+         * boundaries are supposed to be temporary, so that client code can find a
+         * region, extract the pointers to all the Rects in that region and store that
+         * information for later use.
+         */
+        std::list<Rect>::iterator setRegionBoundary (const morph::vec<float, 2>& point, std::list<Rect>::iterator startFrom)
         {
             std::list<morph::Rect>::iterator h = this->findRectNearPoint (point, startFrom);
             h->setFlag (RECT_IS_REGION_BOUNDARY | RECT_INSIDE_REGION);
@@ -2063,6 +2072,7 @@ namespace morph {
             return h;
         }
 
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         /*!
          * Find the rect near @point, starting from startFrom, which should be as close
          * as possible to point in order to reduce computation time.
@@ -2112,6 +2122,7 @@ namespace morph {
 
             return h;
         }
+#endif
 
         /*!
          * Mark rects as being inside the boundary given that \a hi refers to a boundary
@@ -2557,8 +2568,10 @@ namespace morph {
         //! The z coordinate of this rect grid layer
         float z;
 
+#ifdef CARTGRID_COMPILE_WITH_BEZCURVES
         //! A boundary to apply to the initial, rectangular grid.
         BezCurvePath<float> boundary;
+#endif
 
         /*!
          * Set true when a new boundary or domain has been applied. This means that
