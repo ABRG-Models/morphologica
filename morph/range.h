@@ -31,6 +31,9 @@ namespace morph {
         // The maximum
         T max = T{0};
 
+        // Does the range include v?
+        bool includes (const T& v) { return (v <= this->max && v >= this->min); }
+
         // Output a string with notation "[min, max]" to indicate a closed interval
         std::string str() const
         {
