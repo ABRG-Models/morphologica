@@ -86,6 +86,73 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_x;
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
+        //! Shift the supplied coordinates by the metric amounts supplied (to the nearest existing coordintate in the cartgrid) and return a vector of new coordinates. Only for rectangular cartgrids.
+        morph::vvec<morph::vec<float, 2>> shiftCoords(morph::vvec<morph::vec<float, 2>>& cds, float x_shift, float y_shift)
+        {
+            // std::array<int, 4> extents = this->findBoundaryExtents();
+            // float xmin = this->d * float(extents[0]);
+            // float xmax = this->d * float(extents[1]);
+            // float ymin = this->v * float(extents[2]);
+            // float ymax = this->v * float(extents[3]);
+
+            float x_step = this->d * std::round(x_shift/this->d);    // find nearest x value in this->coords to x_shift
+            float y_step = this->v * std::round(y_shift/this->v);    // find nearest y value in this->coords to y_shift
+            
+            morph::vvec<morph::vec<float, 2>> new_coords;
+            morph::vec<float, 2> ctmp;
+            for (auto c : cds){
+                ctmp[0] = c[0] + x_step;
+                if (ctmp[0] > this->x_minmax[1] || ctmp[0] < this->x_minmax[0]) { continue; }
+                ctmp[1] = c[1] + y_step;
+                if (ctmp[1] > this->y_minmax[1] || ctmp[1] < this->y_minmax[0]) { continue; }
+                new_coords.push_back(ctmp);
+            }
+            return new_coords;
+        }
+
+        //! Shift the supplied indices by the metric (float) amounts supplied and return a vector of new indicies. Only for rectangular cartgrids.
+        morph::vvec<int> shiftIndiciesByMetric(morph::vvec<int>& inds, float x_shift, float y_shift)
+        {
+            static constexpr bool debug_function = false;
+            int w = 1 + this->x_span/this->d;
+
+            int x_step = int(std::round(x_shift/this->d));    // Find the number of rects in x_shift
+
+            if constexpr(debug_function){
+                std::cout << "delta x  : " << this->d << std::endl;
+                std::cout << "x shift input : " << x_shift << std::endl;
+                std::cout << "x step output: " << x_step << std::endl;
+            }
+
+            int y_step = int(std::round(y_shift/this->v));    // Find the number of rects in y_shift
+            
+            if constexpr(debug_function){
+                std::cout << "delta y  : " << this->v << std::endl;
+                std::cout << "y shift input : " << y_shift << std::endl;
+                std::cout << "y step output: " << y_step << std::endl;
+            }
+
+            morph::vvec<int> new_indicies;
+
+            for (unsigned int i = 0; i < inds.size(); i++){
+                int orig_row = d_yi[inds[i]];
+                int orig_col = d_xi[inds[i]];
+                int x_moved = orig_col + x_step;
+                if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]){ continue; }
+                int y_moved = (orig_row + y_step);
+                if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]){ continue; }
+                new_indicies.push_back((x_moved - this->xi_minmax[0]) + w * (y_moved - yi_minmax[0]));
+                if constexpr(debug_function){
+                    std::cout << "inds[i] : " << inds[i] << std::endl;
+                    std::cout << "orig_row: " << orig_row << std::endl;
+                    std::cout << "orig_col: " << orig_col << std::endl;
+                    std::cout << "x moved : " << x_moved << std::endl;
+                    std::cout << "y moved : " << y_moved << std::endl;
+                }
+            }
+            return new_indicies;
+        }
+
         //! Get all the (x,y,z) coordinates from the grid and return as vector of Vectors
         std::vector<morph::vec<float, 3>> getCoordinates3()
         {
@@ -148,6 +215,9 @@ namespace morph {
 
         alignas(8) std::vector<int> d_xi;
         alignas(8) std::vector<int> d_yi;
+
+        morph::vec<int, 2> xi_minmax; 
+        morph::vec<int, 2> yi_minmax; 
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside boundary", "has
@@ -1313,6 +1383,10 @@ namespace morph {
                     ri++;
                 }
             }
+            // Create vectors containing the min and max x and y indicies.
+            //  Bottom left elelment is d_xi[0] and top right is represeented by d_yi[last]
+            this->xi_minmax = {d_xi[0], d_xi[d_xi.size()-1]};
+            this->yi_minmax = {d_yi[0], d_yi[d_yi.size()-1]};
 
             this->populate_d_neighbours();
         }
