@@ -143,13 +143,13 @@ namespace morph {
             morph::vvec<int> new_indicies;
 
             for (unsigned int i = 0; i < inds.size(); i++) {
+
                 int orig_row = d_yi[inds[i]];
                 int orig_col = d_xi[inds[i]];
+
                 int x_moved = orig_col + x_step;
-                //if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]) { continue; }
                 if (this->xi_minmax.includes (x_moved) == false) { continue; }
                 int y_moved = (orig_row + y_step);
-                //if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]) { continue; }
                 if (this->yi_minmax.includes (y_moved) == false) { continue; }
                 new_indicies.push_back ((x_moved - this->xi_minmax.min) + w * (y_moved - yi_minmax.min));
 
