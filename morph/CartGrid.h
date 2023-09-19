@@ -90,6 +90,9 @@ namespace morph {
          * Shift the supplied coordinates cds by the metric amounts x_shift and y_shift (to the
          * nearest existing coordinate in the cartgrid) and return a vector of new coordinates. Only
          * for rectangular cartgrids.
+         *
+         * If any of the original coordinates get shifted off the edge of the CartGrid, then they
+         * are simply omitted from the return vvec.
          */
         morph::vvec<morph::vec<float, 2>> shiftCoords (morph::vvec<morph::vec<float, 2>>& cds, float x_shift, float y_shift)
         {
@@ -100,9 +103,9 @@ namespace morph {
             morph::vec<float, 2> ctmp;
             for (auto c : cds) {
                 ctmp[0] = c[0] + x_step;
-                if (ctmp[0] > this->x_minmax[1] || ctmp[0] < this->x_minmax[0]) { continue; }
+                if (this->x_minmax.includes (ctmp[0]) == false) { continue; }
                 ctmp[1] = c[1] + y_step;
-                if (ctmp[1] > this->y_minmax[1] || ctmp[1] < this->y_minmax[0]) { continue; }
+                if (this->y_minmax.includes (ctmp[1]) == false) { continue; }
                 new_coords.push_back (ctmp);
             }
             return new_coords;
@@ -112,6 +115,9 @@ namespace morph {
          * Shift the supplied indices inds by the metric (float) shifts x_shift and y_shift and
          * return a vector of new indicies. The shifts are rounded to the nearest number of integer
          * pixel(Rect) shifts. Only for rectangular cartgrids.
+         *
+         * If any of the original indices get shifted off the edge of the CartGrid, then they
+         * are simply omitted from the return vvec.
          */
         morph::vvec<int> shiftIndiciesByMetric (morph::vvec<int>& inds, float x_shift, float y_shift)
         {
@@ -140,10 +146,12 @@ namespace morph {
                 int orig_row = d_yi[inds[i]];
                 int orig_col = d_xi[inds[i]];
                 int x_moved = orig_col + x_step;
-                if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]) { continue; }
+                //if (x_moved > this->xi_minmax[1] || x_moved < this->xi_minmax[0]) { continue; }
+                if (this->xi_minmax.includes (x_moved) == false) { continue; }
                 int y_moved = (orig_row + y_step);
-                if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]) { continue; }
-                new_indicies.push_back((x_moved - this->xi_minmax[0]) + w * (y_moved - yi_minmax[0]));
+                //if (y_moved > this->yi_minmax[1] || y_moved < yi_minmax[0]) { continue; }
+                if (this->yi_minmax.includes (y_moved) == false) { continue; }
+                new_indicies.push_back ((x_moved - this->xi_minmax.min) + w * (y_moved - yi_minmax.min));
 
                 if constexpr (debug_shift_indicies) {
                     std::cout << "inds[i] : " << inds[i] << std::endl;
@@ -219,8 +227,8 @@ namespace morph {
         alignas(8) std::vector<int> d_xi;
         alignas(8) std::vector<int> d_yi;
 
-        morph::vec<int, 2> xi_minmax;
-        morph::vec<int, 2> yi_minmax;
+        morph::range<int> xi_minmax;
+        morph::range<int> yi_minmax;
 
         /*!
          * Flags, such as "on boundary", "inside boundary", "outside boundary", "has
@@ -1386,10 +1394,11 @@ namespace morph {
                     ri++;
                 }
             }
-            // Create vectors containing the min and max x and y indicies.
-            //  Bottom left elelment is d_xi[0] and top right is represeented by d_yi[last]
-            this->xi_minmax = {d_xi[0], d_xi[d_xi.size()-1]};
-            this->yi_minmax = {d_yi[0], d_yi[d_yi.size()-1]};
+
+            // Create vectors containing the min and max x and y indicies. Bottom left element is
+            // d_xi[0] and top right is represented by d_yi[last]
+            this->xi_minmax = morph::range<int>(d_xi[0], d_xi[d_xi.size()-1]);
+            this->yi_minmax = morph::range<int>(d_yi[0], d_yi[d_yi.size()-1]);
 
             this->populate_d_neighbours();
         }
@@ -1783,8 +1792,8 @@ namespace morph {
                 this->h_px = 2 * halfCols + 1;
             }
 
-            this->x_minmax = {-halfCols * this->d, halfCols * this->d};
-            this->y_minmax = {-halfRows * this->v, halfRows * this->v};
+            this->x_minmax = morph::range<float>(-halfCols * this->d, halfCols * this->d);
+            this->y_minmax = morph::range<float>(-halfRows * this->v, halfRows * this->v);
 
             // The "vector iterator" - this is an identity iterator that is added to each Rect in the grid.
             unsigned int vi = 0;
@@ -1844,8 +1853,8 @@ namespace morph {
             if constexpr (debug_cartgrid) {
                 std::cout << __FUNCTION__ << " called for ("<<x1<<","<<y1<<") to ("<<x2<<","<<y2<<")\n";
             }
-            this->x_minmax = {x1, x2};
-            this->y_minmax = {y1, y2};
+            this->x_minmax = morph::range<float>(x1, x2);
+            this->y_minmax = morph::range<float>(y1, y2);
 
             int _xi = std::round(x1/this->d);
             int _xf = std::round(x2/this->d);
@@ -1935,10 +1944,10 @@ namespace morph {
         // ASSUMING that the boundary is rectangular, is the point inside the rectangle?
         bool isInsideRectangularBoundary (const morph::vec<float, 2>& point)
         {
-            if (point[0] < this->x_minmax[0]) { return false; }
-            if (point[0] > this->x_minmax[1]) { return false; }
-            if (point[1] < this->y_minmax[0]) { return false; }
-            if (point[1] > this->y_minmax[1]) { return false; }
+            if (point[0] < this->x_minmax.min) { return false; }
+            if (point[0] > this->x_minmax.max) { return false; }
+            if (point[1] < this->y_minmax.min) { return false; }
+            if (point[1] > this->y_minmax.max) { return false; }
             return true;
         }
 
@@ -2635,8 +2644,8 @@ namespace morph {
 
     public:
         // Min/max x and y to record size of domain. Populate during init.
-        morph::vec<float, 2> x_minmax = {0,0};
-        morph::vec<float, 2> y_minmax = {0,0};
+        morph::range<float> x_minmax;
+        morph::range<float> y_minmax;
     };
 
 } // namespace morph
