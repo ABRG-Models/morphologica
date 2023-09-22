@@ -3,6 +3,7 @@
 #include <morph/tools.h>
 #include <morph/Random.h>
 #include <morph/ReadCurves.h>
+#define HEXGRID_COMPILE_LOAD_AND_SAVE 1
 #include <morph/HexGrid.h>
 #include <morph/HdfData.h>
 #include <sstream>

@@ -14,6 +14,7 @@
 #include <sstream>
 #include <iostream>
 
+#include <morph/RD_Base.h>
 #include <morph/HdfData.h>
 #include <morph/Visual.h>
 #include <morph/QuadsVisual.h>
@@ -27,7 +28,6 @@
 #include <morph/RecurrentNetworkTools.h>
 #include <morph/RecurrentNetwork.h>
 #include <morph/ReadCurves.h>
-#include <morph/RD_Base.h>
 
 namespace morph {
     namespace recurrentnet {
