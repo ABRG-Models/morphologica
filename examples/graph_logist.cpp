@@ -3,6 +3,28 @@
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
 
+// Make an equation string for the legend
+std::string make_legend_str (double k, double x0)
+{
+    using morph::unicode;
+    std::stringstream ktxt;
+    if (k != 1.0) { ktxt << k; }
+    std::stringstream brtxt;
+    std::stringstream ostxt;
+    if (x0 != 0.0) {
+        brtxt << "(";
+        if (x0 > 0.0) {
+            ostxt << " - " << x0 <<")";
+        } else {
+            ostxt << " + " << -x0 <<")";
+        }
+    }
+    std::stringstream eqn;
+    eqn << "k="<<k<<", x" << unicode::toUtf8(unicode::subs0) << "=" << x0;
+    eqn << ": f(x) = 1 / [1 + exp (-"<< ktxt.str() << brtxt.str() << "x" << ostxt.str() << ")]";
+    return eqn.str();
+}
+
 int main()
 {
     // We'll use morphologica's awesome unicode chars
@@ -16,21 +38,16 @@ int main()
     morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
     x.linspace (-100, 30, 200);
-    // Logistic functions. Args are parameters to the function are (xoffset, alpha)
-    std::string lftag = std::string("ofst=-10, ") + unicode::toUtf8(unicode::alpha) + std::string("=0.1"); // A dataset tag
+    // Logistic functions. Args are parameters to the function: (k, x0)
     // vvec::logistic() returns a new vvec with the logistic function-transformed values:
-    gv->setdata (x, x.logistic(-10, 0.1), lftag);
+    gv->setdata (x, x.logistic(0.1, -10), make_legend_str (0.1, -10));
     // For this one, demonstrate use of logistic_inplace():
-    lftag = std::string("ofst=-5, ") + unicode::toUtf8(unicode::alpha) + std::string("=0.25");
     morph::vvec<double> xlogistic = x;
-    xlogistic.logistic_inplace(-5, 0.25);
-    gv->setdata (x, xlogistic, lftag);
-    lftag = std::string("ofst=0, ") + unicode::toUtf8(unicode::alpha) + std::string("=0.5");
-    gv->setdata (x, x.logistic(0, 0.5), lftag);
-    lftag = std::string("ofst=5, ") + unicode::toUtf8(unicode::alpha) + std::string("=1");
-    gv->setdata (x, x.logistic(5, 1), lftag);
-    lftag = std::string("ofst=10, ") + unicode::toUtf8(unicode::alpha) + std::string("=2");
-    gv->setdata (x, x.logistic(10, 2), lftag);
+    xlogistic.logistic_inplace(0.25, -5);
+    gv->setdata (x, xlogistic, make_legend_str (0.25, -5));
+    gv->setdata (x, x.logistic(0.5, 0), make_legend_str (0.5, 0));
+    gv->setdata (x, x.logistic(1, 5), make_legend_str (1, 5));
+    gv->setdata (x, x.logistic(2, 10), make_legend_str (2, 10));
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
     // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr

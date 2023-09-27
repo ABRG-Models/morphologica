@@ -17,25 +17,24 @@ int main()
     auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({-0.5f,-0.5f,0.0f}));
     v.bindmodel (gv);
     // Params are read from a JSON file
-    double ofst=0, alpha=0, x0=0, x1=0, m=0;
+    double x0=0, k=0, g1x0=0, g1x1=0;
     {
         morph::Config conf ("../examples/graph_logist2.json");
-        ofst = conf.get<double> ("ofst", 4.0);
-        alpha = conf.get<double> ("alpha", 10.0);
-        x0 = conf.get<double> ("x0", -10.0);
-        x1 = conf.get<double> ("x1", 10.0);
-        m = conf.get<double> ("m", 12.0);
+        k = conf.get<double> ("k", 10.0);
+        x0 = conf.get<double> ("x0", 4.0);
+        g1x0 = conf.get<double> ("g1x0", -10.0);
+        g1x1 = conf.get<double> ("g1x1", 10.0);
     }
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
     // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
-    x.linspace (x0, x1, 100);
+    x.linspace (g1x0, g1x1, 100);
     // Logistic functions. Args are parameters to the function are (xoffset, alpha)
     std::stringstream lftag;
-    lftag << "m=" << m << ", ofst=" << ofst << ", " << unicode::toUtf8(unicode::alpha) << "=" << alpha; // A dataset tag
+    lftag << "k=" << k << ", x" << unicode::toUtf8(unicode::subs0) << "=" << x0; // A dataset tag
     // vvec::logistic() returns a new vvec with the logistic function-transformed values:
-    gv->setdata (x, (x*m).logistic(ofst, alpha), lftag.str());
-
+    gv->setdata (x, x.logistic (k, x0), lftag.str());
+    gv->ylabel = "f(x)";
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
     // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the
@@ -47,7 +46,9 @@ int main()
     morph::vvec<double> x2;
     x2.linspace (0, 1, 100);
     gv2->setlimits (0,1,0,1);
-    gv2->setdata (x2, (x2*m).logistic(ofst, alpha), lftag.str());
+    gv2->setdata (x2, x2.logistic(k, x0), lftag.str());
+    gv2->ylabel = "f(x)";
+
     gv2->finalize();
     morph::GraphVisual<double>* gv2ptr = v.addVisualModel (gv2);
 
@@ -60,19 +61,42 @@ int main()
         // Update from config file with every render so that changes in the file are immediately reflected in the graph.
         try {
             morph::Config conf ("../examples/graph_logist2.json");
-            ofst = conf.get<double> ("ofst", 4.0);
-            alpha = conf.get<double> ("alpha", 10.0);
-            x0 = conf.get<double> ("x0", -10.0);
-            x1 = conf.get<double> ("x1", 10.0);
-            m = conf.get<double> ("m", 12.0);
+            k = conf.get<double> ("k", 10.0);
+            x0 = conf.get<double> ("x0", 4.0);
+            //g1x0 = conf.get<double> ("g1x0", -10.0); // These aren't reset in graph1.
+            //g1x1 = conf.get<double> ("g1x1", 10.0);
 
             std::stringstream newtag;
-            newtag << "m=" << m << ", ofst=" << ofst << ", " << unicode::toUtf8(unicode::alpha) << "=" << alpha;
+            newtag << "k=" << k << ", x" << unicode::toUtf8(unicode::subs0) << "=" << x0;
 
+            gvptr->clearTexts();
             // Update the graphs via their non-owning pointers
-            gvptr->update (x, (x*m).logistic(ofst, alpha), newtag.str(), 0);
-            gv2ptr->update (x2, (x2*m).logistic(ofst, alpha), newtag.str(), 0);
-            // Hmm - on update, the graph legends don't change. Can I fix?
+            gvptr->update (x, x.logistic(k, x0), newtag.str(), 0);
+            // Show general eqn here
+            std::stringstream eqngen;
+            eqngen << "f(x) = 1 / [1 + exp (-k(x - x"<< unicode::toUtf8(unicode::subs0) << ")]";
+            gvptr->addLabel (eqngen.str(), morph::vec<float>({0.1f, -0.3f, 0.0f}), morph::TextFeatures(0.05f));
+
+            // Remove label and existing legends
+            gv2ptr->clearTexts();
+            // Update legend
+            gv2ptr->update (x2, x2.logistic(k, x0), newtag.str(), 0);
+            // Add a new eqn label
+            std::stringstream ktxt;
+            if (k != 1.0) { ktxt << k; }
+            std::stringstream brtxt;
+            std::stringstream ostxt;
+            if (x0 != 0.0) {
+                brtxt << "(";
+                if (x0 > 0.0) {
+                    ostxt << " - " << x0 <<")";
+                } else {
+                    ostxt << " + " << -x0 <<")";
+                }
+            }
+            std::stringstream eqn;
+            eqn << "f(x) = 1 / [1 + exp (-"<< ktxt.str() << brtxt.str() << "x" << ostxt.str() << ")]";
+            gv2ptr->addLabel (eqn.str(), morph::vec<float>({0.1f, -0.3f, 0.0f}), morph::TextFeatures(0.05f));
 
             if (shown_error) {
                 std::cout << "JSON parsed successfully\n";
