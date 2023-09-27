@@ -2,10 +2,12 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
+#include <morph/unicode.h>
 
 // Make an equation string for the legend
 std::string make_legend_str (double k, double x0)
 {
+    // We'll use morphologica's awesome unicode chars for the subscript 0 on x0
     using morph::unicode;
     std::stringstream ktxt;
     if (k != 1.0) { ktxt << k; }
@@ -27,8 +29,6 @@ std::string make_legend_str (double k, double x0)
 
 int main()
 {
-    // We'll use morphologica's awesome unicode chars
-    using morph::unicode;
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Logistic functions");
     // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0

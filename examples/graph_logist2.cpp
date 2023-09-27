@@ -63,21 +63,19 @@ int main()
             morph::Config conf ("../examples/graph_logist2.json");
             k = conf.get<double> ("k", 10.0);
             x0 = conf.get<double> ("x0", 4.0);
-            //g1x0 = conf.get<double> ("g1x0", -10.0); // These aren't reset in graph1.
-            //g1x1 = conf.get<double> ("g1x1", 10.0);
 
             std::stringstream newtag;
             newtag << "k=" << k << ", x" << unicode::toUtf8(unicode::subs0) << "=" << x0;
 
+            // Remove label and existing legends with VisualModel::clearTexts()
             gvptr->clearTexts();
             // Update the graphs via their non-owning pointers
             gvptr->update (x, x.logistic(k, x0), newtag.str(), 0);
-            // Show general eqn here
+            // Show the general eqn by adding a label below the first graph
             std::stringstream eqngen;
             eqngen << "f(x) = 1 / [1 + exp (-k(x - x"<< unicode::toUtf8(unicode::subs0) << ")]";
             gvptr->addLabel (eqngen.str(), morph::vec<float>({0.1f, -0.3f, 0.0f}), morph::TextFeatures(0.05f));
 
-            // Remove label and existing legends
             gv2ptr->clearTexts();
             // Update legend
             gv2ptr->update (x2, x2.logistic(k, x0), newtag.str(), 0);
@@ -94,6 +92,7 @@ int main()
                     ostxt << " + " << -x0 <<")";
                 }
             }
+            // Show the specific equation on the second graph
             std::stringstream eqn;
             eqn << "f(x) = 1 / [1 + exp (-"<< ktxt.str() << brtxt.str() << "x" << ostxt.str() << ")]";
             gv2ptr->addLabel (eqn.str(), morph::vec<float>({0.1f, -0.3f, 0.0f}), morph::TextFeatures(0.05f));
