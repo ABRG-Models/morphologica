@@ -1148,20 +1148,20 @@ namespace morph {
             for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
         }
 
-        //! Replace each element with the generalised logistic function of the element:
-        //! f(x) = [ 1 + exp(xoff - x) ]^-alpha
-        vvec<S> logistic (const S xoff = S{0}, const S alpha = S{1}) const
+        //! Return a vvec containing the generalised logistic function of this vvec:
+        //! f(x) = 1 / [ 1 + exp(-k*(x - x0)) ]
+        vvec<S> logistic (const S k = S{1}, const S x0 = S{0}) const
         {
             vvec<S> rtn(this->size());
-            auto _element = [alpha, xoff](S i) { return std::pow((S{1} + std::exp (xoff - i)), -alpha); };
-            std::transform (this->begin(), this->end(), rtn.begin(), _element);
+            auto _logisticfn = [k, x0](S _x) { return S{1} / (S{1} + std::exp (k*(x0 - _x))); };
+            std::transform (this->begin(), this->end(), rtn.begin(), _logisticfn);
             return rtn;
         }
-        void logistic_inplace (const S xoff = S{0}, const S alpha = S{1})
+        //! Replace each element x with the generalised logistic function of the element:
+        //! f(x) = 1 / [ 1 + exp(-k*(x - x0)) ]
+        void logistic_inplace (const S k = S{1}, const S x0 = S{0})
         {
-            for (auto& i : *this) {
-                i = std::pow((S{1} + std::exp (xoff - i)), -alpha);
-            }
+            for (auto& _x : *this) { _x = S{1} / (S{1} + std::exp (k*(x0 - _x))); }
         }
 
         //! Smooth the vector by convolving with a gaussian filter with Gaussian width
