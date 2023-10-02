@@ -14,11 +14,12 @@
 
 // For GLuint and GLenum
 #ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
+# ifdef __OSX__
+#  include <OpenGL/gl3.h>
+# else
+#  include <GL3/gl3.h>
+#  include <GL/glext.h> // For GL_COMPUTE_SHADER
+# endif
 #endif
 
 namespace morph {
@@ -48,7 +49,7 @@ namespace morph {
         };
 
         // To enable debugging, set true.
-        const bool debug_shaders = false;
+        const bool debug_shaders = true;
 
         //! Read a shader from a file.
         const GLchar* ReadShader (const char* filename)
@@ -89,6 +90,21 @@ namespace morph {
             return const_cast<const GLchar*>(source);
         }
 
+        std::string shader_type_str (GLuint shader_type)
+        {
+            std::string type("unknown");
+            if (shader_type == GL_VERTEX_SHADER) {
+                type = "vertex";
+            } else if (shader_type == GL_FRAGMENT_SHADER) {
+                type = "fragment";
+#ifndef __OSX__
+            } else if (shader_type == GL_COMPUTE_SHADER) {
+                type = "compute";
+#endif
+            }
+            return type;
+        }
+
         //! Shader loading code.
         GLuint LoadShaders (std::vector<morph::gl::ShaderInfo>& shader_info)
         {
@@ -110,26 +126,20 @@ namespace morph {
                 GLuint shader = glCreateShader (entry.type);
                 entry.shader = shader;
                 // Test entry.filename. If this GLSL file can be read, then do so, otherwise,
-                // compile the default version from VisualDefaultShaders.h
+                // compile the default version specified in the ShaderInfo
                 const GLchar* source;
+                if constexpr (debug_shaders == true) {
+                    std::cout << "Check file exists for " << std::string(entry.filename) << std::endl;
+                }
                 if (morph::Tools::fileExists (std::string(entry.filename))) {
-                    std::cout << "Using shader from the file " << entry.filename << std::endl;
+                    std::cout << "Using " << morph::gl::shader_type_str(entry.type)
+                              << " shader from the file " << entry.filename << std::endl;
                     source = morph::gl::ReadShader (entry.filename);
                 } else {
-                    if (entry.type == GL_VERTEX_SHADER) {
-                        if constexpr (debug_shaders == true) {
-                            std::cout << "Using compiled-in vertex shader\n";
-                        }
-                        source = morph::gl::ReadDefaultShader (entry.compiledIn);
-                    } else if (entry.type == GL_FRAGMENT_SHADER) {
-                        if constexpr (debug_shaders == true) {
-                            std::cout << "Using compiled-in fragment shader\n";
-                        }
-                        source = morph::gl::ReadDefaultShader (entry.compiledIn);
-                    } else {
-                        std::cerr << "morph::gl::LoadShaders: Unknown shader entry->type...\n";
-                        source = NULL;
+                    if constexpr (debug_shaders == true) {
+                        std::cout << "Using compiled-in " << morph::gl::shader_type_str(entry.type) << " shader\n";
                     }
+                    source = morph::gl::ReadDefaultShader (entry.compiledIn);
                 }
                 if (source == NULL) {
                     for (auto& entry : shader_info) {
@@ -173,13 +183,7 @@ namespace morph {
                 } // shaderError is 0
 
                 if constexpr (debug_shaders == true) {
-                    if (entry.type == GL_VERTEX_SHADER) {
-                        std::cout << "Successfully compiled vertex shader!\n";
-                    } else if (entry.type == GL_FRAGMENT_SHADER) {
-                        std::cout << "Successfully compiled fragment shader!\n";
-                    } else {
-                        std::cout << "Successfully compiled shader!\n";
-                    }
+                    std::cout << "Successfully compiled a " << morph::gl::shader_type_str(entry.type) << " shader!\n";
                 }
                 glAttachShader (program, shader);
             }
