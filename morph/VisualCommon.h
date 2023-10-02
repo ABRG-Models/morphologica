@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+ * Common code for GL functionality in morphologica programs.
+ *
+ * Author: Seb James.
+ */
+
 #include <morph/vec.h>
 #include <morph/tools.h>
 #include <stdexcept>
