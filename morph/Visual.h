@@ -112,9 +112,11 @@ namespace morph {
     class Visual
     {
     public:
-        // Default constructor is used when incorporating Visual inside a QWidget.  We
-        // have to wait on calling init functions until an OpenGL environment is
-        // gauranteed to exist.
+        /*!
+         * Default constructor is used when incorporating Visual inside a QWidget.  We
+         * have to wait on calling init functions until an OpenGL environment is
+         * guaranteed to exist.
+         */
         Visual() { }
 
         /*!
