@@ -106,7 +106,6 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object.
         void initializeVertices()
         {
-            std::cout << "CoordArrows initializeVertices called\n";
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
