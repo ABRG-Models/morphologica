@@ -630,7 +630,7 @@ namespace morph {
         // A function that will be runtime defined to get_shaderprogs from a pointer to
         // Visual (saving a boilerplate argument and avoiding that killer circular
         // dependency at the cost of one line of boilerplate in client programs)
-        std::function<morph::gl::shaderprogs(morph::Visual*)> get_shaderprogs;
+        std::function<morph::gl::visual_shaderprogs(morph::Visual*)> get_shaderprogs;
         // Get the graphics shader prog id
         std::function<GLuint(morph::Visual*)> get_gprog;
         // Get the text shader prog id
