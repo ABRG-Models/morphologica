@@ -861,19 +861,17 @@ namespace morph {
             glfwSwapInterval (0);
 #endif
             // Load up the shaders
-            morph::gl::ShaderInfo shaders[] = {
+            std::vector<morph::gl::ShaderInfo> shaders = {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader },
-                {GL_NONE, NULL, NULL },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader }
             };
 
             this->shaders.gprog = morph::gl::LoadShaders (shaders);
 
             // An additional shader is used for text
-            morph::gl::ShaderInfo tshaders[] = {
+            std::vector<morph::gl::ShaderInfo> tshaders = {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader },
-                {GL_NONE, NULL, NULL }
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader }
             };
             this->shaders.tprog = morph::gl::LoadShaders (tshaders);
 
