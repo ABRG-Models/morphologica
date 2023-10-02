@@ -47,9 +47,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
-
-            // The indices index
-            VBOint idx = 0;
+            this->idx = 0;
 
             // Always draw a full 3D polygon
             morph::vec<float> pend = this->position;
@@ -57,7 +55,7 @@ namespace morph {
             // Figure out ux, uy from position and vertex. Let ux be like dirn to vertex
             this->_ux = this->vertex - this->position;
             this->_uy = this->_ux.cross(this->uz);
-            this->computeTube (idx, this->position, pend, this->_ux, this->_uy,
+            this->computeTube (this->idx, this->position, pend, this->_ux, this->_uy,
                                this->col, this->col,
                                this->radius, this->n);
         }

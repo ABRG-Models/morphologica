@@ -25,6 +25,7 @@ namespace morph {
         {
             this->lengths = {1.0, 1.0, 1.0};
             this->mv_offset = {0.2, 0.2, 0.0};
+            std::cout << "CoordArrows constructor, this->idx = " << this->idx << std::endl;
         }
 
         //! Construct CoordArrows with given shaderprograms sp (graphics) and tsp
@@ -105,36 +106,35 @@ namespace morph {
         //! Initialize vertex buffer objects and vertex array object.
         void initializeVertices()
         {
+            std::cout << "CoordArrows initializeVertices called\n";
             this->vertexPositions.clear();
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
-
-            // The indices index
-            VBOint idx = 0;
+            this->idx = 0;
 
             // Draw four spheres to make up the coord frame, with centre at 0,0,0
             // (mv_offset is applied in translation matrices)
             vec<float, 3> reloffset = {0,0,0};
             vec<float, 3> zerocoord = {0,0,0};
-            this->computeSphere (idx, zerocoord, centresphere_col, this->thickness*this->lengths[0]/20.0);
+            this->computeSphere (this->idx, zerocoord, centresphere_col, this->thickness*this->lengths[0]/20.0);
 
             // x
             reloffset[0] += this->lengths[0];
-            this->computeSphere (idx, reloffset, x_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, zerocoord, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (this->idx, reloffset, x_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (this->idx, zerocoord, reloffset, x_axis_col, x_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // y
             reloffset[0] -= this->lengths[0];
             reloffset[1] += this->lengths[1];
-            this->computeSphere (idx, reloffset, y_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, zerocoord, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (this->idx, reloffset, y_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (this->idx, zerocoord, reloffset, y_axis_col, y_axis_col, this->thickness*this->lengths[0]/80.0);
 
             // z
             reloffset[1] -= this->lengths[1];
             reloffset[2] += this->lengths[2];
-            this->computeSphere (idx, reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
-            this->computeTube (idx, zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
+            this->computeSphere (this->idx, reloffset, z_axis_col, this->thickness*this->lengths[0]/40.0);
+            this->computeTube (this->idx, zerocoord, reloffset, z_axis_col, z_axis_col, this->thickness*this->lengths[0]/80.0);
         }
 
         //! The lengths of the x, y and z arrows.

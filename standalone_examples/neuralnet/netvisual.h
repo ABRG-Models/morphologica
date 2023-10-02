@@ -40,8 +40,6 @@ public:
 
     void initializeVertices()
     {
-        VBOint idx = 0;
-
         // For each neuron layer, draw discs, with colour indicating activation.
         // For each connection layer, draw lines, with colours indicating weight?
 
@@ -77,14 +75,14 @@ public:
                 ss << std::setprecision(3) << neuron;
                 clr = cm.convert (s.transform_one(neuron));
                 if constexpr (pucks_for_neurons) {
-                    this->computeTube (idx,
+                    this->computeTube (this->idx,
                                        (nloc+this->puckthick)*zoom,
                                        (nloc-this->puckthick)*zoom,
                                        morph::vec<float,3>({1,0,0}), morph::vec<float,3>({0,1,0}),
                                        clr, clr,
                                        this->radiusFixed*zoom, 16);
                 } else {
-                    this->computeSphere (idx, nloc*zoom, clr, this->radiusFixed*zoom, 16, 20);
+                    this->computeSphere (this->idx, nloc*zoom, clr, this->radiusFixed*zoom, 16, 20);
                 }
 
                 // Text label for activation
@@ -127,7 +125,7 @@ public:
                     // Draw connection line from w's input position
                     clr = cm.convert (s.transform_one(w));
 
-                    this->computeLine (idx, nloc, nloc2, this->uz, clr, clr,
+                    this->computeLine (this->idx, nloc, nloc2, this->uz, clr, clr,
                                        this->linewidth*zoom, this->linewidth/4*zoom);
 
                     std::stringstream ss;

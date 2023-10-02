@@ -37,7 +37,7 @@ namespace morph {
         }
 
         //! Compute a triangle from 3 arbitrary corners
-        void computeTriangle (VBOint& idx,
+        void computeTriangle (GLuint& idx,
                               vec<float> c1, vec<float> c2, vec<float> c3,
                               std::array<float, 3> colr)
         {

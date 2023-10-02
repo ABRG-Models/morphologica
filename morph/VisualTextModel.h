@@ -228,7 +228,7 @@ namespace morph {
                 // start from. In my scheme, I have 4 vertices for each two triangles
                 // that are constructed. Thus, I draw 6 indices, but increment the base
                 // vertex by 4 for each letter.
-                glDrawElementsBaseVertex (GL_TRIANGLES, 6, VBO_ENUM_TYPE, 0, 4*i);
+                glDrawElementsBaseVertex (GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 4*i);
             }
 
             glBindVertexArray(0);
@@ -502,7 +502,7 @@ namespace morph {
 
                 // Two triangles per quad
                 // qi * 4 + 1, 2 3 or 4
-                VBOint ib = (VBOint)qi*4;
+                GLuint ib = (GLuint)qi*4;
                 this->indices.push_back (ib++); // 0
                 this->indices.push_back (ib++); // 1
                 this->indices.push_back (ib);   // 2
@@ -546,7 +546,7 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
-            int sz = this->indices.size() * sizeof(VBOint);
+            int sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
@@ -634,7 +634,7 @@ namespace morph {
         //! Vertex Buffer Objects stored in an array
         GLuint* vbos = nullptr;
         //! CPU-side data for indices
-        std::vector<VBOint> indices;
+        std::vector<GLuint> indices;
         //! CPU-side data for quad vertex positions
         std::vector<float> vertexPositions;
         //! CPU-side data for quad vertex normals
