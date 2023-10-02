@@ -355,3 +355,6 @@ target_link_libraries(quit_callback OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(quit_callback GLEW::GLEW)
 endif()
+
+add_executable(shadercompute shadercompute.cpp)
+target_link_libraries(shadercompute OpenGL::GL glfw)
