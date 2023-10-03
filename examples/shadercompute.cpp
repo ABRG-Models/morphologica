@@ -112,8 +112,8 @@ namespace my {
             GLint uloc = glGetUniformLocation (this->compute_program, static_cast<const GLchar*>("t"));
             if (uloc != -1) { glUniform1f (uloc, this->frame_count); }
 
-            // This is dispatch with work groups of (512, 512, 1)
-            glDispatchCompute (tex_width, tex_height, 1);
+            // This is dispatch with work groups of (a, b, 1)
+            glDispatchCompute (tex_width/10, tex_height/10, 1);
             // make sure writing to image has finished before read
             glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         }
@@ -145,8 +145,8 @@ namespace my {
 
     private:
         // Add any members required in your compute class
-        static constexpr unsigned int tex_width = 512;
-        static constexpr unsigned int tex_height = 512;
+        static constexpr unsigned int tex_width = 1000;
+        static constexpr unsigned int tex_height = 1000;
         // A texture ID
         unsigned int texture = 0;
         // A vertex shader program
