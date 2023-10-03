@@ -35,6 +35,10 @@ namespace morph {
         ~gl_compute()
         {
             glfwDestroyWindow (this->window);
+            if (this->compute_program) {
+                glDeleteShader (this->compute_program);
+                this->compute_program = 0;
+            }
             glfwTerminate();
         }
 
