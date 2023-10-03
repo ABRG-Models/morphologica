@@ -106,6 +106,12 @@ namespace my {
             }
 
             glUseProgram (this->compute_program);
+
+            // Set time into uniform
+            // This is nice, you can access a uniform variable in the GLSL using its variable name ("t")
+            GLint uloc = glGetUniformLocation (this->compute_program, static_cast<const GLchar*>("t"));
+            if (uloc != -1) { glUniform1f (uloc, this->frame_count); }
+
             // This is dispatch with work groups of (512, 512, 1)
             glDispatchCompute (tex_width, tex_height, 1);
             // make sure writing to image has finished before read
@@ -122,7 +128,7 @@ namespace my {
             glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram (this->vtxprog);
-            // Set the thing called "tex" to 0
+            // Set a uniform variable called "tex" in the vertex shader prog to 0.
             glUniform1i (glGetUniformLocation(this->vtxprog, "tex"), 0);
 
             glActiveTexture (GL_TEXTURE0);
