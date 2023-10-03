@@ -19,6 +19,5 @@ void main()
     // Similar for y
     float y_prop = float(texelCoord.y)/(gl_NumWorkGroups.y);
     value.y = 1.0 / (1.0 + exp (-12*(y_prop-0.5)));
-
     imageStore (imgOutput, texelCoord, value);
 }

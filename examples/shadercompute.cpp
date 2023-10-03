@@ -1,4 +1,5 @@
 #include <morph/gl_compute.h>
+#include <chrono>
 
 /*
  * How to make a compute shader with morph::gl_compute
@@ -14,6 +15,9 @@
  */
 
 namespace my {
+
+    using namespace std::chrono;
+    using sc = std::chrono::steady_clock;
 
     struct gl_compute : public morph::gl_compute
     {
@@ -39,6 +43,8 @@ namespace my {
             glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
             glEnableVertexAttribArray(1);
             glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+            this->t0 = sc::now();
         }
         ~gl_compute()
         {
@@ -94,9 +100,22 @@ namespace my {
             glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         }
 
+        static constexpr unsigned int nframes = 1000;
+        static constexpr double nframes_d = nframes;
+        static constexpr double nframes_d_us = nframes_d * 1000000;
+        unsigned int render_count = 0;
+        sc::time_point t0, t1;
         // Override the render method to do whatever visualization you want
         void render() final
         {
+            if ((render_count++ % nframes) == 0) {
+                this->t1 = sc::now();
+                sc::duration t_d = t1 - t0;
+                double s_per_frame = duration_cast<microseconds>(t_d).count() / nframes_d_us;
+                std::cout << "FPS: " << 1.0/s_per_frame << std::endl;
+                this->t0 = this->t1;
+            }
+
             // Compute again on each render for this example
             glUseProgram (this->compute_program);
             glDispatchCompute (tex_width, tex_height, 1);

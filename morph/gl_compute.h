@@ -48,7 +48,11 @@ namespace morph {
             this->init_gl();
         }
 
-        void setContext() { glfwMakeContextCurrent (this->window); }
+        void setContext()
+        {
+            glfwMakeContextCurrent (this->window);
+            glfwSwapInterval (0);
+        }
         void releaseContext() { glfwMakeContextCurrent (nullptr); }
 
         // You may well need to re-implement this function
@@ -115,6 +119,7 @@ namespace morph {
 
             // Lastly make the context current
             glfwMakeContextCurrent (this->window);
+            glfwSwapInterval (0);
         }
 
         // Initialize OpenGL shaders, set any GL flags required
