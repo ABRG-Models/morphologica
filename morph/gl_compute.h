@@ -142,21 +142,15 @@ namespace morph {
 
             load_shaders();
 
-            // Set GL flags
-            //glEnable (GL_DEPTH_TEST); // Probably not required
-            //glEnable (GL_BLEND); // spec alpha. Probably not required
-            //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Probably not required
-            //glDisable (GL_CULL_FACE); // Not required
-            //glEnable (GL_MULTISAMPLE); // Unlikely to be required
+            // No need to set any GL flags (though a derived class may need to if it is to render any graphics)
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
     public:
-        // Extend this with the correct glsl name (replacing Default.compute.glsl) and the default
-        // GLSL:
+        // Add an implementation of load_shaders looking something like:
         //
-        // virtual void load_shaders()
+        // void load_shaders() finals
         // {
         //   {
         //     std::vector<morph::gl::ShaderInfo> shaders = {
@@ -164,6 +158,11 @@ namespace morph {
         //   };
         //   this->compute_program = morph::gl::LoadShaders (shaders);
         // }
+        //
+        // Here "Default.compute.glsl" is the path to a file containing the GLSL
+        // code. morph::defaultComputeShader is a const char* of some default GLSL code
+        // text that will be used if the file cannot be accessed.
+        //
         virtual void load_shaders() = 0;
 
     protected:
