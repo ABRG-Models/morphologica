@@ -44,6 +44,18 @@ namespace my {
             glEnableVertexAttribArray(1);
             glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+            // Texture setup
+            glUseProgram (this->compute_program);
+            glGenTextures (1, &this->texture);
+            glActiveTexture (GL_TEXTURE0);
+            glBindTexture (GL_TEXTURE_2D, this->texture);
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glBindImageTexture (0, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
             this->t0 = sc::now();
         }
         ~gl_compute()
@@ -76,39 +88,16 @@ namespace my {
             this->vtxprog = morph::gl::LoadShaders (vtxshaders);
         }
 
-        // Override your one time/non-rendering compute function
-        void compute() final
-        {
-            glUseProgram (this->compute_program);
-
-            glGenTextures (1, &this->texture);
-            glActiveTexture (GL_TEXTURE0);
-
-            glBindTexture (GL_TEXTURE_2D, this->texture);
-
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
-
-            glBindImageTexture (0, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-
-            // This is dispatch with work groups of (512, 512, 1)
-            glDispatchCompute (tex_width, tex_height, 1);
-            // make sure writing to image has finished before read
-            glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        }
-
         static constexpr unsigned int nframes = 1000;
         static constexpr double nframes_d = nframes;
         static constexpr double nframes_d_us = nframes_d * 1000000;
-        unsigned int render_count = 0;
+        unsigned int frame_count = 0;
         sc::time_point t0, t1;
-        // Override the render method to do whatever visualization you want
-        void render() final
+
+        // Override your one time/non-rendering compute function
+        void compute() final
         {
-            if ((render_count++ % nframes) == 0) {
+            if ((frame_count++ % nframes) == 0) {
                 this->t1 = sc::now();
                 sc::duration t_d = t1 - t0;
                 double s_per_frame = duration_cast<microseconds>(t_d).count() / nframes_d_us;
@@ -116,10 +105,18 @@ namespace my {
                 this->t0 = this->t1;
             }
 
-            // Compute again on each render for this example
             glUseProgram (this->compute_program);
+            // This is dispatch with work groups of (512, 512, 1)
             glDispatchCompute (tex_width, tex_height, 1);
+            // make sure writing to image has finished before read
             glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        }
+
+        // Override the render method to do whatever visualization you want
+        void render() final
+        {
+            // Compute again on each render for this example
+            this->compute();
 
             // render image to quad
             glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -157,7 +154,11 @@ namespace my {
 int main()
 {
     my::gl_compute c;
-    c.compute();
-    while (!c.readyToFinish) { c.render(); }
+    while (!c.readyToFinish) { c.render(); } // Render also calls compute
+
+    // You could compute very fast without render (I got 1.6 mega-fps) but this may
+    // interfere with your desktop's responsiveness
+    // while (!c.readyToFinish) { c.compute(); }
+
     return 0;
 }
