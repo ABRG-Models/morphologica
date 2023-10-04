@@ -71,13 +71,13 @@ namespace my {
             std::vector<morph::gl::ShaderInfo> shaders = {
                 // Here I set up to load examples/shadercompute.glsl and leave the default shader in
                 // place (which I don't intend to use).
-                {GL_COMPUTE_SHADER, "../examples/shadercompute.glsl", morph::defaultComputeShader }
+                {GL_COMPUTE_SHADER, "../examples/gl_compute/shadercompute.glsl", morph::defaultComputeShader }
             };
             this->compute_program = morph::gl::LoadShaders (shaders);
 
             std::vector<morph::gl::ShaderInfo> vtxshaders = {
-                {GL_VERTEX_SHADER, "../examples/shadercompute.vert.glsl", morph::defaultVtxShader },
-                {GL_FRAGMENT_SHADER, "../examples/shadercompute.frag.glsl", morph::defaultFragShader }
+                {GL_VERTEX_SHADER, "../examples/gl_compute/shadercompute.vert.glsl", morph::defaultVtxShader },
+                {GL_FRAGMENT_SHADER, "../examples/gl_compute/shadercompute.frag.glsl", morph::defaultFragShader }
             };
             this->vtxprog = morph::gl::LoadShaders (vtxshaders);
         }
