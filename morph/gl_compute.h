@@ -32,6 +32,7 @@ namespace morph {
      * A gl_compute environment. I think user will extend this class to add their data structures
      * and then run with their own GLSL compute shader code.
      */
+    template <int gl_version_major = 4, int gl_version_minor = 5>
     struct gl_compute
     {
         gl_compute() { this->t0 = sc::now(); }
@@ -93,16 +94,14 @@ namespace morph {
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
             // Set up error callback
-            glfwSetErrorCallback (morph::gl_compute::errorCallback);
+            glfwSetErrorCallback (morph::gl_compute<>::errorCallback);
             // See https://www.glfw.org/docs/latest/monitor_guide.html
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
             // 4.3+ required for shader compute
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 5);
-            // Tell glfw that we'd like to do anti-aliasing.
-            glfwWindowHint (GLFW_SAMPLES, 4);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version_major);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version_minor);
         }
 
         //! An error callback function for the GLFW windowing library
@@ -134,21 +133,18 @@ namespace morph {
             glfwSwapInterval (0);
 
             // Check GL_MAX_COMPUTE_WORK_GROUP_COUNT and send to std::out
-            morph::vec<GLint64, 3> wgcount = { -1, -1, -1 };
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &wgcount[0]);
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &wgcount[1]);
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &wgcount[2]);
-            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNTS (x, y, z): " << wgcount << std::endl;
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &this->max_compute_work_group_count[0]);
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &this->max_compute_work_group_count[1]);
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &this->max_compute_work_group_count[2]);
+            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNTS (x, y, z): " << this->max_compute_work_group_count << std::endl;
 
-            morph::vec<GLint64, 3> wgsize = { -1, -1, -1 };
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &wgsize[0]);
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &wgsize[1]);
-            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &wgsize[2]);
-            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << wgsize << std::endl;
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &this->max_compute_work_group_size[0]);
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &this->max_compute_work_group_size[1]);
+            glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &this->max_compute_work_group_size[2]);
+            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << this->max_compute_work_group_size << std::endl;
 
-            GLint64 wginvocations = -1;
-            glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &wginvocations);
-            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << wginvocations << std::endl;
+            glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &this->max_compute_work_group_invocations);
+            std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << this->max_compute_work_group_invocations << std::endl;
 
             load_shaders();
 
@@ -184,6 +180,11 @@ namespace morph {
         std::string title = "morph::gl_compute";
         //! The compute program ID.
         GLuint compute_program = 0;
+
+        // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
+        morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};
+        morph::vec<GLint64, 3> max_compute_work_group_size = {-1,-1,-1};
+        GLint64 max_compute_work_group_invocations = -1;
 
         // For frame count timing
         static constexpr unsigned int nframes = 1000;

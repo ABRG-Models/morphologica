@@ -15,7 +15,7 @@
 
 namespace my {
 
-    struct gl_compute : public morph::gl_compute
+    struct gl_compute : public morph::gl_compute<4,5> // Specify OpenGL version 4.5 (4.3 min for compute)
     {
         // Call init in your constructor, ensuring *your* version of load_shaders() is called.
         gl_compute()
@@ -143,10 +143,8 @@ int main()
 {
     my::gl_compute c;
     while (!c.readyToFinish) { c.render(); } // Render also calls compute
-
     // You could compute very fast without render (I got 1.6 mega-fps) but this may
     // interfere with your desktop's responsiveness
     // while (!c.readyToFinish) { c.compute(); }
-
     return 0;
 }
