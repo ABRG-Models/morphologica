@@ -1,5 +1,4 @@
 #include <morph/gl_compute.h>
-#include <chrono>
 
 /*
  * How to make a compute shader with morph::gl_compute
@@ -15,9 +14,6 @@
  */
 
 namespace my {
-
-    using namespace std::chrono;
-    using sc = std::chrono::steady_clock;
 
     struct gl_compute : public morph::gl_compute
     {
@@ -55,8 +51,6 @@ namespace my {
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
             glBindImageTexture (0, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-
-            this->t0 = sc::now();
         }
         ~gl_compute()
         {
@@ -88,22 +82,10 @@ namespace my {
             this->vtxprog = morph::gl::LoadShaders (vtxshaders);
         }
 
-        static constexpr unsigned int nframes = 1000;
-        static constexpr double nframes_d = nframes;
-        static constexpr double nframes_d_us = nframes_d * 1000000;
-        unsigned int frame_count = 0;
-        sc::time_point t0, t1;
-
         // Override your one time/non-rendering compute function
         void compute() final
         {
-            if ((frame_count++ % nframes) == 0) {
-                this->t1 = sc::now();
-                sc::duration t_d = t1 - t0;
-                double s_per_frame = duration_cast<microseconds>(t_d).count() / nframes_d_us;
-                std::cout << "FPS: " << 1.0/s_per_frame << std::endl;
-                this->t0 = this->t1;
-            }
+            this->measure_compute(); // optional
 
             glUseProgram (this->compute_program);
 

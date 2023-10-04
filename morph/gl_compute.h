@@ -15,12 +15,15 @@
 #include <morph/VisualCommon.h> // For shader processing code
 #include <morph/keys.h>
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
-#include <GL3/gl3.h> // For GLuint and GLenum
-#include <GL/glext.h> // For GL_COMPUTE_SHADER
-
+#include <GL3/gl3.h>    // For GLuint and GLenum
+#include <GL/glext.h>   // For GL_COMPUTE_SHADER
+#include <chrono>
 #include <morph/VisualDefaultShaders.h>
 
 namespace morph {
+
+    using namespace std::chrono;
+    using sc = std::chrono::steady_clock;
 
     // A default, empty compute shader with a minimal layout to allow it to compile
     const char* defaultComputeShader = "#version 450 core\nlayout (local_size_x = 1) in;\n";
@@ -31,7 +34,7 @@ namespace morph {
      */
     struct gl_compute
     {
-        gl_compute(){}
+        gl_compute() { this->t0 = sc::now(); }
         ~gl_compute()
         {
             glfwDestroyWindow (this->window);
@@ -179,6 +182,27 @@ namespace morph {
         std::string title = "morph::gl_compute";
         //! The compute program ID.
         GLuint compute_program = 0;
+
+        // For frame count timing
+        static constexpr unsigned int nframes = 1000;
+        static constexpr double nframes_d = nframes;
+        static constexpr double nframes_d_us = nframes_d * 1000000;
+        unsigned int frame_count = 0;
+        sc::time_point t0, t1;
+
+        // Measure the time to execute nframes frames and output an FPS message. Client
+        // code has to call this with every call to compute() to get the measurement
+        // (though its use is entirely optional).
+        void measure_compute()
+        {
+            if ((frame_count++ % nframes) == 0) {
+                this->t1 = sc::now();
+                sc::duration t_d = t1 - t0;
+                double s_per_frame = duration_cast<microseconds>(t_d).count() / nframes_d_us;
+                std::cout << "FPS: " << 1.0/s_per_frame << std::endl;
+                this->t0 = this->t1;
+            }
+        }
 
     private:
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
