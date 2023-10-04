@@ -39,6 +39,8 @@ namespace morph {
         {
             glfwDestroyWindow (this->window);
             if (this->compute_program) {
+                // hmm - there's also glDeleteProgram. you can actually glDeleteShader
+                // after linking the shader to the program. FIXME.
                 glDeleteShader (this->compute_program);
                 this->compute_program = 0;
             }
