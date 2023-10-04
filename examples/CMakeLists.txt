@@ -12,6 +12,9 @@ add_subdirectory(schnakenberg)
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 
+# Shader compute examples
+add_subdirectory(gl_compute)
+
 # Examples showing how to use morphologica with Qt. Compiled only if find_package found Qt5
 if(Qt5_FOUND)
   add_subdirectory(qt)
@@ -355,9 +358,3 @@ target_link_libraries(quit_callback OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
   target_link_libraries(quit_callback GLEW::GLEW)
 endif()
-
-add_executable(shadercompute shadercompute.cpp)
-target_link_libraries(shadercompute OpenGL::GL glfw)
-
-add_executable(shader_ssbo shader_ssbo.cpp)
-target_link_libraries(shader_ssbo OpenGL::GL glfw)
