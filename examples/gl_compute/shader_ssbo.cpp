@@ -9,7 +9,7 @@
 
 namespace my {
 
-    struct gl_compute : public morph::gl_compute<3,1> // Use OpenGL 4.5
+    struct gl_compute : public morph::gl_compute<3,1> // Use OpenGL 3.1 ES
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
