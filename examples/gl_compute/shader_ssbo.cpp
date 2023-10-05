@@ -9,7 +9,7 @@
 
 namespace my {
 
-    struct gl_compute : public morph::gl_compute<4,5> // Use OpenGL 4.5
+    struct gl_compute : public morph::gl_compute<3,1> // Use OpenGL 4.5
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
@@ -61,31 +61,31 @@ namespace my {
 
             // Set up the texture for output
             glUseProgram (this->compute_program);
-            glGenTextures (1, &this->texture);
+            glGenTextures (1, &this->texture1);
             glActiveTexture (GL_TEXTURE0);
-            glBindTexture (GL_TEXTURE_2D, this->texture);
+            glBindTexture (GL_TEXTURE_2D, this->texture1);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
             //        args: ( unit, texture_id,level, layered,layer, access,     pixel_format)
-            glBindImageTexture (0, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            glBindImageTexture (0, this->texture1, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
             // Set up a second texture
-#if 0
-            glUseProgram (this->compute_program);
             glGenTextures (1, &this->texture2);
-            glActiveTexture (GL_TEXTURE1);
+            glActiveTexture (GL_TEXTURE1); // I don't know why it is ok to put GL_TEXTURE0 *or* GL_TEXTURE1 *or* GL_TEXTURE0+1 here
             glBindTexture (GL_TEXTURE_2D, this->texture2);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
-            //        args: ( unit, texture_id,level, layered,layer, access,     pixel_format)
-            glBindImageTexture (0, this->texture2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-#endif
+            //        args: ( unit, texture_id, level, layered,layer, access,     pixel_format)
+            glBindImageTexture (1, this->texture2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
+            std::cout << "texture1: " << texture1 << ", texture2: " << texture2 << std::endl;
+
             // SSBO setup. First a local memory version of the input
             this->input.resize (dsz, 0.0f);
             morph::vec<unsigned int, 2> dims = morph::loadpng ("../examples/gl_compute/bike.png", this->input);
@@ -127,8 +127,8 @@ namespace my {
 
             // We'll reuse the vertex/fragment shaders from the shadercompute example
             std::vector<morph::gl::ShaderInfo> vtxshaders = {
-                {GL_VERTEX_SHADER, "../examples/gl_compute/shadercompute.vert.glsl", morph::defaultVtxShader },
-                {GL_FRAGMENT_SHADER, "../examples/gl_compute/shadercompute.frag.glsl", morph::defaultFragShader }
+                {GL_VERTEX_SHADER, "../examples/gl_compute/shader_ssbo.vert.glsl", morph::defaultVtxShader },
+                {GL_FRAGMENT_SHADER, "../examples/gl_compute/shader_ssbo.frag.glsl", morph::defaultFragShader }
             };
             this->vtxprog = morph::gl::LoadShaders (vtxshaders);
         }
@@ -164,23 +164,23 @@ namespace my {
             glUseProgram (this->vtxprog);
 
             // Activate the texture and get it drawn
-            glActiveTexture (GL_TEXTURE0+2);
-            glBindTexture (GL_TEXTURE_2D, this->texture);
-
+            glActiveTexture (GL_TEXTURE0); // Must be GL_TEXTURE0, as the shader will act only on one texture
+            glBindTexture (GL_TEXTURE_2D, this->texture1);
             glBindVertexArray (this->vao1);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
-            glBindVertexArray(0);
 
-            glActiveTexture (GL_TEXTURE0+2);
+            glActiveTexture (GL_TEXTURE0); // Must be GL_TEXTURE0, as the shader will act only on one texture
             glBindTexture (GL_TEXTURE_2D, this->texture2);
-
             glBindVertexArray (this->vao2);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+
             glBindVertexArray(0);
 
             // Swap buffers and poll for events
             glfwSwapBuffers (this->window);
             glfwPollEvents();
+
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
     private:
@@ -188,7 +188,7 @@ namespace my {
         static constexpr unsigned int tex_width = dwidth;
         static constexpr unsigned int tex_height = dheight;
         // A texture ID
-        unsigned int texture = 0;
+        unsigned int texture1 = 0;
         unsigned int texture2 = 0;
         // A vertex shader program
         GLuint vtxprog = 0;

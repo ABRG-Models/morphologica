@@ -94,7 +94,7 @@ namespace morph {
         {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
             // Set up error callback
-            glfwSetErrorCallback (morph::gl_compute<>::errorCallback);
+            glfwSetErrorCallback (morph::gl_compute<gl_version_major,gl_version_minor>::errorCallback);
             // See https://www.glfw.org/docs/latest/monitor_guide.html
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
@@ -102,12 +102,6 @@ namespace morph {
             // 4.3+ required for shader compute
             glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version_major);
             glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version_minor);
-        }
-
-        //! An error callback function for the GLFW windowing library
-        static void errorCallback (int error, const char* description)
-        {
-            std::cerr << "Error: " << description << " (code "  << error << ")\n";
         }
 
         void init_window()
@@ -207,10 +201,16 @@ namespace morph {
             }
         }
 
+        //! An error callback function for the GLFW windowing library
+        static void errorCallback (int error, const char* description)
+        {
+            std::cerr << "Error: " << description << " (code "  << error << ")\n";
+        }
+
     private:
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
-            gl_compute* self = static_cast<gl_compute*>(glfwGetWindowUserPointer (_window));
+            gl_compute<gl_version_major,gl_version_minor>* self = static_cast<gl_compute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
             if (self->key_callback (key, scancode, action, mods)) {
                 std::cout << "key_callback returned\n";
                 self->compute();
@@ -218,7 +218,7 @@ namespace morph {
         }
         static void window_close_callback_dispatch (GLFWwindow* _window)
         {
-            gl_compute* self = static_cast<gl_compute*>(glfwGetWindowUserPointer (_window));
+            gl_compute<gl_version_major,gl_version_minor>* self = static_cast<gl_compute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
             self->window_close_callback();
         }
 
