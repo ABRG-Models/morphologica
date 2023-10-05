@@ -158,11 +158,11 @@ namespace morph {
             glfwDestroyWindow (this->window);
 #endif
             if (this->shaders.gprog) {
-                glDeleteShader (this->shaders.gprog);
+                glDeleteProgram (this->shaders.gprog);
                 this->shaders.gprog = 0;
             }
             if (this->shaders.tprog) {
-                glDeleteShader (this->shaders.tprog);
+                glDeleteProgram (this->shaders.tprog);
                 this->shaders.tprog = 0;
             }
             morph::VisualResources::deregister();

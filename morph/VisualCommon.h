@@ -186,6 +186,7 @@ namespace morph {
                     std::cout << "Successfully compiled a " << morph::gl::shader_type_str(entry.type) << " shader!\n";
                 }
                 glAttachShader (program, shader);
+                glDeleteShader (shader); // Note it's correct to glDeleteShader after attaching it to program
             }
 
             glLinkProgram (program);
