@@ -158,18 +158,18 @@ namespace my {
             // Compute again on each render for this example
             this->compute();
 
-            // render image to quad
+            // Clear the screen
             glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram (this->vtxprog);
 
-            // Activate the texture and get it drawn
-            glActiveTexture (GL_TEXTURE0); // Must be GL_TEXTURE0, as the shader will act only on one texture
+            // Activate each texture and draw on its relvant vertex array object.
+            glActiveTexture (GL_TEXTURE0);
             glBindTexture (GL_TEXTURE_2D, this->texture1);
             glBindVertexArray (this->vao1);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
 
-            glActiveTexture (GL_TEXTURE0); // Must be GL_TEXTURE0, as the shader will act only on one texture
+            glActiveTexture (GL_TEXTURE0); // Must also be GL_TEXTURE0, as the shader will act only on one texture
             glBindTexture (GL_TEXTURE_2D, this->texture2);
             glBindVertexArray (this->vao2);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
