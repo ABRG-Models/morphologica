@@ -62,7 +62,7 @@ namespace my {
             // Set up the texture for output
             glUseProgram (this->compute_program);
             glGenTextures (1, &this->texture1);
-            glActiveTexture (GL_TEXTURE0);
+            //glActiveTexture (GL_TEXTURE0); // Doesn't appear to be necessary to call glActiveTexture() here.
             glBindTexture (GL_TEXTURE_2D, this->texture1);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -74,7 +74,6 @@ namespace my {
 
             // Set up a second texture
             glGenTextures (1, &this->texture2);
-            glActiveTexture (GL_TEXTURE1); // I don't know why it is ok to put GL_TEXTURE0 *or* GL_TEXTURE1 *or* GL_TEXTURE0+1 here
             glBindTexture (GL_TEXTURE_2D, this->texture2);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
