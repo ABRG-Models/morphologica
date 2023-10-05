@@ -106,7 +106,7 @@ namespace morph {
         }
 
         //! Shader loading code.
-        GLuint LoadShaders (std::vector<morph::gl::ShaderInfo>& shader_info)
+        GLuint LoadShaders (const std::vector<morph::gl::ShaderInfo>& shader_info)
         {
             if (shader_info.empty()) { return 0; }
 
@@ -122,9 +122,9 @@ namespace morph {
                 }
             }
 
-            for (auto& entry : shader_info) {
+            for (auto entry : shader_info) {
                 GLuint shader = glCreateShader (entry.type);
-                entry.shader = shader;
+                //entry.shader = shader;
                 // Test entry.filename. If this GLSL file can be read, then do so, otherwise,
                 // compile the default version specified in the ShaderInfo
                 const GLchar* source;
@@ -142,9 +142,9 @@ namespace morph {
                     source = morph::gl::ReadDefaultShader (entry.compiledIn);
                 }
                 if (source == NULL) {
-                    for (auto& entry : shader_info) {
+                    for (auto entry : shader_info) {
                         glDeleteShader (entry.shader);
-                        entry.shader = 0;
+                        //entry.shader = 0;
                     }
                     return 0;
 
@@ -195,15 +195,12 @@ namespace morph {
             glGetProgramiv (program, GL_LINK_STATUS, &linked);
             if (!linked) {
                 GLsizei len;
-                glGetProgramiv( program, GL_INFO_LOG_LENGTH, &len );
+                glGetProgramiv (program, GL_INFO_LOG_LENGTH, &len);
                 GLchar* log = new GLchar[len+1];
-                glGetProgramInfoLog( program, len, &len, log );
+                glGetProgramInfoLog (program, len, &len, log);
                 std::cerr << "Shader linking failed: " << log << std::endl << "Exiting.\n";
                 delete [] log;
-                for (auto& entry : shader_info) {
-                    glDeleteShader (entry.shader);
-                    entry.shader = 0;
-                }
+                glDeleteProgram (program);
                 exit (5);
             } // else successfully linked
 

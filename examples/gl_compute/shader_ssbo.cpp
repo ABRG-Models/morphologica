@@ -60,7 +60,7 @@ namespace my {
             glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
             // Set up the texture for output
-            glUseProgram (this->compute_program);
+            this->compute_program.use();
             glGenTextures (1, &this->texture1);
             //glActiveTexture (GL_TEXTURE0); // Doesn't appear to be necessary to call glActiveTexture() here.
             glBindTexture (GL_TEXTURE_2D, this->texture1);
@@ -90,7 +90,7 @@ namespace my {
             morph::vec<unsigned int, 2> dims = morph::loadpng ("../examples/gl_compute/bike.png", this->input);
             std::cout << "Image dims: " << dims << std::endl;
 
-            glUseProgram (this->compute_program);
+            this->compute_program.use();
             glGenBuffers (1, &this->input_buffer);
             glBindBufferBase (GL_SHADER_STORAGE_BUFFER, 1, this->input_buffer);
             glBufferData (GL_SHADER_STORAGE_BUFFER, input.size() * sizeof(float), input.data(), GL_STATIC_DRAW);
@@ -122,7 +122,7 @@ namespace my {
                 // place (which I don't intend to use).
                 {GL_COMPUTE_SHADER, "../examples/gl_compute/shader_ssbo.glsl", morph::defaultComputeShader }
             };
-            this->compute_program = morph::gl::LoadShaders (shaders);
+            this->compute_program.load_shaders (shaders);
 
             // We'll reuse the vertex/fragment shaders from the shadercompute example
             std::vector<morph::gl::ShaderInfo> vtxshaders = {
@@ -136,19 +136,10 @@ namespace my {
         void compute() final
         {
             this->measure_compute(); // optional
-
-            glUseProgram (this->compute_program);
-
+            this->compute_program.use();
             // Set time into uniform
-            // This is nice, you can access a uniform variable in the GLSL using its variable name ("t")
-            // Fixme - make a program class that wraps this up.
-            GLint uloc = glGetUniformLocation (this->compute_program, static_cast<const GLchar*>("t"));
-            if (uloc != -1) { glUniform1f (uloc, this->frame_count); }
-
-            // This is dispatch with work groups of (a, b, 1)
-            glDispatchCompute (dwidth, dheight, 1);
-            // make sure writing to image has finished before read
-            glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            this->compute_program.set_uniform<float> ("t", this->frame_count);
+            this->compute_program.dispatch (dwidth, dheight, 1);
         }
 
         // Override the render method to do whatever visualization you want

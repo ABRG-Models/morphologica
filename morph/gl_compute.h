@@ -13,6 +13,7 @@
 #pragma once
 
 #include <morph/VisualCommon.h> // For shader processing code
+#include <morph/gl_compute_shaderprog.h> // compute-shader class
 #include <morph/keys.h>
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
 #include <GL3/gl3.h>    // For GLuint and GLenum
@@ -39,10 +40,6 @@ namespace morph {
         ~gl_compute()
         {
             glfwDestroyWindow (this->window);
-            if (this->compute_program) {
-                glDeleteProgram (this->compute_program);
-                this->compute_program = 0;
-            }
             glfwTerminate();
         }
 
@@ -59,8 +56,8 @@ namespace morph {
         }
         void releaseContext() { glfwMakeContextCurrent (nullptr); }
 
-        // You may well need to re-implement this function
-        virtual void compute() {}
+        // You will need to re-implement this function
+        virtual void compute() = 0;
 
         void keepOpen()
         {
@@ -150,11 +147,10 @@ namespace morph {
         //
         // void load_shaders() finals
         // {
-        //   {
-        //     std::vector<morph::gl::ShaderInfo> shaders = {
+        //   std::vector<morph::gl::ShaderInfo> shaders = {
         //     {GL_COMPUTE_SHADER, "Default.compute.glsl", morph::defaultComputeShader }
         //   };
-        //   this->compute_program = morph::gl::LoadShaders (shaders);
+        //   this->compute_program.load_shaders (shaders);
         // }
         //
         // Here "Default.compute.glsl" is the path to a file containing the GLSL
@@ -171,7 +167,7 @@ namespace morph {
         //! The title for the object, if needed
         std::string title = "morph::gl_compute";
         //! The compute program ID.
-        GLuint compute_program = 0;
+        morph::gl::compute_shaderprog compute_program;
 
         // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
         morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};

@@ -41,7 +41,7 @@ namespace my {
             glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
             // Texture setup
-            glUseProgram (this->compute_program);
+            this->compute_program.use();
             glGenTextures (1, &this->texture);
             glActiveTexture (GL_TEXTURE0);
             glBindTexture (GL_TEXTURE_2D, this->texture);
@@ -73,7 +73,7 @@ namespace my {
                 // place (which I don't intend to use).
                 {GL_COMPUTE_SHADER, "../examples/gl_compute/shadercompute.glsl", morph::defaultComputeShader }
             };
-            this->compute_program = morph::gl::LoadShaders (shaders);
+            this->compute_program.load_shaders (shaders);
 
             std::vector<morph::gl::ShaderInfo> vtxshaders = {
                 {GL_VERTEX_SHADER, "../examples/gl_compute/shadercompute.vert.glsl", morph::defaultVtxShader },
@@ -86,18 +86,11 @@ namespace my {
         void compute() final
         {
             this->measure_compute(); // optional
-
-            glUseProgram (this->compute_program);
-
-            // Set time into uniform
-            // This is nice, you can access a uniform variable in the GLSL using its variable name ("t")
-            GLint uloc = glGetUniformLocation (this->compute_program, static_cast<const GLchar*>("t"));
-            if (uloc != -1) { glUniform1f (uloc, this->frame_count); }
-
+            this->compute_program.use();
+            // Set time into a uniform in the compute program
+            this->compute_program.set_uniform<float> ("t", this->frame_count);
             // This is dispatch with work groups of (a, b, 1)
-            glDispatchCompute (tex_width/10, tex_height/10, 1);
-            // make sure writing to image has finished before read
-            glMemoryBarrier (GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            this->compute_program.dispatch (tex_width/10, tex_height/10, 1);
         }
 
         // Override the render method to do whatever visualization you want
@@ -110,7 +103,9 @@ namespace my {
             glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram (this->vtxprog);
-            // Set a uniform variable called "tex" in the vertex shader prog to 0.
+
+            // Set a uniform variable called "tex" in the shader program to 0. This is
+            // the texture sampler in the fragment shader.
             glUniform1i (glGetUniformLocation(this->vtxprog, "tex"), 0);
 
             glActiveTexture (GL_TEXTURE0);
