@@ -43,16 +43,8 @@ namespace my {
             // Texture setup
             this->compute_program.use();
             GLuint itu = 0; // Image texture unit
-            glGenTextures (1, &this->texture);
-            //glActiveTexture (GL_TEXTURE0+itu); // Sets the active texture to GL_TEXTURE0+itu where itu is Image Texture Unit. But this is not necessary as we bind image texture below with ITU=0
-            glBindTexture (GL_TEXTURE_2D, this->texture);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
-            std::cout << "GL_TEXTURE0: " << GL_TEXTURE0 << std::endl;
-            glBindImageTexture (itu, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            morph::vec<GLsizei, 2> dims = { tex_width, tex_height };
+            this->compute_program.setup_texture (itu, this->texture, dims);
         }
         ~gl_compute()
         {

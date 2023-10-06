@@ -62,35 +62,19 @@ namespace my {
             // Set up the texture for output
             this->compute_program.use();
             GLuint itu = 0; // Image texture unit. The first compute shader texture will be itu 0 in the compute shader program.
-            glGenTextures (1, &this->texture1);
-            //glActiveTexture (GL_TEXTURE0+itu); // Not necessary to call glActiveTexture() here as we don't write to the texture
-            glBindTexture (GL_TEXTURE_2D, this->texture1);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
-            //        args: ( unit, texture_id,level, layered,layer, access,     pixel_format)
-            glBindImageTexture (itu, this->texture1, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            morph::vec<GLsizei, 2> dims = { tex_width, tex_height };
 
-            // Set up a second texture
-            itu += 1; // The second texture will be itu1 in the compute shader program.
-            glGenTextures (1, &this->texture2);
-            glBindTexture (GL_TEXTURE_2D, this->texture2);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
-            //        args: ( unit, texture_id, level, layered,layer, access,     pixel_format)
-            glBindImageTexture (itu, this->texture2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            // First texture
+            this->compute_program.setup_texture (itu, this->texture1, dims);
+            // A second texture
+            this->compute_program.setup_texture (++itu, this->texture2, dims);
 
             std::cout << "texture1: " << texture1 << ", texture2: " << texture2 << std::endl;
 
             // SSBO setup. First a local memory version of the input
             this->input.resize (dsz, 0.0f);
-            morph::vec<unsigned int, 2> dims = morph::loadpng ("../examples/gl_compute/bike.png", this->input);
-            std::cout << "Image dims: " << dims << std::endl;
+            morph::vec<unsigned int, 2> _dims = morph::loadpng ("../examples/gl_compute/bike.png", this->input);
+            if ((_dims - dims) > 0) { throw std::runtime_error ("Loaded image is not expected size"); }
 
             this->compute_program.use();
             glGenBuffers (1, &this->input_buffer);
