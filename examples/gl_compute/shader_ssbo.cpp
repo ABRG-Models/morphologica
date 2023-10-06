@@ -61,8 +61,9 @@ namespace my {
 
             // Set up the texture for output
             this->compute_program.use();
+            GLuint itu = 0; // Image texture unit. The first compute shader texture will be itu 0 in the compute shader program.
             glGenTextures (1, &this->texture1);
-            //glActiveTexture (GL_TEXTURE0); // Doesn't appear to be necessary to call glActiveTexture() here.
+            //glActiveTexture (GL_TEXTURE0+itu); // Not necessary to call glActiveTexture() here as we don't write to the texture
             glBindTexture (GL_TEXTURE_2D, this->texture1);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -70,9 +71,10 @@ namespace my {
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
             //        args: ( unit, texture_id,level, layered,layer, access,     pixel_format)
-            glBindImageTexture (0, this->texture1, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            glBindImageTexture (itu, this->texture1, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
             // Set up a second texture
+            itu += 1; // The second texture will be itu1 in the compute shader program.
             glGenTextures (1, &this->texture2);
             glBindTexture (GL_TEXTURE_2D, this->texture2);
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -81,7 +83,7 @@ namespace my {
             glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, tex_width, tex_height, 0, GL_RGBA, GL_FLOAT, NULL);
             //        args: ( unit, texture_id, level, layered,layer, access,     pixel_format)
-            glBindImageTexture (1, this->texture2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+            glBindImageTexture (itu, this->texture2, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
             std::cout << "texture1: " << texture1 << ", texture2: " << texture2 << std::endl;
 
@@ -159,7 +161,7 @@ namespace my {
             glBindVertexArray (this->vao1);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
 
-            glActiveTexture (GL_TEXTURE0); // Must also be GL_TEXTURE0, as the shader will act only on one texture
+            glActiveTexture (GL_TEXTURE0); // Must *also* be GL_TEXTURE0, as the vertex/frag shaders will act only on one texture at a tiome
             glBindTexture (GL_TEXTURE_2D, this->texture2);
             glBindVertexArray (this->vao2);
             glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
