@@ -1,5 +1,10 @@
 #pragma once
+#include <type_traits>
+#include <vector>
+#include <string>
 #include <morph/VisualCommon.h>
+#include <morph/vec.h>
+#include <morph/vvec.h>
 
 namespace morph {
     namespace gl {
@@ -94,6 +99,17 @@ namespace morph {
                 /////////////////////////////// internal format                   pixel format
                 glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, dims[0], dims[1], 0, GL_RGB, GL_FLOAT, rgb_data);
                 glBindImageTexture (image_texture_unit, texture_id, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+
+            // Set up a Shader storage buffer object
+            template<typename T>
+            void setup_ssbo (const GLuint target_index, unsigned int& ssbo_id, const morph::vvec<T>& data)
+            {
+                glGenBuffers (1, &ssbo_id);
+                glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
+                glBufferData (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
+                glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
         };
