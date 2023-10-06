@@ -63,6 +63,39 @@ namespace morph {
                 }
             }
 
+            // Set up a single texture suitable for filling with values within the
+            // compute shader. Note: fixed format of GL_RGBA and GL_FLOAT; could set these
+            // with template params.
+            void setup_texture (const GLuint image_texture_unit, unsigned int& texture_id, morph::vec<GLsizei, 2> dims)
+            {
+                glGenTextures (1, &texture_id); // generate one texture
+                glBindTexture (GL_TEXTURE_2D, texture_id);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, dims[0], dims[1], 0, GL_RGBA, GL_FLOAT, NULL);
+                glBindImageTexture (image_texture_unit, texture_id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+
+            // Set up a shader-read-only texture with the provided rgb image data
+            void setup_texture (const GLuint image_texture_unit, unsigned int& texture_id,
+                                morph::vec<GLsizei, 2> dims, float* rgb_data)
+            {
+                glGenTextures (1, &texture_id);
+                glBindTexture (GL_TEXTURE_2D, texture_id);
+                // Because we WRITING image data to this texture, we HAVE TO gtActiveTexture():
+                glActiveTexture (GL_TEXTURE0+image_texture_unit);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                /////////////////////////////// internal format                   pixel format
+                glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA32F, dims[0], dims[1], 0, GL_RGB, GL_FLOAT, rgb_data);
+                glBindImageTexture (image_texture_unit, texture_id, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
         };
 
     } // namespace gl
