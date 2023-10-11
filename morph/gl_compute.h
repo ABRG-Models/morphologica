@@ -29,6 +29,10 @@ namespace morph {
     // A default, empty compute shader with a minimal layout to allow it to compile
     const char* defaultComputeShader = "#version 450 core\nlayout (local_size_x = 1) in;\n";
 
+    // You may wish to pass a compiled-in shader that will fail, so that your system MUST find the
+    // file-based shader in morph::gl::LoadShaders.
+    const char* nonCompilingComputeShader = "This is an intentionally non-compiling non-shader\n";
+
     /*!
      * A gl_compute environment. I think user will extend this class to add their data structures
      * and then run with their own GLSL compute shader code.
