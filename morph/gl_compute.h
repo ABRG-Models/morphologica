@@ -101,6 +101,7 @@ namespace morph {
             // 4.3+ required for shader compute
             glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version_major);
             glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version_minor);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
         void init_window()
@@ -117,6 +118,7 @@ namespace morph {
             // Lastly make the context current
             glfwMakeContextCurrent (this->window);
             glfwSwapInterval (0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
         // Initialize OpenGL shaders, set any GL flags required
