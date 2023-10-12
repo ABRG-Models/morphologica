@@ -16,8 +16,10 @@
 #include <morph/gl_compute_shaderprog.h> // compute-shader class
 #include <morph/keys.h>
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
-#include <GL3/gl3.h>    // For GLuint and GLenum
-#include <GL/glext.h>   // For GL_COMPUTE_SHADER
+
+//#include <GL3/gl3.h>    // For GLuint and GLenum
+//#include <GL/glext.h>   // For GL_COMPUTE_SHADER
+
 #include <chrono>
 #include <morph/VisualDefaultShaders.h>
 

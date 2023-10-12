@@ -12,7 +12,9 @@
 #include <iostream>
 #include <cstring>
 
+// YOU have to include GL3/gl3.h or GLEW/gl31.h or GL/glext.h.
 // For GLuint and GLenum
+#if 0
 #ifndef USE_GLEW
 # ifdef __OSX__
 #  include <OpenGL/gl3.h>
@@ -20,6 +22,7 @@
 #  include <GL3/gl3.h>
 #  include <GL/glext.h> // For GL_COMPUTE_SHADER
 # endif
+#endif
 #endif
 
 namespace morph {
