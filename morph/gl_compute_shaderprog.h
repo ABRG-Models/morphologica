@@ -47,7 +47,7 @@ namespace morph {
             void dispatch (GLuint x, GLuint y, GLuint z) const
             {
                 glDispatchCompute (x, y, z);
-                // Choice of GL_SHADER_IMAGE_ACCESS_BARRIER_BIT or GL_ALL_BARRIER_BITS (or others).
+                // Choices of GL_SHADER_IMAGE_ACCESS_BARRIER_BIT, GL_SHADER_STORAGE_BARRIER_BIT or GL_ALL_BARRIER_BITS (or others).
                 glMemoryBarrier (GL_ALL_BARRIER_BITS);
             }
 
@@ -67,6 +67,11 @@ namespace morph {
                     []<bool flag = false>() { static_assert(flag, "Can't set that type as a uniform in an OpenGL context"); }();
                 }
             }
+
+            // Note: I thought the setup_texture and setup_ssbo functions were only valid with a
+            // single shader program. It *seems* that I can setup an SSBO with one shader program in
+            // 'use' but access it in another shader program. Which would mean these functions don't
+            // belong here.
 
             // Set up a single texture suitable for filling with values within the
             // compute shader. Note: fixed format of GL_RGBA and GL_FLOAT; could set these
@@ -102,9 +107,24 @@ namespace morph {
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
-            // Set up a Shader storage buffer object
+            // Set up a Shader Storage Buffer Object (SSBO)
             template<typename T>
             void setup_ssbo (const GLuint target_index, unsigned int& ssbo_id, const morph::vvec<T>& data)
+            {
+                glGenBuffers (1, &ssbo_id);
+                glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
+                // Mutable, re-locatable storage:
+                glBufferData (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
+                // Immutable storage:
+                // void glBufferStorage(GLenum target​, GLsizeiptr size​, const GLvoid * data​, GLbitfield flags​);
+                //glBufferStorage (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_CLIENT_STORAGE_BIT | GL_MAP_READ_BIT);
+                glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+#if 0
+            // Connect the program to an existing SSBO
+            template<typename T>
+            void connect_ssbo (const GLuint target_index, unsigned int& ssbo_id)
             {
                 glGenBuffers (1, &ssbo_id);
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
@@ -112,6 +132,7 @@ namespace morph {
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
+#endif
         };
 
     } // namespace gl
