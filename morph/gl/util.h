@@ -3,6 +3,9 @@
 /*
  * Common code for GL functionality in morphologica programs.
  *
+ * Note: You have to include GL3/gl3.h/GL/glext.h/GLEW3/gl31.h etc for the GL types and
+ * functions BEFORE including this file.
+ *
  * Author: Seb James.
  */
 
@@ -13,9 +16,6 @@
 #include <iostream>
 #include <cstring>
 #include <string>
-
-// Note: You have to include GL3/gl3.h/GL/glext.h/GLEW3/gl31.h etc for the GL types and
-// functions BEFORE including this file.
 
 namespace morph {
 
