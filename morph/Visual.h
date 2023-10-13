@@ -44,6 +44,7 @@
 #include <morph/VisualModel.h>
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
+#include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
 #include <morph/keys.h>
 
 #include <morph/VisualResources.h>
