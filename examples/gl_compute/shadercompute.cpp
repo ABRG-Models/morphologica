@@ -20,11 +20,11 @@
 #include <GL3/gl3.h>
 #include <GL/glext.h>
 
-#include <morph/gl_compute.h>
+#include <morph/gl/shadercompute.h>
 
 namespace my {
 
-    struct gl_compute : public morph::gl_compute<4,5> // Specify OpenGL version 4.5 (4.3 min for compute)
+    struct gl_compute : public morph::gl::shadercompute<4,5> // Specify OpenGL version 4.5 (4.3 min for compute)
     {
         // Call init in your constructor, ensuring *your* version of load_shaders() is called.
         gl_compute()
@@ -74,7 +74,7 @@ namespace my {
             std::vector<morph::gl::ShaderInfo> shaders = {
                 // Here I set up to load examples/shadercompute.glsl and leave the default shader in
                 // place (which I don't intend to use).
-                {GL_COMPUTE_SHADER, "../examples/gl_compute/shadercompute.glsl", morph::defaultComputeShader }
+                {GL_COMPUTE_SHADER, "../examples/gl_compute/shadercompute.glsl", morph::gl::nonCompilingComputeShader }
             };
             this->compute_program.load_shaders (shaders);
 

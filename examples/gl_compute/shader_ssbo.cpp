@@ -9,13 +9,13 @@
 // GLES3/gl3[12].h (and maybe GLES3/gl3ext.h).
 #include <GLES3/gl31.h>
 
-#include <morph/gl_compute.h>
+#include <morph/gl/shadercompute.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>
 
 namespace my {
 
-    struct gl_compute : public morph::gl_compute<3,1> // Use OpenGL 3.1 ES
+    struct gl_compute : public morph::gl::shadercompute<3,1> // Use OpenGL 3.1 ES
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
@@ -112,7 +112,7 @@ namespace my {
             std::vector<morph::gl::ShaderInfo> shaders = {
                 // Here I set up to load examples/shadercompute.glsl and leave the default shader in
                 // place (which I don't intend to use).
-                {GL_COMPUTE_SHADER, "../examples/gl_compute/shader_ssbo.glsl", morph::defaultComputeShader }
+                {GL_COMPUTE_SHADER, "../examples/gl_compute/shader_ssbo.glsl", morph::gl::nonCompilingComputeShader }
             };
             this->compute_program.load_shaders (shaders);
 

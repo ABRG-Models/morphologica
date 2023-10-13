@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * OpenGL compute shading.
+ * OpenGL compute shading. This is a 'manager class' for compute shading.
  *
  * You will need to extend this class, adding your CPU land input and output attributes as well as a
  * path to your GLSL file or a const char* defining your GLSL compute shader program. See
@@ -18,7 +18,7 @@
 // file.
 
 #include <morph/gl/util.h>
-#include <morph/gl/compute_shaderprog.h> // compute-shader class
+#include <morph/gl/compute_shaderprog.h> // A compute-shader class
 #include <morph/keys.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
@@ -40,14 +40,14 @@ namespace morph {
         const char* nonCompilingComputeShader = "This is an intentionally non-compiling non-shader\n";
 
         /*!
-         * A gl_compute environment. I think user will extend this class to add their data structures
+         * A gl compute environment. I think user will extend this class to add their data structures
          * and then run with their own GLSL compute shader code.
          */
         template <int gl_version_major = 4, int gl_version_minor = 5>
-        struct compute
+        struct shadercompute
         {
-            compute() { this->t0 = sc::now(); }
-            ~compute()
+            shadercompute() { this->t0 = sc::now(); }
+            ~shadercompute()
             {
                 glfwDestroyWindow (this->window);
                 glfwTerminate();
@@ -99,7 +99,7 @@ namespace morph {
             {
                 if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
                 // Set up error callback
-                glfwSetErrorCallback (morph::gl_compute<gl_version_major,gl_version_minor>::errorCallback);
+                glfwSetErrorCallback (morph::gl::shadercompute<gl_version_major,gl_version_minor>::errorCallback);
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
                 float xscale, yscale;
@@ -172,7 +172,7 @@ namespace morph {
             virtual void load_shaders() = 0;
 
         protected:
-            //! The window (and OpenGL context) for this gl_compute
+            //! The window (and OpenGL context) for this gl::shadercompute
             GLFWwindow* window = nullptr;
             //! Window size, if needed
             morph::vec<int, 2> win_sz = { 640, 480 };
@@ -216,7 +216,7 @@ namespace morph {
         private:
             static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
             {
-                gl_compute<gl_version_major,gl_version_minor>* self = static_cast<gl_compute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
+                shadercompute<gl_version_major,gl_version_minor>* self = static_cast<shadercompute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
                 if (self->key_callback (key, scancode, action, mods)) {
                     std::cout << "key_callback returned\n";
                     self->compute();
@@ -224,7 +224,7 @@ namespace morph {
             }
             static void window_close_callback_dispatch (GLFWwindow* _window)
             {
-                gl_compute<gl_version_major,gl_version_minor>* self = static_cast<gl_compute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
+                shadercompute<gl_version_major,gl_version_minor>* self = static_cast<shadercompute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
                 self->window_close_callback();
             }
 
