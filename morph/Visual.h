@@ -18,11 +18,6 @@
 # include <GL/glew.h>
 #endif
 
-#include <morph/VisualModel.h>
-#include <morph/VisualTextModel.h> // includes VisualResources.h
-#include <morph/VisualCommon.h>
-#include <morph/keys.h>
-
 // Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
 //
 // "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
@@ -32,18 +27,24 @@
 // Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
 // morph::Visual is the owner of a Window provided by GLFW.
 #ifndef OWNED_MODE
-// Include glfw3 AFTER VisualModel
+# define GLFW_INCLUDE_NONE // Here, we explicitly include GL3/gl3.h and GL/glext.h, leaving none of this to GLFW
 # include <GLFW/glfw3.h>
 #endif
 
-// For GLuint and GLenum (though redundant, as already included in VisualModel
+// Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
 #ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
+# ifdef __OSX__
+#  include <OpenGL/gl3.h>
+# else
+#  include <GL3/gl3.h>
+#  include <GL/glext.h>
+# endif
 #endif
-#endif
+
+#include <morph/VisualModel.h>
+#include <morph/VisualTextModel.h> // includes VisualResources.h
+#include <morph/VisualCommon.h>
+#include <morph/keys.h>
 
 #include <morph/VisualResources.h>
 #include <morph/nlohmann/json.hpp>

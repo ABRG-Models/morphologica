@@ -116,7 +116,7 @@ endif()
 
 # Lib finding
 find_package(OpenCV) # No longer required for morph::Visual, used by some tests
-find_package(OpenGL REQUIRED)
+find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})

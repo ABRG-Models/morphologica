@@ -19,7 +19,7 @@
 # ifdef __OSX__
 #  include <OpenGL/gl3.h>
 # else
-#  include <GL3/gl3.h>
+#  include <GL3/gl3.h>  // For GLenum and GLuint
 #  include <GL/glext.h> // For GL_COMPUTE_SHADER
 # endif
 #endif
@@ -45,7 +45,9 @@ namespace morph {
          */
         struct ShaderInfo
         {
-            GLenum type;
+            // GLenum is, in practice, a 32 bit unsigned int. The type appears not to be defined in
+            // OpenGL 3.1 ES (though it does appear in 3.2 ES), so here I use unsigned int.
+            unsigned int type; // rather than GLenum
             const char* filename;
             const char* compiledIn;
             GLuint shader;

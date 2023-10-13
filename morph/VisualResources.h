@@ -11,6 +11,7 @@
 #pragma once
 
 #ifndef OWNED_MODE
+# define GLFW_INCLUDE_NONE
 # include <GLFW/glfw3.h>
 #endif
 #include <iostream>

@@ -1,11 +1,17 @@
-#include <morph/gl_compute.h>
-#include <morph/vvec.h>
-#include <morph/loadpng.h>
-
 /*
  * A second example of extending morph::gl_compute, this time to a shader which computes
  * using SSBOs - shader storage buffer objects.
  */
+
+// You have to include the GL headers manually so that you will be sure you have the
+// right ones. THis is because for OpenGL version 4.3, you would include GL3/gl3.h and
+// GL/glext.h whereas if you are targeting OpenGL 3.1 ES, you want to include
+// GLES3/gl3[12].h (and maybe GLES3/gl3ext.h).
+#include <GLES3/gl31.h>
+
+#include <morph/gl_compute.h>
+#include <morph/vvec.h>
+#include <morph/loadpng.h>
 
 namespace my {
 
