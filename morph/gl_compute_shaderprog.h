@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
-#include <morph/VisualCommon.h>
+#include <morph/gl/util.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 

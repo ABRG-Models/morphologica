@@ -18,7 +18,7 @@
 #include <tuple>
 #include <set>
 #include <stdexcept>
-#include <morph/VisualCommon.h>
+#include <morph/gl/util.h>
 #include <morph/VisualFace.h>
 // FreeType for text rendering
 #include <ft2build.h>

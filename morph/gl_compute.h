@@ -12,18 +12,15 @@
  */
 #pragma once
 
-#include <morph/VisualCommon.h> // For shader processing code
+// We *don't* want to include the GL headers here, because the correct headers may be
+// GL3/gl.h and GL/glext.h for OpenGL 4.3+ OR GLES3/gl31.h and GLES3/gl3ext.h for OpenGL
+// 3.1 ES. So the client code should include the correct headers before #including this
+// file.
+
+#include <morph/gl/util.h>
 #include <morph/gl_compute_shaderprog.h> // compute-shader class
 #include <morph/keys.h>
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
-
-// We don't want to includ the GL headers here, because the correct headers may be
-// GL3/gl.h and GL/glext.h for OpenGL 4.3+ OR GLES3/gl31.h and GLES3/gl3ext.h for OpenGL
-// 3.1 ES. So the client code should include the correct headers. I'm still in the
-// middle of working out the best scheme for this...
-//
-//#include <GL3/gl3.h>    // For GLuint and GLenum
-//#include <GL/glext.h>   // For GL_COMPUTE_SHADER
 
 #include <chrono>
 #include <morph/VisualDefaultShaders.h>

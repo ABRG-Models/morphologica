@@ -22,6 +22,7 @@
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
+#include <morph/gl/util.h>
 #include <morph/VisualCommon.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualFace.h>
