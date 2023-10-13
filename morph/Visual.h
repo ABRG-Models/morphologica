@@ -509,10 +509,10 @@ namespace morph {
         //! The OpenGL shader programs have an integer ID and are stored in a simple
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
-        morph::gl::visual_shaderprogs shaders;
+        morph::visgl::visual_shaderprogs shaders;
 
         // These static functions will be set as callbacks in each VisualModel object.
-        static morph::gl::visual_shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
+        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
         static GLuint get_gprog (morph::Visual* _v) { return _v->shaders.gprog; };
         static GLuint get_tprog (morph::Visual* _v) { return _v->shaders.tprog; };
 

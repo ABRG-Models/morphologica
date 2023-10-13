@@ -329,7 +329,7 @@ namespace morph {
             std::basic_string<char32_t> utxt = morph::unicode::fromUtf8(_txt);
             morph::TextGeometry geom;
             for (std::basic_string<char32_t>::const_iterator c = utxt.begin(); c != utxt.end(); c++) {
-                morph::gl::CharInfo ci = this->face->glchars[*c];
+                morph::visgl::CharInfo ci = this->face->glchars[*c];
                 float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
                 float bearingy = ci.bearing.y() * this->fontscale;
@@ -344,7 +344,7 @@ namespace morph {
         {
             morph::TextGeometry geom;
             for (std::basic_string<char32_t>::const_iterator c = this->txt.begin(); c != this->txt.end(); c++) {
-                morph::gl::CharInfo ci = this->face->glchars[*c];
+                morph::visgl::CharInfo ci = this->face->glchars[*c];
                 float drop = (ci.size.y() - ci.bearing.y()) * this->fontscale;
                 geom.max_drop = (drop > geom.max_drop) ? drop : geom.max_drop;
                 float bearingy = ci.bearing.y() * this->fontscale;
@@ -401,13 +401,13 @@ namespace morph {
                 if (*c == '\n') {
                     // Skip newline, but add a y offset and reset letter_pos
                     letter_pos = 0.0f;
-                    morph::gl::CharInfo ch = this->face->glchars['h'];
+                    morph::visgl::CharInfo ch = this->face->glchars['h'];
                     letter_y += this->line_spacing * -ch.size.y() * this->fontscale;
                     continue;
                 }
 
                 // Add a quad to this->quads
-                morph::gl::CharInfo ci = this->face->glchars[*c];
+                morph::visgl::CharInfo ci = this->face->glchars[*c];
 
                 float xpos = letter_pos + ci.bearing.x() * this->fontscale;
                 float ypos = letter_y /*this->mv_offset[1]*/ - (ci.size.y() - ci.bearing.y()) * this->fontscale;
@@ -554,10 +554,10 @@ namespace morph {
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
             // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
-            this->setupVBO (this->vbos[textureVBO], this->vertexTextures, gl::textureLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
+            this->setupVBO (this->vbos[textureVBO], this->vertexTextures, visgl::textureLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             // Possibly release (unbind) the vertex buffers, but have to unbind vertex

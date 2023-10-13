@@ -134,9 +134,9 @@ namespace morph {
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
             // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             // Unbind only the vertex array (not the buffers, that causes GL_INVALID_ENUM errors)
@@ -162,9 +162,9 @@ namespace morph {
 #endif
             int sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             glBindVertexArray(0);
@@ -633,7 +633,7 @@ namespace morph {
         // A function that will be runtime defined to get_shaderprogs from a pointer to
         // Visual (saving a boilerplate argument and avoiding that killer circular
         // dependency at the cost of one line of boilerplate in client programs)
-        std::function<morph::gl::visual_shaderprogs(morph::Visual*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::Visual*)> get_shaderprogs;
         // Get the graphics shader prog id
         std::function<GLuint(morph::Visual*)> get_gprog;
         // Get the text shader prog id

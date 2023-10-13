@@ -14,7 +14,7 @@
 
 namespace morph {
 
-    namespace gl {
+    namespace visgl {
 
         // A container struct for the shader program identifiers used in a morph::Visual. Separate
         // from morph::Visual so that it can be used in morph::VisualModel as well, which does not

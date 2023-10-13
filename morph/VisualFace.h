@@ -16,7 +16,7 @@
 #include <fstream>
 
 #include <morph/tools.h>
-#include <morph/VisualCommon.h> // for (vis?)gl::CharInfo
+#include <morph/VisualCommon.h> // for visgl::CharInfo
 
 #ifndef USE_GLEW
 # ifdef __OSX__
@@ -419,7 +419,7 @@ namespace morph {
                     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Could be GL_NEAREST, but doesn't look as good.
                     // now store character for later use
-                    morph::gl::CharInfo glchar = {
+                    morph::visgl::CharInfo glchar = {
                         texture,
                         {static_cast<int>(this->face->glyph->bitmap.width), static_cast<int>(this->face->glyph->bitmap.rows)}, // size
                         {this->face->glyph->bitmap_left, this->face->glyph->bitmap_top}, // bearing
@@ -431,7 +431,7 @@ namespace morph {
                                   << ", Size:" << glchar.size << ", Bearing:" << glchar.bearing
                                   << ", Advance:" << glchar.advance << std::endl;
                     }
-                    this->glchars.insert (std::pair<char32_t, morph::gl::CharInfo>(c, glchar));
+                    this->glchars.insert (std::pair<char32_t, morph::visgl::CharInfo>(c, glchar));
                 }
                 glBindTexture(GL_TEXTURE_2D, 0);
                 // At this point could FT_Done_Face() etc, I think. as we no longer do anything Freetypey with it.
@@ -447,7 +447,7 @@ namespace morph {
             FT_Face face;
 
             //! The OpenGL character info stuff
-            std::map<char32_t, morph::gl::CharInfo> glchars;
+            std::map<char32_t, morph::visgl::CharInfo> glchars;
 
         private:
 
