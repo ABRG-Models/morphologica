@@ -44,9 +44,9 @@ namespace morph {
             void use() const { glUseProgram (this->prog_id); }
 
             // Convenience wrapper for dispatch
-            void dispatch (GLuint x, GLuint y, GLuint z) const
+            void dispatch (GLuint ngrps_x, GLuint ngrps_y, GLuint ngrps_z) const
             {
-                glDispatchCompute (x, y, z);
+                glDispatchCompute (ngrps_x, ngrps_y, ngrps_z);
                 // Choices of GL_SHADER_IMAGE_ACCESS_BARRIER_BIT, GL_SHADER_STORAGE_BARRIER_BIT or GL_ALL_BARRIER_BITS (or others).
                 glMemoryBarrier (GL_ALL_BARRIER_BITS);
             }
