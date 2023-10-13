@@ -12,18 +12,8 @@
 #include <iostream>
 #include <cstring>
 
-// YOU have to include GL3/gl3.h or GLEW/gl31.h or GL/glext.h.
-// For GLuint and GLenum
-#if 0
-#ifndef USE_GLEW
-# ifdef __OSX__
-#  include <OpenGL/gl3.h>
-# else
-#  include <GL3/gl3.h>  // For GLenum and GLuint
-#  include <GL/glext.h> // For GL_COMPUTE_SHADER
-# endif
-#endif
-#endif
+// Note: You have to include GL3/gl3.h/GL/glext.h/GLEW3/gl31.h etc for the GL types
+// BEFORE including this file.
 
 namespace morph {
 
@@ -241,9 +231,9 @@ namespace morph {
         };
 
         //! A class containing a static function to check the GL errors.
-        struct Util
-        {
-            static GLenum checkError (const char *file, int line)
+        namespace Util {
+
+            GLenum checkError (const char *file, int line)
             {
                 GLenum errorCode = 0;
 #ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
@@ -299,6 +289,6 @@ namespace morph {
 #endif
                 return errorCode;
             }
-        };
+        } // namespace Util
     } // namespace gl
 } // namespace
