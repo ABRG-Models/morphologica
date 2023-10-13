@@ -18,8 +18,9 @@
 // file.
 
 #include <morph/gl/util.h>
-#include <morph/gl_compute_shaderprog.h> // compute-shader class
+#include <morph/gl/compute_shaderprog.h> // compute-shader class
 #include <morph/keys.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> // GLFW is our only supported way to getting OpenGL context for morph::gl_compute
 
 #include <chrono>
