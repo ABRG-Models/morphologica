@@ -107,7 +107,7 @@ namespace morph {
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
-            // Set up a Shader Storage Buffer Object (SSBO)
+            // Set up a Shader Storage Buffer Object (SSBO) (with a morph::vvec)
             template<typename T>
             void setup_ssbo (const GLuint target_index, unsigned int& ssbo_id, const morph::vvec<T>& data)
             {
@@ -118,6 +118,17 @@ namespace morph {
                 // Immutable storage:
                 // void glBufferStorage(GLenum target​, GLsizeiptr size​, const GLvoid * data​, GLbitfield flags​);
                 //glBufferStorage (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_CLIENT_STORAGE_BIT | GL_MAP_READ_BIT);
+                glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+            }
+
+            // Set up a Shader Storage Buffer Object (SSBO) (morph::vec version)
+            template<typename T, unsigned int N>
+            void setup_ssbo (const GLuint target_index, unsigned int& ssbo_id, const morph::vec<T, N>& data)
+            {
+                glGenBuffers (1, &ssbo_id);
+                glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
+                glBufferData (GL_SHADER_STORAGE_BUFFER, N * sizeof(T), data.data(), GL_STATIC_DRAW);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
