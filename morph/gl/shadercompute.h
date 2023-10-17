@@ -238,7 +238,7 @@ namespace morph {
             //! The title for the object, if needed
             std::string title = "morph::gl_compute";
             //! The compute program ID.
-            morph::gl::compute_shaderprog compute_program;
+            morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
 
             // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
             morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};
