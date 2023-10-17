@@ -33,6 +33,19 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
+        template <typename T, unsigned int N>
+        void ssbo_copy_to_vec (const unsigned int ssbo_idx, const unsigned int ssbo_name, morph::vec<T, N>& cpu_side)
+        {
+            glBindBufferBase (GL_SHADER_STORAGE_BUFFER, ssbo_idx, ssbo_name);
+            // Really, it's crazy to *copy* because the data is *already in CPU
+            // accessible memory* after glMapBufferRange. BUT here's the copy:
+            T* cpuptr = static_cast<T*>(glMapBufferRange (GL_SHADER_STORAGE_BUFFER, 0, N*sizeof(T), GL_MAP_READ_BIT));
+            for (unsigned int i = 0; i < N; ++i) { cpu_side[i] = cpuptr[i]; }
+            glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
+            glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+        }
+
         // Find the range of the data in the given Shader Storage Buffer Object
         //
         // ssbo_idx: The Index of the Shader Storage Buffer Object that we're reading from
