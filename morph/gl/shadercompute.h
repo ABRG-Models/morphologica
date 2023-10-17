@@ -44,7 +44,7 @@ namespace morph {
          * A gl compute environment. I think user will extend this class to add their data structures
          * and then run with their own GLSL compute shader code.
          */
-        template <int gl_version_major = 4, int gl_version_minor = 5>
+        template <int gl_version_major = 4, int gl_version_minor = 5, bool gles = false>
         struct shadercompute
         {
             shadercompute() { this->t0 = sc::now(); }
@@ -100,12 +100,16 @@ namespace morph {
             {
                 if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
                 // Set up error callback
-                glfwSetErrorCallback (morph::gl::shadercompute<gl_version_major,gl_version_minor>::errorCallback);
+                glfwSetErrorCallback (morph::gl::shadercompute<gl_version_major,gl_version_minor,gles>::errorCallback);
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
                 float xscale, yscale;
                 glfwGetMonitorContentScale(primary, &xscale, &yscale);
-                // 4.3+ required for shader compute
+                // 4.3+ or 3.1ES+ are required for shader compute
+                if constexpr (gles == true) {
+                    glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+                    glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+                }
                 glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version_major);
                 glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version_minor);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
@@ -134,7 +138,37 @@ namespace morph {
                 // Swap as fast as possible to compute as fast as possible
                 glfwSwapInterval (0);
 
-                // Check GL_MAX_COMPUTE_WORK_GROUP_COUNT and send to std::out
+                // Temporary storage for parameter values
+                int pval = -1;
+
+                // Output some info about the resources available to stdout
+                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTERS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTERS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_BLOCKS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_UNIFORM_BLOCKS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_COMPONENTS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_UNIFORM_COMPONENTS: " << pval << std::endl;
+
+                glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &this->max_compute_work_group_invocations);
+                std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << this->max_compute_work_group_invocations << std::endl;
+
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &this->max_compute_work_group_count[0]);
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &this->max_compute_work_group_count[1]);
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &this->max_compute_work_group_count[2]);
@@ -145,8 +179,32 @@ namespace morph {
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &this->max_compute_work_group_size[2]);
                 std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << this->max_compute_work_group_size << std::endl;
 
-                glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &this->max_compute_work_group_invocations);
-                std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << this->max_compute_work_group_invocations << std::endl;
+                // Shader storage
+                glGetIntegerv (GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS: " << pval << std::endl;
+
+                // Combined
+                glGetIntegerv (GL_MAX_TEXTURE_IMAGE_UNITS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_TEXTURE_SIZE, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_TEXTURE_SIZE: " << pval << std::endl;
+
+                glGetIntegerv (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+
+                // Not mentioned on es3.1 Reference page https://registry.khronos.org/OpenGL-Refpages/es3.1/html/glGet.xhtml but can be queried:
+                glGetIntegerv (GL_MAX_IMAGE_UNITS, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_IMAGE_UNITS: " << pval << std::endl;
 
                 load_shaders();
 
@@ -217,7 +275,7 @@ namespace morph {
         private:
             static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
             {
-                shadercompute<gl_version_major,gl_version_minor>* self = static_cast<shadercompute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
+                shadercompute<gl_version_major,gl_version_minor,gles>* self = static_cast<shadercompute<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
                 if (self->key_callback (key, scancode, action, mods)) {
                     std::cout << "key_callback returned\n";
                     self->compute();
@@ -225,7 +283,7 @@ namespace morph {
             }
             static void window_close_callback_dispatch (GLFWwindow* _window)
             {
-                shadercompute<gl_version_major,gl_version_minor>* self = static_cast<shadercompute<gl_version_major,gl_version_minor>*>(glfwGetWindowUserPointer (_window));
+                shadercompute<gl_version_major,gl_version_minor,gles>* self = static_cast<shadercompute<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
                 self->window_close_callback();
             }
 
