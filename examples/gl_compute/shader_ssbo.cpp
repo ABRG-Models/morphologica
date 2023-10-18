@@ -10,12 +10,13 @@
 #include <GLES3/gl31.h>
 
 #include <morph/gl/shadercompute.h>
+#include <morph/gl/texture.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>
 
 namespace my {
 
-    struct gl_compute : public morph::gl::shadercompute<3,1> // Use OpenGL 3.1 ES
+    struct gl_compute : public morph::gl::shadercompute<3,1,true> // Use OpenGL 3.1 ES
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
@@ -71,9 +72,9 @@ namespace my {
             morph::vec<GLsizei, 2> dims = { tex_width, tex_height };
 
             // First texture
-            this->compute_program.setup_texture (itu, this->texture1, dims);
+            morph::gl::setup_texture (itu, this->texture1, dims);
             // A second texture
-            this->compute_program.setup_texture (++itu, this->texture2, dims);
+            morph::gl::setup_texture (++itu, this->texture2, dims);
 
             std::cout << "texture1: " << texture1 << ", texture2: " << texture2 << std::endl;
 
