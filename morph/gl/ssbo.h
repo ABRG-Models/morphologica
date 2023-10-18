@@ -46,6 +46,20 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
         }
 
+        // Copy, without creating a new SSBO
+        template<typename T>
+        void copy_vvec_to_ssbo (const GLuint target_index, const unsigned int ssbo_id, const morph::vvec<T>& data)
+        {
+            glBindBufferBase (GL_SHADER_STORAGE_BUFFER, target_index, ssbo_id);
+            // Mutable, re-locatable storage:
+            glBufferData (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
+            // Immutable storage:
+            // void glBufferStorage(GLenum target​, GLsizeiptr size​, const GLvoid * data​, GLbitfield flags​);
+            //glBufferStorage (GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), data.data(), GL_CLIENT_STORAGE_BIT | GL_MAP_READ_BIT);
+            glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
+            morph::gl::Util::checkError (__FILE__, __LINE__);
+        }
+
         // Find the range of the data in the given Shader Storage Buffer Object
         //
         // ssbo_idx: The Index of the Shader Storage Buffer Object that we're reading from
