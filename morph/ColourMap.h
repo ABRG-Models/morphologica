@@ -28,6 +28,10 @@ namespace morph {
         MonochromeRed,
         MonochromeBlue,
         MonochromeGreen,
+        Monoval,      // Monoval varies the *value* of the colour
+        MonovalRed,
+        MonovalBlue,
+        MonovalGreen,
         Duochrome,    // Two fixed hues, vary saturation of each with two input numbers.
         Trichrome,    // As for Duochrome, but with three inputs
         RGB,          // A kind of 'null' colour map that takes R, G and B values and returns as an RGB colour.
@@ -138,6 +142,14 @@ namespace morph {
                 cmt = morph::ColourMapType::MonochromeRed;
             } else if (_s == "monochrome") {
                 cmt = morph::ColourMapType::Monochrome;
+            } else if (_s == "monovalgreen") {
+                cmt = morph::ColourMapType::MonovalGreen;
+            } else if (_s == "monovalblue") {
+                cmt = morph::ColourMapType::MonovalBlue;
+            } else if (_s == "monovalred") {
+                cmt = morph::ColourMapType::MonovalRed;
+            } else if (_s == "monoval") {
+                cmt = morph::ColourMapType::Monoval;
             } else if (_s == "greyscale") {
                 cmt = morph::ColourMapType::Greyscale;
             } else if (_s == "greyscaleinv") {
@@ -224,6 +236,26 @@ namespace morph {
             case morph::ColourMapType::Monochrome:
             {
                 s = "monochrome";
+                break;
+            }
+            case morph::ColourMapType::MonovalGreen:
+            {
+                s = "monovalgreen";
+                break;
+            }
+            case morph::ColourMapType::MonovalBlue:
+            {
+                s = "monovalblue";
+                break;
+            }
+            case morph::ColourMapType::MonovalRed:
+            {
+                s = "monovalred";
+                break;
+            }
+            case morph::ColourMapType::Monoval:
+            {
+                s = "monoval";
                 break;
             }
             case morph::ColourMapType::Greyscale:
@@ -364,6 +396,10 @@ namespace morph {
             case ColourMapType::MonochromeRed:
             case ColourMapType::MonochromeBlue:
             case ColourMapType::MonochromeGreen:
+            case ColourMapType::Monoval:
+            case ColourMapType::MonovalRed:
+            case ColourMapType::MonovalBlue:
+            case ColourMapType::MonovalGreen:
             case ColourMapType::RGBMono:
             case ColourMapType::RGBGrey:
             {
@@ -613,6 +649,26 @@ namespace morph {
                 c = this->monochrome (datum);
                 break;
             }
+            case ColourMapType::Monoval:
+            {
+                c = this->monoval (datum);
+                break;
+            }
+            case ColourMapType::MonovalRed:
+            {
+                c = { datum, T{0}, T{0} };
+                break;
+            }
+            case ColourMapType::MonovalBlue:
+            {
+                c = { T{0}, T{0}, datum };
+                break;
+            }
+            case ColourMapType::MonovalGreen:
+            {
+                c = { T{0}, datum, T{0} };
+                break;
+            }
             case ColourMapType::Fixed:
             {
                 c = ColourMap::hsv2rgb (this->hue, this->sat, this->val);
@@ -643,21 +699,20 @@ namespace morph {
             this->type = tp;
             // Set hue if necessary
             switch (tp) {
-            case ColourMapType::Monochrome:
-            {
-                break;
-            }
             case ColourMapType::MonochromeRed:
+            case ColourMapType::MonovalRed:
             {
                 this->hue = 1.0f;
                 break;
             }
             case ColourMapType::MonochromeBlue:
+            case ColourMapType::MonovalBlue:
             {
                 this->hue = 0.667f;
                 break;
             }
             case ColourMapType::MonochromeGreen:
+            case ColourMapType::MonovalGreen:
             {
                 this->hue = 0.333f;
                 break;
@@ -776,6 +831,9 @@ namespace morph {
             case ColourMapType::MonochromeRed:
             case ColourMapType::MonochromeBlue:
             case ColourMapType::MonochromeGreen:
+            case ColourMapType::MonovalRed:
+            case ColourMapType::MonovalBlue:
+            case ColourMapType::MonovalGreen:
             {
                 throw std::runtime_error ("This colour map does not accept changes to the hue");
                 break;
@@ -919,11 +977,21 @@ namespace morph {
         /*!
          * @param datum gray value from 0.0 to 1.0
          *
-         * @returns RGB value in a mono-colour map, with main colour this->hue;
+         * @returns RGB value in a mono-colour map, with main colour this->hue; varying saturation.
          */
         std::array<float,3> monochrome (float datum)
         {
             return ColourMap::hsv2rgb (this->hue, datum, 1.0f);
+        }
+
+        /*!
+         * @param datum gray value from 0.0 to 1.0
+         *
+         * @returns RGB value in a mono-colour map, with main colour this->hue and varying value.
+         */
+        std::array<float,3> monoval (float datum)
+        {
+            return ColourMap::hsv2rgb (this->hue, 1.0f, datum);
         }
 
         /*!
