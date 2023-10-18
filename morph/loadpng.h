@@ -219,6 +219,70 @@ namespace morph {
         return dims;
     }
 
+    // Load a colour PNG and return a vector of type T with elements ordered as RGBARGBARGBA...
+    template <typename T, unsigned int im_w, unsigned int im_h>
+    static morph::vec<unsigned int, 2> loadpng_rgba (const std::string& filename, morph::vec<T, 4*im_w*im_h>& image_data,
+                                                     const morph::vec<bool,2> flip = {false, false})
+    {
+        std::vector<unsigned char> png;
+        unsigned int w = 0;
+        unsigned int h = 0;
+        // Assume RGBA and bit depth of 8
+        lodepng::decode (png, w, h, filename, LCT_RGBA, 8);
+        // For return:
+        morph::vec<unsigned int, 2> dims = {w, h};
+        if (w != im_w || h != im_h) {
+            throw std::runtime_error ("Expect png to be the size specified in the template args.");
+        }
+
+        // Now convert out into a value placed in image_data
+        // If T is float or double, then get mean RGB, convert to range 0 to 1
+        // If T is of integer type, then get mean and encode in range 0-255
+
+        unsigned int vsz = png.size();
+        if (vsz % 4 != 0) {
+            throw std::runtime_error ("Expect png vector to have size divisible by 4.");
+        }
+
+        for (unsigned int c = 0; c < dims[1]; ++c) {
+            for (unsigned int r = 0; r < dims[0]; ++r) {
+                // Offset into png
+                unsigned int i = 4*r + 4*dims[0]*c;
+                // Offset into image_data depends on what flips the caller wants
+                unsigned int idx_r = flip[0] == true ?
+                (flip[1]==true ? ((dims[0]-r-1) + dims[0]*(dims[1]-c-1)) : ((dims[0]-r-1) + dims[0]*c))
+                : (flip[1]==true ? (r + dims[0]*(dims[1]-c-1)) : (r + dims[0]*c));
+                idx_r *= 4; // Because our output is rgbargba...
+                unsigned int idx_g = flip[0] == true ? idx_r-1 : idx_r+1;
+                unsigned int idx_b = flip[0] == true ? idx_r-2 : idx_r+2;
+                unsigned int idx_a = flip[0] == true ? idx_r-3 : idx_r+3;
+
+                if (std::is_same<std::decay_t<T>, float>::value == true
+                    || std::is_same<std::decay_t<T>, double>::value == true) {
+                    image_data[idx_r] = static_cast<T>(png[i])/T{255};
+                    image_data[idx_g] = static_cast<T>(png[i+1])/T{255};
+                    image_data[idx_b] = static_cast<T>(png[i+2])/T{255};
+                    image_data[idx_a] = static_cast<T>(png[i+3])/T{255};
+
+                } else if (std::is_same<std::decay_t<T>, unsigned int>::value == true
+                           || std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                    // Copy RGB, 0-255 values
+                    image_data[idx_r] = static_cast<T>(png[i]);
+                    image_data[idx_g] = static_cast<T>(png[i+1]);
+                    image_data[idx_b] = static_cast<T>(png[i+2]);
+                    image_data[idx_a] = static_cast<T>(png[i+3]);
+
+                } else {
+                    // C++-20 mechanism to trigger a compiler error for the else case. Not user friendly!
+                    //[]<bool flag = false>() { static_assert(flag, "no match"); }();
+                    throw std::runtime_error ("type failure");
+                }
+            }
+        }
+
+        return dims;
+    }
+
     template <typename T, size_t N>
     static morph::vec<unsigned int, 2> loadpng (const std::string& filename,
                                                 morph::vvec<morph::vec<T, N>>& image_data,
