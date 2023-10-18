@@ -33,7 +33,11 @@ namespace morph {
             ~ssbo() {}
 
             // Init is not built into the constructor, as client code must ensure there is an OpenGL context available
-            void init() { glGenBuffers (1, &this->name); }
+            void init()
+            {
+                glGenBuffers (1, &this->name);
+                this->copy_to_gpu();
+            }
 
             // Copy the data in the morph::vec data over to the GPU
             void copy_to_gpu()
@@ -53,7 +57,9 @@ namespace morph {
             void copy_from_gpu()
             {
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, index, this->name);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
                 T* cpuptr = static_cast<T*>(glMapBufferRange (GL_SHADER_STORAGE_BUFFER, 0, N*sizeof(T), GL_MAP_READ_BIT));
+                morph::gl::Util::checkError (__FILE__, __LINE__);
                 for (unsigned int i = 0; i < N; ++i) { this->data[i] = cpuptr[i]; }
                 glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
@@ -70,7 +76,9 @@ namespace morph {
                 morph::range<T> r;
                 r.search_init();
                 glBindBufferBase (GL_SHADER_STORAGE_BUFFER, index, this->name);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
                 T* cpuptr = static_cast<T*>(glMapBufferRange (GL_SHADER_STORAGE_BUFFER, 0, N*sizeof(T), GL_MAP_READ_BIT));
+                morph::gl::Util::checkError (__FILE__, __LINE__);
                 for (unsigned int i = 0; i < N; ++i) { r.update (cpuptr[i]); }
                 glUnmapBuffer (GL_SHADER_STORAGE_BUFFER);
                 glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
