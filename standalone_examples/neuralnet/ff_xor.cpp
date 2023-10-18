@@ -66,12 +66,14 @@ int main (int argc, char** argv)
     morph::Visual v(1920, 1080, "XOR network");
     v.setSceneTrans (-0.738625824,-0.950026929,-3.00000191);
     v.lightingEffects();
-    auto nvup = std::make_unique<NetVisual<float>>(v.shaders, morph::vec<float>({0,0,0}), &ff1);
+    auto nvup = std::make_unique<NetVisual<float>>(morph::vec<float>({0,0,0}), &ff1);
+    v.bindmodel (nvup);
     nvup->finalize(); // Generates the model before adding it to the Visual scene
     auto nv = v.addVisualModel (nvup);
 
     // Create a graph to visualise cost vs. epoch
-    auto gvup = std::make_unique<morph::GraphVisual<float>>(v.shaders, morph::vec<float>({1,0.5,0}));
+    auto gvup = std::make_unique<morph::GraphVisual<float>>(morph::vec<float>({1,0.5,0}));
+    v.bindmodel (gvup);
     morph::DatasetStyle ds(morph::stylepolicy::lines);
     ds.linecolour =  {1.0, 0.0, 0.0};
     ds.linewidth = 0.015f;

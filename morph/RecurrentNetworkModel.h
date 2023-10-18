@@ -593,7 +593,8 @@ namespace morph {
                 scale.do_autoscale = true;
                 std::vector<float> fFlt;
                 for (unsigned int i=0; i<M[mapIndex].N; i++){ fFlt.push_back (static_cast<float>(F[i])); }
-                auto qvp = std::make_unique<QuadsVisual<float>> (v.shaders, &M[mapIndex].quads, offset, &fFlt, scale, colourMap);
+                auto qvp = std::make_unique<QuadsVisual<float>> (&M[mapIndex].quads, offset, &fFlt, scale, colourMap);
+                v.bindmodel (qvp);
                 v.addVisualModel (qvp);
                 v.render();
                 v.render();
@@ -621,7 +622,8 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                auto hgv1 = std::make_unique<HexGridVisual<float>> (v.shaders, domain.hg, offset);
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg, offset);
+                v.bindmodel (hgv1);
                 hgv1->setScalarData (&fFlt);
                 hgv1->zScale = zscale;
                 hgv1->colourScale = scale;
@@ -664,7 +666,8 @@ namespace morph {
                 morph::Scale<float> zscale; zscale.setParams (0.0f, 0.0f);
                 std::vector<float> fFlt;
                 for (unsigned int k=0; k<domain.nhex; k++){ fFlt.push_back (static_cast<float>(F[k])); }
-                auto hgv1 = std::make_unique<HexGridVisual<float>> (v.shaders, domain.hg, offset);
+                auto hgv1 = std::make_unique<HexGridVisual<float>> (domain.hg, offset);
+                v.bindmodel (hgv1);
                 hgv1->setScalarData (&fFlt);
                 hgv1->zScale = zscale;
                 hgv1->colourScale = scale;

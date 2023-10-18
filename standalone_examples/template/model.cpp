@@ -72,7 +72,8 @@ int main(int argc, char **argv){
         std::vector<float> Y(1,0);
 
         // add a graph. make_unique<>() will return a std::unique_ptr<GraphVisual<float>>
-        auto gv = std::make_unique<morph::GraphVisual<float>> (v.shaders, morph::vec<float>{-graph_offset,-graph_offset,0.0f});
+        auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>{-graph_offset,-graph_offset,0.0f});
+        v.bindmodel (gv);
         morph::DatasetStyle ds;
         ds.linewidth = 0.01;
         ds.linecolour = {0.0, 0.0, 0.0};
