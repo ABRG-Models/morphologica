@@ -33,8 +33,8 @@ namespace morph {
         using namespace std::chrono;
         using sc = std::chrono::steady_clock;
 
-        // A default, empty compute shader with a minimal layout to allow it to compile
-        const char* defaultComputeShader = "#version 450 core\nlayout (local_size_x = 1) in;\n";
+        // A default shader which won't compile (better than having an empty no-op default shader)
+        const char* defaultComputeShader = "This is an intentionally non-compiling non-shader\n";
 
         // You may wish to pass a compiled-in shader that will fail, so that your system MUST find the
         // file-based shader in morph::gl::LoadShaders.
@@ -45,10 +45,10 @@ namespace morph {
          * and then run with their own GLSL compute shader code.
          */
         template <int gl_version_major = 4, int gl_version_minor = 5, bool gles = false>
-        struct shadercompute
+        struct compute_manager
         {
-            shadercompute() { this->t0 = sc::now(); }
-            ~shadercompute()
+            compute_manager() { this->t0 = sc::now(); }
+            ~compute_manager()
             {
                 glfwDestroyWindow (this->window);
                 glfwTerminate();
@@ -100,7 +100,7 @@ namespace morph {
             {
                 if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
                 // Set up error callback
-                glfwSetErrorCallback (morph::gl::shadercompute<gl_version_major,gl_version_minor,gles>::errorCallback);
+                glfwSetErrorCallback (morph::gl::compute_manager<gl_version_major,gl_version_minor,gles>::errorCallback);
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
                 float xscale, yscale;
@@ -218,10 +218,15 @@ namespace morph {
             //
             // void load_shaders() finals
             // {
-            //   std::vector<morph::gl::ShaderInfo> shaders = {
-            //     {GL_COMPUTE_SHADER, "Default.compute.glsl", morph::defaultComputeShader }
+            //   std::vector<morph::gl::ShaderInfo> shaders1 = {
+            //     {GL_COMPUTE_SHADER, "Default.compute1.glsl", morph::gl::nonCompilingComputeShader }
             //   };
-            //   this->compute_program.load_shaders (shaders);
+            //   this->my_compute_program_1.load_shaders (shaders1);
+            //
+            //   std::vector<morph::gl::ShaderInfo> shaders2 = {
+            //     {GL_COMPUTE_SHADER, "Default.compute2.glsl", morph::gl::nonCompilingComputeShader }
+            //   };
+            //   this->my_compute_program_2.load_shaders (shaders2);
             // }
             //
             // Here "Default.compute.glsl" is the path to a file containing the GLSL
@@ -231,14 +236,12 @@ namespace morph {
             virtual void load_shaders() = 0;
 
         protected:
-            //! The window (and OpenGL context) for this gl::shadercompute
+            //! The window (and OpenGL context) for this gl::compute_manager
             GLFWwindow* window = nullptr;
             //! Window size, if needed
             morph::vec<int, 2> win_sz = { 640, 480 };
             //! The title for the object, if needed
             std::string title = "morph::gl_compute";
-            //! The compute program ID.
-            morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
 
             // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
             morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};
@@ -275,7 +278,7 @@ namespace morph {
         private:
             static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
             {
-                shadercompute<gl_version_major,gl_version_minor,gles>* self = static_cast<shadercompute<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
+                compute_manager<gl_version_major,gl_version_minor,gles>* self = static_cast<compute_manager<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
                 if (self->key_callback (key, scancode, action, mods)) {
                     std::cout << "key_callback returned\n";
                     self->compute();
@@ -283,7 +286,7 @@ namespace morph {
             }
             static void window_close_callback_dispatch (GLFWwindow* _window)
             {
-                shadercompute<gl_version_major,gl_version_minor,gles>* self = static_cast<shadercompute<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
+                compute_manager<gl_version_major,gl_version_minor,gles>* self = static_cast<compute_manager<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
                 self->window_close_callback();
             }
 
