@@ -21,6 +21,7 @@
 #include <GL/glext.h>
 
 #include <morph/gl/shadercompute.h>
+#include <morph/gl/texture.h>
 
 namespace my {
 
@@ -53,7 +54,7 @@ namespace my {
             this->compute_program.use();
             GLuint itu = 0; // Image texture unit
             morph::vec<GLsizei, 2> dims = { tex_width, tex_height };
-            this->compute_program.setup_texture (itu, this->texture, dims);
+            morph::gl::setup_texture (itu, this->texture, dims);
         }
         ~gl_compute()
         {
