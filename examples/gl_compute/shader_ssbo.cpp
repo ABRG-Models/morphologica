@@ -11,6 +11,7 @@
 
 #include <morph/gl/compute_manager.h>
 #include <morph/gl/texture.h>
+#include <morph/gl/ssbo.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>
 
@@ -83,16 +84,14 @@ namespace my {
 
             std::cout << "texture1: " << texture1 << ", texture2: " << texture2 << std::endl;
 
-            // SSBO setup. First a local memory version of the input
-            this->input.resize (dsz, 0.0f);
-            morph::vec<unsigned int, 2> _dims = morph::loadpng ("../examples/gl_compute/bike.png", this->input);
+            // SSBO setup. First load input into a morph::vvec
+            morph::vvec<float> inputvv (dsz, 0.0f);
+            morph::vec<unsigned int, 2> _dims = morph::loadpng ("../examples/gl_compute/bike.png", inputvv);
             if ((_dims - dims) > 0) { throw std::runtime_error ("Loaded image is not expected size"); }
 
-            this->compute_program.use();
-            glGenBuffers (1, &this->input_buffer);
-            glBindBufferBase (GL_SHADER_STORAGE_BUFFER, 1, this->input_buffer);
-            glBufferData (GL_SHADER_STORAGE_BUFFER, input.size() * sizeof(float), input.data(), GL_STATIC_DRAW);
-            glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
+            // Set that data into the SSBO object (where it is stored in a vec<>)
+            std::copy (inputvv.begin(), inputvv.end(), this->input_ssbo.data.begin());
+            this->input_ssbo.init();
         }
 
         ~compute_manager()
@@ -130,14 +129,26 @@ namespace my {
             this->vtxprog = morph::gl::LoadShaders (vtxshaders);
         }
 
+        double compstep = 0.0;
         // Override your one time/non-rendering compute function
         void compute() final
         {
+            // To copy updated data:
+            this->input_ssbo.data[0] = std::abs (std::sin (compstep)); // Make a pixel pulse
+            compstep += 0.0001;
+            this->input_ssbo.copy_to_gpu();
+
             this->measure_compute(); // optional
             this->compute_program.use();
             // Set time into uniform
             this->compute_program.set_uniform<float> ("t", this->frame_count);
             this->compute_program.dispatch (dwidth, dheight, 1);
+
+            // To retreive data from the SSBO:
+            // morph::range<float> ssbo_range = this->input_ssbo.get_range();
+            // or
+            this->input_ssbo.copy_from_gpu();
+            // and access input_ssbo.data.
         }
 
         // Override the render method to do whatever visualization you want
@@ -185,11 +196,8 @@ namespace my {
         unsigned int vbo1 = 0;
         unsigned int vao2 = 0;
         unsigned int vbo2 = 0;
-        // CPU side input data
-        morph::vvec<float> input;
-        // ID for the input SSBO buffer
-        unsigned int input_buffer = 0;
-
+        // CPU side input data. This will be SSBO index 1.
+        morph::gl::ssbo<1, float, dsz> input_ssbo;
         // You will need at least one gl::compute_shaderprog
         morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
     };
