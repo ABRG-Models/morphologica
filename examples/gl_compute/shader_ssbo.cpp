@@ -9,21 +9,26 @@
 // GLES3/gl3[12].h (and maybe GLES3/gl3ext.h).
 #include <GLES3/gl31.h>
 
-#include <morph/gl/shadercompute.h>
+#include <morph/gl/compute_manager.h>
 #include <morph/gl/texture.h>
 #include <morph/vvec.h>
 #include <morph/loadpng.h>
 
 namespace my {
 
-    struct gl_compute : public morph::gl::shadercompute<3,1,true> // Use OpenGL 3.1 ES
+    // Use OpenGL 3.1 ES here
+    static constexpr int gl_version_major = 3;
+    static constexpr int gl_version_minor = 1;
+    static constexpr bool gles = true;
+
+    struct compute_manager : public morph::gl::compute_manager<gl_version_major, gl_version_minor, gles>
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
         static constexpr int dsz = dwidth * dheight;
 
         // Call init in your constructor, ensuring *your* version of load_shaders() is called.
-        gl_compute()
+        compute_manager()
         {
             // Your GLFW window will take the size in win_sz.
             this->win_sz = {dwidth*8, dheight*8};
@@ -90,7 +95,7 @@ namespace my {
             glBindBuffer (GL_SHADER_STORAGE_BUFFER, 0);
         }
 
-        ~gl_compute()
+        ~compute_manager()
         {
             // Clean up buffers
             if (this->vao1 > 0) {
@@ -184,12 +189,15 @@ namespace my {
         morph::vvec<float> input;
         // ID for the input SSBO buffer
         unsigned int input_buffer = 0;
+
+        // You will need at least one gl::compute_shaderprog
+        morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
     };
 } // namespace my
 
 int main()
 {
-    my::gl_compute c;
+    my::compute_manager c;
     while (!c.readyToFinish) { c.render(); } // Render also calls compute
 
     // You could compute very fast without render (I got 1.6 mega-fps) but this may

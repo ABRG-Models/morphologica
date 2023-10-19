@@ -1,11 +1,12 @@
 /*
- * How to make a compute shader with morph::gl_compute
+ * How to make a compute shader with morph::gl::compute_manager
  *
- * 1) Extend morph::gl_compute to add the data structures that you will need for your computation.
- * 2) Write a compute glsl file
- * 3) Create an object of your gl_compute class, call init() and set its compute inputs
+ * 1) Extend morph::compute_manager to add the data structures and compute_programs that you will
+ * need for your computation
+ * 2) Write the compute glsl files
+ * 3) Create an object of your morph::gl::compute_manager class, call init() and set its compute inputs
  * 4) call the compute() method
- * 5) Read the results from your gl_compute class's output attributes
+ * 5) Read the results from your compute_manager class's output attributes
  *
  * This example was constructed by following and adapting the tutorial at:
  * https://learnopengl.com/Guest-Articles/2022/Compute-Shaders/Introduction
@@ -20,15 +21,20 @@
 #include <GL3/gl3.h>
 #include <GL/glext.h>
 
-#include <morph/gl/shadercompute.h>
+#include <morph/gl/compute_manager.h>
 #include <morph/gl/texture.h>
 
 namespace my {
 
-    struct gl_compute : public morph::gl::shadercompute<4,5> // Specify OpenGL version 4.5 (4.3 min for compute)
+    // Specify OpenGL version 4.5 (4.3 min for compute)
+    static constexpr int gl_version_major = 4;
+    static constexpr int gl_version_minor = 5;
+    static constexpr bool gles = false;
+
+    struct compute_manager : public morph::gl::compute_manager<gl_version_major, gl_version_minor, gles>
     {
         // Call init in your constructor, ensuring *your* version of load_shaders() is called.
-        gl_compute()
+        compute_manager()
         {
             this->init();
             // Set up buffers for visualisation
@@ -56,7 +62,7 @@ namespace my {
             morph::vec<GLsizei, 2> dims = { tex_width, tex_height };
             morph::gl::setup_texture (itu, this->texture, dims);
         }
-        ~gl_compute()
+        ~compute_manager()
         {
             // Clean up buffers
             if (this->vao > 0) {
@@ -135,12 +141,14 @@ namespace my {
         // Vertex array/buffer objects used for visualization in render()
         unsigned int vao = 0;
         unsigned int vbo = 0;
+        // You will need at least one gl::compute_shaderprog
+        morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
     };
 } // namespace my
 
 int main()
 {
-    my::gl_compute c;
+    my::compute_manager c;
     while (!c.readyToFinish) { c.render(); } // Render also calls compute
     // You could compute very fast without render (I got 1.6 mega-fps) but this may
     // interfere with your desktop's responsiveness
