@@ -31,6 +31,29 @@ namespace morph {
         // The maximum
         T max = T{0};
 
+        // Initialise the range to participate in a search for the max and min through a range of data.
+        //
+        // Range can then be part of a loop through data with code like:
+        //
+        // morph::vvec<T> data;
+        // data.randomize();
+        // range<T> r;
+        // r.search_init();
+        // for (auto d : data) { r.update (d); }
+        // std::cout << "The range of values in data was: " << r << std::endl;
+        void search_init()
+        {
+            this->min = std::numeric_limits<T>::max();
+            this->max = std::numeric_limits<T>::lowest();
+        }
+
+        // Extend the range to include the given datum
+        void update (const T& d)
+        {
+            this->min = d < this->min ? d : this->min;
+            this->max = d > this->max ? d : this->max;
+        }
+
         // Does the range include v?
         bool includes (const T& v) { return (v <= this->max && v >= this->min); }
 

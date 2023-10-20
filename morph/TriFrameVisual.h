@@ -47,6 +47,7 @@ namespace morph {
             this->vertexNormals.clear();
             this->vertexColors.clear();
             this->indices.clear();
+            this->idx = 0;
 
             unsigned int ncoords = this->dataCoords->size();
             unsigned int ndata = this->scalarData->size();
@@ -58,12 +59,9 @@ namespace morph {
                 this->colourScale.transform (*this->scalarData, dcopy);
             } // else no scaling required - spheres will be one colour
 
-            // The indices index
-            VBOint idx = 0;
-
             // Draw spheres
             for (size_t i = 0; i < ncoords; ++i) {
-                this->computeSphere (idx, (*this->dataCoords)[i], this->cm.convert ((*this->scalarData)[i]), sradius);
+                this->computeSphere (this->idx, (*this->dataCoords)[i], this->cm.convert ((*this->scalarData)[i]), sradius);
             }
             // Draw tubes
             std::array<float, 3> clr = {0.3f,0.3f,0.3f};
@@ -71,7 +69,7 @@ namespace morph {
                 morph::vec<float> v1 = (*this->dataCoords)[i];
                 size_t e = (i < (ncoords-1) ? i+1 : 0);
                 morph::vec<float> v2 = (*this->dataCoords)[e];
-                this->computeTube (idx, this->mv_offset+v1, this->mv_offset+v2,
+                this->computeTube (this->idx, this->mv_offset+v1, this->mv_offset+v2,
                                    clr, clr, this->radius, this->tseg);
             }
         }

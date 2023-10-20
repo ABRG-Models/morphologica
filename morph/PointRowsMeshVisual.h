@@ -136,7 +136,7 @@ namespace morph {
             // First, need to know which set of points form two, adjacent rows. An assumption we'll
             // accept: The rows are listed in slice-order and the points in each row are listed in
             // position-along-the-curve order.
-            VBOint ib = 0; // only 16 bits, 65536 vertices. Not enough!
+            GLuint ib = 0; // only 16 bits, 65536 vertices. Not enough!
 
             size_t r1 = 0;
             size_t r1_e = 0;

@@ -99,7 +99,7 @@ namespace morph {
             this->colourScale.transform ((*this->scalarData), dcopy);
 
             // Index buffer index
-            VBOint ib = 0;
+            GLuint ib = 0;
 
             std::set<vec<float, 6>> lastQuadLines;
             std::cout << "nquads: " << nquads << std::endl;

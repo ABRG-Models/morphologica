@@ -18,11 +18,6 @@
 # include <GL/glew.h>
 #endif
 
-#include <morph/VisualModel.h>
-#include <morph/VisualTextModel.h> // includes VisualResources.h
-#include <morph/VisualCommon.h>
-#include <morph/keys.h>
-
 // Normally, a morph::Visual is the *owner* of a GLFW window in which it does its rendering.
 //
 // "OWNED_MODE" means that the morph::Visual is itself owned by a windowing system of some sort. At
@@ -32,18 +27,25 @@
 // Otherwise (and by default), if OWNED_MODE is NOT defined, we include glfw3 headers and
 // morph::Visual is the owner of a Window provided by GLFW.
 #ifndef OWNED_MODE
-// Include glfw3 AFTER VisualModel
+# define GLFW_INCLUDE_NONE // Here, we explicitly include GL3/gl3.h and GL/glext.h, leaving none of this to GLFW
 # include <GLFW/glfw3.h>
 #endif
 
-// For GLuint and GLenum (though redundant, as already included in VisualModel
+// Include the correct GL headers before VisualCommon.h (VisualModel.h will bring these in, too)
 #ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
+# ifdef __OSX__
+#  include <OpenGL/gl3.h>
+# else
+#  include <GL3/gl3.h>
+#  include <GL/glext.h>
+# endif
 #endif
-#endif
+
+#include <morph/VisualModel.h>
+#include <morph/VisualTextModel.h> // includes VisualResources.h
+#include <morph/VisualCommon.h>
+#include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
+#include <morph/keys.h>
 
 #include <morph/VisualResources.h>
 #include <morph/nlohmann/json.hpp>
@@ -52,6 +54,7 @@
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
 #include <morph/ColourMap.h>
+#include <morph/tools.h>
 
 #include <string>
 #include <array>
@@ -76,31 +79,6 @@ using std::chrono::steady_clock;
 #endif
 
 namespace morph {
-
-    /*!
-     * Data structure for shader info.
-     *
-     * LoadShaders() takes an array of ShaderFile structures, each of which contains the
-     * type of the shader, and a pointer a C-style character string (i.e., a
-     * NULL-terminated array of characters) containing the filename of a GLSL file to
-     * use, and another pointer to the compiled-in version of the shader.
-     *
-     * The array of structures is terminated by a final Shader with
-     * the "type" field set to GL_NONE.
-     *
-     * LoadShaders() returns the shader program value (as returned by
-     * glCreateProgram()) on success, or zero on failure.
-     */
-    typedef struct
-    {
-        GLenum type;
-        const char* filename;
-        const char* compiledIn;
-        GLuint shader;
-    } ShaderInfo;
-
-    // To enable debugging, set true.
-    const bool debug_shaders = false;
 
     //! Whether to render with perspective or orthographic
     enum class perspective_type
@@ -136,9 +114,11 @@ namespace morph {
     class Visual
     {
     public:
-        // Default constructor is used when incorporating Visual inside a QWidget.  We
-        // have to wait on calling init functions until an OpenGL environment is
-        // gauranteed to exist.
+        /*!
+         * Default constructor is used when incorporating Visual inside a QWidget.  We
+         * have to wait on calling init functions until an OpenGL environment is
+         * guaranteed to exist.
+         */
         Visual() { }
 
         /*!
@@ -179,6 +159,14 @@ namespace morph {
 #ifndef OWNED_MODE
             glfwDestroyWindow (this->window);
 #endif
+            if (this->shaders.gprog) {
+                glDeleteProgram (this->shaders.gprog);
+                this->shaders.gprog = 0;
+            }
+            if (this->shaders.tprog) {
+                glDeleteProgram (this->shaders.tprog);
+                this->shaders.tprog = 0;
+            }
             morph::VisualResources::deregister();
         }
 
@@ -522,10 +510,10 @@ namespace morph {
         //! The OpenGL shader programs have an integer ID and are stored in a simple
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
-        morph::gl::shaderprogs shaders;
+        morph::visgl::visual_shaderprogs shaders;
 
         // These static functions will be set as callbacks in each VisualModel object.
-        static morph::gl::shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
+        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual* _v) { return _v->shaders; };
         static GLuint get_gprog (morph::Visual* _v) { return _v->shaders.gprog; };
         static GLuint get_tprog (morph::Visual* _v) { return _v->shaders.tprog; };
 
@@ -885,21 +873,19 @@ namespace morph {
             glfwSwapInterval (0);
 #endif
             // Load up the shaders
-            ShaderInfo shaders[] = {
+            std::vector<morph::gl::ShaderInfo> shaders = {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader },
-                {GL_NONE, NULL, NULL },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader }
             };
 
-            this->shaders.gprog = this->LoadShaders (shaders);
+            this->shaders.gprog = morph::gl::LoadShaders (shaders);
 
             // An additional shader is used for text
-            ShaderInfo tshaders[] = {
+            std::vector<morph::gl::ShaderInfo> tshaders = {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader },
-                {GL_NONE, NULL, NULL }
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader }
             };
-            this->shaders.tprog = this->LoadShaders (tshaders);
+            this->shaders.tprog = morph::gl::LoadShaders (tshaders);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -952,175 +938,6 @@ namespace morph {
 
         //! The default z=0 position for HexGridVisual models
         float zDefault = Z_DEFAULT;
-
-        //! Read a shader from a file.
-        const GLchar* ReadShader (const char* filename)
-        {
-            FILE* infile = fopen (filename, "rb");
-
-            if (!infile) {
-                std::cerr << "Unable to open file '" << filename << "'\n";
-                return NULL;
-            }
-
-            fseek (infile, 0, SEEK_END);
-            int len = ftell (infile);
-            fseek (infile, 0, SEEK_SET);
-
-            GLchar* source = new GLchar[len+1];
-
-            int itemsread = static_cast<int>(fread (source, 1, len, infile));
-            if (itemsread != len) { std::cerr << "Wrong number of items read!\n"; }
-            fclose (infile);
-
-            source[len] = 0;
-
-            return const_cast<const GLchar*>(source);
-        }
-
-        /*!
-         * Read a default shader, stored as a const char*. ReadDefaultShader reads a
-         * file: allocates some memory, copies the text into the new memory and then
-         * returns a GLchar* pointer to the memory.
-         */
-        const GLchar* ReadDefaultShader (const char* shadercontent)
-        {
-            int len = strlen (shadercontent);
-            GLchar* source = new GLchar[len+1];
-            memcpy (static_cast<void*>(source), static_cast<const void*>(shadercontent), len);
-            source[len] = 0;
-            return const_cast<const GLchar*>(source);
-        }
-
-        //! Shader loading code.
-        GLuint LoadShaders (ShaderInfo* shader_info)
-        {
-            if (shader_info == NULL) { return 0; }
-
-            GLuint program = glCreateProgram();
-
-            GLboolean shaderCompilerPresent = GL_FALSE;
-            glGetBooleanv (GL_SHADER_COMPILER, &shaderCompilerPresent);
-            if (shaderCompilerPresent == GL_FALSE) {
-                std::cerr << "Shader compiler NOT present!\n";
-            } else {
-                if constexpr (debug_shaders == true) {
-                    std::cout << "Shader compiler present\n";
-                }
-            }
-
-            ShaderInfo* entry = shader_info;
-            while (entry->type != GL_NONE) {
-                GLuint shader = glCreateShader (entry->type);
-                entry->shader = shader;
-                // Test entry->filename. If this GLSL file can be read, then do so, otherwise,
-                // compile the default version from VisualDefaultShaders.h
-                const GLchar* source;
-                if (morph::Tools::fileExists (std::string(entry->filename))) {
-                    std::cout << "Using shader from the file " << entry->filename << std::endl;
-                    source = morph::Visual::ReadShader (entry->filename);
-                } else {
-                    if (entry->type == GL_VERTEX_SHADER) {
-                        if constexpr (debug_shaders == true) {
-                            std::cout << "Using compiled-in vertex shader\n";
-                        }
-                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
-                    } else if (entry->type == GL_FRAGMENT_SHADER) {
-                        if constexpr (debug_shaders == true) {
-                            std::cout << "Using compiled-in fragment shader\n";
-                        }
-                        source = morph::Visual::ReadDefaultShader (entry->compiledIn);
-                    } else {
-                        std::cerr << "Visual::LoadShaders: Unknown shader entry->type...\n";
-                        source = NULL;
-                    }
-                }
-                if (source == NULL) {
-                    for (entry = shader_info; entry->type != GL_NONE; ++entry) {
-                        glDeleteShader (entry->shader);
-                        entry->shader = 0;
-                    }
-                    return 0;
-
-                } else {
-                    if constexpr (debug_shaders == true) {
-                        std::cout << "Compiling this shader: \n" << "-----\n";
-                        std::cout << source << "-----\n";
-                    }
-                }
-                GLint slen = (GLint)strlen (source);
-                glShaderSource (shader, 1, &source, &slen);
-                delete [] source;
-
-                glCompileShader (shader);
-
-                GLint shaderCompileSuccess = GL_FALSE;
-                char infoLog[512];
-                glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompileSuccess);
-                if (!shaderCompileSuccess) {
-                    glGetShaderInfoLog(shader, 512, NULL, infoLog);
-                    std::cerr << "\nShader compilation failed!";
-                    std::cerr << "\n--------------------------\n";
-                    std::cerr << infoLog << std::endl;
-                    std::cerr << "Exiting.\n";
-                    exit (2);
-                }
-
-                // Test glGetError:
-                GLenum shaderError = glGetError();
-                if (shaderError == GL_INVALID_VALUE) {
-                    std::cerr << "Shader compilation resulted in GL_INVALID_VALUE\n";
-                    exit (3);
-                } else if (shaderError == GL_INVALID_OPERATION) {
-                    std::cerr << "Shader compilation resulted in GL_INVALID_OPERATION\n";
-                    exit (4);
-                } // shaderError is 0
-
-                if constexpr (debug_shaders == true) {
-                    if (entry->type == GL_VERTEX_SHADER) {
-                        std::cout << "Successfully compiled vertex shader!\n";
-                    } else if (entry->type == GL_FRAGMENT_SHADER) {
-                        std::cout << "Successfully compiled fragment shader!\n";
-                    } else {
-                        std::cout << "Successfully compiled shader!\n";
-                    }
-                }
-                glAttachShader (program, shader);
-
-                ++entry;
-            }
-
-            glLinkProgram (program);
-
-            GLint linked;
-            glGetProgramiv (program, GL_LINK_STATUS, &linked);
-            if (!linked) {
-                GLsizei len;
-                glGetProgramiv( program, GL_INFO_LOG_LENGTH, &len );
-                GLchar* log = new GLchar[len+1];
-                glGetProgramInfoLog( program, len, &len, log );
-                std::cerr << "Shader linking failed: " << log << std::endl << "Exiting.\n";
-                delete [] log;
-                for (entry = shader_info; entry->type != GL_NONE; ++entry) {
-                    glDeleteShader (entry->shader);
-                    entry->shader = 0;
-                }
-                exit (5);
-
-            } else {
-                if constexpr (debug_shaders == true) {
-                    if (entry->type == GL_VERTEX_SHADER) {
-                        std::cout << "Successfully linked vertex shader!\n";
-                    } else if (entry->type == GL_FRAGMENT_SHADER) {
-                        std::cout << "Successfully linked fragment shader!\n";
-                    } else {
-                        std::cout << "Successfully linked shader!\n";
-                    }
-                }
-            }
-
-            return program;
-        }
 
     private:
         //! The window (and OpenGL context) for this Visual

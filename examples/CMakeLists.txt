@@ -12,6 +12,9 @@ add_subdirectory(schnakenberg)
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 
+# Shader compute examples
+add_subdirectory(gl_compute)
+
 # Examples showing how to use morphologica with Qt. Compiled only if find_package found Qt5
 if(Qt5_FOUND)
   add_subdirectory(qt)

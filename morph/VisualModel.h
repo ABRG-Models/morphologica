@@ -11,15 +11,18 @@
 #pragma once
 
 #ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
+# ifdef __OSX__
+#  include <OpenGL/gl3.h>
+# else
+#  include <GL3/gl3.h>
+#  include <GL/glext.h>
+# endif
 #endif
-#endif
+
 #include <morph/TransformMatrix.h>
 #include <morph/vec.h>
 #include <morph/mathconst.h>
+#include <morph/gl/util.h>
 #include <morph/VisualCommon.h>
 #include <morph/VisualTextModel.h>
 #include <morph/VisualFace.h>
@@ -124,16 +127,16 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             //std::cout << "indices.size(): " << this->indices.size() << std::endl;
-            int sz = this->indices.size() * sizeof(VBOint);
+            int sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Binds data from the "C++ world" to the OpenGL shader world for
             // "position", "normalin" and "color"
             // (bind, buffer and set vertex array object attribute)
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             // Unbind only the vertex array (not the buffers, that causes GL_INVALID_ENUM errors)
@@ -157,11 +160,11 @@ namespace morph {
             glBindVertexArray (this->vao);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->vbos[idxVBO]);
 #endif
-            int sz = this->indices.size() * sizeof(VBOint);
+            int sz = this->indices.size() * sizeof(GLuint);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sz, this->indices.data(), GL_STATIC_DRAW);
-            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, gl::posnLoc);
-            this->setupVBO (this->vbos[normVBO], this->vertexNormals, gl::normLoc);
-            this->setupVBO (this->vbos[colVBO], this->vertexColors, gl::colLoc);
+            this->setupVBO (this->vbos[posnVBO], this->vertexPositions, visgl::posnLoc);
+            this->setupVBO (this->vbos[normVBO], this->vertexNormals, visgl::normLoc);
+            this->setupVBO (this->vbos[colVBO], this->vertexColors, visgl::colLoc);
 
 #ifdef CAREFULLY_UNBIND_AND_REBIND
             glBindVertexArray(0);
@@ -266,7 +269,7 @@ namespace morph {
                 }
 
                 // Draw the triangles
-                glDrawElements (GL_TRIANGLES, this->indices.size(), VBO_ENUM_TYPE, 0);
+                glDrawElements (GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
 
                 // Unbind the VAO
                 glBindVertexArray(0);
@@ -495,7 +498,7 @@ namespace morph {
         size_t indices_size() { return this->indices.size(); }
         float indices_max() { return this->idx_max; }
         float indices_min() { return this->idx_min; }
-        size_t indices_bytes() { return this->indices.size() * sizeof (VBOint); }
+        size_t indices_bytes() { return this->indices.size() * sizeof (GLuint); }
         // Return base64 encoded version of indices
         std::string indices_base64()
         {
@@ -608,7 +611,7 @@ namespace morph {
         bool twodimensional = false;
 
         //! The current indices index
-        VBOint idx = 0;
+        GLuint idx = 0;
 
         //! Set scaling in all dimensions
         void setSizeScale (const float scl)
@@ -630,7 +633,7 @@ namespace morph {
         // A function that will be runtime defined to get_shaderprogs from a pointer to
         // Visual (saving a boilerplate argument and avoiding that killer circular
         // dependency at the cost of one line of boilerplate in client programs)
-        std::function<morph::gl::shaderprogs(morph::Visual*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::Visual*)> get_shaderprogs;
         // Get the graphics shader prog id
         std::function<GLuint(morph::Visual*)> get_gprog;
         // Get the text shader prog id
@@ -693,7 +696,7 @@ namespace morph {
         GLuint* vbos = nullptr;
 
         //! CPU-side data for indices
-        std::vector<VBOint> indices;
+        std::vector<GLuint> indices;
         //! CPU-side data for vertex positions
         std::vector<float> vertexPositions;
         //! CPU-side data for vertex normals
@@ -712,9 +715,9 @@ namespace morph {
         morph::vec<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         morph::vec<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         //! Max value in indices
-        VBOint idx_max = 0;
+        GLuint idx_max = 0;
         //! Min value in indices.
-        VBOint idx_min = std::numeric_limits<VBOint>::max();
+        GLuint idx_min = std::numeric_limits<GLuint>::max();
 
         //! A model-wide alpha value for the shader
         float alpha = 1.0f;
@@ -767,7 +770,7 @@ namespace morph {
          * \param r Radius of the tube
          * \param segments Number of segments used to render the tube
          */
-        void computeTube (VBOint& idx, vec<float> start, vec<float> end,
+        void computeTube (GLuint& idx, vec<float> start, vec<float> end,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12)
         {
@@ -848,10 +851,10 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx + (3*segments);
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1;
+            GLuint endMiddle = idx + (GLuint)nverts - 1;
+            GLuint endStartIdx = capStartIdx + (3*segments);
 
             //std::cout << "start cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
@@ -954,7 +957,7 @@ namespace morph {
          * \param rotation A rotation in the _ux/_uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeTube (VBOint& idx, vec<float> start, vec<float> end,
+        void computeTube (GLuint& idx, vec<float> start, vec<float> end,
                           vec<float> _ux, vec<float> _uy,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float r = 1.0f, int segments = 12, float rotation = 0.0f)
@@ -1020,10 +1023,10 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx + (3*segments);
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1;
+            GLuint endMiddle = idx + (GLuint)nverts - 1;
+            GLuint endStartIdx = capStartIdx + (3*segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1077,7 +1080,7 @@ namespace morph {
         } // end computeTube with ux/uy vectors for faces
 
         //! Compute a Quad from 4 arbitrary corners which must be ordered clockwise around the quad.
-        void computeFlatQuad (VBOint& idx,
+        void computeFlatQuad (GLuint& idx,
                               vec<float> c1, vec<float> c2,
                               vec<float> c3, vec<float> c4,
                               std::array<float, 3> col)
@@ -1097,7 +1100,7 @@ namespace morph {
                 this->vertex_push (col, this->vertexColors);
                 this->vertex_push (v, this->vertexNormals);
             }
-            VBOint botLeft = idx;
+            GLuint botLeft = idx;
             this->indices.push_back (botLeft);
             this->indices.push_back (botLeft+1);
             this->indices.push_back (botLeft+2);
@@ -1125,7 +1128,7 @@ namespace morph {
          * \param rotation A rotation in the ux/uy plane to orient the vertices of the
          * tube. Useful if this is to be a short tube used as a graph marker.
          */
-        void computeFlatPoly (VBOint& idx, vec<float> vstart,
+        void computeFlatPoly (GLuint& idx, vec<float> vstart,
                               vec<float> _ux, vec<float> _uy,
                               std::array<float, 3> col,
                               float r=1.0f, int segments=12, float rotation=0.0f)
@@ -1153,10 +1156,10 @@ namespace morph {
             int nverts = segments + 1;
 
             // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            //VBOint endMiddle = idx + (VBOint)nverts - 1;
-            //VBOint endStartIdx = capStartIdx + (3*segments);
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1;
+            //GLuint endMiddle = idx + (GLuint)nverts - 1;
+            //GLuint endStartIdx = capStartIdx + (3*segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1182,7 +1185,7 @@ namespace morph {
          * \param t Thickness of the ring
          * \param segments Number of tube segments used to render the ring
          */
-        void computeRing (VBOint& idx, vec<float> ro, std::array<float, 3> rc, float r = 1.0f,
+        void computeRing (GLuint& idx, vec<float> ro, std::array<float, 3> rc, float r = 1.0f,
                           float t = 0.1f, int segments = 12)
         {
             for (int j = 0; j < segments; j++) {
@@ -1220,7 +1223,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (VBOint& idx, vec<float> so,
+        void computeSphere (GLuint& idx, vec<float> so,
                             std::array<float, 3> sc,
                             float r = 1.0f, int rings = 10, int segments = 12)
         {
@@ -1239,9 +1242,9 @@ namespace morph {
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc, this->vertexColors);
 
-            VBOint capMiddle = idx++;
-            VBOint ringStartIdx = idx;
-            VBOint lastRingStartIdx = idx;
+            GLuint capMiddle = idx++;
+            GLuint ringStartIdx = idx;
+            GLuint lastRingStartIdx = idx;
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -1360,7 +1363,7 @@ namespace morph {
          * \param rings Number of rings used to render the sphere
          * \param segments Number of segments used to render the sphere
          */
-        void computeSphere (VBOint& idx, vec<float> so,
+        void computeSphere (GLuint& idx, vec<float> so,
                             std::array<float, 3> sc, std::array<float, 3> sc2,
                             float r = 1.0f, int rings = 10, int segments = 12)
         {
@@ -1379,9 +1382,9 @@ namespace morph {
             this->vertex_push (0.0f, 0.0f, -1.0f, this->vertexNormals);
             this->vertex_push (sc2, this->vertexColors);
 
-            VBOint capMiddle = idx++;
-            VBOint ringStartIdx = idx;
-            VBOint lastRingStartIdx = idx;
+            GLuint capMiddle = idx++;
+            GLuint ringStartIdx = idx;
+            GLuint lastRingStartIdx = idx;
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
@@ -1507,7 +1510,7 @@ namespace morph {
          *
          * \param segments Number of segments used to render the tube
          */
-        void computeCone (VBOint& idx,
+        void computeCone (GLuint& idx,
                           vec<float> centre,
                           vec<float> tip,
                           float ringoffset,
@@ -1577,10 +1580,10 @@ namespace morph {
             int nverts = segments*3 + 2;
 
             // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx /*+ segments*/;
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1;
+            GLuint endMiddle = idx + (GLuint)nverts - 1;
+            GLuint endStartIdx = capStartIdx /*+ segments*/;
 
             // Base of the cone
             for (int j = 0; j < segments-1; j++) {
@@ -1637,7 +1640,7 @@ namespace morph {
         } // end of cone calculation
 
         //! Compute a line with a single colour
-        void computeLine (VBOint& idx, vec<float> start, vec<float> end,
+        void computeLine (GLuint& idx, vec<float> start, vec<float> end,
                           vec<float> _uz,
                           std::array<float, 3> col,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
@@ -1660,7 +1663,7 @@ namespace morph {
          * \param thickness The thickness/depth of the line in uy direction
          * \param shorten An amount by which to shorten the length of the line at each end.
          */
-        void computeLine (VBOint& idx, vec<float> start, vec<float> end,
+        void computeLine (GLuint& idx, vec<float> start, vec<float> end,
                           vec<float> _uz,
                           std::array<float, 3> colStart, std::array<float, 3> colEnd,
                           float w = 0.1f, float thickness = 0.01f, float shorten = 0.0f)
@@ -1746,10 +1749,10 @@ namespace morph {
             int nverts = (segments * 4) + 2;
 
             // After creating vertices, push all the indices.
-            VBOint capMiddle = idx;
-            VBOint capStartIdx = idx + 1;
-            VBOint endMiddle = idx + (VBOint)nverts - 1;
-            VBOint endStartIdx = capStartIdx + (3*segments);
+            GLuint capMiddle = idx;
+            GLuint capStartIdx = idx + 1;
+            GLuint endMiddle = idx + (GLuint)nverts - 1;
+            GLuint endStartIdx = capStartIdx + (3*segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1803,7 +1806,7 @@ namespace morph {
         } // end computeLine
 
         // Like computeLine, but this line has no thickness.
-        void computeFlatLine (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatLine (GLuint& idx, vec<float> start, vec<float> end,
                               vec<float> uz,
                               std::array<float, 3> col,
                               float w = 0.1f, float shorten = 0.0f)
@@ -1867,7 +1870,7 @@ namespace morph {
         // Like computeFlatLine but with option to add rounded start/end caps (I lazily
         // draw a whole circle around start/end to achieve this, rather than figuring
         // out a semi-circle).
-        void computeFlatLineRnd (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineRnd (GLuint& idx, vec<float> start, vec<float> end,
                                  vec<float> uz,
                                  std::array<float, 3> col,
                                  float w = 0.1f, float shorten = 0.0f, bool startcaps = true, bool endcaps = true)
@@ -1960,7 +1963,7 @@ namespace morph {
             // After creating vertices, push all the indices.
 
             if (startcaps) { // prolly startcaps, for flexibility
-                VBOint topcap = idx;
+                GLuint topcap = idx;
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
@@ -1984,7 +1987,7 @@ namespace morph {
             idx += 4;
 
             if (endcaps) {
-                VBOint botcap = idx;
+                GLuint botcap = idx;
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
@@ -2001,7 +2004,7 @@ namespace morph {
         //! Like computeFlatLine, but this line has no thickness and you can provide the
         //! previous and next data points so that this line, the previous line and the
         //! next line can line up perfectly without drawing a circular rounded 'end cap'!
-        void computeFlatLine (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatLine (GLuint& idx, vec<float> start, vec<float> end,
                               vec<float> prev, vec<float> next,
                               vec<float> uz,
                               std::array<float, 3> col,
@@ -2067,7 +2070,7 @@ namespace morph {
         } // end computeFlatLine that joins perfectly
 
         //! Make a joined up line with previous.
-        void computeFlatLineP (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineP (GLuint& idx, vec<float> start, vec<float> end,
                                vec<float> prev,
                                vec<float> uz,
                                std::array<float, 3> col,
@@ -2129,7 +2132,7 @@ namespace morph {
         } // end computeFlatLine that joins perfectly with prev
 
         //! Flat line, joining up with next
-        void computeFlatLineN (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatLineN (GLuint& idx, vec<float> start, vec<float> end,
                                vec<float> next,
                                vec<float> uz,
                                std::array<float, 3> col,
@@ -2193,7 +2196,7 @@ namespace morph {
         // Like computeLine, but this line has no thickness and it's dashed.
         // dashlen: the length of dashes
         // gap prop: The proportion of dash length used for the gap
-        void computeFlatDashedLine (VBOint& idx, vec<float> start, vec<float> end,
+        void computeFlatDashedLine (GLuint& idx, vec<float> start, vec<float> end,
                                     vec<float> uz,
                                     std::array<float, 3> col,
                                     float w = 0.1f, float shorten = 0.0f,
@@ -2274,7 +2277,7 @@ namespace morph {
         } // end computeFlatDashedLine
 
         // Compute a flat line circle outline
-        void computeFlatCircleLine (VBOint& idx, vec<float> centre, vec<float> norm, float radius,
+        void computeFlatCircleLine (GLuint& idx, vec<float> centre, vec<float> norm, float radius,
                                     float linewidth, std::array<float, 3> col, int segments = 128)
         {
             // circle in a plane defined by a point (v0 = vstart or vend) and a normal

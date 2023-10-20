@@ -1,31 +1,30 @@
 #pragma once
 
+/*
+ * Common code for GL functionality in morphologica programs.
+ *
+ * Author: Seb James.
+ */
+
 #include <morph/vec.h>
+#include <morph/tools.h>
 #include <stdexcept>
 #include <iostream>
-
-// For GLuint and GLenum
-#ifndef USE_GLEW
-#ifdef __OSX__
-# include <OpenGL/gl3.h>
-#else
-# include <GL3/gl3.h>
-#endif
-#endif
-
-typedef GLuint VBOint; // A GLuint is an unsigned int
-#define VBO_ENUM_TYPE GL_UNSIGNED_INT
+#include <cstring>
 
 namespace morph {
-    namespace gl {
 
-        // A container struct for the shader program identifiers used in a morph::Visual
-        struct shaderprogs
+    namespace visgl {
+
+        // A container struct for the shader program identifiers used in a morph::Visual. Separate
+        // from morph::Visual so that it can be used in morph::VisualModel as well, which does not
+        // #include morph/Visual.h.
+        struct visual_shaderprogs
         {
             //! An OpenGL shader program for graphical objects
-            GLuint gprog = 0;
+            unsigned int /*GLuint*/ gprog = 0;
             //! A text shader program, which uses textures to draw text on quads.
-            GLuint tprog = 0;
+            unsigned int /*GLuint*/ tprog = 0;
         };
 
         //! The locations for the position, normal and colour vertex attributes in the
@@ -45,65 +44,5 @@ namespace morph {
             unsigned int advance;
         };
 
-        //! A class containing a static function to check the GL errors.
-        struct Util
-        {
-            static GLenum checkError (const char *file, int line)
-            {
-                GLenum errorCode = 0;
-#ifndef __OSX__ // MacOS didn't like multiple calls to glGetError(); don't know why
-                unsigned int ecount = 0;
-                std::string error;
-                while ((errorCode = glGetError()) != GL_NO_ERROR) {
-                    switch (errorCode) {
-                    case GL_INVALID_ENUM:
-                    {
-                        error = "GL error: GL_INVALID_ENUM";
-                        break;
-                    }
-                    case GL_INVALID_VALUE:
-                    {
-                        error = "GL error: GL_INVALID_VALUE";
-                        break;
-                    }
-                    case GL_INVALID_OPERATION:
-                    {
-                        error = "GL error: GL_INVALID_OPERATION";
-                        break;
-                    }
-                    case 1283: // Not part of GL3?
-                    {
-                        error = "GL error: GL_STACK_OVERFLOW";
-                        break;
-                    }
-                    case 1284: // Not part of GL3?
-                    {
-                        error = "GL error: GL_STACK_UNDERFLOW";
-                        break;
-                    }
-                    case GL_OUT_OF_MEMORY:
-                    {
-                        error = "GL error: GL_OUT_OF_MEMORY";
-                        break;
-                    }
-                    case GL_INVALID_FRAMEBUFFER_OPERATION:
-                    {
-                        error = "GL error: GL_INVALID_FRAMEBUFFER_OPERATION";
-                        break;
-                    }
-                    default:
-                    {
-                        error = "GL checkError: Unknown GL error code";
-                        break;
-                    }
-                    }
-                    std::cout << error << " | " << file << ":" << line << std::endl;
-                    ++ecount;
-                }
-                if (ecount) { throw std::runtime_error (error); }
-#endif
-                return errorCode;
-            }
-        };
     } // namespace gl
 } // namespace
