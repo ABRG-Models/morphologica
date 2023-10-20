@@ -54,9 +54,17 @@ namespace morph {
                 glfwTerminate();
             }
 
+            //! Init GLFW and then the GLFW window. What if you want to set window width
+            //! based on GLFW info such as this->workarea_width? In that case, instead
+            //! of calling this do-it-all init function, just call the init functions separately:
+            //! init_glfw(); do_stuff(); init_window(); init_gl();
             void init()
             {
-                this->init_resources();
+                // Init GLFW first
+                this->init_glfw();
+                // Now init a window/context for compute
+                this->init_window();
+                // Finally init GL
                 this->init_gl();
             }
 
@@ -87,14 +95,7 @@ namespace morph {
             //! Set to true when the program should end
             bool readyToFinish = false;
 
-        private:
-            void init_resources()
-            {
-                // Init GLFW first
-                this->init_glfw();
-                // Now init a window/context for compute
-                this->init_window();
-            }
+        protected:
 
             void init_glfw()
             {
@@ -103,8 +104,8 @@ namespace morph {
                 glfwSetErrorCallback (morph::gl::compute_manager<gl_version_major,gl_version_minor,gles>::errorCallback);
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
-                float xscale, yscale;
-                glfwGetMonitorContentScale(primary, &xscale, &yscale);
+                glfwGetMonitorContentScale (primary, &this->monitor_xscale, &this->monitor_yscale);
+                glfwGetMonitorWorkarea (primary, &this->workarea_xpos, &this->workarea_ypos, &this->workarea_width, &this->workarea_height);
                 // 4.3+ or 3.1ES+ are required for shader compute
                 if constexpr (gles == true) {
                     glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -238,7 +239,18 @@ namespace morph {
         protected:
             //! The window (and OpenGL context) for this gl::compute_manager
             GLFWwindow* window = nullptr;
-            //! Window size, if needed
+
+            //! Monitor info, obtained from glfw
+            float monitor_xscale = 0.0f;
+            float monitor_yscale = 0.0f;
+
+            //! Desktop environment workarea info, obtained from glfw.
+            int workarea_xpos=0;
+            int workarea_ypos=0;
+            int workarea_width=0;
+            int workarea_height=0;
+
+            //! Window size, if the derived class creates a Window
             morph::vec<int, 2> win_sz = { 640, 480 };
             //! The title for the object, if needed
             std::string title = "morph::gl_compute";
