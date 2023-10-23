@@ -1,6 +1,8 @@
 // This file is included by Vertex.cpp. It contains default vertex and fragment
 // shaders which get compiled in to libmorphologica.
 
+#pragma once
+
 // Define a version string for the shaders
 #ifdef __OSX__
 // Mac support is fixed at OpenGL 4.1 in favour of their own graphics API.
