@@ -33,9 +33,21 @@ namespace morph {
     class VisualResources
     {
     private:
-        VisualResources() {}
-        //! The deconstructor is never called for a singleton.
-        ~VisualResources() {}
+        VisualResources() { this->init(); }
+        ~VisualResources()
+        {
+            // Clean up the faces, which is a map:
+            for (auto& f : this->faces) { delete f.second; }
+            this->faces.clear();
+
+            // We're done with freetype, so clear those up
+            for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
+
+#ifndef OWNED_MODE
+            // Shut down GLFW
+            glfwTerminate();
+#endif
+        }
 
 #ifndef OWNED_MODE
         void glfw_init()
@@ -68,12 +80,6 @@ namespace morph {
 #endif
         }
 
-        //! A pointer returned to the single instance of this class
-        static VisualResources* pInstance;
-
-        //! How many Visuals are we managing?
-        static int numVisuals;
-
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
@@ -89,6 +95,10 @@ namespace morph {
         std::map<morph::Visual*, FT_Library> freetypes;
 
     public:
+        VisualResources(const VisualResources&) = delete;
+        VisualResources& operator=(const VisualResources &) = delete;
+        VisualResources(VisualResources &&) = delete;
+        VisualResources & operator=(VisualResources &&) = delete;
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -115,48 +125,15 @@ namespace morph {
         }
 
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
-        static VisualResources* i()
+        //! This relies on C++11 magic statics (N2660).
+        static auto& i()
         {
-            if (VisualResources::pInstance == nullptr) {
-                VisualResources::pInstance = new VisualResources;
-                VisualResources::i()->init();
-            }
-            return VisualResources::pInstance;
+            static VisualResources instance;
+            return instance;
         }
 
-        //! register a morph::Visual as being handled by this VisualResources singleton instance
-        static void register_visual() { VisualResources::numVisuals++; }
-
-        //! De-register a morph::Visual. When there are no morph::Visuals left,
-        //! deconstruct this VisualResources and delete self.
-        static void deregister()
-        {
-            VisualResources::numVisuals--;
-            if (VisualResources::numVisuals <= 0) {
-                VisualResources::pInstance->deconstruct();
-                // Delete self
-                delete VisualResources::pInstance;
-                VisualResources::pInstance = nullptr;
-            }
-        }
-
-        //! Deallocate memory for faces, FT_Librarys and the GLFW system.
-        void deconstruct()
-        {
-            // Clean up the faces, which is a map:
-            for (auto& f : this->faces) { delete f.second; }
-            this->faces.clear();
-
-            // We're done with freetype, so clear those up
-            for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
-
-#ifndef OWNED_MODE
-            // Shut down GLFW
-            glfwTerminate();
-#endif
-
-            // Note: static deregister() will delete self
-        }
+        //! A function to call to simply make sure the singleton instance exists
+        void create() {}
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
@@ -174,8 +151,4 @@ namespace morph {
         }
     };
 
-    //! Globally initialise instance pointer to nullptr
-    VisualResources* VisualResources::pInstance = nullptr;
-    //! The number of morph::Visuals to which this singleston class provides resources.
-    int VisualResources::numVisuals = 0;
 } // namespace morph

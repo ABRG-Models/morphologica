@@ -138,7 +138,7 @@ namespace morph {
             // Set up a face to get characters. Choose font, and pixel size. A suitable
             // pixel size will depend on how large we're going to scale and should
             // probably be determined from this->fontscale.
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, this->parentVis);
+            this->face = VisualResources::i().getVisualFace (visualfont, this->fontpixels, this->parentVis);
             this->setupText (_txt);
         }
 
@@ -155,7 +155,7 @@ namespace morph {
             this->fontpixels = tfeatures.fontres;
             this->fontscale = this->m_width/(float)this->fontpixels;
             this->clr_text = tfeatures.colour;
-            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
+            this->face = VisualResources::i().getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
             this->setupText (_txt);
         }
 
@@ -172,7 +172,7 @@ namespace morph {
             this->m_width = _m_width;
             this->fontpixels = _fontpixels;
             this->fontscale = _m_width/(float)this->fontpixels;
-            this->face = VisualResources::i()->getVisualFace (visualfont, this->fontpixels, this->parentVis);
+            this->face = VisualResources::i().getVisualFace (visualfont, this->fontpixels, this->parentVis);
         }
 
         //! A more compact version of the VisualTextModel(GLuint, VisualFont, float, int), taking a TextFeatures object.
@@ -183,7 +183,7 @@ namespace morph {
             this->m_width = tfeatures.fontsize;
             this->fontpixels = tfeatures.fontres;
             this->fontscale = this->m_width/(float)this->fontpixels;
-            this->face = VisualResources::i()->getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
+            this->face = VisualResources::i().getVisualFace (tfeatures.font, this->fontpixels, this->parentVis);
         }
 
         virtual ~VisualTextModel()

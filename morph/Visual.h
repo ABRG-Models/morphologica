@@ -167,7 +167,6 @@ namespace morph {
                 glDeleteProgram (this->shaders.tprog);
                 this->shaders.tprog = 0;
             }
-            morph::VisualResources::deregister();
         }
 
         // Public init that is given a context (window or widget) and then sets up the
@@ -185,17 +184,16 @@ namespace morph {
         // code.
         void init_resources()
         {
-            // VisualResources provides font management and GLFW management.
-            this->resources = morph::VisualResources::i();
-            morph::VisualResources::register_visual();
+            // VisualResources provides font management and GLFW management. Ensure it exists in memory.
+            morph::VisualResources::i().create();
 
             // Set up the window that will present the OpenGL graphics. No-op in
             // Qt-managed Visual, but this has to happen BEFORE the call to
-            // resources->freetype_init()
+            // VisualResources::freetype_init()
             this->init_window();
 
             // Now make sure that Freetype is set up
-            this->resources->freetype_init (this);
+            morph::VisualResources::i().freetype_init (this);
         }
 
         //! Take a screenshot of the window
@@ -942,9 +940,6 @@ namespace morph {
     private:
         //! The window (and OpenGL context) for this Visual
         morph::win_t* window = nullptr;
-
-        //! Pointer to the singleton GLFW and Freetype resources object
-        morph::VisualResources* resources = nullptr;
 
         //! Current window width
         int window_w = 640;
