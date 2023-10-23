@@ -139,6 +139,9 @@ namespace morph {
                 // Swap as fast as possible to compute as fast as possible
                 glfwSwapInterval (0);
 
+                unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+                std::cout << "compute_manager running on OpenGL Version " << glv << std::endl;
+
                 // Temporary storage for parameter values
                 int pval = -1;
 
