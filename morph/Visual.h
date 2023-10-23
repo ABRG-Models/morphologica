@@ -854,6 +854,8 @@ namespace morph {
         // VisualTextModels that will be required to render the Visual.
         void init_gl()
         {
+            unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+            std::cout << "morph::Visual running on OpenGL Version " << glv << std::endl;
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
             GLenum error = glGetError();
