@@ -854,8 +854,6 @@ namespace morph {
         // VisualTextModels that will be required to render the Visual.
         void init_gl()
         {
-            unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-            std::cout << "morph::Visual running on OpenGL Version " << glv << std::endl;
 #ifdef USE_GLEW
             glewExperimental = GL_FALSE;
             GLenum error = glGetError();
@@ -867,6 +865,9 @@ namespace morph {
                 std::cerr << "GLEW initialization failed!" << glewGetErrorString(err) << std::endl;
             }
 #endif
+
+            unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
+            std::cout << "morph::Visual running on OpenGL Version " << glv << std::endl;
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
