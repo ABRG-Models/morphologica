@@ -25,7 +25,6 @@ namespace morph {
         {
             this->lengths = {1.0, 1.0, 1.0};
             this->mv_offset = {0.2, 0.2, 0.0};
-            std::cout << "CoordArrows constructor, this->idx = " << this->idx << std::endl;
         }
 
         //! Construct CoordArrows with given shaderprograms sp (graphics) and tsp
