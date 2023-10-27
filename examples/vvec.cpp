@@ -40,6 +40,15 @@ int main()
     // Find the dot product of vf1 and vf2:
     std::cout << "vf1 dot vf2 = " << vf1.dot (vf2) << std::endl;
 
+    // Shuffle vf1.
+    std::cout << "Before shuffle vf1 = " << vf1 << std::endl;
+    vf1.shuffle();
+    std::cout << "After shuffle  vf1 = " << vf1 << std::endl;
+
+    // And vf2
+    std::cout << "Before shuffle vf2 = " << vf2 << std::endl;
+    std::cout << "After shuffle  vf2 = " << vf2.shuffled() << std::endl;
+
     std::cout << "\nFor more examples, see morphologica/tests/testvvec.cpp\n";
     return 0;
 }

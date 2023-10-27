@@ -377,6 +377,31 @@ namespace morph {
         }
 
         /*!
+         * Re-order the elements in the vvec - shuffle it up. Don't duplicate any
+         * entries, so that summary statistics such as mean() and variance() should
+         * return the same value on the returned, jumbled vvec. This just randomizes the
+         * order of the elements. Uses std::shuffle with a selected RNG.
+         */
+        void shuffle()
+        {
+            std::random_device rd; // we have access to these via #include <morph/Random.h>
+            std::mt19937 generator(rd());
+            std::shuffle (this->begin(), this->end(), generator);
+        }
+
+        /*!
+         * As shuffle() but return the shuffled vvec
+         */
+        morph::vvec<S> shuffled()
+        {
+            morph::vvec<S> rtn (*this);
+            std::random_device rd; // we have access to these via #include <morph/Random.h>
+            std::mt19937 generator(rd());
+            std::shuffle (rtn.begin(), rtn.end(), generator);
+            return rtn;
+        }
+
+        /*!
          * Permute the elements one time in a rotation. This 'rotates left', i.e. in an
          * N element vvec: 0->N-1, 1->0, 2->1, etc. Useful for swapping x and y in a 2D
          * vector.
