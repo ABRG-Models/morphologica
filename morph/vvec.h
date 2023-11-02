@@ -711,7 +711,13 @@ namespace morph {
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
         //! the rest of the numbers
         template<bool test_for_nans = false>
-        morph::range<S> minmax() const
+        morph::range<S> minmax() const { return this->range<test_for_nans>(); }
+
+        //! Return the range of values in the vvec (the min and max values). If you pass 'true' as
+        //! the template arg, then you can test for nans, and return the min/max of the rest of the
+        //! numbers
+        template<bool test_for_nans = false>
+        morph::range<S> range() const
         {
             morph::range<S> r;
             if constexpr (test_for_nans) {

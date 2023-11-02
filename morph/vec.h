@@ -575,6 +575,13 @@ namespace morph {
             return morph::range<S>(*mm.first, *mm.second);
         }
 
+        //! Return the range of the vec (the min and max values of the vec)
+        morph::range<S> range() const
+        {
+            auto mm = std::minmax_element (this->begin(), this->end());
+            return morph::range<S>(*mm.first, *mm.second);
+        }
+
         //! Return true if any element is zero
         bool has_zero() const
         {
