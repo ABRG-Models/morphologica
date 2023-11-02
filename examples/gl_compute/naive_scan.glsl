@@ -28,7 +28,7 @@ void main()
     int k = int(gl_GlobalInvocationID.x);
     int n = N;
     int dmax = int(log2(float(n)));
-    //int dbg = 1; // You can use this to look at values at different 'stages' of the summing
+    int dbg = 1; // You can use this to look at values at different 'stages' of the summing
 
     g_odata[k] = g_idata[k];
     barrier();
@@ -37,20 +37,20 @@ void main()
     for (int d = 1; d <= dmax; d++)   { // 2^5 == 32
         if (k >= powd) {
             g_odata[k] = g_idata[k] + g_idata[k - powd];
-/*
+
             if (d==dbg) {
                 g_dbg[k] = g_idata[k];
                 g_dbg2[k] = g_idata[k - powd];
             }
-*/
+
         } else {
             g_odata[k] = g_idata[k];
-/*
+
             if (d==dbg) {
                 g_dbg[k] = g_idata[k];
                 g_dbg2[k] = 0.0;
             }
-*/
+
         }
         powd *= 2;
         g_idata[k] = g_odata[k];
