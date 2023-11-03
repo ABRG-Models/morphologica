@@ -1029,6 +1029,13 @@ namespace morph {
             for (auto& i : *this) { if (std::isnan(i)) { i = replacement; } }
         }
 
+        void replace_nan_or_inf_with (const S replacement)
+        {
+            static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
+            static_assert (std::numeric_limits<S>::has_infinity, "S does not have infinities");
+            for (auto& i : *this) { if (std::isnan(i) || std::isinf(i)) { i = replacement; } }
+        }
+
         void search_replace (const S searchee, const S replacement)
         {
             for (auto& i : *this) { if (i == searchee) { i = replacement; } }
