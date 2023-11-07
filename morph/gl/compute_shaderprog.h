@@ -68,6 +68,22 @@ namespace morph {
                     []<bool flag = false>() { static_assert(flag, "Can't set that type as a uniform in an OpenGL context"); }();
                 }
             }
+
+            // Set an array into the OpenGL context
+            template <typename T, size_t N>
+            void set_uniform (const std::string& glsl_varname, const morph::vec<T, N>& value)
+            {
+                GLint uloc = glGetUniformLocation (this->prog_id, static_cast<const GLchar*>(glsl_varname.c_str()));
+                if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
+                    if (uloc != -1) { glUniform1fv (uloc, N, value.data()); }
+                } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
+                    if (uloc != -1) { glUniform1iv (uloc, N, value.data()); }
+                } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
+                    if (uloc != -1) { glUniform1uiv (uloc, N, value.data()); }
+                } else {
+                    []<bool flag = false>() { static_assert(flag, "Can't set that type as a uniform array in an OpenGL context"); }();
+                }
+            }
         };
 
     } // namespace gl
