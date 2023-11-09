@@ -183,6 +183,10 @@ namespace morph {
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &this->max_compute_work_group_size[2]);
                 std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << this->max_compute_work_group_size << std::endl;
 
+                glGetIntegerv (GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &pval);
+                morph::gl::Util::checkError (__FILE__, __LINE__);
+                std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << pval << " bytes" << std::endl;
+
                 // Shader storage
                 glGetIntegerv (GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &pval);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
