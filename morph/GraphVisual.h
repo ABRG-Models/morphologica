@@ -164,6 +164,106 @@ namespace morph {
             this->linecolour = c;
             this->markercolour = c;
         }
+
+        //! Obtain the curated dataset colours, by index. Static public function to
+        //! allow other Visuals to set marker style in the same order as a graph.
+        static constexpr morph::markerstyle datamarkerstyle (size_t data_index)
+        {
+            morph::markerstyle rtn = morph::markerstyle::square;
+            switch (data_index) {
+            case 0: { rtn = morph::markerstyle::square; break; }
+            case 1: { rtn = morph::markerstyle::triangle; break; }
+            case 2: { rtn = morph::markerstyle::circle; break; }
+            case 3: { rtn = morph::markerstyle::diamond; break; }
+            case 4: { rtn = morph::markerstyle::hexagon; break; }
+            case 5: { rtn = morph::markerstyle::heptagon; break; }
+            case 6: { rtn = morph::markerstyle::uptriangle; break; }
+            case 7: { rtn = morph::markerstyle::octagon; break; }
+            case 8: { rtn = morph::markerstyle::uphexagon; break; }
+            case 9: { rtn = morph::markerstyle::octagon; break; }
+            default: { rtn = morph::markerstyle::upheptagon; break; }
+            }
+            return rtn;
+        }
+
+        //! Obtain the curated dataset colours, by index. Static public function to
+        //! allow other Visuals to colour things in the same order as a graph.
+        static constexpr std::array<float, 3> datacolour (size_t data_index)
+        {
+            std::array<float, 3> rtn = morph::colour::gray50;
+            switch (data_index) {
+            case 0: { rtn = morph::colour::royalblue; break; }
+            case 1: { rtn = morph::colour::crimson; break; }
+            case 2: { rtn = morph::colour::goldenrod2; break; }
+            case 3: { rtn = morph::colour::green2; break; }
+
+            case 4: { rtn = morph::colour::blue2; break; }
+            case 5: { rtn = morph::colour::blueviolet; break; }
+            case 6: { rtn = morph::colour::khaki3; break; }
+            case 7: { rtn = morph::colour::sapgreen; break; }
+
+            case 8: { rtn = morph::colour::mediumturquoise; break; }
+            case 9: { rtn = morph::colour::seagreen1; break; }
+            case 10: { rtn = morph::colour::darkgoldenrod4; break; }
+            case 11: { rtn = morph::colour::olivedrab2; break; }
+
+            case 12: { rtn = morph::colour::lightsteelblue3; break; }
+            case 13: { rtn = morph::colour::purple; break; }
+            case 14: { rtn = morph::colour::deeppink1; break; }
+            case 15: { rtn = morph::colour::red2; break; }
+
+            case 16: { rtn = morph::colour::royalblue1; break; }
+            case 17: { rtn = morph::colour::mediumorchid1; break; }
+            case 18: { rtn = morph::colour::lightskyblue1; break; }
+            case 19: { rtn = morph::colour::firebrick1; break; }
+
+            case 20: { rtn = morph::colour::royalblue2; break; }
+            case 21: { rtn = morph::colour::mediumorchid2; break; }
+            case 22: { rtn = morph::colour::lightskyblue2; break; }
+            case 23: { rtn = morph::colour::firebrick2; break; }
+
+            case 24: { rtn = morph::colour::royalblue3; break; }
+            case 25: { rtn = morph::colour::mediumorchid3; break; }
+            case 26: { rtn = morph::colour::lightskyblue3; break; }
+            case 27: { rtn = morph::colour::firebrick3; break; }
+
+            case 28: { rtn = morph::colour::royalblue4; break; }
+            case 29: { rtn = morph::colour::mediumorchid4; break; }
+            case 30: { rtn = morph::colour::lightskyblue4; break; }
+            case 31: { rtn = morph::colour::firebrick4; break; }
+
+            case 32: { rtn = morph::colour::brown1; break; }
+            case 33: { rtn = morph::colour::darkolivegreen1; break; }
+            case 34: { rtn = morph::colour::chocolate1; break; }
+            case 35: { rtn = morph::colour::chartreuse; break; }
+
+            case 36: { rtn = morph::colour::brown2; break; }
+            case 37: { rtn = morph::colour::darkolivegreen2; break; }
+            case 38: { rtn = morph::colour::chocolate2; break; }
+            case 39: { rtn = morph::colour::chartreuse2; break; }
+
+            case 40: { rtn = morph::colour::brown3; break; }
+            case 41: { rtn = morph::colour::darkolivegreen3; break; }
+            case 42: { rtn = morph::colour::chocolate3; break; }
+            case 43: { rtn = morph::colour::chartreuse3; break; }
+
+            case 44: { rtn = morph::colour::brown4; break; }
+            case 45: { rtn = morph::colour::darkolivegreen4; break; }
+            case 46: { rtn = morph::colour::chocolate4; break; }
+            case 47: { rtn = morph::colour::chartreuse4; break; }
+
+            default: { break; }
+            }
+            return rtn;
+        }
+
+        //! Set defaults on this dataset as if it were for dataset index data_index
+        void setdefaults (size_t data_index)
+        {
+            this->markercolour = DatasetStyle::datacolour (data_index);
+            // maybe: this->linecolour = DatasetStyle::datacolour (data_index);
+            this->markerstyle = DatasetStyle::datamarkerstyle (data_index);
+        }
     };
 
     /*!
@@ -343,77 +443,6 @@ namespace morph {
             }
         }
 
-        //! Obtain the curated dataset colours, by index. Static public function to
-        //! allow other Visuals to colour things in the same order as a graph.
-        static std::array<float, 3> datacolour (size_t data_index)
-        {
-            std::array<float, 3> rtn = morph::colour::gray50;
-            switch (data_index) {
-            case 0: { rtn = morph::colour::royalblue; break; }
-            case 1: { rtn = morph::colour::crimson; break; }
-            case 2: { rtn = morph::colour::goldenrod2; break; }
-            case 3: { rtn = morph::colour::green2; break; }
-
-            case 4: { rtn = morph::colour::blue2; break; }
-            case 5: { rtn = morph::colour::blueviolet; break; }
-            case 6: { rtn = morph::colour::khaki1; break; }
-            case 7: { rtn = morph::colour::sapgreen; break; }
-
-            case 8: { rtn = morph::colour::mediumturquoise; break; }
-            case 9: { rtn = morph::colour::seagreen1; break; }
-            case 10: { rtn = morph::colour::darkgoldenrod4; break; }
-            case 11: { rtn = morph::colour::olivedrab2; break; }
-
-            case 12: { rtn = morph::colour::lightsteelblue3; break; }
-            case 13: { rtn = morph::colour::purple; break; }
-            case 14: { rtn = morph::colour::deeppink1; break; }
-            case 15: { rtn = morph::colour::red2; break; }
-
-            case 16: { rtn = morph::colour::royalblue1; break; }
-            case 17: { rtn = morph::colour::mediumorchid1; break; }
-            case 18: { rtn = morph::colour::lightskyblue1; break; }
-            case 19: { rtn = morph::colour::firebrick1; break; }
-
-            case 20: { rtn = morph::colour::royalblue2; break; }
-            case 21: { rtn = morph::colour::mediumorchid2; break; }
-            case 22: { rtn = morph::colour::lightskyblue2; break; }
-            case 23: { rtn = morph::colour::firebrick2; break; }
-
-            case 24: { rtn = morph::colour::royalblue3; break; }
-            case 25: { rtn = morph::colour::mediumorchid3; break; }
-            case 26: { rtn = morph::colour::lightskyblue3; break; }
-            case 27: { rtn = morph::colour::firebrick3; break; }
-
-            case 28: { rtn = morph::colour::royalblue4; break; }
-            case 29: { rtn = morph::colour::mediumorchid4; break; }
-            case 30: { rtn = morph::colour::lightskyblue4; break; }
-            case 31: { rtn = morph::colour::firebrick4; break; }
-
-            case 32: { rtn = morph::colour::brown1; break; }
-            case 33: { rtn = morph::colour::darkolivegreen1; break; }
-            case 34: { rtn = morph::colour::chocolate1; break; }
-            case 35: { rtn = morph::colour::chartreuse; break; }
-
-            case 36: { rtn = morph::colour::brown2; break; }
-            case 37: { rtn = morph::colour::darkolivegreen2; break; }
-            case 38: { rtn = morph::colour::chocolate2; break; }
-            case 39: { rtn = morph::colour::chartreuse2; break; }
-
-            case 40: { rtn = morph::colour::brown3; break; }
-            case 41: { rtn = morph::colour::darkolivegreen3; break; }
-            case 42: { rtn = morph::colour::chocolate3; break; }
-            case 43: { rtn = morph::colour::chartreuse3; break; }
-
-            case 44: { rtn = morph::colour::brown4; break; }
-            case 45: { rtn = morph::colour::darkolivegreen4; break; }
-            case 46: { rtn = morph::colour::chocolate4; break; }
-            case 47: { rtn = morph::colour::chartreuse4; break; }
-
-            default: { break; }
-            }
-            return rtn;
-        }
-
         //! Prepare an as-yet empty dataset.
         void prepdata (const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
@@ -438,36 +467,8 @@ namespace morph {
             DatasetStyle ds(this->policy);
             ds.axisside = axisside;
             if (!name.empty()) { ds.datalabel = name; }
-
             size_t data_index = this->graphDataCoords.size();
-            switch (data_index) {
-            case 0:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::square);
-                break;
-            }
-            case 1:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::triangle);
-                break;
-            }
-            case 2:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::circle);
-                break;
-            }
-            case 3:
-            {
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::diamond);
-                break;
-            }
-            default:
-            {
-                // Everything else gets this:
-                this->setstyle (ds, GraphVisual<Flt>::datacolour(data_index), morph::markerstyle::hexagon);
-                break;
-            }
-            }
+            this->setstyle (ds, DatasetStyle::datacolour(data_index), DatasetStyle::datamarkerstyle (data_index));
             this->setdata (_abscissae, _data, ds);
         }
 
@@ -577,7 +578,7 @@ namespace morph {
             ds.linewidth = ds.markersize/10.0;
 
             size_t data_index = this->graphDataCoords.size();
-            ds.markercolour = GraphVisual<Flt>::datacolour(data_index);
+            ds.markercolour = DatasetStyle::datacolour(data_index);
             ds.linecolour = morph::colour::black; // For now.
 
             // Because this is bar graph data, make sure to compute the ord1_scale now from
