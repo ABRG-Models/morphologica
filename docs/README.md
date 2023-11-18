@@ -1,3 +1,6 @@
+---
+layout: home
+---
 # morphologica
 
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
