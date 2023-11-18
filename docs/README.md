@@ -1,21 +1,11 @@
 ---
+title: What is morphologica?
 layout: home
 ---
-# morphologica
 
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
 
 ![cmake build test](https://github.com/ABRG-Models/morphologica/actions/workflows/cmake-single-platform.yml/badge.svg)
-
-**Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
-
-**NEW:** Now morphologica is Qt compatible! See [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)
-
-You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory. For [**example code**](https://github.com/ABRG-Models/morphologica/tree/main/examples) and [**screenshots**](https://github.com/ABRG-Models/morphologica/tree/main/examples), see [this page](https://github.com/ABRG-Models/morphologica/tree/main/examples).
-
-morphologica has some **demo/tutorial** content on YouTube: https://www.youtube.com/playlist?list=PLwiQ_IuTOr_Us9_tBde96VLYQlRWOYeAP
-
-## What is morphologica?
 
 This header-only C++ code provides **simulation support facilities** for simulations of dynamical systems, agent-based models or, in fact, any program that needs dynamic, runtime visualization.
 
