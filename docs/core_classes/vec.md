@@ -17,7 +17,7 @@ morph::vec<int, 4> v1 = { 1, 2, 3, 4 };
 but you can do maths:
 
 ```c++
-morph::vec<int, 4> v1 = { 1, 2, 3, 4 };
+morph::vec<int, 4> v2 = { 1, 2, 3, 4 };
 morph::vec<int, 4> v3 = v1 + v2; // element-wise addition
 ```
 
