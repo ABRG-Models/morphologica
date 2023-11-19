@@ -2,6 +2,7 @@
 title: Quick start
 layout: page
 permalink: /quick/
+order: 4
 ---
 
 Quick-start assumption: You're using a Debian flavour of Linux. If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users.
