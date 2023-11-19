@@ -1,6 +1,7 @@
 ---
 title: What is morphologica?
 layout: home
+permalin: /about/
 ---
 
 ![A banner image of a hexgrid surface plot](https://github.com/ABRG-Models/morphologica/blob/main/examples/screenshots/banner.png?raw=true)
