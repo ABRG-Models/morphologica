@@ -3,12 +3,12 @@ layout: page
 title: morph::vec
 permalink: /core/vec/
 ---
-
-A fixed-size mathematical vector class. Derives from `std::array`.
-
 ```c++
 #include <morph/vec.h>
 ```
+
+A fixed-size mathematical vector class. Derives from `std::array`.
+
 Create like an `std::array`:
 
 ```c++
