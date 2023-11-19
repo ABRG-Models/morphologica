@@ -39,3 +39,5 @@ build*
 *.DS_Store
 CMakeSettings.json
 Debug
+docs/Gemfile.lock
+docs/_site
