@@ -119,7 +119,7 @@ namespace morph {
 
             for (auto entry : shader_info) {
                 GLuint shader = glCreateShader (entry.type);
-                //entry.shader = shader;
+                entry.shader = shader;
                 // Test entry.filename. If this GLSL file can be read, then do so, otherwise,
                 // compile the default version specified in the ShaderInfo
                 const GLchar* source;
@@ -139,7 +139,7 @@ namespace morph {
                 if (source == NULL) {
                     for (auto entry : shader_info) {
                         glDeleteShader (entry.shader);
-                        //entry.shader = 0;
+                        entry.shader = 0;
                     }
                     return 0;
 

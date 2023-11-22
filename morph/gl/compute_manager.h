@@ -227,12 +227,12 @@ namespace morph {
             // void load_shaders() finals
             // {
             //   std::vector<morph::gl::ShaderInfo> shaders1 = {
-            //     {GL_COMPUTE_SHADER, "Default.compute1.glsl", morph::gl::nonCompilingComputeShader }
+            //     {GL_COMPUTE_SHADER, "Default.compute1.glsl", morph::gl::nonCompilingComputeShader, 0 }
             //   };
             //   this->my_compute_program_1.load_shaders (shaders1);
             //
             //   std::vector<morph::gl::ShaderInfo> shaders2 = {
-            //     {GL_COMPUTE_SHADER, "Default.compute2.glsl", morph::gl::nonCompilingComputeShader }
+            //     {GL_COMPUTE_SHADER, "Default.compute2.glsl", morph::gl::nonCompilingComputeShader, 0 }
             //   };
             //   this->my_compute_program_2.load_shaders (shaders2);
             // }
