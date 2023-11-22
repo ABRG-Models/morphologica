@@ -72,11 +72,6 @@ namespace morph {
 
         ~QuadsVisual() { delete this->dataCoords; }
 
-        virtual void updateCoords (std::vector<vec<Flt>>* _coords)
-        {
-            throw std::runtime_error ("This won't work.");
-        }
-
         //! Initialize the vertices that will represent the Quads.
         void initializeVertices()
         {
