@@ -20,7 +20,7 @@ class TestProcessCallbacks : public ProcessCallbacks
 {
 public:
     TestProcessCallbacks (ProcessData* p) { this->parent = p; }
-    void startedSignal (std::string msg) {}
+    void startedSignal (std::string msg) { std::cout << "Started. msg: " << msg << std::endl;}
     void errorSignal (int err) { this->parent->setErrorNum (err); }
     void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
     void readyReadStandardOutputSignal() { this->parent->setStdOutReady (true); }

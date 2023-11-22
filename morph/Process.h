@@ -591,6 +591,8 @@ namespace morph {
         ~ProcessData() {};
 
         //! \brief Set the process finished message for a process
+        void setProcessStartedMsg (const std::string& message) { this->processStartedMessage = message; }
+        //! \brief Set the process finished message for a process
         void setProcessFinishedMsg (const std::string& message) { this->processFinishedMessage = message; }
         //! \brief Set the error num for a process
         void setErrorNum (const int err) { this->errorNum = err; }
@@ -606,6 +608,8 @@ namespace morph {
         bool getStdErrReady() const { return this->stdErrReady; }
 
     private:
+        //! \brief Holds a message that the process started
+        std::string processStartedMessage;
         //! \brief Holds the name of the process that finished
         std::string processFinishedMessage;
         //! \brief Holds a process error number

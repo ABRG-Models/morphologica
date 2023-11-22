@@ -28,7 +28,7 @@ namespace morph {
     {
     public:
         ConfigProcessCallbacks (ProcessData* p) { this->parent = p; }
-        void startedSignal (std::string msg) {}
+        void startedSignal (std::string msg) { this->parent->setProcessStartedMsg (std::string("ConfigProcess started: ") + msg); }
         void errorSignal (int err) { this->parent->setErrorNum (err); }
         void processFinishedSignal (std::string msg) { this->parent->setProcessFinishedMsg (msg); }
         void readyReadStandardOutputSignal() { this->parent->setStdOutReady (true); }
