@@ -178,8 +178,11 @@ namespace morph
         static std::string getPwd()
         {
             char b[FILENAME_MAX];
-            GetCurrentDir (b, FILENAME_MAX);
-            return std::string(b);
+            char* rtn = GetCurrentDir (b, FILENAME_MAX);
+            if (rtn != (char*)0 && rtn == b) {
+                return std::string(b);
+            }
+            return std::string("unknown");
         }
 
         /*!
@@ -1063,6 +1066,8 @@ namespace morph
             std::vector<std::string>::reverse_iterator i = dirs.rbegin();
             std::string prePath("");
             bool first(true);
+            int cortn = 0; // chown return value
+            int cmrtn = 0; // chmod return value
             while (i != dirs.rend()) {
                 if (first && !pathIsAbsolute) {
                     prePath += "./" + *i;
@@ -1083,11 +1088,22 @@ namespace morph
                         // Path exists, though maybe not as a directory.
                         // Set mode/ownership before moving on:
                         if (uid>-1 && gid>-1) {
-                            chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
-                            chmod (prePath.c_str(), mode);
+                            cortn = chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
+                            if (cortn == -1) {
+                                // error
+                                emsg << "Path exists and failed to change owner (chown failed) ";
+                            }
+                            cmrtn = chmod (prePath.c_str(), mode);
+                            if (cmrtn == -1) {
+                                emsg << "Path exists and failed to change mode (chmod failed) ";
+                            }
                         }
-                        i++;
-                        continue;
+                        if (cortn || cmrtn) {
+                            // Error
+                        } else {
+                            i++;
+                            continue;
+                        }
                         break;
                     case EFAULT:
                         emsg << "Bad address";
@@ -1123,7 +1139,10 @@ namespace morph
                     throw std::runtime_error (emsg.str());
                 }
                 if (uid>-1 && gid>-1) {
-                    chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
+                   cortn = chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
+                   if (cortn == -1) {
+                       throw std::runtime_error ("chown of prePath failed");
+                   }
                 }
                 i++;
             }

@@ -430,13 +430,17 @@ if(ARMADILLO_FOUND)
   # Test Cartesian (rectangular) grid
   add_executable(testcartgrid testcartgrid.cpp)
   add_test(testcartgrid testcartgrid)
-  
+
   # Test shiftIndicies function
   add_executable(testCartGridShiftCoords testCartGridShiftCoords.cpp)
   add_test(testCartGridShiftCoords testCartGridShiftCoords)
-  
+
   # Test shiftIndicies function
   add_executable(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric.cpp)
-  add_test(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric)    
-  
+  add_test(testCartGridShiftIndiciesByMetric testCartGridShiftIndiciesByMetric)
+
 endif()
+
+# morph::Tools
+add_executable(testTools testTools.cpp)
+add_test(testTools testTools)
