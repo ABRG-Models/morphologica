@@ -44,8 +44,20 @@ namespace morph {
     public:
         //! Default constructor
         TransformMatrix() { this->setToIdentity(); }
-
-        TransformMatrix (const TransformMatrix& rhs) : mat(rhs.mat) {}
+        //! User-declared destructor
+        ~TransformMatrix() {}
+        //! User-declared copy constructor
+        TransformMatrix (const TransformMatrix<Flt>& other) : mat(other.mat) {}
+        //! User-declared copy assignment constructor
+        TransformMatrix<Flt>& operator= (TransformMatrix<Flt>& other)
+        {
+            std::swap (mat, other.mat);
+            return *this;
+        }
+        //! Explicitly defaulted  move constructor
+        TransformMatrix(TransformMatrix<Flt>&& other) = default;
+        //! Explicitly defaulted move assignment constructor
+        TransformMatrix<Flt>& operator=(TransformMatrix<Flt>&& other) = default;
 
         /*!
          * The transformation matrix data, arranged in column major format to be OpenGL
@@ -950,6 +962,26 @@ namespace morph {
         void operator*= (const T& f)
         {
             for (unsigned int i = 0; i<16; ++i) { this->mat[i] *= f; }
+        }
+
+        //! Equality operator. True if all elements match
+        bool operator==(const TransformMatrix<Flt>& rhs) const
+        {
+            unsigned int ndiff = 0;
+            for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
+                ndiff += this->mat[i] == rhs.mat[i] ? 0 : 1;
+            }
+            return ndiff == 0;
+        }
+
+        //! Not equals
+        bool operator!=(const TransformMatrix<Flt>& rhs) const
+        {
+            unsigned int ndiff = 0;
+            for (unsigned int i = 0; i < 16 && ndiff == 0; ++i) {
+                ndiff += this->mat[i] == rhs.mat[i] ? 0 : 1;
+            }
+            return ndiff > 0;
         }
 
         //! Transpose this matrix

@@ -34,6 +34,20 @@ namespace morph {
     public:
         //! Default constructor
         Matrix33() { this->setToIdentity(); }
+        //! User-declared destructor
+        ~Matrix33() {}
+        //! User-declared copy constructor
+        Matrix33 (const Matrix33<Flt>& other) : mat(other.mat) {}
+        //! User-declared copy assignment constructor
+        Matrix33<Flt>& operator= (Matrix33<Flt>& other)
+        {
+            std::swap (mat, other.mat);
+            return *this;
+        }
+        //! Explicitly defaulted  move constructor
+        Matrix33(Matrix33<Flt>&& other) = default;
+        //! Explicitly defaulted move assignment constructor
+        Matrix33<Flt>& operator=(Matrix33<Flt>&& other) = default;
 
         /*!
          * The matrix data, arranged in column major format to be similar to
@@ -164,6 +178,7 @@ namespace morph {
             return this->transpose (this->cofactor());
         }
 
+        static constexpr bool debug_cofactors = false;
         std::array<Flt, 9> cofactor() const
         {
             std::array<Flt, 9> cofac;
@@ -223,12 +238,13 @@ namespace morph {
             minorElem[2] = this->mat[3];
             minorElem[3] = this->mat[4];
             cofac[8] = this->determinant (minorElem);
-#if 0
-            std::cout << "cofactor:\n";
-            std::cout <<"[ "<< cofac[0]<<" , "<<cofac[3]<<" , "<<cofac[6]<<" ;\n";
-            std::cout <<"  "<< cofac[1]<<" , "<<cofac[4]<<" , "<<cofac[7]<<" ;\n";
-            std::cout <<"  "<< cofac[2]<<" , "<<cofac[5]<<" , "<<cofac[8]<<" ;\n";
-#endif
+
+            if constexpr (debug_cofactors) {
+                std::cout << "cofactor:\n";
+                std::cout <<"[ "<< cofac[0]<<" , "<<cofac[3]<<" , "<<cofac[6]<<" ;\n";
+                std::cout <<"  "<< cofac[1]<<" , "<<cofac[4]<<" , "<<cofac[7]<<" ;\n";
+                std::cout <<"  "<< cofac[2]<<" , "<<cofac[5]<<" , "<<cofac[8]<<" ;\n";
+            }
             return cofac;
         }
 
@@ -444,6 +460,27 @@ namespace morph {
             + this->mat[8] * v1[2];
             return v;
         }
+
+        //! Equality operator. True if all elements match
+        bool operator==(const Matrix33<Flt>& rhs) const
+        {
+            unsigned int ndiff = 0;
+            for (unsigned int i = 0; i < 9 && ndiff == 0; ++i) {
+                ndiff += this->mat[i] == rhs.mat[i] ? 0 : 1;
+            }
+            return ndiff == 0;
+        }
+
+        //! Not equals
+        bool operator!=(const Matrix33<Flt>& rhs) const
+        {
+            unsigned int ndiff = 0;
+            for (unsigned int i = 0; i < 9 && ndiff == 0; ++i) {
+                ndiff += this->mat[i] == rhs.mat[i] ? 0 : 1;
+            }
+            return ndiff > 0;
+        }
+
 
         //! Overload the stream output operator
         friend std::ostream& operator<< <Flt> (std::ostream& os, const Matrix33<Flt>& tm);

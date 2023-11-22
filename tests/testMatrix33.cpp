@@ -101,7 +101,7 @@ int main()
     morph::Matrix33<float> mult1save = mult1;
     mult1 *= mult2;
     std::cout << "mult1 *= mult2 gives\n" << mult1 << std::endl;
-    mult1 = mult1save;
+    mult1 = mult1save; // tests copy
     mult1 *= mult2.mat;
     std::cout << "mult1 *= mult2.mat gives\n" << mult1 << std::endl;
 
@@ -117,6 +117,21 @@ int main()
         ) {
         ++rtn;
     }
+
+    // Test copy
+    morph::Matrix33<double> md1;
+    md1.mat[0] = 0;
+    md1.mat[1] = 1;
+    md1.mat[2] = 2;
+    md1.mat[3] = 3;
+    md1.mat[4] = 4;
+    md1.mat[5] = 5;
+    md1.mat[6] = 6;
+    md1.mat[7] = 7;
+    md1.mat[8] = 8;
+
+    morph::Matrix33<double> md2 = md1;
+    if (md2 != md1) { ++rtn; }
 
     return rtn;
 }

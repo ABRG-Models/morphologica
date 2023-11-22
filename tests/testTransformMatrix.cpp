@@ -187,5 +187,9 @@ int main()
     if ((r[0]==15 && r[1]==17 && r[2]==0 && r[3]==0) == false) {
         ++rtn;
     }
+
+    morph::TransformMatrix<float> mult4inv_copy = mult4inv;
+    if (mult4inv_copy != mult4inv) { ++rtn; }
+
     return rtn;
 }

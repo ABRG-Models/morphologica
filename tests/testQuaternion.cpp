@@ -3,6 +3,8 @@
 
 int main()
 {
+    int rtn = 0;
+
     morph::Quaternion<float> q;
     std::cout << q << std::endl;
     q.renormalize();
@@ -14,5 +16,9 @@ int main()
     rotationQuaternion.initFromAxisAngle (rotationAxis, angularSpeed);
     std::cout << rotationQuaternion << std::endl;
 
-    return 0;
+    morph::Quaternion<float> p = q;
+    if (p == q) {  } else { rtn++; }
+    if (p != q) { rtn++; }
+
+    return rtn;
 }

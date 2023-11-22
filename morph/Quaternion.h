@@ -39,11 +39,27 @@ namespace morph {
             , y(_y)
             , z(_z) {}
 
-        Quaternion (const Quaternion& rhs)
+        //! User-declared destructor
+        ~Quaternion() {}
+        //! User-declared copy constructor
+        Quaternion (const Quaternion<Flt>& rhs)
             : w(rhs.w)
             , x(rhs.x)
             , y(rhs.y)
             , z(rhs.z) {}
+        //! User-declared copy assignment constructor
+        Quaternion<Flt>& operator= (Quaternion<Flt>& other)
+        {
+            std::swap (w, other.w);
+            std::swap (x, other.x);
+            std::swap (y, other.y);
+            std::swap (z, other.z);
+            return *this;
+        }
+        //! Explicitly defaulted  move constructor
+        Quaternion(Quaternion<Flt>&& other) = default;
+        //! Explicitly defaulted move assignment constructor
+        Quaternion<Flt>& operator=(Quaternion<Flt>&& other) = default;
 
         alignas(Flt) Flt w;
         alignas(Flt) Flt x;
@@ -112,6 +128,18 @@ namespace morph {
             this->x = q2.x;
             this->y = q2.y;
             this->z = q2.z;
+        }
+
+        //! Equality operator. True if all elements match
+        bool operator==(const Quaternion<Flt>& rhs) const
+        {
+            return (this->w == rhs.w && this->x == rhs.x && this->y == rhs.y && this->z == rhs.z);
+        }
+
+        //! Not equals
+        bool operator!=(const Quaternion<Flt>& rhs) const
+        {
+            return (this->w != rhs.w || this->x != rhs.x || this->y != rhs.y || this->z != rhs.z);
         }
 
         //! Overload * operator. q1 is 'this->'
