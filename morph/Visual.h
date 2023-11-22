@@ -1434,9 +1434,22 @@ namespace morph {
         }
 
         //! Extra key callback handling, making it easy for client programs to implement their own actions
-        virtual void key_callback_extra (int key, int scancode, int action, int mods) {}
+        static constexpr bool debug_callback_extra = false;
+        virtual void key_callback_extra (int key, int scancode, int action, int mods)
+        {
+            if constexpr (debug_callback_extra) {
+                std::cout << "Visual::key_callback_extra called for key=" << key << " scancode="
+                          << scancode << " action=" << action << " and mods=" << mods << std::endl;
+            }
+        }
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
-        virtual void mouse_button_callback_extra (int button, int action, int mods) {}
+        virtual void mouse_button_callback_extra (int button, int action, int mods)
+        {
+            if constexpr (debug_callback_extra) {
+                std::cout << "Visual::mouse_button_callback_extra called for button=" << button
+                          << " action=" << action << " and mods=" << mods << std::endl;
+            }
+        }
 
         //! A callback that client code can set so that it knows when user has signalled to
         //! morph::Visual that it's quit time.

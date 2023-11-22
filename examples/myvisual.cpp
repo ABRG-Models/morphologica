@@ -36,8 +36,13 @@ protected:
         return false; // No need to re-render the window for either option
     }
     // Also optionally, add actions for extra keys:
+    static constexpr bool debug_callback_extra = false;
     void key_callback_extra (int key, int scancode, int action, int mods) override
     {
+        if constexpr (debug_callback_extra) {
+            std::cout << "myvisual::key_callback_extra called for key=" << key << " scancode="
+                      << scancode << " action=" << action << " and mods=" << mods << std::endl;
+        }
         // 'm' key means toggle the 'moving' attribute
         if (key == GLFW_KEY_F && action == GLFW_PRESS) { this->moving = this->moving ? false : true; }
 
