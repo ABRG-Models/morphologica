@@ -431,8 +431,6 @@ namespace morph {
         /*!
          * Walk an edge between two domains. Common code used by walk_to_neighbour and walk_to_next.
          *
-         * @hg The HexGrid on which the action takes place
-         *
          * @f The map of identities for the HexGrid @hg
          *
          * @v The starting Dirichlet vertex at which the edge starts
@@ -445,8 +443,7 @@ namespace morph {
          * found.
          */
         static morph::vec<Flt, 2>
-        walk_common (HexGrid* hg,
-                     std::vector<Flt>& f,
+        walk_common (std::vector<Flt>& f,
                      DirichVtx<Flt>& v,
                      std::list<morph::vec<Flt, 2>>& path,
                      morph::vec<Flt, 2>& edgedoms,
@@ -820,19 +817,17 @@ namespace morph {
          * neighbour.
          */
         static morph::vec<Flt, 2>
-        walk_to_next (HexGrid* hg, std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom)
+        walk_to_next (std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom)
         {
             // Starting from hex v.hi, find neighbours whos f values are v.f/v.neighb[0]. Record
             // (in v.path_to_next) a series of coordinates that make up the path between that vertex
             // and the next vertex in the domain.
             morph::vec<Flt, 2> edgedoms = { v.f, v.neighb[0] };
-            return walk_common (hg, f, v, v.pathto_next, edgedoms, next_neighb_dom);
+            return walk_common (f, v, v.pathto_next, edgedoms, next_neighb_dom);
         }
 
         /*!
          * Walk out to a neighbour from vertex @v.
-         *
-         * @hg The HexGrid on which the action takes place
          *
          * @f The identity variable.
          *
@@ -843,7 +838,7 @@ namespace morph {
          * neighbour.
          */
         static morph::vec<Flt, 2>
-        walk_to_neighbour (HexGrid* hg, std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
+        walk_to_neighbour (std::vector<Flt>& f, DirichVtx<Flt>& v, Flt& next_neighb_dom) {
 
             // Don't set neighbours for the edge vertices (though edge vertices *can be set* as
             // neighbours for other vertices).
@@ -851,7 +846,7 @@ namespace morph {
                 return morph::vec<Flt, 2>({Flt{0}, Flt{0}});
             }
             morph::vec<Flt, 2> edgedoms = v.neighb;
-            return walk_common (hg, f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
+            return walk_common (f, v, v.pathto_neighbour, edgedoms, next_neighb_dom);
         }
 
         /*!
@@ -884,13 +879,13 @@ namespace morph {
             // in that case.
             Flt next_neighb_dom = std::numeric_limits<Flt>::max();
 
-            morph::vec<Flt, 2> neighb_vtx = walk_to_neighbour (hg, f, v, next_neighb_dom);
+            morph::vec<Flt, 2> neighb_vtx = walk_to_neighbour (f, v, next_neighb_dom);
             DBG2 ("walk_to_neighbour returned with vertex " << neighb_vtx);
             v.vn = neighb_vtx;
 
             // Walk to the next vertex
             next_neighb_dom = std::numeric_limits<Flt>::max();
-            morph::vec<Flt, 2> next_vtx = walk_to_next (hg, f, v, next_neighb_dom);
+            morph::vec<Flt, 2> next_vtx = walk_to_next (f, v, next_neighb_dom);
             DBG2 ("starting from " << v.v << ", walk_to_next returned with vertex " << next_vtx);
 
             DBG2 ("Closing dv at " << dv->v << " with f=" << dv->f << " [" << dv->neighb << "]");
