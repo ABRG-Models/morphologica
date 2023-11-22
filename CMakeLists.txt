@@ -46,7 +46,8 @@ else()
           message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
         endif()
       endif()
-      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -Wextra -g -Werror=deprecated-copy -Wunused-parameter -Wpedantic -Werror -Wfatal-errors -Wunused-result -Wunknown-pragmas -pedantic-errors -march=native -O3")
+      set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors")
+      set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -g ${COMPREHENSIVE_WARNING_FLAGS} -march=native -O3")
     endif()
   else() # Windows
     # Set flags for Windows. /EHsc required for use of exceptions
