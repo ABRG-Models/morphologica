@@ -45,6 +45,8 @@ namespace morph {
         //! Default constructor
         TransformMatrix() { this->setToIdentity(); }
 
+        TransformMatrix (const TransformMatrix& rhs) : mat(rhs.mat) {}
+
         /*!
          * The transformation matrix data, arranged in column major format to be OpenGL
          * friendly.

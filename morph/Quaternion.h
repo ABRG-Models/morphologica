@@ -39,6 +39,12 @@ namespace morph {
             , y(_y)
             , z(_z) {}
 
+        Quaternion (const Quaternion& rhs)
+            : w(rhs.w)
+            , x(rhs.x)
+            , y(rhs.y)
+            , z(rhs.z) {}
+
         alignas(Flt) Flt w;
         alignas(Flt) Flt x;
         alignas(Flt) Flt y;
