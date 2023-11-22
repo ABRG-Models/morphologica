@@ -1593,19 +1593,19 @@ namespace morph {
                 if constexpr (debugdata) { if (datatocopy) { std::cout << " to desthex: " << dest_hex->outputRG() << std::endl; } }
 
                 // Having computed all the overlaps:
-                if (datatocopy && overlap[0]) std::cout << "Adding [0] " << (overlap[0]*100.0f) << "\% to dest_hex itself\n";
+                if (datatocopy && overlap[0]) std::cout << "Adding [0] " << (overlap[0]*100.0f) << "% to dest_hex itself\n";
                 shifted[dest_hex->vi] += overlap[0] * image_data[h->vi];
 
                 if (dest_hex->has_ne()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[1]) { std::cout << "Adding [1] " << (overlap[1]*100.0f) << "\% to dest_hex ne\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[1]) { std::cout << "Adding [1] " << (overlap[1]*100.0f) << "% to dest_hex ne\n"; } }
                     shifted[dest_hex->ne->vi] += overlap[1] * image_data[h->vi];
 
                     if (dest_hex->ne->has_ne()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[8]) { std::cout << "Adding [8] " << (overlap[8]*100.0f) << "\% to dest_hex ne->ne\n";} }
+                        if constexpr (debugdata) { if (datatocopy && overlap[8]) { std::cout << "Adding [8] " << (overlap[8]*100.0f) << "% to dest_hex ne->ne\n";} }
                         shifted[dest_hex->ne->ne->vi] += overlap[8] * image_data[h->vi];
                     }
                     if (dest_hex->ne->has_nne()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[9]) { std::cout << "Adding [9] " << (overlap[9]*100.0f) << "\% to dest_hex ne->nne\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[9]) { std::cout << "Adding [9] " << (overlap[9]*100.0f) << "% to dest_hex ne->nne\n"; } }
                         shifted[dest_hex->ne->nne->vi] += overlap[9] * image_data[h->vi];
                     }
                 } else {
@@ -1613,62 +1613,62 @@ namespace morph {
                 }
 
                 if (dest_hex->has_nne()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[2]) { std::cout << "Adding [2] " << (overlap[2]*100.0f) << "\% to dest_hex nne\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[2]) { std::cout << "Adding [2] " << (overlap[2]*100.0f) << "% to dest_hex nne\n"; } }
                     shifted[dest_hex->nne->vi] += overlap[2] * image_data[h->vi];
                     if (dest_hex->nne->has_nne()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[10]) { std::cout << "Adding [10] " << (overlap[10]*100.0f) << "\% to dest_hex nne->nne\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[10]) { std::cout << "Adding [10] " << (overlap[10]*100.0f) << "% to dest_hex nne->nne\n"; } }
                         shifted[dest_hex->nne->nne->vi] += overlap[10] * image_data[h->vi];
                     }
                     if (dest_hex->nne->has_nnw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[11]) { std::cout << "Adding [11] " << (overlap[11]*100.0f) << "\% to dest_hex nne->nnw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[11]) { std::cout << "Adding [11] " << (overlap[11]*100.0f) << "% to dest_hex nne->nnw\n"; } }
                         shifted[dest_hex->nne->nnw->vi] += overlap[11] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nnw()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[3]) { std::cout << "Adding [3] " << (overlap[3]*100.0f) << "\% to dest_hex nnw\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[3]) { std::cout << "Adding [3] " << (overlap[3]*100.0f) << "% to dest_hex nnw\n"; } }
                     shifted[dest_hex->nnw->vi] += overlap[3] * image_data[h->vi];
                     if (dest_hex->nnw->has_nnw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[12]) { std::cout << "Adding [12] " << (overlap[12]*100.0f) << "\% to dest_hex nnw->nnw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[12]) { std::cout << "Adding [12] " << (overlap[12]*100.0f) << "% to dest_hex nnw->nnw\n"; } }
                         shifted[dest_hex->nnw->nnw->vi] += overlap[12] * image_data[h->vi];
                     }
                     if (dest_hex->nnw->has_nw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[13]) { std::cout << "Adding [13] " << (overlap[13]*100.0f) << "\% to dest_hex nnw->nw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[13]) { std::cout << "Adding [13] " << (overlap[13]*100.0f) << "% to dest_hex nnw->nw\n"; } }
                         shifted[dest_hex->nnw->nw->vi] += overlap[13] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nw()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[4]) { std::cout << "Adding [4] " << (overlap[4]*100.0f) << "\% to dest_hex nw\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[4]) { std::cout << "Adding [4] " << (overlap[4]*100.0f) << "% to dest_hex nw\n"; } }
                     shifted[dest_hex->nw->vi] += overlap[4] * image_data[h->vi];
                     if (dest_hex->nw->has_nw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[14]) { std::cout << "Adding [14] " << (overlap[14]*100.0f) << "\% to dest_hex nw->nw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[14]) { std::cout << "Adding [14] " << (overlap[14]*100.0f) << "% to dest_hex nw->nw\n"; } }
                         shifted[dest_hex->nw->nw->vi] += overlap[14] * image_data[h->vi];
                     }
                     if (dest_hex->nw->has_nsw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[15]) { std::cout << "Adding [15] " << (overlap[15]*100.0f) << "\% to dest_hex nw->nsw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[15]) { std::cout << "Adding [15] " << (overlap[15]*100.0f) << "% to dest_hex nw->nsw\n"; } }
                         shifted[dest_hex->nw->nsw->vi] += overlap[15] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nsw()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[5]) { std::cout << "Adding [5] " << (overlap[5]*100.0f) << "\% to dest_hex nsw\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[5]) { std::cout << "Adding [5] " << (overlap[5]*100.0f) << "% to dest_hex nsw\n"; } }
                     shifted[dest_hex->nsw->vi] += overlap[5] * image_data[h->vi];
                     if (dest_hex->nsw->has_nsw()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[16]) { std::cout << "Adding [16] " << (overlap[16]*100.0f) << "\% to dest_hex nsw->nsw\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[16]) { std::cout << "Adding [16] " << (overlap[16]*100.0f) << "% to dest_hex nsw->nsw\n"; } }
                         shifted[dest_hex->nsw->nsw->vi] += overlap[16] * image_data[h->vi];
                     }
                     if (dest_hex->nsw->has_nse()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[17]) { std::cout << "Adding [17] " << (overlap[17]*100.0f) << "\% to dest_hex nsw->nse\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[17]) { std::cout << "Adding [17] " << (overlap[17]*100.0f) << "% to dest_hex nsw->nse\n"; } }
                         shifted[dest_hex->nsw->nse->vi] += overlap[17] * image_data[h->vi];
                     }
                 }
                 if (dest_hex->has_nse()) {
-                    if constexpr (debugdata) { if (datatocopy && overlap[6]) { std::cout << "Adding [6] " << (overlap[6]*100.0f) << "\% to dest_hex nse\n"; } }
+                    if constexpr (debugdata) { if (datatocopy && overlap[6]) { std::cout << "Adding [6] " << (overlap[6]*100.0f) << "% to dest_hex nse\n"; } }
                     shifted[dest_hex->nse->vi] += overlap[6] * image_data[h->vi];
                     if (dest_hex->nse->has_nse()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[18]) { std::cout << "Adding [18] " << (overlap[18]*100.0f) << "\% to dest_hex nse->nse\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[18]) { std::cout << "Adding [18] " << (overlap[18]*100.0f) << "% to dest_hex nse->nse\n"; } }
                         shifted[dest_hex->nse->nse->vi] += overlap[18] * image_data[h->vi];
                     }
                     if (dest_hex->nse->has_ne()) {
-                        if constexpr (debugdata) { if (datatocopy && overlap[7]) { std::cout << "Adding [7] " << (overlap[7]*100.0f) << "\% to dest_hex nse->ne\n"; } }
+                        if constexpr (debugdata) { if (datatocopy && overlap[7]) { std::cout << "Adding [7] " << (overlap[7]*100.0f) << "% to dest_hex nse->ne\n"; } }
                         shifted[dest_hex->nse->ne->vi] += overlap[7] * image_data[h->vi];
                     }
                 } else {
