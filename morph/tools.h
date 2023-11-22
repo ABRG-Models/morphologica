@@ -1139,10 +1139,10 @@ namespace morph
                     throw std::runtime_error (emsg.str());
                 }
                 if (uid>-1 && gid>-1) {
-                   cortn = chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
-                   if (cortn == -1) {
-                       throw std::runtime_error ("chown of prePath failed");
-                   }
+                    cortn = chown (prePath.c_str(), static_cast<uid_t>(uid), static_cast<gid_t>(gid));
+                    if (cortn == -1) {
+                        throw std::runtime_error ("chown of new directory failed");
+                    }
                 }
                 i++;
             }
