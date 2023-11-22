@@ -52,7 +52,7 @@ namespace my {
         void load_shaders() final
         {
             std::vector<morph::gl::ShaderInfo> shaders = {
-                {GL_COMPUTE_SHADER, "../examples/gl_compute/naive_scan.glsl", morph::gl::nonCompilingComputeShader }
+                {GL_COMPUTE_SHADER, "../examples/gl_compute/naive_scan.glsl", morph::gl::nonCompilingComputeShader, 0 }
             };
             this->scan_program.load_shaders (shaders);
         }
