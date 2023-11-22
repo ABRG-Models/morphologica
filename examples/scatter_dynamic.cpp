@@ -12,7 +12,7 @@
 #include <array>
 #include <iostream>
 
-int main (int argc, char** argv)
+int main()
 {
     int rtn = -1;
     morph::Visual v(848, 480, "Moving ScatterVisual", {0,0}, {1,1,1}, 1.0f, 0.05f);

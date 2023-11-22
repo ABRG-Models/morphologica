@@ -6,7 +6,7 @@
 #include <morph/vec.h>
 #include <iostream>
 
-int main (int argc, char** argv)
+int main()
 {
     int rtn = -1;
 

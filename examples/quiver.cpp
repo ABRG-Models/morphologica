@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-int main (int argc, char** argv)
+int main()
 {
     int rtn = -1;
 

@@ -12,7 +12,7 @@
 #include <cmath>
 #include <array>
 
-int main (int argc, char** argv)
+int main()
 {
     int rtn = -1;
 
