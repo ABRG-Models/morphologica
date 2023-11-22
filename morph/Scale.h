@@ -40,6 +40,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <sstream>
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
 #include <morph/vvec.h>
@@ -305,7 +306,16 @@ namespace morph {
 
         virtual T inverse_one (const S& datum) const
         {
-            throw std::runtime_error ("Inverse transform not yet implemented for vectors");
+            T rtn = T{};
+            if (this->type == ScaleFn::Logarithmic) {
+                rtn = this->inverse_one_log (datum);
+            } else if (this->type == ScaleFn::Linear) {
+                rtn = this->inverse_one_linear (datum);
+            } else {
+                throw std::runtime_error ("Unknown scaling");
+            }
+            return rtn;
+
         }
 
         virtual void compute_autoscale (T input_min, T input_max)
@@ -368,6 +378,26 @@ namespace morph {
                 ++vi;
             }
             return std::sqrt (sos);
+        }
+
+        //! The inverse linear transform; x = (y-c)/m
+        T inverse_one_linear (const T& datum) const
+        {
+            if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
+            T rtn (datum);
+            size_t i = 0;
+            for (auto el : datum) {
+                rtn[i++] = el - this->params[1] / this->params[0];
+            }
+            return rtn;
+        }
+
+        //! The inverse of the log transform is exp.
+        T inverse_one_log (const T& datum) const
+        {
+            T rtn = inverse_one_linear (datum);
+            for (auto& el : rtn) { el = std::exp (el); }
+            return rtn;
         }
 
         //! The parameters for the scaling. For linear scaling, this will contain two scalar
