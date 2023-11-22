@@ -767,7 +767,9 @@ namespace morph {
                                                        const morph::vec<float, 2> c = {0.0f, 0.0f})
         {
             std::vector<morph::BezCoord<float>> bpoints;
-            throw std::runtime_error ("HexGrid::rectangleCompute: Implement me");
+            std::stringstream ss;
+            ss << "HexGrid::rectangleCompute: Implement me for x: " << x << ", y: " << y << " and c=" << c;
+            throw std::runtime_error (ss.str());
             return bpoints;
         }
 
