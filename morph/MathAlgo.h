@@ -525,6 +525,81 @@ namespace morph {
             }
         }
 
+        // Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
+        // even (not tested). Assume the data in the vvec relates to a rectangle of width w.
+        // Specify both input and output type
+        template<typename T, typename T_o = T, int boxside, int w, bool onlysum = false>
+        static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T_o>& result)
+        {
+            // static_assert (boxside * boxside * input_max <= std::numeric_limits<T_o>::max(), "boxside*boxside*Tmax should fit in T_o");
+
+            if constexpr (boxside%2 == 0) {
+                throw std::runtime_error ("boxfilter_2d was not designed for even box filter squares (set boxside template param. to an odd value)");
+            }
+            if (result.size() != data.size()) {
+                throw std::runtime_error ("The input data vector is not the same size as the result vector.");
+            }
+
+            // Divide by boxarea without accounting for edges (wrapping will sort horz edges)
+            static constexpr T_o oneover_boxa = T_o{1} / (static_cast<T_o>(boxside)*static_cast<T_o>(boxside));
+            static constexpr int halfbox = boxside / 2;
+            static constexpr int halfbox_p1 = halfbox + 1;
+
+            morph::vec<T_o, w> colsum;
+            colsum.zero();
+            T_o rowsum = T{0};
+
+            int h = data.size() / w;
+
+            // process data row by row
+            for (int y = -halfbox; y < h; ++y) {
+
+                // 1. Accumulate column sums; pull out last row.
+                if (y+halfbox < h) {
+                    if (y >= halfbox_p1) {
+                        for (int x = 0; x < w; ++x) {
+                            // Add to the next row from the data array and subtract the last (bottom) row of the colsum
+                            colsum[x] += data[(y+halfbox)*w+x]  -  data[(y-halfbox_p1)*w+x];
+                            // T_o       T                         T
+                        }
+                    } else {
+                        for (int x = 0; x < w; ++x) {
+                            // Just add to the next row from the data array
+                            colsum[x] += data[(y+halfbox)*w+x];
+                        }
+                    }
+                } else {
+                    if (y >= halfbox_p1) {
+                        // Just subtract
+                        for (int x = 0; x < w; ++x) {
+                            colsum[x] -= data[(y-halfbox_p1)*w+x];
+                        }
+                    } // else no op on colsum[x]
+                }
+
+                rowsum = T{0};
+                if (y>=0) {
+                    // 2. Initialise rowsum. This happens after we have accumulated colsums. Init rowsum as the sum of the end col
+                    for (int i = -halfbox_p1; i < 0; ++i) { rowsum += colsum[i+w]; }
+                    for (int i = 0; i < halfbox; ++i) { rowsum += colsum[i]; }
+
+                    // 3. Compute the sum along the row, and write this into result
+                    int l = -halfbox_p1;
+                    int r = halfbox;
+                    for (int x = 0; x < w; ++x) {
+                        // A modulus where -x modulus w gives always a positive index: (w + (a % w)) % w
+                        rowsum += colsum[(w + (r++ % w)) % w] - colsum[(w + (l++ % w)) % w];
+
+                        if constexpr (onlysum == true) {
+                            result[y*w + x] = rowsum;
+                        } else {
+                            result[y*w + x] = rowsum * oneover_boxa;
+                        }
+                    }
+                }
+            }
+        }
+
         // Boxfilter that works with a runtime-configured width, w
         template<typename T, int boxside, bool onlysum = false>
         static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T>& result, const int w)

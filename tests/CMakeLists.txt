@@ -444,3 +444,6 @@ endif()
 # morph::Tools
 add_executable(testTools testTools.cpp)
 add_test(testTools testTools)
+
+add_executable(testboxfilter testboxfilter.cpp)
+add_test(testboxfilter testboxfilter)
