@@ -50,10 +50,10 @@ namespace morph {
         //! User-declared copy assignment constructor
         Quaternion<Flt>& operator= (Quaternion<Flt>& other)
         {
-            std::swap (w, other.w);
-            std::swap (x, other.x);
-            std::swap (y, other.y);
-            std::swap (z, other.z);
+            w = other.w;
+            x = other.x;
+            y = other.y;
+            z = other.z;
             return *this;
         }
         //! Explicitly defaulted  move constructor

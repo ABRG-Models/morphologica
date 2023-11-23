@@ -37,7 +37,13 @@ int main()
             ++rtn;
         }
     }
-
+    tm2 = static_cast<morph::TransformMatrix<float>>(tm1);
+    std::cout << "After second assignment:\n" << tm2 << std::endl;
+    for (unsigned int i = 0; i<16; ++i) {
+        if (tm2.mat[i] != (float)i) {
+            ++rtn;
+        }
+    }
     // Test multiplication
     morph::TransformMatrix<float> mult1;
     setMatrixSequence (mult1);

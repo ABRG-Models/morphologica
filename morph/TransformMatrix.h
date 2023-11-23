@@ -51,7 +51,7 @@ namespace morph {
         //! User-declared copy assignment constructor
         TransformMatrix<Flt>& operator= (TransformMatrix<Flt>& other)
         {
-            std::swap (mat, other.mat);
+            std::copy (other.mat.begin(), other.mat.end(), mat.begin());
             return *this;
         }
         //! Explicitly defaulted  move constructor
