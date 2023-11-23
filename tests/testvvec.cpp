@@ -2,6 +2,7 @@
 #include "morph/vec.h"
 #include "morph/mathconst.h"
 #include <array>
+#include <cstdint>
 using morph::vvec;
 using std::cout;
 using std::endl;
@@ -29,6 +30,17 @@ int main() {
     vi.randomize(0,100);
     cout << "After randomize of int vector: " << vi << endl;
     cout << "Length: " << vi.length() << endl;
+
+    morph::vec<float, 2> vfl = {113, 124};
+    cout << "Length of a float morph::vec: " << vfl.length() << endl;
+    morph::vvec<float> vvfl = {113, 124};
+    cout << "Length of a float morph::vvec: " << vvfl.length() << endl;
+
+    morph::vec<int, 2> vil = {113, 124};
+    cout << "Length of an int morph::vec: " << vil.length() << endl;
+    morph::vvec<int> vvil = {113, 124};
+    cout << "Length of an int morph::vvec: " << vvil.length() << endl;
+
     // Test assignment
     vvec<int> vi2 = vi;
     cout << "Copy of int vector: " << vi2 << endl;
@@ -432,6 +444,38 @@ int main() {
     vvvec.zero();
     if (vvvec.sum().sum() != 0) { --rtn; }
     std::cout << "After zero: " << vvvec << " with sum " << vvvec.sum().sum() << std::endl;
+
+    // Sum of squares
+    vvec<uint8_t> sos1 = {2, 3, 4, 5};
+    std::cout << sos1.as_uint() << " uint8_t sum of squares: sos1.sos(): " << sos1.sos() << std::endl;
+    std::cout << sos1.as_uint() << " uint8_t sum of squares: sos1.sos<unsigned int>(): " << sos1.sos<unsigned int>() << std::endl;
+
+    std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<uint8_t>(4) = " << sos1.pow<uint8_t>(4).as_uint() << std::endl;
+    std::cout << sos1.as_uint() << " uint8_t to power 3: sos1.pow<unsigned int>(4) = " << sos1.pow<unsigned int>(4) << std::endl;
+
+    // Correctly fails to compile/errors (will fail to compile when morph moves to C++-20)
+    try {
+        std::cout << sos1.as_uint() << " uint8_t sum of squares: length_sq.sos<vec<>>(): " << sos1.length_sq<morph::vec<float, 2>>() << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "Expected error: " << e.what() << std::endl;
+    }
+
+    vvec<morph::vec<int, 2>> sosv1 = {{1,2}, {3,2}, {2,4}};
+    //std::cout << sosv1 << " sum of squares: " << sosv1.sos() << std::endl; // won't compile or will runtime error
+    std::cout << sosv1 << " is a vector of vectors, so sosv1.length_sq<int>() returns a sum of squared lengths: " << sosv1.length_sq<int>() << std::endl;
+    std::cout << sosv1 << " is a vector of vectors, so sosv1.sos(): " << sosv1.sos() << std::endl;
+
+    morph::vvec<uint8_t> uv = {10, 10, 10};
+    std::cout << uv.as_uint() << ".product() = " << static_cast<unsigned int>(uv.product()) << std::endl;
+    std::cout << uv.as_uint() << ".product<unsigned int>() = " << uv.product<unsigned int>() << std::endl;
+
+    morph::vvec<uint8_t> uv2 = {1, 2, 10, 3, 11, 23};
+    std::cout << uv2.as_uint() << " mean: " << uv2.mean<float>() << std::endl;
+    std::cout << uv2.as_uint() << " variance: " << uv2.variance<float>() << std::endl;
+
+    morph::vvec<float> uv2f = {1, 2, 10, 3, 11, 23};
+    std::cout << uv2f << " mean: " << uv2f.mean() << std::endl;
+    std::cout << uv2f << " variance: " << uv2f.variance() << std::endl;
 
     std::cout << "At end, rtn=" << rtn << std::endl;
     return rtn;

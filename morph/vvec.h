@@ -171,6 +171,22 @@ namespace morph {
             return vv;
         }
 
+        //! Return this vvec in single precision, int format
+        vvec<int> as_int() const
+        {
+            vvec<int> vv(this->size(), 0);
+            vv += *this;
+            return vv;
+        }
+
+        //! Return this vvec in single precision, unsigned int format
+        vvec<unsigned int> as_uint() const
+        {
+            vvec<unsigned int> vv(this->size(), 0);
+            vv += *this;
+            return vv;
+        }
+
         /*!
          * Set an N-D vvec from an N+1 D vvec. Intended to convert 4D vectors (that
          * have been operated on by 4x4 matrices) into 3D vectors.
@@ -491,11 +507,16 @@ namespace morph {
          *
          * \return the length
          */
-        S length() const
+        template <typename _S=S>
+        _S length() const
         {
-            auto add_squared = [](S a, S b) { return a + b * b; };
-            const S len = std::sqrt (std::accumulate (this->begin(), this->end(), S{0}, add_squared));
-            return len;
+            auto add_squared = [](_S a, S b) { return a + b * b; };
+            // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
+            if constexpr (std::is_integral<std::decay_t<_S>>::value == true) {
+                return static_cast<_S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
+            } else {
+                return std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared));
+            }
         }
 
         /*!
@@ -537,30 +558,53 @@ namespace morph {
          * Find the squared length of the vector which is the same as the sum of squared
          * elements, if elements are scalar.
          *
-         * \return the length squared
+         * If S typed elements are morph::vecs or morph::vvecs, then return the sum of the squares
+         * of the lengths of the elements in the return _S type, which you will have to ensure to be
+         * a scalar.
          */
-        S length_sq() const
+        template <typename _S=S>
+        _S length_sq() const
         {
-            auto add_squared = [](S a, S b) { return a + b * b; };
-            const S len_sq = std::accumulate (this->begin(), this->end(), S{0}, add_squared);
-            return len_sq;
+            _S _sos = _S{0};
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
+                    // Return type is also scalar
+                    _sos = this->sos<_S>();
+                } else {
+                    // Return type is a vector. Too weird.
+                    // C++-20:
+                    //[]<bool flag = false>() { static_assert(flag, "Won't compute sum of squared scalar elements into a vector type"); }();
+                    // Before C++-20:
+                    throw std::runtime_error ("Won't compute sum of squared scalar elements into a vector type");
+                }
+            } else {
+                // S is a vector so i is a vector.
+                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
+                    // Return type _S is a scalar
+                    for (auto& i : *this) { _sos += i.template sos<_S>(); }
+                } else {
+                    // Return type _S is also a vector, place result in 0th element? No, can now use vvec<vec<float>>::sos<float>()
+                    //[]<bool flag = false>() { static_assert(flag, "Won't compute sum of squared vector length elements into a vector type"); }();
+                    throw std::runtime_error ("Won't compute sum of squared vector lengths into a vector type");
+                }
+            }
+            return _sos;
         }
 
         /*!
-         * Return the sum of the squares of the elements. If S typed elements are
-         * morph::vecs or morph::vvecs, then return the sum of the squares of the
-         * lengths of the elements in the zeroth element of the return S type.
+         * Return the sum of the squares of the elements.
+         *
+         * If S is a vector type, then the result will be a vector type containing the
+         * sos of all elements i - that is, element 0 of the returned vector will contain
+         *  the sum of squares of element 0 of all members of *this.
+         *
+         * \return the length squared
          */
-        S sos() const
+        template <typename _S=S>
+        _S sos() const
         {
-            S _sos = S{0};
-            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
-                _sos = this->length_sq();
-            } else {
-                // S is a vector so i is a vector.
-                for (auto& i : *this) { _sos[0] += i.length_sq(); }
-            }
-            return _sos;
+            auto add_squared = [](_S a, S b) { return a + b * b; };
+            return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
         }
 
         //! Return the value of the longest component of the vector.
@@ -890,43 +934,53 @@ namespace morph {
         }
 
         //! Return the arithmetic mean of the elements
-        S mean() const
+        template<typename _S=S>
+        _S mean() const
         {
-            const S sum = std::accumulate (this->begin(), this->end(), S{0});
+            const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
             return sum / this->size();
         }
 
         //! Return the variance of the elements
-        S variance() const
+        template<typename _S=S>
+        _S variance() const
         {
             if (this->empty()) { return S{0}; }
-            S _mean = this->mean();
-            S sos_deviations = S{0};
+            _S _mean = this->mean<_S>();
+            _S sos_deviations = _S{0};
             for (S val : *this) {
                 sos_deviations += ((val-_mean)*(val-_mean));
             }
-            S variance = sos_deviations / (this->size()-1);
+            _S variance = sos_deviations / (this->size()-1);
             return variance;
         }
 
         //! Return the standard deviation of the elements
-        S std() const
+        template<typename _S=S>
+        _S std() const
         {
-            if (this->empty()) { return S{0}; }
-            return std::sqrt (this->variance());
+            if (this->empty()) { return _S{0}; }
+            return std::sqrt (this->variance<_S>());
         }
 
-        //! Return the sum of the elements
-        S sum() const
+        //! Return the sum of the elements. If elements are of a constrained type, you can call this something like:
+        //! vvec<uint8_t> uv (256, 10);
+        //! unsigned int thesum = uv.sum<unsigned int>();
+        template<typename _S=S>
+        _S sum() const
         {
-            return std::accumulate (this->begin(), this->end(), S{0});
+            return std::accumulate (this->begin(), this->end(), _S{0});
         }
 
-        //! Return the product of the elements
-        S product() const
+        //! Return the product of the elements. If elements are of a constrained type, you can call
+        //! this something like:
+        //! vvec<uint8_t> uv (256, 10);
+        //! unsigned int theproduct = uv.product<unsigned int>();
+        template<typename _S=S>
+        _S product() const
         {
-            auto _product = [](S a, S b) mutable { return a ? a * b : b; };
-            return std::accumulate (this->begin(), this->end(), S{0}, _product);
+            auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
+            return std::accumulate (this->begin(), this->end(), _S{0}, _product);
         }
 
         /*!
@@ -934,9 +988,10 @@ namespace morph {
          *
          * \return a vvec whose elements have been raised to the power p
          */
-        vvec<S> pow (const S& p) const
+        template<typename _S=S>
+        vvec<_S> pow (const S& p) const
         {
-            vvec<S> rtn(this->size());
+            vvec<_S> rtn(this->size());
             auto raise_to_p = [p](S coord) { return std::pow(coord, p); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;

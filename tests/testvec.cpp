@@ -33,6 +33,9 @@ int main() {
     vi.randomize(0,200);
     cout << "After randomize of int morph::vector: " << vi << endl;
     cout << "Length: " << vi.length() << endl;
+    morph::vec<float, 3> vfl;
+    vfl.randomize();
+    cout << "Length of a float vector: " << vfl.length() << endl;
     // Test assignment
     morph::vec<int, 2> vi2 = vi;
     cout << "Copy of int morph::vector: " << vi2 << endl;

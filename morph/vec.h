@@ -158,6 +158,25 @@ namespace morph {
             for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
+        /*!
+         * Similar to numpy's arange. Set a linear sequence from start to stop with the given step
+         * size. If this leads to too many elements to fit in this vec, simply stop when it's
+         * full. If too few, then the rest will be 0.
+         */
+        template <typename _S=S, typename _S2=S>
+        void arange (const _S start, const _S2 stop, const _S2 increment)
+        {
+            this->zero();
+            // Figure out how many elements given the increment:
+            S num = std::ceil((stop - start) / increment);
+            if (num > S{0}) {
+                for (size_t i = 0; i < static_cast<size_t>(num) && i < N; ++i) {
+                    (*this)[i] = start + increment*static_cast<S>(i);
+                }
+            } // else vector will now be full of zeros, not quite like Python does it (it returns an
+              // empty array with no elements)
+        }
+
         //! Return a vector with one less dimension - losing the last one.
         vec<S, N-1> less_one_dim () const
         {
@@ -197,6 +216,24 @@ namespace morph {
         vec<double, N> as_double() const
         {
             vec<double, N> v;
+            v.zero();
+            v += *this;
+            return v;
+        }
+
+        //! Return this vec in single precision, int format
+        vec<int, N> as_int() const
+        {
+            vec<int, N> v;
+            v.zero();
+            v += *this;
+            return v;
+        }
+
+        //! Return this vec in single precision, unsigned int format
+        vec<unsigned int, N> as_uint() const
+        {
+            vec<unsigned int, N> v;
             v.zero();
             v += *this;
             return v;
@@ -428,18 +465,17 @@ namespace morph {
         /*!
          * Find the length of the vector.
          *
-         * \return the length
+         * \return a value which is as close as possible to the length
          */
-        S length() const
+        template <typename _S=S>
+        _S length() const
         {
-            auto add_squared = [](S a, S b) { return a + b * b; };
-            // Add check on whether S is integral or float. If integral, then std::round then cast the result of std::sqrt()
-            if constexpr (std::is_integral<std::decay_t<S>>::value == true) {
-                const S len = static_cast<S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared))));
-                return len;
+            auto add_squared = [](_S a, S b) { return a + b * b; };
+            // Add check on whether return type _S is integral or float. If integral, then std::round then cast the result of std::sqrt()
+            if constexpr (std::is_integral<std::decay_t<_S>>::value == true) {
+                return static_cast<_S>(std::round(std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared))));
             } else {
-                const S len = std::sqrt(std::accumulate(this->begin(), this->end(), S{ 0 }, add_squared));
-                return len;
+                return std::sqrt(std::accumulate(this->begin(), this->end(), _S{0}, add_squared));
             }
         }
 
@@ -474,15 +510,54 @@ namespace morph {
         }
 
         /*!
-         * Find the squared length of the vector.
+         * Find the squared length of the vector which is the same as the sum of squared
+         * elements, if elements are scalar.
          *
-         * \return the square of the length
+         * If S typed elements are morph::vecs or morph::vvecs, then return the sum of the squares
+         * of the lengths of the elements in the return _S type, which you will have to ensure to be
+         * a scalar.
          */
-        S length_sq() const
+        template <typename _S=S>
+        _S length_sq() const
         {
-            auto add_squared = [](S a, S b) { return a + b * b; };
-            const S len_sq = std::accumulate (this->begin(), this->end(), S{0}, add_squared);
-            return len_sq;
+            _S _sos = _S{0};
+            if constexpr (std::is_scalar<std::decay_t<S>>::value) {
+                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
+                    // Return type is also scalar
+                    _sos = this->sos<_S>();
+                } else {
+                    // Return type is a vector. Too weird.
+                    //[]<bool flag = false>() { static_assert(flag, "Won't compute sum of squared scalar elements into a vector type"); }();
+                    throw std::runtime_error ("Won't compute sum of squared scalar elements into a vector type");
+                }
+            } else {
+                // S is a vector so i is a vector.
+                if constexpr (std::is_scalar<std::decay_t<_S>>::value) {
+                    // Return type _S is a scalar
+                    for (auto& i : *this) { _sos += i.template sos<_S>(); }
+                } else {
+                    // Return type _S is also a vector, place result in 0th element? No, can now use vvec<vec<float>>::sos<float>()
+                    throw std::runtime_error ("Won't compute sum of squared vector lengths into a vector type");
+                    //[]<bool flag = false>() { static_assert(flag, "Won't compute sum of squared vector length elements into a vector type"); }();
+                }
+            }
+            return _sos;
+        }
+
+        /*!
+         * Return the sum of the squares of the elements.
+         *
+         * If S is a vector type, then the result will be a vector type containing the
+         * sos of all elements i - that is, element 0 of the returned vector will contain
+         *  the sum of squares of element 0 of all members of *this.
+         *
+         * \return the length squared
+         */
+        template <typename _S=S>
+        _S sos() const
+        {
+            auto add_squared = [](_S a, S b) { return a + b * b; };
+            return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
         }
 
         //! Return the value of the longest component of the vector.
@@ -631,20 +706,48 @@ namespace morph {
         }
 
         //! Return the arithmetic mean of the elements
-        S mean() const
+        template<typename _S=S>
+        _S mean() const
         {
-            const S sum = std::accumulate (this->begin(), this->end(), S{0});
+            const _S sum = std::accumulate (this->begin(), this->end(), _S{0});
             return sum / this->size();
         }
 
+        //! Return the variance of the elements
+        template<typename _S=S>
+        _S variance() const
+        {
+            if (this->empty()) { return S{0}; }
+            _S _mean = this->mean<_S>();
+            _S sos_deviations = _S{0};
+            for (S val : *this) {
+                sos_deviations += ((val-_mean)*(val-_mean));
+            }
+            _S variance = sos_deviations / (this->size()-1);
+            return variance;
+        }
+
+        //! Return the standard deviation of the elements
+        template<typename _S=S>
+        _S std() const
+        {
+            if (this->empty()) { return _S{0}; }
+            return std::sqrt (this->variance<_S>());
+        }
+
         //! Return the sum of the elements
-        S sum() const { return std::accumulate (this->begin(), this->end(), S{0}); }
+        template<typename _S=S>
+        _S sum() const
+        {
+            return std::accumulate (this->begin(), this->end(), _S{0});
+        }
 
         //! Return the product of the elements
-        S product() const
+        template<typename _S=S>
+        _S product() const
         {
-            auto _product = [](S a, S b) mutable -> S { return a ? a * b : b; };
-            return std::accumulate (this->begin(), this->end(), S{0}, _product);
+            auto _product = [](_S a, S b) mutable { return a ? a * b : b; };
+            return std::accumulate (this->begin(), this->end(), _S{0}, _product);
         }
 
         /*!
