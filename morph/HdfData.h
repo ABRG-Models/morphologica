@@ -514,11 +514,17 @@ namespace morph {
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
+            } else if constexpr (std::is_same<std::decay_t<T>, char>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_LLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<std::decay_t<T>, unsigned int>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                status = H5Dread (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
                 status = H5Dread (dataset_id, H5T_NATIVE_ULLONG, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
@@ -851,6 +857,11 @@ namespace morph {
                 this->check_dataset_space_1_dim (dataset_id, N);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
+            } else if constexpr (std::is_same<std::decay_t<T>, char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_1_dim (dataset_id, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 this->check_dataset_space_1_dim (dataset_id, N);
@@ -860,6 +871,11 @@ namespace morph {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 this->check_dataset_space_1_dim (dataset_id, N);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_1_dim (dataset_id, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(vals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
@@ -988,6 +1004,11 @@ namespace morph {
                 this->check_dataset_space_1_dim (dataset_id, vals.size());
                 status = H5Dwrite (dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
+            } else if constexpr (std::is_same<std::decay_t<T>, char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_1_dim (dataset_id, vals.size());
+                status = H5Dwrite (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
             } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 this->check_dataset_space_1_dim (dataset_id, vals.size());
@@ -1002,6 +1023,11 @@ namespace morph {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 this->check_dataset_space_1_dim (dataset_id, vals.size());
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_1_dim (dataset_id, vals.size());
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
@@ -1119,6 +1145,11 @@ namespace morph {
                 this->check_dataset_space_2_dims (dataset_id, sz, N);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
+            } else if constexpr (std::is_same<std::decay_t<T>, char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
             } else if constexpr (std::is_same<std::decay_t<T>, long long int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_I64LE, dataspace_id);
                 this->check_dataset_space_2_dims (dataset_id, sz, N);
@@ -1128,6 +1159,11 @@ namespace morph {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
                 this->check_dataset_space_2_dims (dataset_id, sz, N);
                 status = H5Dwrite (dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
+
+            } else if constexpr (std::is_same<std::decay_t<T>, unsigned char>::value == true) {
+                dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
+                this->check_dataset_space_2_dims (dataset_id, sz, N);
+                status = H5Dwrite (dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(outvals[0]));
 
             } else if constexpr (std::is_same<typename std::decay<T>::type, unsigned long long int>::value == true) {
                 dataset_id = this->open_dataset (path, H5T_STD_U64LE, dataspace_id);
