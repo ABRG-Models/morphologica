@@ -88,6 +88,19 @@ namespace morph {
         alignas(alignof(std::vector<float>)) std::vector<float> d_y;
 
         /*!
+         * For a given coordinate pair (x, y), the function returns the 1D index of the nearest cartgrid vertex
+         * This is a simplified version of "findRectNearest".  findRectNearest can be used for non-recatngular grids.
+         * This function is for rectangular grids only.
+         */
+        int indexFromCoord (morph::vec<float, 2>& coord)
+        {
+            int x_ind = std::round((coord.at(0) - x_minmax.min)/this->d);   // Index of nearest column
+            int y_ind = std::round((coord.at(1) - y_minmax.min)/this->v);   // Index of nearest row
+            int nc = int(((x_minmax.max - x_minmax.min)/this->d) + 1.0f);   // Number of columns in rectangular cartgrid
+            return (nc * y_ind) + x_ind;
+        }
+
+        /*!
          * Shift the supplied coordinates cds by the metric amounts x_shift and y_shift (to the
          * nearest existing coordinate in the cartgrid) and return a vector of new coordinates. Only
          * for rectangular cartgrids.

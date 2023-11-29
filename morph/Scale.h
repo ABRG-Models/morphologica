@@ -40,7 +40,6 @@
 
 #include <stdexcept>
 #include <cmath>
-#include <sstream>
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
 #include <morph/vvec.h>
@@ -315,7 +314,6 @@ namespace morph {
                 throw std::runtime_error ("Unknown scaling");
             }
             return rtn;
-
         }
 
         virtual void compute_autoscale (T input_min, T input_max)
