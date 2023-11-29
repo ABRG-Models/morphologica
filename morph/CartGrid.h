@@ -20,6 +20,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/Scale.h>
+#include <morph/range.h>
 
 // If the CartGrid::save and CartGrid::load methods are required, define
 // CARTGRID_COMPILE_LOAD_AND_SAVE. A link to libhdf5 will be required in your program.
