@@ -21,6 +21,7 @@
 #include <functional>
 #include <morph/Random.h>
 #include <morph/range.h>
+#include <morph/expression_sfinae.h>
 
 namespace morph {
 
@@ -76,14 +77,19 @@ namespace morph {
         //! \return the fourth component of the vector
         S w() const { return (*this)[3]; }
 
-        //! Set data members from an std::vector (by copying)
-        template <typename _S=S>
-        void set_from (const std::vector<_S>& vec)
+        //! Set data members from a templated container (by copying). Containers like
+        //! std::vector, std::deque and so on should work, but std::array, std::map won't.
+        // FIXME: Implement traits solution? https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
+        template < template <typename, typename> typename Ctnr,
+                   typename _S=S,
+                   typename Alctr=std::allocator<_S> >
+        void set_from (const Ctnr<_S, Alctr>& contained)
         {
-            this->resize(vec.size());
-            std::copy (vec.begin(), vec.end(), this->begin());
+            this->resize (contained.size());
+            std::copy (contained.begin(), contained.end(), this->begin());
         }
 
+#if 1
         //! Set data members from an std::array, matching the size of the array first.
         template <typename _S=S, size_t N>
         void set_from (const std::array<_S, N>& ar)
@@ -91,8 +97,18 @@ namespace morph {
             this->resize(N);
             std::copy (ar.begin(), ar.end(), this->begin());
         }
+#else
+        //! Traits set_from that could work with std::array?
+        template <typename Container>
+        std::enable_if_t<morph::has_const_iterator<Container>::value, void> // Need more tests - satisfy LegacyInputIterator
+        set_from (const Container& c)
+        {
+            this->resize (c.size());
+            std::copy (c.begin(), c.end(), this->begin());
+        }
+#endif
 
-        //! Set all elements from the value type v. Same as vvec::set
+        //! Set all elements from the value type v.
         template <typename _S=S>
         void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 

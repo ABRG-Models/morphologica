@@ -95,4 +95,14 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
+    // Test for the has a const_iterator trait
+    template<typename T>
+    class has_const_iterator
+    {
+        template<typename C> static char test(typename C::const_iterator*);
+        template<typename C> static int  test(...);
+    public:
+        enum { value = sizeof(test<T>(0)) == sizeof(char) };
+    };
+
 } // morph::

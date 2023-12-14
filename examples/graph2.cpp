@@ -31,8 +31,10 @@ int main()
     static constexpr bool setup_axes = true;
 
     try {
-        morph::vvec<float> absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
-        morph::vvec<float> data = absc.pow(3);
+        morph::vvec<float> _absc =  {-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8};
+        morph::vvec<float> data = _absc.pow(3);
+        std::deque<float> absc (_absc.size());
+        std::copy (_absc.begin(), _absc.end(), absc.begin());
         auto gvup = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0,0,0}));
         v.bindmodel (gvup);
 
@@ -55,16 +57,16 @@ int main()
             gvup->setdata (absc, data, ds);
             ds.markerstyle = morph::markerstyle::square;
             ds.setcolour ({0.0, 1.0, 0.0});
-            gvup->setdata (absc, absc.pow(4), ds);
+            gvup->setdata (absc, _absc.pow(4), ds);
         } else {
             gvup->policy = morph::stylepolicy::allcolour; // markers, lines, both, allcolour
             // The code here demonstrates how to include unicode characters (ss2 is "superscript 2")
             using morph::unicode;
             gvup->setdata (absc, absc, "y=x");
-            gvup->setdata (absc, absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
-            gvup->setdata (absc, absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
-            gvup->setdata (absc, absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
-            gvup->setdata (absc, absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
+            gvup->setdata (absc, _absc.pow(2)+0.05f, "y=x" + unicode::toUtf8(unicode::ss2));
+            gvup->setdata (absc, _absc.pow(3)+0.1f, "y=x" + unicode::toUtf8(unicode::ss3));
+            gvup->setdata (absc, _absc.pow(4)+0.15f, "y=x" + unicode::toUtf8(unicode::ss4));
+            gvup->setdata (absc, _absc.pow(5)+0.2f, "y=x" + unicode::toUtf8(unicode::ss5));
         }
 
         if constexpr (setup_axes) {
@@ -86,7 +88,7 @@ int main()
             v.waitevents (0.018);
             // Don't update this fast. That's crazy!
             if ((rcount++)%20 == 0) {
-                gv->update (absc, absc.pow(2)*addn, 1);
+                gv->update (absc, _absc.pow(2)*addn, 1);
                 addn += 0.2f;
             }
             // want gv->update (datasets); // to update all at once. THEN I'm done.
