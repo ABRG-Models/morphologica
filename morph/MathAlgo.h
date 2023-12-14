@@ -39,18 +39,16 @@ namespace morph {
         /*******************************************************************/
 
         /*!
-         * Functions whose implementations are in MathImpl, and which differ depending
-         * on whether T is a scalar type or a vector-like object (such as std::vector
+         * Functions whose implementations are in MathImpl, and which differ depending on whether
+         * the container's value_type is a scalar type or a vector-like object (such as std::vector
          * or std::list).
          *
          * Don't confuse this with C++11's std::minmax, which does something similar,
          * but won't do a max/min length of vector search like this does.
          */
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static morph::range<T> maxmin (const Container<T, Allocator>& vec) {
-            return MathImpl<number_type<T>::value>::maxmin (vec);
+        template <typename Container, std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, int> = 0>
+        static morph::range<typename Container::value_type> maxmin (const Container& vec) {
+            return MathImpl<number_type<typename Container::value_type>::value>::maxmin (vec);
         }
 
         /*!

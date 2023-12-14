@@ -119,13 +119,10 @@ namespace morph {
          *
          * \tparam OAllocator Memory allocator for OContainer.
          */
-        template < template <typename, typename> typename Container,
-                   typename TT=T,
-                   typename Allocator=std::allocator<TT>,
-                   template <typename, typename> typename OContainer=Container,
-                   typename ST=S,
-                   typename OAllocator=std::allocator<ST> >
-        void transform (const Container<TT, Allocator>& data, OContainer<ST, OAllocator>& output)
+        template <typename Container, typename OContainer=Container>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value
+                         && morph::container_with_legacy_input_iterator<OContainer>::value, void>
+        transform (const Container& data, OContainer& output)
         {
             size_t dsize = data.size();
             if (output.size() != dsize) {
@@ -136,21 +133,18 @@ namespace morph {
             } else if (this->do_autoscale == false && !this->ready()) {
                 throw std::runtime_error ("ScaleImplBase::transform(): Params are not set and do_autoscale is set false. Can't transform.");
             }
-            typename Container<TT, Allocator>::const_iterator di = data.begin();
-            typename Container<ST, OAllocator>::iterator oi = output.begin();
+            typename Container::const_iterator di = data.begin();
+            typename OContainer::iterator oi = output.begin();
             while (di != data.end()) { *oi++ = this->transform_one (*di++); }
         }
 
         /*!
          * \brief Inverse transform a container of scalars or vectors.
          */
-        template < template <typename, typename> typename OContainer,
-                   typename ST=S,
-                   typename OAllocator=std::allocator<ST>,
-                   template <typename, typename> typename Container=OContainer,
-                   typename TT=T,
-                   typename Allocator=std::allocator<TT> >
-        void inverse (const Container<ST, OAllocator>& data, OContainer<T, Allocator>& output)
+        template <typename OContainer, typename Container=OContainer>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value
+                         && morph::container_with_legacy_input_iterator<OContainer>::value, void>
+        inverse (const Container& data, OContainer& output)
         {
             size_t dsize = data.size();
             if (output.size() != dsize) {
@@ -159,8 +153,8 @@ namespace morph {
             if (!this->ready()) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Can't inverse transform; set params of this Scale, first");
             }
-            typename Container<ST, OAllocator>::const_iterator di = data.begin();
-            typename Container<TT, Allocator>::iterator oi = output.begin();
+            typename Container::const_iterator di = data.begin();
+            typename OContainer::iterator oi = output.begin();
             while (di != data.end()) { *oi++ = this->inverse_one (*di++); }
         }
 
@@ -195,12 +189,11 @@ namespace morph {
          * \param data The data from which to determine the scaling parameters. In practice, this
          * will be something like \c std::vector<float> or \c std::list<morph::vec<double,2>>
          */
-        template < template <typename, typename> typename Container,
-                   typename TT=T,
-                   typename Allocator=std::allocator<TT> >
-        void autoscale_from (const Container<TT, Allocator>& data)
+        template <typename Container>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, void>
+        autoscale_from (const Container& data)
         {
-            morph::range<TT> mm = MathAlgo::maxmin (data);
+            morph::range<typename Container::value_type> mm = MathAlgo::maxmin (data);
             this->compute_autoscale (mm.min, mm.max);
         }
 

@@ -14,7 +14,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <morph/mathconst.h>
-#include <morph/expression_sfinae.h>
+#include <morph/trait_tests.h>
 
 namespace morph {
 

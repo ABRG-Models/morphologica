@@ -367,11 +367,10 @@ namespace morph {
         }
 
         //! Update the data for the graph, recomputing the vertices when done.
-        template < template <typename, typename> typename Ctnr1,
-                   template <typename, typename> typename Ctnr2,
-                   typename Alctr=std::allocator<Flt> >
-        void update (const Ctnr1<Flt, Alctr>& _abscissae,
-                     const Ctnr2<Flt, Alctr>& _data, const size_t data_idx)
+        template <typename Ctnr1, typename Ctnr2>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
+                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        update (const Ctnr1& _abscissae, const Ctnr2& _data, const size_t data_idx)
         {
             size_t dsize = _data.size();
 
@@ -390,11 +389,12 @@ namespace morph {
             // May need a re-autoscaling option somewhere in here.
 
             // Transfor the data into temporary containers sd and ad
-            Ctnr2<Flt, Alctr> sd (dsize, Flt{0});
-            this->ord1_scale.transform (_data, sd);
-
-            Ctnr1<Flt, Alctr> ad (dsize, Flt{0});
+            std::vector<Flt> ad (dsize, Flt{0});
             this->abscissa_scale.transform (_abscissae, ad);
+
+
+            std::vector<Flt> sd (dsize, Flt{0});
+            this->ord1_scale.transform (_data, sd);
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
@@ -469,18 +469,18 @@ namespace morph {
 
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
-        template < template <typename, typename> typename Ctnr1,
-                   template <typename, typename> typename Ctnr2,
-                   typename Alctr=std::allocator<Flt> >
-        void setdata (const Ctnr1<Flt, Alctr>& _abscissae, const Ctnr2<Flt, Alctr>& _data,
-                      const std::string name = "", const morph::axisside axisside = morph::axisside::left)
+        template <typename Ctnr1, typename Ctnr2>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
+                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        setdata (const Ctnr1& _abscissae, const Ctnr2& _data,
+                 const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
             DatasetStyle ds(this->policy);
             ds.axisside = axisside;
             if (!name.empty()) { ds.datalabel = name; }
             size_t data_index = this->graphDataCoords.size();
             this->setstyle (ds, DatasetStyle::datacolour(data_index), DatasetStyle::datamarkerstyle (data_index));
-            this->setdata<Ctnr1, Ctnr2, Alctr> (_abscissae, _data, ds);
+            this->setdata (_abscissae, _data, ds);
         }
 
         //! setdata overload that accepts vvec of coords (as morph::vec<Flt, 2>)
@@ -499,11 +499,11 @@ namespace morph {
 
         //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
         //! style. The locations of the markers for each dataset are computed and stored
-        //! in this->graohDataCoords, one vector for each dataset.
-        template < template <typename, typename> typename Ctnr1,
-                   template <typename, typename> typename Ctnr2,
-                   typename Alctr=std::allocator<Flt> >
-        void setdata (const Ctnr1<Flt, Alctr>& _abscissae, const Ctnr2<Flt, Alctr>& _data, const DatasetStyle& ds)
+        //! in this->graphDataCoords, one vector for each dataset.
+        template <typename Ctnr1, typename Ctnr2>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
+                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        setdata (const Ctnr1& _abscissae, const Ctnr2& _data, const DatasetStyle& ds)
         {
             if (_abscissae.size() != _data.size()) {
                 std::stringstream ee;
@@ -544,8 +544,8 @@ namespace morph {
 
             if (dsize > 0) {
                 // Transform the data into temporary containers sd and ad
-                Ctnr1<Flt, Alctr> ad (dsize, Flt{0});
-                Ctnr2<Flt, Alctr> sd (dsize, Flt{0});
+                std::vector<Flt> ad (dsize, Flt{0});
+                std::vector<Flt> sd (dsize, Flt{0});
                 if (ds.axisside == morph::axisside::left) {
                     this->ord1_scale.transform (_data, sd);
                 } else {
@@ -613,10 +613,10 @@ namespace morph {
 
     protected:
         //! Compute the scaling of ord1_scale and abscissa_scale according to the scalingpolicies
-        template < template <typename, typename> typename Ctnr1,
-                   template <typename, typename> typename Ctnr2,
-                   typename Alctr=std::allocator<Flt> >
-        void compute_scaling (const Ctnr1<Flt, Alctr>& _abscissae, const Ctnr2<Flt, Alctr>& _data, const morph::axisside axisside)
+        template <typename Ctnr1, typename Ctnr2>
+        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
+                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        compute_scaling (const Ctnr1& _abscissae, const Ctnr2& _data, const morph::axisside axisside)
         {
             morph::range<Flt> data_maxmin = morph::MathAlgo::maxmin (_data);
             morph::range<Flt> absc_maxmin = morph::MathAlgo::maxmin (_abscissae);

@@ -32,12 +32,14 @@ int main()
         auto gv = std::make_unique<morph::GraphVisual<float>>(morph::vec<float>({0,0,0}));
         v.bindmodel (gv);
         morph::vvec<float> data = absc.pow(3);
+        morph::vec<float, 14> ardata;
+        ardata.set_from (static_cast<std::vector<float>>(data));
 
         ds.linecolour =  {1.0, 0.0, 0.0};
         ds.linewidth = 0.015f;
         ds.markerstyle = morph::markerstyle::triangle;
         ds.markercolour = {0.0, 0.0, 1.0};
-        gv->setdata (absc, data, ds);
+        gv->setdata (absc, ardata, ds);
 
         gv->axisstyle = morph::axisstyle::L;
 
