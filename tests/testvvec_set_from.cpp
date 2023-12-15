@@ -51,6 +51,14 @@ int main()
         --rtn;
     }
 
+    // set from a set
+    std::set<int> si = { 2, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    mvf.set_from (si);
+    std::cout << "mvf set from std::set<int>: " << mvf << std::endl;
+    if (mvf[0] != 1.0f || mvf[8] != 9.0f) {
+        --rtn;
+    }
+
     std::cout << "Test is returning: " << rtn << std::endl;
     return rtn;
 }

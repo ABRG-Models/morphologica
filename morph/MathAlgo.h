@@ -46,7 +46,7 @@ namespace morph {
          * Don't confuse this with C++11's std::minmax, which does something similar,
          * but won't do a max/min length of vector search like this does.
          */
-        template <typename Container, std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, int> = 0>
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
         static morph::range<typename Container::value_type> maxmin (const Container& vec) {
             return MathImpl<number_type<typename Container::value_type>::value>::maxmin (vec);
         }

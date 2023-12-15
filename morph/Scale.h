@@ -120,8 +120,8 @@ namespace morph {
          * \tparam OAllocator Memory allocator for OContainer.
          */
         template <typename Container, typename OContainer=Container>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value
-                         && morph::container_with_legacy_input_iterator<OContainer>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Container>::value
+                         && morph::is_copyable_container<OContainer>::value, void>
         transform (const Container& data, OContainer& output)
         {
             size_t dsize = data.size();
@@ -142,8 +142,8 @@ namespace morph {
          * \brief Inverse transform a container of scalars or vectors.
          */
         template <typename OContainer, typename Container=OContainer>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value
-                         && morph::container_with_legacy_input_iterator<OContainer>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Container>::value
+                         && morph::is_copyable_container<OContainer>::value, void>
         inverse (const Container& data, OContainer& output)
         {
             size_t dsize = data.size();
@@ -190,7 +190,7 @@ namespace morph {
          * will be something like \c std::vector<float> or \c std::list<morph::vec<double,2>>
          */
         template <typename Container>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Container>::value, void>
         autoscale_from (const Container& data)
         {
             morph::range<typename Container::value_type> mm = MathAlgo::maxmin (data);

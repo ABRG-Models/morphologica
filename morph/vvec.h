@@ -81,9 +81,9 @@ namespace morph {
         //! https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
 
         //! Traits set_from that can work with sequential containers like std::array, deque, vector,
-        //! morph::vvec, morph::vec etc.
+        //! morph::vvec, morph::vec etc and even with std::set (though not with std::map)
         template <typename Container>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Container>::value, void>
         set_from (const Container& c)
         {
             this->resize (c.size());
@@ -91,7 +91,7 @@ namespace morph {
         }
         //! Set all elements from the value type v.
         template <typename _S=S>
-        std::enable_if_t<!morph::container_with_legacy_input_iterator<_S>::value, void>
+        std::enable_if_t<!morph::is_copyable_container<_S>::value, void>
         set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!

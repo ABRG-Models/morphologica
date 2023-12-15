@@ -94,20 +94,22 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
-    // A Test for whether T has a const_iterator
+#if 0 // haven't figured out how to make this work.
     template<typename T>
-    class has_const_iterator
+    class has_find_method
     {
-        template<typename C> static char test(typename C::const_iterator*);
-        template<typename C> static int  test(...);
+	template<typename U> static auto test(int) -> decltype(std::declval<U>().find(std::declval<U>().end()), std::true_type());
+	template<typename> static std::false_type test(...);
     public:
-        enum { value = sizeof(test<T>(0)) == sizeof(char) };
+	static constexpr bool value = std::is_same< decltype(test<T>(0)), std::true_type >::value;
     };
+#endif
 
     // Does T have a const_iterator which satisfies the requirements of LegacyInputIterator?
     // Note this is NOT yet complete - I don't test std::iterator_traits.
+    // The tests here more or less tell me if I have a copyable container
     template<typename T>
-    class container_with_legacy_input_iterator
+    class is_copyable_container
     {
         // Test C's const_iterator for traits copy constructible, copy assignable, destructible, swappable and equality comparable
 	template<typename C> static auto test(int) -> decltype(std::is_copy_constructible<typename C::const_iterator>::value == true

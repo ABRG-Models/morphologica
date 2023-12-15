@@ -368,8 +368,8 @@ namespace morph {
 
         //! Update the data for the graph, recomputing the vertices when done.
         template <typename Ctnr1, typename Ctnr2>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
-                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Ctnr1>::value
+                         && morph::is_copyable_container<Ctnr2>::value, void>
         update (const Ctnr1& _abscissae, const Ctnr2& _data, const size_t data_idx)
         {
             size_t dsize = _data.size();
@@ -470,8 +470,8 @@ namespace morph {
         //! Set a dataset into the graph using default styles, incrementing colour and
         //! marker shape as more datasets are included in the graph.
         template <typename Ctnr1, typename Ctnr2>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
-                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Ctnr1>::value
+                         && morph::is_copyable_container<Ctnr2>::value, void>
         setdata (const Ctnr1& _abscissae, const Ctnr2& _data,
                  const std::string name = "", const morph::axisside axisside = morph::axisside::left)
         {
@@ -501,8 +501,8 @@ namespace morph {
         //! style. The locations of the markers for each dataset are computed and stored
         //! in this->graphDataCoords, one vector for each dataset.
         template <typename Ctnr1, typename Ctnr2>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
-                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Ctnr1>::value
+                         && morph::is_copyable_container<Ctnr2>::value, void>
         setdata (const Ctnr1& _abscissae, const Ctnr2& _data, const DatasetStyle& ds)
         {
             if (_abscissae.size() != _data.size()) {
@@ -614,8 +614,8 @@ namespace morph {
     protected:
         //! Compute the scaling of ord1_scale and abscissa_scale according to the scalingpolicies
         template <typename Ctnr1, typename Ctnr2>
-        std::enable_if_t<morph::container_with_legacy_input_iterator<Ctnr1>::value
-                         && morph::container_with_legacy_input_iterator<Ctnr2>::value, void>
+        std::enable_if_t<morph::is_copyable_container<Ctnr1>::value
+                         && morph::is_copyable_container<Ctnr2>::value, void>
         compute_scaling (const Ctnr1& _abscissae, const Ctnr2& _data, const morph::axisside axisside)
         {
             morph::range<Flt> data_maxmin = morph::MathAlgo::maxmin (_data);

@@ -47,7 +47,7 @@ namespace morph {
     struct MathImpl
     {
         //! Resizable and Fixed size vector maxmin implementations are common
-        template <typename Container, std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, int> = 0>
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
         static morph::range<typename Container::value_type> maxmin (const Container& values)
         {
             using T = typename Container::value_type;
@@ -232,7 +232,7 @@ namespace morph {
     struct MathImpl<1>
     {
         //! Scalar maxmin implementation
-        template <typename Container, std::enable_if_t<morph::container_with_legacy_input_iterator<Container>::value, int> = 0>
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
         static morph::range<typename Container::value_type> maxmin (const Container& values)
         {
             using T = typename Container::value_type;
