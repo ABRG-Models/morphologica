@@ -14,6 +14,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <morph/mathconst.h>
+#include <type_traits>
 #include <morph/trait_tests.h>
 
 namespace morph {
@@ -56,16 +57,16 @@ namespace morph {
      * containing a path of points. The template-template is not flexible enough for
      * Container to be std::map.
      */
-    template < typename T,
-               template <typename, typename> typename Container,
-               typename TT=T,
-               typename Alloc=std::allocator<TT> >
+    template<typename C>
     class Winder
     {
+        // C must be copyable. This should ensure it has a vlue_type, too.
+        static_assert (morph::is_copyable_container<C>::value == true);
+        using T = typename C::value_type;
+
     public:
         //! Construct with the boundary reference.
-        Winder (const Container<T, Alloc>& _boundary)
-            : boundary(_boundary) {}
+        Winder (const C& _boundary) : boundary(_boundary) {}
 
         //! Compute the winding number of the coordinate px with respect to the boundary.
         int wind (const T& px) {
@@ -202,7 +203,7 @@ namespace morph {
         }
 
         //! Member reference to the boundary
-        const Container<T, Alloc>& boundary;
+        const C& boundary;
         //! Current angle around a point
         double angle;
         //! The sum of angles
