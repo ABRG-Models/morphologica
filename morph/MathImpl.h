@@ -25,7 +25,7 @@
 #include <morph/vec.h>
 #include <morph/range.h>
 #include <morph/mathconst.h>
-#include <morph/expression_sfinae.h>
+#include <morph/trait_tests.h>
 
 namespace morph {
 
@@ -47,11 +47,10 @@ namespace morph {
     struct MathImpl
     {
         //! Resizable and Fixed size vector maxmin implementations are common
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static morph::range<T> maxmin (const Container<T, Allocator>& values)
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
+        static morph::range<typename Container::value_type> maxmin (const Container& values)
         {
+            using T = typename Container::value_type;
             // Example to get the type of the container T.
             // See https://stackoverflow.com/questions/44521991/type-trait-to-get-element-type-of-stdarray-or-c-style-array
             using T_el = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
@@ -233,11 +232,10 @@ namespace morph {
     struct MathImpl<1>
     {
         //! Scalar maxmin implementation
-        template < template <typename, typename> typename Container,
-                   typename T,
-                   typename Allocator=std::allocator<T> >
-        static morph::range<T> maxmin (const Container<T, Allocator>& values)
+        template <typename Container, std::enable_if_t<morph::is_copyable_container<Container>::value, int> = 0>
+        static morph::range<typename Container::value_type> maxmin (const Container& values)
         {
+            using T = typename Container::value_type;
             morph::range<T> r (std::numeric_limits<T>::max(), std::numeric_limits<T>::lowest());
             for (auto v : values) {
                 r.max = v > r.max ? v : r.max;

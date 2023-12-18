@@ -1,7 +1,7 @@
 /*!
  * \file
  *
- * Expression SFINAE template incantations.
+ * Type traits template incantations.
  *
  * This file contains numerous classes which can be used to test for features in class
  * types. It's useful for if constexpr () tests, and was initially
@@ -16,8 +16,8 @@
 
 namespace morph {
 
-    //! Expression SFINAE approach to testing for possibility of a-b. Could also make a
-    //! class which used std::is_arithmetic here.
+    //! Traits approach to testing for possibility of a-b. Could also make a class which used
+    //! std::is_arithmetic here.
     template<typename T>
     class has_subtraction
     {
@@ -27,7 +27,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(T{}, T{})),std::true_type>::value;
     };
 
-    //! Expression SFINAE approach to testing for possibility of a+b.
+    //! Traits approach to testing for possibility of a+b.
     template<typename T>
     class has_addition
     {
@@ -37,7 +37,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(T{}, T{})),std::true_type>::value;
     };
 
-    //! An expression SFINAE approach to testing for x() and y() methods
+    //! Traits approach to testing for x() and y() methods
     template<typename T>
     class has_xy_methods
     {
@@ -49,8 +49,8 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    //! Expression SFINAE approach to testing for resize(size_t) method. Can be used to
-    //! distinguish std::array from std::vector.
+    //! Traits approach to testing for resize(size_t) method. Can be used to distinguish std::array
+    //! from std::vector.
     template<typename T>
     class has_resize_method
     {
@@ -61,9 +61,8 @@ namespace morph {
 	static constexpr bool value = std::is_same< decltype(test<T>(2)), std::true_type >::value;
     };
 
-    //! Expression SFINAE approach to testing for x and y member attributes. I use this
-    //! to detect a class like cv::Point which has its coordinates set/accessed with .x
-    //! and .y
+    //! Traits approach to testing for x and y member attributes. I use this to detect a class like
+    //! cv::Point which has its coordinates set/accessed with .x and .y
     template<typename T>
     class has_xy_members
     {
@@ -74,7 +73,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
     };
 
-    // Expression SFINAE approach to testing for first and second member attributes
+    // Traits approach to testing for first and second member attributes
     template<typename T>
     class has_firstsecond_members
     {
@@ -85,7 +84,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    // Expression SFINAE approach to testing for ability to access like an array (i.e. std::array, morph::vec)
+    // Traits approach to testing for ability to access like an array (i.e. std::array, morph::vec)
     template<typename T>
     class array_access_possible
     {
@@ -93,6 +92,37 @@ namespace morph {
 	template<typename> static std::false_type test(...);
     public:
 	static constexpr bool value = std::is_same<decltype(test<T>(0)),std::true_type>::value;
+    };
+
+#if 0 // haven't figured out how to make this work.
+    template<typename T>
+    class has_find_method
+    {
+	template<typename U> static auto test(int) -> decltype(std::declval<U>().find(std::declval<U>().end()), std::true_type());
+	template<typename> static std::false_type test(...);
+    public:
+	static constexpr bool value = std::is_same< decltype(test<T>(0)), std::true_type >::value;
+    };
+#endif
+
+    // Does T have a const_iterator which satisfies the requirements of LegacyInputIterator?
+    // Note this is NOT yet complete - I don't test std::iterator_traits.
+    // The tests here more or less tell me if I have a copyable container
+    template<typename T>
+    class is_copyable_container
+    {
+        // Test C's const_iterator for traits copy constructible, copy assignable, destructible, swappable and equality comparable
+	template<typename C> static auto test(int) -> decltype(std::is_copy_constructible<typename C::const_iterator>::value == true
+                                                               && std::is_copy_assignable<typename C::const_iterator>::value == true
+                                                               && std::is_destructible<typename C::const_iterator>::value == true
+                                                               && std::is_swappable<typename C::const_iterator>::value == true
+                                                               && std::declval<typename C::const_iterator> == std::declval<typename C::const_iterator>
+                                                               , std::true_type());
+
+        template<typename C> static int test(...);
+
+    public:
+	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
 } // morph::

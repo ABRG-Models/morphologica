@@ -21,6 +21,7 @@
 #include <functional>
 #include <morph/Random.h>
 #include <morph/range.h>
+#include <morph/trait_tests.h>
 
 namespace morph {
 
@@ -76,25 +77,22 @@ namespace morph {
         //! \return the fourth component of the vector
         S w() const { return (*this)[3]; }
 
-        //! Set data members from an std::vector (by copying)
-        template <typename _S=S>
-        void set_from (const std::vector<_S>& vec)
-        {
-            this->resize(vec.size());
-            std::copy (vec.begin(), vec.end(), this->begin());
-        }
+        //! This uses a traits solution inspired by
+        //! https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
 
-        //! Set data members from an std::array, matching the size of the array first.
-        template <typename _S=S, size_t N>
-        void set_from (const std::array<_S, N>& ar)
+        //! Traits set_from that can work with sequential containers like std::array, deque, vector,
+        //! morph::vvec, morph::vec etc and even with std::set (though not with std::map)
+        template <typename Container>
+        std::enable_if_t<morph::is_copyable_container<Container>::value, void>
+        set_from (const Container& c)
         {
-            this->resize(N);
-            std::copy (ar.begin(), ar.end(), this->begin());
+            this->resize (c.size());
+            std::copy (c.begin(), c.end(), this->begin());
         }
-
-        //! Set all elements from the value type v. Same as vvec::set
+        //! Set all elements from the value type v.
         template <typename _S=S>
-        void set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
+        std::enable_if_t<!morph::is_copyable_container<_S>::value, void>
+        set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
          * Set the data members of this vvec from the passed in, larger array, \a ar,
