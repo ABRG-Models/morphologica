@@ -1,10 +1,24 @@
-title: morphologica - OpenGL data visualization
+title: morphologica
 description:  Learn how to use morphologica C++ classes to write fast numerical simulations with amazing OpenGL visualization
 baseurl: "/" # the subpath of your site, e.g. /blog
 github_username:  sebjameswml
 
-theme: minima
+theme: just-the-docs
+#theme: minima
+#theme: jekyll-theme-minima
 #theme: jekyll-theme-minimal
+#theme: jekyll-theme-architect
+#theme: jekyll-theme-cayman
+#theme: jekyll-theme-dinky
+#theme: jekyll-theme-hacker
+#theme: jekyll-theme-leap-day
+#theme: jekyll-theme-merlot
+#theme: jekyll-theme-midnight
+#theme: jekyll-theme-modernist
+#theme: jekyll-theme-slate
+#theme: jekyll-theme-tactile
+#theme: jekyll-theme-time-machine
+
 plugins:
   - jekyll-feed
 
