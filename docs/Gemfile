@@ -13,7 +13,7 @@ source "https://rubygems.org"
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 #gem "minima", "~> 2.0"
 #gem "just-the-docs", "~> 0.7.0"
-gem "just-the-docs"
+gem "jekyll-theme-dinky"
 
 # If using Ruby 3 you need this previously standard gem
 gem "webrick"

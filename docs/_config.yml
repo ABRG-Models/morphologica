@@ -3,13 +3,13 @@ description:  Learn how to use morphologica C++ classes to write fast numerical 
 baseurl: "/" # the subpath of your site, e.g. /blog
 github_username:  sebjameswml
 
-theme: just-the-docs
+#theme: just-the-docs
 #theme: minima
 #theme: jekyll-theme-minima
 #theme: jekyll-theme-minimal
 #theme: jekyll-theme-architect
 #theme: jekyll-theme-cayman
-#theme: jekyll-theme-dinky
+theme: jekyll-theme-dinky
 #theme: jekyll-theme-hacker
 #theme: jekyll-theme-leap-day
 #theme: jekyll-theme-merlot
