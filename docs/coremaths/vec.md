@@ -3,6 +3,7 @@ layout: page
 title: morph::vec
 parent: Core maths classes
 permalink: /core/vec/
+nav_order: 1
 ---
 ```c++
 #include <morph/vec.h>
