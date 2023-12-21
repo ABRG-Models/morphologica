@@ -1,5 +1,6 @@
 ---
 layout: page
+parent: Core maths classes
 title: morph::vvec
 permalink: /core/vvec/
 ---

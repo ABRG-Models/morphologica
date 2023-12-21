@@ -1,7 +1,7 @@
 ---
 title: morph::Visual
+parent: Visualization classes
 layout: page
-permalink: /visual/
 ---
 ```c++
 #include <morph/Visual.h>

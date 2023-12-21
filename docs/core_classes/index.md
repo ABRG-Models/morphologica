@@ -2,6 +2,8 @@
 title: Core maths classes
 layout: page
 permalink: /core/
+nav_order: 2
+has_children: true
 ---
 As I developed the data-vis features of morphologica, I found I needed functionality that I've used repeatedly in many programs.
 The most basic was a simple mathematical vector class, [morph::vec](/core/vec), which was essential for computing locations within the 3D graphics environment.

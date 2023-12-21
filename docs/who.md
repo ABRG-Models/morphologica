@@ -1,8 +1,8 @@
 ---
 title: Who'd need morphologica?
+parent: Welcome
 layout: page
 permalink: /who
-order: 2
 ---
 If you want to write mathematical programs in C++ and you need to see the maths, then you need a system like morphologica.
 

@@ -1,8 +1,12 @@
 ---
-title: morphologica reference site
+title: Welcome
 layout: home
 permalink: /
+has_children: true
+nav_order: 1
 ---
-# Welcome
+# Welcome to morphologica
 
-This is a website for morphologica.
+This is a documentation and reference website for
+morphologica. How-tos, tutorial content and class reference material
+should all be here.

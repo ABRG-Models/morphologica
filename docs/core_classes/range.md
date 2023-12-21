@@ -1,5 +1,6 @@
 ---
 title: morph::range
+parent: Core maths classes
 layout: page
 permalink: /core/range
 ---

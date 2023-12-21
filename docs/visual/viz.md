@@ -1,7 +1,8 @@
 ---
-title: Visualization with OpenGL
+title: Visualization classes
+nav_order: 3
 layout: page
-permalink: /viz/
+has_children: true
 ---
 morphologica uses OpenGL to draw graphics and text.
 In a way it's like a game engine for data visualization because it provides a 3D world into which models are drawn and you can 'fly around' the models viewing them from different angles.

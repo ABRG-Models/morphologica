@@ -1,6 +1,7 @@
 ---
 layout: page
 title: morph::vec
+parent: Core maths classes
 permalink: /core/vec/
 ---
 ```c++

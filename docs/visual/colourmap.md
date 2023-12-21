@@ -1,7 +1,7 @@
 ---
 title: morph::ColourMap
+parent: Visualization classes
 layout: page
-permalink: /core/colourmap
 ---
 ```c++
 #include <morph/ColourMap.h>

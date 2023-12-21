@@ -2,7 +2,7 @@
 title: What is morphologica?
 layout: home
 permalink: /about
-order: 1
+parent: Welcome
 ---
 
 morphologica is a library of header-only C++ code for data visualization.
