@@ -1,7 +1,8 @@
 ---
-title: Getting Started
+title: Creating a new project
+parent: Tutorials
 layout: page
-permalink: /starting/
+permalink: /ref/tutorials/newproject
 ---
 This page will walk you through the process of setting up a new project to build morphologica code so that you can try the example code in the tutorials.
 

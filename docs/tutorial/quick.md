@@ -1,7 +1,8 @@
 ---
 title: Quick start
+parent: Tutorials
 layout: page
-permalink: /quick/
+permalink: /tutorials/quick/
 order: 4
 ---
 
