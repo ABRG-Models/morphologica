@@ -6,15 +6,16 @@ grand_parent: Reference
 permalink: /ref/coremaths/vec/
 nav_order: 1
 ---
+## morph::vec (fixed-size mathematical vector)
+
+Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h)
 ```c++
 #include <morph/vec.h>
 ```
 
-The most up to date reference is always the header file [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h).
-
 ## Summary
 
-`morph::vec` is a fixed-size mathematical vector class. Derives from
+`morph::vec` is a fixed-size mathematical vector class. It derives from
 `std::array` and can be used in much the same way as its STL parent.
 
 ```c++
@@ -35,17 +36,11 @@ but with `morph::vec`, you can do maths:
 
 ```c++
 morph::vec<int, 4> v2 = { 1, 2, 3, 4 };
-morph::vec<int, 4> v3 = v1 + v2; // element-wise addition
-```
-
-It's really useful to be able to do vector maths:
-
-```c++
+morph::vec<int, 4> v3 = v1 + v2;             // element-wise addition
 morph::vec<float, 3> u1 = { 1.0f, 0.0f, 0.0f };
 morph::vec<float, 3> u2 = { 0.0f, 1.0f, 0.0f };
-morph::vec<float, 3> u3 = u1.cross (u2);
-morph::vec<float, 3> u4 = u1 - u2;
-float dp = u1.dot (u3);
+morph::vec<float, 3> u3 = u1.cross (u2);     // vector cross-product
+float dp = u1.dot (u3);                      // (scalar/dot/inner)-product
 ```
 
 See these programs for more example usage: [tests/testvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec.cpp), [tests/testvecElementOps](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvecElementOps.cpp).
@@ -68,12 +63,13 @@ and one-smaller arrays; these are used in the graphics code where 3D
 vectors are converted to 4D before being multiplied by 4x4 transform
 matrices.
 
----
-
 ```c++
 void set_from (const _S& v);
+void zero();
+void set_max();
+void set_lowest();
 ```
-This `set_from` overload fills all elements of the `morph::vec` with `v`.
+This `set_from` overload fills all elements of the `morph::vec` with `v`. `zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
 
 ### Numpy clones
 
@@ -89,14 +85,23 @@ with `start` and ending with `stop` incrementing by `increment`. If
 the function gets to the end of the array, then it simply stops. If it
 fails to fill the array, remaining values will be 0.
 
-### Plus-one/Less-one dimension
+### Random numbers
+
+Three functions to fill a `vec` with random numbers:
+```c++
+void randomize();                // fill from uniform random number generator, range [0,1).
+void randomize (S min, S max)    // fill from uniform RNG, range [min,max).
+void randomizeN (S _mean, S _sd) // fill from normal RNG with given mean and std. deviation.
+```
+
+### Plus-one/less-one dimension
 
 ```c++
 vec<S, N-1> less_one_dim () const;
 vec<S, N+1> plus_one_dim () const;
 vec<S, N+1> plus_one_dim (const S val) const;
 ```
-Returns `morph::vec`s with one additional or one less element.
+Returns a `morph::vec` with one additional or one less element.
 
 ### Type conversions
 
@@ -106,7 +111,13 @@ vec<double, N> as_double() const;
 vec<int, N> as_int() const;
 vec<unsigned int, N> as_uint() const;
 ```
-When you need to convert a `vec` of `float` into a `vec` of `int` and similar.
+When you need to convert a `vec` of `float` into a `vec` of `int` and similar:
+
+```c++
+morph::vec<int, 3> vi = {1,2,3};
+morph::vec<float, 3> vf = vi.as_float(); // Note: new memory is allocated for the new object
+
+```
 
 ### String output
 
@@ -115,25 +126,52 @@ std::string str() const;
 std::string str_mat() const;
 std::string str_numpy() const;
 ```
-These functions output the array as a string in different formats. The _mat and _numpy versions generate text that can be pasted into a session of MATLAB/Octave or Python.
+These functions output the array as a string in different formats. The _mat and _numpy versions generate text that can be pasted into a session of MATLAB/Octave or Python. Output looks like `(1,2,3)` (`str()`), `[1,2,3]` (`str_mat()`) or `np.array((1,2,3))` (`str_numpy()`). If you stream a `vec` then `str()` is used:
+```c++
+morph::vec<int, 3> v = {1,2,3}; // Make a vec called v
+std::cout << v;                 // Stream to stdout
+```
+gives output `(1,2,3)`.
+
+### Length, lengthen, shorten
+
+```c++
+template <typename _S=S>
+_S length() const;                     // return the vector length
+_S length_sq() const;                  // return the vector length squared
+_S sos() const;                        // also length squared. See header for difference
+// Enabled only for non-integral S:
+vec<S, N> shorten (const S dl) const;  // return a vector shortened by length dl
+vec<S, N> lengthen (const S dl) const; // return a vector lengthened by length dl
+```
 
 ### Rescale/renormalize
 
-These functions use a template to ensure they are only enabled for non-integral types:
+```c++
+void renormalize();  // make vector length 1
+void rescale();      // rescale to range [0,1]
+void rescale_neg();  // rescale to range [-1,0]
+void rescale_sym();  // rescale to range [-1,1]
+```
+Renormalization takes a vector and makes it have length 1. Thus,
+`renormalize()` computes the length of the `vec` and divides each element by this length.
+
+Use `rescale` when you want the values in the array to range between 0
+and 1. `recale` will find a linear scaling so that the values in the
+`vec` will be in the range [0,1]. `rescale_neg` finds a scaling that
+puts the values in the range [-1,0]. `rescale_sym` puts the values in
+the range [-1,1].
+
+Note that these functions use a template to ensure they are only enabled for non-integral types:
 ```c++
 template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
 ```
 
+Check whether your renormalized vector is a unit vector:
+
 ```c++
-void renormalize();
-void rescale();
-void rescale_neg();
-void rescale_sym();
+bool checkunit() const; // return true if length is 1 (to within vec::unitThresh = 0.001)
 ```
-
-
-
-
 
 
 

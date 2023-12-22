@@ -1,6 +1,6 @@
 ---
-title: HDF5 support
-parent: Simulation support
+title: Data with HDF5
+parent: Data and config
 grand_parent: Reference
 layout: page
 permalink: /ref/simsupport/hdf5

@@ -6,13 +6,13 @@ title: morph::vvec
 permalink: /ref/coremaths/vvec/
 nav_order: 2
 ---
-# The variable vector class, morph::vvec
+## morph::vvec  (dynamically resizable mathematical vector)
 
+Header file: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vvec.h)
 ```c++
 #include <morph/vvec.h>
 ```
-
-Header: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vvec.h)
+## Summary
 
 `vvec` is a dynamically re-sizable array which derives from `std::vector`.
 It extends `std::vector` by providing maths methods.

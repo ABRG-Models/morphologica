@@ -1,6 +1,6 @@
 ---
-title: morph::Config
-parent: Simulation support
+title: Config with JSON
+parent: Data and config
 grand_parent: Reference
 layout: page
 permalink: /ref/simsupport/config
