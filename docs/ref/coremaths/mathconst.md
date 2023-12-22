@@ -2,7 +2,7 @@
 layout: page
 title: morph::mathconst
 parent: Core maths classes
-permalink: /core/mathconst/
+permalink: /ref/coremaths/mathconst/
 ---
 ```c++
 #include <morph/mathconst.h>

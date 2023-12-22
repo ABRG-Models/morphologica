@@ -2,7 +2,8 @@
 layout: page
 title: morph::vec
 parent: Core maths classes
-permalink: /core/vec/
+grand_parent: Reference
+permalink: /ref/coremaths/vec/
 nav_order: 1
 ---
 ```c++

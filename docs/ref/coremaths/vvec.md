@@ -1,8 +1,9 @@
 ---
 layout: page
 parent: Core maths classes
+grand_parent: Reference
 title: morph::vvec
-permalink: /core/vvec/
+permalink: /ref/coremaths/vvec/
 nav_order: 2
 ---
 # The variable vector class, morph::vvec

@@ -1,6 +1,8 @@
 ---
 title: morph::ColourMap
 parent: Visualization classes
+grand_parent: Reference
+permalink: /ref/visual/colourmap
 layout: page
 ---
 ```c++

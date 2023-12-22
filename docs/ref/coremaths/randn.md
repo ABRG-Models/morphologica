@@ -1,8 +1,9 @@
 ---
 layout: page
-title: morph::RandUniform
+title: morph::RandNormal
 parent: Core maths classes
-permalink: /core/randuniform/
+grand_parent: Reference
+permalink: /ref/coremaths/randnormal/
 ---
 ```c++
 #include <morph/Random.h>

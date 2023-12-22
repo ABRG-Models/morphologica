@@ -1,5 +1,7 @@
 ---
 title: Visualization classes
+parent: Reference
+permalink: /ref/visual/
 nav_order: 3
 layout: page
 has_children: true

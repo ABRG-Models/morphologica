@@ -1,7 +1,8 @@
 ---
 title: Core maths classes
+parent: Reference
 layout: page
-permalink: /core/
+permalink: /ref/coremaths/
 nav_order: 2
 has_children: true
 ---

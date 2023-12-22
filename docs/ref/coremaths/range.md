@@ -1,8 +1,9 @@
 ---
 title: morph::range
 parent: Core maths classes
+grand_parent: Reference
 layout: page
-permalink: /core/range
+permalink: /ref/coremaths/range
 ---
 ```c++
 #include <morph/range.h>

@@ -2,7 +2,8 @@
 layout: page
 title: morph::Matrix22
 parent: Core maths classes
-permalink: /core/mat22/
+grand_parent: Reference
+permalink: /ref/coremaths/mat22/
 ---
 ```c++
 #include <morph/Matrix22.h>

@@ -1,8 +1,9 @@
 ---
 title: morph::Scale
 parent: Core maths classes
+grand_parent: Reference
 layout: page
-permalink: /core/scale
+permalink: /ref/coremaths/scale
 ---
 ```c++
 #include <morph/Scale.h>

@@ -2,7 +2,8 @@
 layout: page
 title: morph::Quaternion
 parent: Core maths classes
-permalink: /core/quaternion/
+grand_parent: Reference
+permalink: /ref/coremaths/quaternion/
 nav_order: 10
 ---
 ```c++

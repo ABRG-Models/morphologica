@@ -2,7 +2,8 @@
 layout: page
 title: morph::TransformMatrix
 parent: Core maths classes
-permalink: /core/mat44/
+grand_parent: Reference
+permalink: /ref/coremaths/mat44/
 ---
 ```c++
 #include <morph/TransformMatrix.h>
