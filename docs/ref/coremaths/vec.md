@@ -83,7 +83,7 @@ real numbers.
 | *= | `v2 *= 10;` | `v2 *= v1;` |
 | /  | `v2 = v1 / 10.0;`  *or* `v2 = 10.0 / v1;`| `v3 = v1 / v2;` |
 | /= | `v2 /= 10;` | `v2 /= v1;` |
-| ! (negation) |   | `v2 = !v1;` |
+| - (unary negate) |   | `v2 = -v1;` |
 
 ### Assignment operators
 
