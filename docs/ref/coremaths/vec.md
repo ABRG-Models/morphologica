@@ -45,7 +45,67 @@ float dp = u1.dot (u3);                      // (scalar/dot/inner)-product
 
 See these programs for more example usage: [tests/testvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec.cpp), [tests/testvecElementOps](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvecElementOps.cpp).
 
-## Functions
+## Design
+
+This was the first class where I decided to derive from an STL
+container. I was motivated by a need for a fixed size mathematical
+vector to use in the computation of three dimensional models for the
+visualization code. I wanted only the data stored in a fixed size
+std::array, but I wanted to add mathematical operations.
+
+Inheriting from an STL container is generally discouraged but it works
+very well because I add no additional member data attributes to the
+derived class, only methods. The resulting class is extremely
+convenient to use.
+
+`std::array` is an 'aggregate class' with no user-provided constructors,
+and morph::vec does not add any of its own constructors. It is generally initialized with brace-initializer lists.
+```c++
+vec<float, 3> v = { 1.0f , 1.0f, 1.0f };
+```
+
+The template arguments are `S` and `N` which are type and size. These
+are passed through to std::array. The argument name `S` hints 'scalar'
+as the elements of a mathematical vector of `N` dimensions are scalar,
+real numbers.
+
+## Member functions
+
+### Arithmetic operators
+
+| Operator | Scalar example | Element wise `vec` example |
+| --- | --- | --- |
+| + | `v2 = v1 + 2.0f;` *or* `v2 = 2.0f + v1;` | `v3 = v1 + v2;` |
+| += | `v2 += 2.0f;` | `v2 += v1;` |
+| - | `v2 = v1 - 5.0f;` *or* `v2 = 5.0f - v1;` | `v3 = v1 - v2;` |
+| -= | `v2 -= 2.0f;` | `v2 -= v1;` |
+| *  | `v2 = v1 * 10.0;` *or* `v2 =  10.0 * v1;` | `v3 = v1 * v2;` |
+| *= | `v2 *= 10;` | `v2 *= v1;` |
+| /  | `v2 = v1 / 10.0;`  *or* `v2 = 10.0 / v1;`| `v3 = v1 / v2;` |
+| /= | `v2 /= 10;` | `v2 /= v1;` |
+| ! (negation) |   | `v2 = !v1;` |
+
+### Assignment operators
+
+Describe how assignment works and where it doesn't.
+
+### Comparison operators
+
+About comparison, especially the re-definition of less-than and greater-than for mathematical vectors.
+
+#### Using morph::vec as a key in std::map or within an std::set
+
+Although morph::vec derives from std::array, you **can't use it as a key in an std::map**.
+
+```c++
+// Bad!
+std::map<morph::vec<int, 2>, myclass> some_map;
+
+// Also Bad!
+std::set<morph::vec<int, 2>> some_set;
+```
+
+The reason for this is that the less-than operation is redefined, but `std::set` and `std::map` depend upon less-than for their functionality. In std::array, less-than is lexicographic. See this file for a workaround, in which you specify that you want to use morph::vec's lexicographics less-than: [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
 
 ### Setter functions
 ```c++
@@ -104,19 +164,17 @@ vec<S, N+1> plus_one_dim (const S val) const;
 Returns a `morph::vec` with one additional or one less element.
 
 ### Type conversions
-
+These return a new `vec` in the requested type:
 ```c++
 vec<float, N> as_float() const;
 vec<double, N> as_double() const;
 vec<int, N> as_int() const;
 vec<unsigned int, N> as_uint() const;
 ```
-When you need to convert a `vec` of `float` into a `vec` of `int` and similar:
-
+For example:
 ```c++
 morph::vec<int, 3> vi = {1,2,3};
-morph::vec<float, 3> vf = vi.as_float(); // Note: new memory is allocated for the new object
-
+morph::vec<float, 3> vf = vi.as_float(); // Note: new memory is used for the new object
 ```
 
 ### String output
@@ -145,8 +203,19 @@ vec<S, N> shorten (const S dl) const;  // return a vector shortened by length dl
 vec<S, N> lengthen (const S dl) const; // return a vector lengthened by length dl
 ```
 
-### Rescale/renormalize
+### The range and rescaling or renormalizing
 
+You can obtain the range of values in the `vec` with `vec::range` which returns a [morph::range](/ref/coremaths/range) object:
+```c++
+morph::range<S> range() const;
+```
+Example usage:
+```c++
+morph::vec<float, 3> v = { 1, 2, 3 };
+morph::range<float> r = v.range();
+std::cout << "vec max: " << r.max << " and min: " << r.min << std::endl;
+```
+To re-scale or renormalize the values in the `vec`:
 ```c++
 void renormalize();  // make vector length 1
 void rescale();      // rescale to range [0,1]
@@ -173,22 +242,130 @@ Check whether your renormalized vector is a unit vector:
 bool checkunit() const; // return true if length is 1 (to within vec::unitThresh = 0.001)
 ```
 
+### Finding elements
 
-
-
-
-
-
-## Using morph::vec as a key in std::map or within an std::set
-
-Although morph::vec derives from std::array, you **can't use it as a key in an std::map**.
-
+A group of functions to find the value or index of particular elements in the array.
 ```c++
-// Bad!
-std::map<morph::vec<int, 2>, myclass> some_map;
-
-// Also Bad!
-std::set<morph::vec<int, 2>> some_set;
+S longest() const;          // return longest element (greatest magnitude)
+size_t arglongest() const;  // return index of longest element
+S shortest() const;         // return shortest element (closest to 0)
+size_t argshortest() const; // return index of shortest element
+S max() const;              // return max element
+size_t argmax() const;      // return index of max element
+S min() const;              // return min element
+size_t argmin() const;      // return index of min element
 ```
 
-The reason for this is that the less-than operation is redefined, but `std::set` and `std::map` depend upon less-than for their functionality. In std::array, less-than is lexicographic. See this file for a workaround, in which you specify that you want to use morph::vec's lexicographics less-than: [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
+#### Content tests (zero, inf, NaN)
+
+```c++
+bool has_zero() const;
+bool has_inf() const;         // can only return true if type S has infinity
+bool has_nan() const;         // can only return true if type S has NaN
+bool has_nan_or_inf() const;  // can only return true if type S has infinity and/or NaN
+```
+
+#### Replacing NaN and inf values
+
+To replace all not-a-numbers in a `vec` with another value use:
+```c++
+void replace_nan_with (const S replacement)
+```
+To replace NaNs *and* infinitities, it's:
+```c++
+void replace_nan_or_inf_with (const S replacement)
+```
+
+### Simple statistics
+
+```c++
+// These template functions are declared with a type _S:
+template<typename _S=S>
+
+_S mean() const;          // The arithmetic mean
+_S variance() const;      // The variance
+_S std() const;           // The standard deviation
+_S sum() const;           // The sum of all elements
+_S product() const;       // The product of the elements
+```
+
+### Maths functions
+
+Raising elements to a **power**.
+```c++
+vec<S, N> pow (const S& p) const;          // raise all elements to the power p, returning result in new vec
+void pow_inplace (const S& p);             // in-place version which operates on the existing data in *this
+template<typename _S=S>
+vec<S, N> pow (const vec<_S, N>& p) const; // Raise each element in *this to the power of the matching element in p
+template<typename _S=S>
+void pow_inplace (const vec<_S, N>& p);    // in-place version
+```
+
+The **signum function** is 1 if a value is >0; -1 if the value is <0 and 0 if the value is 0.
+```c++
+vec<S, N> signum() const;    // Return the result of the signum function in a new vec
+void signum_inplace();       // in-place version
+```
+
+**Floor** computes the largest integer value not greater than an element value. This is applied to each element.
+```c++
+vec<S, N> floor() const;     // Return the result of the floor function in a new vec
+void floor_inplace();        // in-place version
+```
+
+**Ceil** computes the least integer value not less than an element value. This is applied to each element.
+```c++
+vec<S, N> ceil() const;      // Return the result of the ceil function in a new vec
+void ceil_inplace();         // in-place version
+```
+
+**Trunc** computes the nearest integer not greater in magnitude than element value. This is applied to each element.
+```c++
+vec<S, N> trunc() const;     // Return the result of the trunc function in a new vec
+void trunc_inplace();        // in-place version
+```
+
+**Square root** or the **square**. These are convenience functions. For cube root, etc, use `pow()`.
+```c++
+vec<S, N> sqrt() const;   // the square root
+void sqrt_inplace();
+vec<S, N> sq() const;     // the square
+void sq_inplace();
+```
+**Logarithms** and **exponential**
+```c++
+vec<S, N> log() const;     // element-wise natural log
+void log_inplace();
+vec<S, N> log10() const;   // log to base 10
+void log10_inplace();
+vec<S, N> exp() const;     // element-wise exp
+void exp_inplace();
+```
+**absolute value**/**magnitude**
+```c++
+vec<S, N> abs() const;     // element-wise abs()
+void abs_inplace();
+```
+
+The **scalar product** (also known as inner product or dot product) can be computed for two `vec` instances:
+```c++
+template<typename _S=S>
+S dot (const vec<_S, N>& v) const
+```
+
+The **cross product** is defined here only for `N`=2 or `N`=3.
+
+If `N` is 2, then v x w is defined to be v_x w_y - v_y w_x and for N=3, see your nearest vector maths textbook. The function signatures are
+```c++
+template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+S cross (const vec<_S, _N>& w) const;
+template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+vec<S, _N> cross (const vec<_S, _N>& v) const;
+```
+
+Also defined only in two dimensions are **angle** functions. `angle()` returns the angle of the `vec`. It wraps `std::atan2(y, x)`. `set_angle()` sets the angle of a 2D `vec`, maintaining its length or setting it to 1 if it is a zero vector.
+
+```c++
+S angle() const;                  // Returns the angle of the 2D vec in radians
+void set_angle (const _S _ang);   // Set a two dimensional angle in radians
+```
