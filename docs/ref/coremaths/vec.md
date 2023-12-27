@@ -8,10 +8,10 @@ nav_order: 1
 ---
 ## morph::vec (fixed-size mathematical vector)
 
-Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h)
 ```c++
 #include <morph/vec.h>
 ```
+Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h). Test and example code:  [tests/testvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec.cpp), [tests/testvecElementOps](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvecElementOps.cpp).
 
 ## Summary
 
@@ -43,8 +43,6 @@ morph::vec<float, 3> u3 = u1.cross (u2);     // vector cross-product
 float dp = u1.dot (u3);                      // (scalar/dot/inner)-product
 ```
 
-See these programs for more example usage: [tests/testvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec.cpp), [tests/testvecElementOps](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvecElementOps.cpp).
-
 ## Design
 
 This was the first class where I decided to derive from an STL
@@ -69,9 +67,9 @@ are passed through to std::array. The argument name `S` hints 'scalar'
 as the elements of a mathematical vector of `N` dimensions are scalar,
 real numbers.
 
-## Member functions
+## Arithmetic operators
 
-### Arithmetic operators
+You can use arithmetic operators on `vec` objects with their operations being applied element wise. operations with other `vec` objects and with scalars are all supported and should work as expected.
 
 | Operator | Scalar example | Element wise `vec` example |
 | --- | --- | --- |
@@ -85,27 +83,75 @@ real numbers.
 | /= | `v2 /= 10;` | `v2 /= v1;` |
 | - (unary negate) |   | `v2 = -v1;` |
 
-### Assignment operators
+## Assignment operators
 
-Describe how assignment works and where it doesn't.
+The assignment operator `=` will work correctly to assign one `vec` to another. For example,
+```c++
+morph::vec<float, 3> v1 = { 1, 2, 3 };
+morph::vec<float, 3> v2 = v1;           // Good, works fine
+```
+Because `std::array` is the base class of `vec` it is also possible to assign a `vec` TO an `std::array`:
+```c++
+morph::vec<float, 3> v1 = { 1, 2, 3 };
+std::array<float, 3> a1 = v1;           // Good, works fine
+```
 
-### Comparison operators
+However, there are no templated assignment operators in `morph::vec` that make it
+possible to assign other types (I *did* try). For example, this does NOT work:
+```c++
+std::array<float, 3> a1 = { 1, 2, 3 };
+morph::vec<float, 3> v1 = a1;           // Bad, does NOT compile
+```
 
-About comparison, especially the re-definition of less-than and greater-than for mathematical vectors.
+## Comparison operators
 
-#### Using morph::vec as a key in std::map or within an std::set
+The default comparison in `std::array` is a **lexicographic comparison**. This means that if the first element in a first `array` is less than the first element in a second `array`, then the first `array` is less than the second `array` regardless of the values in the remaining elements. This is not useful when the array is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **elementwise comparison** where one vector may be considered to be less than another if *all* of its elements are less than the others. Both vector magnitude and elementwise comparison can be applied to a `morph::vec` and a scalar.
 
-Although morph::vec derives from std::array, you **can't use it as a key in an std::map**.
+In `morph::vec` I've implemented the following comparisons. Note that the default is no longer lexicographic comparison and that some comparisions could still be implemented.
+
+| `vec v1` : `vec v2` comparison     | Lexicographic      | Vector magnitude  | Elementwise |
+| --- | --- | --- | --- |
+| `v1` < `v2`  | `v1.lexical_lessthan (v2)` | `v1.length_lessthan (v2)` |  `v1 < v2`   |
+| `v1` <= `v2`  | not implemented | `v1.length_lte (v2)` |  `v1 <= v2`   |
+| `v1` > `v2`  | not implemented | `v1.length_gtrthan (v2)` |  `v1 > v2`   |
+| `v1` >= `v2`  | not implemented | `v1.length_gte (v2)` |  `v1 >= v2`   |
+
+| `vec v ` : `scalar s` comparison     | Lexicographic      | Vector magnitude  | Elementwise |
+| `v` < `s` | not implemented | not implemented |  `v < s` |
+| `v` <= `s` | not implemented | not implemented |  `v <= s` |
+| `v` > `s` | not implemented | not implemented |  `v > s` |
+| `v` >= `s` | not implemented | not implemented |  `v >= s` |
+
+| Not equal comparison | Implementation |
+| --- | --- |
+| unary not operator `!` | `operator!` implements length comparison. `!v1` is true if `v1.length() == 0`  |
+| not operator `!=` | unimplemented |
+
+### Using `morph::vec` as a key in `std::map` or within an `std::set`
+
+Although `morph::vec` derives from `std::array`, you **can't use it as a key in an `std::map`**!
+
+**Danger!** The following examples **will compile**  but will have **unexpected runtime results**:
 
 ```c++
-// Bad!
+// Bad!! Because the key is morph::vec<int, 2>
 std::map<morph::vec<int, 2>, myclass> some_map;
 
-// Also Bad!
+// Also Bad! Again, the key is morph::vec<int, 2>
 std::set<morph::vec<int, 2>> some_set;
 ```
 
-The reason for this is that the less-than operation is redefined, but `std::set` and `std::map` depend upon less-than for their functionality. In std::array, less-than is lexicographic. See this file for a workaround, in which you specify that you want to use morph::vec's lexicographics less-than: [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
+The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vec` is *elementwise* which will fail to sort an array. In `std::array`, less-than is lexicographic which guarantees a successful sort.
+
+The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function in your `map` or `set`
+```c++
+// To make the map work, we have to tell it to use lexical_lessthan:
+auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
+std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
+```
+This example comes from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
+
+## Member functions
 
 ### Setter functions
 ```c++

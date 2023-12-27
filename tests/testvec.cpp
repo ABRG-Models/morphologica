@@ -31,19 +31,19 @@ int main() {
     // Check ints are ok, too
     morph::vec<int, 2> vi;
     vi.randomize(0,200);
-    cout << "After randomize of int morph::vector: " << vi << endl;
+    cout << "After randomize of int morph::vec: " << vi << endl;
     cout << "Length: " << vi.length() << endl;
     morph::vec<float, 3> vfl;
     vfl.randomize();
     cout << "Length of a float vector: " << vfl.length() << endl;
     // Test assignment
     morph::vec<int, 2> vi2 = vi;
-    cout << "Copy of int morph::vector: " << vi2 << endl;
+    cout << "Copy of int morph::vec: " << vi2 << endl;
     // Test comparison
     cout << "vi == vi2? " << (vi == vi2 ? "yes" : "no") << endl;
     // Test negate
     morph::vec<int, 2> vi3 = -vi;
-    cout << "-ve Copy of int morph::vector: " << vi3 << endl;
+    cout << "-ve Copy of int morph::vec: " << vi3 << endl;
     // Test comparison
     cout << "vi == vi3? " << (vi == vi3 ? "yes" : "no") << endl;
     // Test cross product (3D only
@@ -56,12 +56,24 @@ int main() {
     morph::vec<int, 2> vv2 = {2,2};
     int dp = vv1.dot (vv2);
     cout << vv1 << "." << vv2 << " = " << dp << endl;
-#if 0 // No good:
+
+    // Assignment
+#if 0 //  Copy FROM std::array to vec is NO good
     // Test init from array
     array<float, 3> arr = { 2,3,4 };
     morph::vec<float, 3> varr = arr; // Tried overloading operator= to no avail.
     cout << "morph::vec from array: " << varr << endl;
 #endif
+
+#if 1 // copy FROM vec TO std::array is OK
+    // Test init from array
+    morph::vec<float, 3> varr = { 2, 3, 4 };
+    std::array<float, 3> arr = varr; // copy TO std::array
+    cout << "std::array assigned to from morph::vec: ";
+    for (auto a : arr) { cout << a << ", "; }
+    cout << std::endl;
+#endif
+
     // Test scalar multiply
     vv2 *= 2UL;
     cout << "vv2 after *2:" << vv2 << endl;
@@ -84,7 +96,7 @@ int main() {
     v_def.randomize();
     cout << v_def << endl;
 
-    // So you want to do the dot product of a 1000000 D morph::vector? Easy
+    // So you want to do the dot product of a 1000000 D morph::vec? Easy
     morph::vec<float, 1000> big1;
     morph::vec<float, 1000> big2;
     big1.randomize(0,100);
@@ -125,7 +137,7 @@ int main() {
     h4 *= h2;
 
     morph::vec<float, 4> maxlongest = {-1.1f, -7.0f, 3.0f, 6.0f };
-    cout << "For morph::vector " << maxlongest
+    cout << "For morph::vec " << maxlongest
          << ", max: " << maxlongest.max() << " (at index "<< maxlongest.argmax()
          << "), longest component: " << maxlongest.longest() << " (at index "
          << maxlongest.arglongest() << ")\n";
