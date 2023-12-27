@@ -90,17 +90,17 @@ The assignment operator `=` will work correctly to assign one `vec` to another. 
 morph::vec<float, 3> v1 = { 1, 2, 3 };
 morph::vec<float, 3> v2 = v1;           // Good, works fine
 ```
-Because `std::array` is the base class of `vec` it is also possible to assign a `vec` TO an `std::array`:
+Because `std::array` is the base class of `vec` it is also possible to assign a `vec` **to** an `std::array`:
 ```c++
 morph::vec<float, 3> v1 = { 1, 2, 3 };
 std::array<float, 3> a1 = v1;           // Good, works fine
 ```
 
 However, there are no templated assignment operators in `morph::vec` that make it
-possible to assign other types (I *did* try). For example, this does NOT work:
+possible to assign **from** other types (I *did* try). For example, this will **not** compile:
 ```c++
 std::array<float, 3> a1 = { 1, 2, 3 };
-morph::vec<float, 3> v1 = a1;           // Bad, does NOT compile
+morph::vec<float, 3> v1 = a1;           // Bad, doesn't compile
 ```
 
 ## Comparison operators
