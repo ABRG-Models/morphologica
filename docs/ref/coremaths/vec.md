@@ -13,10 +13,31 @@ nav_order: 1
 ```
 Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vec.h). Test and example code:  [tests/testvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec.cpp), [tests/testvecElementOps](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvecElementOps.cpp).
 
+**Table of contents**
+
+* [Summary](/ref/coremaths/vec/#summary)
+* [Design](/ref/coremaths/vec/#design)
+* [Arithmetic operators](/ref/coremaths/vec/#arithmetic-operators)
+* [Assignment operators](/ref/coremaths/vec/#assignment-operators)
+* [Comparison operators](/ref/coremaths/vec/#comparison-operators)
+* [Member functions](/ref/coremaths/vec/#member-functions)
+  - [Setter functions](/ref/coremaths/vec/#setter-functions)
+  - [Numpy-like functions](/ref/coremaths/vec/#numpy-clones)
+  - [Random numbers](/ref/coremaths/vec/#random-numbers)
+  - [Plus-one/less-one dimension](/ref/coremaths/vec/#plus-oneless-one-dimension)
+  - [Type conversions](/ref/coremaths/vec/#type-conversions)
+  - [String output](/ref/coremaths/vec/#string-output)
+  - [Length/lengthen/shorten](/ref/coremaths/vec/#length-lengthen-shorten)
+  - [Range and renormalization](/ref/coremaths/vec/#the-range-and-rescaling-or-renormalizing)
+  - [Finding elements](/ref/coremaths/vec/#finding-elements)
+  - [Simple statistics](/ref/coremaths/vec/#simple-statistics)
+  - [Maths functions](/ref/coremaths/vec/#maths-functions)
+
 ## Summary
 
-`morph::vec` is a fixed-size mathematical vector class. It derives from
-`std::array` and can be used in much the same way as its STL parent.
+`morph::vec` is a fixed-size mathematical vector class. It derives
+from `std::array` and can be used in much the same way as its STL
+parent. It has iterators and you can apply STL algorithms.
 
 ```c++
 namespace morph {
@@ -49,7 +70,9 @@ This was the first class where I decided to derive from an STL
 container. I was motivated by a need for a fixed size mathematical
 vector to use in the computation of three dimensional models for the
 visualization code. I wanted only the data stored in a fixed size
-std::array, but I wanted to add mathematical operations.
+std::array, but I wanted to add mathematical operations with an
+interface that would make coding with the class convenient, easy and
+enjoyable.
 
 Inheriting from an STL container is generally discouraged but it works
 very well because I add no additional member data attributes to the
@@ -105,9 +128,9 @@ morph::vec<float, 3> v1 = a1;           // Bad, doesn't compile
 
 ## Comparison operators
 
-The default comparison in `std::array` is a **lexicographic comparison**. This means that if the first element in a first `array` is less than the first element in a second `array`, then the first `array` is less than the second `array` regardless of the values in the remaining elements. This is not useful when the array is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **elementwise comparison** where one vector may be considered to be less than another if *all* of its elements are less than the others. Both vector magnitude and elementwise comparison can be applied to a `morph::vec` and a scalar.
+The default comparison in `std::array` is a **lexicographic comparison**. This means that if the first element in a first `array` is less than the first element in a second `array`, then the first `array` is less than the second `array` regardless of the values in the remaining elements. This is not useful when the array is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **elementwise comparison** where one vector may be considered to be less than another if *each* of its elements is less than the corresonding other element. That is to say `v1` < `v2` if `v1[i]` < `v2[i]` for all `i`. Both vector magnitude and elementwise comparison can be applied to a `morph::vec` and a scalar.
 
-In `morph::vec` I've implemented the following comparisons. Note that the default is no longer lexicographic comparison and that some comparisions could still be implemented.
+In `morph::vec` I've implemented the following comparisons. Note that the default is not lexicographic comparison and that some comparisions could still be implemented.
 
 | Comparison (`vec v1` with `vec v2`)   | Lexicographic      | Vector magnitude  | Elementwise |
 | --- | --- | --- | --- |
@@ -144,7 +167,7 @@ std::set<morph::vec<int, 2>> some_set;
 
 The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vec` is *elementwise* which will fail to sort an array. In `std::array`, less-than is lexicographic which guarantees a successful sort.
 
-The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function in your `map` or `set`
+The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function `lexical_lessthan` in your `map` or `set`:
 ```c++
 // To make the map work, we have to tell it to use lexical_lessthan:
 auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
