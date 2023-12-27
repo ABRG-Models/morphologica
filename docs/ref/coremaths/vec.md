@@ -15,23 +15,23 @@ Header file: [morph/vec.h](https://github.com/ABRG-Models/morphologica/blob/main
 
 **Table of contents**
 
-* [Summary](/ref/coremaths/vec/#summary)
-* [Design](/ref/coremaths/vec/#design)
-* [Arithmetic operators](/ref/coremaths/vec/#arithmetic-operators)
-* [Assignment operators](/ref/coremaths/vec/#assignment-operators)
-* [Comparison operators](/ref/coremaths/vec/#comparison-operators)
-* [Member functions](/ref/coremaths/vec/#member-functions)
-  - [Setter functions](/ref/coremaths/vec/#setter-functions)
-  - [Numpy-like functions](/ref/coremaths/vec/#numpy-clones)
-  - [Random numbers](/ref/coremaths/vec/#random-numbers)
-  - [Plus-one/less-one dimension](/ref/coremaths/vec/#plus-oneless-one-dimension)
-  - [Type conversions](/ref/coremaths/vec/#type-conversions)
-  - [String output](/ref/coremaths/vec/#string-output)
-  - [Length/lengthen/shorten](/ref/coremaths/vec/#length-lengthen-shorten)
-  - [Range and renormalization](/ref/coremaths/vec/#the-range-and-rescaling-or-renormalizing)
-  - [Finding elements](/ref/coremaths/vec/#finding-elements)
-  - [Simple statistics](/ref/coremaths/vec/#simple-statistics)
-  - [Maths functions](/ref/coremaths/vec/#maths-functions)
+* [Summary](/morphologica/ref/coremaths/vec/#summary)
+* [Design](/morphologica/ref/coremaths/vec/#design)
+* [Arithmetic operators](/morphologica/ref/coremaths/vec/#arithmetic-operators)
+* [Assignment operators](/morphologica/ref/coremaths/vec/#assignment-operators)
+* [Comparison operators](/morphologica/ref/coremaths/vec/#comparison-operators)
+* [Member functions](/morphologica/ref/coremaths/vec/#member-functions)
+  - [Setter functions](/morphologica/ref/coremaths/vec/#setter-functions)
+  - [Numpy-like functions](/morphologica/ref/coremaths/vec/#numpy-clones)
+  - [Random numbers](/morphologica/ref/coremaths/vec/#random-numbers)
+  - [Plus-one/less-one dimension](/morphologica/ref/coremaths/vec/#plus-oneless-one-dimension)
+  - [Type conversions](/morphologica/ref/coremaths/vec/#type-conversions)
+  - [String output](/morphologica/ref/coremaths/vec/#string-output)
+  - [Length/lengthen/shorten](/morphologica/ref/coremaths/vec/#length-lengthen-shorten)
+  - [Range and renormalization](/morphologica/ref/coremaths/vec/#the-range-and-rescaling-or-renormalizing)
+  - [Finding elements](/morphologica/ref/coremaths/vec/#finding-elements)
+  - [Simple statistics](/morphologica/ref/coremaths/vec/#simple-statistics)
+  - [Maths functions](/morphologica/ref/coremaths/vec/#maths-functions)
 
 ## Summary
 
@@ -275,7 +275,7 @@ vec<S, N> lengthen (const S dl) const; // return a vector lengthened by length d
 
 ### The range and rescaling or renormalizing
 
-You can obtain the range of values in the `vec` with `vec::range` which returns a [morph::range](/ref/coremaths/range) object:
+You can obtain the range of values in the `vec` with `vec::range` which returns a [morph::range](/morphologica/ref/coremaths/range) object:
 ```c++
 morph::range<S> range() const;
 ```
