@@ -8,10 +8,31 @@ nav_order: 2
 ---
 ## morph::vvec  (dynamically resizable mathematical vector)
 
-Header file: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vvec.h)
 ```c++
 #include <morph/vvec.h>
 ```
+Header file: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/vvec.h). Test and example code:  [tests/testvvec](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvvec.cpp)
+
+**Table of contents**
+
+* [Summary](/morphologica/ref/coremaths/vvec/#summary)
+* [Design](/morphologica/ref/coremaths/vvec/#design)
+* [Arithmetic operators](/morphologica/ref/coremaths/vvec/#arithmetic-operators)
+* [Assignment operators](/morphologica/ref/coremaths/vvec/#assignment-operators)
+* [Comparison operators](/morphologica/ref/coremaths/vvec/#comparison-operators)
+* [Member functions](/morphologica/ref/coremaths/vvec/#member-functions)
+  - [Setter functions](/morphologica/ref/coremaths/vvec/#setter-functions)
+  - [Numpy-like functions](/morphologica/ref/coremaths/vvec/#numpy-clones)
+  - [Random numbers](/morphologica/ref/coremaths/vvec/#random-numbers)
+  - [Plus-one/less-one dimension](/morphologica/ref/coremaths/vvec/#plus-oneless-one-dimension)
+  - [Type conversions](/morphologica/ref/coremaths/vvec/#type-conversions)
+  - [String output](/morphologica/ref/coremaths/vvec/#string-output)
+  - [Length/lengthen/shorten](/morphologica/ref/coremaths/vvec/#length-lengthen-shorten)
+  - [Range and renormalization](/morphologica/ref/coremaths/vvec/#the-range-and-rescaling-or-renormalizing)
+  - [Finding elements](/morphologica/ref/coremaths/vvec/#finding-elements)
+  - [Simple statistics](/morphologica/ref/coremaths/vvec/#simple-statistics)
+  - [Maths functions](/morphologica/ref/coremaths/vvec/#maths-functions)
+
 ## Summary
 
 `vvec` is a dynamically re-sizable array which derives from `std::vector`.
@@ -28,4 +49,394 @@ Here's how the class is declared:
     {
         //! We inherit std::vector's constructors like this:
         using std::vector<S, Al>::vector;
+```
+
+Template arguments are `S`, the element type and `N`, the size of the array.
+
+Create objects just like `std::vector`:
+
+```c++
+morph::vvec<int> v1 = { 1, 2, 3, 4 };
+```
+but with `morph::vvec`, and just like `morph::vec`, you can do maths:
+
+```c++
+morph::vvec<int> v2 = { 1, 2, 3, 4 };
+morph::vvec<int> v3 = v1 + v2;                // element-wise addition
+morph::vvec<float> u1 = { 1.0f, 0.0f, 0.0f };
+morph::vvec<float> u2 = { 0.0f, 1.0f, 0.0f };
+morph::vvec<float> u3 = u1.cross (u2);        // vector cross-product
+float dp = u1.dot (u3);                       // (scalar/dot/inner)-product
+```
+
+## Design
+
+Like `morph::vec` , `vvec` derives from an STL container without
+apology to give us a dynamically resizable container of scalars or
+vectors on which mathematical operations can be called.
+
+`vvec` is very similar to `vec`, sharing many member functions with the same name.
+
+## Arithmetic operators
+
+You can use arithmetic operators on `vvec` objects with their operations being applied element wise. operations with other `vvec` objects and with scalars are all supported and should work as expected.
+
+| Operator | Scalar example | Element wise `vvec` example |
+| --- | --- | --- |
+| + | `v2 = v1 + 2.0f;` *or* `v2 = 2.0f + v1;` | `v3 = v1 + v2;` |
+| += | `v2 += 2.0f;` | `v2 += v1;` |
+| - | `v2 = v1 - 5.0f;` *or* `v2 = 5.0f - v1;` | `v3 = v1 - v2;` |
+| -= | `v2 -= 2.0f;` | `v2 -= v1;` |
+| *  | `v2 = v1 * 10.0;` *or* `v2 =  10.0 * v1;` | `v3 = v1 * v2;` |
+| *= | `v2 *= 10;` | `v2 *= v1;` |
+| /  | `v2 = v1 / 10.0;`  *or* `v2 = 10.0 / v1;`| `v3 = v1 / v2;` |
+| /= | `v2 /= 10;` | `v2 /= v1;` |
+| - (unary negate) |   | `v2 = -v1;` |
+
+## Assignment operators
+
+The assignment operator `=` will work correctly to assign one `vvec` to another. For example,
+```c++
+morph::vvec<float> v1 = { 1, 2, 3 };
+morph::vvec<float> v2 = v1;            // Good, works fine
+```
+Because `std::vector` is the base class of `vvec` it is also possible to assign a `vvec` **to** an `std::vector`:
+```c++
+morph::vvec<float> v1 = { 1, 2, 3 };
+std::vector<float> sv1 = v1;           // Good, works fine
+```
+
+However, there are no templated assignment operators in `morph::vvec` that make it
+possible to assign **from** other types. For example, this will **not** compile:
+```c++
+std::vector<float> sv1 = { 1, 2, 3 };
+morph::vec<float> v1 = sv1;            // Bad, doesn't compile
+```
+
+## Comparison operators
+
+The default comparison in `std::vector` (and also in `std::array`) is a **lexicographic comparison**. This means that if the first element in a first `vector` is less than the first element in a second `vector`, then the first `vector` is less than the second `vector` regardless of the values in the remaining elements. This is not useful when the vector is interpreted as a mathematical vector. In this case, an appropriate comparison is probably **vector magnitude comparison** (i.e comparing their lengths). Another useful comparison is **elementwise comparison** where one vector may be considered to be less than another if *each* of its elements is less than the corresonding other element. That is to say `v1` < `v2` if `v1[i]` < `v2[i]` for all `i`. Both vector magnitude and elementwise comparison can be applied to a `morph::vvec` and a scalar.
+
+In `morph::vvec` I've implemented the following comparisons. Note that the default is not lexicographic comparison and that some comparisions could still be implemented.
+
+| Comparison (`vvec v1` with `vvec v2`)   | Lexicographic      | Vector magnitude  | Elementwise |
+| --- | --- | --- | --- |
+| `v1` < `v2`  | `v1.lexical_lessthan (v2)` | `v1.length_lessthan (v2)` |  `v1 < v2`   |
+| `v1` <= `v2`  | not implemented | `v1.length_lte (v2)` |  `v1 <= v2`   |
+| `v1` > `v2`  | not implemented | `v1.length_gtrthan (v2)` |  `v1 > v2`   |
+| `v1` >= `v2`  | not implemented | `v1.length_gte (v2)` |  `v1 >= v2`   |
+
+| Comparison (`vvec v ` with `scalar s`)    | Lexicographic      | Vector magnitude  | Elementwise |
+| --- | --- | --- | --- |
+| `v` < `s` | not implemented | not implemented |  `v < s` |
+| `v` <= `s` | not implemented | not implemented |  `v <= s` |
+| `v` > `s` | not implemented | not implemented |  `v > s` |
+| `v` >= `s` | not implemented | not implemented |  `v >= s` |
+
+| 'not' comparison | Implementation |
+| --- | --- |
+| unary not operator `!` | `operator!` implements length comparison. `!v1` is true if `v1.length() == 0`  |
+| not operator `!=` | unimplemented |
+
+### Using `morph::vvec` as a key in `std::map` or within an `std::set`
+
+**FIXME: Check this section**
+
+Although `morph::vvec` derives from `std::vector`, you **can't use it as a key in an `std::map`**!
+
+**Danger!** The following examples **will compile**  but will have **unexpected runtime results**:
+
+```c++
+// Bad!! Because the key is morph::vec<int, 2>
+std::map<morph::vvec<int>, myclass> some_map;
+
+// Also Bad! Again, the key is morph::vec<int, 2>
+std::set<morph::vvec<int>> some_set;
+```
+
+The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vec` is *elementwise* which will fail to sort an array. In `std::array`, less-than is lexicographic which guarantees a successful sort.
+
+The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function `lexical_lessthan` in your `map` or `set`:
+```c++
+// To make the map work, we have to tell it to use lexical_lessthan:
+auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
+std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
+```
+This example comes from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
+
+## Member functions
+
+### Setter functions
+
+These `set_from` functions differ from those in `morph::vec`
+```c++
+void set_from (); // Fill me in
+```
+
+```c++
+void set_from (const _S& v);
+void zero();
+void set_max();
+void set_lowest();
+```
+This `set_from` overload fills all elements of the `morph::vvec` with `v`. `zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
+
+### Numpy clones
+
+```c++
+void linspace (const _S start, const _S2 stop, const size_t num=0);
+void arange (const _S start, const _S2 stop, const _S2 increment);
+```
+
+Python Numpy-like functions to fill the `morph::vvec` with sequences of
+numbers.  `linspace` fills the `vvec` with `num` values in a sequence
+from `start` to `stop`. `arange` resizes the `vvec` and fills it with elements starting
+with `start` and ending with `stop` incrementing by `increment`.
+
+### Random numbers
+
+Three functions to fill a `vvec` with random numbers:
+```c++
+void randomize();                // fill from uniform random number generator, range [0,1).
+void randomize (S min, S max)    // fill from uniform RNG, range [min,max).
+void randomizeN (S _mean, S _sd) // fill from normal RNG with given mean and std. deviation.
+```
+
+### Re-ordering elements
+
+There's a shuffle function:
+```c++
+void shuffle();                  // Randomize the order of the existing elements
+vvec<S> shuffled();              // Return a vvec copy with randomized the order of the existing elements
+```
+And rotates:
+
+```c++
+void rotate();                                // Rotate '1 step to the left'
+template <typename T=int> void rotate (T n);  // Rotates 'n steps to the left'
+void rotate_pairs(); // If size is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
+```
+
+### Type conversions
+These return a new `vvec` in the requested type:
+```c++
+vvec<float> as_float() const;
+vvec<double> as_double() const;
+vvec<int> as_int() const;
+vvec<unsigned int> as_uint() const;
+```
+For example:
+```c++
+morph::vvec<int> vi = {1,2,3};
+morph::vvec<float> vf = vi.as_float(); // Note: new memory is used for the new object
+```
+
+### String output
+
+```c++
+std::string str() const;
+std::string str_mat() const;
+std::string str_numpy() const;
+```
+These functions output the `vvec` as a string in different formats. The _mat and _numpy versions generate text that can be pasted into a session of MATLAB/Octave or Python. Output looks like `(1,2,3)` (`str()`), `[1,2,3]` (`str_mat()`) or `np.array((1,2,3))` (`str_numpy()`). If you stream a `vvec` then `str()` is used:
+```c++
+morph::vvec<int> v = {1,2,3};   // Make a vvec called v
+std::cout << v;                 // Stream to stdout
+```
+gives output `(1,2,3)`.
+
+### Length, lengthen, shorten
+
+```c++
+template <typename _S=S>
+_S length() const;                     // return the vector length
+_S length_sq() const;                  // return the vector length squared
+_S sos() const;                        // also length squared. See header for difference
+// Enabled only for non-integral S:
+vvec<S> shorten (const S dl) const;    // return a vector shortened by length dl
+vvec<S> lengthen (const S dl) const;   // return a vector lengthened by length dl
+```
+
+### The range and rescaling or renormalizing
+
+You can obtain the range of values in the `vvec` with `vvec::range` which returns a [morph::range](/morphologica/ref/coremaths/range) object:
+```c++
+morph::range<S> range() const;
+```
+Example usage:
+```c++
+morph::vvec<float> v = { 1, 2, 3 };
+morph::range<float> r = v.range();
+std::cout << "vvec max: " << r.max << " and min: " << r.min << std::endl;
+```
+To re-scale or renormalize the values in the `vvec`:
+```c++
+void renormalize();  // make vector length 1
+void rescale();      // rescale to range [0,1]
+void rescale_neg();  // rescale to range [-1,0]
+void rescale_sym();  // rescale to range [-1,1]
+```
+Renormalization takes a vector and makes it have length 1. Thus,
+`renormalize()` computes the length of the `vvec` and divides each element by this length.
+
+Use `rescale` when you want the values in the array to range between 0
+and 1. `recale` will find a linear scaling so that the values in the
+`vec` will be in the range [0,1]. `rescale_neg` finds a scaling that
+puts the values in the range [-1,0]. `rescale_sym` puts the values in
+the range [-1,1].
+
+Note that these functions use a template to ensure they are only enabled for non-integral types:
+```c++
+template <typename _S=S, std::enable_if_t<!std::is_integral<std::decay_t<_S>>::value, int> = 0 >
+```
+
+Check whether your renormalized vector is a unit vector:
+
+```c++
+bool checkunit() const; // return true if length is 1 (to within vvec::unitThresh = 0.001)
+```
+
+### Finding elements
+
+A group of functions to find the value or index of particular elements in the array.
+```c++
+S longest() const;          // return longest element (greatest magnitude)
+size_t arglongest() const;  // return index of longest element
+S shortest() const;         // return shortest element (closest to 0)
+size_t argshortest() const; // return index of shortest element
+S max() const;              // return max element
+size_t argmax() const;      // return index of max element
+S min() const;              // return min element
+size_t argmin() const;      // return index of min element
+```
+
+#### Content tests (zero, inf, NaN)
+
+```c++
+bool has_zero() const;
+bool has_inf() const;         // can only return true if type S has infinity
+bool has_nan() const;         // can only return true if type S has NaN
+bool has_nan_or_inf() const;  // can only return true if type S has infinity and/or NaN
+```
+
+#### Replacing NaN and inf values
+
+To replace all not-a-numbers in a `vvec` with another value use:
+```c++
+void replace_nan_with (const S replacement);
+```
+To replace NaNs *and* infinitities, it's:
+```c++
+void replace_nan_or_inf_with (const S replacement);
+```
+
+#### Search/replace and thresholding
+
+`vvec` has search/replace:
+```c++
+void search_replace (const S searchee, const S replacement);
+```
+
+And threshold functions which replace any values outside limits with the limit.
+```c++
+vvec<S> threshold (const S lower, const S upper) const;
+void threshold_inplace (const S lower, const S upper);
+```
+
+#### Pruning - removing elements from a `vvec`
+
+There are also 'pruning' functions to *remove* positive or negative or nan values in a `vvec`, thus changing the size of the vvec or returning a vvec of smaller size.
+
+```c++
+vvec<S> prune_positive() const;
+void prune_positive_inplace();
+vvec<S> prune_negative() const;
+void prune_negative_inplace();
+vvec<S> prune_nan() const;
+void prune_nan_inplace();
+```
+
+### Simple statistics
+
+```c++
+// These template functions are declared with a type _S:
+template<typename _S=S>
+
+_S mean() const;          // The arithmetic mean
+_S variance() const;      // The variance
+_S std() const;           // The standard deviation
+_S sum() const;           // The sum of all elements
+_S product() const;       // The product of the elements
+```
+
+### Maths functions
+
+Raising elements to a **power**.
+```c++
+vvec<S> pow (const S& p) const;          // raise all elements to the power p, returning result in new vec
+void pow_inplace (const S& p);           // in-place version which operates on the existing data in *this
+template<typename _S=S>
+vec<S, N> pow (const vvec<_S>& p) const; // Raise each element in *this to the power of the matching element in p (which must be same size)
+template<typename _S=S>
+void pow_inplace (const vvec<_S>& p);    // in-place version
+```
+
+The **signum function** is 1 if a value is >0; -1 if the value is <0 and 0 if the value is 0.
+```c++
+vvec<S> signum() const;      // Return the result of the signum function in a new vec
+void signum_inplace();       // in-place version
+```
+
+**Floor** computes the largest integer value not greater than an element value. This is applied to each element.
+```c++
+vvec<S> floor() const;       // Return the result of the floor function in a new vec
+void floor_inplace();        // in-place version
+```
+
+**Ceil** computes the least integer value not less than an element value. This is applied to each element.
+```c++
+vvec<S> ceil() const;        // Return the result of the ceil function in a new vec
+void ceil_inplace();         // in-place version
+```
+
+**Trunc** computes the nearest integer not greater in magnitude than element value. This is applied to each element.
+```c++
+vvec<S> trunc() const;       // Return the result of the trunc function in a new vec
+void trunc_inplace();        // in-place version
+```
+
+**Square root** or the **square**. These are convenience functions. For cube root, etc, use `pow()`.
+```c++
+vvec<S> sqrt() const;   // the square root
+void sqrt_inplace();
+vvec<S> sq() const;     // the square
+void sq_inplace();
+```
+**Logarithms** and **exponential**
+```c++
+vvec<S> log() const;     // element-wise natural log
+void log_inplace();
+vvec<S> log10() const;   // log to base 10
+void log10_inplace();
+vvec<S> exp() const;     // element-wise exp
+void exp_inplace();
+```
+**absolute value**/**magnitude**
+```c++
+vvec<S> abs() const;     // element-wise abs()
+void abs_inplace();
+```
+
+The **scalar product** (also known as inner product or dot product) can be computed for two `vvec` instances, which must have equal size (otherwise a runtime error is thrown).
+```c++
+template<typename _S=S>
+S dot (const vvec<_S>& v) const
+```
+
+The **cross product** is defined here only for `vvec` of size 3.
+
+If `N` is 2, then v x w is defined to be v_x w_y - v_y w_x and for N=3, see your nearest vector maths textbook. The function signatures are
+```c++
+template<typename _S=S>
+S cross (const vvec<_S>& w) const;
 ```
