@@ -109,20 +109,21 @@ The default comparison in `std::array` is a **lexicographic comparison**. This m
 
 In `morph::vec` I've implemented the following comparisons. Note that the default is no longer lexicographic comparison and that some comparisions could still be implemented.
 
-| `vec v1` : `vec v2` comparison     | Lexicographic      | Vector magnitude  | Elementwise |
+| Comparison (`vec v1` with `vec v2`)   | Lexicographic      | Vector magnitude  | Elementwise |
 | --- | --- | --- | --- |
 | `v1` < `v2`  | `v1.lexical_lessthan (v2)` | `v1.length_lessthan (v2)` |  `v1 < v2`   |
 | `v1` <= `v2`  | not implemented | `v1.length_lte (v2)` |  `v1 <= v2`   |
 | `v1` > `v2`  | not implemented | `v1.length_gtrthan (v2)` |  `v1 > v2`   |
 | `v1` >= `v2`  | not implemented | `v1.length_gte (v2)` |  `v1 >= v2`   |
 
-| `vec v ` : `scalar s` comparison     | Lexicographic      | Vector magnitude  | Elementwise |
+| Comparison (`vec v ` with `scalar s`)    | Lexicographic      | Vector magnitude  | Elementwise |
+| --- | --- | --- | --- |
 | `v` < `s` | not implemented | not implemented |  `v < s` |
 | `v` <= `s` | not implemented | not implemented |  `v <= s` |
 | `v` > `s` | not implemented | not implemented |  `v > s` |
 | `v` >= `s` | not implemented | not implemented |  `v >= s` |
 
-| Not equal comparison | Implementation |
+| 'not' comparison | Implementation |
 | --- | --- |
 | unary not operator `!` | `operator!` implements length comparison. `!v1` is true if `v1.length() == 0`  |
 | not operator `!=` | unimplemented |
