@@ -72,7 +72,7 @@ morph::Quaternion<float> q3 = q1 * q2;
 To multiply one Quaternion by another, it's important to specify the multiplication order.
 ```c++
 q1.postmultiply (q2); // Places result of q1 * q2 into q1.
-q1.premultiply (q2); // Places result of q2 * q1 into q1.
+q1.premultiply (q2);  // Places result of q2 * q1 into q1.
 ```
 
 Quaternion **division** is also possible: `q3 = q1/q2;` as is division by a scalar.
@@ -86,4 +86,24 @@ For the **algebraic inverse** or **reciprocal**, q<sup>-1</sup>, use `inverse`. 
 ```c++
 q.inverse(); // q^-1
 ```
-The conjugate is also obtainable with `q.conjugate();`.
+The conjugate is also obtainable with `q.conjugate();` and the magnitude of the Quaternion with `q.magnitude();`.
+
+**Rotate** the Quaternion with these methods:
+```c++
+void rotate (const vec<Flt, 3>& axis, const Flt angle);
+void rotate (const std::array<Flt, 3>& axis, const Flt angle);
+void rotate (const Flt axis_x, const Flt axis_y, const Flt axis_z, const Flt angle)
+```
+Each method rotates the Quaternion by an angle in radians about a 3D axis specified by the axis array (or by the individual components of the axis).
+
+You can obtain the equivalent **rotation matrix** in column-major format (OpenGL friendly) from the Quaternion with
+```c++
+std::array<Flt, 16> rotationMatrix() const;           // Returns the rotation matrix
+void rotationMatrix (std::array<Flt, 16>& mat) const  // sets the values in the passed-in matrix
+```
+If you know that your Quaternion can be assumed to be a unit Quaternion, you can use
+```c++
+std::array<Flt, 16> unitRotationMatrix() const;
+void unitRotationMatrix (std::array<Flt, 16>& mat) const;
+```
+These involve slightly less computation.
