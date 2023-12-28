@@ -8,6 +8,7 @@
 
 #include <morph/mathconst.h>
 #include <morph/vec.h>
+#include <limits>
 #include <cmath>
 #include <array>
 #include <iostream>
@@ -133,17 +134,24 @@ namespace morph {
         //! Equality operator. True if all elements match
         bool operator==(const Quaternion<Flt>& rhs) const
         {
-            return (this->w == rhs.w && this->x == rhs.x && this->y == rhs.y && this->z == rhs.z);
+            return (std::abs(this->w - rhs.w) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->x - rhs.x) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->y - rhs.y) < std::numeric_limits<Flt>::epsilon()
+                    && std::abs(this->z - rhs.z) < std::numeric_limits<Flt>::epsilon());
         }
 
         //! Not equals
         bool operator!=(const Quaternion<Flt>& rhs) const
         {
-            return (this->w != rhs.w || this->x != rhs.x || this->y != rhs.y || this->z != rhs.z);
+            return (std::abs(this->w - rhs.w) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->x - rhs.x) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->y - rhs.y) >= std::numeric_limits<Flt>::epsilon()
+                    || std::abs(this->z - rhs.z) >= std::numeric_limits<Flt>::epsilon());
         }
 
         //! Overload * operator. q1 is 'this->'
-        Quaternion<Flt> operator* (const Quaternion<Flt>& q2) const
+        template <typename F=Flt>
+        Quaternion<Flt> operator* (const Quaternion<F>& q2) const
         {
             Quaternion<Flt> q;
             q.w = this->w * q2.w - this->x * q2.x - this->y * q2.y - this->z * q2.z;
@@ -165,6 +173,17 @@ namespace morph {
             return q;
         }
 
+        //! Division by a scalar
+        Quaternion<Flt> operator/ (const Flt f) const
+        {
+            Quaternion<Flt> q;
+            q.w = this->w / f;
+            q.x = this->x / f;
+            q.y = this->y / f;
+            q.z = this->z / f;
+            return q;
+        }
+
         //! Invert the rotation represented by this Quaternion and return the result.
         Quaternion<Flt> invert() const
         {
@@ -181,12 +200,10 @@ namespace morph {
             return qconj;
         }
 
-        //! Compute the multiplicative inverse 1/q
+        //! Compute the inverse, q^-1. Also known as the reciprocal, q^-1 * q = I.
         Quaternion<Flt> inverse() const
         {
-            Quaternion<Flt> qconj = this->conjugate();
-            Quaternion<Flt> qinv = qconj / (*this * qconj);
-            return qinv;
+            return (this->conjugate() / (w*w + x*x + y*y + z*z));
         }
 
         //! Return the magnitude of the Quaternion
