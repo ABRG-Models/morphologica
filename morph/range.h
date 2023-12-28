@@ -16,8 +16,8 @@
 
 namespace morph {
 
-    // Forward declare class and stream operator
-    template <typename T> class range;
+    // Forward declare the class and stream operator
+    template <typename T> struct range;
     template <typename T> std::ostream& operator<< (std::ostream&, const range<T>&);
 
     template <typename T>
