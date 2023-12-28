@@ -275,6 +275,19 @@ namespace morph {
         }
 
         /*!
+         * Change this Quaternion to represent a new rotation by rotating it \a angle
+         * (radians) around the axis given by \a axis.
+         */
+        void rotate (const vec<Flt, 3>& axis, const Flt angle)
+        {
+            Flt halfangle = angle * Flt{0.5};
+            Flt cosHalf = std::cos (halfangle);
+            Flt sinHalf = std::sin (halfangle);
+            Quaternion<Flt> local(cosHalf, axis[0] * sinHalf, axis[1] * sinHalf, axis[2] * sinHalf);
+            this->premultiply (local);
+        }
+
+        /*!
          * Obtain the rotation matrix (without assumption that this is a unit
          * Quaternion)
          *
