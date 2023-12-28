@@ -12,8 +12,10 @@ add_subdirectory(schnakenberg)
 # A retinotectal model published by Simpson and Goodhill, 2011
 add_subdirectory(SimpsonGoodhill)
 
-# Shader compute examples
-add_subdirectory(gl_compute)
+# Shader compute examples. Not supported on Apple, which is limited to OpenGL 4.1.
+if(NOT APPLE)
+  add_subdirectory(gl_compute)
+endif()
 
 # Examples showing how to use morphologica with Qt. Compiled only if find_package found Qt5
 if(Qt5_FOUND)

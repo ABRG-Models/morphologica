@@ -94,30 +94,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE
 # example, if you're compiling with morphologica in a subdirectory, you may need:
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMORPH_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/morphologica/fonts\\\"\"")
 
-# A section to ensure library linking works on Apple. No longer necessary? Doesn't seem to be.
-if(0)#APPLE
-  set(CMAKE_MACOSX_RPATH ON)
-  # use, i.e. don't skip the full RPATH for the build tree
-  set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-  # when building, don't use the install RPATH already
-  # (but later on when installing)
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-  # the RPATH to be used when installing
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  # add the automatically determined parts of the RPATH
-  # which point to directories outside the build tree to the install RPATH
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  # the RPATH to be used when installing, but only if it's not a system directory
-  list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-  if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  endif("${isSystemDir}" STREQUAL "-1")
-  include_directories(/usr/local/include)
-endif()
-
 # Lib finding
 find_package(OpenCV) # No longer required for morph::Visual, used by some tests
-find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
+if(APPLE)
+  find_package(OpenGL REQUIRED)
+else()
+  find_package(OpenGL REQUIRED EGL) # GL ES 3.1 used in one gl compute example
+endif()
+
 if(USE_GLEW)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
