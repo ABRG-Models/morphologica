@@ -24,7 +24,7 @@ Header file: [morph/vvec.h](https://github.com/ABRG-Models/morphologica/blob/mai
   - [Setter functions](/morphologica/ref/coremaths/vvec/#setter-functions)
   - [Numpy-like functions](/morphologica/ref/coremaths/vvec/#numpy-clones)
   - [Random numbers](/morphologica/ref/coremaths/vvec/#random-numbers)
-  - [Plus-one/less-one dimension](/morphologica/ref/coremaths/vvec/#plus-oneless-one-dimension)
+  - [Re-ordering elements](/morphologica/ref/coremaths/vvec/#re-ordering-elements)
   - [Type conversions](/morphologica/ref/coremaths/vvec/#type-conversions)
   - [String output](/morphologica/ref/coremaths/vvec/#string-output)
   - [Length/lengthen/shorten](/morphologica/ref/coremaths/vvec/#length-lengthen-shorten)
