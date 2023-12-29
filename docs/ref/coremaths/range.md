@@ -42,8 +42,12 @@ r.update (-100);     // range now -100 to 100
 r.includes (45);     // would return bool true, following on from previous example
 r.includes (-450);   // would return bool false
 ```
+To query the max or min of the range, just access the `max` or `min` members:
+```c++
+std::cout << "range maximum is " << r.max << " and its minimum is " << r.min << std::endl;
+```
 
-**Stream** the range
+You can **stream** the range to get both at once:
 ```c++
 std::cout << r << std::endl;
 ```
