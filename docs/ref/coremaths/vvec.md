@@ -110,7 +110,7 @@ However, there are no templated assignment operators in `morph::vvec` that make 
 possible to assign **from** other types. For example, this will **not** compile:
 ```c++
 std::vector<float> sv1 = { 1, 2, 3 };
-morph::vec<float> v1 = sv1;            // Bad, doesn't compile
+morph::vvec<float> v1 = sv1;            // Bad, doesn't compile
 ```
 
 ## Comparison operators
@@ -140,29 +140,27 @@ In `morph::vvec` I've implemented the following comparisons. Note that the defau
 
 ### Using `morph::vvec` as a key in `std::map` or within an `std::set`
 
-**FIXME: Check this section**
-
 Although `morph::vvec` derives from `std::vector`, you **can't use it as a key in an `std::map`**!
 
 **Danger!** The following examples **will compile**  but will have **unexpected runtime results**:
 
 ```c++
-// Bad!! Because the key is morph::vec<int, 2>
+// Bad!! Because the key is morph::vvec<int>
 std::map<morph::vvec<int>, myclass> some_map;
 
-// Also Bad! Again, the key is morph::vec<int, 2>
+// Also Bad! Again, the key is morph::vvec<int>
 std::set<morph::vvec<int>> some_set;
 ```
 
-The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vec` is *elementwise* which will fail to sort an array. In `std::array`, less-than is lexicographic which guarantees a successful sort.
+The reason for this is that `std::set` and `std::map` depend upon the less-than comparison for their functionality and the default element-wise less-than in `morph::vvec` is *elementwise* which will fail to sort an array. In `std::vector`, less-than is lexicographic which guarantees a successful sort.
 
-The workaround is to specify that you want to use the `morph::vec` lexicographical less-than function `lexical_lessthan` in your `map` or `set`:
+The workaround is to specify that you want to use the `morph::vvec` lexicographical less-than function `lexical_lessthan` in your `map` or `set`:
 ```c++
 // To make the map work, we have to tell it to use lexical_lessthan:
-auto _cmp = [](morph::vec<int,2> a, morph::vec<int,2> b){return a.lexical_lessthan(b);};
-std::map<morph::vec<int, 2>, std::string, decltype(_cmp)> themap(_cmp);
+auto _cmp = [](morph::vvec<int> a, morph::vvec<int> b){return a.lexical_lessthan(b);};
+std::map<morph::vvec<int>, std::string, decltype(_cmp)> themap(_cmp);
 ```
-This example comes from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp).
+This example is adapted from [tests/testvec_asmapkey](https://github.com/ABRG-Models/morphologica/blob/main/tests/testvec_asmapkey.cpp) and may need to be tested!
 
 ## Member functions
 

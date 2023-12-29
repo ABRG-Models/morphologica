@@ -9,6 +9,7 @@ nav_order: 10
 ```c++
 #include <morph/Quaternion.h>
 ```
+Header file: [morph/Quaternion.h](https://github.com/ABRG-Models/morphologica/blob/main/morph/Quaternion.h). Test and example code:  [tests/testQuaternion](https://github.com/ABRG-Models/morphologica/blob/main/tests/testQuaternion.cpp)
 
 A class for doing quaternion operations. Initially developed for use in `morph::Visual` to compute rotations of the scene.
 
