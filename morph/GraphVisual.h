@@ -714,15 +714,15 @@ namespace morph {
             this->height = _height;
 
             float _extra = this->dataaxisdist * this->height;
-            this->ord1_scale.range_min = _extra;
-            this->ord1_scale.range_max = this->height - _extra;
+            this->ord1_scale.output_range.min = _extra;
+            this->ord1_scale.output_range.max = this->height - _extra;
             // Same for ord2_scale:
-            this->ord2_scale.range_min = _extra;
-            this->ord2_scale.range_max = this->height - _extra;
+            this->ord2_scale.output_range.min = _extra;
+            this->ord2_scale.output_range.max = this->height - _extra;
 
             _extra = this->dataaxisdist * this->width;
-            this->abscissa_scale.range_min = _extra;
-            this->abscissa_scale.range_max = this->width - _extra;
+            this->abscissa_scale.output_range.min = _extra;
+            this->abscissa_scale.output_range.max = this->width - _extra;
 
             this->thickness *= this->width;
         }
@@ -1580,15 +1580,15 @@ namespace morph {
                     throw std::runtime_error ("abscissa and ordinate Scales not set. Is there data?");
                 }
                 // Compute locations for ticks...
-                Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.range_min);
-                Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.range_max);
-                Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.range_min);
-                Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.range_max);
+                Flt _xmin = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.min);
+                Flt _xmax = this->abscissa_scale.inverse_one (this->abscissa_scale.output_range.max);
+                Flt _ymin = this->ord1_scale.inverse_one (this->ord1_scale.output_range.min);
+                Flt _ymax = this->ord1_scale.inverse_one (this->ord1_scale.output_range.max);
                 Flt _ymin2 = Flt{0};
                 Flt _ymax2 = Flt{1};
                 if (this->ord2_scale.ready()) {
-                    _ymin2 = this->ord2_scale.inverse_one (this->ord2_scale.range_min);
-                    _ymax2 = this->ord2_scale.inverse_one (this->ord2_scale.range_max);
+                    _ymin2 = this->ord2_scale.inverse_one (this->ord2_scale.output_range.min);
+                    _ymax2 = this->ord2_scale.inverse_one (this->ord2_scale.output_range.max);
                 }
                 if constexpr (gv_debug) {
                     std::cout << "x ticks between " << _xmin << " and " << _xmax << " in data units\n";

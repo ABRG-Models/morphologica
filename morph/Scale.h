@@ -43,6 +43,7 @@
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
 #include <morph/vvec.h>
+#include <morph/range.h>
 
 namespace morph {
 
@@ -269,12 +270,8 @@ namespace morph {
         //! Element type of S
         using S_el=std::remove_reference_t<decltype(*std::begin(std::declval<S&>()))>;
 
-        //! minimum for autoscaling. After autoscaling, the minimum value of the scaled values
-        //! should be have this value.
-        S_el range_min = S_el{0};
-        //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled values should
-        //! be have this value.
-        S_el range_max = S_el{1};
+        //! The output range required. Change if you want to scale to something other than [0, 1]
+        morph::range<S_el> output_range = morph::range<S_el>(S_el{0}, S_el{1});
 
         //! Transform a single (math) vector T into a (math) vector S
         virtual S transform_one (const T& datum) const
@@ -321,12 +318,12 @@ namespace morph {
             // Handle imax_len == imin_len
             if (imax_len == imin_len) {
                 // params[0] is already 0
-                this->params[1] = (this->range_max-this->range_min)/S_el{2};
+                this->params[1] = (this->output_range.max-this->output_range.min)/S_el{2};
             } else {
                 // m = rise/run
-                this->params[0] = (this->range_max - this->range_min) / static_cast<S_el>(imax_len - imin_len);
+                this->params[0] = (this->output_range.max - this->output_range.min) / static_cast<S_el>(imax_len - imin_len);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-                this->params[1] = static_cast<S_el>(imin_len); // this->range_min - (this->params[0] * imin_len);
+                this->params[1] = static_cast<S_el>(imin_len); // this->output_range.min - (this->params[0] * imin_len);
             }
         }
 
@@ -417,12 +414,8 @@ namespace morph {
     class ScaleImpl<1, T, S> : public ScaleImplBase<T, S>
     {
     public:
-        //! minimum for autoscaling. After autoscaling, the minimum value of the scaled values
-        //! should be have this value.
-        S range_min = S{0};
-        //! maximum for autoscaling. After autoscaling, the maxmum value of the scaled values should
-        //! be have this value.
-        S range_max = S{1};
+        //! The output range required. Change if you want to scale to something other than [0, 1]
+        morph::range<S> output_range = morph::range<S>(S{0}, S{1});
 
         virtual S transform_one (const T& datum) const
         {
@@ -521,12 +514,12 @@ namespace morph {
             this->params.resize (2, S{0});
             if (input_min == input_max) {
                 this->params[0] = T{0};
-                this->params[1] = (this->range_max - this->range_min) / S{2};
+                this->params[1] = (this->output_range.max - this->output_range.min) / S{2};
             } else {
                 // m = rise/run
-                this->params[0] = (this->range_max - this->range_min) / static_cast<S>(input_max - input_min);
+                this->params[0] = (this->output_range.max - this->output_range.min) / static_cast<S>(input_max - input_min);
                 // c = y - mx => min = m * input_min + c => c = min - (m * input_min)
-                this->params[1] = this->range_min - (this->params[0] * static_cast<S>(input_min));
+                this->params[1] = this->output_range.min - (this->params[0] * static_cast<S>(input_min));
             }
         }
 

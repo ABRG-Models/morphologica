@@ -71,9 +71,9 @@ namespace morph {
             // If client code provided no scale, then show colour bar from 0->1
             if (!this->scale.ready()) { this->tickscale.compute_autoscale (0, 1); }
 
-            this->tickscale.range_max = this->length;
-            this->tickscale.compute_autoscale (this->scale.inverse_one (this->scale.range_min),
-                                               this->scale.inverse_one (this->scale.range_max));
+            this->tickscale.output_range.max = this->length;
+            this->tickscale.compute_autoscale (this->scale.inverse_one (this->scale.output_range.min),
+                                               this->scale.inverse_one (this->scale.output_range.max));
 
             this->computeTickPositions();
             this->drawFrame();
@@ -91,8 +91,8 @@ namespace morph {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
                 // Compute locations for ticks
-                F _min = this->tickscale.inverse_one (this->tickscale.range_min);
-                F _max = this->tickscale.inverse_one (this->tickscale.range_max);
+                F _min = this->tickscale.inverse_one (this->tickscale.output_range.min);
+                F _max = this->tickscale.inverse_one (this->tickscale.output_range.max);
                 float realmin = this->tickscale.inverse_one (0);
                 float realmax = this->tickscale.inverse_one (this->length);
 

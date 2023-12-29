@@ -29,6 +29,7 @@ int main () {
     vector<float> vf = {1,2,3,4,5,8,9,18};
     vector<float> result(vf);
     s.transform (vf, result);
+    cout << "s output_range: " << s.output_range << std::endl;
     cout << "1st data: Unscaled/scaled: ";
     for (unsigned int i = 0; i < vf.size(); ++i) {
         cout << vf[i]<<"/"<<result[i]<<", ";
@@ -44,6 +45,19 @@ int main () {
         cout << "Error in scalar scaling" << endl;
         rtn--;
     }
+
+    // Test different output range ([1,2] instead of the default [0,1])
+    Scale<float> s_2;
+    s_2.do_autoscale = true;
+    s_2.output_range.min = 1.0f;
+    s_2.output_range.max = 2.0f;
+    vector<float> result_2(vf);
+    s_2.transform (vf, result_2);
+    cout << "New range: Unscaled / scaled [0,1]  / scaled [1,2]\n";
+    for (unsigned int i = 0; i < vf.size(); ++i) {
+        cout << vf[i] << " / " << result[i] << " / " << result_2[i] << "\n";
+    }
+    cout << endl;
 
     // Different data, but extend max a bit. The result should now span >0,1
     // range. This shows that the autoscaling is carried out once only by the Scale
