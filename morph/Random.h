@@ -172,7 +172,7 @@ namespace morph {
         std::uniform_int_distribution<T> dist;
     public:
         //! Default constructor gives an integer random number generator which works
-        //! in range [0,(type max)]
+        //! in range [(type min),(type max)]
         RandUniform ()
         {
             typename std::uniform_int_distribution<T>::param_type prms (std::numeric_limits<T>::min(),
@@ -180,7 +180,7 @@ namespace morph {
             this->dist.param (prms);
         }
         //! This constructor gives an integer random number generator which works
-        //! in range [0,(type max)] with fixed seed \a _seed.
+        //! in range [(type min),(type max)] with fixed seed \a _seed.
         RandUniform (unsigned int _seed)
         {
             this->generator.seed (_seed);
