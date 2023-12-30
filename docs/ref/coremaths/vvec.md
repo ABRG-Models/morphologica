@@ -4,7 +4,7 @@ parent: Core maths classes
 grand_parent: Reference
 title: morph::vvec
 permalink: /ref/coremaths/vvec/
-nav_order: 2
+nav_order: 3
 ---
 ## morph::vvec  (dynamically resizable mathematical vector)
 

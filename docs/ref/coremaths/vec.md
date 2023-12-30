@@ -4,7 +4,7 @@ title: morph::vec
 parent: Core maths classes
 grand_parent: Reference
 permalink: /ref/coremaths/vec/
-nav_order: 1
+nav_order: 2
 ---
 ## morph::vec (fixed-size mathematical vector)
 

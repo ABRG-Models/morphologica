@@ -4,6 +4,7 @@ parent: Core maths classes
 grand_parent: Reference
 layout: page
 permalink: /ref/coremaths/scale
+nav_order: 5
 ---
 ```c++
 #include <morph/Scale.h>

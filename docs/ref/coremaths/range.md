@@ -4,6 +4,7 @@ parent: Core maths classes
 grand_parent: Reference
 layout: page
 permalink: /ref/coremaths/range
+nav_order: 4
 ---
 ```c++
 #include <morph/range.h>
