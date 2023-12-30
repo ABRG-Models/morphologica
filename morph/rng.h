@@ -13,8 +13,8 @@
 #pragma once
 #include <morph/Random.h>
 
-// #define RANDSINGLE if you want a single precision rng
-#ifdef RANDSINGLE
+// #define NO_RANDSINGLE if you DON'T want a single precision rng
+#ifndef NO_RANDSINGLE
 namespace morph {
     // Uniform random number generator, singles
     class srng

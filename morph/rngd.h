@@ -1,8 +1,6 @@
 // Include only morph::randDouble.h from rng.h
 #pragma once
-#ifdef RANDSINGLE
-# undef RANDSINGLE
-#endif
+#define NO_RANDSINGLE 1 // disable randSingle
 #ifdef NO_RANDDOUBLE
 # undef NO_RANDDOUBLE
 #endif
