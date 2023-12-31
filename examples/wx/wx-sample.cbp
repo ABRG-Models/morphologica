@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="wx-sample" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/wx-sample" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/wx-sample" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="`$(#WX_CONFIG) --cflags`" />
+			<Add option="`pkg-config --cflags freetype2`" />
+			<Add option="-DUSE_GLEW" />
+			<Add option="-D__WIN__" />
+			<Add directory="../../../morphologica" />
+			<Add directory="../../include" />
+		</Compiler>
+		<Linker>
+			<Add option="`$(#WX_CONFIG) --libs std,gl`" />
+			<Add option="-lopengl32" />
+			<Add option="-lglu32" />
+			<Add option="-lwxmsw32ud_gl" />
+			<Add option="`pkg-config --libs glm`" />
+			<Add option="`pkg-config --libs glfw3`" />
+			<Add option="`pkg-config --libs glew`" />
+			<Add library="opengl32" />
+			<Add library="freetype" />
+		</Linker>
+		<Unit filename="../../morph/wx/keycodes.h" />
+		<Unit filename="../../morph/wx/viswidget.h" />
+		<Unit filename="main-wx.cpp" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>
