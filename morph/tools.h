@@ -18,9 +18,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <stdlib.h>
-#ifndef __WIN__
-# include <morph/Process.h>
-#endif
+#include <iostream>
 
 #include <math.h>
 #include <stdlib.h>
@@ -2135,9 +2133,7 @@ namespace morph
             std::stringstream datestamp;
 
             buf = static_cast<struct stat*>(malloc (sizeof (struct stat)));
-            if (!buf) { // Malloc error.
-                std::cout << "malloc error\n";
-            }
+            if (!buf) { std::cout << "malloc error\n"; }
             memset (buf, 0, sizeof(struct stat));
             if (stat (filename.c_str(), buf)) {
                 datestamp << 0;
