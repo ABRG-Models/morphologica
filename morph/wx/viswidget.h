@@ -3,7 +3,11 @@
 #include <iostream>
 #include <functional>
 
-// Visual is going to be owned by the QOpenGLWidget
+#include <wx/wx.h>
+#include <wx/glcanvas.h>
+#include <wx/gtk/glcanvas.h>
+
+// Visual is going to be owned by the wxGLCanvas
 #define OWNED_MODE 1
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = wxGLCanvas; }
@@ -11,9 +15,6 @@ namespace morph { using win_t = wxGLCanvas; }
 #include <morph/Visual.h>
 // We need to be able to convert from wxWidgets keycodes to morph keycodes
 #include <morph/wx/keycodes.h>
-
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
 
 namespace morph {
     namespace wx {

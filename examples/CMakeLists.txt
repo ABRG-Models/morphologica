@@ -22,6 +22,10 @@ if(Qt5_FOUND)
   add_subdirectory(qt)
 endif()
 
+if(wxWidgets_FOUND)
+  add_subdirectory(wx)
+endif()
+
 # All #includes in test programs have to be #include <morph/header.h>
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 

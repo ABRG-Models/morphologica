@@ -135,6 +135,10 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 # If Qt5 is present, then some optional Qt examples will be compiled
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
 
+# wxwidgets. Optional. Use `apt install libwxgtk3.0-gtk3-dev` on Debian/Ubuntu Linux or `apt install libwxgtk3.2-dev`
+set(WX_OPTIONAL_COMPONENTS "")
+find_package(wxWidgets 3.1 COMPONENTS gl core base ${WX_OPTIONAL_COMPONENTS} net)
+
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")
 
