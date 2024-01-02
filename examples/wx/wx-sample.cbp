@@ -42,7 +42,6 @@
 			<Add option="`$(#WX_CONFIG) --libs std,gl`" />
 			<Add option="-lopengl32" />
 			<Add option="-lglu32" />
-			<Add option="-lwxmsw32ud_gl" />
 			<Add option="`pkg-config --libs glm`" />
 			<Add option="`pkg-config --libs glfw3`" />
 			<Add option="`pkg-config --libs glew`" />
