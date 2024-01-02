@@ -5,7 +5,6 @@
 
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
-#include <wx/gtk/glcanvas.h>
 
 // Visual is going to be owned by the wxGLCanvas
 #define OWNED_MODE 1
@@ -18,7 +17,8 @@ namespace morph { using win_t = wxGLCanvas; }
 
 namespace morph {
     namespace wx {
-        // A morph::Visual widget
+        // A morph::Visual widget. This might be more suitably named wx::viscanvas. The MyCanvas
+        // example holds reference to MyFrame.
         struct viswidget : public wxGLCanvas
         {
             // In wx::viswidget, the morph::Visual is owned by the widget.
@@ -40,51 +40,64 @@ namespace morph {
             viswidget (wxWindow* parent, const wxGLAttributes& canvasAttrs)
                 : wxGLCanvas(parent, canvasAttrs)
             {
-
-                // Explicitly create a new rendering context instance for this canvas.
-                wxGLContextAttrs ctxAttrs;
-                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(3, 2).EndList();
-                m_context = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
-
-                SetCurrent(*m_context);
-
-                Bind(wxEVT_MOTION, &viswidget::OnMouseMove, this);
-                Bind(wxEVT_LEFT_DOWN, &viswidget::OnMousePress, this);
-                Bind(wxEVT_RIGHT_DOWN, &viswidget::OnMousePress, this);
-                Bind(wxEVT_LEFT_UP, &viswidget::OnMouseRelease, this);
-                Bind(wxEVT_RIGHT_UP, &viswidget::OnMouseRelease, this);
-                Bind(wxEVT_MOUSEWHEEL, &viswidget::OnMouseWheel, this);
-                Bind(wxEVT_KEY_DOWN, &viswidget::OnKeyPress, this);
-
-                Bind(wxEVT_SIZE, &viswidget::OnSize, this);
-
-                Bind(wxEVT_PAINT, &viswidget::OnPaint, this);
-
-                initializeGL();
+                this->initializeGL_stage1();
             }
 
-        protected:
-
-            void initializeGL()
+            // Must be called after viswidget has been created
+            void initializeGL_stage1()
             {
+                std::cout << __FUNCTION__ << " called\n";
+                // Explicitly create a new rendering context instance for this canvas.
+                wxGLContextAttrs ctxAttrs;
+                // Fixme: Set OpenGL version in Visual via template args like
+                // morph::gl::compute_manager, then use same ones here:
+                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(4, 1).EndList(); // asmwarrior had 3, 2
+                m_context = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
+
+                Bind (wxEVT_SIZE, &viswidget::OnSize, this);
+            }
+
+            // Call second stage once window is shown
+            void initializeGL_stage2()
+            {
+                std::cout << __FUNCTION__ << " called\n";
+                SetCurrent (*this->m_context);
+                Bind (wxEVT_MOTION, &viswidget::OnMouseMove, this);
+                Bind (wxEVT_LEFT_DOWN, &viswidget::OnMousePress, this);
+                Bind (wxEVT_RIGHT_DOWN, &viswidget::OnMousePress, this);
+                Bind (wxEVT_LEFT_UP, &viswidget::OnMouseRelease, this);
+                Bind (wxEVT_RIGHT_UP, &viswidget::OnMouseRelease, this);
+                Bind (wxEVT_MOUSEWHEEL, &viswidget::OnMouseWheel, this);
+                Bind (wxEVT_KEY_DOWN, &viswidget::OnKeyPress, this);
+                //Bind (wxEVT_SIZE, &viswidget::OnSize, this);
+                Bind (wxEVT_PAINT, &viswidget::OnPaint, this);
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 glEnable (GL_MULTISAMPLE);
                 // Initialise morph::Visual
                 v.init (this);
             }
 
+        protected:
+
+            bool gl_init_complete = false;
             void OnSize (wxSizeEvent& event)
             {
+                std::cout << __FUNCTION__ << " event\n";
                 event.Skip();
                 const wxSize size = event.GetSize() * GetContentScaleFactor();
                 int w = size.x;
                 int h = size.y;
                 v.set_winsize (w, h);
+                if (!gl_init_complete) {
+                    this->initializeGL_stage2();
+                    gl_init_complete = true;
+                }
                 Refresh (false);
             }
 
             void OnPaint (wxPaintEvent& WXUNUSED(event))
             {
+                std::cout << __FUNCTION__ << " event\n";
                 // This is a dummy, to avoid an endless succession of paint messages.
                 // OnPaint handlers must always create a wxPaintDC.
                 wxPaintDC dc(this);
@@ -178,7 +191,6 @@ namespace morph {
                     Refresh (false);
                 }
                 event.Skip();
-
             }
         };
     } // wx
