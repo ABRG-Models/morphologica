@@ -21,8 +21,7 @@ namespace morph {
         // A morph::Visual widget
         struct viswidget : public wxGLCanvas
         {
-            // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
-            // inside the widget.
+            // In wx::viswidget, the morph::Visual is owned by the widget.
             morph::Visual v;
 
             std::unique_ptr<wxGLContext> m_context;
@@ -68,28 +67,23 @@ namespace morph {
 
             void initializeGL()
             {
-                // Make sure we can call gl functions
-
                 // Switch on multisampling anti-aliasing (with the num samples set in constructor)
                 glEnable (GL_MULTISAMPLE);
                 // Initialise morph::Visual
                 v.init (this);
             }
 
-            void OnSize(wxSizeEvent& event)
+            void OnSize (wxSizeEvent& event)
             {
                 event.Skip();
-
                 const wxSize size = event.GetSize() * GetContentScaleFactor();
                 int w = size.x;
                 int h = size.y;
-
                 v.set_winsize (w, h);
-
-                Refresh(false);
+                Refresh (false);
             }
 
-            void OnPaint(wxPaintEvent& WXUNUSED(event))
+            void OnPaint (wxPaintEvent& WXUNUSED(event))
             {
                 // This is a dummy, to avoid an endless succession of paint messages.
                 // OnPaint handlers must always create a wxPaintDC.
@@ -110,19 +104,18 @@ namespace morph {
                     this->model_ptrs[this->needs_reinit]->reinit();
                     this->needs_reinit = -1;
                 }
-                v.render();
 
+                v.render();
                 SwapBuffers();
             }
 
-            void OnMousePress(wxMouseEvent& event)
+            void OnMousePress (wxMouseEvent& event)
             {
                 event.Skip();
                 wxPoint pos = event.GetPosition();
                 int x = pos.x;
                 int y = pos.y;
                 v.set_cursorpos (x, y);
-
                 int bflg = event.GetButton();
                 int b = morph::mousebutton::unhandled;
                 b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
@@ -131,32 +124,26 @@ namespace morph {
                 int mods = 0;
                 if (mflg & wxMOD_CONTROL) { mods |= morph::keymod::CONTROL; }
                 if (mflg & wxMOD_SHIFT) { mods |= morph::keymod::SHIFT; }
-
                 v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
-
                 event.Skip();
             }
 
-            void OnMouseMove(wxMouseEvent& event)
+            void OnMouseMove (wxMouseEvent& event)
             {
                 wxPoint pos = event.GetPosition();
                 int x = pos.x;
                 int y = pos.y;
-                if(v.cursor_position_callback (x,y))
-                {
-                    Refresh(false);
-                }
+                if (v.cursor_position_callback (x,y)) { Refresh (false); }
                 event.Skip();
             }
 
-            void OnMouseRelease(wxMouseEvent& event)
+            void OnMouseRelease (wxMouseEvent& event)
             {
                 event.Skip();
                 wxPoint pos = event.GetPosition();
                 int x = pos.x;
                 int y = pos.y;
                 v.set_cursorpos(x, y);
-
                 int bflg = event.GetButton();
                 int b = morph::mousebutton::unhandled;
                 b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
@@ -164,34 +151,31 @@ namespace morph {
                 v.mouse_button_callback(b, morph::keyaction::RELEASE);
             }
 
-            void OnMouseWheel(wxMouseEvent& event)
+            void OnMouseWheel (wxMouseEvent& event)
             {
                 int direction = event.GetWheelRotation()/120; // 1 or -1
                 wxPoint numSteps;
                 numSteps.x = 0;
                 numSteps.y = direction;
                 v.scroll_callback (numSteps.x, numSteps.y);
-                Refresh(false);
+                Refresh (false);
                 event.Skip();
             }
 
-            void OnKeyPress(wxKeyEvent & event)
+            void OnKeyPress (wxKeyEvent & event)
             {
                 int mflg = event.GetModifiers();
                 int mods = 0;
-                if(mflg & wxMOD_CONTROL)
-                {
+                if (mflg & wxMOD_CONTROL) {
                     mods |= morph::keymod::CONTROL;
                 }
-                if(mflg & wxMOD_SHIFT)
-                {
+                if (mflg & wxMOD_SHIFT) {
                     mods |= morph::keymod::SHIFT;
                 }
                 int morph_keycode = morph::wx::wxkey_to_morphkey(event.GetKeyCode());
                 // Could be keyaction::REPEAT in GLFW
-                if(v.key_callback(morph_keycode, 0, morph::keyaction::PRESS, mods))
-                {
-                    Refresh(false);
+                if (v.key_callback (morph_keycode, 0, morph::keyaction::PRESS, mods)) {
+                    Refresh (false);
                 }
                 event.Skip();
 
