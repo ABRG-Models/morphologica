@@ -3,6 +3,7 @@ title: Why was morphologica developed?
 parent: Welcome
 layout: page
 permalink: /why
+nav_order: 3
 ---
 Why expend the time writing an OpenGL visualization system when there are alternatives, like Python's matplotlib already available?
 
