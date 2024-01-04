@@ -4,6 +4,7 @@ title: morph::Rand*
 parent: Core maths classes
 grand_parent: Reference
 permalink: /ref/coremaths/random/
+nav_order: 6
 ---
 ```c++
 #include <morph/Random.h>

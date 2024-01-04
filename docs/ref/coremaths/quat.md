@@ -4,7 +4,7 @@ title: morph::Quaternion
 parent: Core maths classes
 grand_parent: Reference
 permalink: /ref/coremaths/quaternion/
-nav_order: 10
+nav_order: 7
 ---
 ```c++
 #include <morph/Quaternion.h>

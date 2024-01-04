@@ -13,7 +13,7 @@ morphologica provides **simulation support facilities** for simulations of dynam
 It helps with:
 
 * **OpenGL Visualizations of your program while it runs**. A modern OpenGL visualization
-  scheme called **[morph::Visual](/visual/)**
+  scheme called **[morph::Visual](/morphologica/visual/)**
   provides the ability to visualise 2D and 3D graphs
   of surfaces, lines, bars, scatter plots and quiver plots with minimal
   processing overhead.
