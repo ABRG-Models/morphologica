@@ -142,25 +142,22 @@ namespace morph {
                 unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
                 std::cout << "compute_manager running on OpenGL Version " << glv << std::endl;
 
-                // Temporary storage for parameter values
-                int pval = -1;
-
-                // Output some info about the resources available to stdout
-                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTERS, &pval);
+                // Store, and also output to stdout, some info about the GL resources available
+                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTERS, &this->max_compute_atomic_counters);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTERS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTERS: " << this->max_compute_atomic_counters << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS, &this->max_compute_atomic_counters_buffers);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS: " << this->max_compute_atomic_counters_buffers << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &this->max_compute_shader_storage_blocks);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS: " << this->max_compute_shader_storage_blocks << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &this->max_compute_texture_image_units);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS: " << this->max_compute_texture_image_units << std::endl;
 
                 glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_BLOCKS, &this->max_compute_uniform_blocks);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
@@ -183,36 +180,36 @@ namespace morph {
                 glGetInteger64i_v (GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &this->max_compute_work_group_size[2]);
                 std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE (x, y, z): " << this->max_compute_work_group_size << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &this->max_compute_shared_memory_size);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << pval << " bytes" << std::endl;
+                std::cout << "GL_MAX_COMPUTE_SHARED_MEMORY_SIZE: " << this->max_compute_shared_memory_size << " bytes" << std::endl;
 
                 // Shader storage
-                glGetIntegerv (GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &pval);
+                glGetIntegerv (GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &this->max_shader_storage_block_size);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE: " << pval << std::endl;
+                std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE: " << this->max_shader_storage_block_size << std::endl;
 
-                glGetIntegerv (GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &pval);
+                glGetIntegerv (GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &this->max_shader_storage_buffer_bindings);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS: " << pval << std::endl;
+                std::cout << "GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS: " << this->max_shader_storage_buffer_bindings << std::endl;
 
                 // Combined
-                glGetIntegerv (GL_MAX_TEXTURE_IMAGE_UNITS, &pval);
+                glGetIntegerv (GL_MAX_TEXTURE_IMAGE_UNITS, &this->max_texture_image_units);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+                std::cout << "GL_MAX_TEXTURE_IMAGE_UNITS: " << this->max_texture_image_units << std::endl;
 
-                glGetIntegerv (GL_MAX_TEXTURE_SIZE, &pval);
+                glGetIntegerv (GL_MAX_TEXTURE_SIZE, &this->max_texture_size);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_TEXTURE_SIZE: " << pval << std::endl;
+                std::cout << "GL_MAX_TEXTURE_SIZE: " << this->max_texture_size << std::endl;
 
-                glGetIntegerv (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &pval);
+                glGetIntegerv (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &this->max_combined_texture_image_units);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " << this->max_combined_texture_image_units << std::endl;
 
                 // Not mentioned on es3.1 Reference page https://registry.khronos.org/OpenGL-Refpages/es3.1/html/glGet.xhtml but can be queried:
-                glGetIntegerv (GL_MAX_IMAGE_UNITS, &pval);
+                glGetIntegerv (GL_MAX_IMAGE_UNITS, &this->max_image_units);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_IMAGE_UNITS: " << pval << std::endl;
+                std::cout << "GL_MAX_IMAGE_UNITS: " << this->max_image_units << std::endl;
 
                 load_shaders();
 
@@ -262,14 +259,25 @@ namespace morph {
             //! The title for the object, if needed
             std::string title = "morph::gl_compute";
 
-            // Various runtime-queryable limits on computation that I've found to be useful enough
-            // to store in this class as int/int64
+            // Various runtime-queryable limits on computation. The GL names for each of these can
+            // be obtained by upper-casing and prepending 'GL_'. E.g.: max_compute_atomic_counters will
+            // be set from a query of GL_MAX_COMPUTE_ATOMIC_COUNTERS.
+            GLint max_compute_atomic_counters = -1;
+            GLint max_compute_atomic_counters_buffers = -1;
+            GLint max_compute_shader_storage_blocks = -1;
+            GLint max_compute_texture_image_units = -1;
             GLint max_compute_uniform_blocks = -1;
             GLint max_compute_uniform_components = -1;
-            // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
+            GLint64 max_compute_work_group_invocations = -1;
             morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};
             morph::vec<GLint64, 3> max_compute_work_group_size = {-1,-1,-1};
-            GLint64 max_compute_work_group_invocations = -1;
+            GLint max_compute_shared_memory_size = -1; // bytes
+            GLint max_shader_storage_block_size = -1; // bytes?
+            GLint max_shader_storage_buffer_bindings = -1;
+            GLint max_texture_image_units = -1;
+            GLint max_texture_size = -1; // bytes?
+            GLint max_combined_texture_image_units = -1;
+            GLint max_image_units = -1;
 
             // For frame count timing
             static constexpr unsigned int nframes = 1000;
