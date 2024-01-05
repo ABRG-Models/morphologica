@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <morph/gl/util.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
@@ -57,7 +58,7 @@ namespace morph {
             void set_uniform (const std::string& glsl_varname, const T& value)
             {
                 GLint uloc = glGetUniformLocation (this->prog_id, static_cast<const GLchar*>(glsl_varname.c_str()));
-
+                this->check_uniform_location (glsl_varname, uloc);
                 if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
                     if (uloc != -1) { glUniform1f (uloc, static_cast<GLfloat>(value)); }
                 } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
@@ -74,6 +75,7 @@ namespace morph {
             void set_uniform (const std::string& glsl_varname, const morph::vec<T, N>& value)
             {
                 GLint uloc = glGetUniformLocation (this->prog_id, static_cast<const GLchar*>(glsl_varname.c_str()));
+                this->check_uniform_location (glsl_varname, uloc);
                 if constexpr (std::is_same<std::decay_t<T>, float>::value == true) {
                     if (uloc != -1) { glUniform1fv (uloc, N, value.data()); }
                 } else if constexpr (std::is_same<std::decay_t<T>, int>::value == true) {
@@ -82,6 +84,23 @@ namespace morph {
                     if (uloc != -1) { glUniform1uiv (uloc, N, value.data()); }
                 } else {
                     []<bool flag = false>() { static_assert(flag, "Can't set that type as a uniform array in an OpenGL context"); }();
+                }
+            }
+
+        private:
+            // Runtime check on a uniform location. If -1 throw exception. This is useful because
+            // any uniform variable in a GLSL program which is not used may be compiled out and thus
+            // be not 'active'. In this case, glGetUniformLocation will return -1. Our programmer
+            // should be told in an exception, and either not try to set_uniform on an inactive
+            // variable, or they should ensure the uniform IS actually used in their program.
+            void check_uniform_location (const std::string& glsl_varname, const GLint uloc) const
+            {
+                if (uloc == -1) {
+                    std::stringstream ee;
+                    ee << "Error: glGetUniformLocation returned -1\n"
+                       << "Failed to get uniform location for the ACTIVE uniform " << glsl_varname.c_str()
+                       << "\n(Hint: Make sure you USE your uniform in your GLSL code)" << std::endl;
+                    throw std::runtime_error (ee.str());
                 }
             }
         };
