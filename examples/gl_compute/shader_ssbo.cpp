@@ -140,8 +140,6 @@ namespace my {
 
             this->measure_compute(); // optional
             this->compute_program.use();
-            // Set time into uniform
-            this->compute_program.set_uniform<float> ("t", this->frame_count);
             this->compute_program.dispatch (dwidth, dheight, 1);
 
             // To retreive data from the SSBO:

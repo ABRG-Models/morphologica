@@ -15,8 +15,6 @@ layout (binding = 0, rgba32f) writeonly uniform image2D imgOutput;
 // Specifying precision for an individual image2D:
 layout (binding = 1, rgba32f) writeonly highp uniform image2D imgOutput2;
 
-layout (location = 2) uniform float t;
-
 void main()
 {
     vec4 value = vec4 (0.0, 0.0, 0.0, 1.0);
