@@ -162,13 +162,13 @@ namespace morph {
                 morph::gl::Util::checkError (__FILE__, __LINE__);
                 std::cout << "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS: " << pval << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_BLOCKS, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_BLOCKS, &this->max_compute_uniform_blocks);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_UNIFORM_BLOCKS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_UNIFORM_BLOCKS: " << this->max_compute_uniform_blocks << std::endl;
 
-                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_COMPONENTS, &pval);
+                glGetIntegerv (GL_MAX_COMPUTE_UNIFORM_COMPONENTS, &this->max_compute_uniform_components);
                 morph::gl::Util::checkError (__FILE__, __LINE__);
-                std::cout << "GL_MAX_COMPUTE_UNIFORM_COMPONENTS: " << pval << std::endl;
+                std::cout << "GL_MAX_COMPUTE_UNIFORM_COMPONENTS: " << this->max_compute_uniform_components << std::endl;
 
                 glGetInteger64v (GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &this->max_compute_work_group_invocations);
                 std::cout << "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS: " << this->max_compute_work_group_invocations << std::endl;
@@ -262,6 +262,10 @@ namespace morph {
             //! The title for the object, if needed
             std::string title = "morph::gl_compute";
 
+            // Various runtime-queryable limits on computation that I've found to be useful enough
+            // to store in this class as int/int64
+            GLint max_compute_uniform_blocks = -1;
+            GLint max_compute_uniform_components = -1;
             // GL_MAX_COMPUTE_WORK_GROUP_COUNT, _GROUP_SIZE and _INVOCATIONS as queried from OpenGL
             morph::vec<GLint64, 3> max_compute_work_group_count = {-1,-1,-1};
             morph::vec<GLint64, 3> max_compute_work_group_size = {-1,-1,-1};
