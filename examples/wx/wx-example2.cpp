@@ -5,7 +5,7 @@
 
 #include <wx/colordlg.h>
 
-#include <morph/wx/viswx.h>
+#include <morph/wx/viswx0.h> // From before I bring in morph::Visual
 
 // Your application-specific frame, deriving from morph::wx:Frame.
 class MyFrame : public morph::wx::Frame
