@@ -179,47 +179,24 @@ namespace morph {
             unsigned int VAO, VBO, shaderProgram;
         };
 
-        // morph::wx::Frame
+        // morph::wx::Frame is to be extended
         class Frame : public wxFrame
         {
         public:
             Frame(const wxString &title)
                 : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
             {
-                auto sizer = new wxBoxSizer(wxVERTICAL);
-
                 wxGLAttributes vAttrs;
                 vAttrs.PlatformDefaults().Defaults().EndList();
-
-                if (wxGLCanvas::IsDisplaySupported(vAttrs))
-                {
+                if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
                     this->canvas = std::make_unique<morph::wx::Canvas>(this, vAttrs);
                     this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
-                    sizer->Add (this->canvas.get(), 1, wxEXPAND);
+                } else {
+                    throw std::runtime_error ("wxGLCanvas::IsDisplaySupported(vAttrs) returned false");
                 }
-
-                auto bottomSizer = new wxBoxSizer(wxHORIZONTAL);
-                auto colorButton = new wxButton(this, wxID_ANY, "Change Color");
-
-                bottomSizer->Add(colorButton, 0, wxALL | wxALIGN_CENTER, FromDIP(15));
-                bottomSizer->AddStretchSpacer(1);
-
-                sizer->Add(bottomSizer, 0, wxEXPAND);
-
-                SetSizerAndFit(sizer);
-
-                colorButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event) {
-                    wxColourData colorData;
-                    colorData.SetColour(this->canvas->triangleColor);
-                    wxColourDialog dialog(this, &colorData);
-                    if (dialog.ShowModal() == wxID_OK) {
-                        this->canvas->triangleColor = dialog.GetColourData().GetColour();
-                        this->canvas->Refresh();
-                    }
-                }); // end of lambda
             }
 
-        private:
+        protected:
             std::unique_ptr<morph::wx::Canvas> canvas;
         };
 
