@@ -23,10 +23,16 @@ target_compile_definitions(wx-example PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
 target_link_libraries(wx-example ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
 
-# Pulling frame and canvas into viswx.h
+# Pulling frame and canvas into viswx0.h
 add_executable (wx-example2 wx-example2.cpp)
 target_compile_definitions(wx-example2 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
 target_link_libraries(wx-example2 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+
+# Adding morph::Visual to viswx0.h to make viswx.h
+add_executable (wx-example3 wx-example3.cpp)
+target_compile_definitions(wx-example3 PRIVATE
+"${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
+target_link_libraries(wx-example3 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
 
 endif()

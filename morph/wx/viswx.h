@@ -4,11 +4,21 @@
  * Defined morph::wx::Canvas and morph::wx::Frame.
  */
 #include <memory>
+#include <vector>
 #include <wx/wx.h>
 
 #include <GL/glew.h> // must be included before glcanvas.h
 #include <wx/glcanvas.h>
 #include <wx/colordlg.h>
+
+// Visual is going to be owned either by the morph::wx::canvas or by the morph::wx::frame
+#define OWNED_MODE 1
+// Define morph::win_t before #including morph/Visual.h
+namespace morph { using win_t = wxGLCanvas; }
+
+#include <morph/Visual.h>
+// We need to be able to convert from wxWidgets keycodes to morph keycodes
+#include <morph/wx/keycodes.h>
 
 namespace morph {
     namespace wx {
@@ -28,8 +38,16 @@ namespace morph {
                                   "OpenGL version error", wxOK | wxICON_INFORMATION, this);
                 }
 
-                Bind(wxEVT_PAINT, &morph::wx::Canvas::OnPaint, this);
-                Bind(wxEVT_SIZE, &morph::wx::Canvas::OnSize, this);
+                // Bind events to functions in the Canvas constructor
+                Bind (wxEVT_PAINT, &morph::wx::Canvas::OnPaint, this);
+                Bind (wxEVT_SIZE, &morph::wx::Canvas::OnSize, this);
+                Bind (wxEVT_MOTION, &morph::wx::Canvas::OnMouseMove, this);
+                Bind (wxEVT_LEFT_DOWN, &morph::wx::Canvas::OnMousePress, this);
+                Bind (wxEVT_RIGHT_DOWN, &morph::wx::Canvas::OnMousePress, this);
+                Bind (wxEVT_LEFT_UP, &morph::wx::Canvas::OnMouseRelease, this);
+                Bind (wxEVT_RIGHT_UP, &morph::wx::Canvas::OnMouseRelease, this);
+                Bind (wxEVT_MOUSEWHEEL, &morph::wx::Canvas::OnMouseWheel, this);
+                Bind (wxEVT_KEY_DOWN, &morph::wx::Canvas::OnKeyPress, this);
             }
 
             bool InitializeOpenGLFunctions()
@@ -44,115 +62,42 @@ namespace morph {
                 return true;
             }
 
-            // *this* will change with morph::Visual
             bool InitializeOpenGL()
             {
                 if (!this->glContext) { return false; }
-
                 SetCurrent (*this->glContext.get());
-
                 if (!InitializeOpenGLFunctions()) {
                     wxMessageBox("Error: Could not initialize OpenGL function pointers.",
                                  "OpenGL initialization error", wxOK | wxICON_INFORMATION, this);
                     return false;
                 }
-
-                wxLogDebug("OpenGL version: %s", reinterpret_cast<const char *>(glGetString(GL_VERSION)));
-                wxLogDebug("OpenGL vendor: %s", reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
-
-                constexpr auto vertexShaderSource = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        void main()
-        {
-            gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-        }
-    )";
-
-                constexpr auto fragmentShaderSource = R"(
-        #version 330 core
-        out vec4 FragColor;
-        uniform vec4 triangleColor;
-        void main()
-        {
-            FragColor = triangleColor;
-        }
-    )";
-
-                unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-                glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-                glCompileShader(vertexShader);
-
-                int success;
-                char infoLog[512];
-                glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-                if (!success) {
-                    glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-                    wxLogDebug("Vertex Shader Compilation Failed: %s", infoLog);
-                }
-
-                unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-                glCompileShader(fragmentShader);
-
-                glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-                if (!success) {
-                    glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-                    wxLogDebug("Fragment Shader Compilation Failed: %s", infoLog);
-                }
-
-                shaderProgram = glCreateProgram();
-                glAttachShader(shaderProgram, vertexShader);
-                glAttachShader(shaderProgram, fragmentShader);
-                glLinkProgram(shaderProgram);
-
-                glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-
-                if (!success) {
-                    glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-                    wxLogDebug("Shader Program Linking Failed: %s", infoLog);
-                }
-
-                glDeleteShader(vertexShader);
-                glDeleteShader(fragmentShader);
-
-                float vertices[] = {
-                    -0.5f, -0.5f, 0.0f,
-                    0.5f, -0.5f, 0.0f,
-                    0.0f, 0.5f, 0.0f};
-
-                glGenVertexArrays(1, &VAO);
-                glGenBuffers(1, &VBO);
-
-                glBindVertexArray(VAO);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-                glEnableVertexAttribArray(0);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glBindVertexArray(0);
-
+                // Switch on multisampling anti-aliasing (with the num samples set in constructor)
+                glEnable (GL_MULTISAMPLE);
+                // Initialise morph::Visual
+                v.init (this);
                 this->glInitialized = true;
-
-                return true;
+                return this->glInitialized;
             }
 
-
+            // Check if any of the VisualModels in the Visual need a reinit and then call Visual::render
             void OnPaint (wxPaintEvent &event)
             {
                 wxPaintDC dc(this);
                 if (!this->glInitialized) { return; }
                 SetCurrent(*this->glContext.get());
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
-                glUseProgram(shaderProgram);
-                int colorLocation = glGetUniformLocation(shaderProgram, "triangleColor");
-                glUniform4f(colorLocation,
-                            triangleColor.Red() / 255.0f, triangleColor.Green() / 255.0f, triangleColor.Blue() / 255.0f, 1.0f);
-                glBindVertexArray(VAO);
-                glDrawArrays(GL_TRIANGLES, 0, 3);
+                if (!this->newvisualmodels.empty()) {
+                    // Now we iterate through newvisualmodels, finalize them and add them to morph::Visual
+                    for (unsigned int i = 0; i < newvisualmodels.size(); ++i) {
+                        this->newvisualmodels[i]->finalize();
+                        this->model_ptrs.push_back (this->v.addVisualModel (this->newvisualmodels[i]));
+                    }
+                    this->newvisualmodels.clear();
+                }
+                if (this->needs_reinit > -1) {
+                    this->model_ptrs[this->needs_reinit]->reinit();
+                    this->needs_reinit = -1;
+                }
+                v.render();
                 SwapBuffers();
             }
 
@@ -161,19 +106,103 @@ namespace morph {
                 bool firstApperance = IsShownOnScreen() && !this->glInitialized;
                 if (firstApperance) { InitializeOpenGL(); }
                 if (this->glInitialized) {
-                    auto viewPortSize = event.GetSize() * GetContentScaleFactor();
-                    glViewport(0, 0, viewPortSize.x, viewPortSize.y);
+                    const wxSize size = event.GetSize() * GetContentScaleFactor();
+                    v.set_winsize (static_cast<int>(size.x), static_cast<int>(size.y));
+                }
+                // Refresh(false); // maybe
+                event.Skip();
+            }
+
+            void OnMousePress (wxMouseEvent& event)
+            {
+                event.Skip();
+                wxPoint pos = event.GetPosition();
+                int x = pos.x;
+                int y = pos.y;
+                v.set_cursorpos (x, y);
+                int bflg = event.GetButton();
+                int b = morph::mousebutton::unhandled;
+                b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
+                b = bflg & wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
+                int mflg = event.GetModifiers();
+                int mods = 0;
+                if (mflg & wxMOD_CONTROL) { mods |= morph::keymod::CONTROL; }
+                if (mflg & wxMOD_SHIFT) { mods |= morph::keymod::SHIFT; }
+                v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
+                event.Skip();
+            }
+
+            void OnMouseMove (wxMouseEvent& event)
+            {
+                wxPoint pos = event.GetPosition();
+                int x = pos.x;
+                int y = pos.y;
+                if (v.cursor_position_callback (x,y)) { Refresh (false); }
+                event.Skip();
+            }
+
+            void OnMouseRelease (wxMouseEvent& event)
+            {
+                event.Skip();
+                wxPoint pos = event.GetPosition();
+                int x = pos.x;
+                int y = pos.y;
+                v.set_cursorpos(x, y);
+                int bflg = event.GetButton();
+                int b = morph::mousebutton::unhandled;
+                b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
+                b = bflg & wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
+                v.mouse_button_callback(b, morph::keyaction::RELEASE);
+            }
+
+            void OnMouseWheel (wxMouseEvent& event)
+            {
+                int direction = event.GetWheelRotation()/120; // 1 or -1
+                wxPoint numSteps;
+                numSteps.x = 0;
+                numSteps.y = direction;
+                v.scroll_callback (numSteps.x, numSteps.y);
+                Refresh (false);
+                event.Skip();
+            }
+
+            void OnKeyPress (wxKeyEvent & event)
+            {
+                int mflg = event.GetModifiers();
+                int mods = 0;
+                if (mflg & wxMOD_CONTROL) {
+                    mods |= morph::keymod::CONTROL;
+                }
+                if (mflg & wxMOD_SHIFT) {
+                    mods |= morph::keymod::SHIFT;
+                }
+                int morph_keycode = morph::wx::wxkey_to_morphkey(event.GetKeyCode());
+                // Could be keyaction::REPEAT in GLFW
+                if (v.key_callback (morph_keycode, 0, morph::keyaction::PRESS, mods)) {
+                    Refresh (false);
                 }
                 event.Skip();
             }
 
-            wxColour triangleColor{wxColour(255, 128, 51)};
+            // API for user to say that model 4 (say) need to be reinitialized.
+            void set_model_needs_reinit (int model_idx, bool reinit_required = true)
+            {
+                this->needs_reinit = reinit_required ? model_idx : -1;
+            }
+
+            // In your wx code, build VisualModels that should be added to the scene and add them to this.
+            std::vector<std::unique_ptr<morph::VisualModel>> newvisualmodels;
+            std::vector<morph::VisualModel*> model_ptrs;
+            // if >-1, then that model needs a reinit.
+            int needs_reinit = -1;
+
+            bool ready() { return this->glInitialized; }
+
+            morph::Visual v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;
-            bool glInitialized{false};
-
-            unsigned int VAO, VBO, shaderProgram;
+            bool glInitialized = false;
         };
 
         // morph::wx::Frame is to be extended
