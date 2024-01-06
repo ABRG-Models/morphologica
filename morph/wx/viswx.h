@@ -20,20 +20,17 @@ namespace morph {
                 : wxGLCanvas(parent, canvasAttrs)
             {
                 wxGLContextAttrs ctxAttrs;
-                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(3, 3).EndList();
+                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(4, 1).EndList();
                 this->glContext = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
 
                 if (!this->glContext->IsOK()) {
-                    wxMessageBox ("This sample needs an OpenGL 3.3 capable driver.",
+                    wxMessageBox ("This sample needs an OpenGL 4.1 capable driver.",
                                   "OpenGL version error", wxOK | wxICON_INFORMATION, this);
                 }
 
                 Bind(wxEVT_PAINT, &morph::wx::Canvas::OnPaint, this);
                 Bind(wxEVT_SIZE, &morph::wx::Canvas::OnSize, this);
             }
-
-            ~Canvas(){}
-
 
             bool InitializeOpenGLFunctions()
             {
@@ -52,7 +49,7 @@ namespace morph {
             {
                 if (!this->glContext) { return false; }
 
-                SetCurrent(*this->glContext.get());
+                SetCurrent (*this->glContext.get());
 
                 if (!InitializeOpenGLFunctions()) {
                     wxMessageBox("Error: Could not initialize OpenGL function pointers.",
