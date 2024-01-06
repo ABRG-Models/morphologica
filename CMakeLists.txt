@@ -22,7 +22,7 @@ else()
   message(ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
-# An option that's useful for Ubuntu 16.04 builds
+# An option that's useful for Ubuntu 16.04 builds OR wxWidgets
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
 # Using c++-14 (calls to std::decay_t in number_type.h). c++-17
@@ -136,8 +136,17 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
 
 # wxwidgets. Optional. Use `apt install libwxgtk3.0-gtk3-dev` on Debian/Ubuntu Linux or `apt install libwxgtk3.2-dev`
+set(FOUND_WX_AND_GLEW 0)
 set(WX_OPTIONAL_COMPONENTS "")
 find_package(wxWidgets 3.1 COMPONENTS gl core base ${WX_OPTIONAL_COMPONENTS} net)
+if(wxWidgets_FOUND)
+  if(USE_GLEW)
+    message(STATUS "Compiling wx examples")
+    set(FOUND_WX_AND_GLEW 1)
+  else()
+  message(WARNING "The wxWidgets examples require GLEW. wxWidgets was found but USE_GLEW is OFF. You will need to call cmake with the -DUSE_GLEW=ON option to compile wxWidgets examples.")
+  endif()
+endif()
 
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")

@@ -22,7 +22,7 @@ if(Qt5_FOUND)
   add_subdirectory(qt)
 endif()
 
-if(wxWidgets_FOUND)
+if(FOUND_WX_AND_GLEW)
   add_subdirectory(wx)
 endif()
 
