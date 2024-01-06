@@ -3,11 +3,11 @@
  *
  * Defined morph::wx::Canvas and morph::wx::Frame.
  */
+#include <memory>
 #include <wx/wx.h>
 
 #include <GL/glew.h> // must be included before glcanvas.h
 #include <wx/glcanvas.h>
-
 #include <wx/colordlg.h>
 
 namespace morph {
@@ -21,21 +21,18 @@ namespace morph {
             {
                 wxGLContextAttrs ctxAttrs;
                 ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(3, 3).EndList();
-                this->glContext = new wxGLContext(this, nullptr, &ctxAttrs);
+                this->glContext = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
 
-                if (!this->glContext->IsOK())
-                {
-                    wxMessageBox("This sample needs an OpenGL 3.3 capable driver.",
-                                 "OpenGL version error", wxOK | wxICON_INFORMATION, this);
-                    delete this->glContext;
-                    this->glContext = nullptr;
+                if (!this->glContext->IsOK()) {
+                    wxMessageBox ("This sample needs an OpenGL 3.3 capable driver.",
+                                  "OpenGL version error", wxOK | wxICON_INFORMATION, this);
                 }
 
                 Bind(wxEVT_PAINT, &morph::wx::Canvas::OnPaint, this);
                 Bind(wxEVT_SIZE, &morph::wx::Canvas::OnSize, this);
             }
 
-            ~Canvas() { delete this->glContext; }
+            ~Canvas(){}
 
 
             bool InitializeOpenGLFunctions()
@@ -55,7 +52,7 @@ namespace morph {
             {
                 if (!this->glContext) { return false; }
 
-                SetCurrent(*this->glContext);
+                SetCurrent(*this->glContext.get());
 
                 if (!InitializeOpenGLFunctions()) {
                     wxMessageBox("Error: Could not initialize OpenGL function pointers.",
@@ -150,7 +147,7 @@ namespace morph {
             {
                 wxPaintDC dc(this);
                 if (!this->glInitialized) { return; }
-                SetCurrent(*this->glContext);
+                SetCurrent(*this->glContext.get());
                 glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
                 glUseProgram(shaderProgram);
@@ -176,7 +173,7 @@ namespace morph {
             wxColour triangleColor{wxColour(255, 128, 51)};
 
         private:
-            wxGLContext* glContext;
+            std::unique_ptr<wxGLContext> glContext;
             bool glInitialized{false};
 
             unsigned int VAO, VBO, shaderProgram;
@@ -196,9 +193,9 @@ namespace morph {
 
                 if (wxGLCanvas::IsDisplaySupported(vAttrs))
                 {
-                    this->canvas = new morph::wx::Canvas(this, vAttrs);
+                    this->canvas = std::make_unique<morph::wx::Canvas>(this, vAttrs);
                     this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
-                    sizer->Add (this->canvas, 1, wxEXPAND);
+                    sizer->Add (this->canvas.get(), 1, wxEXPAND);
                 }
 
                 auto bottomSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -223,7 +220,7 @@ namespace morph {
             }
 
         private:
-            Canvas *canvas{nullptr};
+            std::unique_ptr<morph::wx::Canvas> canvas;
         };
 
     } // wx
