@@ -14,6 +14,7 @@ public:
 
 class OpenGLCanvas;
 
+// Do I make a morphWxFrame class and have client code derive their MyFrame from that? Possibly.
 class MyFrame : public wxFrame
 {
 public:
