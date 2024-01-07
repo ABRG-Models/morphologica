@@ -1,7 +1,7 @@
 /*
- * To become a wx-canvas-with-morph::Visual
- *
- * Defined morph::wx::Canvas and morph::wx::Frame.
+ * Defines morph::wx::Canvas and morph::wx::Frame. These two classes are extensions of
+ * wxWidgets classes that allow for the use of morph::Visual (which is owned by
+ * morph::wx::Canvas) to draw with OpenGL in a wxWidgets program.
  */
 #include <memory>
 #include <vector>
