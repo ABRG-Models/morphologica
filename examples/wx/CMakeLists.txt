@@ -18,4 +18,10 @@ target_compile_definitions(wx-graph1 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
 target_link_libraries(wx-graph1 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
 
+# Triaxes
+add_executable (wx-triaxes wx-triaxes.cpp)
+target_compile_definitions(wx-triaxes PRIVATE
+"${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
+target_link_libraries(wx-triaxes ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+
 endif()
