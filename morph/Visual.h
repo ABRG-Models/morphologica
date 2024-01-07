@@ -48,7 +48,7 @@
 #include <morph/keys.h>
 
 #include <morph/VisualResources.h>
-#include <morph/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
