@@ -215,7 +215,8 @@ namespace morph {
                 wxGLAttributes vAttrs;
                 vAttrs.PlatformDefaults().Defaults().EndList();
                 if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
-                    this->canvas = std::make_unique<morph::wx::Canvas>(this, vAttrs);
+                    // canvas becomes a child of this wxFrame which is responsible for deallocation
+                    this->canvas = new morph::wx::Canvas(this, vAttrs);
                     this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
                 } else {
                     throw std::runtime_error ("wxGLCanvas::IsDisplaySupported(vAttrs) returned false");
@@ -223,7 +224,8 @@ namespace morph {
             }
 
         protected:
-            std::unique_ptr<morph::wx::Canvas> canvas;
+            // A morph::wx::Frame contains a morph::wx::Canvas
+            morph::wx::Canvas* canvas;
         };
 
     } // wx

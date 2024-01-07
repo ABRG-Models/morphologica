@@ -19,7 +19,7 @@ public:
         auto sizer = new wxBoxSizer(wxVERTICAL);
 
         // Adding the GL canvas, where all the morphologica stuff will be drawn
-        sizer->Add (this->canvas.get(), 1, wxEXPAND);
+        sizer->Add (this->canvas, 1, wxEXPAND);
 
         auto bottomSizer = new wxBoxSizer(wxHORIZONTAL);
         auto colorButton = new wxButton(this, wxID_ANY, "Change Color");
@@ -33,10 +33,8 @@ public:
 
         colorButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event) {
             wxColourData colorData;
-            //colorData.SetColour(this->canvas->triangleColor);
             wxColourDialog dialog(this, &colorData);
             if (dialog.ShowModal() == wxID_OK) {
-                // this->canvas->triangleColor = dialog.GetColourData().GetColour();
                 this->canvas->Refresh();
             }
         }); // end of lambda
