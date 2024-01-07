@@ -134,6 +134,16 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # If Qt5 is present, then some optional Qt examples will be compiled
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
+set(FOUND_QT_AND_HAVE_NO_GLEW 0)
+if(Qt5_FOUND)
+  if(USE_GLEW)
+    message(WARNING "Qt was found, but GLEW was requested with -DUSE_GLEW=ON. GLEW interferes with Qt, so not compiling the Qt examples")
+  else()
+    set(FOUND_QT_AND_HAVE_NO_GLEW 1)
+    message(STATUS "Compiling Qt examples")
+  endif()
+endif()
+
 
 # wxwidgets. Optional. Use `apt install libwxgtk3.0-gtk3-dev` on Debian/Ubuntu Linux or `apt install libwxgtk3.2-dev`
 set(FOUND_WX_AND_GLEW 0)
