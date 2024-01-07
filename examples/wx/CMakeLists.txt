@@ -13,9 +13,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${wxWidgets_CXX_FLAGS}")
 include_directories(${wxWidgets_INCLUDE_DIRS})
 
 # morph::Visual graph1 example with morph/wx/viswx.h
-add_executable (wx-example3 wx-example3.cpp)
-target_compile_definitions(wx-example3 PRIVATE
+add_executable (wx-graph1 wx-graph1.cpp)
+target_compile_definitions(wx-graph1 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
-target_link_libraries(wx-example3 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+target_link_libraries(wx-graph1 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
 
 endif()
