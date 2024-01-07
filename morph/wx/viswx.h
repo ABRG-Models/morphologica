@@ -122,8 +122,8 @@ namespace morph {
                 v.set_cursorpos (x, y);
                 int bflg = event.GetButton();
                 int b = morph::mousebutton::unhandled;
-                b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
-                b = bflg & wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
+                b = bflg == wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
+                b = bflg == wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
                 int mflg = event.GetModifiers();
                 int mods = 0;
                 if (mflg & wxMOD_CONTROL) { mods |= morph::keymod::control; }
