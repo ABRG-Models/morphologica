@@ -126,9 +126,9 @@ namespace morph {
                 b = bflg & wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
                 int mflg = event.GetModifiers();
                 int mods = 0;
-                if (mflg & wxMOD_CONTROL) { mods |= morph::keymod::CONTROL; }
-                if (mflg & wxMOD_SHIFT) { mods |= morph::keymod::SHIFT; }
-                v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
+                if (mflg & wxMOD_CONTROL) { mods |= morph::keymod::control; }
+                if (mflg & wxMOD_SHIFT) { mods |= morph::keymod::shift; }
+                v.mouse_button_callback (b, morph::keyaction::press, mods);
                 event.Skip();
             }
 
@@ -152,7 +152,7 @@ namespace morph {
                 int b = morph::mousebutton::unhandled;
                 b = bflg & wxMOUSE_BTN_LEFT ? morph::mousebutton::left : b;
                 b = bflg & wxMOUSE_BTN_RIGHT ? morph::mousebutton::right : b;
-                v.mouse_button_callback(b, morph::keyaction::RELEASE);
+                v.mouse_button_callback(b, morph::keyaction::release);
             }
 
             void OnMouseWheel (wxMouseEvent& event)
@@ -171,14 +171,14 @@ namespace morph {
                 int mflg = event.GetModifiers();
                 int mods = 0;
                 if (mflg & wxMOD_CONTROL) {
-                    mods |= morph::keymod::CONTROL;
+                    mods |= morph::keymod::control;
                 }
                 if (mflg & wxMOD_SHIFT) {
-                    mods |= morph::keymod::SHIFT;
+                    mods |= morph::keymod::shift;
                 }
                 int morph_keycode = morph::wx::wxkey_to_morphkey(event.GetKeyCode());
                 // Could be keyaction::REPEAT in GLFW
-                if (v.key_callback (morph_keycode, 0, morph::keyaction::PRESS, mods)) {
+                if (v.key_callback (morph_keycode, 0, morph::keyaction::press, mods)) {
                     Refresh (false);
                 }
                 event.Skip();

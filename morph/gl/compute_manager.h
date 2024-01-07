@@ -334,11 +334,11 @@ namespace morph {
                 bool needs_render = false;
 
                 // Exit action
-                if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+                if (_key == key::q && (mods & keymod::control) && action == keyaction::press) {
                     this->signal_to_quit();
                 }
 
-                if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+                if (_key == key::h && (mods & keymod::control) && action == keyaction::press) {
                     std::cout << "Ctrl-h: Output this help to stdout\n";
                     std::cout << "Ctrl-q: Quit\n";
                 }
