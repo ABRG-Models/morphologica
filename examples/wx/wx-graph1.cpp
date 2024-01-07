@@ -86,10 +86,8 @@ class MyApp : public wxApp
 {
 public:
     MyApp() {}
-    bool OnInit() wxOVERRIDE;
+    bool OnInit();
 };
-
-wxIMPLEMENT_APP(MyApp);
 
 bool MyApp::OnInit()
 {
@@ -99,3 +97,15 @@ bool MyApp::OnInit()
     frame->setupVisualModels(); // After calling Show()
     return true;
 }
+
+// This macro implements an int main(){} stanza in a Windows and Unix compatible way
+wxIMPLEMENT_APP(MyApp);
+
+#if 0
+// The equivalent which works fine on Linux is:
+int main (int argc, char* argv[])
+{
+    wxApp::SetInstance(new MyApp{});
+    return wxEntry(argc, argv);
+}
+#endif
