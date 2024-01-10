@@ -59,7 +59,8 @@ asm("\n.pushsection dvsansbi_ttf\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSan
 
 # else
 
-// "a", @progbits means 'allocatable section containing type data'
+// "a", @progbits means 'allocatable section containing type data'. It seems to be unnecessary. The
+// code that was introduced above for aarch64 actually works fine on modern Intel x86_64.
 asm("\n.pushsection vera_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
 asm("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
 asm("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
