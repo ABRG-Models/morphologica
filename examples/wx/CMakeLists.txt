@@ -18,6 +18,12 @@ target_compile_definitions(wx-graph1 PRIVATE
 "${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
 target_link_libraries(wx-graph1 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
 
+# morph::Visual graph6 example with morph/wx/viswx.h
+add_executable (wx-graph6 wx-graph6.cpp)
+target_compile_definitions(wx-graph6 PRIVATE
+"${wxWidgets_DEFINITIONS} -Wno-unused-parameter")
+target_link_libraries(wx-graph6 ${wxWidgets_LIBRARIES} OpenGL::GL Freetype::Freetype GLEW::GLEW)
+
 # Triaxes
 add_executable (wx-triaxes wx-triaxes.cpp)
 target_compile_definitions(wx-triaxes PRIVATE

@@ -145,7 +145,7 @@ if(Qt5_FOUND)
 endif()
 
 
-# wxwidgets. Optional. Use `apt install libwxgtk3.0-gtk3-dev` on Debian/Ubuntu Linux or `apt install libwxgtk3.2-dev`
+# wxwidgets. Optional. Use `apt install libwxgtk3.2-dev` on Debian/Ubuntu Linux (Min compatible Ubuntu version is 23.04)
 set(FOUND_WX_AND_GLEW 0)
 set(WX_OPTIONAL_COMPONENTS "")
 find_package(wxWidgets 3.1 COMPONENTS gl core base ${WX_OPTIONAL_COMPONENTS} net)
