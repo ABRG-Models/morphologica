@@ -183,7 +183,7 @@ namespace morph {
                 mkc = morph::key::insert;
                 break;
             case Qt::Key_Delete:
-                mkc = morph::key::delete;
+                mkc = morph::key::delete_key;
                 break;
             case Qt::Key_Right:
                 mkc = morph::key::right;
