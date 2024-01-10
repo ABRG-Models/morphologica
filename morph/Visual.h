@@ -896,8 +896,6 @@ namespace morph {
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
-            // Possibly redundant call (because it's enabled by default in most drivers) to enable multisampling (for anti-aliasing)
-            glEnable (GL_MULTISAMPLE);
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
