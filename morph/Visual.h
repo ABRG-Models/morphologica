@@ -832,7 +832,7 @@ namespace morph {
             this->window = glfwCreateWindow (this->window_w, this->window_h, this->title.c_str(), NULL, NULL);
             if (!this->window) {
                 // Window or OpenGL context creation failed
-                throw std::runtime_error("GLFW window creation failed!");
+                throw std::runtime_error("GLFW window creation failed!"); // Because Raspberry Pi doesn't suport OpenGL 4.1 (Needs 3.1 ES)
             }
             // now associate "this" object with mWindow object
             glfwSetWindowUserPointer (this->window, this);

@@ -22,6 +22,12 @@ else()
   message(ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
+# Need to fine the host system processor to fine tune assembly in VisualFace.h
+message(STATUS "Host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
+  set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
+endif()
+
 # An option that's useful for Ubuntu 16.04 builds
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
@@ -46,7 +52,7 @@ else()
           message(STATUS "GCC version ${CMAKE_CXX_COMPILER_VERSION} OK!")
         endif()
       endif()
-      set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors")
+      set(COMPREHENSIVE_WARNING_FLAGS "-Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi")
       set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -g ${COMPREHENSIVE_WARNING_FLAGS} -march=native -O3")
     endif()
   else() # Windows
