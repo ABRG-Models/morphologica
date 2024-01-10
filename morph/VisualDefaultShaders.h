@@ -90,13 +90,15 @@ OpenGL 4.5
  SPIR-V shaders
  Improved anisotropic filtering
 */
-#define OpenGL_VersionString "#version 410\n"
+#define OpenGL_VersionString "#version 310 es\n"
 #endif
 
 namespace morph {
     // The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has
     // some code comments.
     const char* defaultVtxShader = OpenGL_VersionString
+    "#extension GL_EXT_shader_io_blocks : enable\n"
+    "precision mediump float;\n"
     "uniform mat4 mvp_matrix;\n"
     "uniform mat4 vp_matrix;\n"
     "uniform mat4 m_matrix;\n"
@@ -112,7 +114,7 @@ namespace morph {
     "    vec4 color;\n"
     "    vec3 fragpos;\n"
     "} vertex;\n"
-    "void main (void)\n"
+    "void main()\n"
     "{\n"
     "    gl_Position = (p_matrix * v_matrix * m_matrix * position);\n"
     "    vertex.color = vec4(color, alpha);\n"
@@ -122,6 +124,8 @@ namespace morph {
 
     // Default fragment shader. To study this GLSL, see Visual.frag.glsl.
     const char* defaultFragShader = OpenGL_VersionString
+    "#extension GL_EXT_shader_io_blocks : enable\n"
+    "precision mediump float;\n"
     "in VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
@@ -146,6 +150,7 @@ namespace morph {
 
     // Default text vertex shader. See VisText.vert.glsl
     const char* defaultTextVtxShader = OpenGL_VersionString
+    "precision mediump float;\n"
     "uniform mat4 m_matrix;\n"
     "uniform mat4 v_matrix;\n"
     "uniform mat4 p_matrix;\n"
@@ -162,6 +167,7 @@ namespace morph {
 
     // Default text fragment shader. See VisText.frag.glsl
     const char* defaultTextFragShader = OpenGL_VersionString
+    "precision mediump float;\n"
     "in vec2 TexCoords;\n"
     "out vec4 color;\n"
     "uniform sampler2D text;\n"

@@ -51,6 +51,7 @@ namespace morph {
     };
 
     //! Forward declaration of a Visual class
+    template <int, int, bool>
     class Visual;
 
     /*!
@@ -72,6 +73,7 @@ namespace morph {
      * and computeCone, which compute the vertices that will make up sphere and cone,
      * respectively.
      */
+    template <int glv1, int glv2, bool gles>
     class VisualModel
     {
         //! Debug rendering process with cout messages
@@ -297,7 +299,7 @@ namespace morph {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModel<glv1,glv2,gles>> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -316,14 +318,14 @@ namespace morph {
         //! to a pointer, tm, allows client code to change the text of the VisualTextModel as necessary.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel*& tm,
+                                      morph::VisualTextModel<glv1,glv2,gles>*& tm,
                                       const morph::TextFeatures& tfeatures)
         {
             if (this->get_shaderprogs(this->parentVis).tprog == 0) {
                 throw std::runtime_error ("No text shader prog. Did your VisualModel-derived class set it up?");
             }
 
-            auto tmup = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
+            auto tmup = std::make_unique<morph::VisualTextModel<glv1,glv2,gles>> (this->parentVis, this->get_shaderprogs(this->parentVis).tprog, tfeatures);
 
             if (tfeatures.centre_horz == true) {
                 morph::TextGeometry tg = tmup->getTextGeometry(_text);
@@ -354,7 +356,7 @@ namespace morph {
         //! Deprecated argument format. Prefer the versions that take TextFeatures, rather than multiple args.
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel*& tm,
+                                      morph::VisualTextModel<glv1,glv2,gles>*& tm,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                                       const float _fontsize = 0.05,
@@ -633,14 +635,14 @@ namespace morph {
         // A function that will be runtime defined to get_shaderprogs from a pointer to
         // Visual (saving a boilerplate argument and avoiding that killer circular
         // dependency at the cost of one line of boilerplate in client programs)
-        std::function<morph::visgl::visual_shaderprogs(morph::Visual*)> get_shaderprogs;
+        std::function<morph::visgl::visual_shaderprogs(morph::Visual<glv1,glv2,gles>*)> get_shaderprogs;
         // Get the graphics shader prog id
-        std::function<GLuint(morph::Visual*)> get_gprog;
+        std::function<GLuint(morph::Visual<glv1,glv2,gles>*)> get_gprog;
         // Get the text shader prog id
-        std::function<GLuint(morph::Visual*)> get_tprog;
+        std::function<GLuint(morph::Visual<glv1,glv2,gles>*)> get_tprog;
 
         // Setter for the parent pointer, parentVis
-        void set_parent (morph::Visual* _vis)
+        void set_parent (morph::Visual<glv1,glv2,gles>* _vis)
         {
             if (this->parentVis != nullptr) { throw std::runtime_error ("VisualModel: Set the parent pointer once only!"); }
             this->parentVis = _vis;
@@ -672,7 +674,7 @@ namespace morph {
         Quaternion<float> sv_rotation;
 
         //! A vector of pointers to text models that should be rendered.
-        std::vector<std::unique_ptr<morph::VisualTextModel>> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel<glv1,glv2,gles>>> texts;
 
         //! This enum contains the positions within the vbo array of the different
         //! vertex buffer objects
@@ -725,7 +727,7 @@ namespace morph {
         bool hide = false;
 
         // The morph::Visual in which this model exists.
-        morph::Visual* parentVis = nullptr;
+        morph::Visual<glv1,glv2,gles>* parentVis = nullptr;
 
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)

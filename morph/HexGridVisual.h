@@ -64,8 +64,8 @@ namespace morph {
 
     //! The template argument T is the type of the data which this HexGridVisual
     //! will visualize.
-    template <class T>
-    class HexGridVisual : public VisualDataModel<T>
+    template <class T, int glv1, int glv2, bool gles>
+    class HexGridVisual : public VisualDataModel<T,glv1,glv2,gles>
     {
     public:
         //! Simplest constructor. Use this in all new code!
@@ -1010,15 +1010,15 @@ namespace morph {
 
     //! Extended HexGridVisual class for plotting with individual red, green and blue
     //! values (i.e., without a ColourMap).
-    template <class T>
-    class HexGridVisualManual : public morph::HexGridVisual<T>
+    template <class T, int glv1, int glv2, bool gles>
+    class HexGridVisualManual : public morph::HexGridVisual<T,glv1,glv2,gles>
     {
     public:
         //! Individual colour values for plotting
         std::vector<float> R, G, B;
 
         HexGridVisualManual(GLuint sp, GLuint tsp, const morph::HexGrid* _hg, const morph::vec<float> _offset)
-            : morph::HexGridVisual<T>(sp, tsp, _hg, _offset)
+            : morph::HexGridVisual<T,glv1,glv2,gles>(sp, tsp, _hg, _offset)
         {
             R.resize (this->hg->num(), 0.0f);
             G.resize (this->hg->num(), 0.0f);
@@ -1033,7 +1033,7 @@ namespace morph {
                             const morph::Scale<T, float>& zscale,
                             const morph::Scale<T, float>& cscale,
                             morph::ColourMapType _cmt)
-            : morph::HexGridVisual<T>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
+            : morph::HexGridVisual<T,glv1,glv2,gles>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
         {
             R.resize (this->hg->num(), 0.0f);
             G.resize (this->hg->num(), 0.0f);

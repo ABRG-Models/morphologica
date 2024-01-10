@@ -27,9 +27,11 @@
 namespace morph {
 
     // Pointers to morph::Visual are used to index font faces
+    template<int, int, bool>
     class Visual;
 
     //! Singleton resource class for morph::Visual scenes.
+    template <int glv1, int glv2, bool gles>
     class VisualResources
     {
     private:
@@ -55,15 +57,19 @@ namespace morph {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
             // Set up error callback
-            glfwSetErrorCallback (morph::VisualResources::errorCallback);
+            glfwSetErrorCallback (morph::VisualResources<glv1,glv2,gles>::errorCallback);
 
             // See https://www.glfw.org/docs/latest/monitor_guide.html
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
 
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+            if constexpr (gles == true) {
+                glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+                glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+            }
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, glv1);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, glv2);
 #ifdef __OSX__
             glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -83,7 +89,9 @@ namespace morph {
         //! The collection of VisualFaces generated for this instance of the
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
-        std::map<std::tuple<morph::VisualFont, unsigned int, morph::Visual*>, morph::gl::VisualFace*> faces;
+        std::map<std::tuple<morph::VisualFont, unsigned int,
+                            morph::Visual<glv1,glv2,gles>*>,
+                 morph::gl::VisualFace*> faces;
 
         //! An error callback function for the GLFW windowing library
         static void errorCallback (int error, const char* description)
@@ -92,13 +100,13 @@ namespace morph {
         }
 
         //! FreeType library object, public for access by client code?
-        std::map<morph::Visual*, FT_Library> freetypes;
+        std::map<morph::Visual<glv1,glv2,gles>*, FT_Library> freetypes;
 
     public:
-        VisualResources(const VisualResources&) = delete;
-        VisualResources& operator=(const VisualResources &) = delete;
-        VisualResources(VisualResources &&) = delete;
-        VisualResources & operator=(VisualResources &&) = delete;
+        VisualResources(const VisualResources<glv1,glv2,gles>&) = delete;
+        VisualResources& operator=(const VisualResources<glv1,glv2,gles> &) = delete;
+        VisualResources(VisualResources<glv1,glv2,gles> &&) = delete;
+        VisualResources & operator=(VisualResources<glv1,glv2,gles> &&) = delete;
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -106,7 +114,7 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::Visual* _vis)
+        void freetype_init (morph::Visual<glv1,glv2,gles>* _vis)
         {
             FT_Library freetype = (FT_Library)0;
             try {
@@ -128,7 +136,7 @@ namespace morph {
         //! This relies on C++11 magic statics (N2660).
         static auto& i()
         {
-            static VisualResources instance;
+            static VisualResources<glv1,glv2,gles> instance;
             return instance;
         }
 
@@ -137,7 +145,8 @@ namespace morph {
 
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
-        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels, morph::Visual* _vis)
+        morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
+                                              morph::Visual<glv1,glv2,gles>* _vis)
         {
             morph::gl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);

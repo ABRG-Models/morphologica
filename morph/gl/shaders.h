@@ -151,7 +151,6 @@ namespace morph {
                 }
                 GLint slen = (GLint)strlen (source);
                 glShaderSource (shader, 1, &source, &slen);
-                delete [] source;
 
                 glCompileShader (shader);
 
@@ -161,11 +160,15 @@ namespace morph {
                 if (!shaderCompileSuccess) {
                     glGetShaderInfoLog(shader, 512, NULL, infoLog);
                     std::cerr << "\nShader compilation failed!";
-                    std::cerr << "\n--------------------------\n";
+                    std::cerr << "\n--------------------------\n\n";
+                    std::cerr << source;
+                    std::cerr << "\n\n--------------------------\n";
                     std::cerr << infoLog << std::endl;
                     std::cerr << "Exiting.\n";
+                    delete [] source;
                     exit (2);
                 }
+                delete [] source;
 
                 // Test glGetError:
                 GLenum shaderError = glGetError();
