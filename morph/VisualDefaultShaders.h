@@ -93,13 +93,13 @@ OpenGL 4.5
 #define OpenGL_VersionString "#version 310 es\n"
 #endif
 
+#include <morph/gl/version.h>
+
 namespace morph {
+
     // The default vertex shader. To study this GLSL, see Visual.vert.glsl, which has
     // some code comments.
-    const char* defaultVtxShader = OpenGL_VersionString
-    "#extension GL_EXT_shader_io_blocks : enable\n"
-    "precision mediump float;\n"
-    "uniform mat4 mvp_matrix;\n"
+    const char* defaultVtxShader = "uniform mat4 mvp_matrix;\n"
     "uniform mat4 vp_matrix;\n"
     "uniform mat4 m_matrix;\n"
     "uniform mat4 v_matrix;\n"
@@ -122,11 +122,16 @@ namespace morph {
     "    vertex.normal = normalin;\n"
     "}\n";
 
+    std::string getDefaultVtxShader (const int glver)
+    {
+        std::string shdr;
+        shdr += morph::gl::version::shaderpreamble (glver);
+        shdr += defaultVtxShader;
+        return shdr;
+    }
+
     // Default fragment shader. To study this GLSL, see Visual.frag.glsl.
-    const char* defaultFragShader = OpenGL_VersionString
-    "#extension GL_EXT_shader_io_blocks : enable\n"
-    "precision mediump float;\n"
-    "in VERTEX\n"
+    const char* defaultFragShader = "in VERTEX\n"
     "{\n"
     "    vec4 normal;\n"
     "    vec4 color;\n"
@@ -148,10 +153,16 @@ namespace morph {
     "    finalcolor = vec4(result, vertex.color.w);\n"
     "}\n";
 
+    std::string getDefaultFragShader (const int glver)
+    {
+        std::string shdr;
+        shdr += morph::gl::version::shaderpreamble (glver);
+        shdr += defaultFragShader;
+        return shdr;
+    }
+
     // Default text vertex shader. See VisText.vert.glsl
-    const char* defaultTextVtxShader = OpenGL_VersionString
-    "precision mediump float;\n"
-    "uniform mat4 m_matrix;\n"
+    const char* defaultTextVtxShader = "uniform mat4 m_matrix;\n"
     "uniform mat4 v_matrix;\n"
     "uniform mat4 p_matrix;\n"
     "layout(location = 0) in vec4 position;\n"
@@ -165,10 +176,16 @@ namespace morph {
     "    TexCoords = texture.xy;\n"
     "}";
 
+    std::string getDefaultTextVtxShader (const int glver)
+    {
+        std::string shdr;
+        shdr += morph::gl::version::shaderpreamble (glver);
+        shdr += defaultTextVtxShader;
+        return shdr;
+    }
+
     // Default text fragment shader. See VisText.frag.glsl
-    const char* defaultTextFragShader = OpenGL_VersionString
-    "precision mediump float;\n"
-    "in vec2 TexCoords;\n"
+    const char* defaultTextFragShader = "in vec2 TexCoords;\n"
     "out vec4 color;\n"
     "uniform sampler2D text;\n"
     "uniform vec3 textColor;\n"
@@ -176,4 +193,13 @@ namespace morph {
     "{\n"
     "    color = vec4(textColor, texture(text, TexCoords).r);\n"
     "}\n";
+
+    std::string getDefaultTextFragShader (const int glver)
+    {
+        std::string shdr;
+        shdr += morph::gl::version::shaderpreamble (glver);
+        shdr += defaultTextFragShader;
+        return shdr;
+    }
+
 } // namespace morph

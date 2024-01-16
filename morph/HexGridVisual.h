@@ -7,6 +7,7 @@
 # include <GL3/gl3.h>
 #endif
 #endif
+#include <morph/gl/version.h>
 #include <morph/tools.h>
 #include <morph/VisualDataModel.h>
 #include <morph/ColourMap.h>
@@ -64,8 +65,8 @@ namespace morph {
 
     //! The template argument T is the type of the data which this HexGridVisual
     //! will visualize.
-    template <class T, int glv1, int glv2, bool gles>
-    class HexGridVisual : public VisualDataModel<T,glv1,glv2,gles>
+    template <class T, int glver = morph::gl::version_4_1>
+    class HexGridVisual : public VisualDataModel<T,glver>
     {
     public:
         //! Simplest constructor. Use this in all new code!
@@ -1010,15 +1011,15 @@ namespace morph {
 
     //! Extended HexGridVisual class for plotting with individual red, green and blue
     //! values (i.e., without a ColourMap).
-    template <class T, int glv1, int glv2, bool gles>
-    class HexGridVisualManual : public morph::HexGridVisual<T,glv1,glv2,gles>
+    template <class T, int glver = morph::gl::version_4_1>
+    class HexGridVisualManual : public morph::HexGridVisual<T,glver>
     {
     public:
         //! Individual colour values for plotting
         std::vector<float> R, G, B;
 
         HexGridVisualManual(GLuint sp, GLuint tsp, const morph::HexGrid* _hg, const morph::vec<float> _offset)
-            : morph::HexGridVisual<T,glv1,glv2,gles>(sp, tsp, _hg, _offset)
+            : morph::HexGridVisual<T,glver>(sp, tsp, _hg, _offset)
         {
             R.resize (this->hg->num(), 0.0f);
             G.resize (this->hg->num(), 0.0f);
@@ -1033,7 +1034,7 @@ namespace morph {
                             const morph::Scale<T, float>& zscale,
                             const morph::Scale<T, float>& cscale,
                             morph::ColourMapType _cmt)
-            : morph::HexGridVisual<T,glv1,glv2,gles>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
+            : morph::HexGridVisual<T,glver>(sp, tsp, _hg, _offset, _data, zscale, cscale, _cmt)
         {
             R.resize (this->hg->num(), 0.0f);
             G.resize (this->hg->num(), 0.0f);

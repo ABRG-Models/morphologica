@@ -13,14 +13,11 @@
 #include <morph/HexGridVisual.h>
 #include <morph/HexGrid.h>
 
-constexpr int glv1 = 3;
-constexpr int glv2 = 1;
-constexpr int gles = true;
 int main()
 {
     // Contructor args are width, height, title, coordinate arrows offset, cooridnate
     // arrows lengths, coord arrow thickness, coord arrow font size (0 means no labels)
-    morph::Visual<glv1,glv2,gles> v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, "morph::HexGridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
     // You can set a field of view (in degrees)
     v.fov = 15;
     // Should the scene be 'locked' so that movements and rotations are prevented?
@@ -63,7 +60,7 @@ int main()
 
     // Add a HexGridVisual to display the HexGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    auto hgv = std::make_unique<morph::HexGridVisual<float,glv1,glv2,gles>>(&hg, offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float>>(&hg, offset);
     v.bindmodel (hgv);
     hgv->setScalarData (&data);
     hgv->hexVisMode = morph::HexVisMode::HexInterp; // Or morph::HexVisMode::Triangles for a smoother surface plot

@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include <morph/gl/version.h>
 #include <morph/vec.h>
 #include <morph/VisualModel.h>
 #include <morph/mathconst.h>
@@ -18,8 +19,8 @@ namespace morph {
 
     //! This class creates the vertices for a set of coordinate arrows to be rendered
     //! in a 3-D scene.
-    template<int glv1, int glv2, bool gles>
-    class CoordArrows : public VisualModel<glv1, glv2, gles>
+    template<int glver = morph::gl::version_4_1>
+    class CoordArrows : public VisualModel<glver>
     {
     public:
         CoordArrows()
@@ -79,26 +80,26 @@ namespace morph {
             if (this->em > 0.0f) {
                 morph::vec<float> toffset = this->mv_offset;
                 toffset[0] += this->lengths[0] + this->em;
-                auto vtm1 = std::make_unique<VisualTextModel<glv1,glv2,gles>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                               morph::VisualFont::DVSansItalic,
-                                                                               this->em, 48, toffset,
-                                                                               this->x_label);
+                auto vtm1 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                      morph::VisualFont::DVSansItalic,
+                                                                      this->em, 48, toffset,
+                                                                      this->x_label);
                 this->texts.push_back (std::move(vtm1));
                 toffset = this->mv_offset;
                 toffset[1] += this->lengths[1];
                 toffset[0] += this->em;
-                auto vtm2 = std::make_unique<VisualTextModel<glv1,glv2,gles>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                               morph::VisualFont::DVSansItalic,
-                                                                               this->em, 48, toffset,
-                                                                               this->y_label);
+                auto vtm2 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                      morph::VisualFont::DVSansItalic,
+                                                                      this->em, 48, toffset,
+                                                                      this->y_label);
                 this->texts.push_back (std::move(vtm2));
                 toffset = this->mv_offset;
                 toffset[2] += this->lengths[2];
                 toffset[0] += this->em;
-                auto vtm3 = std::make_unique<VisualTextModel<glv1,glv2,gles>> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                               morph::VisualFont::DVSansItalic,
-                                                                               this->em, 48, toffset,
-                                                                               this->z_label);
+                auto vtm3 = std::make_unique<VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                      morph::VisualFont::DVSansItalic,
+                                                                      this->em, 48, toffset,
+                                                                      this->z_label);
                 this->texts.push_back (std::move(vtm3));
             }
         }

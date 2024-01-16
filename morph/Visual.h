@@ -41,6 +41,7 @@
 # endif
 #endif
 
+#include <morph/gl/version.h>
 #include <morph/VisualModel.h>
 #include <morph/VisualTextModel.h> // includes VisualResources.h
 #include <morph/VisualCommon.h>
@@ -111,7 +112,12 @@ namespace morph {
      * position and field of view of the 'camera' (Visual::zNear, Visual::zFar and
      * Visual::fov).
      */
-    template <int glv1 = 4, int glv2 = 1, bool gles = false>
+
+    // How about passing GL version as single int?
+    // gles = ver >> 30 & 0x1        // 30th bit encodes gles   (30)
+    // vermaj = ver >> 16 & 0x7fff   // next 14 bits ver major  (16-29)
+    // vermin = ver & 0xffff         // lowest 16 bits ver minor (0-15)
+    template <int glver = morph::gl::version_4_1>
     class Visual
     {
     public:
@@ -186,7 +192,7 @@ namespace morph {
         void init_resources()
         {
             // VisualResources provides font management and GLFW management. Ensure it exists in memory.
-            morph::VisualResources<glv1,glv2,gles>::i().create();
+            morph::VisualResources<glver>::i().create();
 
             // Set up the window that will present the OpenGL graphics. No-op in
             // Qt-managed Visual, but this has to happen BEFORE the call to
@@ -194,7 +200,7 @@ namespace morph {
             this->init_window();
 
             // Now make sure that Freetype is set up
-            morph::VisualResources<glv1,glv2,gles>::i().freetype_init (this);
+            morph::VisualResources<glver>::i().freetype_init (this);
         }
 
         //! Take a screenshot of the window
@@ -245,9 +251,9 @@ namespace morph {
         void bindmodel (std::unique_ptr<T>& model)
         {
             model->set_parent (this);
-            model->get_shaderprogs = &morph::Visual<glv1,glv2,gles>::get_shaderprogs;
-            model->get_gprog = &morph::Visual<glv1,glv2,gles>::get_gprog;
-            model->get_tprog = &morph::Visual<glv1,glv2,gles>::get_tprog;
+            model->get_shaderprogs = &morph::Visual<glver>::get_shaderprogs;
+            model->get_gprog = &morph::Visual<glver>::get_gprog;
+            model->get_tprog = &morph::Visual<glver>::get_tprog;
         }
 
         /*!
@@ -257,7 +263,7 @@ namespace morph {
         template <typename T>
         unsigned int addVisualModelId (std::unique_ptr<T>& model)
         {
-            std::unique_ptr<VisualModel<glv1,glv2,gles>> vmp = std::move(model);
+            std::unique_ptr<VisualModel<glver>> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             unsigned int rtn = (this->vm.size()-1);
             return rtn;
@@ -269,7 +275,7 @@ namespace morph {
         template <typename T>
         T* addVisualModel (std::unique_ptr<T>& model)
         {
-            std::unique_ptr<VisualModel<glv1,glv2,gles>> vmp = std::move(model);
+            std::unique_ptr<VisualModel<glver>> vmp = std::move(model);
             this->vm.push_back (std::move(vmp));
             return static_cast<T*>(this->vm.back().get());
         }
@@ -281,13 +287,13 @@ namespace morph {
          *
          * \return VisualModel pointer
          */
-        VisualModel<glv1,glv2,gles>* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
+        VisualModel<glver>* getVisualModel (unsigned int modelId) { return (this->vm[modelId].get()); }
 
         //! Remove the VisualModel with ID \a modelId from the scene.
         void removeVisualModel (unsigned int modelId) { this->vm.erase (this->vm.begin() + modelId); }
 
         //! Remove the VisualModel whose pointer matches the VisualModel* modelPtr
-        void removeVisualModel (VisualModel<glv1,glv2,gles>* modelPtr)
+        void removeVisualModel (VisualModel<glver>* modelPtr)
         {
             unsigned int modelId = 0;
             bool found_model = false;
@@ -309,21 +315,21 @@ namespace morph {
                                       const float _fontsize = 0.01,
                                       const int _fontres = 24)
         {
-            morph::VisualTextModel<glv1,glv2,gles>* tm = nullptr;
+            morph::VisualTextModel<glver>* tm = nullptr;
             return this->addLabel (_text, _toffset, tm, _tcolour, _font, _fontsize, _fontres);
         }
 
         //! Add label, using the passed-in pointer. Allows client code to update the text model
         morph::TextGeometry addLabel (const std::string& _text,
                                       const morph::vec<float, 3>& _toffset,
-                                      morph::VisualTextModel<glv1,glv2,gles>*& tm,
+                                      morph::VisualTextModel<glver>*& tm,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
                                       const float _fontsize = 0.01,
                                       const int _fontres = 24)
         {
             if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
-            auto tmup = std::make_unique<morph::VisualTextModel<glv1,glv2,gles>> (this, this->shaders.tprog, _font, _fontsize, _fontres);
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, _font, _fontsize, _fontres);
             tmup->setupText (_text, _toffset, _tcolour);
             tm = tmup.get();
             this->texts.push_back (std::move(tmup));
@@ -353,7 +359,7 @@ namespace morph {
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
 
         //! A callback function
-        static void callback_render (morph::Visual<glv1,glv2,gles>* _v) { _v->render(); };
+        static void callback_render (morph::Visual<glver>* _v) { _v->render(); };
 
         //! Render the scene
         void render()
@@ -512,9 +518,9 @@ namespace morph {
         morph::visgl::visual_shaderprogs shaders;
 
         // These static functions will be set as callbacks in each VisualModel object.
-        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glv1,glv2,gles>* _v) { return _v->shaders; };
-        static GLuint get_gprog (morph::Visual<glv1,glv2,gles>* _v) { return _v->shaders.gprog; };
-        static GLuint get_tprog (morph::Visual<glv1,glv2,gles>* _v) { return _v->shaders.tprog; };
+        static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
+        static GLuint get_gprog (morph::Visual<glver>* _v) { return _v->shaders.gprog; };
+        static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
         vec<float> light_colour = {1,1,1};
@@ -823,7 +829,7 @@ namespace morph {
     protected:
         //! A vector of pointers to all the morph::VisualModels (HexGridVisual,
         //! ScatterVisual, etc) which are going to be rendered in the scene.
-        std::vector<std::unique_ptr<VisualModel<glv1,glv2,gles>>> vm;
+        std::vector<std::unique_ptr<VisualModel<glver>>> vm;
 
     private:
 
@@ -868,24 +874,29 @@ namespace morph {
 #endif
 
             unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-            std::cout << "morph::Visual running on OpenGL Version " << glv << std::endl;
+            std::cout << "morph::Visual<glver=" << morph::gl::version::vstring (glver)
+                      << "> running on OpenGL Version " << glv << std::endl;
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)
             glfwSwapInterval (0);
 #endif
             // Load up the shaders
+            std::string vshdr = morph::getDefaultVtxShader(glver);
+            std::string fshdr = morph::getDefaultFragShader(glver);
             std::vector<morph::gl::ShaderInfo> shaders = {
-                {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::defaultVtxShader, 0 },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::defaultFragShader, 0 }
+                {GL_VERTEX_SHADER, "Visual.vert.glsl", vshdr.c_str(), 0 },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", fshdr.c_str(), 0 }
             };
 
             this->shaders.gprog = morph::gl::LoadShaders (shaders);
 
             // An additional shader is used for text
+            vshdr = morph::getDefaultTextVtxShader(glver);
+            fshdr = morph::getDefaultTextFragShader(glver);
             std::vector<morph::gl::ShaderInfo> tshaders = {
-                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::defaultTextVtxShader, 0 },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::defaultTextFragShader, 0 }
+                {GL_VERTEX_SHADER, "VisText.vert.glsl", vshdr.c_str(), 0 },
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , fshdr.c_str(), 0 }
             };
             this->shaders.tprog = morph::gl::LoadShaders (tshaders);
 
@@ -921,7 +932,7 @@ namespace morph {
             }
 
             // Use coordArrowsOffset to set the location of the CoordArrows *scene*
-            this->coordArrows = std::make_unique<CoordArrows<glv1,glv2,gles>>();
+            this->coordArrows = std::make_unique<CoordArrows<glver>>();
             // For CoordArrows, because we don't add via Visual::addVisualModel(), we
             // have to set the get_shaderprogs function here:
             this->bindmodel (this->coordArrows);
@@ -930,7 +941,7 @@ namespace morph {
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
             // Set up the title, which may or may not be rendered
-            this->textModel = std::make_unique<VisualTextModel<glv1,glv2,gles>> (this, this->shaders.tprog,
+            this->textModel = std::make_unique<VisualTextModel<glver>> (this, this->shaders.tprog,
                                                                                  morph::VisualFont::DVSans,
                                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                                  this->title);
@@ -956,7 +967,7 @@ namespace morph {
 
     protected:
         //! A little model of the coordinate axes.
-        std::unique_ptr<CoordArrows<glv1,glv2,gles>> coordArrows;
+        std::unique_ptr<CoordArrows<glver>> coordArrows;
 
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
         vec<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
@@ -969,9 +980,9 @@ namespace morph {
 
     private:
         //! A VisualTextModel for a title text.
-        std::unique_ptr<VisualTextModel<glv1,glv2,gles>> textModel = nullptr;
+        std::unique_ptr<VisualTextModel<glver>> textModel = nullptr;
         //! Text models for labels
-        std::vector<std::unique_ptr<morph::VisualTextModel<glv1,glv2,gles>>> texts;
+        std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
         /*
          * Variables to manage projection and rotation of the object
@@ -1027,38 +1038,38 @@ namespace morph {
     private:
         static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->key_callback (key, scancode, action, mods)) {
                 self->render();
             }
         }
         static void mouse_button_callback_dispatch (GLFWwindow* _window, int button, int action, int mods)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             self->mouse_button_callback (button, action, mods);
         }
         static void cursor_position_callback_dispatch (GLFWwindow* _window, double x, double y)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->cursor_position_callback (x, y)) {
                 self->render();
             }
         }
         static void window_size_callback_dispatch (GLFWwindow* _window, int width, int height)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->window_size_callback (width, height)) {
                 self->render();
             }
         }
         static void window_close_callback_dispatch (GLFWwindow* _window)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             self->window_close_callback();
         }
         static void scroll_callback_dispatch (GLFWwindow* _window, double xoffset, double yoffset)
         {
-            Visual<glv1,glv2,gles>* self = static_cast<Visual<glv1,glv2,gles>*>(glfwGetWindowUserPointer (_window));
+            Visual<glver>* self = static_cast<Visual<glver>*>(glfwGetWindowUserPointer (_window));
             if (self->scroll_callback (xoffset, yoffset)) {
                 self->render();
             }

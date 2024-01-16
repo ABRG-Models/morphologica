@@ -18,6 +18,7 @@
 #include <tuple>
 #include <set>
 #include <stdexcept>
+#include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/VisualFace.h>
 // FreeType for text rendering
@@ -27,11 +28,11 @@
 namespace morph {
 
     // Pointers to morph::Visual are used to index font faces
-    template<int, int, bool>
+    template<int>
     class Visual;
 
     //! Singleton resource class for morph::Visual scenes.
-    template <int glv1, int glv2, bool gles>
+    template <int glver>
     class VisualResources
     {
     private:
@@ -57,19 +58,19 @@ namespace morph {
             if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
 
             // Set up error callback
-            glfwSetErrorCallback (morph::VisualResources<glv1,glv2,gles>::errorCallback);
+            glfwSetErrorCallback (morph::VisualResources<glver>::errorCallback);
 
             // See https://www.glfw.org/docs/latest/monitor_guide.html
             GLFWmonitor* primary = glfwGetPrimaryMonitor();
             float xscale, yscale;
             glfwGetMonitorContentScale(primary, &xscale, &yscale);
 
-            if constexpr (gles == true) {
+            if constexpr (morph::gl::version::gles (glver) == true) {
                 glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                 glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
             }
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, glv1);
-            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, glv2);
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, morph::gl::version::major (glver));
+            glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, morph::gl::version::minor (glver));
 #ifdef __OSX__
             glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -90,7 +91,7 @@ namespace morph {
         //! application. Create one VisualFace for each unique combination of VisualFont
         //! and fontpixels (the texture resolution)
         std::map<std::tuple<morph::VisualFont, unsigned int,
-                            morph::Visual<glv1,glv2,gles>*>,
+                            morph::Visual<glver>*>,
                  morph::gl::VisualFace*> faces;
 
         //! An error callback function for the GLFW windowing library
@@ -100,13 +101,13 @@ namespace morph {
         }
 
         //! FreeType library object, public for access by client code?
-        std::map<morph::Visual<glv1,glv2,gles>*, FT_Library> freetypes;
+        std::map<morph::Visual<glver>*, FT_Library> freetypes;
 
     public:
-        VisualResources(const VisualResources<glv1,glv2,gles>&) = delete;
-        VisualResources& operator=(const VisualResources<glv1,glv2,gles> &) = delete;
-        VisualResources(VisualResources<glv1,glv2,gles> &&) = delete;
-        VisualResources & operator=(VisualResources<glv1,glv2,gles> &&) = delete;
+        VisualResources(const VisualResources<glver>&) = delete;
+        VisualResources& operator=(const VisualResources<glver> &) = delete;
+        VisualResources(VisualResources<glver> &&) = delete;
+        VisualResources & operator=(VisualResources<glver> &&) = delete;
 
         //! Initialize a freetype library instance and add to this->freetypes. I wanted
         //! to have only a single freetype library instance, but this didn't work, so I
@@ -114,7 +115,7 @@ namespace morph {
         //! window). Thus, arguably, the FT_Library should be a member of morph::Visual,
         //! but that's a task for the future, as I coded it this way under the false
         //! assumption that I'd only need one FT_Library.
-        void freetype_init (morph::Visual<glv1,glv2,gles>* _vis)
+        void freetype_init (morph::Visual<glver>* _vis)
         {
             FT_Library freetype = (FT_Library)0;
             try {
@@ -136,7 +137,7 @@ namespace morph {
         //! This relies on C++11 magic statics (N2660).
         static auto& i()
         {
-            static VisualResources<glv1,glv2,gles> instance;
+            static VisualResources<glver> instance;
             return instance;
         }
 
@@ -146,7 +147,7 @@ namespace morph {
         //! Return a pointer to a VisualFace for the given \a font at the given texture
         //! resolution, \a fontpixels and the given window (i.e. OpenGL context) \a _win.
         morph::gl::VisualFace* getVisualFace (morph::VisualFont font, unsigned int fontpixels,
-                                              morph::Visual<glv1,glv2,gles>* _vis)
+                                              morph::Visual<glver>* _vis)
         {
             morph::gl::VisualFace* rtn = nullptr;
             auto key = std::make_tuple(font, fontpixels, _vis);
