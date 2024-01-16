@@ -20,16 +20,19 @@ namespace morph { using win_t = QOpenGLWidget; }
 namespace morph {
     namespace qt {
 
+        // This must match the QOpenGLFunctions_ class you derive from
+        constexpr int gl_version = morph::gl::version_4_1;
+
         // A morph::Visual widget
         struct viswidget : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
         {
             // Unlike the GLFW or morph-in-a-QWindow schemes, we hold the morph::Visual
             // inside the widget.
-            morph::Visual v;
+            morph::Visual<gl_version> v;
 
             // In your Qt code, build VisualModels that should be added to the scene and add them to this.
-            std::vector<std::unique_ptr<morph::VisualModel>> newvisualmodels;
-            std::vector<morph::VisualModel*> model_ptrs;
+            std::vector<std::unique_ptr<morph::VisualModel<gl_version>>> newvisualmodels;
+            std::vector<morph::VisualModel<gl_version>*> model_ptrs;
 
             // if >-1, then that model needs a reinit.
             int needs_reinit = -1;

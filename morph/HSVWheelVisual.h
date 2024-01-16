@@ -18,8 +18,8 @@
 
 namespace morph {
 
-    template <typename F>
-    class HSVWheelVisual : public VisualModel
+    template <typename F, int glver = morph::gl::version_4_1>
+    class HSVWheelVisual : public VisualModel<glver>
     {
         using mc = morph::mathconst<F>;
     public:
@@ -56,7 +56,7 @@ namespace morph {
         void initializeVertices()
         {
             // Auto-set ticklabelgap
-            auto em = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
+            auto em = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
             morph::TextGeometry em_geom = em->getTextGeometry (std::string("m"));
             this->ticklabelgap = em_geom.width()/2.0f;
             this->drawFrame();
@@ -94,7 +94,7 @@ namespace morph {
 
             for (unsigned int i = 0; i < this->label_angles.size(); ++i) {
                 std::string s = this->labels[i];
-                auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
+                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->tf);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ticklabelheight = geom.height() > this->ticklabelheight ? geom.height() : this->ticklabelheight;
                 this->ticklabelwidth = geom.width() > this->ticklabelwidth ? geom.width() : this->ticklabelwidth;

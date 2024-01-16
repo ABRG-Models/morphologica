@@ -8,7 +8,7 @@
 namespace morph {
 
     //! This class creates the vertices for a polygonal object in a 3D scene
-    template <int glver = morph::gl::version_4_1>
+    template<int glver = morph::gl::version_4_1>
     class PolygonVisual : public VisualModel<glver>
     {
     public:

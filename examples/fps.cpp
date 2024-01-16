@@ -22,7 +22,7 @@ int main()
     v.fov = 15;
     v.zFar = 200;
     v.lightingEffects();
-    morph::VisualTextModel* fps_tm;
+    morph::VisualTextModel<>* fps_tm;
     v.addLabel ("0 FPS", {0.33f, -0.23f, 0.0f}, fps_tm); // With fps_tm can update the VisualTextModel with fps_tm->setupText("new text")
 
     // Create a HexGrid to show in the scene

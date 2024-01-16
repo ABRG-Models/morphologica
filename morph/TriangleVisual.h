@@ -8,7 +8,8 @@
 namespace morph {
 
     //! This class creates the vertices for a simple triangle in a 3D scene.
-    class TriangleVisual : public VisualModel
+    template<int glver = morph::gl::version_4_1>
+    class TriangleVisual : public VisualModel<glver>
     {
     public:
         TriangleVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }

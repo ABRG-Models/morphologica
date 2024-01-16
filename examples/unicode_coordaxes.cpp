@@ -18,13 +18,13 @@
 using morph::unicode;
 
 // Derive Visual to modify the coordinate arrows object in the constructor.
-class MyVisual : public morph::Visual
+class MyVisual : public morph::Visual<>
 {
 public:
     MyVisual (int width, int height, const std::string& title,
               const morph::vec<float, 2> caOffset, const morph::vec<float> caLength,
               const float caThickness, const float caEm)
-        : morph::Visual (width, height, title, caOffset, caLength, caThickness, caEm)
+        : morph::Visual<> (width, height, title, caOffset, caLength, caThickness, caEm)
     {
         this->backgroundWhite();
         this->coordArrows->clear();

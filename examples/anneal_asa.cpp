@@ -111,25 +111,25 @@ int main (int argc, char** argv)
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    auto cand_up = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
+    auto cand_up = std::make_unique<morph::PolygonVisual<>>(offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
     v.bindmodel (cand_up);
     cand_up->finalize();
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    auto best_up = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
+    auto best_up = std::make_unique<morph::PolygonVisual<>>(offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
     v.bindmodel (best_up);
     best_up->finalize();
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    auto curr_up = std::make_unique<morph::PolygonVisual> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto curr_up = std::make_unique<morph::PolygonVisual<>> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
     v.bindmodel (curr_up);
     curr_up->finalize();
 
     // Fourth object marks the starting place
     col = { .5f, .5f, .5f };
     polypos[2] = objective(p);
-    auto sp = std::make_unique<morph::PolygonVisual> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto sp = std::make_unique<morph::PolygonVisual<>> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
     v.bindmodel (sp);
     sp->finalize();
 

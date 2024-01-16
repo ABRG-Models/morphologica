@@ -26,8 +26,8 @@ namespace morph {
      * support the Stalefish app, which collects 2-D curves of ISH gene expression and arranges them
      * in a stack.
      */
-    template <typename Flt>
-    class PointRowsVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class PointRowsVisual : public VisualDataModel<Flt, glver>
     {
     public:
         PointRowsVisual(std::vector<vec<float,3>>* _pointrows,

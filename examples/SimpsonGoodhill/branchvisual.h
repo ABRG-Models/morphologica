@@ -26,7 +26,7 @@
 #include "branch.h"
 
 template <typename Flt>
-class BranchVisual : public morph::VisualModel
+class BranchVisual : public morph::VisualModel<>
 {
 public:
     BranchVisual(const morph::vec<float, 3> _offset, std::vector<branch<Flt>>* _branches)

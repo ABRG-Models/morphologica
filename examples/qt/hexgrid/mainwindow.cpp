@@ -54,7 +54,7 @@ void MainWindow::setupHexGridVisual()
     hgv->setScalarData (&this->data);
 
     // Now add the HexGridVisual model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
-    std::unique_ptr<morph::VisualModel> vmp = std::move (hgv);
+    std::unique_ptr<morph::VisualModel<>> vmp = std::move (hgv);
     // The vector of VisualModels lives in viswidget, accessible via p_vw:
     static_cast<morph::qt::viswidget*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
 }

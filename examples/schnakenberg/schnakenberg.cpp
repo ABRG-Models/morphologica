@@ -46,7 +46,7 @@
 
 //! Helper function to save PNG images with a suitable name
 void savePngs (const std::string& logpath, const std::string& name,
-               unsigned int frameN, morph::Visual& v)
+               unsigned int frameN, morph::Visual<>& v)
 {
     std::stringstream ff1;
     ff1 << logpath << "/" << name<< "_";

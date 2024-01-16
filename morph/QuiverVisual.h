@@ -32,8 +32,8 @@ namespace morph {
     };
 
     //! A class to make quiver plots
-    template <typename Flt>
-    class QuiverVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class QuiverVisual : public VisualDataModel<Flt, glver>
     {
     public:
         QuiverVisual(std::vector<vec<float>>* _coords,

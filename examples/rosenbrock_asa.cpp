@@ -68,19 +68,19 @@ int main()
 
     // One object for the 'candidate' position
     std::array<float, 3> col = { 0, 1, 0 };
-    auto candup = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
+    auto candup = std::make_unique<morph::PolygonVisual<>>(offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.4f, col, 20);
     v.bindmodel (candup);
     candup->finalize();
 
     // A second object for the 'best' position
     col = { 1, 0, 0 };
-    auto bestup = std::make_unique<morph::PolygonVisual>(offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
+    auto bestup = std::make_unique<morph::PolygonVisual<>>(offset, polypos, morph::vec<float>({1,0,0}), 0.001f, 0.8f, col, 10);
     v.bindmodel (bestup);
     bestup->finalize();
 
     // A third object for the currently accepted position
     col = { 1, 0, 0.7f };
-    auto currup = std::make_unique<morph::PolygonVisual> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
+    auto currup = std::make_unique<morph::PolygonVisual<>> (offset, polypos, morph::vec<float>({1,0,0}), 0.005f, 0.6f, col, 20);
     v.bindmodel (currup);
     currup->finalize();
 

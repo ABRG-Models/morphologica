@@ -20,7 +20,8 @@
 
 namespace morph {
 
-    class TxtVisual : public VisualModel
+    template<int glver = morph::gl::version_4_1>
+    class TxtVisual : public VisualModel<glver>
     {
     public:
         TxtVisual (const std::string& _text,

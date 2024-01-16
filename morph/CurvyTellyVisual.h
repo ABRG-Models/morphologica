@@ -10,8 +10,8 @@ namespace morph {
 
     // Draw a curved CartGrid like a curved TV. You make a cylinder if you make the
     // rotation right. Frames can be drawn around the CartGrid.
-    template <typename T>
-    struct CurvyTellyVisual : public morph::CartGridVisual<T>
+    template <typename T, int glver = morph::gl::version_4_1>
+    struct CurvyTellyVisual : public morph::CartGridVisual<T, glver>
     {
         // The radius of the curved surface representing the CartGrid
         T radius = T{1};
@@ -29,7 +29,7 @@ namespace morph {
 
         // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
         CurvyTellyVisual(const morph::CartGrid* _cg, const morph::vec<float> _offset)
-            : morph::CartGridVisual<T>(_cg, _offset) { this->centralize = true; }
+            : morph::CartGridVisual<T, glver>(_cg, _offset) { this->centralize = true; }
 
         void drawcurvygrid()
         {

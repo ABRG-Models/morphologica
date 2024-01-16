@@ -11,10 +11,10 @@
 #include <morph/HSVWheelVisual.h>
 
 // In this example, I'll create a special visual to show hsv colours.
-struct SquareGridVisual : public morph::VisualModel
+struct SquareGridVisual : public morph::VisualModel<>
 {
     SquareGridVisual(const morph::vec<float> _offset, const float hue_rotn = 0.0f, const bool rev = false)
-        : morph::VisualModel (_offset)
+        : morph::VisualModel<> (_offset)
     {
         // In the constructor set up the colour map
         this->colourMap.setType (morph::ColourMapType::HSV);

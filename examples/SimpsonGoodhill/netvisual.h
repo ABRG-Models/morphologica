@@ -25,7 +25,7 @@
 #include "net.h"
 
 template <typename Flt>
-class NetVisual : public morph::VisualModel
+class NetVisual : public morph::VisualModel<>
 {
 public:
     NetVisual(const morph::vec<float, 3> _offset, net<Flt>* _locations)

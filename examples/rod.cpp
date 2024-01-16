@@ -36,7 +36,7 @@ int main()
         morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
         morph::vec<float, 3> colour2 = { 0.0, 0.9, 0.4 };
 
-        std::unique_ptr<morph::VisualModel> rvm = std::make_unique<morph::RodVisual> (offset, start, end, 0.1f, colour1, colour2);
+        std::unique_ptr<morph::VisualModel<>> rvm = std::make_unique<morph::RodVisual<>> (offset, start, end, 0.1f, colour1, colour2);
         v.bindmodel (rvm);
         rvm->finalize();
         v.addVisualModel (rvm);
@@ -44,7 +44,7 @@ int main()
         morph::vec<float, 3> start2 = { -0.1, 0.2, 0.6 };
         morph::vec<float, 3> end2 = { 0.2, 0.4, 0.6 };
         // You can reuse the unique_ptr rvm, once you've transferred ownership with v.addVisualModel (rvm)
-        rvm = std::make_unique<morph::RodVisual>(offset, start2, end2, 0.05f, colour2);
+        rvm = std::make_unique<morph::RodVisual<>>(offset, start2, end2, 0.05f, colour2);
         v.bindmodel (rvm);
         rvm->finalize();
         v.addVisualModel (rvm);

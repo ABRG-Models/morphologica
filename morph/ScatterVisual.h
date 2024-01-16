@@ -25,8 +25,8 @@ namespace morph {
 
     //! The template argument Flt is the type of the data which this ScatterVisual
     //! will visualize.
-    template <typename Flt>
-    class ScatterVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class ScatterVisual : public VisualDataModel<Flt, glver>
     {
     public:
         ScatterVisual(const vec<float> _offset)

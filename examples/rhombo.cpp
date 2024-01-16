@@ -16,7 +16,7 @@ int main()
     morph::vec<float, 3> e3 = { 0,  0.0,  0.25 };
     morph::vec<float, 3> colour1 = { 0.35,  0.76,  0.98 };  // RGB colour triplet
 
-    auto rv = std::make_unique<morph::RhomboVisual> (offset, e1, e2, e3, colour1);
+    auto rv = std::make_unique<morph::RhomboVisual<>> (offset, e1, e2, e3, colour1);
     v.bindmodel (rv);
     rv->finalize();
     v.addVisualModel (rv);

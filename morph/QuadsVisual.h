@@ -19,8 +19,8 @@
 
 namespace morph {
 
-    template <typename Flt>
-    class QuadsVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class QuadsVisual : public VisualDataModel<Flt, glver>
     {
     public:
         QuadsVisual(const std::vector<std::array<Flt,12>>* _quads,

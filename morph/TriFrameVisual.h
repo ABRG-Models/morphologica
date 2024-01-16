@@ -31,8 +31,8 @@ namespace morph {
      * \param _offset The offset within the morph::Visual scene at which the model will
      * be drawn (used when rendering, not when creating the model's vertices)
      */
-    template <typename Flt>
-    class TriFrameVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class TriFrameVisual : public VisualDataModel<Flt, glver>
     {
     public:
         TriFrameVisual(const vec<float, 3> _offset)

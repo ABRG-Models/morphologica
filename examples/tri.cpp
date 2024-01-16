@@ -30,7 +30,7 @@ int main()
 
         morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 };
 
-        auto tv = std::make_unique<morph::TriangleVisual> (offset, c1, c2, c3, colour1);
+        auto tv = std::make_unique<morph::TriangleVisual<>> (offset, c1, c2, c3, colour1);
         v.bindmodel (tv);
         tv->finalize();
         v.addVisualModel (tv);

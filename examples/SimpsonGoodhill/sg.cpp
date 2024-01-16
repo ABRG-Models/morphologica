@@ -203,7 +203,7 @@ struct SimpsonGoodhill
     // Centroid of the branches for each axon
     net<T> ax_centroids;
     // A visual environment
-    morph::Visual* v;
+    morph::Visual<>* v;
     // Specialised visualization of agents with a history
     BranchVisual<T>* bv;
     // Centroid visual

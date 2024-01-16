@@ -66,8 +66,8 @@ namespace morph {
      * _radius is good to see the spheres. Make this 0 to omit the spheres.
      *
      */
-    template <typename Flt>
-    class PointRowsMeshVisual : public VisualDataModel<Flt>
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class PointRowsMeshVisual : public VisualDataModel<Flt, glver>
     {
     public:
         PointRowsMeshVisual(std::vector<vec<float,3>>* _pointrows,

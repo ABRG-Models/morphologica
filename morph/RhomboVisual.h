@@ -8,14 +8,15 @@
 namespace morph {
 
     //! This class creates the vertices for a rhombohedron
-    class RhomboVisual : public VisualModel
+    template<int glver = morph::gl::version_4_1>
+    class RhomboVisual : public VisualModel<glver>
     {
     public:
         //! Initialise with offset, three edges and a single colour.
         RhomboVisual(const vec<float, 3> _offset,
                      const vec<float, 3> _edge1, const vec<float, 3> _edge2, const vec<float, 3> _edge3,
                      const std::array<float, 3> _col)
-            : VisualModel(_offset)
+            : VisualModel<glver>(_offset)
             , edge1 (_edge1) , edge2 (_edge2) , edge3 (_edge3), col (_col) {}
 
         //! Initialize vertex buffer objects and vertex array object.

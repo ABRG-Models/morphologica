@@ -22,13 +22,13 @@ namespace morph {
         struct viswidget : public wxGLCanvas
         {
             // In wx::viswidget, the morph::Visual is owned by the widget.
-            morph::Visual v;
+            morph::Visual<> v;
 
             std::unique_ptr<wxGLContext> m_context;
 
             // In your wx code, build VisualModels that should be added to the scene and add them to this.
-            std::vector<std::unique_ptr<morph::VisualModel>> newvisualmodels;
-            std::vector<morph::VisualModel*> model_ptrs;
+            std::vector<std::unique_ptr<morph::VisualModel<>>> newvisualmodels;
+            std::vector<morph::VisualModel<>*> model_ptrs;
 
             // if >-1, then that model needs a reinit.
             int needs_reinit = -1;

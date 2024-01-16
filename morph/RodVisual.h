@@ -8,7 +8,8 @@
 namespace morph {
 
     //! This class creates the vertices for a cylindrical 'rod' in a 3D scene.
-    class RodVisual : public VisualModel
+    template<int glver = morph::gl::version_4_1>
+    class RodVisual : public VisualModel<glver>
     {
     public:
         RodVisual() { this->mv_offset = {0.0, 0.0, 0.0}; }
