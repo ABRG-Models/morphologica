@@ -39,28 +39,27 @@
 
 # ifdef __AARCH64__
 
-// "a", @progbits isn't liked by pi/arm
-asm("\n.pushsection vera_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
-asm("\n.pushsection verait_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
-asm("\n.pushsection verabd_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
-asm("\n.pushsection verabi_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
-asm("\n.pushsection veramono_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
-asm("\n.pushsection veramoit_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
-asm("\n.pushsection veramobd_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
-asm("\n.pushsection veramobi_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
-asm("\n.pushsection verase_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
-asm("\n.pushsection verasebd_ttf\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
+// "a", @progbits isn't liked by pi/arm, but "a", %progbits DOES seem to be necessary
+asm("\n.pushsection vera_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
+asm("\n.pushsection verait_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
+asm("\n.pushsection verabd_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
+asm("\n.pushsection verabi_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBI.ttf\"\n.popsection\n");
+asm("\n.pushsection veramono_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMono.ttf\"\n.popsection\n");
+asm("\n.pushsection veramoit_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoIt.ttf\"\n.popsection\n");
+asm("\n.pushsection veramobd_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBd.ttf\"\n.popsection\n");
+asm("\n.pushsection veramobi_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraMoBI.ttf\"\n.popsection\n");
+asm("\n.pushsection verase_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSe.ttf\"\n.popsection\n");
+asm("\n.pushsection verasebd_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraSeBd.ttf\"\n.popsection\n");
 
 // DejaVu Sans allows for Greek symbols and will be the default
-asm("\n.pushsection dvsans_ttf\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans.ttf\"\n.popsection\n");
-asm("\n.pushsection dvsansit_ttf\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Oblique.ttf\"\n.popsection\n");
-asm("\n.pushsection dvsansbd_ttf\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Bold.ttf\"\n.popsection\n");
-asm("\n.pushsection dvsansbi_ttf\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-BoldOblique.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsans_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansit_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Oblique.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansbd_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-Bold.ttf\"\n.popsection\n");
+asm("\n.pushsection dvsansbi_ttf, \"a\", %progbits\n.incbin \"" MORPH_FONTS_DIR "/dejavu/DejaVuSans-BoldOblique.ttf\"\n.popsection\n");
 
 # else
 
-// "a", @progbits means 'allocatable section containing type data'. It seems to be unnecessary. The
-// code that was introduced above for aarch64 actually works fine on modern Intel x86_64.
+// "a", @progbits means 'allocatable section containing type data'. It seems not to be strictly necessary.
 asm("\n.pushsection vera_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/Vera.ttf\"\n.popsection\n");
 asm("\n.pushsection verait_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraIt.ttf\"\n.popsection\n");
 asm("\n.pushsection verabd_ttf, \"a\", @progbits\n.incbin \"" MORPH_FONTS_DIR "/ttf-bitstream-vera/VeraBd.ttf\"\n.popsection\n");
