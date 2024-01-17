@@ -1,4 +1,4 @@
-# Raspbery Pi examples
+# Raspberry Pi examples
 
 There are some of the original examples in this directory which have been slightly modified so that they will run on a Raspberry Pi.
 
