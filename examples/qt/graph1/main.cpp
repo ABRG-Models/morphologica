@@ -8,7 +8,8 @@ int main (int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-    // Create widget.
+    // Create widget. The GL version to be used is set inside viswidget. It's accessible as
+    // morph::qt::gl_version.
     morph::qt::viswidget widget;
     // Calling show ensures initializeGL() method gets called. The alternative to
     // calling show() at the start of the main() function, is to set viswidget's
@@ -18,7 +19,7 @@ int main (int argc, char **argv)
     // We can now add VisualModels to the Visual inside the Widget. Create a GraphVisual
     // object (obtaining a unique_ptr to the object) with a spatial offset within the
     // scene of 0,0,0
-    auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+    auto gv = std::make_unique<morph::GraphVisual<double, morph::qt::gl_version>> (morph::vec<float>({0,0,0}));
     // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
     widget.v.bindmodel (gv);
     // Allow 3D
