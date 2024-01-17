@@ -6,7 +6,9 @@
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
-**NEW:** Now morphologica is Qt compatible! See [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)
+Morphologica can run standalone (using GLFW for window handling) and it is also Qt compatible! See [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)
+
+**NEW** Now morphologica is compatible with the Raspberry Pi! See [**examples/pi/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/pi) where the program have their OpenGL version set to OpenGL 3.1 ES.
 
 You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find [**example code and screenshots** here](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
