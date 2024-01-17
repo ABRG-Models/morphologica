@@ -18,11 +18,7 @@
 namespace my {
 
     // Use OpenGL 3.1 ES here
-    static constexpr int gl_version_major = 3;
-    static constexpr int gl_version_minor = 1;
-    static constexpr bool gles = true;
-
-    struct compute_manager : public morph::gl::compute_manager<gl_version_major, gl_version_minor, gles>
+    struct compute_manager : public morph::gl::compute_manager<morph::gl::version_3_1_es>
     {
         static constexpr int dwidth = 256;
         static constexpr int dheight = 65;
@@ -197,7 +193,7 @@ namespace my {
         // CPU side input data. This will be SSBO index 1.
         morph::gl::ssbo<1, float, dsz> input_ssbo;
         // You will need at least one gl::compute_shaderprog
-        morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
+        morph::gl::compute_shaderprog<morph::gl::version_3_1_es> compute_program;
     };
 } // namespace my
 

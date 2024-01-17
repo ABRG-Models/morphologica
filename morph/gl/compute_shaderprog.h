@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/vec.h>
 #include <morph/vvec.h>
@@ -10,7 +11,7 @@
 namespace morph {
     namespace gl {
 
-        template<int gl_version_major = 4, int gl_version_minor = 5, bool gles = false>
+        template<int glver>
         struct compute_shaderprog
         {
             GLuint prog_id = 0;

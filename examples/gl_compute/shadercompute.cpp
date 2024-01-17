@@ -26,12 +26,8 @@
 
 namespace my {
 
-    // Specify OpenGL version 4.5 (4.3 min for compute)
-    static constexpr int gl_version_major = 4;
-    static constexpr int gl_version_minor = 5;
-    static constexpr bool gles = false;
-
-    struct compute_manager : public morph::gl::compute_manager<gl_version_major, gl_version_minor, gles>
+    // Specify OpenGL version 4.5 (4.3 is min for compute)
+    struct compute_manager : public morph::gl::compute_manager<morph::gl::version_4_5>
     {
         // Call init in your constructor, ensuring *your* version of load_shaders() is called.
         compute_manager()
@@ -142,7 +138,7 @@ namespace my {
         unsigned int vao = 0;
         unsigned int vbo = 0;
         // You will need at least one gl::compute_shaderprog
-        morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> compute_program;
+        morph::gl::compute_shaderprog<morph::gl::version_4_5> compute_program;
     };
 } // namespace my
 

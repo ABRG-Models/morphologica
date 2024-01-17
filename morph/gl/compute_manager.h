@@ -17,6 +17,7 @@
 // 3.1 ES. So the client code should include the correct headers before #including this
 // file.
 
+#include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/gl/shaders.h>
 #include <morph/gl/compute_shaderprog.h> // A compute-shader class
@@ -44,7 +45,7 @@ namespace morph {
          * A gl compute environment. I think user will extend this class to add their data structures
          * and then run with their own GLSL compute shader code.
          */
-        template <int gl_version_major = 4, int gl_version_minor = 5, bool gles = false>
+        template <int glver = morph::gl::version_4_5>
         struct compute_manager
         {
             compute_manager() { this->t0 = sc::now(); }
@@ -101,18 +102,18 @@ namespace morph {
             {
                 if (!glfwInit()) { std::cerr << "GLFW initialization failed!\n"; }
                 // Set up error callback
-                glfwSetErrorCallback (morph::gl::compute_manager<gl_version_major,gl_version_minor,gles>::errorCallback);
+                glfwSetErrorCallback (morph::gl::compute_manager<glver>::errorCallback);
                 // See https://www.glfw.org/docs/latest/monitor_guide.html
                 GLFWmonitor* primary = glfwGetPrimaryMonitor();
                 glfwGetMonitorContentScale (primary, &this->monitor_xscale, &this->monitor_yscale);
                 glfwGetMonitorWorkarea (primary, &this->workarea_xpos, &this->workarea_ypos, &this->workarea_width, &this->workarea_height);
                 // 4.3+ or 3.1ES+ are required for shader compute
-                if constexpr (gles == true) {
+                if constexpr (morph::gl::version::gles (glver) == true) {
                     glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
                     glfwWindowHint (GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
                 }
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version_major);
-                glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version_minor);
+                glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, morph::gl::version::major (glver));
+                glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, morph::gl::version::minor (glver));
                 morph::gl::Util::checkError (__FILE__, __LINE__);
             }
 
@@ -140,7 +141,8 @@ namespace morph {
                 glfwSwapInterval (0);
 
                 unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
-                std::cout << "compute_manager running on OpenGL Version " << glv << std::endl;
+                std::cout << "compute_manager<" << morph::gl::version::vstring (glver)
+                          << "> running on OpenGL Version " << glv << std::endl;
 
                 // Store, and also output to stdout, some info about the GL resources available
                 glGetIntegerv (GL_MAX_COMPUTE_ATOMIC_COUNTERS, &this->max_compute_atomic_counters);
@@ -309,7 +311,7 @@ namespace morph {
         private:
             static void key_callback_dispatch (GLFWwindow* _window, int key, int scancode, int action, int mods)
             {
-                compute_manager<gl_version_major,gl_version_minor,gles>* self = static_cast<compute_manager<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
+                compute_manager<glver>* self = static_cast<compute_manager<glver>*>(glfwGetWindowUserPointer (_window));
                 if (self->key_callback (key, scancode, action, mods)) {
                     std::cout << "key_callback returned\n";
                     self->compute();
@@ -317,7 +319,7 @@ namespace morph {
             }
             static void window_close_callback_dispatch (GLFWwindow* _window)
             {
-                compute_manager<gl_version_major,gl_version_minor,gles>* self = static_cast<compute_manager<gl_version_major,gl_version_minor,gles>*>(glfwGetWindowUserPointer (_window));
+                compute_manager<glver>* self = static_cast<compute_manager<glver>*>(glfwGetWindowUserPointer (_window));
                 self->window_close_callback();
             }
 

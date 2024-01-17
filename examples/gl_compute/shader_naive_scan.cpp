@@ -18,11 +18,7 @@
 namespace my {
 
     // Use OpenGL 3.1 ES here
-    static constexpr int gl_version_major = 3;
-    static constexpr int gl_version_minor = 1;
-    static constexpr bool gles = true;
-
-    struct compute_manager : public morph::gl::compute_manager<gl_version_major, gl_version_minor, gles>
+    struct compute_manager : public morph::gl::compute_manager<morph::gl::version_3_1_es>
     {
         static constexpr int dsz = 32;
 
@@ -85,7 +81,7 @@ namespace my {
         morph::gl::ssbo<3, float, dsz> debug_ssbo;
         morph::gl::ssbo<4, float, dsz> debug2_ssbo;
         // You will need at least one gl::compute_shaderprog
-        morph::gl::compute_shaderprog<gl_version_major, gl_version_minor, gles> scan_program;
+        morph::gl::compute_shaderprog<morph::gl::version_3_1_es> scan_program;
     };
 } // namespace my
 
