@@ -14,6 +14,10 @@ if (OpenGL_EGL_FOUND)
   set_target_properties(shader_naive_scan PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
   target_link_libraries(shader_naive_scan OpenGL::EGL glfw)
 
+  add_executable(shader_naive_scan_cli shader_naive_scan_cli.cpp)
+  set_target_properties(shader_naive_scan_cli PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+  target_link_libraries(shader_naive_scan_cli OpenGL::EGL gbm)
+
   add_executable(seq_naive_scan naive_scan.cpp)
 
 endif (OpenGL_EGL_FOUND)
