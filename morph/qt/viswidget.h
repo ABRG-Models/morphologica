@@ -20,7 +20,7 @@ namespace morph { using win_t = QOpenGLWidget; }
 namespace morph {
     namespace qt {
 
-        // This must match the QOpenGLFunctions_ class you derive from
+        // This must match the QOpenGLFunctions_4_1_Core class you derive from
         constexpr int gl_version = morph::gl::version_4_1;
 
         // A morph::Visual widget
