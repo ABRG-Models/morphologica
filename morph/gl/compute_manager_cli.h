@@ -21,15 +21,13 @@
 #include <morph/gl/util.h>
 #include <morph/gl/shaders.h>
 #include <morph/gl/compute_shaderprog.h> // A compute-shader class
-#include <morph/keys.h>
 
-// EGL for a headless OpenGL context
+// EGL and gbm for a headless OpenGL context
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <gbm.h>
 
 #include <chrono>
-#include <morph/VisualDefaultShaders.h>
 
 namespace morph {
     namespace gl {
