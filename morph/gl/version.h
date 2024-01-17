@@ -64,13 +64,13 @@ namespace morph {
 
                 switch (gl_version_number) {
                 case morph::gl::version_3_0_es:
-                    preamble = "#version 300\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
+                    preamble = "#version 300 es\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
                     break;
                 case morph::gl::version_3_1_es:
-                    preamble = "#version 310\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
+                    preamble = "#version 310 es\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
                     break;
                 case morph::gl::version_3_2_es:
-                    preamble = "#version 320\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
+                    preamble = "#version 320 es\n#extension GL_EXT_shader_io_blocks : enable\nprecision mediump float;\n";
                     break;
                 case morph::gl::version_4_1:
                 case morph::gl::version_4_1_compat:
