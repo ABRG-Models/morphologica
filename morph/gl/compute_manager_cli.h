@@ -73,8 +73,9 @@ namespace morph {
             void setContext()
             {
                 bool res = eglMakeCurrent (this->egl_dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, this->core_ctx);
-                assert (res);
-
+                if (res == false) {
+                    throw std::runtime_error ("Failed to eglMakeCurrent for headless GL");
+                }
             }
             void releaseContext()
             {
@@ -90,20 +91,26 @@ namespace morph {
 
             void init_context()
             {
-                bool res = false;
-
                 // Set up a GBM device
-                int32_t fd = open ("/dev/dri/renderD128", O_RDWR);
-                assert (fd > 0);
+                int fd = open ("/dev/dri/renderD128", O_RDWR);
+                if (fd <= 0) {
+                    throw std::runtime_error ("Failed to open renderD128 device for headless GL");
+                }
                 struct gbm_device* gbm = gbm_create_device (fd);
-                assert (gbm != nullptr);
+                if (gbm == nullptr) {
+                    throw std::runtime_error ("Failed to gbm_create_device for headless GL");
+                }
 
                 // setup EGL from the GBM device
                 this->egl_dpy = eglGetPlatformDisplay (EGL_PLATFORM_GBM_MESA, gbm, NULL);
-                assert (this->egl_dpy != NULL);
+                if (this->egl_dpy == NULL) {
+                    throw std::runtime_error ("Failed to eglGetPlatformDisplay for headless GL");
+                }
 
-                res = eglInitialize (this->egl_dpy, NULL, NULL);
-                assert (res);
+                bool res = eglInitialize (this->egl_dpy, NULL, NULL);
+                if (res == false) {
+                    throw std::runtime_error ("Failed to eglInitialize display for headless GL");
+                }
 
                 const char* egl_extension_st = eglQueryString (egl_dpy, EGL_EXTENSIONS);
                 assert (strstr (egl_extension_st, "EGL_KHR_create_context") != NULL);
@@ -117,16 +124,24 @@ namespace morph {
                 EGLint count;
 
                 res = eglChooseConfig (this->egl_dpy, config_attribs, &cfg, 1, &count);
-                assert (res);
+                if (res == false) {
+                    throw std::runtime_error ("Failed to eglChooseConfig for headless GL");
+                }
+
                 res = eglBindAPI (EGL_OPENGL_ES_API);
-                assert (res);
+                if (res == false) {
+                    throw std::runtime_error ("Failed to eglBindAPI for headless GL");
+                }
 
                 static const EGLint attribs[] = {
-                    EGL_CONTEXT_CLIENT_VERSION, 3,
+                    EGL_CONTEXT_MAJOR_VERSION, morph::gl::version::major(glver),
+                    EGL_CONTEXT_MINOR_VERSION, morph::gl::version::minor(glver),
                     EGL_NONE
                 };
                 this->core_ctx = eglCreateContext (this->egl_dpy, cfg, EGL_NO_CONTEXT, attribs);
-                assert (this->core_ctx != EGL_NO_CONTEXT);
+                if (this->core_ctx == EGL_NO_CONTEXT) {
+                    throw std::runtime_error ("Failed to eglCreateContext for headless GL");
+                }
             }
 
             // Initialize OpenGL shaders, set any GL flags required
