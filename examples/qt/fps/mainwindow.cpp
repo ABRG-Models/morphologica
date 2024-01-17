@@ -67,7 +67,7 @@ void MainWindow::setupHexGridVisual()
 
     // Now create the HexGridVisual
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    auto hgv = std::make_unique<morph::HexGridVisual<float>>(hg.get(), offset);
+    auto hgv = std::make_unique<morph::HexGridVisual<float, morph::qt::gl_version>>(hg.get(), offset);
 
     // In general, you need to bindmodel before calling finalize() (esp. for
     // VisualModels that do text, like a GraphVisual). This gives the VisualModel access
@@ -79,7 +79,7 @@ void MainWindow::setupHexGridVisual()
     hgv->setScalarData (&this->data);
 
     // Now add the HexGridVisual model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
-    std::unique_ptr<morph::VisualModel> vmp = std::move (hgv);
+    std::unique_ptr<morph::VisualModel<morph::qt::gl_version>> vmp = std::move (hgv);
     // The vector of VisualModels lives in viswidget, accessible via p_vw:
     static_cast<morph::qt::viswidget*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
 }

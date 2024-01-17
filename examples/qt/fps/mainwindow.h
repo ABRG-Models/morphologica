@@ -11,8 +11,6 @@ QT_END_NAMESPACE
 #include <morph/vvec.h>
 #include <morph/HexGrid.h>
 
-namespace morph { class Visual; }
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
