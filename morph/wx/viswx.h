@@ -198,7 +198,7 @@ namespace morph {
 
             bool ready() { return this->glInitialized; }
 
-            morph::Visual v;
+            morph::Visual<> v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;

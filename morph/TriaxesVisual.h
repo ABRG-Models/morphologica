@@ -15,12 +15,13 @@
 #include <morph/mathconst.h>
 #include <morph/Scale.h>
 #include <morph/vec.h>
+#include <morph/VisualModel.h>
 #include <morph/GraphVisual.h> // Share tickstyle, axestyle and possibly scalingpolicy from GraphVisual
 
 namespace morph {
 
-    template <typename Flt>
-    class TriaxesVisual : public VisualModel
+    template <typename Flt, int glver = morph::gl::version_4_1>
+    class TriaxesVisual : public VisualModel<glver>
     {
     public:
         //! Constructor
@@ -73,15 +74,15 @@ namespace morph {
 
                 float realmin = this->x_scale.inverse_one (0);
                 float realmax = this->x_scale.inverse_one (this->axis_ends[0]);
-                this->xticks = morph::GraphVisual<Flt>::maketicks (_xmin, _xmax, realmin, realmax, 8);
+                this->xticks = morph::GraphVisual<Flt, glver>::maketicks (_xmin, _xmax, realmin, realmax, 8);
 
                 realmin = this->y_scale.inverse_one (0);
                 realmax = this->y_scale.inverse_one (this->axis_ends[1]);
-                this->yticks = morph::GraphVisual<Flt>::maketicks (_ymin, _ymax, realmin, realmax, 8);
+                this->yticks = morph::GraphVisual<Flt, glver>::maketicks (_ymin, _ymax, realmin, realmax, 8);
 
                 realmin = this->z_scale.inverse_one (0);
                 realmax = this->z_scale.inverse_one (this->axis_ends[2]);
-                this->zticks = morph::GraphVisual<Flt>::maketicks (_zmin, _zmax, realmin, realmax, 8);
+                this->zticks = morph::GraphVisual<Flt, glver>::maketicks (_zmin, _zmax, realmin, realmax, 8);
 
                 this->xtick_posns.resize (this->xticks.size());
                 this->x_scale.transform (xticks, xtick_posns);
@@ -219,10 +220,10 @@ namespace morph {
             float y_for_zticks = 0.0f;
 
             for (unsigned int i = 0; i < this->xtick_posns.size(); ++i) {
-                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->xticks[i]);
+                std::string s = morph::GraphVisual<Flt, glver>::graphNumberFormat (this->xticks[i]);
                 // Issue: I need the width of the text ss.str() before I can create the
                 // VisualTextModel, so need a static method like this:
-                auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->xtick_height = geom.height() > this->xtick_height ? geom.height() : this->xtick_height;
                 this->xtick_width = geom.width() > this->xtick_width ? geom.width() : this->xtick_width;
@@ -233,7 +234,7 @@ namespace morph {
 
             for (unsigned int i = 0; i < this->ytick_posns.size(); ++i) {
                 std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->yticks[i]);
-                auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ytick_height = geom.height() > this->ytick_height ? geom.height() : this->ytick_height;
                 this->ytick_width = geom.width() > this->ytick_width ? geom.width() : this->ytick_width;
@@ -243,8 +244,8 @@ namespace morph {
             }
 
             for (unsigned int i = 0; i < this->ztick_posns.size(); ++i) {
-                std::string s = morph::GraphVisual<Flt>::graphNumberFormat (this->zticks[i]);
-                auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+                std::string s = morph::GraphVisual<Flt, glver>::graphNumberFormat (this->zticks[i]);
+                auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
                 morph::TextGeometry geom = lbl->getTextGeometry (s);
                 this->ztick_height = geom.height() > this->ztick_height ? geom.height() : this->ztick_height;
                 this->ztick_width = geom.width() > this->ztick_width ? geom.width() : this->ztick_width;
@@ -258,7 +259,7 @@ namespace morph {
         void drawAxisLabels()
         {
             // x axis label (easy)
-            auto lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+            auto lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
             morph::TextGeometry geom = lbl->getTextGeometry (this->xlabel);
             morph::vec<float> lblpos;
             lblpos = {{0.5f * this->axis_ends[0] - geom.half_width(),
@@ -267,7 +268,7 @@ namespace morph {
             this->texts.push_back (std::move(lbl));
 
             // y axis label (have to rotate)
-            lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+            lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->ylabel);
 
             // Rotate label if it's long
@@ -291,7 +292,7 @@ namespace morph {
             this->texts.push_back (std::move(lbl));
 
             // z axis
-            lbl = std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
+            lbl = std::make_unique<morph::VisualTextModel<glver>> (this->parentVis, this->get_tprog(this->parentVis), this->font, this->fontsize, this->fontres);
             geom = lbl->getTextGeometry (this->zlabel);
             lblpos = {{ -(this->axislabelgap+this->ticklabelgap+geom.width()+this->ztick_width),
                         0,

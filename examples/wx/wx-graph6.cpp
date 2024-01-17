@@ -46,7 +46,7 @@ public:
     // Member variable used to update GraphVisual
     double dx = 0.0;
     // A pointer to our GraphVisual
-    morph::GraphVisual<double> graph_ptr = nullptr;
+    morph::GraphVisual<double>* graph_ptr = nullptr;
 
     // A function to make a dynamic update to the model
     void updateModel()
