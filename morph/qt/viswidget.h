@@ -99,9 +99,9 @@ namespace morph {
                 b = bflg & Qt::RightButton ? morph::mousebutton::right : b;
                 int mflg = event->modifiers();
                 int mods = 0;
-                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::CONTROL; }
-                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::SHIFT; }
-                v.mouse_button_callback (b, morph::keyaction::PRESS, mods);
+                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::control; }
+                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::shift; }
+                v.mouse_button_callback (b, morph::keyaction::press, mods);
                 event->accept();
             }
 
@@ -120,7 +120,7 @@ namespace morph {
                 int b =  morph::mousebutton::unhandled;
                 b = bflg & Qt::LeftButton ? morph::mousebutton::left : b;
                 b = bflg & Qt::RightButton ? morph::mousebutton::right : b;
-                v.mouse_button_callback (b, morph::keyaction::RELEASE);
+                v.mouse_button_callback (b, morph::keyaction::release);
                 event->accept();
             }
 
@@ -137,11 +137,11 @@ namespace morph {
             {
                 int mflg = event->modifiers();
                 int mods = 0;
-                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::CONTROL; }
-                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::SHIFT; }
+                if (mflg & Qt::ControlModifier) { mods |= morph::keymod::control; }
+                if (mflg & Qt::ShiftModifier) { mods |= morph::keymod::shift; }
                 int morph_keycode = morph::qt::qtkey_to_morphkey (event->key());
                 // Could be keyaction::REPEAT in GLFW
-                if (v.key_callback (morph_keycode, 0, morph::keyaction::PRESS, mods)) {
+                if (v.key_callback (morph_keycode, 0, morph::keyaction::press, mods)) {
                     this->update();
                 }
                 event->accept();
