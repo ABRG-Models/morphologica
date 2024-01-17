@@ -163,7 +163,7 @@ namespace morph {
          * \brief Compute scaling parameters
          *
          * Compute the parameters for the scaling given the minimum and maximum inputs such that \a
-         * input_min gives \b range_min as output and \a input_max gives \b range_max as output.
+         * input_min gives \b range_min as output and \a input_max gives \b output_range.max as output.
          *
          * \param input_min The minimum value of the input data
          * \param input_max The maximum value of the input data
@@ -173,9 +173,9 @@ namespace morph {
         /*!
          * \brief Autoscale from data
          *
-         * 'Autoscale from data'. Compute the parameters for the scaling given the container of data
-         * such that min(\a data) gives \b range_min as output and max(\a data) gives \b range_max
-         * as output.
+         * 'Autoscale from data'. Compute the parameters for the scaling given the
+         * container of data such that min(\a data) gives \b output_range.min as output
+         * and max(\a data) gives \b output_range.max as output.
          *
          * This method sub-calls #compute_autoscale, when then modifies ScaleImpl::params.
          *

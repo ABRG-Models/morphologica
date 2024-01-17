@@ -8,7 +8,7 @@
  */
 #pragma once
 
-#include <morph/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <morph/tools.h>
 #include <morph/vvec.h>
 #include <list>

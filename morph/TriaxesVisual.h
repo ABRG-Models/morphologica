@@ -40,9 +40,9 @@ namespace morph {
         {
             // First compute the x/y/z scales. Set the range_max of each to the ends of
             // the axes leaving range_mins at 0.
-            this->x_scale.range_max = this->axis_ends[0];
-            this->y_scale.range_max = this->axis_ends[1];
-            this->z_scale.range_max = this->axis_ends[2];
+            this->x_scale.output_range.max = this->axis_ends[0];
+            this->y_scale.output_range.max = this->axis_ends[1];
+            this->z_scale.output_range.max = this->axis_ends[2];
 
             this->x_scale.compute_autoscale (this->input_min[0], this->input_max[0]);
             this->y_scale.compute_autoscale (this->input_min[1], this->input_max[1]);
@@ -64,12 +64,12 @@ namespace morph {
                 std::cout << "Writeme: Implement a manual tick-setting scheme\n";
             } else {
                 // Compute locations for ticks...
-                Flt _xmin = this->x_scale.inverse_one (this->x_scale.range_min);
-                Flt _xmax = this->x_scale.inverse_one (this->x_scale.range_max);
-                Flt _ymin = this->y_scale.inverse_one (this->y_scale.range_min);
-                Flt _ymax = this->y_scale.inverse_one (this->y_scale.range_max);
-                Flt _zmin = this->z_scale.inverse_one (this->z_scale.range_min);
-                Flt _zmax = this->z_scale.inverse_one (this->z_scale.range_max);
+                Flt _xmin = this->x_scale.inverse_one (this->x_scale.output_range.min);
+                Flt _xmax = this->x_scale.inverse_one (this->x_scale.output_range.max);
+                Flt _ymin = this->y_scale.inverse_one (this->y_scale.output_range.min);
+                Flt _ymax = this->y_scale.inverse_one (this->y_scale.output_range.max);
+                Flt _zmin = this->z_scale.inverse_one (this->z_scale.output_range.min);
+                Flt _zmax = this->z_scale.inverse_one (this->z_scale.output_range.max);
 
                 float realmin = this->x_scale.inverse_one (0);
                 float realmax = this->x_scale.inverse_one (this->axis_ends[0]);

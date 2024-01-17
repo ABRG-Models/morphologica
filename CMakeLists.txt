@@ -22,13 +22,13 @@ else()
   message(ERROR " Operating system not supported: " ${CMAKE_SYSTEM})
 endif()
 
-# Need to fine the host system processor to fine tune assembly in VisualFace.h
+# Need to find the host system processor to fine tune assembly in VisualFace.h
 message(STATUS "Host system processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES aarch64)
   set(MORPH_HOST_DEFINITION "${MORPH_HOST_DEFINITION} -D__AARCH64__")
 endif()
 
-# An option that's useful for Ubuntu 16.04 builds
+# An option that's useful for Ubuntu 16.04 builds OR wxWidgets
 option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArrays)" OFF)
 
 # Using c++-14 (calls to std::decay_t in number_type.h). c++-17
@@ -140,10 +140,29 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # If Qt5 is present, then some optional Qt examples will be compiled
 find_package(Qt5 QUIET COMPONENTS Gui Core Widgets)
+set(FOUND_QT_AND_HAVE_NO_GLEW 0)
+if(Qt5_FOUND)
+  if(USE_GLEW)
+    message(WARNING "Qt was found, but GLEW was requested with -DUSE_GLEW=ON. GLEW interferes with Qt, so not compiling the Qt examples")
+  else()
+    set(FOUND_QT_AND_HAVE_NO_GLEW 1)
+    message(STATUS "Compiling Qt examples")
+  endif()
+endif()
 
-# wxwidgets. Optional. Use `apt install libwxgtk3.0-gtk3-dev` on Debian/Ubuntu Linux or `apt install libwxgtk3.2-dev`
+
+# wxwidgets. Optional. Use `apt install libwxgtk3.2-dev` on Debian/Ubuntu Linux (Min compatible Ubuntu version is 23.04)
+set(FOUND_WX_AND_GLEW 0)
 set(WX_OPTIONAL_COMPONENTS "")
 find_package(wxWidgets 3.1 COMPONENTS gl core base ${WX_OPTIONAL_COMPONENTS} net)
+if(wxWidgets_FOUND)
+  if(USE_GLEW)
+    message(STATUS "Compiling wx examples")
+    set(FOUND_WX_AND_GLEW 1)
+  else()
+  message(WARNING "The wxWidgets examples require GLEW. wxWidgets was found but USE_GLEW is OFF. You will need to call cmake with the -DUSE_GLEW=ON option to compile wxWidgets examples.")
+  endif()
+endif()
 
 # rapidxml is bundled in the source, but its headers will be installed in ${CMAKE_INSTALL_PREFIX}/morph/, and they're symlinked in ${PROJECT_SOURCE_DIR}/morph
 #include_directories("${PROJECT_SOURCE_DIR}/include/rapidxml-1.13")

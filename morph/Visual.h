@@ -49,7 +49,7 @@
 #include <morph/keys.h>
 
 #include <morph/VisualResources.h>
-#include <morph/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <morph/CoordArrows.h>
 #include <morph/Quaternion.h>
 #include <morph/TransformMatrix.h>
@@ -1093,16 +1093,16 @@ namespace morph {
 
 #ifndef OWNED_MODE // If Visual is 'owned' then the owning system deals with program exit
             // Exit action
-            if (_key == key::Q && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::q && (mods & keymod::control) && action == keyaction::press) {
                 this->signal_to_quit();
             }
 #endif
-            if (!this->sceneLocked && _key == key::C  && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::c  && (mods & keymod::control) && action == keyaction::press) {
                 this->showCoordArrows = !this->showCoordArrows;
                 needs_render = true;
             }
 
-            if (_key == key::H && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::h && (mods & keymod::control) && action == keyaction::press) {
                 // Help to stdout:
                 std::cout << "Ctrl-h: Output this help to stdout\n";
                 std::cout << "Mouse-primary: rotate mode (use Ctrl to change axis)\n";
@@ -1125,12 +1125,12 @@ namespace morph {
                 std::cout << "Shift-Right: Increase opacity of selected model\n";
             }
 
-            if (_key == key::L && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
                 this->sceneLocked = this->sceneLocked ? false : true;
                 std::cout << "Scene is now " << (this->sceneLocked ? "" : "un-") << "locked\n";
             }
 
-            if (_key == key::S && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::s && (mods & keymod::control) && action == keyaction::press) {
                 std::string fname (this->title);
                 morph::Tools::stripFileSuffix (fname);
                 fname += ".png";
@@ -1141,7 +1141,7 @@ namespace morph {
             }
 
             // Save gltf 3D file
-            if (_key == key::M && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::m && (mods & keymod::control) && action == keyaction::press) {
                 std::string gltffile = this->title;
                 morph::Tools::stripFileSuffix (gltffile);
                 gltffile += ".gltf";
@@ -1150,7 +1150,7 @@ namespace morph {
                 std::cout << "Saved 3D file '" << gltffile << "'\n";
             }
 
-            if (_key == key::Z && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (_key == key::z && (mods & keymod::control) && action == keyaction::press) {
                 std::cout << "Scenetrans setup code:\n    v.setSceneTrans (morph::vec<float,3>({"
                           << this->scenetrans.x()
                           << (this->scenetrans.x()/std::round(this->scenetrans.x()) == 1.0f ? ".0" : "")
@@ -1181,56 +1181,56 @@ namespace morph {
             }
 
             // Set selected model
-            if (_key == key::F1 && action == keyaction::PRESS) {
+            if (_key == key::f1 && action == keyaction::press) {
                 this->selectedVisualModel = 0;
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F2 && action == keyaction::PRESS) {
+            } else if (_key == key::f2 && action == keyaction::press) {
                 if (this->vm.size() > 1) { this->selectedVisualModel = 1; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F3 && action == keyaction::PRESS) {
+            } else if (_key == key::f3 && action == keyaction::press) {
                 if (this->vm.size() > 2) { this->selectedVisualModel = 2; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F4 && action == keyaction::PRESS) {
+            } else if (_key == key::f4 && action == keyaction::press) {
                 if (this->vm.size() > 3) { this->selectedVisualModel = 3; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F5 && action == keyaction::PRESS) {
+            } else if (_key == key::f5 && action == keyaction::press) {
                 if (this->vm.size() > 4) { this->selectedVisualModel = 4; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F6 && action == keyaction::PRESS) {
+            } else if (_key == key::f6 && action == keyaction::press) {
                 if (this->vm.size() > 5) { this->selectedVisualModel = 5; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F7 && action == keyaction::PRESS) {
+            } else if (_key == key::f7 && action == keyaction::press) {
                 if (this->vm.size() > 6) { this->selectedVisualModel = 6; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F8 && action == keyaction::PRESS) {
+            } else if (_key == key::f8 && action == keyaction::press) {
                 if (this->vm.size() > 7) { this->selectedVisualModel = 7; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F9 && action == keyaction::PRESS) {
+            } else if (_key == key::f9 && action == keyaction::press) {
                 if (this->vm.size() > 8) { this->selectedVisualModel = 8; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
-            } else if (_key == key::F10 && action == keyaction::PRESS) {
+            } else if (_key == key::f10 && action == keyaction::press) {
                 if (this->vm.size() > 9) { this->selectedVisualModel = 9; }
                 std::cout << "Selected visual model index " << this->selectedVisualModel << std::endl;
             }
 
             // Toggle hide model if the shift key is down
-            if ((_key == key::F10 || _key == key::F1 || _key == key::F2 || _key == key::F3
-                 || _key == key::F4 || _key == key::F5 || _key == key::F6
-                 || _key == key::F7 || _key == key::F8 || _key == key::F9)
-                && action == keyaction::PRESS && (mods & keymod::SHIFT)) {
+            if ((_key == key::f10 || _key == key::f1 || _key == key::f2 || _key == key::f3
+                 || _key == key::f4 || _key == key::f5 || _key == key::f6
+                 || _key == key::f7 || _key == key::f8 || _key == key::f9)
+                && action == keyaction::press && (mods & keymod::shift)) {
                 this->vm[this->selectedVisualModel]->toggleHide();
             }
 
             // Increment/decrement alpha for selected model
-            if (_key == key::LEFT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
+            if (_key == key::left && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::shift)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->decAlpha(); }
             }
-            if (_key == key::RIGHT && (action == keyaction::PRESS || action == keyaction::REPEAT) && (mods & keymod::SHIFT)) {
+            if (_key == key::right && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::shift)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
             }
 
             // Reset view to default
-            if (!this->sceneLocked && _key == key::A && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::a && (mods & keymod::control) && action == keyaction::press) {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
@@ -1241,25 +1241,25 @@ namespace morph {
                 needs_render = true;
             }
 
-            if (!this->sceneLocked && _key == key::O && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::o && (mods & keymod::control) && action == keyaction::press) {
                 this->fov -= 2;
                 if (this->fov < 1.0) {
                     this->fov = 2.0;
                 }
                 std::cout << "FOV reduced to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::P && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::p && (mods & keymod::control) && action == keyaction::press) {
                 this->fov += 2;
                 if (this->fov > 179.0) {
                     this->fov = 178.0;
                 }
                 std::cout << "FOV increased to " << this->fov << std::endl;
             }
-            if (!this->sceneLocked && _key == key::U && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::u && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear /= 2;
                 std::cout << "zNear reduced to " << this->zNear << std::endl;
             }
-            if (!this->sceneLocked && _key == key::I && (mods & keymod::CONTROL) && action == keyaction::PRESS) {
+            if (!this->sceneLocked && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
             }
@@ -1390,7 +1390,7 @@ namespace morph {
             if (this->sceneLocked) { return; }
 
             // Record the position at which the button was pressed
-            if (action == keyaction::PRESS) { // Button down
+            if (action == keyaction::press) { // Button down
                 this->mousePressPosition = this->cursorpos;
                 // Save the rotation at the start of the mouse movement
                 this->savedRotation = this->rotation;
@@ -1402,12 +1402,12 @@ namespace morph {
 
             if (button == morph::mousebutton::left) { // Primary button means rotate
                 // if mods:
-                this->rotateModMode = (mods & keymod::CONTROL) ? true : false;
-                this->rotateMode = (action == keyaction::PRESS);
+                this->rotateModMode = (mods & keymod::control) ? true : false;
+                this->rotateMode = (action == keyaction::press);
                 this->translateMode = false;
             } else if (button == morph::mousebutton::right) { // Secondary button means translate
                 this->rotateMode = false;
-                this->translateMode = (action == keyaction::PRESS);
+                this->translateMode = (action == keyaction::press);
             }
 
             this->mouse_button_callback_extra (button, action, mods);

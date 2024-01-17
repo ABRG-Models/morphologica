@@ -17,12 +17,13 @@ if(NOT APPLE)
   add_subdirectory(gl_compute)
 endif()
 
-# Examples showing how to use morphologica with Qt. Compiled only if find_package found Qt5
-if(Qt5_FOUND)
+# Examples showing how to use morphologica with Qt. Compiled only if
+# find_package found Qt5 and USE_GLEW is false
+if(FOUND_QT_AND_HAVE_NO_GLEW)
   add_subdirectory(qt)
 endif()
 
-if(wxWidgets_FOUND)
+if(FOUND_WX_AND_GLEW)
   add_subdirectory(wx)
 endif()
 
