@@ -69,7 +69,7 @@ public:
             this->canvas->v.addVisualModel (gv);
 #else
             // Now add the model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
-            std::unique_ptr<morph::VisualModel> vmp = std::move (gv);
+            std::unique_ptr<morph::VisualModel<>> vmp = std::move (gv);
             // The vector of VisualModels lives in the Canvas
             this->canvas->newvisualmodels.push_back (std::move(vmp));
 #endif
