@@ -387,50 +387,53 @@ add_test(testdirs testdirs)
 # programs.
 #
 
-add_executable(testGeneNet testGeneNet.cpp)
-if (APPLE)
-  target_compile_options(testGeneNet PUBLIC "-mavx")
-endif()
-#add_test(testGeneNet testGeneNet )
-
-add_executable(testGeneNetKeqN testGeneNetKeqN.cpp)
-if (APPLE)
-  target_compile_options(testGeneNetKeqN PUBLIC "-mavx")
-endif()
-#add_test(testGeneNetKeqN testGeneNetKeqN)
-
-add_executable(testGeneNetKeqNm1 testGeneNetKeqNm1.cpp)
-if (APPLE)
-  target_compile_options(testGeneNetKeqNm1 PUBLIC "-mavx")
-endif()
-#add_test(testGeneNetKeqNm1 testGeneNetKeqNm1)
-
-add_executable(testEvolveOnegen testEvolveOnegen.cpp)
-if (APPLE)
-  target_compile_options(testEvolveOnegen PUBLIC "-mavx")
-endif()
-#add_test(testEvolveOnegen testEvolveOnegen)
-
-add_executable(testEvolveFit testEvolveFit.cpp)
-if (APPLE)
-  target_compile_options(testEvolveFit PUBLIC "-mavx")
-endif()
-#add_test(testEvolveFit testEvolveFit)
-
-add_executable(testEvolve testEvolve.cpp)
-if (APPLE)
-  target_compile_options(testEvolve PUBLIC "-mavx")
-endif()
-
-if(NOT WIN32)
-  # testGradGenome tries to create random num generator with width <
-  # 16 bits, not strictly allowed and enforced by VS2019
-  add_executable(testGradGenome testGradGenome.cpp)
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES x86_64) # Intel architecture required for AVX instructions
+  add_executable(testGeneNet testGeneNet.cpp)
   if (APPLE)
-    target_compile_options(testGradGenome PUBLIC "-mavx")
+    target_compile_options(testGeneNet PUBLIC "-mavx")
   endif()
-  #add_test(testGradGenome testGradGenome )
-endif()
+  #add_test(testGeneNet testGeneNet )
+
+  add_executable(testGeneNetKeqN testGeneNetKeqN.cpp)
+  if (APPLE)
+    target_compile_options(testGeneNetKeqN PUBLIC "-mavx")
+  endif()
+  #add_test(testGeneNetKeqN testGeneNetKeqN)
+
+  add_executable(testGeneNetKeqNm1 testGeneNetKeqNm1.cpp)
+  if (APPLE)
+    target_compile_options(testGeneNetKeqNm1 PUBLIC "-mavx")
+  endif()
+  #add_test(testGeneNetKeqNm1 testGeneNetKeqNm1)
+
+  add_executable(testEvolveOnegen testEvolveOnegen.cpp)
+  if (APPLE)
+    target_compile_options(testEvolveOnegen PUBLIC "-mavx")
+  endif()
+  #add_test(testEvolveOnegen testEvolveOnegen)
+
+  add_executable(testEvolveFit testEvolveFit.cpp)
+  if (APPLE)
+    target_compile_options(testEvolveFit PUBLIC "-mavx")
+  endif()
+  #add_test(testEvolveFit testEvolveFit)
+
+  add_executable(testEvolve testEvolve.cpp)
+  if (APPLE)
+    target_compile_options(testEvolve PUBLIC "-mavx")
+  endif()
+
+  if(NOT WIN32)
+    # testGradGenome tries to create random num generator with width <
+    # 16 bits, not strictly allowed and enforced by VS2019
+    add_executable(testGradGenome testGradGenome.cpp)
+    if (APPLE)
+      target_compile_options(testGradGenome PUBLIC "-mavx")
+    endif()
+    #add_test(testGradGenome testGradGenome )
+  endif()
+
+endif() # intel architecture test
 
 if(ARMADILLO_FOUND)
   # Test Cartesian (rectangular) grid
