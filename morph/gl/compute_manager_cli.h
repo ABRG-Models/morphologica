@@ -28,7 +28,6 @@
 #include <EGL/eglext.h>
 #include <gbm.h>
 
-#include <cassert>
 #include <chrono>
 #include <morph/VisualDefaultShaders.h>
 
@@ -113,9 +112,12 @@ namespace morph {
                 }
 
                 const char* egl_extension_st = eglQueryString (egl_dpy, EGL_EXTENSIONS);
-                assert (strstr (egl_extension_st, "EGL_KHR_create_context") != NULL);
-                assert (strstr (egl_extension_st, "EGL_KHR_surfaceless_context") != NULL);
-
+                if (strstr (egl_extension_st, "EGL_KHR_create_context") == NULL) {
+                    throw std::runtime_error ("query response did not contain EGL_KHR_create_context");
+                }
+                if (strstr (egl_extension_st, "EGL_KHR_surfaceless_context") == NULL) {
+                    throw std::runtime_error ("query response did not contain EGL_KHR_surfaceless_context");
+                }
                 static const EGLint config_attribs[] = {
                     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT_KHR,
                     EGL_NONE
