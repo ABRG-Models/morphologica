@@ -6,11 +6,15 @@
 
 **Header-only library code to visualize C++ numerical simulations using fast, modern OpenGL.**
 
-Morphologica can run standalone (using GLFW for window handling) and it is also Qt compatible! See [**examples/qt/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/qt)
+Morphologica can run standalone (using GLFW for window handling) and it is also Qt and wxWidgets compatible!
 
-**NEW** Now morphologica is compatible with the Raspberry Pi! See [**examples/pi/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/pi) where the program have their OpenGL version set to OpenGL 3.1 ES.
+**NEW:** Morphologica can now be used with [wxWidgets](https://www.wxwidgets.org/)! For example code, see [**examples/wx/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/wx)
 
-You'll find all in the **code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find [**example code and screenshots** here](https://github.com/ABRG-Models/morphologica/tree/main/examples).
+**NEW:** Morphologica now has **OpenGL Compute Shader managers**! See [**examples/gl_compute**](https://github.com/ABRG-Models/morphologica/tree/main/examples/gl_compute) for details.
+
+**NEW:** Now morphologica is compatible with the **Raspberry Pi**! See [**examples/pi/**](https://github.com/ABRG-Models/morphologica/tree/main/examples/pi). These examples show how to set the OpenGL version to 3.1 ES, which is Pi compatible.
+
+You'll find all of the **library code** in the [**morph**](https://github.com/ABRG-Models/morphologica/tree/main/morph) directory and you can find [**example code and screenshots** here](https://github.com/ABRG-Models/morphologica/tree/main/examples).
 
 morphologica has an (in-progress) **documentation and reference** website at https://abrg-models.github.io/morphologica/.
 
