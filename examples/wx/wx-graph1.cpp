@@ -10,11 +10,16 @@
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
 
+// Choose an OpenGL version and pass this as a template argument to your morph::wx::Frame and all of
+// your VisualModels. version_4_1 is the default across morphologica. version_3_1_es allows your
+// code to run on small ARM devices such as a Raspberry Pi.
+constexpr int gl_version = morph::gl::version_4_1;
+
 // Your application-specific frame, deriving from morph::wx:Frame. In this frame, I'll set up VisualModels
-class MyFrame : public morph::wx::Frame
+class MyFrame : public morph::wx::Frame<gl_version>
 {
 public:
-    MyFrame(const wxString &title) : morph::wx::Frame(title)
+    MyFrame(const wxString &title) : morph::wx::Frame<gl_version>(title)
     {
         auto sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -49,7 +54,7 @@ public:
             // We can now add VisualModels to the Visual inside the Widget. Create a GraphVisual
             // object (obtaining a unique_ptr to the object) with a spatial offset within the
             // scene of 0,0,0
-            auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
+            auto gv = std::make_unique<morph::GraphVisual<double, gl_version>> (morph::vec<float>({0,0,0}));
             // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
             this->canvas->v.bindmodel (gv);
             // Allow 3D
@@ -69,7 +74,7 @@ public:
             this->canvas->v.addVisualModel (gv);
 #else
             // Now add the model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
-            std::unique_ptr<morph::VisualModel<>> vmp = std::move (gv);
+            std::unique_ptr<morph::VisualModel<gl_version>> vmp = std::move (gv);
             // The vector of VisualModels lives in the Canvas
             this->canvas->newvisualmodels.push_back (std::move(vmp));
 #endif

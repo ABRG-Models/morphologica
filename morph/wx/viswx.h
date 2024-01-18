@@ -5,6 +5,7 @@
  */
 #include <memory>
 #include <vector>
+#include <sstream>
 #include <wx/wx.h>
 
 #include <GL/glew.h> // must be included before glcanvas.h
@@ -16,6 +17,7 @@
 // Define morph::win_t before #including morph/Visual.h
 namespace morph { using win_t = wxGLCanvas; }
 
+#include <morph/gl/version.h>
 #include <morph/Visual.h>
 // We need to be able to convert from wxWidgets keycodes to morph keycodes
 #include <morph/wx/keycodes.h>
@@ -23,6 +25,9 @@ namespace morph { using win_t = wxGLCanvas; }
 namespace morph {
     namespace wx {
 
+        // This is the OpenGL version you will attempt to create a context for. Example version:
+        // morph::gl::version_4_1
+        template<int glver>
         class Canvas : public wxGLCanvas
         {
         public:
@@ -30,24 +35,26 @@ namespace morph {
                 : wxGLCanvas(parent, canvasAttrs)
             {
                 wxGLContextAttrs ctxAttrs;
-                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(4, 1).EndList();
+                ctxAttrs.PlatformDefaults().CoreProfile().OGLVersion(morph::gl::version::major(glver),
+                                                                     morph::gl::version::minor(glver)).EndList();
                 this->glContext = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
 
                 if (!this->glContext->IsOK()) {
-                    wxMessageBox ("This sample needs an OpenGL 4.1 capable driver.",
-                                  "OpenGL version error", wxOK | wxICON_INFORMATION, this);
+                    std::stringstream ee;
+                    ee << "This sample needs an OpenGL " << morph::gl::version::vstring(glver) << " capable driver.";
+                    wxMessageBox (ee.str(), "OpenGL version error", wxOK | wxICON_INFORMATION, this);
                 }
 
                 // Bind events to functions in the Canvas constructor
-                Bind (wxEVT_PAINT, &morph::wx::Canvas::OnPaint, this);
-                Bind (wxEVT_SIZE, &morph::wx::Canvas::OnSize, this);
-                Bind (wxEVT_MOTION, &morph::wx::Canvas::OnMouseMove, this);
-                Bind (wxEVT_LEFT_DOWN, &morph::wx::Canvas::OnMousePress, this);
-                Bind (wxEVT_RIGHT_DOWN, &morph::wx::Canvas::OnMousePress, this);
-                Bind (wxEVT_LEFT_UP, &morph::wx::Canvas::OnMouseRelease, this);
-                Bind (wxEVT_RIGHT_UP, &morph::wx::Canvas::OnMouseRelease, this);
-                Bind (wxEVT_MOUSEWHEEL, &morph::wx::Canvas::OnMouseWheel, this);
-                Bind (wxEVT_KEY_DOWN, &morph::wx::Canvas::OnKeyPress, this);
+                Bind (wxEVT_PAINT, &morph::wx::Canvas<glver>::OnPaint, this);
+                Bind (wxEVT_SIZE, &morph::wx::Canvas<glver>::OnSize, this);
+                Bind (wxEVT_MOTION, &morph::wx::Canvas<glver>::OnMouseMove, this);
+                Bind (wxEVT_LEFT_DOWN, &morph::wx::Canvas<glver>::OnMousePress, this);
+                Bind (wxEVT_RIGHT_DOWN, &morph::wx::Canvas<glver>::OnMousePress, this);
+                Bind (wxEVT_LEFT_UP, &morph::wx::Canvas<glver>::OnMouseRelease, this);
+                Bind (wxEVT_RIGHT_UP, &morph::wx::Canvas<glver>::OnMouseRelease, this);
+                Bind (wxEVT_MOUSEWHEEL, &morph::wx::Canvas<glver>::OnMouseWheel, this);
+                Bind (wxEVT_KEY_DOWN, &morph::wx::Canvas<glver>::OnKeyPress, this);
             }
 
             bool InitializeOpenGLFunctions()
@@ -191,21 +198,22 @@ namespace morph {
             }
 
             // In your wx code, build VisualModels that should be added to the scene and add them to this.
-            std::vector<std::unique_ptr<morph::VisualModel<>>> newvisualmodels;
-            std::vector<morph::VisualModel<>*> model_ptrs;
+            std::vector<std::unique_ptr<morph::VisualModel<glver>>> newvisualmodels;
+            std::vector<morph::VisualModel<glver>*> model_ptrs;
             // if >-1, then that model needs a reinit.
             int needs_reinit = -1;
 
             bool ready() { return this->glInitialized; }
 
-            morph::Visual<> v;
+            morph::Visual<glver> v;
 
         private:
             std::unique_ptr<wxGLContext> glContext;
             bool glInitialized = false;
         };
 
-        // morph::wx::Frame is to be extended
+        // morph::wx::Frame is to be extended. Note that a default GL version of 4.1 is given here.
+        template <int glver = morph::gl::version_4_1>
         class Frame : public wxFrame
         {
         public:
@@ -216,7 +224,7 @@ namespace morph {
                 vAttrs.PlatformDefaults().Defaults().EndList();
                 if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
                     // canvas becomes a child of this wxFrame which is responsible for deallocation
-                    this->canvas = new morph::wx::Canvas(this, vAttrs);
+                    this->canvas = new morph::wx::Canvas<glver>(this, vAttrs);
                     this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
                 } else {
                     throw std::runtime_error ("wxGLCanvas::IsDisplaySupported(vAttrs) returned false");
@@ -225,7 +233,7 @@ namespace morph {
 
         protected:
             // A morph::wx::Frame contains a morph::wx::Canvas
-            morph::wx::Canvas* canvas;
+            morph::wx::Canvas<glver>* canvas;
         };
 
     } // wx

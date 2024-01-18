@@ -5,15 +5,17 @@
 
 #include <wx/colordlg.h>
 
+#include <morph/gl/version.h>
 #include <morph/wx/viswx.h>
-
 #include <morph/TriaxesVisual.h>
 
+constexpr int gl_version = morph::gl::version_4_1; // options in morph/gl/version.h
+
 // Your application-specific frame, deriving from morph::wx:Frame. In this frame, I'll set up VisualModels
-class MyFrame : public morph::wx::Frame
+class MyFrame : public morph::wx::Frame<gl_version>
 {
 public:
-    MyFrame(const wxString &title) : morph::wx::Frame(title)
+    MyFrame(const wxString &title) : morph::wx::Frame<gl_version>(title)
     {
         auto sizer = new wxBoxSizer(wxVERTICAL);
         // Adding ONLY the GL canvas, where all the morphologica stuff will be drawn
@@ -27,7 +29,7 @@ public:
     void setupVisualModels()
     {
         if (this->canvas->ready()) {
-            auto tav = std::make_unique<morph::TriaxesVisual<float>> (morph::vec<float,3>({0,0,0}));
+            auto tav = std::make_unique<morph::TriaxesVisual<float, gl_version>> (morph::vec<float,3>({0,0,0}));
             this->canvas->v.bindmodel (tav);
             tav->axisstyle = morph::axisstyle::L;
             // Specify axes min and max with a min and max vector
