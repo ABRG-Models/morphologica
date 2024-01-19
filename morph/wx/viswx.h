@@ -111,7 +111,12 @@ namespace morph {
             void OnSize (wxSizeEvent &event)
             {
                 bool firstApperance = IsShownOnScreen() && !this->glInitialized;
-                if (firstApperance) { InitializeOpenGL(); }
+                if (firstApperance) {
+                    InitializeOpenGL();
+                    if (this->glInitialized) {
+                        this->setupVisualModels();
+                    }
+                }
                 if (this->glInitialized) {
                     const wxSize size = event.GetSize() * GetContentScaleFactor();
                     v.set_winsize (static_cast<int>(size.x), static_cast<int>(size.y));

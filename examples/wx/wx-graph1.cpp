@@ -115,7 +115,6 @@ bool MyApp::OnInit()
     if (!wxApp::OnInit()) { return false; }
     MyFrame *frame = new MyFrame("Hello OpenGL");
     frame->Show(true);
-    frame->canvas->setupVisualModels(); // After calling Show()
     return true;
 }
 
