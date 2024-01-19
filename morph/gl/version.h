@@ -1,13 +1,22 @@
 #pragma once
 
+/*
+ * A single-int OpenGL versioning scheme
+ *
+ * Author: Seb James
+ * Date: January 2024
+ */
+
 #include <string>
 
 namespace morph {
     namespace gl {
-        // I want to encode the GL version in a single int. This struct provides the static methods
-        // to decode.
-        //
-        // These are our version numbers:
+
+        /*
+         * I encode the OpenGL version in a single int value, which can be passed as a template
+         * argument to morph::Visual and friends. These are the human-readable definitions. You can
+         * pass, for example `morph::gl::version_4_3` as the argument to your template.
+         */
         static constexpr int version_4_1        = 0x00040001;
         static constexpr int version_4_1_compat = 0x20040001;
         static constexpr int version_4_2        = 0x00040002;
@@ -23,16 +32,37 @@ namespace morph {
         static constexpr int version_3_0_es     = 0x40030000; // OpenGL 3.0 ES is a subset of OpenGL 3.3
         static constexpr int version_3_1_es     = 0x40030001; // OpenGL 3.1 ES is a subset of OpenGL 4.3
         static constexpr int version_3_2_es     = 0x40030002;
-        struct version
-        {
-            // Open GL minor version number (note: outdated versions with a 3rd number such as 1.2.1 are NOT supported)
-            static int constexpr minor (const int gl_version_number) { return (gl_version_number & 0xffff); }
+
+        /*
+         * The morph::gl::version namespace contains static and constexpr methods to decode the
+         * single OpenGL version integer into minor, major, compat, gles and to generate strings
+         * which describe the version. The bottom 16 bits encode the minor version number. The next
+         * 13 bits encode the major version number. bit 29 encodes the 'compatibility' flag and bit
+         * 30 encodes the OpenGL ES flag. Note that outdated versions with a 3rd number such as
+         * OpenGL 1.2.1 are NOT supported here.
+         */
+        namespace version {
+
+            // Open GL minor version number
+            static int constexpr minor (const int gl_version_number)
+            {
+                return (gl_version_number & 0xffff);
+            }
             // Open GL major version number
-            static int constexpr major (const int gl_version_number) { return (gl_version_number >> 16 & 0x1fff); }
+            static int constexpr major (const int gl_version_number)
+            {
+                return (gl_version_number >> 16 & 0x1fff);
+            }
             // True if this is the compatibility profile (by default it's the core profile)
-            static bool constexpr compat (const int gl_version_number) { return (((gl_version_number >> 29) & 0x1) > 0x0) ? true : false; }
+            static bool constexpr compat (const int gl_version_number)
+            {
+                return (((gl_version_number >> 29) & 0x1) > 0x0) ? true : false;
+            }
             // True if this is an OpenGL ES version
-            static bool constexpr gles (const int gl_version_number) { return (((gl_version_number >> 30) & 0x1) > 0x0) ? true : false; }
+            static bool constexpr gles (const int gl_version_number)
+            {
+                return (((gl_version_number >> 30) & 0x1) > 0x0) ? true : false;
+            }
             // Output a string describing the version number
             static std::string vstring (const int gl_version_number)
             {
@@ -46,18 +76,7 @@ namespace morph {
                 }
                 return v;
             }
-            // Output the shader version string
-            static std::string shaderversion (const int gl_version_number)
-            {
-                std::string v("#version ");
-                v += std::to_string (version::major(gl_version_number))
-                + std::to_string (version::minor(gl_version_number)) + std::string("0");
-                if (version::gles(gl_version_number)) {
-                    v += " es";
-                }
-                return v;
-            }
-            // Return the version-specific shader preamble in a constexpr function
+            // Return the version-specific shader preamble as a const char* from a constexpr function
             static constexpr const char* shaderpreamble (const int gl_version_number)
             {
                 const char* preamble = "#version unknown\n";
@@ -101,6 +120,6 @@ namespace morph {
                 }
                 return preamble;
             }
-        };
-    }
-}
+        } // namespace version
+    } // namespace gl
+} // namespace morph
