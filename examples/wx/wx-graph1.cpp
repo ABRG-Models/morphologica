@@ -10,11 +10,6 @@
 #include <morph/GraphVisual.h>
 #include <morph/vvec.h>
 
-// Choose an OpenGL version and pass this as a template argument to your morph::wx::Frame and all of
-// your VisualModels. version_4_1 is the default across morphologica. version_3_1_es allows your
-// code to run on small ARM devices such as a Raspberry Pi.
-constexpr int gl_version = morph::gl::version_4_1;
-
 // Here, we specialise a morph::wx::Canvas, introducing the VisualModels that will be displayed in
 // the canvas in the overridden function setupVisualModels.
 template<int glver>
@@ -55,6 +50,11 @@ struct MyCanvas : public morph::wx::Canvas<glver>
     }
 };
 
+
+// Choose an OpenGL version and pass this as a template argument to your MyFrame. version_4_1 is the
+// default across morphologica. version_3_1_es allows your code to run on small ARM devices such as
+// a Raspberry Pi.
+constexpr int gl_version = morph::gl::version_4_1;
 
 // Your application-specific frame, deriving from morph::wx:Frame. In this frame, I'll set up VisualModels
 class MyFrame : public wxFrame
