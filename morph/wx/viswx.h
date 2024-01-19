@@ -191,6 +191,11 @@ namespace morph {
                 event.Skip();
             }
 
+            // A funtion to be extended with morph::VisualModel setup.
+            virtual void setupVisualModels()
+            {
+            }
+
             // API for user to say that model 4 (say) need to be reinitialized.
             void set_model_needs_reinit (int model_idx, bool reinit_required = true)
             {

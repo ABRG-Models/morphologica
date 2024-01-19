@@ -15,6 +15,47 @@
 // code to run on small ARM devices such as a Raspberry Pi.
 constexpr int gl_version = morph::gl::version_4_1;
 
+// Here, we specialise a morph::wx::Canvas, introducing the VisualModels that will be displayed in
+// the canvas in the overridden function setupVisualModels.
+template<int glver>
+struct MyCanvas : public morph::wx::Canvas<glver>
+{
+    // Call parent constructor
+    MyCanvas(wxFrame* parent, const wxGLAttributes& canvasAttrs)
+        : morph::wx::Canvas<glver>(parent, canvasAttrs) {}
+
+    // This function, which sets up the morph::VisualModels, is called when GL is initialized.
+    void setupVisualModels()
+    {
+        if (this->ready()) {
+            // We can now add VisualModels to the Visual inside the Widget. Create a GraphVisual
+            // object (obtaining a unique_ptr to the object) with a spatial offset within the
+            // scene of 0,0,0
+            auto gv = std::make_unique<morph::GraphVisual<double, glver>> (morph::vec<float>({0,0,0}));
+            // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
+            this->v.bindmodel (gv);
+            // Allow 3D
+            gv->twodimensional = false;
+            // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
+            morph::vvec<double> x;
+            // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
+            x.linspace (-0.5, 0.8, 14);
+            // Set a graph up of y = x^3
+            gv->setdata (x, x.pow(3));
+            // finalize() makes the GraphVisual compute the vertices of the OpenGL model
+            gv->finalize(); // Requires opengl context
+            // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
+            std::cout << "add visualmodel to my morph::wx::Canvas" << std::endl;
+            this->v.addVisualModel (gv);
+
+        } else {
+            // Not ready
+            throw std::runtime_error ("Canvas is not ready (no gl context yet)");
+        }
+    }
+};
+
+
 // Your application-specific frame, deriving from morph::wx:Frame. In this frame, I'll set up VisualModels
 class MyFrame : public wxFrame
 {
@@ -27,7 +68,7 @@ public:
         vAttrs.PlatformDefaults().Defaults().EndList();
         if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
             // canvas becomes a child of this wxFrame which is responsible for deallocation
-            this->canvas = new morph::wx::Canvas<gl_version>(this, vAttrs);
+            this->canvas = new MyCanvas<gl_version>(this, vAttrs);
             this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
         } else {
             throw std::runtime_error ("wxGLCanvas::IsDisplaySupported(vAttrs) returned false");
@@ -57,47 +98,8 @@ public:
         }); // end of lambda
     }
 
-    // To set up the VisualModels in the widget, the GL context must have been initialized. So I'll
-    // have to have a callback in viswidget (soon to be viscanvas) which will call this function
-    // after gl init has completed.
-    void setupVisualModels()
-    {
-        if (this->canvas->ready()) {
-            // We can now add VisualModels to the Visual inside the Widget. Create a GraphVisual
-            // object (obtaining a unique_ptr to the object) with a spatial offset within the
-            // scene of 0,0,0
-            auto gv = std::make_unique<morph::GraphVisual<double, gl_version>> (morph::vec<float>({0,0,0}));
-            // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
-            this->canvas->v.bindmodel (gv);
-            // Allow 3D
-            gv->twodimensional = false;
-            // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
-            morph::vvec<double> x;
-            // This works like numpy's linspace() (the 3 args are "start", "end" and "num"):
-            x.linspace (-0.5, 0.8, 14);
-            // Set a graph up of y = x^3
-            gv->setdata (x, x.pow(3));
-            // finalize() makes the GraphVisual compute the vertices of the OpenGL model
-            gv->finalize(); // Requires opengl context
-
-            // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
-            std::cout << "add visualmodel to morph::wx::Canvas" << std::endl;
-#if 1
-            this->canvas->v.addVisualModel (gv);
-#else
-            // Now add the model to newvisualmodels. It has to be cast to a plain morph::VisualModel first:
-            std::unique_ptr<morph::VisualModel<gl_version>> vmp = std::move (gv);
-            // The vector of VisualModels lives in the Canvas
-            this->canvas->newvisualmodels.push_back (std::move(vmp));
-#endif
-        } else {
-            // Not ready
-            throw std::runtime_error ("Canvas is not ready (no gl context yet)");
-        }
-    }
-
-    // Your Frame must contain a morph::wx::Canvas
-    morph::wx::Canvas<gl_version>* canvas;
+    // Your Frame must contain a morph::wx::Canvas-derived canvas class
+    MyCanvas<gl_version>* canvas;
 };
 
 // Your app, containing your frame
@@ -113,7 +115,7 @@ bool MyApp::OnInit()
     if (!wxApp::OnInit()) { return false; }
     MyFrame *frame = new MyFrame("Hello OpenGL");
     frame->Show(true);
-    frame->setupVisualModels(); // After calling Show()
+    frame->canvas->setupVisualModels(); // After calling Show()
     return true;
 }
 
