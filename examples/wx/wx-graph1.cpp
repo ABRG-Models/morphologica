@@ -16,11 +16,23 @@
 constexpr int gl_version = morph::gl::version_4_1;
 
 // Your application-specific frame, deriving from morph::wx:Frame. In this frame, I'll set up VisualModels
-class MyFrame : public morph::wx::Frame<gl_version>
+class MyFrame : public wxFrame
 {
 public:
-    MyFrame(const wxString &title) : morph::wx::Frame<gl_version>(title)
+    MyFrame(const wxString &title)
+        : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
     {
+        // First job, set up a new morph::wx::Canvas
+        wxGLAttributes vAttrs;
+        vAttrs.PlatformDefaults().Defaults().EndList();
+        if (wxGLCanvas::IsDisplaySupported(vAttrs)) {
+            // canvas becomes a child of this wxFrame which is responsible for deallocation
+            this->canvas = new morph::wx::Canvas<gl_version>(this, vAttrs);
+            this->canvas->SetMinSize (FromDIP (wxSize(640, 480)));
+        } else {
+            throw std::runtime_error ("wxGLCanvas::IsDisplaySupported(vAttrs) returned false");
+        }
+
         auto sizer = new wxBoxSizer(wxVERTICAL);
 
         // Adding the GL canvas, where all the morphologica stuff will be drawn
@@ -84,6 +96,8 @@ public:
         }
     }
 
+    // Your Frame must contain a morph::wx::Canvas
+    morph::wx::Canvas<gl_version>* canvas;
 };
 
 // Your app, containing your frame
