@@ -1,6 +1,12 @@
 /*
+ * Display-free GL compute shader example.
+ *
  * A shader example implementing naive parallel prefix scan (using SSBOs - shader storage buffer
  * objects to transfer data to and from the GPU)
+ *
+ * This differs from shader_naive_scan.cpp in that it derives its compute_manager from
+ * morph::gl::compute_manager_cli, which allows you to perform compute shader
+ * computations without any display at all. It uses EGL to achieve this.
  */
 
 // You have to include the GL headers manually so that you will be sure you have the
