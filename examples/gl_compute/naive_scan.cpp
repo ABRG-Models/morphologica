@@ -29,7 +29,7 @@ int main()
 
     std::cout << "Prefix sum input:\n" << g_idata << std::endl;
 
-    int dbg = 2; // Choose at which stage to record debug data
+    int dbg = 5; // Choose at which stage to record debug data. As 2^5 == 32, 5 will give the correct result.
     int powd = 1; // 2^d with d=1 to log2(n)
     for (int d = 1; d <= dbg; d++)   { // 2^5 == 32
         powd *= 2;
