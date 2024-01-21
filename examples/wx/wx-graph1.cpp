@@ -79,23 +79,8 @@ public:
         // Adding the GL canvas, where all the morphologica stuff will be drawn
         sizer->Add (this->canvas, 1, wxEXPAND);
 
-        auto bottomSizer = new wxBoxSizer(wxHORIZONTAL);
-        auto colorButton = new wxButton(this, wxID_ANY, "Change Color");
-
-        bottomSizer->Add(colorButton, 0, wxALL | wxALIGN_CENTER, FromDIP(15));
-        bottomSizer->AddStretchSpacer(1);
-
-        sizer->Add(bottomSizer, 0, wxEXPAND);
-
         SetSizerAndFit(sizer);
 
-        colorButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent &event) {
-            wxColourData colorData;
-            wxColourDialog dialog(this, &colorData);
-            if (dialog.ShowModal() == wxID_OK) {
-                this->canvas->Refresh();
-            }
-        }); // end of lambda
     }
 
     // Your Frame must contain a morph::wx::Canvas-derived canvas class
