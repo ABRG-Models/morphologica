@@ -62,6 +62,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <chrono>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -72,12 +73,6 @@
 
 //! The default z=0 position for VisualModels
 #define Z_DEFAULT -5
-
-#ifdef PROFILE_RENDER
-#include <chrono>
-using namespace std::chrono;
-using std::chrono::steady_clock;
-#endif
 
 namespace morph {
 
@@ -120,6 +115,8 @@ namespace morph {
     template <int glver = morph::gl::version_4_1>
     class Visual
     {
+        using sc = std::chrono::steady_clock;
+
     public:
         /*!
          * Default constructor is used when incorporating Visual inside a QWidget.  We
@@ -354,6 +351,17 @@ namespace morph {
         void poll() { glfwPollEvents(); }
         //! A wait-for-events with a timeout wrapper
         void waitevents (const double& timeout) { glfwWaitEventsTimeout (timeout); }
+        //! Collect events for timeout, returning after *all* the time elapsed
+        void wait (const double& timeout)
+        {
+            sc::time_point t0 = sc::now();
+            sc::time_point t1 = sc::now();
+            int timeout_us = timeout * 1000000;
+            while (std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() < timeout_us) {
+                glfwWaitEventsTimeout (timeout/10.0);
+                t1 = sc::now();
+            }
+        }
 #endif
 
         void set_cursorpos (double _x, double _y) { this->cursorpos = {static_cast<float>(_x), static_cast<float>(_y)}; }
@@ -365,7 +373,7 @@ namespace morph {
         void render()
         {
 #ifdef PROFILE_RENDER
-            steady_clock::time_point renderstart = steady_clock::now();
+            sc::time_point renderstart = sc::now();
 #endif
 
 #ifndef OWNED_MODE
@@ -488,9 +496,9 @@ namespace morph {
 #endif
 
 #ifdef PROFILE_RENDER
-            steady_clock::time_point renderend = steady_clock::now();
-            steady_clock::duration time_span = renderend - renderstart;
-            std::cout << "Render took " << duration_cast<microseconds>(time_span).count() << " us\n";
+            sc::time_point renderend = sc::now();
+            std::chrono::duration time_span = renderend - renderstart;
+            std::cout << "Render took " << std::chrono::duration_cast<std::chrono::microseconds>(time_span).count() << " us\n";
 #endif
         }
 
