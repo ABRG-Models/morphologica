@@ -449,8 +449,22 @@ namespace morph {
             }
         }
 
-        // Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
-        // even (not tested). Assume the data in the vvec relates to a rectangle of width w.
+        /*!
+         * Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
+         * even (which has not been tested/accounted for).
+         *
+         * Assume the data in the vvec relates to a rectangle of width w.
+         *
+         * \param data The input data. Should be a multiple of \tparam w in size. Must be
+         * pre-allocated and of the same size as result.
+         * \param result The output container. Must not be the same memory as input data.
+         *
+         * \tparam T The type of the input and output data
+         * \tparam boxside The length of the boxfilter square
+         * \tparam w The width of the input data (and of the result)
+         * \tparam onlysum If true, only sum up the contributions from the box. If false, sum
+         * contributions and divide by box area.
+         */
         template<typename T, int boxside, int w, bool onlysum = false>
         static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T>& result)
         {
@@ -523,9 +537,24 @@ namespace morph {
             }
         }
 
-        // Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
-        // even (not tested). Assume the data in the vvec relates to a rectangle of width w.
-        // Specify both input and output type
+        /*!
+         * Apply a 2d, horizontally wrapping box filter. Test to see if boxside is odd and disallow
+         * even (which was not not tested). Assume the data in the vvec relates to a rectangle of width w.
+         *
+         * The method differs from the previous one as it permits you to specify both input and
+         * output type.
+         *
+         * \param data The input data. Should be a multiple of \tparam w in size. Must be
+         * pre-allocated and of the same size as result.
+         * \param result The output container. Must not be the same memory as input data.
+         *
+         * \tparam T The type of the input data
+         * \tparam T_o The type of the output data
+         * \tparam boxside The length of the boxfilter square
+         * \tparam w The width of the input data (and of the result)
+         * \tparam onlysum If true, only sum up the contributions from the box. If false, sum
+         * contributions and divide by box area.
+         */
         template<typename T, typename T_o = T, int boxside, int w, bool onlysum = false>
         static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T_o>& result)
         {
@@ -598,7 +627,20 @@ namespace morph {
             }
         }
 
-        // Boxfilter that works with a runtime-configured width, w
+        /*!
+         * This is a Boxfilter that works with a runtime-configured width, w, and not a
+         * template-specified w.
+         *
+         * \param data The input data. Should be a multiple of \tparam w in size. Must be
+         * pre-allocated and of the same size as result.
+         * \param result The output container. Must not be the same memory as input data.
+         * \param w The width of rectangular data presented in the input.
+         *
+         * \tparam T The type of the input and output data
+         * \tparam boxside The length of the boxfilter square
+         * \tparam onlysum If true, only sum up the contributions from the box. If false, sum
+         * contributions and divide by box area.
+         */
         template<typename T, int boxside, bool onlysum = false>
         static void boxfilter_2d (const morph::vvec<T>& data, morph::vvec<T>& result, const int w)
         {
