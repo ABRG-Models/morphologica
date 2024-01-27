@@ -1,10 +1,12 @@
 #pragma once
 
-/*
- * A single-int OpenGL versioning scheme
+/*!
+ * \file
  *
- * Author: Seb James
- * Date: January 2024
+ * A single-int OpenGL versioning scheme.
+ *
+ * \author Seb James
+ * \date January 2024
  */
 
 #include <string>
@@ -12,7 +14,8 @@
 namespace morph {
     namespace gl {
 
-        /*
+        //!@{
+        /*!
          * I encode the OpenGL version in a single int value, which can be passed as a template
          * argument to morph::Visual and friends. These are the human-readable definitions. You can
          * pass, for example `morph::gl::version_4_3` as the argument to your template.
@@ -32,6 +35,7 @@ namespace morph {
         static constexpr int version_3_0_es     = 0x40030000; // OpenGL 3.0 ES is a subset of OpenGL 3.3
         static constexpr int version_3_1_es     = 0x40030001; // OpenGL 3.1 ES is a subset of OpenGL 4.3
         static constexpr int version_3_2_es     = 0x40030002;
+        //!@{
 
         /*
          * The morph::gl::version namespace contains static and constexpr methods to decode the

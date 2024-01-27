@@ -63,7 +63,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../morph ../morph/nn ../morph/bn ../README.md
+INPUT                  = ../morph ../morph/nn ../morph/bn ../README.md ../morph/gl ../morph/qt ../morph/wx ../morph/linuxos
 USE_MDFILE_AS_MAINPAGE = README.md
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO

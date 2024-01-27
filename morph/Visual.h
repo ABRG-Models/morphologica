@@ -106,12 +106,9 @@ namespace morph {
      * location of the objects in the scene (Visual::setSceneTransZ and friends) and the
      * position and field of view of the 'camera' (Visual::zNear, Visual::zFar and
      * Visual::fov).
+     *
+     * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
-
-    // How about passing GL version as single int?
-    // gles = ver >> 30 & 0x1        // 30th bit encodes gles   (30)
-    // vermaj = ver >> 16 & 0x7fff   // next 14 bits ver major  (16-29)
-    // vermin = ver & 0xffff         // lowest 16 bits ver minor (0-15)
     template <int glver = morph::gl::version_4_1>
     class Visual
     {

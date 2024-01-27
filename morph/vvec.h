@@ -35,7 +35,7 @@ namespace morph {
      * signature would be:
      *
      *\code{.cpp}
-     * vvec<float> v(3);
+     * vvec<float> v;
      *\endcode
      *
      * The class inherits std::vector's dynamically-resizeable memory for storing the
@@ -77,11 +77,13 @@ namespace morph {
         //! \return the fourth component of the vector
         S w() const { return (*this)[3]; }
 
-        //! This uses a traits solution inspired by
-        //! https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
-
-        //! Traits set_from that can work with sequential containers like std::array, deque, vector,
-        //! morph::vvec, morph::vec etc and even with std::set (though not with std::map)
+        /*!
+         * Traits-based set_from that can work with sequential containers like std::array, deque, vector,
+         * morph::vvec, morph::vec etc and even with std::set (though not with std::map).
+         *
+         * This uses a traits solution inspired by
+         * https://stackoverflow.com/questions/7728478/c-template-class-function-with-arbitrary-container-type-how-to-define-it
+         */
         template <typename Container>
         std::enable_if_t<morph::is_copyable_container<Container>::value, void>
         set_from (const Container& c)
@@ -95,8 +97,8 @@ namespace morph {
         set_from (const _S& v) { std::fill (this->begin(), this->end(), v); }
 
         /*!
-         * Set the data members of this vvec from the passed in, larger array, \a ar,
-         * ignoring the last element of \a ar. Used when working with 4D vectors in
+         * Set the data members of this vvec from the passed in, larger vector, \a v,
+         * ignoring the last element of \a v. Used when working with 4D vectors in
          * graphics applications involving 4x4 transform matrices.
          */
         template <typename _S=S>
@@ -110,9 +112,9 @@ namespace morph {
         }
 
         /*!
-         * Set the data members of this vvec from the passed in, larger array, \a ar,
-         * ignoring the last element of \a ar. Used when working with 4D vectors in
-         * graphics applications involving 4x4 transform matrices.
+         * Set the data members of this vvec from the passed in, larger, fixed-size
+         * array, \a v, ignoring the last element of \a v. Used when working with 4D
+         * vectors in graphics applications involving 4x4 transform matrices.
          */
         template <typename _S=S, size_t N>
         void set_from_onelonger (const std::array<_S, N>& v)
@@ -124,7 +126,7 @@ namespace morph {
             } // else do nothing?
         }
 
-        //! Return a vector with one less dimension - losing the last one.
+        //! \return a vector with one less dimension - losing the last one.
         vvec<S> less_one_dim () const
         {
             size_t N = this->size();
@@ -133,7 +135,7 @@ namespace morph {
             return rtn;
         }
 
-        //! Return a vector with one additional dimension - setting it to 0.
+        //! \return a vector with one additional dimension - setting it to 0.
         vvec<S> plus_one_dim () const
         {
             size_t N = this->size();
@@ -153,7 +155,7 @@ namespace morph {
             return rtn;
         }
 
-        //! Return this vvec in single precision, float format
+        //! \return this vvec in single precision, float format
         vvec<float> as_float() const
         {
             vvec<float> vv(this->size(), 0.0f);
@@ -161,7 +163,7 @@ namespace morph {
             return vv;
         }
 
-        //! Return this vvec in double precision format
+        //! \return this vvec in double precision format
         vvec<double> as_double() const
         {
             vvec<double> vv(this->size(), 0.0);
@@ -169,7 +171,7 @@ namespace morph {
             return vv;
         }
 
-        //! Return this vvec in single precision, int format
+        //! \return this vvec in single precision, int format
         vvec<int> as_int() const
         {
             vvec<int> vv(this->size(), 0);
@@ -177,7 +179,7 @@ namespace morph {
             return vv;
         }
 
-        //! Return this vvec in single precision, unsigned int format
+        //! \return this vvec in single precision, unsigned int format
         vvec<unsigned int> as_uint() const
         {
             vvec<unsigned int> vv(this->size(), 0);
@@ -590,7 +592,7 @@ namespace morph {
         }
 
         /*!
-         * Return the sum of the squares of the elements.
+         * \return the sum of the squares of the elements.
          *
          * If S is a vector type, then the result will be a vector type containing the
          * sos of all elements i - that is, element 0 of the returned vector will contain
@@ -605,7 +607,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), _S{0}, add_squared);
         }
 
-        //! Return the value of the longest component of the vector.
+        //! \return the value of the longest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S longest() const
         {
@@ -619,7 +621,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S longest() const { return this->max(); }
 
-        //! Return the index of the longest component of the vector.
+        //! \return the index of the longest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t arglongest() const
         {
@@ -640,7 +642,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t arglongest() const { return this->argmax(); }
 
-        //! Return the value of the shortest component of the vector.
+        //! \return the value of the shortest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S shortest() const
         {
@@ -659,7 +661,7 @@ namespace morph {
         }
 
         /*!
-         * Return the index of the shortest component of the vector. If this is a vector
+         * \return the index of the shortest component of the vector. If this is a vector
          * of vectors, then return the index of the shortest vector.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
@@ -688,7 +690,7 @@ namespace morph {
             return idx;
         }
 
-        //! Return the value of the maximum (most positive) component of the vector.
+        //! \return the value of the maximum (most positive) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S max() const
         {
@@ -696,7 +698,7 @@ namespace morph {
             return themax == this->end() ? S{0} : *themax;
         }
 
-        //! Return the max lengthed element of the vvec. Intended for use with a vvec of vecs
+        //! \return the max lengthed element of the vvec. Intended for use with a vvec of vecs
         //! (morph::vvec<morph::vec<T, N>>). Note that the enclosed non-scalar thing must have
         //! function length_lessthan (as morph::vec does).
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
@@ -706,7 +708,7 @@ namespace morph {
             return themax == this->end() ? S{0} : *themax;
         }
 
-        //! Return the index of the maximum (most positive) component of the vector.
+        //! \return the index of the maximum (most positive) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argmax() const
         {
@@ -724,7 +726,7 @@ namespace morph {
             return idx;
         }
 
-        //! Return the value of the minimum (smallest or most negative) component of the vector.
+        //! \return the value of the minimum (smallest or most negative) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S min() const
         {
@@ -736,7 +738,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         S min() const { return this->shortest(); }
 
-        //! Return the index of the minimum (smallest or most negative) component of the vector.
+        //! \return the index of the minimum (smallest or most negative) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argmin() const
         {
@@ -749,13 +751,13 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         size_t argmin() const { return this->argshortest(); }
 
-        //! Return the min and max values of the vvec, ignoring any not-a-number elements. If you
+        //! \return the min and max values of the vvec, ignoring any not-a-number elements. If you
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
         //! the rest of the numbers
         template<bool test_for_nans = false>
         morph::range<S> minmax() const { return this->range<test_for_nans>(); }
 
-        //! Return the range of values in the vvec (the min and max values). If you pass 'true' as
+        //! \return the range of values in the vvec (the min and max values). If you pass 'true' as
         //! the template arg, then you can test for nans, and return the min/max of the rest of the
         //! numbers
         template<bool test_for_nans = false>
@@ -784,13 +786,19 @@ namespace morph {
         }
 
         /*!
-         * Return the locations where the function crosses zero. Returned as a float so
-         * that it can take intermediate values and also indicate the direction of the
-         * crossing. For example, if the function crosses from a negative value at index
-         * 2 to a positive value at index 3, then the entry in the return object would
-         * be 2.5f. If it also crosses zero from +ve at index 6 to -ve at index 7, then
-         * the other element in the return object would be -6.5f. If the function
-         * evaluates as zero *at* index 12, then the last entry would be 12.0f.
+         * \brief Finds the 'zero-crossings' of a function
+         *
+         * Returned as a float so that it can take intermediate values and also indicate
+         * the direction of the crossing. For example, if the function crosses from a
+         * negative value at index 2 to a positive value at index 3, then the entry in
+         * the return object would be 2.5f. If it also crosses zero from +ve at index 6
+         * to -ve at index 7, then the other element in the return object would be
+         * -6.5f. If the function evaluates as zero *at* index 12, then the last entry
+         * would be 12.0f.
+         *
+         * \param wrap Does the data wrap? If so, start and end elements may cross zero
+         *
+         * \return the locations where the function crosses zero.
          */
         vvec<float> zerocross (const wrapdata wrap = wrapdata::none) const
         {
@@ -896,13 +904,13 @@ namespace morph {
             return indices;
         }
 
-        //! Return true if any element is zero
+        //! \return true if any element is zero
         bool has_zero() const
         {
             return std::any_of (this->cbegin(), this->cend(), [](S i){ return i == S{0}; });
         }
 
-        //! Return true if any element is infinity
+        //! \return true if any element is infinity
         bool has_inf() const
         {
             if constexpr (std::numeric_limits<S>::has_infinity) {
@@ -912,7 +920,7 @@ namespace morph {
             }
         }
 
-        //! Return true if any element is NaN
+        //! \return true if any element is NaN
         bool has_nan() const
         {
             if constexpr (std::numeric_limits<S>::has_quiet_NaN
@@ -923,7 +931,7 @@ namespace morph {
             }
         }
 
-        //! Return true if any element is NaN or infinity
+        //! \return true if any element is NaN or infinity
         bool has_nan_or_inf() const
         {
             bool has_nan_or_inf = false;
@@ -931,7 +939,7 @@ namespace morph {
             return has_nan_or_inf ? has_nan_or_inf : this->has_inf();
         }
 
-        //! Return the arithmetic mean of the elements
+        //! \return the arithmetic mean of the elements
         template<typename _S=S>
         _S mean() const
         {
@@ -939,7 +947,7 @@ namespace morph {
             return sum / this->size();
         }
 
-        //! Return the variance of the elements
+        //! \return the variance of the elements
         template<typename _S=S>
         _S variance() const
         {
@@ -953,7 +961,7 @@ namespace morph {
             return variance;
         }
 
-        //! Return the standard deviation of the elements
+        //! \return the standard deviation of the elements
         template<typename _S=S>
         _S std() const
         {
@@ -961,7 +969,7 @@ namespace morph {
             return std::sqrt (this->variance<_S>());
         }
 
-        //! Return the sum of the elements. If elements are of a constrained type, you can call this something like:
+        //! \return the sum of the elements. If elements are of a constrained type, you can call this something like:
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int thesum = uv.sum<unsigned int>();
         template<typename _S=S>
@@ -970,7 +978,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), _S{0});
         }
 
-        //! Return the product of the elements. If elements are of a constrained type, you can call
+        //! \return the product of the elements. If elements are of a constrained type, you can call
         //! this something like:
         //! vvec<uint8_t> uv (256, 10);
         //! unsigned int theproduct = uv.product<unsigned int>();
@@ -1021,7 +1029,7 @@ namespace morph {
             for (auto& i : *this) { i = std::pow (i, static_cast<S>(*pi++)); }
         }
 
-        //! Return the signum of the vvec, with signum(0)==0
+        //! \return the signum of the vvec, with signum(0)==0
         vvec<S> signum() const
         {
             vvec<S> rtn(this->size());
@@ -1031,7 +1039,7 @@ namespace morph {
         }
         void signum_inplace() { for (auto& i : *this) { i = (i > S{0} ? S{1} : (i == S{0} ? S{0} : S{-1})); } }
 
-        //! Return a vvec which is a copy of *this for which positive, non-zero elements have been removed
+        //! \return a vvec which is a copy of *this for which positive, non-zero elements have been removed
         vvec<S> prune_positive() const
         {
             vvec<S> rtn;
@@ -1046,7 +1054,7 @@ namespace morph {
             this->swap (pruned);
         }
 
-        //! Return a vvec which is a copy of *this for which negative, non-zero elements have been removed
+        //! \return a vvec which is a copy of *this for which negative, non-zero elements have been removed
         vvec<S> prune_negative() const
         {
             vvec<S> rtn;
@@ -1060,7 +1068,7 @@ namespace morph {
             this->swap (pruned);
         }
 
-        //! Return a vvec which is a copy of *this for which NaN elements have been removed
+        //! \return a vvec which is a copy of *this for which NaN elements have been removed
         vvec<S> prune_nan() const
         {
             static_assert (std::numeric_limits<S>::has_quiet_NaN, "S does not have quiet_NaNs");
@@ -1094,7 +1102,7 @@ namespace morph {
             for (auto& i : *this) { if (i == searchee) { i = replacement; } }
         }
 
-        // Return a vec in which we replace any value that's above upper with upper and any below lower with lower
+        // \return a vec in which we replace any value that's above upper with upper and any below lower with lower
         vvec<S> threshold (const S lower, const S upper) const
         {
             vvec<S> rtn(this->size());
@@ -1239,7 +1247,7 @@ namespace morph {
             for (auto& i : *this) { i = std::exp (i*i/(S{-2}*sigma*sigma)); }
         }
 
-        //! Return a vvec containing the generalised logistic function of this vvec:
+        //! \return a vvec containing the generalised logistic function of this vvec:
         //! f(x) = 1 / [ 1 + exp(-k*(x - x0)) ]
         vvec<S> logistic (const S k = S{1}, const S x0 = S{0}) const
         {
@@ -1329,7 +1337,7 @@ namespace morph {
             }
         }
 
-        //! Return the discrete differential, computed as the mean difference between a
+        //! \return the discrete differential, computed as the mean difference between a
         //! datum and its adjacent neighbours.
         vvec<S> diff (const wrapdata wrap = wrapdata::none)
         {
@@ -1433,28 +1441,28 @@ namespace morph {
             return comparison;
         }
 
-        //! Less than a scalar. Return true if every element is less than the scalar
+        //! Less than a scalar. \return true if every element is less than the scalar
         bool operator<(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b < rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! <= a scalar. Return true if every element is less than the scalar
+        //! <= a scalar. \return true if every element is less than the scalar
         bool operator<=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b <= rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! Greater than a scalar. Return true if every element is gtr than the scalar
+        //! Greater than a scalar. \return true if every element is gtr than the scalar
         bool operator>(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b > rhs ? S{0} : S{1}); };
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! >= a scalar. Return true if every element is gtr than the scalar
+        //! >= a scalar. \return true if every element is gtr than the scalar
         bool operator>=(const S rhs) const
         {
             auto _element_fails = [rhs](S a, S b) { return a + (b >= rhs ? S{0} : S{1}); };
@@ -1527,7 +1535,7 @@ namespace morph {
             return this->length() >= rhs.length();
         }
 
-        //! Return true if each element of *this is less than its counterpart in rhs.
+        //! \return true if each element of *this is less than its counterpart in rhs.
         template<typename _S=S>
         bool operator< (const vvec<_S>& rhs) const
         {
@@ -1539,7 +1547,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! Return true if each element of *this is <= its counterpart in rhs.
+        //! \return true if each element of *this is <= its counterpart in rhs.
         template<typename _S=S>
         bool operator<= (const vvec<_S>& rhs) const
         {
@@ -1551,7 +1559,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! Return true if each element of *this is greater than its counterpart in rhs.
+        //! \return true if each element of *this is greater than its counterpart in rhs.
         template<typename _S=S>
         bool operator> (const vvec<_S>& rhs) const
         {
@@ -1563,7 +1571,7 @@ namespace morph {
             return std::accumulate (this->begin(), this->end(), S{0}, _element_fails) == S{0} ? true : false;
         }
 
-        //! Return true if each element of *this is >= its counterpart in rhs.
+        //! \return true if each element of *this is >= its counterpart in rhs.
         template<typename _S=S>
         bool operator>= (const vvec<_S>& rhs) const
         {
