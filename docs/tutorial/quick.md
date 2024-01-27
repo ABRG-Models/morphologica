@@ -2,7 +2,7 @@
 title: Quick start
 parent: Tutorials
 layout: page
-nav_order: 1
+nav_order: 0
 permalink: /tutorials/quick/
 ---
 # Quick-start to run a morphologica example

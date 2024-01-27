@@ -3,7 +3,7 @@ title: Creating a new project
 parent: Tutorials
 layout: page
 permalink: /ref/tutorials/newproject
-nav_order: 2
+nav_order: 1
 ---
 # Building your code with morphologica
 
