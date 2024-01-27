@@ -2,8 +2,8 @@
 title: Creating a new project
 parent: Tutorials
 layout: page
-permalink: /ref/tutorials/newproject
 nav_order: 1
+permalink: /tutorials/newproject
 ---
 # Building your code with morphologica
 

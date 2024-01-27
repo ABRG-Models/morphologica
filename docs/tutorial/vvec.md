@@ -1,10 +1,9 @@
 ---
 layout: page
-parent: Core maths classes
-grand_parent: Tutorials
+parent: Tutorials
 title: morph::vvec
-permalink: /tutorials/coremaths/vvec/
-nav_order: 2
+permalink: /tutorials/vvec/
+nav_order: 3
 ---
 # Using the variable vector class, morph::vvec
 

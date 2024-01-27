@@ -2,8 +2,8 @@
 title: morph::Visual
 parent: Tutorials
 permalink: /tutorials/visual
-layout: page
 nav_order: 2
+layout: page
 ---
 # Getting started with `morph::Visual`
 
