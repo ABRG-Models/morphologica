@@ -2,14 +2,17 @@
 title: Quick start
 parent: Tutorials
 layout: page
+nav_order: 1
 permalink: /tutorials/quick/
-order: 4
 ---
+# Quick-start to run a morphologica example
 
-Quick-start assumption: You're using a Debian flavour of Linux. If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users.
+This page is going to show you how to build and run one of the morphologica 2D graph examples.
+
+Quick-start assumption: You're using a Debian flavour of Linux. If you're using another type of Linux, then I hope you can figure out the packages you'll need from the list below and how to install them. In all other ways, the process will be the same. If you're using a Mac, see [README.build.mac](https://github.com/ABRG-Models/morphologica/tree/main/README.build.mac.md) for help getting dependencies in place. It's [README.build.windows](https://github.com/ABRG-Models/morphologica/tree/main/README.build.windows.md) for Windows users (works, but less well supported).
 
 ## Install dependencies
-This command will install dependencies for building graph1.cpp and (almost) all the other examples (assuming Debian-like OS)
+This command will install dependencies for building graph1.cpp and (almost) all the other examples (assuming a Debian-like OS)
 
 ```bash
 sudo apt install build-essential cmake git wget  \
@@ -51,9 +54,9 @@ int main()
 {
     // Set up a morph::Visual 'scene environment'.
     morph::Visual v(1024, 768, "Made with morph::GraphVisual");
-    // Create a new GraphVisual object with offset within the scene of 0,0,0
+    // Create a GraphVisual object (obtaining a unique_ptr to the object) with a spatial offset within the scene of 0,0,0
     auto gv = std::make_unique<morph::GraphVisual<double>> (morph::vec<float>({0,0,0}));
-    // Boilerplate bindmodel function call - do this for every model you add to a Visual
+    // This mandatory line of boilerplate code sets the parent pointer in GraphVisual and binds some functions
     v.bindmodel (gv);
     // Data for the x axis. A vvec is like std::vector, but with built-in maths methods
     morph::vvec<double> x;
@@ -63,10 +66,11 @@ int main()
     gv->setdata (x, x.pow(3));
     // finalize() makes the GraphVisual compute the vertices of the OpenGL model
     gv->finalize();
-    // Add the GraphVisual OpenGL model to the Visual scene (which takes ownership of the unique_ptr)
+    // Add the GraphVisual OpenGL model to the Visual scene, transferring ownership of the unique_ptr
     v.addVisualModel (gv);
     // Render the scene on the screen until user quits with 'Ctrl-q'
     v.keepOpen();
+    // Because v owns the unique_ptr to the GraphVisual, its memory will be deallocated when v goes out of scope.
     return 0;
 }
 ```

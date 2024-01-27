@@ -6,6 +6,8 @@ nav_order: 2
 layout: page
 has_children: true
 ---
+# Visualization reference
+
 morphologica uses OpenGL to draw graphics and text.
 In a way it's like a game engine for data visualization because it provides a 3D world into which models are drawn and you can 'fly around' the models viewing them from different angles.
 Unlike a game engine though, it uses very simple shaders and very simple graphics.
@@ -16,4 +18,4 @@ Before it can draw OpenGL models, morphologica needs an OpenGL context to have b
 
 Within your scene, you will then create one or more instances of a `morph::VisualModel`. This is the base class for a number of different classes that draw different kinds of objects. VisualModel provides a number of drawing primitives that can be used to draw the objects that form the model. Visualization models commonly consist of discs, rods, spheres and so on. Each primitive specifies the locations of OpenGL vertices that make up the rod, sphere or disc.
 
-If you have a custom visualization need, you can derive your own class from  `morph::VisualModel`, and use the built-in primitives to draw your objects, or you can create your own.
+If you have a custom visualization need, you can derive your own class from  `morph::VisualModel`, and use the built-in primitives to draw your objects. One of the design principles of morphologica is that, unless you are programming the internals of morphologica, you *never do any OpenGL programming yourself*. Instead, you should be able to create custom visualization models using the provided drawing primitives which can draw rods, spheres and so on. If you need to create a custom primitive, you can do that too - you then have to determine what vertices will make up the trangles in your model.
