@@ -3,8 +3,9 @@ title: Orientation
 parent: Welcome
 layout: page
 permalink: /orientation
-nav_order: 5
+nav_order: 4
 ---
+# Finding your way
 This is an introduction to the morphologica repository; what's in each directory and why they are there.
 
 First off, the library is header-only, which means that you don't need to compile it to include it in your programs. You just `#include` the relevant headers in your own `.cpp` files. All the header files that you need to include are in **morphologica/morph**.
