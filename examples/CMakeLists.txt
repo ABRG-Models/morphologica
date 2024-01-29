@@ -143,6 +143,12 @@ if(USE_GLEW)
   target_link_libraries(quiver GLEW::GLEW)
 endif()
 
+add_executable(vectorvis vectorvis.cpp)
+target_link_libraries(vectorvis OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(vectorvis GLEW::GLEW)
+endif()
+
 add_executable(scatter scatter.cpp)
 target_link_libraries(scatter OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
