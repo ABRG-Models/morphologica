@@ -57,12 +57,12 @@ namespace morph {
             // Shift threevec to sit on origin if necessary
             if (this->vgoes == VectorGoes::FromOrigin) {
                 start = origin;
-                end = threevec;
+                end = threevec * this->scale_factor;
             } else if (this->vgoes == VectorGoes::ToOrigin) {
                 end = origin;
-                start = threevec;
+                start = threevec * this->scale_factor;
             } else { // OnOrigin
-                vec<float> halfvec = threevec * 0.5f;
+                vec<float> halfvec = threevec * this->scale_factor * 0.5f;
                 start = origin - halfvec;
                 end = origin + halfvec ;
             }
@@ -78,13 +78,11 @@ namespace morph {
             vec<float> cone_start = arrow_line.shorten (len * arrowhead_prop);
             cone_start += start;
 
-            this->computeTube (this->idx, start, cone_start, clr, clr, thickness, shapesides);
+            this->computeTube (this->idx, start, cone_start, clr, clr, thickness * this->scale_factor, shapesides);
             float conelen = (arrow_line - cone_start).length();
             if (arrow_line.length() > conelen) {
-                this->computeCone (this->idx, cone_start, end, 0.0f, clr, thickness * 2.0f, shapesides);
+                this->computeCone (this->idx, cone_start, end, 0.0f, clr, thickness  * this->scale_factor * 2.0f, shapesides);
             }
-            // Plus a sphere on the coordinate:
-            //this->computeSphere (this->idx, origin, clr, thickness * 2.0f, shapesides / 2, shapesides);
         }
 
         // The vector to vis
@@ -104,8 +102,8 @@ namespace morph {
         // What proportion of the arrow length should the arrowhead length be?
         float arrowhead_prop = 0.25f;
 
-        // User can choose a colour
-        //std::array<float, 3> clr = morph::colour::crimson;
+        // How much to lienarly scale the size of the vector
+        float scale_factor = 1.0f;
     };
 
 } // namespace morph
