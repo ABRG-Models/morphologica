@@ -1195,6 +1195,12 @@ namespace morph {
             return (xmax - xmin);
         }
 
+        /*!
+         * Returns the visible width of the CartGrid if it were visualized as pixels (assuming
+         * rectangular)
+         */
+        float width_of_pixels() const { return this->x_span + this->d; }
+
         morph::vec<float, 4> get_extents() const
         {
             morph::vec<int, 4> extents;
