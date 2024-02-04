@@ -25,11 +25,11 @@ protected:
     {
         // Here, I've omitted all the normal keypress actions in Visual::key_callback,
         // except for one to close the program and one for help output:
-        if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+        if (key == morph::key::x && action == morph::keyaction::press) {
             std::cout << "User requested exit.\n";
             this->readyToFinish = true;
         }
-        if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        if (key == morph::key::h && action == morph::keyaction::press) {
             std::cout << "Help:\n";
             std::cout << "x: Exit program\n";
             std::cout << "h: This help\n";
@@ -48,9 +48,9 @@ protected:
                       << scancode << " action=" << action << " and mods=" << mods << std::endl;
         }
         // 'm' key means toggle the 'moving' attribute
-        if (key == GLFW_KEY_F && action == GLFW_PRESS) { this->moving = this->moving ? false : true; }
+        if (key == morph::key::f && action == morph::keyaction::press) { this->moving = this->moving ? false : true; }
 
-        if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        if (key == morph::key::h && action == morph::keyaction::press) {
             std::cout << "myvisual extra help:\n";
             std::cout << "m: Start moving\n";
         }
