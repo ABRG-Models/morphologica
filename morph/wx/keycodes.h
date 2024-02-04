@@ -68,7 +68,7 @@ namespace morph {
                 mkc = morph::key::equal;
                 break;
 
-            case 'a':
+            case 'A':
                 mkc = morph::key::a;
                 break;
             case 'B':
