@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <morph/tools.h>
+#include <morph/vec.h>
 #include <morph/mathconst.h>
 
 namespace morph {
@@ -952,6 +953,21 @@ namespace morph {
             return col;
         }
 
+        //! HSB to RGB. std::array input/output
+        static std::array<float, 3> hsv2rgb (const std::array<float, 3>& hsv)
+        {
+            return ColourMap<T>::hsv2rgb (hsv[0], hsv[1], hsv[2]);
+        }
+
+        //! HSB to RGB. morph::vec input/output
+        static morph::vec<float, 3> hsv2rgb_vec (const morph::vec<float, 3>& hsv)
+        {
+            std::array<float, 3> rgb_ar = ColourMap<T>::hsv2rgb (hsv[0], hsv[1], hsv[2]);
+            morph::vec<float, 3> rgb;
+            rgb.set_from (rgb_ar);
+            return rgb;
+        }
+
         //! Convert hue, saturation, value to RGB. single precision arguments.
         static std::array<float,3> hsv2rgb (float h, float s, float v)
         {
@@ -971,6 +987,64 @@ namespace morph {
             default: break;
             }
             return rgb;
+        }
+
+        //! Convert RGB to HSV, receiving input and returning output as std::array
+        static std::array<float, 3> rgb2hsv (const std::array<float, 3>& rgb)
+        {
+            return ColourMap<T>::rgb2hsv (rgb[0], rgb[1], rgb[2]);
+        }
+
+        //! Convert RGB to HSV, receiving input and returning output as morph::vec
+        static morph::vec<float, 3> rgb2hsv_vec (const morph::vec<float, 3>& rgb)
+        {
+            std::array<float, 3> hsv_ar = ColourMap<T>::rgb2hsv (rgb[0], rgb[1], rgb[2]);
+            morph::vec<float, 3> hsv;
+            hsv.set_from (hsv_ar);
+            return hsv;
+        }
+
+        //! Convert RGB to hue, saturation, value. single precision arguments.
+        static std::array<float, 3> rgb2hsv (float r, float g, float b)
+        {
+            std::array<float, 3> hsv = {0.0f, 0.0f, 0.0f};
+            float min = 0.0f, max = 0.0f, delta = 0.0f;
+
+            min = r < g ? r : g;
+            min = min  < b ? min : b;
+            max = r > g ? r : g;
+            max = max  > b ? max : b;
+
+            hsv[2] = max; // val
+            delta = max - min;
+            if (delta < std::numeric_limits<float>::epsilon()) {
+                // hsv[1] = 0.0f; // sat
+                // hsv[0] = 0.0f; // hue undefined
+                return hsv; // already {0,0,max}
+            }
+            if (max > 0.0f) { // NOTE: if Max is == 0, this divide would cause a crash
+                hsv[1] = (delta / max); // sat
+            } else {
+                // if max is 0, then r = g = b = 0
+                // s = 0, h is undefined
+                // hsv[1] = 0.0f; // sat
+                hsv[0] = std::numeric_limits<float>::quiet_NaN(); // its now undefined
+                return hsv;
+            }
+            if (r < max) {
+                if (g < max) {
+                    hsv[0] = 4.0f + (r - g) / delta;  // between magenta & cyan
+                } else {
+                    hsv[0] = 2.0f + (b - r) / delta;  // between cyan & yellow
+                }
+            } else {
+                hsv[0] = (g - b) / delta;  // between yellow & magenta
+            }
+            hsv[0] *= 60.0f;               // degrees
+
+            if (hsv[0] < 0.0f) { hsv[0] += 360.0f; }
+
+            return hsv;
         }
 
     private:

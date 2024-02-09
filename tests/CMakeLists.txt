@@ -347,6 +347,9 @@ add_test(testScale testScale)
 add_executable(testColourMap testColourMap.cpp)
 add_test(testColourMap testColourMap)
 
+add_executable(testrgbhsv testrgbhsv.cpp)
+add_test(testrgbhsv testrgbhsv)
+
 # Test Nelder Mead algorithm
 add_executable(testNMSimplex testNMSimplex.cpp)
 target_compile_definitions(testNMSimplex PUBLIC FLT=float)

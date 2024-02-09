@@ -364,6 +364,13 @@ if(USE_GLEW)
   target_link_libraries(vvec_gauss GLEW::GLEW)
 endif()
 
+
+add_executable(vvec_rgb_gaussians vvec_rgb_gaussians.cpp)
+target_link_libraries(vvec_rgb_gaussians OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(vvec_rgb_gaussians GLEW::GLEW)
+endif()
+
 add_executable(vvec_smoothgauss vvec_smoothgauss.cpp)
 target_link_libraries(vvec_smoothgauss OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
