@@ -459,3 +459,7 @@ add_test(testTools testTools)
 
 add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
+
+# morph::Grid
+add_executable(testGrid testGrid.cpp)
+add_test(testGrid testGrid)
