@@ -41,6 +41,8 @@ int main()
                   << " NN: " << (grid2.has_nn(i) ?  grid2.index_nn(i) : 99) << " NS: " << (grid2.has_ns(i) ?  grid2.index_ns(i) : 99) << std::endl;
     }
 
+    std::cout << "Extents for grid: " << grid.get_extents() << std::endl;
+
     // FIXME: Make the testing count for something!
     return 0;
 }

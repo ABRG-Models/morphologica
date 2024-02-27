@@ -24,14 +24,18 @@ namespace morph {
     };
 
     //! The template argument T is the type of the *data* which this GridVisual will visualize.
-    template <typename T, size_t n_x, size_t n_y,
-              GridOrder O = morph::GridOrder::bottomleft_to_topright,
+    template <typename T,
+              size_t n_x, size_t n_y,
+              morph::vec<float, 2> dx = { 1.0f, 1.0f },
+              morph::vec<float, 2> g_offset = { 0.0f, 0.0f },
+              CartDomainWrap d_wrap = CartDomainWrap::None,
+              GridOrder g_order = morph::GridOrder::bottomleft_to_topright,
               int glver = morph::gl::version_4_1>
     class GridVisual : public VisualDataModel<T, glver>
     {
     public:
         //! Single constructor for simplicity
-        GridVisual(const Grid<n_x, n_y, O>* _g, const vec<float> _offset)
+        GridVisual(const Grid<n_x, n_y, dx, g_offset, d_wrap, g_order>* _g, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = { _cg->getd()/2.0f, _cg->getv()/2.0f, 0.0f };
@@ -74,7 +78,7 @@ namespace morph {
 
             if (this->showborder == true) {
                 // Draw around the outside.
-                morph::vec<float, 4> cg_extents = this->cg->get_extents(); // {xmin, xmax, ymin, ymax}
+                morph::vec<float, 4> cg_extents = this->g->get_extents(); // {xmin, xmax, ymin, ymax}
                 float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : this->cg->getd() * this->border_thickness;
                 float bz = this->cg->getd() / 10.0f;
                 float half_bthick = bthick/2.0f;
