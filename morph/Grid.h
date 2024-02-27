@@ -55,7 +55,10 @@ namespace morph {
         static constexpr size_t n = n_x * n_y;
 
         // Indexing the grid will return a computed vec location.
-        constexpr morph::vec<float, 2> operator[] (const size_t index) const
+        constexpr morph::vec<float, 2> operator[] (const size_t index) const { return this->coord (index); }
+
+        //! Return the coordinate with the given index
+        constexpr morph::vec<float, 2> coord (const size_t index) const
         {
             if (index >= n) { return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}); }
             morph::vec<float, 2> loc = g_offset;
@@ -90,7 +93,7 @@ namespace morph {
             return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
         }
         //! Return true if the index has a neighbour to the east
-        constexpr bool has_ne (const size_t index) { return index_ne(index) != std::numeric_limits<size_t>::max(); }
+        constexpr bool has_ne (const size_t index) { return index_ne (index) != std::numeric_limits<size_t>::max(); }
 
         //! Return the index of the neighbour to the west of index, or if there is no neighbour
         //! to the west, return std::numeric_limits<size_t>::max()
@@ -114,20 +117,31 @@ namespace morph {
             return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
         }
         //! Return true if the index has a neighbour to the west
-        constexpr bool has_nw (const size_t index) { return index_nw(index) != std::numeric_limits<size_t>::max(); }
+        constexpr bool has_nw (const size_t index) { return index_nw (index) != std::numeric_limits<size_t>::max(); }
 
         //! Return the index of the neighbour to the north of index, or if there is no neighbour
         //! to the north, return std::numeric_limits<size_t>::max()
         constexpr size_t index_nn (const size_t index)
         {
             size_t c = this->col (index);
-            //std::cout << "Col c = " << c << " and n_y - 1 = " << (n_y - 1) << std::endl;
-            if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
-                return std::numeric_limits<size_t>::max();
-            } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
-                return index - (n_x * (n_y - 1));
+            if constexpr (g_order == morph::GridOrder::bottomleft_to_topright) {
+                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                    return std::numeric_limits<size_t>::max();
+                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                    return index - (n_x * (n_y - 1));
+                } else {
+                    return index + n_x;
+                }
+            } else if constexpr (g_order == morph::GridOrder::topleft_to_bottomright) {
+                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                    return std::numeric_limits<size_t>::max();
+                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                    return index + (n_x * (n_y - 1));
+                } else {
+                    return index - n_x;
+                }
             } else {
-                return index + n_x;
+                []<bool flag = false>() { static_assert(flag, "unexpected value for g_order template arg"); }();
             }
         }
         //! Return the coordinate of the neighbour to the north of index, or if there is no neighbour
@@ -139,7 +153,95 @@ namespace morph {
             return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
         }
         //! Return true if the index has a neighbour to the north
-        constexpr bool has_nn (const size_t index) { return index_nn(index) != std::numeric_limits<size_t>::max(); }
+        constexpr bool has_nn (const size_t index) { return index_nn (index) != std::numeric_limits<size_t>::max(); }
+
+        //! Return the index of the neighbour to the south of index, or if there is no neighbour
+        //! to the south, return std::numeric_limits<size_t>::max()
+        constexpr size_t index_ns (const size_t index)
+        {
+            size_t c = this->col (index);
+            if constexpr (g_order == morph::GridOrder::bottomleft_to_topright) {
+                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                    return std::numeric_limits<size_t>::max();
+                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                    return index + (n_x * (n_y - 1));
+                } else {
+                    return index - n_x;
+                }
+            } else if constexpr (g_order == morph::GridOrder::topleft_to_bottomright) {
+                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                    return std::numeric_limits<size_t>::max();
+                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                    return index - (n_x * (n_y - 1));
+                } else {
+                    return index + n_x;
+                }
+            } else {
+                []<bool flag = false>() { static_assert(flag, "unexpected value for g_order template arg"); }();
+            }
+        }
+        //! Return the coordinate of the neighbour to the south of index, or if there is no neighbour
+        //! to the south, return {float_max, float_max}
+        constexpr morph::vec<float, 2> coord_ns (const size_t index)
+        {
+            size_t idx = index_ns (index);
+            if (idx < n) { return (*this)[idx]; }
+            return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+        //! Return true if the index has a neighbour to the south
+        constexpr bool has_ns (const size_t index) { return index_ns (index) != std::numeric_limits<size_t>::max(); }
+
+        //! Neighbour north east
+        constexpr bool has_nne (const size_t index) { return has_ne (index) && has_nn (index); }
+        constexpr size_t index_nne (const size_t index)
+        {
+            size_t nn = this->index_nn (index);
+            return nn < n ? index_ne (nn) : std::numeric_limits<size_t>::max();
+        }
+        constexpr morph::vec<float, 2> coord_nne (const size_t index)
+        {
+            size_t idx = this->index_nne (index);
+            return idx < n ? (*this)[idx] : morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+
+        //! Neighbour north west
+        constexpr bool has_nnw (const size_t index) { return has_nw (index) && has_nn (index); }
+        constexpr size_t index_nnw (const size_t index)
+        {
+            size_t nn = this->index_nn (index);
+            return nn < n ? index_nw (nn) : std::numeric_limits<size_t>::max();
+        }
+        constexpr morph::vec<float, 2> coord_nnw (const size_t index)
+        {
+            size_t idx = this->index_nnw (index);
+            return idx < n ? (*this)[idx] : morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+
+        //! Neighbour south east
+        constexpr bool has_nse (const size_t index) { return has_ne (index) && has_ns (index); }
+        constexpr size_t index_nse (const size_t index)
+        {
+            size_t ns = this->index_ns (index);
+            return ns < n ? index_ne (ns) : std::numeric_limits<size_t>::max();
+        }
+        constexpr morph::vec<float, 2> coord_nse (const size_t index)
+        {
+            size_t idx = this->index_nse (index);
+            return idx < n ? (*this)[idx] : morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+
+        //! Neighbour south west
+        constexpr bool has_nsw (const size_t index) { return has_nw (index) && has_ns (index); }
+        constexpr size_t index_nsw (const size_t index)
+        {
+            size_t ns = this->index_ns (index);
+            return ns < n ? index_nw (ns) : std::numeric_limits<size_t>::max();
+        }
+        constexpr morph::vec<float, 2> coord_nsw (const size_t index)
+        {
+            size_t idx = this->index_nsw (index);
+            return idx < n ? (*this)[idx] : morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
 
         /*
          * What is the width of a grid? Is it the distance from the centre of the left-most pixel to
@@ -150,34 +252,30 @@ namespace morph {
 
         //! Return the distance from the centre of the left element column to the centre of the
         //! right element column
-        float width() const { return dx[0] * n_x; }
+        constexpr float width() const { return dx[0] * n_x; }
 
         //! Return the width of the grid if drawn as pixels
-        float width_of_pixels() const { return dx[0] * n_x + dx[0]; }
+        constexpr float width_of_pixels() const { return dx[0] * n_x + dx[0]; }
 
         //! Return the distance from the centre of the bottom row to the centre of the top row
-        float height() const { return dx[1] * n_y; }
+        constexpr float height() const { return dx[1] * n_y; }
+
+        constexpr float area() const { return this->width() * this->height(); }
 
         //! Return the height of the grid if drawn as pixels
-        float height_of_pixels() const { return dx[1] * n_y + dx[1]; }
+        constexpr float height_of_pixels() const { return dx[1] * n_y + dx[1]; }
 
         //! Return the area of the grid, if drawn as pixels
-        float area_of_pixels() const { return width_of_pixels() * height_of_pixels(); }
+        constexpr float area_of_pixels() const { return this->width_of_pixels() * this->height_of_pixels(); }
 
         //! Return the row for the index
-        size_t row (const size_t index) const { return index < n ? index % n_x : std::numeric_limits<size_t>::max(); }
+        constexpr size_t row (const size_t index) const { return index < n ? index % n_x : std::numeric_limits<size_t>::max(); }
 
         //! Return the col for the index
-        size_t col (const size_t index) const
-        {
-            // FIXME: Do I need to switch on d_wrap?
-            return index < n ? index / n_x : std::numeric_limits<size_t>::max();
-        }
+        constexpr size_t col (const size_t index) const { return index < n ? index / n_x : std::numeric_limits<size_t>::max(); }
 
-        /*!
-         * Output some text information about the hexgrid.
-         */
-        std::string output() const
+        //! Output some text information about the hexgrid.
+        constexpr std::string output() const
         {
             std::stringstream ss;
             ss << n_x << " x " << n_y << " grid (" << n << " elements).";
