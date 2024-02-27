@@ -6,6 +6,7 @@
 #pragma once
 
 #include <morph/Rect.h>
+#include <morph/CartDomains.h>
 
 // CartGrid contains carried over code (from HexGrid) which allows for the imposition of
 // arbitrary boundaries, specified as Bezier curves. This brings in a link dependency on
@@ -42,18 +43,6 @@
 #include <limits>
 
 namespace morph {
-
-    enum class CartDomainShape {
-        Rectangle,
-        Boundary // The shape of the arbitrary boundary set with CartGrid::setBoundary
-    };
-
-    enum class CartDomainWrap {
-        None,        // No wrapping
-        Horizontal,  // The eastern neighbour of the most eastern element is the most western element on that row
-        Vertical,
-        Both
-    };
 
     /*!
      * This class is used to build a Cartesian grid of rectangular elements.

@@ -4,6 +4,13 @@
  * This is a simple Cartesian Grid class. Simpler than morph::CartGrid. There is no option to
  * define an arbitrary boundary to your domain.
  *
+ * I'm writing this as a fully compile-time class for which the programmer sets grid width and
+ * height (in number of pixels) the gridspacing (as a vec<> hopefully) and the offset (another vec)
+ * as template arguments. I think this will require C++-20 which permits floating point values to be
+ * passed as template args.
+ *
+ * I might later make a runtime one, which will be compatible with <= C++-17
+ *
  * \author Seb James
  * \date February 2024
  */
@@ -13,6 +20,7 @@
 #include <string>
 #include <sstream>
 #include <morph/vec.h>
+#include <morph/CartDomains.h>
 
 namespace morph {
 
@@ -47,39 +55,95 @@ namespace morph {
      *
      * \tparam n_y Number of elements that the grid is high
      *
-     * \tparam d The horizontal distance between adjacent grid element centres
+     * \tparam dx A two element vec providing the horizontal distance between adjacent grid element
+     * centres (element 0) and the vertical distance between adjacent grid element centres (element 1).
      *
-     * \tparam v The vertical distance between adjacent grid element centres
+     * \tparam zoffset A vector giving the distance offset (in your chosen units) to Grid index 0.
+     *
+     * \tparam domainWrap An enum to set how the grid wraps. Affects neighbour relationships
      *
      * \tparam O The index order. Always counting left to right, but do you start on the top row or
      * the bottom row (the default)?
      */
-    template <size_t n_x = 1, size_t n_y = 1, float d, float v, // Can't use float until C++-20
-              GridOrder O = morph::GridOrder::bottomleft_to_topright>
+    template < size_t n_x, size_t n_y,
+               morph::vec<float, 2> dx = { 1.0f, 1.0f },
+               morph::vec<float, 2> zoffset = { 0.0f, 0.0f },
+               CartDomainWrap domainWrap = CartDomainWrap::None,
+               GridOrder O = morph::GridOrder::bottomleft_to_topright >
     struct Grid
     {
         //! The number of elements in the grid
         static constexpr size_t n = n_x * n_y;
 
-        //! The 2-D location of (*this)[0]. User defines this.
-        morph::vec<float, 2> zero_location = { 0.0f, 0.0f };
-
         // Indexing the grid will return a computed vec location. Would like this to be constexpr
-        morph::vec<float, 2> operator[] (size_t index) const
+        constexpr morph::vec<float, 2> operator[] (size_t index) const
         {
-            morph::vec<float, 2> loc = zero_location;
-            loc[0] += d * (index % n_x);
+            morph::vec<float, 2> loc = zoffset;
+            loc[0] += dx[0] * (index % n_x);
             if constexpr (O == morph::GridOrder::bottomleft_to_topright) {
-                loc[1] += v * (index / n_x);
+                loc[1] += dx[1] * (index / n_x);
             } else {
-                loc[1] -= v * (index / n_x);
+                loc[1] -= dx[1] * (index / n_x);
             }
             return loc;
         }
 
-        morph::vec<float, 2> nne() (size_t index) const
+        //! Return the index of the neighbour to the east of index, or if there is no neighbour
+        //! to the east, return std::numeric_limits<size_t>::max()
+        constexpr size_t index_ne (size_t index)
         {
-            // Need to have wrapping
+            size_t rtn = std::numeric_limits<size_t>::max();
+            // Compute row
+            size_t r = index % n_x;
+            if (r == (n_x - 1) && (domainWrap == CartDomainWrap::None || domainWrap == CartDomainWrap::Vertical)) {
+                return rtn;
+            } else if (r == (n_x - 1) && (domainWrap == CartDomainWrap::Horizontal || domainWrap == CartDomainWrap::Both)) {
+                return index - (n_x - 1);
+            } else {
+                return index + 1;
+            }
+        }
+        //! Return the coordinate of the neighbour to the east of index, or if there is no neighbour
+        //! to the east, return {float_max, float_max}
+        constexpr morph::vec<float, 2> coord_ne (size_t index)
+        {
+            size_t idx = index_ne (index);
+            if (idx < n) { return (*this)[idx]; }
+            return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+        //! Return true if the index has a neighbour to the east
+        constexpr bool has_ne (size_t index)
+        {
+            return index_ne (index) == std::numeric_limits<size_t>::max() ? false : true;
+        }
+
+        //! Return the index of the neighbour to the east of index, or if there is no neighbour
+        //! to the east, return std::numeric_limits<size_t>::max()
+        constexpr size_t index_nw (size_t index)
+        {
+            size_t rtn = std::numeric_limits<size_t>::max();
+            // Compute row
+            size_t r = index % n_x;
+            if (r == 0 && (domainWrap == CartDomainWrap::None || domainWrap == CartDomainWrap::Vertical)) {
+                return rtn;
+            } else if (r == 0 && (domainWrap == CartDomainWrap::Horizontal || domainWrap == CartDomainWrap::Both)) {
+                return index + (n_x - 1);
+            } else {
+                return index - 1;
+            }
+        }
+        //! Return the coordinate of the neighbour to the west of index, or if there is no neighbour
+        //! to the west, return {float_max, float_max}
+        constexpr morph::vec<float, 2> coord_nw (size_t index)
+        {
+            size_t idx = index_nw (index);
+            if (idx < n) { return (*this)[idx]; }
+            return morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
+        }
+        //! Return true if the index has a neighbour to the west
+        constexpr bool has_nw (size_t index)
+        {
+            return index_nw (index) == std::numeric_limits<size_t>::max() ? false : true;
         }
 
         /*
@@ -91,16 +155,16 @@ namespace morph {
 
         //! Return the distance from the centre of the left element column to the centre of the
         //! right element column
-        float width() const { return d * n_x; }
+        float width() const { return dx[0] * n_x; }
 
         //! Return the width of the grid if drawn as pixels
-        float width_of_pixels() const { return d * n_x + d; }
+        float width_of_pixels() const { return dx[0] * n_x + dx[0]; }
 
         //! Return the distance from the centre of the bottom row to the centre of the top row
-        float height() const { return v * n_y; }
+        float height() const { return dx[1] * n_y; }
 
         //! Return the height of the grid if drawn as pixels
-        float height_of_pixels() const { return v * n_y + v; }
+        float height_of_pixels() const { return dx[1] * n_y + dx[1]; }
 
         //! Return the area of the grid, if drawn as pixels
         float area_of_pixels() const { return width_of_pixels() * height_of_pixels(); }
