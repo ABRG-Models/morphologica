@@ -1,8 +1,9 @@
 /*!
  * \file
  *
- * This is a simple Cartesian Grid class. Simpler than morph::CartGrid. There is no option to
- * define an arbitrary boundary to your domain.
+ * This is a simple Cartesian Grid class. Simpler than morph::CartGrid. There is no option to define
+ * an arbitrary boundary to your domain, but this code is a few hundred lines versus 2600 lines in
+ * CartGrid.
  *
  * I'm writing this as a fully compile-time class for which the programmer sets grid width and
  * height (in number of pixels) the gridspacing (as a vec<> hopefully) and the offset (another vec)
