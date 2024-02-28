@@ -464,3 +464,6 @@ add_test(testboxfilter testboxfilter)
 add_executable(testGrid testGrid.cpp)
 set_property(TARGET testGrid PROPERTY CXX_STANDARD 20)
 add_test(testGrid testGrid)
+
+add_executable(profileGrid profileGrid.cpp)
+set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)

@@ -3,8 +3,8 @@
 
 int main()
 {
-    constexpr morph::vec<float, 2> grid_spacing = {1.0f, 1.0f};
-    constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
+    constexpr morph::vec<float, 2> grid_spacing = { 1.0f, 1.0f };
+    constexpr morph::vec<float, 2> grid_zero = { 0.0f, 0.0f };
 
     morph::Grid<10, 4, grid_spacing, grid_zero> grid;
 
@@ -26,7 +26,7 @@ int main()
                   << " NSW: " << (grid.has_nsw(i) ?  grid.index_nsw(i) : 99) << " NSE: " << (grid.has_nse(i) ?  grid.index_nse(i) : 99) << std::endl;
     }
 
-    morph::Grid<10, 4, grid_spacing, grid_zero,
+    morph::Grid<10, 4, grid_spacing, grid_zero, true,
                 morph::CartDomainWrap::None, morph::GridOrder::topleft_to_bottomright> grid2;
 
     for (size_t i = 0; i < grid2.n; ++i) {

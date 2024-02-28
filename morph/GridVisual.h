@@ -34,13 +34,14 @@ namespace morph {
      */
     template <typename T, size_t n_x, size_t n_y,
               morph::vec<float, 2> dx, morph::vec<float, 2> g_offset,
+              bool memory_coords,
               CartDomainWrap d_wrap, GridOrder g_order,
               int glver = morph::gl::version_4_1>
     class GridVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(morph::Grid<n_x, n_y, dx, g_offset, d_wrap, g_order>& _grid, const vec<float> _offset)
+        GridVisual(const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = dx.plus_one_dim (0.0f);
@@ -51,7 +52,6 @@ namespace morph {
             this->colourScale.do_autoscale = true;
             this->colourScale2.do_autoscale = true;
             this->colourScale3.do_autoscale = true;
-            // Copy information from the Grid reference to member vars
             this->grid = _grid;
             // Note: VisualModel::finalize() should be called before rendering
         }
@@ -60,9 +60,7 @@ namespace morph {
         virtual void initializeVertices()
         {
             // Optionally compute an offset to ensure that the cartgrid is centred about the mv_offset.
-            if (this->centralize == true) {
-                this->centering_offset = this->grid.centre().plus_one_dim(); // maybe (-) this?
-            }
+            if (this->centralize == true) { this->centering_offset = -this->grid->centre().plus_one_dim(); }
 
             switch (this->gridVisMode) {
             case GridVisMode::Triangles:
@@ -80,7 +78,7 @@ namespace morph {
 
             if (this->showborder == true) {
                 // Draw around the outside.
-                morph::vec<float, 4> cg_extents = this->grid.extents(); // {xmin, xmax, ymin, ymax}
+                morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
                 float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
                 float bz = dx[0] / 10.0f;
                 float half_bthick = bthick/2.0f;
@@ -132,30 +130,30 @@ namespace morph {
                 }
             }
 
-            for (unsigned int ri = 0; ri < this->grid.n; ++ri) {
+            for (unsigned int ri = 0; ri < this->grid->n; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
-                this->vertex_push (this->grid[ri][0]+centering_offset[0],
-                                   this->grid[ri][1]+centering_offset[1], dcopy[ri], this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0]+centering_offset[0],
+                                   (*this->grid)[ri][1]+centering_offset[1], dcopy[ri], this->vertexPositions);
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
             // Build indices based on neighbour relations in the CartGrid
-            for (unsigned int ri = 0; ri < this->grid.n; ++ri) {
-                if (this->grid.has_nne(ri) && this->grid.has_ne(ri)) {
+            for (unsigned int ri = 0; ri < this->grid->n; ++ri) {
+                if (this->grid->has_nne(ri) && this->grid->has_ne(ri)) {
                     this->indices.push_back (ri);
-                    this->indices.push_back (this->grid.index_nne(ri));
-                    this->indices.push_back (this->grid.index_ne(ri));
+                    this->indices.push_back (this->grid->index_nne(ri));
+                    this->indices.push_back (this->grid->index_ne(ri));
                 }
 
-                if (this->grid.has_nw(ri) && this->grid.has_nsw(ri)) {
+                if (this->grid->has_nw(ri) && this->grid->has_nsw(ri)) {
                     this->indices.push_back (ri);
-                    this->indices.push_back (this->grid.index_nw(ri));
-                    this->indices.push_back (this->grid.index_nsw(ri));
+                    this->indices.push_back (this->grid->index_nw(ri));
+                    this->indices.push_back (this->grid->index_nsw(ri));
                 }
             }
 
-            this->idx += this->grid.n;
+            this->idx += this->grid->n;
         }
 
         //! Show a set of hexes at the zero?
@@ -217,89 +215,89 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            for (size_t ri = 0; ri < this->grid.n; ++ri) {
+            for (size_t ri = 0; ri < this->grid->n; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
-                datumNE =  this->grid.has_ne(ri)  ? dcopy[this->grid.index_ne(ri)] : datumC;
-                datumNN =  this->grid.has_nn(ri)  ? dcopy[this->grid.index_nn(ri)] : datumC;
-                datumNW =  this->grid.has_nw(ri)  ? dcopy[this->grid.index_nw(ri)] : datumC;
-                datumNS =  this->grid.has_ns(ri)  ? dcopy[this->grid.index_ns(ri)] : datumC;
-                datumNNE = this->grid.has_nne(ri) ? dcopy[this->grid.index_nne(ri)] : datumC;
-                datumNNW = this->grid.has_nnw(ri) ? dcopy[this->grid.index_nnw(ri)] : datumC;
-                datumNSW = this->grid.has_nsw(ri) ? dcopy[this->grid.index_nsw(ri)] : datumC;
-                datumNSE = this->grid.has_nse(ri) ? dcopy[this->grid.index_nse(ri)] : datumC;
+                datumNE =  this->grid->has_ne(ri)  ? dcopy[this->grid->index_ne(ri)] : datumC;
+                datumNN =  this->grid->has_nn(ri)  ? dcopy[this->grid->index_nn(ri)] : datumC;
+                datumNW =  this->grid->has_nw(ri)  ? dcopy[this->grid->index_nw(ri)] : datumC;
+                datumNS =  this->grid->has_ns(ri)  ? dcopy[this->grid->index_ns(ri)] : datumC;
+                datumNNE = this->grid->has_nne(ri) ? dcopy[this->grid->index_nne(ri)] : datumC;
+                datumNNW = this->grid->has_nnw(ri) ? dcopy[this->grid->index_nnw(ri)] : datumC;
+                datumNSW = this->grid->has_nsw(ri) ? dcopy[this->grid->index_nsw(ri)] : datumC;
+                datumNSE = this->grid->has_nse(ri) ? dcopy[this->grid->index_nse(ri)] : datumC;
 
                 // Use a single colour for each rect, even though rectangle's z
                 // positions are interpolated. Do the _colour_ scaling:
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                this->vertex_push (this->grid[ri][0] + centering_offset[0], this->grid[ri][1] + centering_offset[1], datumC, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC, this->vertexPositions);
 
                 // Use the centre position as the first location for finding the normal vector
-                vtx_0 = {{this->grid[ri][0] + centering_offset[0], this->grid[ri][1] + centering_offset[1], datumC}};
+                vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
 
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
                 //datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
-                if (this->grid.has_nn(ri) && this->grid.has_ne(ri) && this->grid.has_nne(ri)) {
+                if (this->grid->has_nn(ri) && this->grid->has_ne(ri) && this->grid->has_nne(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
-                } else if (this->grid.has_ne(ri)) {
+                } else if (this->grid->has_ne(ri)) {
                     // Assume no NN and no NNE
                     datum = 0.5f * (datumC + datumNE);
-                } else if (this->grid.has_nn(ri)) {
+                } else if (this->grid->has_nn(ri)) {
                     // Assume no NE and no NNE
                     datum = 0.5f * (datumC + datumNN);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->grid[ri][0]+hx+centering_offset[0], this->grid[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
-                vtx_1 = {{this->grid[ri][0]+hx+centering_offset[0], this->grid[ri][1]+vy+centering_offset[1], datum}};
+                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_1 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum}};
 
                 // SE vertex
                 //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
                 // SE vertex
-                if (this->grid.has_ns(ri) && this->grid.has_ne(ri) && this->grid.has_nse(ri)) {
+                if (this->grid->has_ns(ri) && this->grid->has_ne(ri) && this->grid->has_nse(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
-                } else if (this->grid.has_ne(ri)) {
+                } else if (this->grid->has_ne(ri)) {
                     // Assume no NS and no NSE
                     datum = 0.5f * (datumC + datumNE);
-                } else if (this->grid.has_ns(ri)) {
+                } else if (this->grid->has_ns(ri)) {
                     // Assume no NE and no NSE
                     datum = 0.5f * (datumC + datumNS);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->grid[ri][0]+hx+centering_offset[0], this->grid[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
-                vtx_2 = {{this->grid[ri][0]+hx+centering_offset[0], this->grid[ri][1]-vy+centering_offset[1], datum}};
+                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
+                vtx_2 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum}};
 
 
                 // SW vertex
                 //datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
-                if (this->grid.has_ns(ri) && this->grid.has_nw(ri) && this->grid.has_nsw(ri)) {
+                if (this->grid->has_ns(ri) && this->grid->has_nw(ri) && this->grid->has_nsw(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
-                } else if (this->grid.has_nw(ri)) {
+                } else if (this->grid->has_nw(ri)) {
                     datum = 0.5f * (datumC + datumNW);
-                } else if (this->grid.has_ns(ri)) {
+                } else if (this->grid->has_ns(ri)) {
                     datum = 0.5f * (datumC + datumNS);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->grid[ri][0]-hx+centering_offset[0], this->grid[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
 
                 // NW vertex
                 //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
-                if (this->grid.has_nn(ri) && this->grid.has_nw(ri) && this->grid.has_nnw(ri)) {
+                if (this->grid->has_nn(ri) && this->grid->has_nw(ri) && this->grid->has_nnw(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
-                } else if (this->grid.has_nw(ri)) {
+                } else if (this->grid->has_nw(ri)) {
                     datum = 0.5f * (datumC + datumNW);
-                } else if (this->grid.has_nn(ri)) {
+                } else if (this->grid->has_nn(ri)) {
                     datum = 0.5f * (datumC + datumNN);
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push (this->grid[ri][0]-hx+centering_offset[0], this->grid[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
@@ -386,7 +384,7 @@ namespace morph {
         }
 
         //! The morph::Grid to visualize
-        morph::Grid<n_x, n_y, dx, g_offset, d_wrap, g_order> grid;
+        const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

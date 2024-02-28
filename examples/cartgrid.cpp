@@ -67,10 +67,8 @@ int main()
     cgv->finalize();
     v.addVisualModel (cgv);
 
-    while (v.readyToFinish == false) {
-        v.waitevents (0.018);
-        v.render();
-    }
+    v.render();
+    //v.keepOpen();
 
     return 0;
 }
