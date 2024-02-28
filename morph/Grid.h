@@ -59,7 +59,7 @@ namespace morph {
         //! The number of elements in the grid
         static constexpr size_t n = n_x * n_y;
 
-        //! Constructor only required to populate memory_coords
+        //! Constructor only required to populate d_x/d_y
         Grid()
         {
             if constexpr (memory_coords == true) {
@@ -304,22 +304,14 @@ namespace morph {
         //! Extents {xmin, xmax, ymin, ymax}
         constexpr morph::vec<float, 4> extents() const { return morph::vec<float, 4>({ xmin(), xmax(), ymin(), ymax() }); }
 
+        //! Return the coordinates of the centre of the grid
         constexpr morph::vec<float, 2> centre() const { return morph::vec<float, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
-
 
         //! Return the row for the index
         constexpr size_t row (const size_t index) const { return index < n ? index % n_x : std::numeric_limits<size_t>::max(); }
 
         //! Return the col for the index
         constexpr size_t col (const size_t index) const { return index < n ? index / n_x : std::numeric_limits<size_t>::max(); }
-
-        //! Output some text information about the hexgrid.
-        constexpr std::string output() const
-        {
-            std::stringstream ss;
-            ss << n_x << " x " << n_y << " grid (" << n << " elements).";
-            return ss.str();
-        }
 
         //! Two vector structures that contains the coords for this grid. Populated only if template arg
         //! memory_coords is true.
