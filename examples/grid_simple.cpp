@@ -23,7 +23,7 @@ int main()
 
     // Create a grid to show in the scene
     constexpr size_t Nside = 100;
-    constexpr morph::vec<float, 2> grid_spacing = {0.001f, 0.001f};
+    constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
     constexpr morph::CartDomainWrap d_wrap = morph::CartDomainWrap::None;
     constexpr morph::GridOrder g_order = morph::GridOrder::bottomleft_to_topright;
@@ -48,8 +48,7 @@ int main()
     gv->finalize();
     v.addVisualModel (gv);
 
-    //v.keepOpen();
-    v.render();
+    v.keepOpen();
 
     return 0;
 }

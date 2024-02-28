@@ -67,8 +67,7 @@ int main()
     cgv->finalize();
     v.addVisualModel (cgv);
 
-    v.render();
-    //v.keepOpen();
+    v.keepOpen();
 
     return 0;
 }
