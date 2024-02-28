@@ -35,9 +35,20 @@ option(USE_GLEW "Link libglew.so (try if the linker can't find glCreateVertexArr
 # required to allow brace initializers for the morph::Vector class
 set (CMAKE_CXX_STANDARD 17)
 
+# There's ONE class that requires C++-20. C++-20 support is available
+# in Gnu GCC so if we have a recent enough version of that, then go
+# ahead and compile the morph::Grid code.
+set (CXX_20_AVAILABLE 0)
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 10.0)
+    message(STATUS "C++-20 is available on Gnu GCC version 10.0 and up")
+    set (CXX_20_AVAILABLE 1) # Can do C++-20
+  endif()
+endif()
+
 # Add the host definition to CXXFLAGS along with other switches
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
+  set(CMAKE_CXX_FLAGS "${MORPH_HOST_DEFINITION} -Wall -g -O3")
 else()
   if(NOT CMAKE_SYSTEM MATCHES Win.*)
     # To use Intel compiler, you can call cmake as: `cmake -DCMAKE_CXX_COMPILER=icpc ..` or `CXX=icpc cmake ..`

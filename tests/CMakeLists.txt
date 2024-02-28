@@ -460,10 +460,12 @@ add_test(testTools testTools)
 add_executable(testboxfilter testboxfilter.cpp)
 add_test(testboxfilter testboxfilter)
 
-# morph::Grid
-add_executable(testGrid testGrid.cpp)
-set_property(TARGET testGrid PROPERTY CXX_STANDARD 20)
-add_test(testGrid testGrid)
+# morph::Grid requires C++-20
+if(CXX_20_AVAILABLE)
+  add_executable(testGrid testGrid.cpp)
+  set_property(TARGET testGrid PROPERTY CXX_STANDARD 20)
+  add_test(testGrid testGrid)
 
-add_executable(profileGrid profileGrid.cpp)
-set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
+  add_executable(profileGrid profileGrid.cpp)
+  set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
+endif()
