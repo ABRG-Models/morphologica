@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <string>
-#include <sstream>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/CartDomains.h>
