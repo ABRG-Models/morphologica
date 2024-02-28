@@ -275,7 +275,10 @@ namespace morph {
         constexpr float ymax() const { return g_order == morph::GridOrder::bottomleft_to_topright ? (*this)[n_x * (n_y-1)][1] : (*this)[0][1]; }
 
         //! Extents {xmin, xmax, ymin, ymax}
-        constexpr morph::vec<float, 4> get_extents() const { return morph::vec<float, 4>({ xmin(), xmax(), ymin(), ymax() }); }
+        constexpr morph::vec<float, 4> extents() const { return morph::vec<float, 4>({ xmin(), xmax(), ymin(), ymax() }); }
+
+        constexpr morph::vec<float, 2> centre() const { return morph::vec<float, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
+
 
         //! Return the row for the index
         constexpr size_t row (const size_t index) const { return index < n ? index % n_x : std::numeric_limits<size_t>::max(); }

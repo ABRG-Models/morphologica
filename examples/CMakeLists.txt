@@ -104,6 +104,13 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid GLEW::GLEW)
   endif()
 
+  add_executable(grid_simple grid_simple.cpp)
+  set_property(TARGET grid_simple PROPERTY CXX_STANDARD 20)
+  target_link_libraries(grid_simple OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(grid_simple GLEW::GLEW)
+  endif()
+
   add_executable(hsvwheel hsvwheel.cpp)
   target_link_libraries(hsvwheel OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
