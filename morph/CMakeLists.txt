@@ -4,7 +4,7 @@
 
 # Header installation
 install(
-  FILES Quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h mathconst.h MathAlgo.h MathImpl.h number_type.h Hex.h HexGrid.h CartDomains.h CartGrid.h Grid.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Anneal.h Config.h vec.h vvec.h TransformMatrix.h colour.h ColourMap.h ColourMap_Lists.h Scale.h Random.h RecurrentNetworkTools.h RecurrentNetwork.h Winder.h trait_tests.h base64.h
+  FILES Quaternion.h tools.h BezCoord.h BezCurve.h BezCurvePath.h ReadCurves.h AllocAndRead.h MorphDbg.h mathconst.h MathAlgo.h MathImpl.h number_type.h Hex.h HexGrid.h CartDomains.h CartGrid.h Grid.h Gridv.h HdfData.h Process.h RD_Base.h DirichVtx.h DirichDom.h ShapeAnalysis.h NM_Simplex.h Anneal.h Config.h vec.h vvec.h TransformMatrix.h colour.h ColourMap.h ColourMap_Lists.h Scale.h Random.h RecurrentNetworkTools.h RecurrentNetwork.h Winder.h trait_tests.h base64.h
 Mnist.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/morph
   )
 # There are also headers in sub directories

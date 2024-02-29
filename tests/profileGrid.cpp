@@ -4,6 +4,7 @@
 
 #include <morph/CartGrid.h>
 #include <morph/Grid.h>
+#include <morph/Gridv.h>
 #include <chrono>
 
 int main()
@@ -36,11 +37,16 @@ int main()
     cgrid.setBoundaryOnOuterEdge();
     sc::time_point t3 = sc::now();
 
+    morph::Gridv gridv(Nside, Nside, grid_spacing, grid_zero, d_wrap);
+
+    sc::time_point t4 = sc::now();
+
     std::cout << "Grid sizes: " << grid.n << " and " << cgrid.num() << std::endl;
 
     std::cout << "Grid instantiation (without memory vecs):   " << duration_cast<milliseconds>(t1-t0).count() << " ms\n";
     std::cout << "Grid instantiation (WITH memory vecs):      " << duration_cast<milliseconds>(t2-t1).count() << " ms\n";
     std::cout << "CartGrid instantiation:                     " << duration_cast<milliseconds>(t3-t2).count() << " ms\n";
+    std::cout << "Gridv instantiation:                        " << duration_cast<milliseconds>(t4-t3).count() << " ms\n";
 
     std::cout << "\nGrid without memory\n------------------------------\n";
 
@@ -62,10 +68,24 @@ int main()
     for (size_t i = 0; i < grid_mem.n; ++i) {
         one_coordinate[0] += grid_mem.d_x[i];
         one_coordinate[1] += grid_mem.d_y[i];
-
     }
     t1 = sc::now();
     std::cout << "Grid (WITH mem) access as '+= grid.d_x[i]/d_y[i]':  " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+
+    std::cout << "\nGridv without memory\n------------------------------\n";
+
+    one_coordinate = {0,0};
+    t0 = sc::now();
+    for (size_t i = 0; i < gridv.n; ++i) { one_coordinate += gridv.coord(i); }
+    t1 = sc::now();
+    std::cout << "Gridv (no mem) access as '+= gridv.coord(i)':               " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+
+    one_coordinate = {0,0};
+    std::cout << "\nGridv WITH memory\n------------------------------\n";
+    t0 = sc::now();
+    for (size_t i = 0; i < gridv.n; ++i) { one_coordinate += gridv[i]; }
+    t1 = sc::now();
+    std::cout << "Gridv (WITH mem) access as  '+= gridv[i]':            " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nCartGrid (also WITH memory)\n------------------------------\n";

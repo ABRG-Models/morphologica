@@ -69,7 +69,9 @@ namespace morph {
      * coordinates for each grid element. The vvecs are called Grid<>::d_x and
      * Grid<>::d_y. On your compute architecture, it may be faster to retrieve an
      * element's position information by memory lookup than by carrying out the
-     * computation. To test, you can run the program morphologica/tests/profileGrid
+     * computation. To test, you can run the program morphologica/tests/profileGrid. NB:
+     * *neighbour* relationships are always computed (though they could in principle be
+     * stored in d_ vectors as they are in CartGrid).
      *
      * \tparam d_wrap An enum to set how the grid wraps. Affects neighbour relationships
      *
