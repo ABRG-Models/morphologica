@@ -1,16 +1,14 @@
 /*!
  * \file
  *
- * This is a simple Cartesian Grid class. Simpler than morph::CartGrid. There is no option to define
- * an arbitrary boundary to your domain, but this code is a few hundred lines versus 2600 lines in
- * CartGrid.
+ * This file contains the definition for morph::Grid<>, a simple Cartesian Grid
+ * class. It is much simpler than morph::CartGrid because there is no option to define
+ * an arbitrary boundary to your domain. This code is a few hundred lines of code versus
+ * about 2600 lines in CartGrid.
  *
- * I'm writing this as a fully compile-time class for which the programmer sets grid width and
- * height (in number of pixels) the gridspacing (as a vec<> hopefully) and the offset (another vec)
- * as template arguments. I think this will require C++-20 which permits floating point values to be
- * passed as template args.
- *
- * I might later make a runtime one, which will be compatible with <= C++-17
+ * I'm writing this as a fully compile-time class for which the programmer sets grid
+ * parameters as template arguments. This requires C++-20 which permits floating point
+ * values (and the values of user-defined classes) to be passed as template args.
  *
  * \author Seb James
  * \date February 2024
@@ -25,26 +23,58 @@
 namespace morph {
 
     /*!
-     * A grid class. This provides coordinates for each element in a grid along with neighbour
-     * relationships. The data associated with the grid is expected to be stored in an array or
-     * vector. Use the index of the array/vector to obtain info about the grid locations. The size
-     * of the grid is not expected to change and so is provided as template args
+     * \brief A grid class to define a rectangular Cartesian grid of locations
+     *
+     * This class exists to provide coordinates for each element in a rectangular grid
+     * along with neighbour relationships between the elements. The idea is that during
+     * a computation in which you are using state variables from arrays (or vectors or
+     * vvecs or whatever) that define some kind of spatial field, you can retrieve the
+     * coordinates that relate to element i and also the coordinates (or index i or
+     * existence) of the neighbour to the 'East', 'West', 'North' etc.
+     *
+     * This class allows you to specify (at compile time) the dimensions of the
+     * rectangular grid, specifying the number of elements on each side of the grid and
+     * the inter-element distances. You can also specify and offset coordinate of the
+     * zeroth element of your grid, so that all the locations you retrieve become offset
+     * (this is useful for specifying zero-centred grids). Two more template arguments
+     * are important for specifying the coordinates that a given index in your arrays
+     * maps to. One is whether or not the grid should be considered to be 'wrappable' -
+     * if horizontally wrappable, then the neighbour-to-the-east of the east-most
+     * element is the west-most element in the same row. The other is the 'element
+     * order'. You could index a square grid by starting at the bottom left, counting to
+     * the right and then moving up in the y direction for the next row. You could
+     * equally define your indices to start at the top left and count to the right and
+     * down for each row. These are 'row-major' schemes. Either is an option for this
+     * class. Column-major schemes are possible, but omitted for now (they would not be
+     * difficult to code up).
+     *
+     * Lastly, there is a template argument to choose whether to compute each element
+     * when instantiating the class (which takes a few milliseconds on my laptop) and
+     * then look up the coordinate from memory when requested. This is the default as it
+     * appears to be faster. The alternative is to always compute the coordinate when it
+     * is requested, which results in (almost) no class instatiation time.
      *
      * \tparam n_x Number of elements that the grid is wide
      *
      * \tparam n_y Number of elements that the grid is high
      *
-     * \tparam dx A two element vec providing the horizontal distance between adjacent grid element
-     * centres (element 0) and the vertical distance between adjacent grid element centres (element 1).
+     * \tparam dx A two element morph::vec providing the horizontal distance between
+     * horizontally adjacent grid element centres (element 0) and the vertical distance
+     * between vertically adjacent grid element centres (element 1).
      *
-     * \tparam g_offset A vector giving the distance offset (in your chosen units) to Grid index 0.
+     * \tparam g_offset A vector giving the distance offset (in your chosen units) to
+     * Grid index 0.
      *
-     * \tparam memory_coords If true, then populate some vvecs with the coordinates
+     * \tparam memory_coords If true, then populate two vvecs with the x and y
+     * coordinates for each grid element. The vvecs are called Grid<>::d_x and
+     * Grid<>::d_y. On your compute architecture, it may be faster to retrieve an
+     * element's position information by memory lookup than by carrying out the
+     * computation. To test, you can run the program morphologica/tests/profileGrid
      *
      * \tparam d_wrap An enum to set how the grid wraps. Affects neighbour relationships
      *
-     * \tparam g_order The index order. Always counting left to right, but do you start on the top row or
-     * the bottom row (the default)?
+     * \tparam g_order The index order. Always counting left to right (row-major), but
+     * do you start on the top row or the bottom row (the default)?
      */
     template < size_t n_x, size_t n_y,
                morph::vec<float, 2> dx = { 1.0f, 1.0f },
@@ -268,15 +298,17 @@ namespace morph {
             return idx < n ? (*this)[idx] : morph::vec<float, 2>({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()});
         }
 
-        /*
+        /*!
+         * Return the distance from the centre of the left element column to the centre of the
+         * right element column
+         *
+         * A note on widths:
+         *
          * What is the width of a grid? Is it the distance from the centre of the left-most pixel to
          * the centre of the right-most pixel, OR is it the distance from the left edge of the
          * left-most pixel to the right edge of the right-most pixel? It could be either, so I
          * provide width() and width_of_pixels() as well as height() and height_of_pixels().
          */
-
-        //! Return the distance from the centre of the left element column to the centre of the
-        //! right element column
         constexpr float width() const { return dx[0] * n_x; }
 
         //! Return the width of the grid if drawn as pixels
