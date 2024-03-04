@@ -94,12 +94,21 @@ namespace morph {
 
         // Note: No setters for d_wrap or g_order. I'm assuming noone will want to change these at runtime
 
+        // Getters
+        size_t get_n_x() const { return this->n_x; }
+        size_t get_n_y() const { return this->n_y; }
+        morph::vec<float, 2> get_dx() const { return this->dx; }
+        morph::vec<float, 2> get_g_offset() const { return this->g_offset; }
+        CartDomainWrap get_d_wrap() const { return this->d_wrap; }
+        GridOrder get_g_order() const { return this->g_order; }
+
         //! The number of elements in the grid. Public, but don't change it manually.
         size_t n = n_x * n_y;
 
         //! Constructor
         Gridv (const size_t _n_x, const size_t _n_y,
-               const morph::vec<float, 2> _dx, const morph::vec<float, 2> _g_offset,
+               const morph::vec<float, 2> _dx = { 1.0f, 1.0f },
+               const morph::vec<float, 2> _g_offset = { 0.0f, 0.0f },
                const CartDomainWrap _d_wrap = CartDomainWrap::None,
                const GridOrder _g_order = morph::GridOrder::bottomleft_to_topright)
             : n_x(_n_x)

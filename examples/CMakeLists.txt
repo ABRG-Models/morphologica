@@ -104,6 +104,7 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid GLEW::GLEW)
   endif()
 
+  # morph::Grid is compile-time-configured
   if(CXX_20_AVAILABLE)
     add_executable(grid_simple grid_simple.cpp)
     set_property(TARGET grid_simple PROPERTY CXX_STANDARD 20)
@@ -111,6 +112,13 @@ if(ARMADILLO_FOUND)
     if(USE_GLEW)
       target_link_libraries(grid_simple GLEW::GLEW)
     endif()
+  endif()
+
+  # morph::Gridv is runtime-configured
+  add_executable(gridv_simple gridv_simple.cpp)
+  target_link_libraries(gridv_simple OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(gridv_simple GLEW::GLEW)
   endif()
 
   add_executable(hsvwheel hsvwheel.cpp)

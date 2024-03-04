@@ -9,7 +9,7 @@
 #endif
 #include <morph/ColourMap.h>
 #include <morph/VisualDataModel.h>
-#include <morph/Grid.h>
+#include <morph/Gridv.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <vector>
@@ -17,36 +17,27 @@
 
 namespace morph {
 
-    enum class GridVisMode
+    enum class GridvVisMode
     {
         Triangles, // Render triangles with a triangle vertex at the centre of each Rect.
         RectInterp  // Render each rect as an actual rectangle made of 4 triangles.
     };
 
     /*!
-     * The template argument T is the type of the *data* which this GridVisual will visualize.
+     * The template argument T is the type of the *data* which this GridvVisual will visualize.
      *
-     * GridVisual (like CartGridVisual and HexGridVisual) derives from VisualDataModel, allowing the
-     * data (1D, 2D or 3D) to visualize for the Grid to be stored.
-     *
-     * Right now, I have to pass in all the template arguments for the Grid that will be
-     * visualized. This seems clunky. Sensible defaults may help.
+     * GridvVisual is like GridVisual, but uses Gridv instead of the compile-time-defined
+     * morph::Grid.
      */
-    template <typename T, size_t n_x, size_t n_y,
-              morph::vec<float, 2> dx = { 1.0f, 1.0f },
-              morph::vec<float, 2> g_offset = { 0.0f, 0.0f },
-              bool memory_coords = true,
-              CartDomainWrap d_wrap = CartDomainWrap::None,
-              GridOrder g_order = morph::GridOrder::bottomleft_to_topright,
-              int glver = morph::gl::version_4_1>
-    class GridVisual : public VisualDataModel<T, glver>
+    template <typename T, int glver = morph::gl::version_4_1>
+    class GridvVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* _grid, const vec<float> _offset)
+        GridvVisual(const morph::Gridv* _grid, const vec<float> _offset)
         {
             // Set up...
-            morph::vec<float> pixel_offset = dx.plus_one_dim (0.0f);
+            morph::vec<float> pixel_offset = _grid->get_dx().plus_one_dim (0.0f);
             this->mv_offset = _offset + pixel_offset;
             this->viewmatrix.translate (this->mv_offset);
             // Defaults for z and colourScale
@@ -65,12 +56,12 @@ namespace morph {
             if (this->centralize == true) { this->centering_offset = -this->grid->centre().plus_one_dim(); }
 
             switch (this->gridVisMode) {
-            case GridVisMode::Triangles:
+            case GridvVisMode::Triangles:
             {
                 this->initializeVerticesTris();
                 break;
             }
-            case GridVisMode::RectInterp:
+            case GridvVisMode::RectInterp:
             default:
             {
                 this->initializeVerticesRectsInterpolated();
@@ -81,6 +72,7 @@ namespace morph {
             if (this->showborder == true) {
                 // Draw around the outside.
                 morph::vec<float, 4> cg_extents = this->grid->extents(); // {xmin, xmax, ymin, ymax}
+                morph::vec<float, 2> dx = this->grid->get_dx();
                 float bthick    = this->border_thickness_fixed ? this->border_thickness_fixed : dx[0] * this->border_thickness;
                 float bz = dx[0] / 10.0f;
                 float half_bthick = bthick/2.0f;
@@ -166,6 +158,7 @@ namespace morph {
         //! for each rectangle. Gives a smooth surface in which you can see the pixels.
         void initializeVerticesRectsInterpolated()
         {
+            morph::vec<float, 2> dx = this->grid->get_dx();
             float hx = 0.5f * dx[0];
             float vy = 0.5f * dx[1];
 
@@ -345,9 +338,9 @@ namespace morph {
         }
 
         //! How to render the elements. Triangles are faster.
-        GridVisMode gridVisMode = GridVisMode::Triangles;
+        GridvVisMode gridVisMode = GridvVisMode::Triangles;
 
-        //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
+        //! Set this to true to adjust the positions that the GridvVisual uses to plot the Grid so
         //! that the Grid is centralised around the VisualModel::mv_offset.
         bool centralize = false;
 
@@ -385,8 +378,8 @@ namespace morph {
             return clr;
         }
 
-        //! The morph::Grid to visualize
-        const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* grid;
+        //! The morph::Gridv to visualize
+        const morph::Gridv* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;
