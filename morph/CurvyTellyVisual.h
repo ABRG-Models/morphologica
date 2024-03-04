@@ -3,15 +3,15 @@
 #include <array>
 #include <morph/mathconst.h>
 #include <morph/vec.h>
-#include <morph/CartGrid.h>
-#include <morph/CartGridVisual.h>
+#include <morph/Grid.h>
+#include <morph/GridVisual.h>
 
 namespace morph {
 
     // Draw a curved CartGrid like a curved TV. You make a cylinder if you make the
     // rotation right. Frames can be drawn around the CartGrid.
     template <typename T, int glver = morph::gl::version_4_1>
-    struct CurvyTellyVisual : public morph::CartGridVisual<T, glver>
+    struct CurvyTellyVisual : public morph::GridVisual<T, glver>
     {
         // The radius of the curved surface representing the CartGrid
         T radius = T{1};
@@ -28,17 +28,16 @@ namespace morph {
         float frame_width = 0.01f;
 
         // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
-        CurvyTellyVisual(const morph::CartGrid* _cg, const morph::vec<float> _offset)
-            : morph::CartGridVisual<T, glver>(_cg, _offset) { this->centralize = true; }
+        CurvyTellyVisual(const morph::Grid* _cg, const morph::vec<float> _offset)
+            : morph::GridVisual<T, glver>(_cg, _offset) { this->centralize = true; }
 
         void drawcurvygrid()
         {
-            float dx = this->cg->getd();
-            float hx = 0.5f * dx;
-            float dy = this->cg->getv();
-            float vy = 0.5f * dy;
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float hx = 0.5f * dx[0];
+            float vy = 0.5f * dx[1];
 
-            unsigned int nrect = this->cg->num();
+            unsigned int nrect = this->grid->n;
             this->idx = 0;
 
             if (this->scalarData != nullptr) {
@@ -69,10 +68,10 @@ namespace morph {
             morph::vec<float> vtx_0; // centre of a CartGrid element
             morph::vec<float> vtx_ne, vtx_nw, vtx_se, vtx_sw;
 
-            float angle_per_distance = this->angle_to_subtend / (dx+this->cg->width());
+            float angle_per_distance = this->angle_to_subtend / (dx[0]+this->grid->width());
 
             // Use extents to plot a frame, if required. extents are { xmin, xmax, ymin, ymax }
-            morph::vec<float, 4> extents = this->cg->get_extents(); // Have to centre
+            morph::vec<float, 4> extents = this->grid->extents(); // Have to centre
             float xmin = extents[0] + this->centering_offset[0];
             float xmax = extents[1] + this->centering_offset[0];
             float ymin = extents[2] + this->centering_offset[1];
@@ -91,7 +90,7 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                _x = -(this->cg->d_x[ri]+this->centering_offset[0]); // why mult by -1? Because -x on CartGrid becomes +angle on CurvyTelly
+                _x = -((*this->grid)[ri][0]+this->centering_offset[0]); // why mult by -1? Because -x on CartGrid becomes +angle on CurvyTelly
 
                 // Here we test if we should omit this rectangle.
                 if (std::abs(_x) > this->max_abs_x) { continue; }
@@ -101,7 +100,7 @@ namespace morph {
                 vtx_0 = {
                     rprime * std::cos (this->rotoff + _x*angle_per_distance),
                     rprime * std::sin (this->rotoff + _x*angle_per_distance),
-                    this->cg->d_y[ri]+this->centering_offset[1]
+                    (*this->grid)[ri][1]+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_0, this->vertexPositions);
                 // Use the centre position as the first location for finding the normal vector
@@ -111,7 +110,7 @@ namespace morph {
                 vtx_ne = {
                     this->radius * std::cos (this->rotoff + _x*angle_per_distance),
                     this->radius * std::sin (this->rotoff + _x*angle_per_distance),
-                    this->cg->d_y[ri]+vy+this->centering_offset[1]
+                    (*this->grid)[ri][1]+vy+this->centering_offset[1]
                 };
                 this->vertex_push (vtx_ne, this->vertexPositions);
 
@@ -121,15 +120,15 @@ namespace morph {
 
                 // SE vertex
                 vtx_se = vtx_ne; // x/y unchanged
-                vtx_se[2] = this->cg->d_y[ri]-vy+this->centering_offset[1];
+                vtx_se[2] = (*this->grid)[ri][1]-vy+this->centering_offset[1];
                 this->vertex_push (vtx_se, this->vertexPositions);
 
                 // SW vertex
-                _x = -(this->cg->d_x[ri]+this->centering_offset[0])-hx;
+                _x = -((*this->grid)[ri][0]+this->centering_offset[0])-hx;
                 vtx_sw = {
                     this->radius * std::cos (this->rotoff + _x*angle_per_distance),
                     this->radius * std::sin (this->rotoff + _x*angle_per_distance),
-                    this->cg->d_y[ri]-vy+this->centering_offset[1] // same as vtx_2[2]
+                    (*this->grid)[ri][1]-vy+this->centering_offset[1] // same as vtx_2[2]
                 };
                 this->vertex_push (vtx_sw, this->vertexPositions);
 
@@ -141,7 +140,7 @@ namespace morph {
 
                 // NW vertex
                 vtx_nw = vtx_sw; // x/y unchanged
-                vtx_nw[2] = this->cg->d_y[ri]+vy+this->centering_offset[1];
+                vtx_nw[2] = (*this->grid)[ri][1]+vy+this->centering_offset[1];
                 this->vertex_push (vtx_nw, this->vertexPositions);
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
@@ -229,10 +228,11 @@ namespace morph {
         {
             // Compute the offset to ensure that the cartgrid is centred about the mv_offset.
             if (this->centralize == true) {
-                float left_lim = -this->cg->width()/2.0f;
-                float bot_lim = -this->cg->depth()/2.0f;
-                this->centering_offset[0] = left_lim - this->cg->d_x[0];
-                this->centering_offset[1] = bot_lim - this->cg->d_y[0];
+                float left_lim = -this->grid->width()/2.0f;
+                float bot_lim = -this->grid->height()/2.0f;
+                morph::vec<float, 2> coord0 = (*this->grid)[0];
+                this->centering_offset[0] = left_lim - coord0[0];
+                this->centering_offset[1] = bot_lim - coord0[1];
                 //std::cout << "centering_offset is " << this->centering_offset << std::endl;
             }
             this->drawcurvygrid();
