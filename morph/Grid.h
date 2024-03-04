@@ -1,8 +1,8 @@
 /*!
  * \file
  *
- * This file contains the definition for morph::Gridv, a simple Cartesian Grid
- * class. This is the runtime-modifiable version of morph::Grid<>
+ * This file contains the definition for morph::Grid, a simple Cartesian Grid
+ * class. This is the runtime-modifiable version of morph::Gridct<>
  *
  * \author Seb James
  * \date February 2024
@@ -42,13 +42,13 @@ namespace morph {
      * class. Column-major schemes are possible, but omitted for now (they would not be
      * difficult to code up).
      *
-     * Use this class instead of morph::Grid<> if you need to change the grid parameters
-     * at runtime. For example, with Gridv, you could model an expanding domain by
-     * changing Gridv::dx over time. You could model a shift in the cooordinates that
-     * your grid maps by changing Gridv::g_offset.
+     * Use this class instead of morph::Gridct<> if you need to change the grid parameters
+     * at runtime. For example, with Grid, you could model an expanding domain by
+     * changing Grid::dx over time. You could model a shift in the cooordinates that
+     * your grid maps by changing Grid::g_offset.
      *
      */
-    struct Gridv
+    struct Grid
     {
     private:
         // Members that are template arguments in morph::Grid. Set only via constructor or setters
@@ -106,11 +106,11 @@ namespace morph {
         size_t n = n_x * n_y;
 
         //! Constructor
-        Gridv (const size_t _n_x, const size_t _n_y,
-               const morph::vec<float, 2> _dx = { 1.0f, 1.0f },
-               const morph::vec<float, 2> _g_offset = { 0.0f, 0.0f },
-               const CartDomainWrap _d_wrap = CartDomainWrap::None,
-               const GridOrder _g_order = morph::GridOrder::bottomleft_to_topright)
+        Grid (const size_t _n_x, const size_t _n_y,
+              const morph::vec<float, 2> _dx = { 1.0f, 1.0f },
+              const morph::vec<float, 2> _g_offset = { 0.0f, 0.0f },
+              const CartDomainWrap _d_wrap = CartDomainWrap::None,
+              const GridOrder _g_order = morph::GridOrder::bottomleft_to_topright)
             : n_x(_n_x)
             , n_y(_n_y)
             , dx(_dx)

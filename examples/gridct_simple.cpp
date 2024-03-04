@@ -15,13 +15,11 @@
 
 int main()
 {
-    // Contructor args are width, height, title, coordinate arrows offset, cooridnate
-    // arrows lengths, coord arrow thickness, ?
-    morph::Visual v(1600, 1000, "morph::GridVisual", {-0.8,-0.8}, {.05,.05,.05}, 2.0f, 0.0f);
+    morph::Visual v(1600, 1000, "morph::GridctVisual");
     v.lightingEffects();
-    v.addLabel ("This is a\nmorph::GridVisual\nobject", {0.26f, -0.16f, 0.0f});
+    v.addLabel ("This is a\nmorph::GridctVisual\nobject", {0.26f, -0.16f, 0.0f});
 
-    // Create a grid to show in the scene
+    // Create a Gridct to show in the scene
     constexpr size_t Nside = 100;
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
@@ -42,7 +40,7 @@ int main()
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto gv = std::make_unique<morph::GridctVisual<float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order>>(&grid, offset);
     v.bindmodel (gv);
-    gv->gridVisMode = morph::GridVisMode::RectInterp; // RectInterp or Triangles
+    gv->gridVisMode = morph::GridctVisMode::RectInterp; // RectInterp or Triangles
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->finalize();

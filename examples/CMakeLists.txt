@@ -114,11 +114,11 @@ if(ARMADILLO_FOUND)
     endif()
   endif()
 
-  # morph::Gridv is runtime-configured
-  add_executable(gridv_simple gridv_simple.cpp)
-  target_link_libraries(gridv_simple OpenGL::GL glfw Freetype::Freetype)
+  # morph::Grid is runtime-configured
+  add_executable(grid_simple grid_simple.cpp)
+  target_link_libraries(grid_simple OpenGL::GL glfw Freetype::Freetype)
   if(USE_GLEW)
-    target_link_libraries(gridv_simple GLEW::GLEW)
+    target_link_libraries(grid_simple GLEW::GLEW)
   endif()
 
   add_executable(hsvwheel hsvwheel.cpp)
