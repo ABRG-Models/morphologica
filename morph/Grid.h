@@ -12,7 +12,7 @@
 
 #include <morph/vec.h>
 #include <morph/vvec.h>
-#include <morph/CartDomains.h>
+#include <morph/GridFeatures.h>
 
 namespace morph {
 
@@ -65,7 +65,7 @@ namespace morph {
         //! index 0.
         morph::vec<float, 2> g_offset = { 0.0f, 0.0f };
         //! d_wrap An enum to set how the grid wraps. Affects neighbour relationships
-        CartDomainWrap d_wrap = CartDomainWrap::None;
+        GridDomainWrap d_wrap = GridDomainWrap::None;
         //! g_order The index order. Always counting left to right (row-major), but do
         //! you start on the top row or the bottom row (the default)?
         GridOrder g_order = morph::GridOrder::bottomleft_to_topright;
@@ -99,7 +99,7 @@ namespace morph {
         size_t get_n_y() const { return this->n_y; }
         morph::vec<float, 2> get_dx() const { return this->dx; }
         morph::vec<float, 2> get_g_offset() const { return this->g_offset; }
-        CartDomainWrap get_d_wrap() const { return this->d_wrap; }
+        GridDomainWrap get_d_wrap() const { return this->d_wrap; }
         GridOrder get_g_order() const { return this->g_order; }
 
         //! The number of elements in the grid. Public, but don't change it manually.
@@ -109,7 +109,7 @@ namespace morph {
         Grid (const size_t _n_x, const size_t _n_y,
               const morph::vec<float, 2> _dx = { 1.0f, 1.0f },
               const morph::vec<float, 2> _g_offset = { 0.0f, 0.0f },
-              const CartDomainWrap _d_wrap = CartDomainWrap::None,
+              const GridDomainWrap _d_wrap = GridDomainWrap::None,
               const GridOrder _g_order = morph::GridOrder::bottomleft_to_topright)
             : n_x(_n_x)
             , n_y(_n_y)
@@ -168,9 +168,9 @@ namespace morph {
         size_t index_ne (const size_t index) const
         {
             size_t r = this->row (index);
-            if (r == (n_x - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Vertical)) {
+            if (r == (n_x - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<size_t>::max();
-            } else if (r == (n_x - 1) && (d_wrap == CartDomainWrap::Horizontal || d_wrap == CartDomainWrap::Both)) {
+            } else if (r == (n_x - 1) && (d_wrap == GridDomainWrap::Horizontal || d_wrap == GridDomainWrap::Both)) {
                 return index - (n_x - 1);
             } else {
                 return index + 1;
@@ -192,9 +192,9 @@ namespace morph {
         size_t index_nw (const size_t index) const
         {
             size_t r = this->row (index);
-            if (r == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Vertical)) {
+            if (r == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<size_t>::max();
-            } else if (r == 0 && (d_wrap == CartDomainWrap::Horizontal || d_wrap == CartDomainWrap::Both)) {
+            } else if (r == 0 && (d_wrap == GridDomainWrap::Horizontal || d_wrap == GridDomainWrap::Both)) {
                 return index + (n_x - 1);
             } else {
                 return index - 1;
@@ -217,17 +217,17 @@ namespace morph {
         {
             size_t c = this->col (index);
             if (g_order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == (n_y - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == (n_y - 1) && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index - (n_x * (n_y - 1));
                 } else {
                     return index + n_x;
                 }
             } else if (g_order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == 0 && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index + (n_x * (n_y - 1));
                 } else {
                     return index - n_x;
@@ -253,17 +253,17 @@ namespace morph {
         {
             size_t c = this->col (index);
             if (g_order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == 0 && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index + (n_x * (n_y - 1));
                 } else {
                     return index - n_x;
                 }
             } else if (g_order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == (n_y - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == (n_y - 1) && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index - (n_x * (n_y - 1));
                 } else {
                     return index + n_x;

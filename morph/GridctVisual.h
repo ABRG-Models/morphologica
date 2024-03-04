@@ -36,7 +36,7 @@ namespace morph {
               morph::vec<float, 2> dx = { 1.0f, 1.0f },
               morph::vec<float, 2> g_offset = { 0.0f, 0.0f },
               bool memory_coords = true,
-              CartDomainWrap d_wrap = CartDomainWrap::None,
+              GridDomainWrap d_wrap = GridDomainWrap::None,
               GridOrder g_order = morph::GridOrder::bottomleft_to_topright,
               int glver = morph::gl::version_4_1>
     class GridctVisual : public VisualDataModel<T, glver>

@@ -6,7 +6,7 @@
 #pragma once
 
 #include <morph/Rect.h>
-#include <morph/CartDomains.h>
+#include <morph/GridFeatures.h>
 
 // CartGrid contains carried over code (from HexGrid) which allows for the imposition of
 // arbitrary boundaries, specified as Bezier curves. This brings in a link dependency on
@@ -209,7 +209,7 @@ namespace morph {
             return rtn;
         }
 
-        // Width and height of a CartGrid that happens to be of type CartDomainShape::Rectangle.
+        // Width and height of a CartGrid that happens to be of type GridDomainShape::Rectangle.
         int w_px = -1;
         int h_px = -1;
 
@@ -603,7 +603,7 @@ namespace morph {
         //! square size length x_span. The number of elements will be computed. If x_ and x_span_ do
         //! not permit a symmetric, zero-centred grid to be created, an error will be thrown.
         CartGrid (float d_, float x_span_, float z_ = 0.0f,
-                  CartDomainShape shape = CartDomainShape::Rectangle)
+                  GridDomainShape shape = GridDomainShape::Rectangle)
         : CartGrid (d_, d_, x_span_, x_span_, z_, shape) {}
 
         //! Construct a grid with rectangular element width d_, height v_ but still symmetric and
@@ -612,7 +612,7 @@ namespace morph {
         //! calculated based on d_, v_, x_span_ and y_span_. If the passed values do not permit a
         //! symmetric, zero-centred grid to be created an error will be thrown.
         CartGrid (float d_, float v_, float x_span_, float y_span_, float z_ = 0.0f,
-                  CartDomainShape shape = CartDomainShape::Rectangle)
+                  GridDomainShape shape = GridDomainShape::Rectangle)
         {
             this->d = d_;
             this->v = v_;
@@ -646,8 +646,8 @@ namespace morph {
         //! creating to x2,y2. The number of elements that need to be created will be determined
         //! from these. This is a non-symmetric constructor.
         CartGrid (float d_, float v_, float x1, float y1, float x2, float y2, float z_ = 0.0f,
-                  CartDomainShape shape = CartDomainShape::Rectangle,
-                  CartDomainWrap wrap = CartDomainWrap::None)
+                  GridDomainShape shape = GridDomainShape::Rectangle,
+                  GridDomainWrap wrap = GridDomainWrap::None)
         {
             if constexpr (debug_cartgrid) {
                 std::cout << "CartGrid constructor (x1,y1 to x2,y2 version) called. 0x" << (unsigned long long int)this << "\n";
@@ -741,12 +741,12 @@ namespace morph {
                 throw std::runtime_error ("The boundary is not a contiguous sequence of rects.");
             }
 
-            if (this->domainShape == morph::CartDomainShape::Boundary) {
+            if (this->domainShape == morph::GridDomainShape::Boundary) {
                 // Boundary IS contiguous, discard rects outside the boundary.
                 this->discardOutsideBoundary();
             } else {
                 throw std::runtime_error ("For now, setBoundary (const list<Rect>& pRects) doesn't know what to "
-                                          "do if domain shape is not CartDomainShape::Boundary.");
+                                          "do if domain shape is not GridDomainShape::Boundary.");
             }
 
             this->populate_d_vectors();
@@ -832,11 +832,11 @@ namespace morph {
                 }
             }
 
-            if (this->domainShape == morph::CartDomainShape::Boundary) {
+            if (this->domainShape == morph::GridDomainShape::Boundary) {
                 this->discardOutsideBoundary();
                 this->populate_d_vectors();
             } else {
-                throw std::runtime_error ("Use CartDomainShape::Boundary when setting a boundary");
+                throw std::runtime_error ("Use GridDomainShape::Boundary when setting a boundary");
             }
         }
 #endif // CARTGRID_COMPILE_WITH_BEZCURVES
@@ -1030,7 +1030,7 @@ namespace morph {
                 throw std::runtime_error ("The boundary is not a contiguous sequence of rects.");
             }
 
-            if (this->domainShape == morph::CartDomainShape::Boundary) {
+            if (this->domainShape == morph::GridDomainShape::Boundary) {
                 // Boundary IS contiguous, discard rects outside the boundary.
                 this->discardOutsideBoundary();
             }
@@ -1350,7 +1350,7 @@ namespace morph {
             // Bottom left rectangle
             std::list<morph::Rect>::iterator blr = this->rects.end();
 
-            if (this->domainShape == morph::CartDomainShape::Rectangle) {
+            if (this->domainShape == morph::GridDomainShape::Rectangle) {
 
                 // Use neighbour relations to go from bottom left to top right.  Find rect on bottom row.
                 while (ri != this->rects.end()) {
@@ -1371,7 +1371,7 @@ namespace morph {
             this->d_clear();
 
             // Now raster through the rects, building the d_ vectors.
-            if (this->domainShape == morph::CartDomainShape::Rectangle) {
+            if (this->domainShape == morph::GridDomainShape::Rectangle) {
 
                 this->d_push_back (ri);
 
@@ -1637,10 +1637,10 @@ namespace morph {
             if (result.size() != this->rects.size()) {
                 throw std::runtime_error ("The result vector is not the same size as the CartGrid.");
             }
-            if (this->domainShape != CartDomainShape::Rectangle) {
+            if (this->domainShape != GridDomainShape::Rectangle) {
                 throw std::runtime_error ("This method requires a rectangular CartGrid.");
             }
-            if (this->domainWrap != CartDomainWrap::Horizontal) {
+            if (this->domainWrap != GridDomainWrap::Horizontal) {
                 throw std::runtime_error ("This method ASSUMES the CartGrid is horizontally wrapped.");
             }
             // check w_px >= boxside and h_px >= boxside
@@ -1744,10 +1744,10 @@ namespace morph {
          * CartGrid::setBoundary (const BezCurvePath& p) - that's where the domainShape
          * is applied.
          */
-        CartDomainShape domainShape = CartDomainShape::Rectangle;
+        GridDomainShape domainShape = GridDomainShape::Rectangle;
 
         //! Edge wrapping? None, Horizontal, Vertical or Both.
-        CartDomainWrap domainWrap = CartDomainWrap::None;
+        GridDomainWrap domainWrap = GridDomainWrap::None;
 
         /*!
          * The list of rects that make up this CartGrid.
@@ -1796,7 +1796,7 @@ namespace morph {
             float halfY = this->y_span/2.0f;
             int halfRows = std::abs(std::ceil(halfY/this->v));
 
-            if (this->domainShape == CartDomainShape::Rectangle) {
+            if (this->domainShape == GridDomainShape::Rectangle) {
                 this->w_px = 2 * halfRows + 1;
                 this->h_px = 2 * halfCols + 1;
             }
@@ -1870,7 +1870,7 @@ namespace morph {
             int _yi = std::round(y1/this->v);
             int _yf = std::round(y2/this->v);
 
-            if (this->domainShape == CartDomainShape::Rectangle) {
+            if (this->domainShape == GridDomainShape::Rectangle) {
                 this->w_px = _xf-_xi+1;
                 this->h_px = _yf-_yi+1;
             }
@@ -1915,7 +1915,7 @@ namespace morph {
                     nextPrevRow->push_back (ri);
                 }
                 // Now row has been created, can complete the wraparound links (if necessary). *nextPrevRow is the current row.
-                if (this->domainWrap == morph::CartDomainWrap::Horizontal || this->domainWrap == morph::CartDomainWrap::Both) {
+                if (this->domainWrap == morph::GridDomainWrap::Horizontal || this->domainWrap == morph::GridDomainWrap::Both) {
                     (*nextPrevRow)[0]->set_nw ((*nextPrevRow)[_xf-_xi]);
                     (*nextPrevRow)[0]->set_wraps_w();
                     (*nextPrevRow)[_xf-_xi]->set_ne ((*nextPrevRow)[0]);

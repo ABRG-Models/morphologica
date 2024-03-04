@@ -23,7 +23,7 @@ int main()
     constexpr size_t Nside = 100;
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
-    constexpr morph::CartDomainWrap d_wrap = morph::CartDomainWrap::None;
+    constexpr morph::GridDomainWrap d_wrap = morph::GridDomainWrap::None;
     constexpr morph::GridOrder g_order = morph::GridOrder::bottomleft_to_topright;
 
     morph::Gridct<Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order> grid;

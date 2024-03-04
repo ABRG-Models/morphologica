@@ -26,7 +26,7 @@ int main()
 
     // A CartGrid with a few elements. Note setting of Horizontal wrap. boxfilter_f will throw exception if CartGrid is not wrapped horiontally
     morph::CartGrid cg3(0.05f, 0.05f, 0.0f, 0.0f, 0.2f, 0.2f,
-                        0.0f, morph::CartDomainShape::Rectangle, morph::CartDomainWrap::Horizontal);
+                        0.0f, morph::GridDomainShape::Rectangle, morph::GridDomainWrap::Horizontal);
     cg3.setBoundaryOnOuterEdge();
     std::cout << "Set up " << cg3.num() << " pixels in a Cartesian grid of width/depth: " << cg3.width() << "/" << cg3.depth() << std::endl;
     for (auto a : cg3.rects) {
@@ -70,7 +70,7 @@ int main()
     morph::vvec<float> filtered_5x5 (80, 0);
     morph::vvec<float> filtered_5x5_slow (80, 0);
     morph::CartGrid cg4(0.05f, 0.05f, 0.0f, 0.0f, 0.45f, 0.35f,
-                        0.0f, morph::CartDomainShape::Rectangle, morph::CartDomainWrap::Horizontal);
+                        0.0f, morph::GridDomainShape::Rectangle, morph::GridDomainWrap::Horizontal);
     cg4.setBoundaryOnOuterEdge();
     std::cout << "Set up " << cg4.num() << " pixels in a Cartesian grid of width/depth: " << cg4.widthnum() << "/" << cg4.depthnum() << std::endl;
 

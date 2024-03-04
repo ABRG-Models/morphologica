@@ -19,7 +19,7 @@
 
 #include <morph/vec.h>
 #include <morph/vvec.h>
-#include <morph/CartDomains.h>
+#include <morph/GridFeatures.h>
 
 namespace morph {
 
@@ -81,7 +81,7 @@ namespace morph {
                morph::vec<float, 2> dx = { 1.0f, 1.0f },
                morph::vec<float, 2> g_offset = { 0.0f, 0.0f },
                bool memory_coords = true,
-               CartDomainWrap d_wrap = CartDomainWrap::None,
+               GridDomainWrap d_wrap = GridDomainWrap::None,
                GridOrder g_order = morph::GridOrder::bottomleft_to_topright >
     struct Gridct
     {
@@ -132,9 +132,9 @@ namespace morph {
         constexpr size_t index_ne (const size_t index) const
         {
             size_t r = this->row (index);
-            if (r == (n_x - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Vertical)) {
+            if (r == (n_x - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<size_t>::max();
-            } else if (r == (n_x - 1) && (d_wrap == CartDomainWrap::Horizontal || d_wrap == CartDomainWrap::Both)) {
+            } else if (r == (n_x - 1) && (d_wrap == GridDomainWrap::Horizontal || d_wrap == GridDomainWrap::Both)) {
                 return index - (n_x - 1);
             } else {
                 return index + 1;
@@ -156,9 +156,9 @@ namespace morph {
         constexpr size_t index_nw (const size_t index) const
         {
             size_t r = this->row (index);
-            if (r == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Vertical)) {
+            if (r == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<size_t>::max();
-            } else if (r == 0 && (d_wrap == CartDomainWrap::Horizontal || d_wrap == CartDomainWrap::Both)) {
+            } else if (r == 0 && (d_wrap == GridDomainWrap::Horizontal || d_wrap == GridDomainWrap::Both)) {
                 return index + (n_x - 1);
             } else {
                 return index - 1;
@@ -181,17 +181,17 @@ namespace morph {
         {
             size_t c = this->col (index);
             if constexpr (g_order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == (n_y - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == (n_y - 1) && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index - (n_x * (n_y - 1));
                 } else {
                     return index + n_x;
                 }
             } else if constexpr (g_order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == 0 && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index + (n_x * (n_y - 1));
                 } else {
                     return index - n_x;
@@ -217,17 +217,17 @@ namespace morph {
         {
             size_t c = this->col (index);
             if constexpr (g_order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == 0 && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == 0 && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == 0 && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == 0 && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index + (n_x * (n_y - 1));
                 } else {
                     return index - n_x;
                 }
             } else if constexpr (g_order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == (n_y - 1) && (d_wrap == CartDomainWrap::None || d_wrap == CartDomainWrap::Horizontal)) {
+                if (c == (n_y - 1) && (d_wrap == GridDomainWrap::None || d_wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<size_t>::max();
-                } else if (c == (n_y - 1) && (d_wrap == CartDomainWrap::Vertical || d_wrap == CartDomainWrap::Both)) {
+                } else if (c == (n_y - 1) && (d_wrap == GridDomainWrap::Vertical || d_wrap == GridDomainWrap::Both)) {
                     return index - (n_x * (n_y - 1));
                 } else {
                     return index + n_x;

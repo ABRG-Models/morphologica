@@ -15,7 +15,7 @@ int main()
     constexpr size_t Nside = 1000;
     constexpr morph::vec<float, 2> grid_spacing = {1.0f, 1.0f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
-    constexpr morph::CartDomainWrap d_wrap = morph::CartDomainWrap::None;
+    constexpr morph::GridDomainWrap d_wrap = morph::GridDomainWrap::None;
 
     sc::time_point t0 = sc::now();
 
@@ -33,7 +33,7 @@ int main()
     // A CartGrid object
     morph::CartGrid cgrid(grid_spacing[0], grid_spacing[1],
                           grid_zero[0], grid_zero[1], (Nside-1)*grid_spacing[0], (Nside-1)*grid_spacing[1], 0.0f,
-                          morph::CartDomainShape::Rectangle, d_wrap);
+                          morph::GridDomainShape::Rectangle, d_wrap);
     cgrid.setBoundaryOnOuterEdge();
     sc::time_point t3 = sc::now();
 
