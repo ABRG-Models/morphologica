@@ -104,13 +104,13 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid GLEW::GLEW)
   endif()
 
-  # morph::Grid is compile-time-configured
+  # morph::Gridct is compile-time-configured
   if(CXX_20_AVAILABLE)
-    add_executable(grid_simple grid_simple.cpp)
-    set_property(TARGET grid_simple PROPERTY CXX_STANDARD 20)
-    target_link_libraries(grid_simple OpenGL::GL glfw Freetype::Freetype)
+    add_executable(gridct_simple gridct_simple.cpp)
+    set_property(TARGET gridct_simple PROPERTY CXX_STANDARD 20)
+    target_link_libraries(gridct_simple OpenGL::GL glfw Freetype::Freetype)
     if(USE_GLEW)
-      target_link_libraries(grid_simple GLEW::GLEW)
+      target_link_libraries(gridct_simple GLEW::GLEW)
     endif()
   endif()
 

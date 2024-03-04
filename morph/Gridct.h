@@ -1,14 +1,15 @@
 /*!
  * \file
  *
- * This file contains the definition for morph::Grid<>, a simple Cartesian Grid
- * class. It is much simpler than morph::CartGrid because there is no option to define
- * an arbitrary boundary to your domain. This code is a few hundred lines of code versus
- * about 2600 lines in CartGrid.
+ * This file contains the definition for morph::Gridct<>, a simple Cartesian Grid class. It is much
+ * simpler than morph::CartGrid because there is no option to define an arbitrary boundary to your
+ * domain. This code is a few hundred lines of code versus about 2600 lines in CartGrid.
  *
- * I'm writing this as a fully compile-time class for which the programmer sets grid
- * parameters as template arguments. This requires C++-20 which permits floating point
- * values (and the values of user-defined classes) to be passed as template args.
+ * I'm writing this as a fully compile-time class for which the programmer sets grid parameters as
+ * template arguments. This requires C++-20 which permits floating point values (and the values of
+ * user-defined classes) to be passed as template args.
+ *
+ * The runtime-configurable version of this class, morph::Grid, is more convenient to code with.
  *
  * \author Seb James
  * \date February 2024
@@ -32,21 +33,19 @@ namespace morph {
      * coordinates that relate to element i and also the coordinates (or index i or
      * existence) of the neighbour to the 'East', 'West', 'North' etc.
      *
-     * This class allows you to specify (at compile time) the dimensions of the
-     * rectangular grid, specifying the number of elements on each side of the grid and
-     * the inter-element distances. You can also specify and offset coordinate of the
-     * zeroth element of your grid, so that all the locations you retrieve become offset
-     * (this is useful for specifying zero-centred grids). Two more template arguments
-     * are important for specifying the coordinates that a given index in your arrays
-     * maps to. One is whether or not the grid should be considered to be 'wrappable' -
-     * if horizontally wrappable, then the neighbour-to-the-east of the east-most
-     * element is the west-most element in the same row. The other is the 'element
-     * order'. You could index a square grid by starting at the bottom left, counting to
-     * the right and then moving up in the y direction for the next row. You could
-     * equally define your indices to start at the top left and count to the right and
-     * down for each row. These are 'row-major' schemes. Either is an option for this
-     * class. Column-major schemes are possible, but omitted for now (they would not be
-     * difficult to code up).
+     * This class allows you to specify (at compile time, hence the 'ct' in the class name) the
+     * dimensions of the rectangular grid, specifying the number of elements on each side of the
+     * grid and the inter-element distances. You can also specify and offset coordinate of the
+     * zeroth element of your grid, so that all the locations you retrieve become offset (this is
+     * useful for specifying zero-centred grids). Two more template arguments are important for
+     * specifying the coordinates that a given index in your arrays maps to. One is whether or not
+     * the grid should be considered to be 'wrappable' - if horizontally wrappable, then the
+     * neighbour-to-the-east of the east-most element is the west-most element in the same row. The
+     * other is the 'element order'. You could index a square grid by starting at the bottom left,
+     * counting to the right and then moving up in the y direction for the next row. You could
+     * equally define your indices to start at the top left and count to the right and down for each
+     * row. These are 'row-major' schemes. Either is an option for this class. Column-major schemes
+     * are possible, but omitted for now (they would not be difficult to code up).
      *
      * Lastly, there is a template argument to choose whether to compute each element
      * when instantiating the class (which takes a few milliseconds on my laptop) and
@@ -84,13 +83,13 @@ namespace morph {
                bool memory_coords = true,
                CartDomainWrap d_wrap = CartDomainWrap::None,
                GridOrder g_order = morph::GridOrder::bottomleft_to_topright >
-    struct Grid
+    struct Gridct
     {
         //! The number of elements in the grid
         static constexpr size_t n = n_x * n_y;
 
         //! Constructor only required to populate d_x/d_y
-        Grid()
+        Gridct()
         {
             if constexpr (memory_coords == true) {
                 this->d_x.resize (n);

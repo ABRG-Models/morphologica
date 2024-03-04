@@ -9,7 +9,7 @@
 #endif
 #include <morph/ColourMap.h>
 #include <morph/VisualDataModel.h>
-#include <morph/Grid.h>
+#include <morph/Gridct.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <vector>
@@ -39,11 +39,11 @@ namespace morph {
               CartDomainWrap d_wrap = CartDomainWrap::None,
               GridOrder g_order = morph::GridOrder::bottomleft_to_topright,
               int glver = morph::gl::version_4_1>
-    class GridVisual : public VisualDataModel<T, glver>
+    class GridctVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* _grid, const vec<float> _offset)
+        GridctVisual(const morph::Gridct<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = dx.plus_one_dim (0.0f);
@@ -385,8 +385,8 @@ namespace morph {
             return clr;
         }
 
-        //! The morph::Grid to visualize
-        const morph::Grid<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* grid;
+        //! The morph::Gridct to visualize
+        const morph::Gridct<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

@@ -10,8 +10,8 @@
 #include <morph/vec.h>
 #include <morph/Visual.h>
 #include <morph/VisualDataModel.h>
-#include <morph/GridVisual.h>
-#include <morph/Grid.h>
+#include <morph/GridctVisual.h>
+#include <morph/Gridct.h>
 
 int main()
 {
@@ -28,7 +28,7 @@ int main()
     constexpr morph::CartDomainWrap d_wrap = morph::CartDomainWrap::None;
     constexpr morph::GridOrder g_order = morph::GridOrder::bottomleft_to_topright;
 
-    morph::Grid<Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order> grid;
+    morph::Gridct<Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order> grid;
     std::cout << "Number of pixels in grid:" << grid.n << std::endl;
 
     // Make some dummy data (a sine wave) to make an interesting surface
@@ -40,7 +40,7 @@ int main()
 
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    auto gv = std::make_unique<morph::GridVisual<float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order>>(&grid, offset);
+    auto gv = std::make_unique<morph::GridctVisual<float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::RectInterp; // RectInterp or Triangles
     gv->setScalarData (&data);
