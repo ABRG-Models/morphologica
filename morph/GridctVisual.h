@@ -17,7 +17,7 @@
 
 namespace morph {
 
-    enum class GridVisMode
+    enum class GridctVisMode
     {
         Triangles, // Render triangles with a triangle vertex at the centre of each Rect.
         RectInterp  // Render each rect as an actual rectangle made of 4 triangles.
@@ -65,12 +65,12 @@ namespace morph {
             if (this->centralize == true) { this->centering_offset = -this->grid->centre().plus_one_dim(); }
 
             switch (this->gridVisMode) {
-            case GridVisMode::Triangles:
+            case GridctVisMode::Triangles:
             {
                 this->initializeVerticesTris();
                 break;
             }
-            case GridVisMode::RectInterp:
+            case GridctVisMode::RectInterp:
             default:
             {
                 this->initializeVerticesRectsInterpolated();
@@ -345,7 +345,7 @@ namespace morph {
         }
 
         //! How to render the elements. Triangles are faster.
-        GridVisMode gridVisMode = GridVisMode::Triangles;
+        GridctVisMode gridVisMode = GridctVisMode::Triangles;
 
         //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
         //! that the Grid is centralised around the VisualModel::mv_offset.
