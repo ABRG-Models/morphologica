@@ -97,6 +97,7 @@ namespace morph {
         // Getters
         size_t get_n_x() const { return this->n_x; }
         size_t get_n_y() const { return this->n_y; }
+        morph::vec<size_t, 2> get_dims() const { return morph::vec<size_t, 2>({this->n_x, this->n_y}); }
         morph::vec<float, 2> get_dx() const { return this->dx; }
         morph::vec<float, 2> get_g_offset() const { return this->g_offset; }
         GridDomainWrap get_d_wrap() const { return this->d_wrap; }

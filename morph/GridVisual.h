@@ -127,19 +127,38 @@ namespace morph {
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
-            // Build indices based on neighbour relations in the CartGrid
-            for (unsigned int ri = 0; ri < this->grid->n; ++ri) {
-                if (this->grid->has_nne(ri) && this->grid->has_ne(ri)) {
-                    this->indices.push_back (ri);
-                    this->indices.push_back (this->grid->index_nne(ri));
-                    this->indices.push_back (this->grid->index_ne(ri));
+            // Build indices based on neighbour relations in the Grid. No - make it simpler. Do it row by row.
+            auto dims = this->grid->get_dims();
+            if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
+                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
+                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        unsigned int ii = ri * dims[0] + ci;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (this->grid->index_nne(ii));
+                        this->indices.push_back (this->grid->index_ne(ii));
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (this->grid->index_nn(ii));
+                        this->indices.push_back (this->grid->index_nne(ii));
+                    }
                 }
-
-                if (this->grid->has_nw(ri) && this->grid->has_nsw(ri)) {
-                    this->indices.push_back (ri);
-                    this->indices.push_back (this->grid->index_nw(ri));
-                    this->indices.push_back (this->grid->index_nsw(ri));
+            } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
+                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
+                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        unsigned int ii = ri * dims[0] + ci;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (this->grid->index_ne(ii));
+                        this->indices.push_back (this->grid->index_nse(ii));
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (this->grid->index_nse(ii));
+                        this->indices.push_back (this->grid->index_ns(ii));
+                    }
                 }
+            } else {
+                throw std::runtime_error ("morph::GridVisual: Unhandled morph::GridOrder");
             }
 
             this->idx += this->grid->n;
@@ -345,7 +364,7 @@ namespace morph {
         //! The colour for the border
         std::array<float, 3> border_colour = morph::colour::grey80;
 
-        //! The border thickness in multiples of a pixel in the CartGrid
+        //! The border thickness in multiples of a pixel in the Grid
         float border_thickness = 0.33f;
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
@@ -383,7 +402,7 @@ namespace morph {
         std::vector<float> dcolour2;
         std::vector<float> dcolour3;
 
-        // A centering offset to make sure that the Cartgrid is centred on
+        // A centering offset to make sure that the grid is centred on
         // this->mv_offset. This is computed so that you *add* centering_offset to each
         // computed x/y/z position for a rectangle, and this means that the rectangle
         // will be centered around mv_offset.
