@@ -10,8 +10,8 @@ namespace morph {
 
     // Draw a curved CartGrid like a curved TV. You make a cylinder if you make the
     // rotation right. Frames can be drawn around the CartGrid.
-    template <typename T, typename I = unsigned int, int glver = morph::gl::version_4_1>
-    struct CurvyTellyVisual : public morph::GridVisual<T, I, glver>
+    template <typename T, typename I = unsigned int, typename TC = float, int glver = morph::gl::version_4_1>
+    struct CurvyTellyVisual : public morph::GridVisual<T, I, TC, glver>
     {
         // The radius of the curved surface representing the CartGrid
         T radius = T{1};
@@ -28,8 +28,8 @@ namespace morph {
         float frame_width = 0.01f;
 
         // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
-        CurvyTellyVisual(const morph::Grid<T, I>* _cg, const morph::vec<float> _offset)
-            : morph::GridVisual<T, I, glver>(_cg, _offset) { this->centralize = true; }
+        CurvyTellyVisual(const morph::Grid<I, TC>* _cg, const morph::vec<float> _offset)
+            : morph::GridVisual<T, I, TC, glver>(_cg, _offset) { this->centralize = true; }
 
         void drawcurvygrid()
         {
@@ -65,7 +65,7 @@ namespace morph {
             }
 
             float _x = 0.0f;
-            morph::vec<float> vtx_0; // centre of a CartGrid element
+            morph::vec<float> vtx_0; // centre of a Grid element
             morph::vec<float> vtx_ne, vtx_nw, vtx_se, vtx_sw;
 
             float angle_per_distance = this->angle_to_subtend / (dx[0]+this->grid->width());
@@ -90,7 +90,7 @@ namespace morph {
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
-                _x = -((*this->grid)[ri][0]+this->centering_offset[0]); // why mult by -1? Because -x on CartGrid becomes +angle on CurvyTelly
+                _x = -((*this->grid)[ri][0]+this->centering_offset[0]); // why mult by -1? Because -x on Grid becomes +angle on CurvyTelly
 
                 // Here we test if we should omit this rectangle.
                 if (std::abs(_x) > this->max_abs_x) { continue; }
@@ -145,7 +145,7 @@ namespace morph {
 
                 // From vtx_0,1,2 compute normal. This sets the correct normal, but note
                 // that there is only one 'layer' of vertices; the back of the
-                // HexGridVisual will be coloured the same as the front. To get lighting
+                // GridVisual will be coloured the same as the front. To get lighting
                 // effects to look really good, the back of the surface could need the
                 // opposite normal.
                 morph::vec<float> plane1 = vtx_ne - vtx_0;

@@ -19,17 +19,22 @@
 namespace morph {
 
     /*!
-     * The template argument T is the type of the *data* which this GridVisual will visualize.
+     * GridVisual a visualizer for the morph::Grid class
      *
-     * GridVisual is like GridctVisual, but uses the runtime-configured morph::Grid instead of the
-     * compile-time-defined morph::Gridct.
+     * \tparam T the type of the *data* which this GridVisual will visualize.
+     *
+     * \tparam I The type for the Grid indexing (defaults to unsigned int)
+     *
+     * \tparam TC The type for the Grid coordinates (default float, must be a signed type)
+     *
+     * \tparam glver The OpenGL version in use in your program
      */
-    template <typename T, typename I = unsigned int, int glver = morph::gl::version_4_1>
+    template <typename T, typename I = unsigned int, typename TC = float, int glver = morph::gl::version_4_1>
     class GridVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(const morph::Grid<T, I>* _grid, const vec<float> _offset)
+        GridVisual(const morph::Grid<I, TC>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = _grid->get_dx().plus_one_dim (0.0f);
@@ -129,7 +134,7 @@ namespace morph {
 
             // Build indices row by row.
             auto dims = this->grid->get_dims();
-            if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
+            if (this->grid->get_order() == morph::GridOrder::bottomleft_to_topright) {
                 for (I ri = 0; ri < dims[1]-1; ++ri) {
                     for (I ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
@@ -143,7 +148,7 @@ namespace morph {
                         this->indices.push_back (ii + dims[0] + 1); // NNE
                     }
                 }
-            } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
+            } else if (this->grid->get_order() == morph::GridOrder::topleft_to_bottomright) {
                 for (I ri = 0; ri < dims[1]-1; ++ri) {
                     for (I ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
@@ -384,7 +389,7 @@ namespace morph {
         }
 
         //! The morph::Grid<> to visualize
-        const morph::Grid<T, I>* grid;
+        const morph::Grid<I, TC>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;
