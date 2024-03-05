@@ -38,7 +38,7 @@ int main()
         data[ri] = 0.05f + 0.05f * std::sin(20.0f * coord[0]) * std::sin(10.0f*coord[1]) ; // Range 0->1
     }
 
-    // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
+    // Add a GridVisual to display the Grid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);

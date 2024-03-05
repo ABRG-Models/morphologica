@@ -88,6 +88,15 @@ namespace morph {
         //! The number of elements in the grid
         static constexpr size_t n = n_x * n_y;
 
+        // Getters as an interface
+        size_t get_n_x() const { return n_x; }
+        size_t get_n_y() const { return n_y; }
+        morph::vec<size_t, 2> get_dims() const { return morph::vec<size_t, 2>({n_x, n_y}); }
+        morph::vec<float, 2> get_dx() const { return dx; }
+        morph::vec<float, 2> get_g_offset() const { return g_offset; }
+        GridDomainWrap get_d_wrap() const { return d_wrap; }
+        GridOrder get_g_order() const { return g_order; }
+
         //! Constructor only required to populate d_x/d_y
         Gridct()
         {

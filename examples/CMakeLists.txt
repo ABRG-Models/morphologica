@@ -112,6 +112,13 @@ if(ARMADILLO_FOUND)
     if(USE_GLEW)
       target_link_libraries(gridct_simple GLEW::GLEW)
     endif()
+
+    add_executable(gridct_image gridct_image.cpp)
+    set_property(TARGET gridct_image PROPERTY CXX_STANDARD 20)
+    target_link_libraries(gridct_image OpenGL::GL glfw Freetype::Freetype)
+    if(USE_GLEW)
+      target_link_libraries(gridct_image GLEW::GLEW)
+    endif()
   endif()
 
   # morph::Grid is runtime-configured

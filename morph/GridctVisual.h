@@ -134,26 +134,42 @@ namespace morph {
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
-            // Build indices based on neighbour relations in the CartGrid
-            for (unsigned int ri = 0; ri < this->grid->n; ++ri) {
-                if (this->grid->has_nne(ri) && this->grid->has_ne(ri)) {
-                    this->indices.push_back (ri);
-                    this->indices.push_back (this->grid->index_nne(ri));
-                    this->indices.push_back (this->grid->index_ne(ri));
+            // Build indices row by row.
+            auto dims = this->grid->get_dims();
+            if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
+                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
+                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        unsigned int ii = ri * dims[0] + ci;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[0] + 1); // NNE
+                        this->indices.push_back (ii + 1);           // NE
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[0]);     // NN
+                        this->indices.push_back (ii + dims[0] + 1); // NNE
+                    }
                 }
-
-                if (this->grid->has_nw(ri) && this->grid->has_nsw(ri)) {
-                    this->indices.push_back (ri);
-                    this->indices.push_back (this->grid->index_nw(ri));
-                    this->indices.push_back (this->grid->index_nsw(ri));
+            } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
+                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
+                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        unsigned int ii = ri * dims[0] + ci;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + 1);
+                        this->indices.push_back (ii + dims[0] + 1); // NSE
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[0] + 1); // NSE
+                        this->indices.push_back (ii + dims[0]);     // NS
+                    }
                 }
+            } else {
+                throw std::runtime_error ("morph::GridctVisual: Unhandled morph::GridOrder");
             }
 
             this->idx += this->grid->n;
         }
-
-        //! Show a set of hexes at the zero?
-        bool zerogrid = false;
 
         //! Initialize as a rectangle made of 4 triangles for each rect, with z position
         //! of each of the 4 outer edges of the triangles interpolated, but a single colour

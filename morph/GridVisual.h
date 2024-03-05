@@ -127,7 +127,7 @@ namespace morph {
                 this->vertex_push (0.0f, 0.0f, 1.0f, this->vertexNormals);
             }
 
-            // Build indices based on neighbour relations in the Grid. No - make it simpler. Do it row by row.
+            // Build indices row by row.
             auto dims = this->grid->get_dims();
             if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
                 for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
@@ -135,12 +135,12 @@ namespace morph {
                         // Triangle 1
                         unsigned int ii = ri * dims[0] + ci;
                         this->indices.push_back (ii);
-                        this->indices.push_back (this->grid->index_nne(ii));
-                        this->indices.push_back (this->grid->index_ne(ii));
+                        this->indices.push_back (ii + dims[0] + 1); // NNE
+                        this->indices.push_back (ii + 1);           // NE
                         // Triangle 2
                         this->indices.push_back (ii);
-                        this->indices.push_back (this->grid->index_nn(ii));
-                        this->indices.push_back (this->grid->index_nne(ii));
+                        this->indices.push_back (ii + dims[0]);     // NN
+                        this->indices.push_back (ii + dims[0] + 1); // NNE
                     }
                 }
             } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
@@ -149,12 +149,12 @@ namespace morph {
                         // Triangle 1
                         unsigned int ii = ri * dims[0] + ci;
                         this->indices.push_back (ii);
-                        this->indices.push_back (this->grid->index_ne(ii));
-                        this->indices.push_back (this->grid->index_nse(ii));
+                        this->indices.push_back (ii + 1);
+                        this->indices.push_back (ii + dims[0] + 1); // NSE
                         // Triangle 2
                         this->indices.push_back (ii);
-                        this->indices.push_back (this->grid->index_nse(ii));
-                        this->indices.push_back (this->grid->index_ns(ii));
+                        this->indices.push_back (ii + dims[0] + 1); // NSE
+                        this->indices.push_back (ii + dims[0]);     // NS
                     }
                 }
             } else {
@@ -163,9 +163,6 @@ namespace morph {
 
             this->idx += this->grid->n;
         }
-
-        //! Show a set of hexes at the zero?
-        bool zerogrid = false;
 
         //! Initialize as a rectangle made of 4 triangles for each rect, with z position
         //! of each of the 4 outer edges of the triangles interpolated, but a single colour
@@ -237,8 +234,8 @@ namespace morph {
                 datumNSW = this->grid->has_nsw(ri) ? dcopy[this->grid->index_nsw(ri)] : datumC;
                 datumNSE = this->grid->has_nse(ri) ? dcopy[this->grid->index_nse(ri)] : datumC;
 
-                // Use a single colour for each rect, even though rectangle's z
-                // positions are interpolated. Do the _colour_ scaling:
+                // Use a single colour for each rect, even though rectangle's z positions are
+                // interpolated. Do the _colour_ scaling:
                 std::array<float, 3> clr = this->setColour (ri);
 
                 // First push the 5 positions of the triangle vertices, starting with the centre
@@ -249,7 +246,6 @@ namespace morph {
 
                 // NE vertex
                 // Compute mean of this->data[ri] and N, NE and E elements
-                //datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
                 if (this->grid->has_nn(ri) && this->grid->has_ne(ri) && this->grid->has_nne(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNE + datumNNE);
                 } else if (this->grid->has_ne(ri)) {
@@ -261,11 +257,9 @@ namespace morph {
                 } else {
                     datum = datumC;
                 }
-                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datum, this->vertexPositions);
                 vtx_1 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum}};
 
-                // SE vertex
-                //datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
                 // SE vertex
                 if (this->grid->has_ns(ri) && this->grid->has_ne(ri) && this->grid->has_nse(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNE + datumNSE);
@@ -283,7 +277,6 @@ namespace morph {
 
 
                 // SW vertex
-                //datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
                 if (this->grid->has_ns(ri) && this->grid->has_nw(ri) && this->grid->has_nsw(ri)) {
                     datum = 0.25f * (datumC + datumNS + datumNW + datumNSW);
                 } else if (this->grid->has_nw(ri)) {
@@ -296,7 +289,6 @@ namespace morph {
                 this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datum, this->vertexPositions);
 
                 // NW vertex
-                //datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
                 if (this->grid->has_nn(ri) && this->grid->has_nw(ri) && this->grid->has_nnw(ri)) {
                     datum = 0.25f * (datumC + datumNN + datumNW + datumNNW);
                 } else if (this->grid->has_nw(ri)) {
@@ -308,11 +300,10 @@ namespace morph {
                 }
                 this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datum, this->vertexPositions);
 
-                // From vtx_0,1,2 compute normal. This sets the correct normal, but note
-                // that there is only one 'layer' of vertices; the back of the
-                // HexGridVisual will be coloured the same as the front. To get lighting
-                // effects to look really good, the back of the surface could need the
-                // opposite normal.
+                // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
+                // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
+                // same as the front. To get lighting effects to look really good, the back of the
+                // surface could need the opposite normal.
                 morph::vec<float> plane1 = vtx_1 - vtx_0;
                 morph::vec<float> plane2 = vtx_2 - vtx_0;
                 morph::vec<float> vnorm = plane2.cross (plane1);
@@ -330,7 +321,7 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
                 this->vertex_push (clr, this->vertexColors);
 
-                // Define indices now to produce the 4 triangles in the hex
+                // Define indices now to produce the 4 triangles in the pixel
                 this->indices.push_back (this->idx+1);
                 this->indices.push_back (this->idx);
                 this->indices.push_back (this->idx+2);
