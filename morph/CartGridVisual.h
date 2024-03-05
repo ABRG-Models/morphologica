@@ -455,8 +455,8 @@ namespace morph {
 #endif
         }
 
-        //! How to render the elements. Triangles are faster.
-        CartVisMode cartVisMode = CartVisMode::Triangles;
+        //! How to render the elements. Triangles are faster. RectInterp more often used.
+        CartVisMode cartVisMode = CartVisMode::RectInterp;
 
         //! Set this to true to adjust the positions that the CartGridVisual uses to plot
         //! the CartGrid so that the CartGrid is centralised around the
