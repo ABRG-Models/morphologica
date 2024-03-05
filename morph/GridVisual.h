@@ -10,18 +10,13 @@
 #include <morph/ColourMap.h>
 #include <morph/VisualDataModel.h>
 #include <morph/Grid.h>
+#include <morph/GridFeatures.h>
 #include <morph/vec.h>
 #include <iostream>
 #include <vector>
 #include <array>
 
 namespace morph {
-
-    enum class GridVisMode
-    {
-        Triangles, // Render triangles with a triangle vertex at the centre of each Rect.
-        RectInterp  // Render each rect as an actual rectangle made of 4 triangles.
-    };
 
     /*!
      * The template argument T is the type of the *data* which this GridVisual will visualize.
@@ -337,8 +332,8 @@ namespace morph {
             }
         }
 
-        //! How to render the elements. Triangles are faster.
-        GridVisMode gridVisMode = GridVisMode::Triangles;
+        //! How to render the elements. Triangles are faster. RectInterp is chosen more often.
+        GridVisMode gridVisMode = GridVisMode::RectInterp;
 
         //! Set this to true to adjust the positions that the GridVisual uses to plot the Grid so
         //! that the Grid is centralised around the VisualModel::mv_offset.

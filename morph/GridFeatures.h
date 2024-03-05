@@ -2,7 +2,7 @@
  * \file GridFeatures.h
  *
  * This contains some definitions that are used by CartGrid.h, Grid.h and Gridct.h, all of which
- * define cartesian grids.
+ * define Cartesian grids.
  *
  * \author Seb James
  * \date Feb 2024
@@ -47,6 +47,17 @@ namespace morph {
     {
         bottomleft_to_topright,
         topleft_to_bottomright
+    };
+
+    /*!
+     * How to visualize a grid. You could draw a triangle map with vertices at the centres of the
+     * elements or you could draw a rectangular pixel for each element. Triangles is
+     * faster. RectInterp gives a nice pixellated rendering.
+     */
+    enum class GridVisMode
+    {
+        Triangles,  // Render triangles with a triangle vertex at the centre of each Rect.
+        RectInterp  // Render each rect as an actual rectangle made of 4 triangles.
     };
 
 } // namespace morph
