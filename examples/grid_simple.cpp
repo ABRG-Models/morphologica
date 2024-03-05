@@ -20,7 +20,7 @@ int main()
     v.addLabel ("This is a\nmorph::GridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a grid to show in the scene
-    constexpr size_t Nside = 100;
+    constexpr unsigned int Nside = 100;
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
 
     // The simplest declaration of Grid is:

@@ -24,12 +24,12 @@ namespace morph {
      * GridVisual is like GridctVisual, but uses the runtime-configured morph::Grid instead of the
      * compile-time-defined morph::Gridct.
      */
-    template <typename T, int glver = morph::gl::version_4_1>
+    template <typename T, typename I = unsigned int, int glver = morph::gl::version_4_1>
     class GridVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(const morph::Grid* _grid, const vec<float> _offset)
+        GridVisual(const morph::Grid<T, I>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = _grid->get_dx().plus_one_dim (0.0f);
@@ -119,7 +119,7 @@ namespace morph {
                 }
             }
 
-            for (unsigned int ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n; ++ri) {
                 std::array<float, 3> clr = this->setColour (ri);
                 this->vertex_push ((*this->grid)[ri][0]+centering_offset[0],
                                    (*this->grid)[ri][1]+centering_offset[1], dcopy[ri], this->vertexPositions);
@@ -130,10 +130,10 @@ namespace morph {
             // Build indices row by row.
             auto dims = this->grid->get_dims();
             if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
-                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
-                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < dims[1]-1; ++ri) {
+                    for (I ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
-                        unsigned int ii = ri * dims[0] + ci;
+                        I ii = ri * dims[0] + ci;
                         this->indices.push_back (ii);
                         this->indices.push_back (ii + dims[0] + 1); // NNE
                         this->indices.push_back (ii + 1);           // NE
@@ -144,10 +144,10 @@ namespace morph {
                     }
                 }
             } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
-                for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
-                    for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
+                for (I ri = 0; ri < dims[1]-1; ++ri) {
+                    for (I ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
-                        unsigned int ii = ri * dims[0] + ci;
+                        I ii = ri * dims[0] + ci;
                         this->indices.push_back (ii);
                         this->indices.push_back (ii + 1);
                         this->indices.push_back (ii + dims[0] + 1); // NSE
@@ -221,7 +221,7 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            for (size_t ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];
@@ -363,7 +363,7 @@ namespace morph {
 
     protected:
         //! An overridable function to set the colour of rect ri
-        std::array<float, 3> setColour (unsigned int ri)
+        std::array<float, 3> setColour (I ri)
         {
             std::array<float, 3> clr = { 0.0f, 0.0f, 0.0f };
             if (this->cm.numDatums() == 3) {
@@ -383,8 +383,8 @@ namespace morph {
             return clr;
         }
 
-        //! The morph::Grid to visualize
-        const morph::Grid* grid;
+        //! The morph::Grid<> to visualize
+        const morph::Grid<T, I>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

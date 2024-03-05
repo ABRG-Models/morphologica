@@ -19,16 +19,16 @@ int main()
     morph::vec<float, 2> nul = { 0.0f, 0.0f };
     // Top left to bottom right order matches image loaded by loadpng and avoids the need for a
     // vec<bool, 2> flip arg to morph::loadpng.
-    morph::Grid g1(256, 65, dx, nul, morph::GridDomainWrap::Horizontal, // Triangles, TLBR
+    morph::Grid g1(256U, 65U, dx, nul, morph::GridDomainWrap::Horizontal, // Triangles, TLBR
                    morph::GridOrder::topleft_to_bottomright);
 
-    morph::Grid g2(256, 65, dx, nul, morph::GridDomainWrap::Horizontal, // Triangles, BLTR
+    morph::Grid g2(256U, 65U, dx, nul, morph::GridDomainWrap::Horizontal, // Triangles, BLTR
                    morph::GridOrder::bottomleft_to_topright);
 
-    morph::Grid g3(256, 65, dx, nul, morph::GridDomainWrap::Horizontal, // RectInterp TLBR
+    morph::Grid g3(256U, 65U, dx, nul, morph::GridDomainWrap::Horizontal, // RectInterp TLBR
                    morph::GridOrder::topleft_to_bottomright);
 
-    morph::Grid g4(256, 65, dx, nul, morph::GridDomainWrap::Horizontal, // RectInterp, BLTR
+    morph::Grid g4(256U, 65U, dx, nul, morph::GridDomainWrap::Horizontal, // RectInterp, BLTR
                    morph::GridOrder::bottomleft_to_topright);
 
     // Load an image
