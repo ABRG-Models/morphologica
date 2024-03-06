@@ -8,12 +8,22 @@
 
 namespace morph {
 
-    // Draw a curved CartGrid like a curved TV. You make a cylinder if you make the
-    // rotation right. Frames can be drawn around the CartGrid.
-    template <typename T, typename I = unsigned int, typename TC = float, int glver = morph::gl::version_4_1>
-    struct CurvyTellyVisual : public morph::GridVisual<T, I, TC, glver>
+    /*!
+     * Draw a curved CartGrid like a curved TV. You make a cylinder if you make the rotation
+     * right. Frames can be drawn around the grid.
+     *
+     * \tparam T the type of the *data* which this CurvyTellyVisual will visualize.
+     *
+     * \tparam I The type for the Grid indexing (defaults to unsigned int)
+     *
+     * \tparam C The type for the Grid coordinates (default float, must be a signed type)
+     *
+     * \tparam glver The OpenGL version in use in your program
+     */
+    template <typename T, typename I = unsigned int, typename C = float, int glver = morph::gl::version_4_1>
+    struct CurvyTellyVisual : public morph::GridVisual<T, I, C, glver>
     {
-        // The radius of the curved surface representing the CartGrid
+        // The radius of the curved surface representing the grid
         T radius = T{1};
         // What angle around the circle to draw the telly. 2pi gives a cylinder and is the default.
         T angle_to_subtend = morph::mathconst<T>::two_pi;
@@ -28,8 +38,8 @@ namespace morph {
         float frame_width = 0.01f;
 
         // Note constructor forces centralize to be true, which is important when drawing a curvy CartGrid
-        CurvyTellyVisual(const morph::Grid<I, TC>* _cg, const morph::vec<float> _offset)
-            : morph::GridVisual<T, I, TC, glver>(_cg, _offset) { this->centralize = true; }
+        CurvyTellyVisual(const morph::Grid<I, C>* _cg, const morph::vec<float> _offset)
+            : morph::GridVisual<T, I, C, glver>(_cg, _offset) { this->centralize = true; }
 
         void drawcurvygrid()
         {

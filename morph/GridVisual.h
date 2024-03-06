@@ -25,16 +25,16 @@ namespace morph {
      *
      * \tparam I The type for the Grid indexing (defaults to unsigned int)
      *
-     * \tparam TC The type for the Grid coordinates (default float, must be a signed type)
+     * \tparam C The type for the Grid coordinates (default float, must be a signed type)
      *
      * \tparam glver The OpenGL version in use in your program
      */
-    template <typename T, typename I = unsigned int, typename TC = float, int glver = morph::gl::version_4_1>
+    template <typename T, typename I = unsigned int, typename C = float, int glver = morph::gl::version_4_1>
     class GridVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridVisual(const morph::Grid<I, TC>* _grid, const vec<float> _offset)
+        GridVisual(const morph::Grid<I, C>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = _grid->get_dx().plus_one_dim (0.0f);
@@ -389,7 +389,7 @@ namespace morph {
         }
 
         //! The morph::Grid<> to visualize
-        const morph::Grid<I, TC>* grid;
+        const morph::Grid<I, C>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

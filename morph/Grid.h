@@ -51,13 +51,17 @@ namespace morph {
      * changing Grid::dx over time. You could model a shift in the cooordinates that
      * your grid maps by changing Grid::g_offset.
      *
-     * \tparam I The integer type for specifying/retrieving number of pixels etc
+     * \tparam I I for 'Index type'. This is the integer type for indexing the pixels in the grid. The
+     * capacity of this type will limit the size of Grid that can be defined. A runtime test will be
+     * performed to ensure that the capacity of I is sufficient for the width and height of the
+     * requested grid.
      *
-     * \tparam T The type for storing and retrieving coordinates. Probably floating point, but could
-     * be a signed integer type.
+     * \tparam C C for 'Coordinate type". The type for storing and retrieving coordinates. In most
+     * cases a floating point type will be used, but this could also be a signed integer type. A
+     * compiled time test will be performed to ensure it is a signed type.
      *
      */
-    template<typename I = unsigned int, typename T = float>
+    template<typename I = unsigned int, typename C = float>
     struct Grid
     {
     private:
@@ -70,10 +74,10 @@ namespace morph {
         //! dx A two element morph::vec providing the horizontal distance between
         //! horizontally adjacent grid element centres (element 0) and the vertical
         //! distance between vertically adjacent grid element centres (element 1).
-        morph::vec<T, 2> dx = { T{1}, T{1} };
+        morph::vec<C, 2> dx = { C{1}, C{1} };
         //! offset A vector giving the distance offset (in your chosen units) to Grid
         //! index 0.
-        morph::vec<T, 2> offset = { T{0}, T{0} };
+        morph::vec<C, 2> offset = { C{0}, C{0} };
         //! wrap An enum to set how the grid wraps. Affects neighbour relationships
         GridDomainWrap wrap = GridDomainWrap::None;
         //! order The index order. Always counting left to right (row-major), but do
@@ -86,14 +90,14 @@ namespace morph {
         //! Setter for h
         void set_h (const I _h) { this->h = _h; this->init(); }
         //! Setter for dx
-        void set_dx (const morph::vec<T, 2> _dx) { this->dx = _dx; this->init(); }
+        void set_dx (const morph::vec<C, 2> _dx) { this->dx = _dx; this->init(); }
         //! Setter for g_offset
-        void set_offset (const morph::vec<T, 2> _offset) { this->offset = _offset; this->init(); }
+        void set_offset (const morph::vec<C, 2> _offset) { this->offset = _offset; this->init(); }
 
         //! Setter for most of the grid parameters to be carried out all in one function
         void set_grid_params (const morph::vec<I, 2> dims,
-                              const morph::vec<T, 2> spacing,
-                              const morph::vec<T, 2> grid_offset)
+                              const morph::vec<C, 2> spacing,
+                              const morph::vec<C, 2> grid_offset)
         {
             this->w = dims[0];
             this->h = dims[1];
@@ -108,8 +112,8 @@ namespace morph {
         I get_w() const { return this->w; }
         I get_h() const { return this->h; }
         morph::vec<I, 2> get_dims() const { return morph::vec<I, 2>({this->w, this->h}); }
-        morph::vec<T, 2> get_dx() const { return this->dx; }
-        morph::vec<T, 2> get_offset() const { return this->offset; }
+        morph::vec<C, 2> get_dx() const { return this->dx; }
+        morph::vec<C, 2> get_offset() const { return this->offset; }
         GridDomainWrap get_wrap() const { return this->wrap; }
         GridOrder get_order() const { return this->order; }
 
@@ -118,8 +122,8 @@ namespace morph {
 
         //! Constructor
         Grid (const I _w, const I _h,
-              const morph::vec<T, 2> _dx = { T{1}, T{1} },
-              const morph::vec<T, 2> _offset = { T{0}, T{0} },
+              const morph::vec<C, 2> _dx = { C{1}, C{1} },
+              const morph::vec<C, 2> _offset = { C{0}, C{0} },
               const GridDomainWrap _wrap = GridDomainWrap::None,
               const GridOrder _order = morph::GridOrder::bottomleft_to_topright)
             : w(_w)
@@ -137,37 +141,34 @@ namespace morph {
         //! relationships are always runtime computed.
         void init()
         {
-            static_assert (std::numeric_limits<I>::is_integer, "I must be an integer type");
-            static_assert (std::numeric_limits<T>::is_signed, "T must be an signed type (floating point or integer)");
+            static_assert (std::numeric_limits<I>::is_integer, "The index type I must be an integer type");
+            static_assert (std::numeric_limits<C>::is_signed,
+                           "The coordinate type C must be an signed type (floating point or integer)");
 
             if constexpr (std::is_signed_v<I> == true) {
-
+                // I is signed, so check that neither w nor h is negative.
                 if (this->w < I{0} || this->h < I{0}) {
-                    std::stringstream ee;
                     throw std::runtime_error ("Specify your grid with positive width and height");
                 }
-
+                // Place the result of w*h in a very large capacity signed integer type and check
+                // that it won't overflow I.
                 long long int test = this->w * this->h;
                 if (test > std::numeric_limits<I>::max()) {
-                    std::stringstream ee;
-                    ee << "Use a larger capacity type for I if you need a grid of size "
-                       << w << " * " << h;
-                    throw std::runtime_error (ee.str());
+                    throw std::runtime_error ("Use a larger capacity type for I");
                 }
-
             } else {
+                // I is unsigned. Place the result of w*h in a very large capacity unsigned integer
+                // type and check if it would overflow I.
                 unsigned long long int test = this->w * this->h;
                 if (test > std::numeric_limits<I>::max()) {
-                    std::stringstream ee;
-                    ee << "Use a larger capacity type for I if you need a grid of size "
-                       << w << " * " << h;
-                    throw std::runtime_error (ee.str());
+                    throw std::runtime_error ("Use a larger capacity type for I");
                 }
             }
+
             this->n = this->w * this->h;
             this->v_x.resize (this->n);
             this->v_y.resize (this->n);
-            morph::vec<T, 2> c = { T{0}, T{0} };
+            morph::vec<C, 2> c = { C{0}, C{0} };
             for (I i = 0; i < this->n; ++i) {
                 c = this->coord (i);
                 this->v_x[i] = c[0];
@@ -176,22 +177,22 @@ namespace morph {
         }
 
         //! Indexing the grid will return a memorized vec location.
-        morph::vec<T, 2> operator[] (const I index) const
+        morph::vec<C, 2> operator[] (const I index) const
         {
-            return morph::vec<T, 2>({ this->v_x[index], this->v_y[index] });
+            return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
         }
 
         //! A named function that does the same as operator[]
-        morph::vec<T, 2> coord_lookup (const I index) const
+        morph::vec<C, 2> coord_lookup (const I index) const
         {
-            return morph::vec<T, 2>({ this->v_x[index], this->v_y[index] });
+            return morph::vec<C, 2>({ this->v_x[index], this->v_y[index] });
         }
 
         //! Compute and return the coordinate with the given index
-        morph::vec<T, 2> coord (const I index) const
+        morph::vec<C, 2> coord (const I index) const
         {
-            if (index >= this->n) { return morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()}); }
-            morph::vec<T, 2> loc = this->offset;
+            if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
+            morph::vec<C, 2> loc = this->offset;
             loc[0] += this->dx[0] * (index % this->w);
             if (order == morph::GridOrder::bottomleft_to_topright) {
                 loc[1] += this->dx[1] * (index / this->w);
@@ -215,12 +216,12 @@ namespace morph {
             }
         }
         //! Return the coordinate of the neighbour to the east of index, or if there is no neighbour
-        //! to the east, return {T_max, T_max}
-        morph::vec<T, 2> coord_ne (const I index) const
+        //! to the east, return {C_max, C_max}
+        morph::vec<C, 2> coord_ne (const I index) const
         {
             I idx = index_ne (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
         //! Return true if the index has a neighbour to the east
         bool has_ne (const I index) const { return index_ne (index) != std::numeric_limits<I>::max(); }
@@ -239,12 +240,12 @@ namespace morph {
             }
         }
         //! Return the coordinate of the neighbour to the west of index, or if there is no neighbour
-        //! to the west, return {T_max, T_max}
-        morph::vec<T, 2> coord_nw (const I index) const
+        //! to the west, return {C_max, C_max}
+        morph::vec<C, 2> coord_nw (const I index) const
         {
             I idx = index_nw (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
         //! Return true if the index has a neighbour to the west
         bool has_nw (const I index) const { return index_nw (index) != std::numeric_limits<I>::max(); }
@@ -275,12 +276,12 @@ namespace morph {
             }
         }
         //! Return the coordinate of the neighbour to the north of index, or if there is no neighbour
-        //! to the north, return {T_max, T_max}
-        morph::vec<T, 2> coord_nn (const I index) const
+        //! to the north, return {C_max, C_max}
+        morph::vec<C, 2> coord_nn (const I index) const
         {
             I idx = index_nn (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
         //! Return true if the index has a neighbour to the north
         bool has_nn (const I index) const { return index_nn (index) != std::numeric_limits<I>::max(); }
@@ -311,12 +312,12 @@ namespace morph {
             }
         }
         //! Return the coordinate of the neighbour to the south of index, or if there is no neighbour
-        //! to the south, return {T_max, T_max}
-        morph::vec<T, 2> coord_ns (const I index) const
+        //! to the south, return {C_max, C_max}
+        morph::vec<C, 2> coord_ns (const I index) const
         {
             I idx = index_ns (index);
             if (idx < n) { return (*this)[idx]; }
-            return morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
         //! Return true if the index has a neighbour to the south
         bool has_ns (const I index) const { return index_ns (index) != std::numeric_limits<I>::max(); }
@@ -328,10 +329,10 @@ namespace morph {
             I nn = this->index_nn (index);
             return nn < n ? index_ne (nn) : std::numeric_limits<I>::max();
         }
-        morph::vec<T, 2> coord_nne (const I index) const
+        morph::vec<C, 2> coord_nne (const I index) const
         {
             I idx = this->index_nne (index);
-            return idx < n ? (*this)[idx] : morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
 
         //! Neighbour north west
@@ -341,10 +342,10 @@ namespace morph {
             I nn = this->index_nn (index);
             return nn < n ? index_nw (nn) : std::numeric_limits<I>::max();
         }
-        morph::vec<T, 2> coord_nnw (const I index) const
+        morph::vec<C, 2> coord_nnw (const I index) const
         {
             I idx = this->index_nnw (index);
-            return idx < n ? (*this)[idx] : morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
 
         //! Neighbour south east
@@ -354,10 +355,10 @@ namespace morph {
             I ns = this->index_ns (index);
             return ns < n ? index_ne (ns) : std::numeric_limits<I>::max();
         }
-        morph::vec<T, 2> coord_nse (const I index) const
+        morph::vec<C, 2> coord_nse (const I index) const
         {
             I idx = this->index_nse (index);
-            return idx < n ? (*this)[idx] : morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
 
         //! Neighbour south west
@@ -367,10 +368,10 @@ namespace morph {
             I ns = this->index_ns (index);
             return ns < n ? index_nw (ns) : std::numeric_limits<I>::max();
         }
-        morph::vec<T, 2> coord_nsw (const I index) const
+        morph::vec<C, 2> coord_nsw (const I index) const
         {
             I idx = this->index_nsw (index);
-            return idx < n ? (*this)[idx] : morph::vec<T, 2>({std::numeric_limits<T>::max(), std::numeric_limits<T>::max()});
+            return idx < n ? (*this)[idx] : morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()});
         }
 
         /*!
@@ -384,33 +385,33 @@ namespace morph {
          * left-most pixel to the right edge of the right-most pixel? It could be either, so I
          * provide width() and width_of_pixels() as well as height() and height_of_pixels().
          */
-        T width() const { return dx[0] * w; }
+        C width() const { return dx[0] * w; }
 
         //! Return the width of the grid if drawn as pixels
-        T width_of_pixels() const { return dx[0] * w + dx[0]; }
+        C width_of_pixels() const { return dx[0] * w + dx[0]; }
 
         //! Return the distance from the centre of the bottom row to the centre of the top row
-        T height() const { return dx[1] * h; }
+        C height() const { return dx[1] * h; }
 
-        T area() const { return this->width() * this->height(); }
+        C area() const { return this->width() * this->height(); }
 
         //! Return the height of the grid if drawn as pixels
-        T height_of_pixels() const { return dx[1] * h + dx[1]; }
+        C height_of_pixels() const { return dx[1] * h + dx[1]; }
 
         //! Return the area of the grid, if drawn as pixels
-        T area_of_pixels() const { return this->width_of_pixels() * this->height_of_pixels(); }
+        C area_of_pixels() const { return this->width_of_pixels() * this->height_of_pixels(); }
 
         //! Individual extents
-        T xmin() const { return (*this)[0][0]; }
-        T xmax() const { return (*this)[w-1][0]; }
-        T ymin() const { return order == GridOrder::bottomleft_to_topright ? (*this)[0][1] : (*this)[w * (h-1)][1]; }
-        T ymax() const { return order == GridOrder::bottomleft_to_topright ? (*this)[w * (h-1)][1] : (*this)[0][1]; }
+        C xmin() const { return (*this)[0][0]; }
+        C xmax() const { return (*this)[w-1][0]; }
+        C ymin() const { return order == GridOrder::bottomleft_to_topright ? (*this)[0][1] : (*this)[w * (h-1)][1]; }
+        C ymax() const { return order == GridOrder::bottomleft_to_topright ? (*this)[w * (h-1)][1] : (*this)[0][1]; }
 
         //! Extents {xmin, xmax, ymin, ymax}
-        morph::vec<T, 4> extents() const { return morph::vec<T, 4>({ xmin(), xmax(), ymin(), ymax() }); }
+        morph::vec<C, 4> extents() const { return morph::vec<C, 4>({ xmin(), xmax(), ymin(), ymax() }); }
 
         //! Return the coordinates of the centre of the grid
-        morph::vec<T, 2> centre() const { return morph::vec<T, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
+        morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
 
         //! Return the row for the index
         I row (const I index) const { return index < n ? index % w : std::numeric_limits<I>::max(); }
@@ -419,9 +420,9 @@ namespace morph {
         I col (const I index) const { return index < n ? index / w : std::numeric_limits<I>::max(); }
 
         //! Two vector structures that contains the coords for this grid. v_x is a vector of the x coordinates
-        morph::vvec<T> v_x;
+        morph::vvec<C> v_x;
         //! v_y is a vector of the y coordinates
-        morph::vvec<T> v_y;
+        morph::vvec<C> v_y;
     };
 
 } // namespace morph
