@@ -2,13 +2,12 @@
 #include <morph/Config.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/VisualDataModel.h>
 #include <morph/vec.h>
 
 // basic model class
 template<class Flt>
-class Model {
-
+class Model
+{
 public:
     int time;
     morph::Config* conf;
@@ -30,8 +29,8 @@ public:
 };
 
 
-int main(int argc, char **argv){
-
+int main(int argc, char **argv)
+{
         if (argc < 4) { std::cerr << "\nUsage: ./model configfile logdir seed"; return -1; }
 
         // set random seed (NB: redundant in this sim - no rng used)
@@ -43,14 +42,14 @@ int main(int argc, char **argv){
         if (!conf.ready) { std::cerr << "Error setting up JSON config: " << conf.emsg << std::endl; return 1; }
 
         // Load in some data from config file
-        unsigned int T = conf.getUInt("T",1000);
+        unsigned int T = conf.getUInt("T", 1000);
 
         // setup the log file
         std::string logpath = argv[2];
         std::ofstream logfile;
         morph::Tools::createDir (logpath);
-        { std::stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str());}
-        logfile<<"Hello world!"<<std::endl;
+        { std::stringstream ss; ss << logpath << "/log.txt"; logfile.open(ss.str()); }
+        logfile << "Hello world!" << std::endl;
 
         // Start the clock
         std::chrono::steady_clock::time_point lastrender = std::chrono::steady_clock::now();
@@ -84,14 +83,15 @@ int main(int argc, char **argv){
         gv->setlimits (0,T,0,1);
         gv->setdata (X, Y, ds);
         gv->finalize();
-        // Pass the graph (and ownership of its memory to the morph::Visual. The returned pointer can be used to interact with the GraphVisual
+        // Pass the graph (and ownership of its memory to the morph::Visual. The returned pointer
+        // can be used to interact with the GraphVisual.
         morph::GraphVisual<float>* gv_ptr = v.addVisualModel (gv);
 
         // Create a basic model object
         Model<float> M(&conf);
 
         // Run the main loop
-        for(int t=0;t<T;t++){
+        for (int t=0; t<T; t++) {
 
             // Step the model
             M.step();
@@ -100,17 +100,16 @@ int main(int argc, char **argv){
             X.push_back((float)M.time);
             Y.push_back(M.x);
 
-            // update the display
+            // update the graph on every loop
             gv_ptr->update (X, Y, 0);
 
-            // poll gl events and re-render
+            // You can poll gl events and re-render on a schedule:
             std::chrono::steady_clock::duration sincerender = std::chrono::steady_clock::now() - lastrender;
             if (std::chrono::duration_cast<std::chrono::milliseconds>(sincerender).count() > 17) {
-                glfwPollEvents();
+                v.poll();
                 v.render();
                 lastrender = std::chrono::steady_clock::now();
             }
-
         }
 
         v.keepOpen();

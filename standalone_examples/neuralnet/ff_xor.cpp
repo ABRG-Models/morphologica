@@ -9,6 +9,7 @@
 #include <morph/Random.h>
 #include <morph/nn/FeedForwardNet.h>
 #include <morph/vvec.h>
+#include <morph/tools.h>
 #include <fstream>
 #include <vector>
 #include <utility>
@@ -20,7 +21,7 @@
 
 //! Helper function to save PNG images
 void savePngs (const std::string& logpath, const std::string& name,
-               unsigned int frameN, morph::Visual& v) {
+               unsigned int frameN, morph::Visual<>& v) {
     std::stringstream ss;
     ss << logpath << "/" << name<< "_";
     ss << std::setw(5) << std::setfill('0') << frameN;
@@ -88,6 +89,11 @@ int main (int argc, char** argv)
     unsigned int i = 0;
     // Used to number saved frames for a movie
     unsigned int framenum = 0;
+
+    // Create a directory to save PNG images
+    if (morph::Tools::dirExists ("./logs") == false) {
+        morph::Tools::createDir ("./logs");
+    }
 
     for (unsigned int ep = 0; ep < epochs; ++ep) {
 

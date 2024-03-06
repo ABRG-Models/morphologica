@@ -27,7 +27,7 @@
 static constexpr bool pucks_for_neurons = true;
 
 template <typename Flt>
-class NetVisual : public morph::VisualModel
+class NetVisual : public morph::VisualModel<>
 {
 public:
     NetVisual(const morph::vec<float, 3> _offset, morph::nn::FeedForwardNet<Flt>* _thenet)
@@ -85,8 +85,8 @@ public:
                 }
 
                 // Text label for activation
-                this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                           nloc+toffset, ss.str(), morph::TextFeatures(em)) ));
+                this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                                             nloc+toffset, ss.str(), morph::TextFeatures(em)) ));
                 nloc[0] += this->radiusFixed * 4.0f;
             }
 
@@ -131,8 +131,8 @@ public:
                     morph::vec<float,3> nloccross = nloc.cross (nloc2);
                     toffset = (nloccross[2] > 0) ? toffset1 : toffset2;
 
-                    this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                               ((nloc+nloc2)/2.0f)+toffset, ss.str(), morph::TextFeatures(em))));
+                    this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                                                 ((nloc+nloc2)/2.0f)+toffset, ss.str(), morph::TextFeatures(em))));
 
                     // When reset is needed:
                     size_t M = population.size() / cl.N;
@@ -140,8 +140,8 @@ public:
                         // Draw bias text
                         std::stringstream bb1;
                         bb1 << "bias " << std::setprecision(3) << cl.b[bidx++];
-                        this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel> (this->parentVis, this->get_tprog(this->parentVis),
-                                                                                                   (nloc2+toffsetbias), bb1.str(), morph::TextFeatures(em/2))));
+                        this->texts.push_back (std::move(std::make_unique<morph::VisualTextModel<>> (this->parentVis, this->get_tprog(this->parentVis),
+                                                                                                     (nloc2+toffsetbias), bb1.str(), morph::TextFeatures(em/2))));
                         nloc = *sl; // reset nloc
                         nloc2[0] += this->radiusFixed * 4.0f; // increment nloc2
                         counter = 0;
