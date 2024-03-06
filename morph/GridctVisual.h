@@ -26,9 +26,9 @@ namespace morph {
      * Right now, I have to pass in all the template arguments for the Grid that will be
      * visualized. This seems clunky. Sensible defaults may help.
      */
-    template <typename T, size_t w, size_t h,
-              morph::vec<float, 2> dx = { 1.0f, 1.0f },
-              morph::vec<float, 2> offset = { 0.0f, 0.0f },
+    template <typename T, typename I, typename C, I w, I h,
+              morph::vec<C, 2> dx = { 1.0f, 1.0f },
+              morph::vec<C, 2> offset = { 0.0f, 0.0f },
               bool memory_coords = true,
               GridDomainWrap wrap = GridDomainWrap::None,
               GridOrder order = morph::GridOrder::bottomleft_to_topright,
@@ -37,7 +37,7 @@ namespace morph {
     {
     public:
 
-        GridctVisual(const morph::Gridct<w, h, dx, offset, memory_coords, wrap, order>* _grid, const vec<float> _offset)
+        GridctVisual(const morph::Gridct<I, C, w, h, dx, offset, memory_coords, wrap, order>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = dx.plus_one_dim (0.0f);
@@ -396,7 +396,7 @@ namespace morph {
         }
 
         //! The morph::Gridct to visualize
-        const morph::Gridct<w, h, dx, offset, memory_coords, wrap, order>* grid;
+        const morph::Gridct<I, C, w, h, dx, offset, memory_coords, wrap, order>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

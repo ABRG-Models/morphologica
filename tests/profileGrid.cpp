@@ -12,7 +12,7 @@ int main()
     using namespace std::chrono;
     using sc = std::chrono::steady_clock;
 
-    constexpr size_t Nside = 1000;
+    constexpr unsigned int Nside = 1000;
     constexpr morph::vec<float, 2> grid_spacing = {1.0f, 1.0f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
     constexpr morph::GridDomainWrap d_wrap = morph::GridDomainWrap::None;
@@ -20,13 +20,13 @@ int main()
     sc::time_point t0 = sc::now();
 
     // A Grid with no memory use (fast to instantiate, slower to access coordinates)
-    morph::Gridct<Nside, Nside, grid_spacing, grid_zero, false, d_wrap> grid_ct;
+    morph::Gridct<unsigned int, float, Nside, Nside, grid_spacing, grid_zero, false, d_wrap> grid_ct;
 
     sc::time_point t1 = sc::now();
 
     // A Grid with memory use (slower to instantiate, fast to access coordinates)
     constexpr bool memory_vecs = true;
-    morph::Gridct<Nside, Nside, grid_spacing, grid_zero, memory_vecs, d_wrap> grid_ct_mem;
+    morph::Gridct<unsigned int, float, Nside, Nside, grid_spacing, grid_zero, memory_vecs, d_wrap> grid_ct_mem;
 
     sc::time_point t2 = sc::now();
 
@@ -52,20 +52,20 @@ int main()
 
     morph::vec<float, 2> one_coordinate = {0,0};
     t0 = sc::now();
-    for (size_t i = 0; i < grid_ct.n; ++i) { one_coordinate += grid_ct[i]; }
+    for (unsigned int i = 0; i < grid_ct.n; ++i) { one_coordinate += grid_ct[i]; }
     t1 = sc::now();
     std::cout << "Gridct (no mem) access as '+= grid[i]':               " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nGridct WITH memory\n------------------------------\n";
     t0 = sc::now();
-    for (size_t i = 0; i < grid_ct_mem.n; ++i) { one_coordinate += grid_ct_mem[i]; }
+    for (unsigned int i = 0; i < grid_ct_mem.n; ++i) { one_coordinate += grid_ct_mem[i]; }
     t1 = sc::now();
     std::cout << "Gridct (WITH mem) access as  '+= grid[i]':            " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     t0 = sc::now();
-    for (size_t i = 0; i < grid_ct_mem.n; ++i) {
+    for (unsigned int i = 0; i < grid_ct_mem.n; ++i) {
         one_coordinate[0] += grid_ct_mem.v_x[i];
         one_coordinate[1] += grid_ct_mem.v_y[i];
     }
@@ -76,21 +76,21 @@ int main()
 
     one_coordinate = {0,0};
     t0 = sc::now();
-    for (size_t i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord(i); }
+    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord(i); }
     t1 = sc::now();
     std::cout << "Grid (no mem) access as '+= grid_rt.coord(i)':               " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nGrid WITH memory\n------------------------------\n";
     t0 = sc::now();
-    for (size_t i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt[i]; }
+    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt[i]; }
     t1 = sc::now();
     std::cout << "Grid (WITH mem) access as  '+= grid_rt[i]':            " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nCartGrid (also WITH memory)\n------------------------------\n";
     t0 = sc::now();
-    for (size_t i = 0; i < cgrid.num(); ++i) {
+    for (unsigned int i = 0; i < cgrid.num(); ++i) {
         one_coordinate[0] += cgrid.d_x[i];
         one_coordinate[1] += cgrid.d_y[i];
     }

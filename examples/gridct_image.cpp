@@ -15,18 +15,18 @@ int main()
 {
     morph::Visual v(1600, 1000, "Demo of Gridct showing an image");
 
-    constexpr size_t w = 256;
-    constexpr size_t h = 65;
+    constexpr unsigned int w = 256;
+    constexpr unsigned int h = 65;
     constexpr morph::vec<float, 2> dx = {0.02f, 0.02f};
     constexpr morph::vec<float, 2> nul = {0.0f, 0.0f};
     constexpr morph::GridDomainWrap d_wrap = morph::GridDomainWrap::None;
 
     // Top left to bottom right order matches image loaded by loadpng and avoids the need for a
     // vec<bool, 2> flip arg to morph::loadpng.
-    morph::Gridct<w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright> g1;
-    morph::Gridct<w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright> g2;
-    morph::Gridct<w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright> g3;
-    morph::Gridct<w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright> g4;
+    morph::Gridct<unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright> g1;
+    morph::Gridct<unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright> g2;
+    morph::Gridct<unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright> g3;
+    morph::Gridct<unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright> g4;
 
     // Load an image
     std::string fn = "../examples/bike256_65.png";
@@ -37,7 +37,7 @@ int main()
     std::cout << "Image dims: " << dims << std::endl;
 
     // Now visualise with a GridVisual
-    auto gv1 = std::make_unique<morph::GridctVisual<float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright>>(&g1, morph::vec<float>({0,0,0}));
+    auto gv1 = std::make_unique<morph::GridctVisual<float, unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright>>(&g1, morph::vec<float>({0,0,0}));
     v.bindmodel (gv1);
     gv1->gridVisMode = morph::GridVisMode::Triangles;
     gv1->setScalarData (&image_data_tlbr);
@@ -46,7 +46,7 @@ int main()
     gv1->finalize();
     v.addVisualModel (gv1);
 
-    auto gv2 = std::make_unique<morph::GridctVisual<float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright>>(&g2, morph::vec<float>({6,0,0}));
+    auto gv2 = std::make_unique<morph::GridctVisual<float, unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright>>(&g2, morph::vec<float>({6,0,0}));
     v.bindmodel (gv2);
     gv2->gridVisMode = morph::GridVisMode::Triangles;
     gv2->setScalarData (&image_data_bltr);
@@ -55,7 +55,7 @@ int main()
     gv2->finalize();
     v.addVisualModel (gv2);
 
-    auto gv3 = std::make_unique<morph::GridctVisual<float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright>>(&g3, morph::vec<float>({0,1.6,0}));
+    auto gv3 = std::make_unique<morph::GridctVisual<float, unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::topleft_to_bottomright>>(&g3, morph::vec<float>({0,1.6,0}));
     v.bindmodel (gv3);
     gv3->gridVisMode = morph::GridVisMode::RectInterp;
     gv3->setScalarData (&image_data_tlbr);
@@ -64,7 +64,7 @@ int main()
     gv3->finalize();
     v.addVisualModel (gv3);
 
-    auto gv4 = std::make_unique<morph::GridctVisual<float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright>>(&g4, morph::vec<float>({6,1.6,0}));
+    auto gv4 = std::make_unique<morph::GridctVisual<float, unsigned int, float, w, h, dx, nul, true, d_wrap, morph::GridOrder::bottomleft_to_topright>>(&g4, morph::vec<float>({6,1.6,0}));
     v.bindmodel (gv4);
     gv4->gridVisMode = morph::GridVisMode::RectInterp;
     gv4->setScalarData (&image_data_bltr);

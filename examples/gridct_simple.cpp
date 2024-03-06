@@ -20,13 +20,13 @@ int main()
     v.addLabel ("This is a\nmorph::GridctVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a Gridct to show in the scene
-    constexpr size_t Nside = 100;
+    constexpr unsigned int Nside = 100;
     constexpr morph::vec<float, 2> grid_spacing = {0.01f, 0.01f};
     constexpr morph::vec<float, 2> grid_zero = {0.0f, 0.0f};
     constexpr morph::GridDomainWrap d_wrap = morph::GridDomainWrap::None;
     constexpr morph::GridOrder g_order = morph::GridOrder::bottomleft_to_topright;
 
-    morph::Gridct<Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order> grid;
+    morph::Gridct<unsigned int, float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order> grid;
     std::cout << "Number of pixels in grid:" << grid.n << std::endl;
 
     // Make some dummy data (a sine wave) to make an interesting surface
@@ -38,7 +38,7 @@ int main()
 
     // Add a CartGridVisual to display the CartGrid within the morph::Visual scene
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
-    auto gv = std::make_unique<morph::GridctVisual<float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order>>(&grid, offset);
+    auto gv = std::make_unique<morph::GridctVisual<float, unsigned int, float, Nside, Nside, grid_spacing, grid_zero, true, d_wrap, g_order>>(&grid, offset);
     v.bindmodel (gv);
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);

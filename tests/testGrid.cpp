@@ -10,13 +10,13 @@ int main()
     constexpr morph::vec<float, 2> grid_zero = { 0.0f, 0.0f };
     constexpr bool non_memory = false;
     constexpr bool with_memory = true;
-    constexpr size_t no_element = std::numeric_limits<size_t>::max();
+    constexpr int no_element = std::numeric_limits<int>::max();
 
     // Expected coordinate
     morph::vec<float, 2> expected = { 0.0f, 0.0f };
 
     // Test 1. 2x2 grid, no offset, memory coords, no wrapping, bottomleft_to_topright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::None, morph::GridOrder::bottomleft_to_topright> grid1;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::None, morph::GridOrder::bottomleft_to_topright> grid1;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
@@ -71,7 +71,7 @@ int main()
     if (rtn != 0) { std::cout << "Test 1 el 3 FAILED\n"; return rtn; }
 
     // Test 1.1. 2x2 grid, no offset, NO memory coords, no wrapping, bottomleft_to_topright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, non_memory, morph::GridDomainWrap::None, morph::GridOrder::bottomleft_to_topright> grid1p1;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, non_memory, morph::GridDomainWrap::None, morph::GridOrder::bottomleft_to_topright> grid1p1;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
@@ -124,7 +124,7 @@ int main()
     if (rtn != 0) { std::cout << "Test 1.1 FAILED\n"; return rtn; }
 
     // Test 2. 2x2 grid, no offset, memory coords, horz wrapping, bottomleft_to_topright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Horizontal, morph::GridOrder::bottomleft_to_topright> grid2;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Horizontal, morph::GridOrder::bottomleft_to_topright> grid2;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
@@ -177,7 +177,7 @@ int main()
     if (rtn != 0) { std::cout << "Test 2 FAILED\n"; return rtn; }
 
     // Test 3. 2x2 grid, no offset, memory coords, both wrapping, bottomleft_to_topright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Both, morph::GridOrder::bottomleft_to_topright> grid3;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Both, morph::GridOrder::bottomleft_to_topright> grid3;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
@@ -230,7 +230,7 @@ int main()
     if (rtn != 0) { std::cout << "Test 3 FAILED\n"; return rtn; }
 
     // Test 4. 2x2 grid, no offset, memory coords, no wrapping, topleft_to_bottomright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::None, morph::GridOrder::topleft_to_bottomright> grid4;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::None, morph::GridOrder::topleft_to_bottomright> grid4;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
@@ -283,7 +283,7 @@ int main()
     if (rtn != 0) { std::cout << "Test 4 FAILED\n"; return rtn; }
 
     // Test 5. 2x2 grid, no offset, memory coords, vertical wrapping, topleft_to_bottomright ordering,
-    morph::Gridct<2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Vertical, morph::GridOrder::topleft_to_bottomright> grid5;
+    morph::Gridct<int, float, 2, 2, grid_spacing, grid_zero, with_memory, morph::GridDomainWrap::Vertical, morph::GridOrder::topleft_to_bottomright> grid5;
 
     // Test element 0
     expected = { 0.0f, 0.0f };
