@@ -26,18 +26,18 @@ namespace morph {
      * Right now, I have to pass in all the template arguments for the Grid that will be
      * visualized. This seems clunky. Sensible defaults may help.
      */
-    template <typename T, size_t n_x, size_t n_y,
+    template <typename T, size_t w, size_t h,
               morph::vec<float, 2> dx = { 1.0f, 1.0f },
-              morph::vec<float, 2> g_offset = { 0.0f, 0.0f },
+              morph::vec<float, 2> offset = { 0.0f, 0.0f },
               bool memory_coords = true,
-              GridDomainWrap d_wrap = GridDomainWrap::None,
-              GridOrder g_order = morph::GridOrder::bottomleft_to_topright,
+              GridDomainWrap wrap = GridDomainWrap::None,
+              GridOrder order = morph::GridOrder::bottomleft_to_topright,
               int glver = morph::gl::version_4_1>
     class GridctVisual : public VisualDataModel<T, glver>
     {
     public:
 
-        GridctVisual(const morph::Gridct<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* _grid, const vec<float> _offset)
+        GridctVisual(const morph::Gridct<w, h, dx, offset, memory_coords, wrap, order>* _grid, const vec<float> _offset)
         {
             // Set up...
             morph::vec<float> pixel_offset = dx.plus_one_dim (0.0f);
@@ -136,7 +136,7 @@ namespace morph {
 
             // Build indices row by row.
             auto dims = this->grid->get_dims();
-            if (this->grid->get_g_order() == morph::GridOrder::bottomleft_to_topright) {
+            if (this->grid->get_order() == morph::GridOrder::bottomleft_to_topright) {
                 for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
                     for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
@@ -150,7 +150,7 @@ namespace morph {
                         this->indices.push_back (ii + dims[0] + 1); // NNE
                     }
                 }
-            } else if (this->grid->get_g_order() == morph::GridOrder::topleft_to_bottomright) {
+            } else if (this->grid->get_order() == morph::GridOrder::topleft_to_bottomright) {
                 for (unsigned int ri = 0; ri < dims[1]-1; ++ri) {
                     for (unsigned int ci = 0; ci < dims[0]-1; ++ci) {
                         // Triangle 1
@@ -396,7 +396,7 @@ namespace morph {
         }
 
         //! The morph::Gridct to visualize
-        const morph::Gridct<n_x, n_y, dx, g_offset, memory_coords, d_wrap, g_order>* grid;
+        const morph::Gridct<w, h, dx, offset, memory_coords, wrap, order>* grid;
 
         //! A copy of the scalarData which can be transformed suitably to be the z value of the surface
         std::vector<float> dcopy;

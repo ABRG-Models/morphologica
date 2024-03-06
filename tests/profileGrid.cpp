@@ -66,8 +66,8 @@ int main()
     one_coordinate = {0,0};
     t0 = sc::now();
     for (size_t i = 0; i < grid_ct_mem.n; ++i) {
-        one_coordinate[0] += grid_ct_mem.d_x[i];
-        one_coordinate[1] += grid_ct_mem.d_y[i];
+        one_coordinate[0] += grid_ct_mem.v_x[i];
+        one_coordinate[1] += grid_ct_mem.v_y[i];
     }
     t1 = sc::now();
     std::cout << "Gridct (WITH mem) access as '+= grid.d_x[i]/d_y[i]':  " << duration_cast<microseconds>(t1-t0).count() << " us\n";
