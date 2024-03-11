@@ -168,6 +168,9 @@ namespace morph {
                 glDeleteProgram (this->shaders.tprog);
                 this->shaders.tprog = 0;
             }
+
+            // Free up the Fonts associated with this morph::Visual
+            morph::VisualResources<glver>::i().freetype_deinit (this);
         }
 
         // Public init that is given a context (window or widget) and then sets up the

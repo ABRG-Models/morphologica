@@ -133,6 +133,20 @@ namespace morph {
             }
         }
 
+        //! When a morph::Visual goes out of scope, its freetype library instance should be
+        //! deinitialized.
+        void freetype_deinit (morph::Visual<glver>* _vis)
+        {
+            // First clear the faces associated with Visual<>* _vis
+            this->clearVisualFaces (_vis);
+            // Second, clean up the FreeType library instance and erase from this->freetypes
+            auto freetype = this->freetypes.find (_vis);
+            if (freetype != this->freetypes.end()) {
+                FT_Done_FreeType (freetype->second);
+                this->freetypes.erase (freetype);
+            }
+        }
+
         //! The instance public function. Uses the very short name 'i' to keep code tidy.
         //! This relies on C++11 magic statics (N2660).
         static auto& i()
@@ -158,6 +172,19 @@ namespace morph {
                 rtn = this->faces.at (key);
             }
             return rtn;
+        }
+
+        //! Loop through this->faces clearing out those associated with the given morph::Visual
+        void clearVisualFaces (morph::Visual<glver>* _vis)
+        {
+            auto f = this->faces.begin();
+            while (f != this->faces.end()) {
+                // f->first is a key. If its third, Visual<>* element == _vis, then delete and erase
+                if (std::get<morph::Visual<glver>*>(f->first) == _vis) {
+                    delete f->second;
+                    f = this->faces.erase (f);
+                } else { f++; }
+            }
         }
     };
 
