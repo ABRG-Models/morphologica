@@ -39,13 +39,15 @@ namespace morph {
         VisualResources() { this->init(); }
         ~VisualResources()
         {
-            // Normally, faces is cleaned as all morph::Visuals go out of scope, but clean up any
-            // faces that are left over.
+            // Normally, when each morph::Visual goes out of scope, the faces associated with that
+            // Visual get cleaned up (in VisualResources::freetype_deinit). So at this point, faces
+            // should be empty, and the following loop and clear() should do nothing.
             for (auto& f : this->faces) { delete f.second; }
             this->faces.clear();
 
-            // We're done with freetype, so clear those up. Similarly, freetypes should be empty
-            // already.
+            // As with the case for faces, when each morph::Visual goes out of scope, the FreeType
+            // instance gets cleaned up. So at this stage freetypes should also be empy and nothing
+            // will happen here either.
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
 #ifndef OWNED_MODE
