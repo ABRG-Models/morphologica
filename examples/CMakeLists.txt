@@ -275,6 +275,12 @@ if(USE_GLEW)
   target_link_libraries(twowindows GLEW::GLEW)
 endif()
 
+add_executable(threewindows threewindows.cpp)
+target_link_libraries(threewindows OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(threewindows GLEW::GLEW)
+endif()
+
 add_executable(rod rod.cpp)
 target_link_libraries(rod OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
