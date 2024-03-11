@@ -39,11 +39,13 @@ namespace morph {
         VisualResources() { this->init(); }
         ~VisualResources()
         {
-            // Clean up the faces, which is a map:
+            // Normally, faces is cleaned as all morph::Visuals go out of scope, but clean up any
+            // faces that are left over.
             for (auto& f : this->faces) { delete f.second; }
             this->faces.clear();
 
-            // We're done with freetype, so clear those up
+            // We're done with freetype, so clear those up. Similarly, freetypes should be empty
+            // already.
             for (auto& ft : this->freetypes) { FT_Done_FreeType (ft.second); }
 
 #ifndef OWNED_MODE
