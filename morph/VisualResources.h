@@ -117,7 +117,7 @@ namespace morph {
         //! assumption that I'd only need one FT_Library.
         void freetype_init (morph::Visual<glver>* _vis)
         {
-            FT_Library freetype = (FT_Library)0;
+            FT_Library freetype = nullptr;
             try {
                 freetype = this->freetypes.at (_vis);
             } catch (const std::out_of_range& e) {
