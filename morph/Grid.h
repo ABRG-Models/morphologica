@@ -83,6 +83,8 @@ namespace morph {
         //! order The index order. Always counting left to right (row-major), but do
         //! you start on the top row or the bottom row (the default)?
         GridOrder order = morph::GridOrder::bottomleft_to_topright;
+        //! Record whether ordering is row-major (true) or column-major (false)
+        bool rowmaj = true;
 
     public:
         //! Setter for w
@@ -165,6 +167,11 @@ namespace morph {
                 }
             }
 
+            if (this->order == morph::GridOrder::bottomleft_to_topright_colmaj
+                || order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                this->rowmaj = false;
+            }
+
             this->n = this->w * this->h;
             this->v_x.resize (this->n);
             this->v_y.resize (this->n);
@@ -193,12 +200,24 @@ namespace morph {
         {
             if (index >= this->n) { return morph::vec<C, 2>({std::numeric_limits<C>::max(), std::numeric_limits<C>::max()}); }
             morph::vec<C, 2> loc = this->offset;
-            loc[0] += this->dx[0] * (index % this->w);
             if (order == morph::GridOrder::bottomleft_to_topright) {
+                loc[0] += this->dx[0] * (index % this->w);
                 loc[1] += this->dx[1] * (index / this->w);
-            } else {
+
+            } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                loc[0] += this->dx[0] * (index % this->w);
                 loc[1] -= this->dx[1] * (index / this->w);
-            }
+
+            } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                loc[0] += this->dx[0] * (index / this->h);
+                loc[1] += this->dx[1] * (index % this->h);
+
+            } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                loc[0] += this->dx[0] * (index / this->h);
+                loc[1] -= this->dx[1] * (index % this->h);
+
+            } // else user will just get the offset coordinate
+
             return loc;
         }
 
@@ -210,9 +229,9 @@ namespace morph {
             if (r == (w - 1) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<I>::max();
             } else if (r == (w - 1) && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
-                return index - (w - 1);
+                return index - (this->rowmaj ? (w - 1) : (h * (w-1)));
             } else {
-                return index + 1;
+                return index + (this->rowmaj ? 1 : h);
             }
         }
         //! Return the coordinate of the neighbour to the east of index, or if there is no neighbour
@@ -234,9 +253,9 @@ namespace morph {
             if (r == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Vertical)) {
                 return std::numeric_limits<I>::max();
             } else if (r == 0 && (wrap == GridDomainWrap::Horizontal || wrap == GridDomainWrap::Both)) {
-                return index + (w - 1);
+                return index + (this->rowmaj ? (w - 1) : (h * (w-1)));
             } else {
-                return index - 1;
+                return index - (this->rowmaj ? 1 : h);
             }
         }
         //! Return the coordinate of the neighbour to the west of index, or if there is no neighbour
@@ -255,24 +274,32 @@ namespace morph {
         I index_nn (const I index) const
         {
             I c = this->col (index);
-            if (order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == (h - 1) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
-                    return std::numeric_limits<I>::max();
-                } else if (c == (h - 1) && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
-                    return index - (w * (h - 1));
+            if (c == (h - 1) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
+                return std::numeric_limits<I>::max();
+            } else if (c == (h - 1) && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
+                if (order == morph::GridOrder::bottomleft_to_topright) {
+                    return index  - (w * (h - I{1}));
+                } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                    return index + (w * (h - I{1}));
+                } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                    return index + (I{1} - h);
+                } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                    return index + (h - I{1});
                 } else {
-                    return index + w;
-                }
-            } else if (order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<I>::max();
-                } else if (c == 0 && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
-                    return index + (w * (h - 1));
-                } else {
-                    return index - w;
                 }
             } else {
-                return std::numeric_limits<I>::max();
+                if (order == morph::GridOrder::bottomleft_to_topright) {
+                    return index + w;
+                } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                    return index - w;
+                } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                    return index + I{1};
+                } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                    return index - I{1};
+                } else {
+                    return std::numeric_limits<I>::max();
+                }
             }
         }
         //! Return the coordinate of the neighbour to the north of index, or if there is no neighbour
@@ -291,24 +318,33 @@ namespace morph {
         I index_ns (const I index) const
         {
             I c = this->col (index);
-            if (order == morph::GridOrder::bottomleft_to_topright) {
-                if (c == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
-                    return std::numeric_limits<I>::max();
-                } else if (c == 0 && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
-                    return index + (w * (h - 1));
+            if (c == 0 && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
+                return std::numeric_limits<I>::max();
+            } else if (c == 0 && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
+
+                if (order == morph::GridOrder::bottomleft_to_topright) {
+                    return index + (w * (h - I{1}));
+                } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                    return index - (w * (h - I{1}));
+                } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                    return index + h - I{1};
+                } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                    return index + I{1} - h;
                 } else {
-                    return index - w;
-                }
-            } else if (order == morph::GridOrder::topleft_to_bottomright) {
-                if (c == (h - 1) && (wrap == GridDomainWrap::None || wrap == GridDomainWrap::Horizontal)) {
                     return std::numeric_limits<I>::max();
-                } else if (c == (h - 1) && (wrap == GridDomainWrap::Vertical || wrap == GridDomainWrap::Both)) {
-                    return index - (w * (h - 1));
-                } else {
-                    return index + w;
                 }
             } else {
-                return std::numeric_limits<I>::max();
+                if (order == morph::GridOrder::bottomleft_to_topright) {
+                    return index - w;
+                } else if (order == morph::GridOrder::topleft_to_bottomright) {
+                    return index + w;
+                } else if (order == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                    return index - I{1};
+                } else if (order == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                    return index + I{1};
+                } else {
+                    return std::numeric_limits<I>::max();
+                }
             }
         }
         //! Return the coordinate of the neighbour to the south of index, or if there is no neighbour
@@ -403,21 +439,46 @@ namespace morph {
 
         //! Individual extents
         C xmin() const { return (*this)[0][0]; }
-        C xmax() const { return (*this)[w-1][0]; }
-        C ymin() const { return order == GridOrder::bottomleft_to_topright ? (*this)[0][1] : (*this)[w * (h-1)][1]; }
-        C ymax() const { return order == GridOrder::bottomleft_to_topright ? (*this)[w * (h-1)][1] : (*this)[0][1]; }
+        C xmax() const {
+            if (this->rowmaj == true) {
+                return (*this)[w-1][0];
+            } // else colmaj
+            return (*this)[(w*h)-1][0];
+        }
+        C ymin() const {
+            if (this->rowmaj == true) {
+                return order == GridOrder::bottomleft_to_topright ? (*this)[0][1] : (*this)[w * (h-1)][1];
+            } // else colmaj
+            return order == GridOrder::bottomleft_to_topright_colmaj ? (*this)[0][1] : (*this)[h-1][1];
+        }
+        C ymax() const {
+            if (this->rowmaj == true) {
+                return order == GridOrder::bottomleft_to_topright ? (*this)[w * (h-1)][1] : (*this)[0][1];
+            } // else colmaj
+            return order == GridOrder::bottomleft_to_topright_colmaj ? (*this)[h-1][1] : (*this)[0][1];
+        }
 
         //! Extents {xmin, xmax, ymin, ymax}
         morph::vec<C, 4> extents() const { return morph::vec<C, 4>({ xmin(), xmax(), ymin(), ymax() }); }
 
         //! Return the coordinates of the centre of the grid
-        morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * 0.5f; }
+        morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * C{0.5}; }
 
         //! Return the row for the index
-        I row (const I index) const { return index < n ? index % w : std::numeric_limits<I>::max(); }
+        I row (const I index) const {
+            if (this->rowmaj == true) {
+                return index < n ? index % w : std::numeric_limits<I>::max();
+            } // else colmaj
+            return index < n ? index / w : std::numeric_limits<I>::max();
+        }
 
         //! Return the col for the index
-        I col (const I index) const { return index < n ? index / w : std::numeric_limits<I>::max(); }
+        I col (const I index) const {
+            if (this->rowmaj == true) {
+                return index < n ? index / w : std::numeric_limits<I>::max();
+            } // else colmaj
+            return index < n ? index % w : std::numeric_limits<I>::max();
+        }
 
         //! Two vector structures that contains the coords for this grid. v_x is a vector of the x coordinates
         morph::vvec<C> v_x;

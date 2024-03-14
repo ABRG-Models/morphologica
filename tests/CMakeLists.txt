@@ -462,10 +462,13 @@ add_test(testboxfilter testboxfilter)
 
 # morph::Grid requires C++-20
 if(CXX_20_AVAILABLE)
-  add_executable(testGrid testGrid.cpp)
-  set_property(TARGET testGrid PROPERTY CXX_STANDARD 20)
-  add_test(testGrid testGrid)
+  add_executable(testGridct testGridct.cpp)
+  set_property(TARGET testGridct PROPERTY CXX_STANDARD 20)
+  add_test(testGridct testGridct)
 
   add_executable(profileGrid profileGrid.cpp)
   set_property(TARGET profileGrid PROPERTY CXX_STANDARD 20)
 endif()
+
+add_executable(testGrid testGrid.cpp)
+add_test(testGrid testGrid)

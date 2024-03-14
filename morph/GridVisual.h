@@ -162,6 +162,35 @@ namespace morph {
                         this->indices.push_back (ii + dims[0]);     // NS
                     }
                 }
+            } else if (this->grid->get_order() == morph::GridOrder::bottomleft_to_topright_colmaj) {
+                for (I ri = 0; ri < dims[1]-1; ++ri) {
+                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        I ii = ci * dims[1] + ri;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[1] + 1); // NNE
+                        this->indices.push_back (ii + dims[1]);     // NE
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + 1);           // NN
+                        this->indices.push_back (ii + dims[1] + 1); // NNE
+                    }
+                }
+            } else if (this->grid->get_order() == morph::GridOrder::topleft_to_bottomright_colmaj) {
+                for (I ri = 0; ri < dims[1]-1; ++ri) {
+                    for (I ci = 0; ci < dims[0]-1; ++ci) {
+                        // Triangle 1
+                        I ii = ci * dims[1] + ri;
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[1]);     // NE
+                        this->indices.push_back (ii + dims[1] + 1); // NSE
+                        // Triangle 2
+                        this->indices.push_back (ii);
+                        this->indices.push_back (ii + dims[1] + 1); // NSE
+                        this->indices.push_back (ii + 1);           // NS
+                    }
+                }
+
             } else {
                 throw std::runtime_error ("morph::GridVisual: Unhandled morph::GridOrder");
             }

@@ -40,13 +40,22 @@ namespace morph {
      * 0 1 2 3
      * 4 5 6 7
      *
-     * Note that I've omitted the possibility of indexing the grid in column major format. That
-     * could be added if required.
+     * bottomleft_to_topright_colmaj:
+     *
+     * 1 3 5 7
+     * 0 2 4 6
+     *
+     * topleft_to_bottomright_colmaj:
+     *
+     * 0 2 4 6
+     * 1 3 5 7
      */
     enum class GridOrder
     {
         bottomleft_to_topright,
-        topleft_to_bottomright
+        topleft_to_bottomright,
+        bottomleft_to_topright_colmaj,
+        topleft_to_bottomright_colmaj
     };
 
     /*!
