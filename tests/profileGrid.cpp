@@ -107,6 +107,18 @@ int main()
     t1 = sc::now();
     std::cout << "CartGrid access as '+= cgrid.d_x[i]/d_y[i]':          " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
+    t0 = sc::now();
+    for (unsigned int i = 0; i < cgrid.num(); ++i) {
+        int ii = cgrid.d_ne[i];
+        if (ii > -1) {
+            one_coordinate[0] += cgrid.d_x[ii];
+            one_coordinate[1] += cgrid.d_y[ii];
+        }
+    }
+
+    t1 = sc::now();
+    std::cout << "CartGrid neighbour access':                           " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+
     std::cout << "\n\nLast one_coordinate: " << one_coordinate << std::endl;
     return 0;
 }
