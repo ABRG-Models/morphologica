@@ -1116,9 +1116,8 @@ namespace morph {
         // Replace any value that's above upper with upper and any below lower with lower
         void threshold_inplace (const S lower, const S upper)
         {
-            for (auto& i : *this) {
-                i = i >= upper ? upper : i;
-                i = i <= lower ? lower : i;
+            for (auto& coord : *this) {
+                coord = (coord <= lower ? lower : (coord >= upper ? upper : coord));
             }
         }
 
