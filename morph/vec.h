@@ -239,7 +239,7 @@ namespace morph {
             return v;
         }
 
-        //! Stream the coordinates of the vector into \a ss as a comma separated list.
+        //! Stream the elements of the vector into \a ss as a comma separated list.
         void str_comma_separated (std::stringstream& ss) const
         {
             ss << std::setprecision (std::numeric_limits<S>::max_digits10);
@@ -381,7 +381,7 @@ namespace morph {
             }
         }
 
-        //! Zero the vector. Set all coordinates to 0
+        //! Zero the vector. Set all elements to 0
         void zero() { std::fill (this->begin(), this->end(), S{0}); }
         //! Set all elements of the vector to the maximum possible value given type S
         void set_max() { std::fill (this->begin(), this->end(), std::numeric_limits<S>::max()); }
@@ -391,7 +391,7 @@ namespace morph {
         /*!
          * Randomize the vector
          *
-         * Randomly set the elements of the vector. Coordinates are set to random
+         * Randomly set the elements of the vector. Elements are set to random
          * numbers drawn from a uniform distribution between 0 and 1 if S is a
          * floating point type or to integers between std::numeric_limits<S>::min()
          * and std::numeric_limits<S>::max() if S is an integral type (See
@@ -406,7 +406,7 @@ namespace morph {
         /*!
          * Randomize the vector with provided bounds
          *
-         * Randomly set the elements of the vector. Coordinates are set to random
+         * Randomly set the elements of the vector. Elements are set to random
          * numbers drawn from a uniform distribution between \a min and \a
          * max. Strictly, the range is [min, max)
          */
@@ -419,7 +419,7 @@ namespace morph {
         /*!
          * Randomize the vector from a Gaussian distribution
          *
-         * Randomly set the elements of the vector. Coordinates are set to random
+         * Randomly set the elements of the vector. Elements are set to random
          * numbers drawn from a uniform distribution between \a min and \a
          * max. Strictly, the range is [min, max)
          */
@@ -758,7 +758,7 @@ namespace morph {
         vec<S, N> pow (const S& p) const
         {
             vec<S, N> rtn{};
-            auto raise_to_p = [p](S coord) -> S { return static_cast<S>(std::pow(coord, p)); };
+            auto raise_to_p = [p](S elmnt) -> S { return static_cast<S>(std::pow(elmnt, p)); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
@@ -771,7 +771,7 @@ namespace morph {
         {
             auto pi = p.begin();
             vec<S, N> rtn{};
-            auto raise_to_p = [pi](S coord) mutable -> S { return static_cast<S>(std::pow(coord, (*pi++))); };
+            auto raise_to_p = [pi](S elmnt) mutable -> S { return static_cast<S>(std::pow(elmnt, (*pi++))); };
             std::transform (this->begin(), this->end(), rtn.begin(), raise_to_p);
             return rtn;
         }
@@ -786,7 +786,7 @@ namespace morph {
         vec<S, N> signum() const
         {
             vec<S, N> rtn{};
-            auto _signum = [](S coord) -> S { return (coord > S{0} ? S{1} : (coord == S{0} ? S{0} : S{-1})); };
+            auto _signum = [](S elmnt) -> S { return (elmnt > S{0} ? S{1} : (elmnt == S{0} ? S{0} : S{-1})); };
             std::transform (this->begin(), this->end(), rtn.begin(), _signum);
             return rtn;
         }
@@ -796,7 +796,7 @@ namespace morph {
         vec<S, N> floor() const
         {
             vec<S, N> rtn{};
-            auto _floor = [](S coord) -> S { return (std::floor(coord)); };
+            auto _floor = [](S elmnt) -> S { return (std::floor(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _floor);
             return rtn;
         }
@@ -806,7 +806,7 @@ namespace morph {
         vec<S, N> trunc() const
         {
             vec<S, N> rtn{};
-            auto _trunc = [](S coord) -> S { return (std::trunc(coord)); };
+            auto _trunc = [](S elmnt) -> S { return (std::trunc(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _trunc);
             return rtn;
         }
@@ -816,7 +816,7 @@ namespace morph {
         vec<S, N> ceil() const
         {
             vec<S, N> rtn{};
-            auto _ceil = [](S coord) -> S { return (std::ceil(coord)); };
+            auto _ceil = [](S elmnt) -> S { return (std::ceil(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), _ceil);
             return rtn;
         }
@@ -830,7 +830,7 @@ namespace morph {
         vec<S, N> sqrt() const
         {
             vec<S, N> rtn{};
-            auto sqrt_element = [](S coord) -> S { return static_cast<S>(std::sqrt(coord)); };
+            auto sqrt_element = [](S elmnt) -> S { return static_cast<S>(std::sqrt(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), sqrt_element);
             return rtn;
         }
@@ -845,7 +845,7 @@ namespace morph {
         vec<S, N> sq() const
         {
             vec<S, N> rtn{};
-            auto sq_element = [](S coord) -> S { return (coord * coord); };
+            auto sq_element = [](S elmnt) -> S { return (elmnt * elmnt); };
             std::transform (this->begin(), this->end(), rtn.begin(), sq_element);
             return rtn;
         }
@@ -860,7 +860,7 @@ namespace morph {
         vec<S, N> log() const
         {
             vec<S, N> rtn{};
-            auto log_element = [](S coord) -> S { return static_cast<S>(std::log(coord)); };
+            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
@@ -875,7 +875,7 @@ namespace morph {
         vec<S, N> log10() const
         {
             vec<S, N> rtn{};
-            auto log_element = [](S coord) -> S { return static_cast<S>(std::log10(coord)); };
+            auto log_element = [](S elmnt) -> S { return static_cast<S>(std::log10(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), log_element);
             return rtn;
         }
@@ -890,7 +890,7 @@ namespace morph {
         vec<S, N> exp() const
         {
             vec<S, N> rtn{};
-            auto exp_element = [](S coord) -> S { return static_cast<S>(std::exp(coord)); };
+            auto exp_element = [](S elmnt) -> S { return static_cast<S>(std::exp(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), exp_element);
             return rtn;
         }
@@ -905,7 +905,7 @@ namespace morph {
         vec<S, N> abs() const
         {
             vec<S, N> rtn{};
-            auto abs_element = [](S coord) -> S { return static_cast<S>(std::abs(coord)); };
+            auto abs_element = [](S elmnt) -> S { return static_cast<S>(std::abs(elmnt)); };
             std::transform (this->begin(), this->end(), rtn.begin(), abs_element);
             return rtn;
         }
@@ -1141,7 +1141,7 @@ namespace morph {
         vec<S, N> operator* (const _S& s) const
         {
             vec<S, N> rtn{};
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
             std::transform (this->begin(), this->end(), rtn.begin(), mult_by_s);
             return rtn;
         }
@@ -1155,7 +1155,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator*= (const _S& s)
         {
-            auto mult_by_s = [s](S coord) { return coord * s; };
+            auto mult_by_s = [s](S elmnt) { return elmnt * s; };
             std::transform (this->begin(), this->end(), this->begin(), mult_by_s);
         }
 
@@ -1190,7 +1190,7 @@ namespace morph {
         vec<S, N> operator/ (const _S& s) const
         {
             vec<S, N> rtn;
-            auto div_by_s = [s](S coord) { return coord / s; };
+            auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), rtn.begin(), div_by_s);
             return rtn;
         }
@@ -1199,7 +1199,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator/= (const _S& s)
         {
-            auto div_by_s = [s](S coord) { return coord / s; };
+            auto div_by_s = [s](S elmnt) { return elmnt / s; };
             std::transform (this->begin(), this->end(), this->begin(), div_by_s);
         }
 
@@ -1248,7 +1248,7 @@ namespace morph {
         vec<S, N> operator+ (const _S& s) const
         {
             vec<S, N> rtn{};
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -1257,7 +1257,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator+= (const _S& s)
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -1266,7 +1266,7 @@ namespace morph {
         vec<S, N> operator- (const _S& s) const
         {
             vec<S, N> rtn{};
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -1275,7 +1275,7 @@ namespace morph {
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
         void operator-= (const _S& s)
         {
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
@@ -1283,7 +1283,7 @@ namespace morph {
         vec<S, N> operator+ (const S& s) const
         {
             vec<S, N> rtn{};
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), rtn.begin(), add_s);
             return rtn;
         }
@@ -1291,7 +1291,7 @@ namespace morph {
         //! Addition += operator for any type same as the enclosed type that implements + op
         void operator+= (const S& s) const
         {
-            auto add_s = [s](S coord) { return coord + s; };
+            auto add_s = [s](S elmnt) { return elmnt + s; };
             std::transform (this->begin(), this->end(), this->begin(), add_s);
         }
 
@@ -1299,7 +1299,7 @@ namespace morph {
         vec<S, N> operator- (const S& s) const
         {
             vec<S, N> rtn{};
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), rtn.begin(), subtract_s);
             return rtn;
         }
@@ -1307,7 +1307,7 @@ namespace morph {
         //! Subtraction -= operator for any time same as the enclosed type that implements - op
         void operator-= (const S& s) const
         {
-            auto subtract_s = [s](S coord) { return coord - s; };
+            auto subtract_s = [s](S elmnt) { return elmnt - s; };
             std::transform (this->begin(), this->end(), this->begin(), subtract_s);
         }
 
@@ -1333,7 +1333,7 @@ namespace morph {
     vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> division;
-        auto lhs_div_by_vec = [lhs](S coord) { return lhs / coord; };
+        auto lhs_div_by_vec = [lhs](S elmnt) { return lhs / elmnt; };
         std::transform (rhs.begin(), rhs.end(), division.begin(), lhs_div_by_vec);
         return division;
     }
@@ -1346,7 +1346,7 @@ namespace morph {
     vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> subtraction;
-        auto lhs_minus_vec = [lhs](S coord) { return lhs - coord; };
+        auto lhs_minus_vec = [lhs](S elmnt) { return lhs - elmnt; };
         std::transform (rhs.begin(), rhs.end(), subtraction.begin(), lhs_minus_vec);
         return subtraction;
     }
