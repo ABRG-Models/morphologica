@@ -16,8 +16,6 @@
 int main()
 {
     morph::Visual v(1600, 1000, "morph::GridVisual");
-    v.lightingEffects();
-    v.addLabel ("This is a\nmorph::GridVisual\nobject", {0.26f, -0.16f, 0.0f});
 
     // Create a grid to show in the scene
     constexpr unsigned int Nside = 100;
@@ -38,13 +36,62 @@ int main()
         data[ri] = 0.05f + 0.05f * std::sin(20.0f * coord[0]) * std::sin(10.0f*coord[1]) ; // Range 0->1
     }
 
+    float step = 0.6f;
     // Add a GridVisual to display the Grid within the morph::Visual scene
-    morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
+    morph::vec<float, 3> offset = { -step * grid.width(), -step * grid.width(), 0.0f };
+
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Triangles;
+    //gv->interpolate_colour_sides = true;
+    //gv->clr_east_column = morph::colour::royalblue;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->addLabel ("GridVisMode::Triangles", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset = { step * grid.width(), -step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::RectInterp;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->addLabel ("GridVisMode::RectInterp", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset = { -step * grid.width(), step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Columns;
+    gv->interpolate_colour_sides = true;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->addLabel ("GridVisMode::Columns, interpolated sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset = { step * grid.width(), step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
+    v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Columns;
+    //gv->interpolate_colour_sides = false; // default
+    //gv->clr_east_column = morph::colour::black; // These are defaults but you can change them
+    //gv->clr_north_column = morph::colour::black;
+    gv->setScalarData (&data);
+    gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->addLabel ("GridVisMode::Columns, black sides", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+    gv->finalize();
+    v.addVisualModel (gv);
+
+    offset = { 3 * step * grid.width(), step * grid.width(), 0.0f };
+    gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Pixels;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
+    gv->addLabel ("GridVisMode::Pixels", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
     gv->finalize();
     v.addVisualModel (gv);
 

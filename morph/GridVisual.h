@@ -388,10 +388,213 @@ namespace morph {
 
         void initializeVerticesCols()
         {
-            // writeme
+            morph::vec<float, 2> dx = this->grid->get_dx();
+            float hx = 0.5f * dx[0];
+            float vy = 0.5f * dx[1];
+
+            this->idx = 0;
+
+            if (this->scalarData != nullptr) {
+                this->dcopy.resize (this->scalarData->size());
+                this->zScale.transform (*(this->scalarData), dcopy);
+                this->dcolour.resize (this->scalarData->size());
+                this->colourScale.transform (*(this->scalarData), dcolour);
+            } else if (this->vectorData != nullptr) {
+                this->dcopy.resize (this->vectorData->size());
+                this->dcolour.resize (this->vectorData->size());
+                this->dcolour2.resize (this->vectorData->size());
+                this->dcolour3.resize (this->vectorData->size());
+                std::vector<float> veclens(dcopy);
+                for (unsigned int i = 0; i < this->vectorData->size(); ++i) {
+                    veclens[i] = (*this->vectorData)[i].length();
+                    this->dcolour[i] = (*this->vectorData)[i][0];
+                    this->dcolour2[i] = (*this->vectorData)[i][1];
+                    // Could also extract a third colour for Trichrome vs Duochrome (or for raw RGB signal)
+                    this->dcolour3[i] = (*this->vectorData)[i][2];
+                }
+                this->zScale.transform (veclens, this->dcopy);
+
+                // Handle case where this->cm.getType() == morph::ColourMapType::RGB and there is
+                // exactly one colour. ColourMapType::RGB assumes R/G/B data all in range 0->1
+                // ALREADY and therefore they don't need to be re-scaled with this->colourScale.
+                if (this->cm.getType() != morph::ColourMapType::RGB) {
+                    this->colourScale.transform (this->dcolour, this->dcolour);
+                    // Dual axis colour maps like Duochrome and HSV will need to use colourScale2 to
+                    // transform their second colour/axis,
+                    this->colourScale2.transform (this->dcolour2, this->dcolour2);
+                    // Similarly for Triple axis maps
+                    this->colourScale3.transform (this->dcolour3, this->dcolour3);
+                } // else assume dcolour/dcolour2/dcolour3 are all in range 0->1 (or 0-255) already
+            }
+            float datumC = 0.0f;   // datum at the centre
+            float datumNE = 0.0f;  // datum at the hex to the east.
+            float datumNN = 0.0f;
+
+            morph::vec<float> vtx_0, vtx_1, vtx_2, vtx_3, vtx_4;
+
+            for (I ri = 0; ri < this->grid->n; ++ri) {
+
+                // Use the linear scaled copy of the data, dcopy.
+                datumC  = dcopy[ri];
+                datumNE =  this->grid->has_ne(ri)  ? dcopy[this->grid->index_ne(ri)] : datumC;
+                datumNN =  this->grid->has_nn(ri)  ? dcopy[this->grid->index_nn(ri)] : datumC;
+
+                // Use a single colour for each rect, even though rectangle's z positions are
+                // interpolated. Do the _colour_ scaling:
+                std::array<float, 3> clr = this->setColour (ri);
+                std::array<float, 3> clr_e;
+                std::array<float, 3> clr_n;
+                if (this->interpolate_colour_sides == true) {
+                    clr_e = this->setColour (this->grid->has_ne(ri) ? this->grid->index_ne(ri) : ri);
+                    clr_n = this->setColour (this->grid->has_nn(ri) ? this->grid->index_nn(ri) : ri);
+                }
+
+                // First push the 5 positions of the triangle vertices, starting with the centre
+                this->vertex_push ((*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC, this->vertexPositions);
+
+                // Use the centre position as the first location for finding the normal vector
+                vtx_0 = {{(*this->grid)[ri][0] + centering_offset[0], (*this->grid)[ri][1] + centering_offset[1], datumC}};
+
+                // NE vertex
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
+                vtx_1 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC}};
+
+                // SE vertex
+                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
+                vtx_2 = {{(*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC}};
+
+
+                // SW vertex
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
+
+                // NW vertex
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC, this->vertexPositions);
+
+                // 4 Neighbour East vertices
+                // NE
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
+                // SE
+                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumC, this->vertexPositions);
+
+                // NE
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNE, this->vertexPositions);
+                vtx_3 = {{(*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNE}};
+                // SE
+                this->vertex_push ((*this->grid)[ri][0]+hx+centering_offset[0], (*this->grid)[ri][1]-vy+centering_offset[1], datumNE, this->vertexPositions);
+
+                // 4 Neighbour North vertices
+                // NW high
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumC, this->vertexPositions);
+                // NE high
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumC, this->vertexPositions);
+                // NW low
+                this->vertex_push ((*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumNN, this->vertexPositions);
+                vtx_4 = {{(*this->grid)[ri][0]-hx+centering_offset[0], (*this->grid)[ri][1]+vy+centering_offset[1], datumNN}};
+                // NE low
+                this->vertex_push ((*this->grid)[ri][0] + hx + centering_offset[0], (*this->grid)[ri][1] + vy + centering_offset[1], datumNN, this->vertexPositions);
+
+                // From vtx_0,1,2 compute normal. This sets the correct normal, but note that there
+                // is only one 'layer' of vertices; the back of the GridVisual will be coloured the
+                // same as the front. To get lighting effects to look really good, the back of the
+                // surface could need the opposite normal.
+                morph::vec<float> plane1 = vtx_1 - vtx_0;
+                morph::vec<float> plane2 = vtx_2 - vtx_0;
+                morph::vec<float> vnorm = plane2.cross (plane1);
+
+                plane1 = vtx_1 - vtx_2;
+                plane2 = vtx_3 - vtx_2;
+                morph::vec<float> vnorm_e = plane2.cross (plane1);
+                if (datumNE > datumC) { vnorm_e = -vnorm_e; }
+
+                plane1 = vtx_1 - vtx_3;
+                plane2 = vtx_4 - vtx_3;
+                morph::vec<float> vnorm_n = plane2.cross (plane1);
+                if (datumNN > datumC) { vnorm_n = -vnorm_n; }
+
+                vnorm.renormalize();
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm, this->vertexNormals);
+                this->vertex_push (vnorm_e, this->vertexNormals);
+                this->vertex_push (vnorm_e, this->vertexNormals);
+                this->vertex_push (vnorm_e, this->vertexNormals);
+                this->vertex_push (vnorm_e, this->vertexNormals);
+                this->vertex_push (vnorm_n, this->vertexNormals);
+                this->vertex_push (vnorm_n, this->vertexNormals);
+                this->vertex_push (vnorm_n, this->vertexNormals);
+                this->vertex_push (vnorm_n, this->vertexNormals);
+
+                // Five vertices with the same colour
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+                this->vertex_push (clr, this->vertexColors);
+
+                if (this->interpolate_colour_sides == true) {
+                    this->vertex_push (clr_e, this->vertexColors);
+                    this->vertex_push (clr_e, this->vertexColors);
+                    this->vertex_push (clr_e, this->vertexColors);
+                    this->vertex_push (clr_e, this->vertexColors);
+
+                    this->vertex_push (clr_n, this->vertexColors);
+                    this->vertex_push (clr_n, this->vertexColors);
+                    this->vertex_push (clr_n, this->vertexColors);
+                    this->vertex_push (clr_n, this->vertexColors);
+                } else {
+                    this->vertex_push (this->clr_east_column, this->vertexColors);
+                    this->vertex_push (this->clr_east_column, this->vertexColors);
+                    this->vertex_push (this->clr_east_column, this->vertexColors);
+                    this->vertex_push (this->clr_east_column, this->vertexColors);
+
+                    this->vertex_push (this->clr_north_column, this->vertexColors);
+                    this->vertex_push (this->clr_north_column, this->vertexColors);
+                    this->vertex_push (this->clr_north_column, this->vertexColors);
+                    this->vertex_push (this->clr_north_column, this->vertexColors);
+                }
+
+                // Define indices now to produce the 4 triangles in the pixel
+                this->indices.push_back (this->idx+1);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+2);
+
+                this->indices.push_back (this->idx+2);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+3);
+
+                this->indices.push_back (this->idx+3);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+4);
+
+                this->indices.push_back (this->idx+4);
+                this->indices.push_back (this->idx);
+                this->indices.push_back (this->idx+1);
+
+                // East face
+                this->indices.push_back (this->idx + 5);
+                this->indices.push_back (this->idx + 6);
+                this->indices.push_back (this->idx + 7);
+
+                this->indices.push_back (this->idx + 6);
+                this->indices.push_back (this->idx + 8);
+                this->indices.push_back (this->idx + 7);
+
+                // North face
+                this->indices.push_back (this->idx + 9);
+                this->indices.push_back (this->idx + 10);
+                this->indices.push_back (this->idx + 11);
+
+                this->indices.push_back (this->idx + 10);
+                this->indices.push_back (this->idx + 12);
+                this->indices.push_back (this->idx + 11);
+
+                this->idx += 13;
+            }
         }
 
-        //! New!
+        //! Floating pixels
         void initializeVerticesPixels()
         {
             morph::vec<float, 2> dx = this->grid->get_dx();
@@ -526,6 +729,13 @@ namespace morph {
 
         //! If you need to override the pixels-relationship to the border thickness, set it here
         float border_thickness_fixed = 0.0f;
+
+        // If true, interpolate the colour of the sides of columns on a column grid
+        bool interpolate_colour_sides = false;
+
+        // User-modifiable colours for the columns if interpolated_colour_sides == false
+        std::array<float, 3> clr_east_column = morph::colour::black;
+        std::array<float, 3> clr_north_column = morph::colour::black;
 
     protected:
         //! An overridable function to set the colour of rect ri
