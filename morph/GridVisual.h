@@ -534,13 +534,13 @@ namespace morph {
                 this->vertex_push (clr, this->vertexColors);
 
                 if (this->interpolate_colour_sides == true) {
-                    this->vertex_push (clr_e, this->vertexColors);
-                    this->vertex_push (clr_e, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
                     this->vertex_push (clr_e, this->vertexColors);
                     this->vertex_push (clr_e, this->vertexColors);
 
-                    this->vertex_push (clr_n, this->vertexColors);
-                    this->vertex_push (clr_n, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
+                    this->vertex_push (clr, this->vertexColors);
                     this->vertex_push (clr_n, this->vertexColors);
                     this->vertex_push (clr_n, this->vertexColors);
                 } else {
