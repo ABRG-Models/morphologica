@@ -54,7 +54,7 @@ int main()
     t0 = sc::now();
     for (unsigned int i = 0; i < grid_ct.n; ++i) { one_coordinate += grid_ct[i]; }
     t1 = sc::now();
-    std::cout << "Gridct (no mem) access as '+= grid[i]':               " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+    std::cout << "Gridct (no mem) access as '+= grid[i]':               " << duration_cast<microseconds>(t1-t0).count() << " us\n(one_coordinate: " << one_coordinate << "\n";
 
     one_coordinate = {0,0};
     std::cout << "\nGridct WITH memory\n------------------------------\n";
@@ -78,14 +78,24 @@ int main()
     t0 = sc::now();
     for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord(i); }
     t1 = sc::now();
-    std::cout << "Grid (no mem) access as '+= grid_rt.coord(i)':               " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+    std::cout << "Grid (no mem) access as '+= grid_rt.coord(i)':        " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nGrid WITH memory\n------------------------------\n";
     t0 = sc::now();
     for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt[i]; }
     t1 = sc::now();
-    std::cout << "Grid (WITH mem) access as  '+= grid_rt[i]':            " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+    std::cout << "Grid (WITH mem) access as  '+= grid_rt[i]':           " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+
+    t0 = sc::now();
+    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord_ne(i); }
+    t1 = sc::now();
+    std::cout << "Grid neighbour access as  '+= grid_rt.coord_ne(i)':   " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+
+    t0 = sc::now();
+    for (unsigned int i = 0; i < grid_rt.n; ++i) { one_coordinate += grid_rt.coord_nne(i); }
+    t1 = sc::now();
+    std::cout << "Grid neighbour access as  '+= grid_rt.coord_nne(i)':  " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     one_coordinate = {0,0};
     std::cout << "\nCartGrid (also WITH memory)\n------------------------------\n";
@@ -95,7 +105,7 @@ int main()
         one_coordinate[1] += cgrid.d_y[i];
     }
     t1 = sc::now();
-    std::cout << "CartGrid access as '+= cgrid.d_x[i]/d_y[i]':        " << duration_cast<microseconds>(t1-t0).count() << " us\n";
+    std::cout << "CartGrid access as '+= cgrid.d_x[i]/d_y[i]':          " << duration_cast<microseconds>(t1-t0).count() << " us\n";
 
     std::cout << "\n\nLast one_coordinate: " << one_coordinate << std::endl;
     return 0;
