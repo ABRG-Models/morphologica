@@ -66,7 +66,9 @@ namespace morph {
     enum class GridVisMode
     {
         Triangles,  // Render triangles with a triangle vertex at the centre of each Rect.
-        RectInterp  // Render each rect as an actual rectangle made of 4 triangles.
+        RectInterp, // Render each rect as an actual rectangle made of 4 triangles, interpolating heights with neighbours
+        Pixels,     // Render each rect as a rectangular pixel, with all z values the same
+        Columns     // Render each rect as a rectangular column, with sides
     };
 
 } // namespace morph

@@ -42,6 +42,7 @@ int main()
     morph::vec<float, 3> offset = { 0.0f, -0.05f, 0.0f };
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
+    gv->gridVisMode = morph::GridVisMode::Pixels;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->finalize();
