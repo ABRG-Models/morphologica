@@ -43,8 +43,6 @@ int main()
     auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
     v.bindmodel (gv);
     gv->gridVisMode = morph::GridVisMode::Triangles;
-    //gv->interpolate_colour_sides = true;
-    //gv->clr_east_column = morph::colour::royalblue;
     gv->setScalarData (&data);
     gv->cm.setType (morph::ColourMapType::Twilight);
     gv->addLabel ("GridVisMode::Triangles", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
