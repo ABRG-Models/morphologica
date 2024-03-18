@@ -104,6 +104,13 @@ if(ARMADILLO_FOUND)
     target_link_libraries(cartgrid GLEW::GLEW)
   endif()
 
+  # Repeated removal and re-addition of VisualModels to check memory stability
+  add_executable(cartgrid_colourbar_repeat cartgrid_colourbar_repeat.cpp)
+  target_link_libraries(cartgrid_colourbar_repeat OpenGL::GL glfw Freetype::Freetype)
+  if(USE_GLEW)
+    target_link_libraries(cartgrid_colourbar_repeat GLEW::GLEW)
+  endif()
+
   # morph::Gridct is compile-time-configured
   if(CXX_20_AVAILABLE)
     add_executable(gridct_simple gridct_simple.cpp)
