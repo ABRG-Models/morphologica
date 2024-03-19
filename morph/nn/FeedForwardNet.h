@@ -39,7 +39,7 @@ namespace morph {
                     // Create, and zero, a layer containing nn neurons:
                     morph::vvec<T> lyr(nn);
                     lyr.zero();
-                    size_t lastLayerSize = 0;
+                    unsigned int lastLayerSize = 0U;
                     if (!this->neurons.empty()) { // Set lastLayerSize
                         lastLayerSize = this->neurons.back().size();
                     }

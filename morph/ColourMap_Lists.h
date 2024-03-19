@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cuchar>
+
 /*!
  * Listed colour maps, copied from _cm_listed.py
  */
@@ -265,7 +267,7 @@ namespace morph {
                                  {0.987387, 0.984288, 0.742002},
                                  {0.987053, 0.991438, 0.749504}};
 
-    const size_t cm_magma_len = sizeof(cm_magma)/(sizeof(float)*3);
+    const std::size_t cm_magma_len = sizeof(cm_magma)/(sizeof(float)*3);
 
     /*!
      * Inferno
@@ -527,7 +529,7 @@ namespace morph {
                                    {0.982257, 0.994109, 0.631017},
                                    {0.988362, 0.998364, 0.644924}};
 
-    const size_t cm_inferno_len = sizeof(cm_inferno)/(sizeof(float)*3);
+    const std::size_t cm_inferno_len = sizeof(cm_inferno)/(sizeof(float)*3);
 
     /*!
      * Plasma
@@ -789,7 +791,7 @@ namespace morph {
                                   {0.941896, 0.968590, 0.140956},
                                   {0.940015, 0.975158, 0.131326}};
 
-    const size_t cm_plasma_len = sizeof(cm_plasma)/(sizeof(float)*3);
+    const std::size_t cm_plasma_len = sizeof(cm_plasma)/(sizeof(float)*3);
 
     /*!
      * Viridis
@@ -1051,7 +1053,7 @@ namespace morph {
                                    {0.983868, 0.904867, 0.136897},
                                    {0.993248, 0.906157, 0.143936}};
 
-    const size_t cm_viridis_len = sizeof(cm_viridis)/(sizeof(float)*3);
+    const std::size_t cm_viridis_len = sizeof(cm_viridis)/(sizeof(float)*3);
 
     /*!
      * Cividis
@@ -1313,7 +1315,7 @@ namespace morph {
                                    {0.995503, 0.903866, 0.212370},
                                    {0.995737, 0.909344, 0.217772}};
 
-    const size_t cm_cividis_len = sizeof(cm_cividis)/(sizeof(float)*3);
+    const std::size_t cm_cividis_len = sizeof(cm_cividis)/(sizeof(float)*3);
 
     /*!
      * Twilight
@@ -1829,6 +1831,6 @@ namespace morph {
                                    {0.88554714811952384, 0.84987174283631584,  0.88336206121170946},
                                    {0.88571155122845646, 0.85002186115856315,  0.88572538990087124}};
 
-    const size_t cm_twilight_len = sizeof(cm_twilight)/(sizeof(float)*3);
+    const std::size_t cm_twilight_len = sizeof(cm_twilight)/(sizeof(float)*3);
 
 } // namespace morph

@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <functional>
+#include <cuchar>
 #include <morph/Random.h>
 #include <morph/range.h>
 
@@ -54,7 +55,7 @@ namespace morph {
      * vec<float, 3> v;
      * v[0] = 1.0f; v[1] = 1.0f; v[2] = 1.0f;
      */
-    template <typename S, size_t N> struct vec;
+    template <typename S, std::size_t N> struct vec;
 
     /*!
      * Template friendly mechanism to overload the stream operator.
@@ -63,22 +64,22 @@ namespace morph {
      * stream operator overloading. Example adapted from
      * https://stackoverflow.com/questions/4660123
      */
-    template <typename S, size_t N> std::ostream& operator<< (std::ostream&, const vec<S, N>&);
+    template <typename S, std::size_t N> std::ostream& operator<< (std::ostream&, const vec<S, N>&);
 
-    template <typename S=float, size_t N=3>
+    template <typename S=float, std::size_t N=3>
     struct vec : public std::array<S, N>
     {
         //! \return the first component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
+        template <std::size_t _N = N, std::enable_if_t<(_N>0), int> = 0>
         S x() const { return (*this)[0]; }
         //! \return the second component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
+        template <std::size_t _N = N, std::enable_if_t<(_N>1), int> = 0>
         S y() const { return (*this)[1]; }
         //! \return the third component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
+        template <std::size_t _N = N, std::enable_if_t<(_N>2), int> = 0>
         S z() const { return (*this)[2]; }
         //! \return the fourth component of the vector
-        template <size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
+        template <std::size_t _N = N, std::enable_if_t<(_N>3), int> = 0>
         S w() const { return (*this)[3]; }
 
         //! Set data members from an std::vector
@@ -107,7 +108,7 @@ namespace morph {
         void set_from (const std::array<_S, (N+1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
-            for (size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
+            for (std::size_t i = 0; i < N; ++i) { (*this)[i] = ar[i]; }
         }
 
         /*!
@@ -120,7 +121,7 @@ namespace morph {
         void set_from (const std::array<_S, (N-1)>& ar)
         {
             // Don't use std::copy here, because ar has more elements than *this.
-            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
+            for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = ar[i]; }
             (*this)[N-1] = S{0};
         }
 
@@ -131,14 +132,14 @@ namespace morph {
         template <typename _S=S>
         void set_from (const vec<_S, (N+1)>& v)
         {
-            for (size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
+            for (std::size_t i = 0; i < N; ++i) { (*this)[i] = v[i]; }
         }
 
         //! Set an N D vec from an (N-1) D vec.
         template <typename _S=S>
         void set_from (const vec<_S, (N-1)>& v)
         {
-            for (size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
+            for (std::size_t i = 0; i < N-1; ++i) { (*this)[i] = v[i]; }
             (*this)[N-1] = S{0};
         }
 
@@ -155,7 +156,7 @@ namespace morph {
         void linspace (const _S start, const _S2 stop)
         {
             S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (N-1);
-            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+            for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
         /*!
@@ -170,7 +171,7 @@ namespace morph {
             // Figure out how many elements given the increment:
             S num = std::ceil((stop - start) / increment);
             if (num > S{0}) {
-                for (size_t i = 0; i < static_cast<size_t>(num) && i < N; ++i) {
+                for (std::size_t i = 0; i < static_cast<std::size_t>(num) && i < N; ++i) {
                     (*this)[i] = start + increment*static_cast<S>(i);
                 }
             } // else vector will now be full of zeros, not quite like Python does it (it returns an
@@ -181,7 +182,7 @@ namespace morph {
         vec<S, N-1> less_one_dim () const
         {
             vec<S, N-1> rtn;
-            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
             return rtn;
         }
 
@@ -189,7 +190,7 @@ namespace morph {
         vec<S, N+1> plus_one_dim () const
         {
             vec<S, N+1> rtn;
-            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
             rtn[N] = S{0};
             return rtn;
         }
@@ -198,7 +199,7 @@ namespace morph {
         vec<S, N+1> plus_one_dim (const S val) const
         {
             vec<S, N+1> rtn;
-            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
             rtn[N] = val;
             return rtn;
         }
@@ -344,7 +345,7 @@ namespace morph {
         {
             if constexpr (N>1) {
                 S z_el = (*this)[0];
-                for (size_t i = 1; i < N; ++i) {
+                for (std::size_t i = 1; i < N; ++i) {
                     (*this)[i-1] = (*this)[i];
                 }
                 (*this)[N-1] = z_el;
@@ -361,7 +362,7 @@ namespace morph {
 
             auto _start = this->begin();
             if constexpr (std::numeric_limits<T>::is_signed) {
-                size_t _n = n >= 0 ? n : N + n;
+                std::size_t _n = n >= 0 ? n : N + n;
                 std::advance (_start, _n);
             } else {
                 std::advance (_start, n);
@@ -374,7 +375,7 @@ namespace morph {
         {
             static_assert ((N%2==0), "N must be even to call morph::vec::rotate_pairs");
             S tmp_el = S{0};
-            for (size_t i = 0; i < N; i+=2) {
+            for (std::size_t i = 0; i < N; i+=2) {
                 tmp_el = (*this)[i];
                 (*this)[i] = (*this)[i+1];
                 (*this)[i+1] = tmp_el;
@@ -445,7 +446,7 @@ namespace morph {
              * the initialization of the vec with curly brace initialization.
              *
              * Clearly, this will be the wrong threshold for some cases. Possibly, a
-             * template parameter could set this; so size_t U could indicate the threshold;
+             * template parameter could set this; so std::size_t U could indicate the threshold;
              * 0.001 could be U=-3 (10^-3).
              *
              * Another idea would be to change unitThresh based on the type S. Or use
@@ -570,9 +571,9 @@ namespace morph {
         }
 
         //! Return the index of the longest component of the vector.
-        size_t arglongest() const
+        std::size_t arglongest() const
         {
-            size_t idx = 0;
+            std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
                 auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -595,9 +596,9 @@ namespace morph {
         }
 
         //! Return the index of the shortest component of the vector.
-        size_t argshortest() const
+        std::size_t argshortest() const
         {
-            size_t idx = 0;
+            std::size_t idx = 0;
             // Check on the type S. If S is a vec thing, then abs_compare needs to be different.
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
@@ -620,10 +621,10 @@ namespace morph {
         }
 
         //! Return the index of the maximum (most positive) component of the vector.
-        size_t argmax() const
+        std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
-            size_t idx = (themax - this->begin());
+            std::size_t idx = (themax - this->begin());
             return idx;
         }
 
@@ -636,10 +637,10 @@ namespace morph {
         }
 
         //! Return the index of the minimum (smallest or most negative) component of the vector.
-        size_t argmin() const
+        std::size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
-            size_t idx = (themin - this->begin());
+            std::size_t idx = (themin - this->begin());
             return idx;
         }
 
@@ -1059,7 +1060,7 @@ namespace morph {
          * higher dimensions, its more complicated to define what the cross product is,
          * and I'm unlikely to need anything other than the plain old 3D cross product.
          */
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
+        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==3), int> = 0>
         vec<S, _N> cross (const vec<_S, _N>& v) const
         {
             vec<S, _N> vrtn{};
@@ -1070,7 +1071,7 @@ namespace morph {
         }
 
         //! Define a 2D cross product, v x w to be v_x w_y - v_y w_x.
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
         S cross (const vec<_S, _N>& w) const
         {
             S rtn = (*this)[0] * w.y() - (*this)[1] * w.x();
@@ -1080,7 +1081,7 @@ namespace morph {
         /*!
          * Two dimensional angle in radians (only for N=2)
          */
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
         S angle() const
         {
             S _angle = std::atan2 ((*this)[1], (*this)[0]);
@@ -1091,7 +1092,7 @@ namespace morph {
          * Set a two dimensional angle in radians (only for N=2). Preserve length, unless vector
          * length is 0, in which case set as unit vector.
          */
-        template <typename _S=S, size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
+        template <typename _S=S, std::size_t _N = N, std::enable_if_t<(_N==2), int> = 0>
         void set_angle (const _S _ang)
         {
             S l = this->length();
@@ -1315,7 +1316,7 @@ namespace morph {
         friend std::ostream& operator<< <S, N> (std::ostream& os, const vec<S, N>& v);
     };
 
-    template <typename S=float, size_t N=3>
+    template <typename S=float, std::size_t N=3>
     std::ostream& operator<< (std::ostream& os, const vec<S, N>& v)
     {
         os << v.str();
@@ -1326,10 +1327,10 @@ namespace morph {
     // e.g. vec<float> denom = {1,2,3}; vec<float> result = float(1) / denom;
 
     //! Scalar * vec<> (commutative; lhs * rhs == rhs * lhs, so return rhs * lhs)
-    template <typename S, size_t N> vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
+    template <typename S, std::size_t N> vec<S, N> operator* (S lhs, const vec<S, N>& rhs) { return rhs * lhs; }
 
     //! Scalar / vec<>
-    template <typename S, size_t N>
+    template <typename S, std::size_t N>
     vec<S, N> operator/ (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> division;
@@ -1339,10 +1340,10 @@ namespace morph {
     }
 
     //! Scalar + vec<> (commutative)
-    template <typename S, size_t N> vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
+    template <typename S, std::size_t N> vec<S, N> operator+ (S lhs, const vec<S, N>& rhs) { return rhs + lhs; }
 
     //! Scalar - vec<>
-    template <typename S, size_t N>
+    template <typename S, std::size_t N>
     vec<S, N> operator- (S lhs, const vec<S, N>& rhs)
     {
         vec<S, N> subtraction;

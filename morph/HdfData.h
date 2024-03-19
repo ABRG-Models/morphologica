@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 #include <bitset>
+#include <cuchar>
 #include <sstream>
 #include <stdexcept>
 #include <morph/vec.h>
@@ -442,7 +443,7 @@ namespace morph {
         }
 
         //! read_contained_vals for a vector of array<T,N>
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void read_contained_vals (const char* path, std::vector<std::array<T, N>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
@@ -489,7 +490,7 @@ namespace morph {
         }
 
         //! read_contained_vals for an array<T,N> (and by extension, a morph::vec<T,N>)
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void read_contained_vals (const char* path, std::array<T, N>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
@@ -537,7 +538,7 @@ namespace morph {
         }
 
         //! read_contained_vals for a vvec of vec<T,N>
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void read_contained_vals (const char* path, morph::vvec<morph::vec<T, N>>& vals)
         {
             hid_t dataset_id = H5Dopen2 (this->file_id, path, H5P_DEFAULT);
@@ -630,8 +631,8 @@ namespace morph {
             // Now copy the data from invals into vals
             vals.resize (dims[0]);
             for (auto& v : vals) { v.resize(dims[1]); }
-            for (size_t i = 0; i < dims[0]; ++i) {
-                for (size_t j = 0; j < dims[1]; ++j) {
+            for (hsize_t i = 0; i < dims[0]; ++i) {
+                for (hsize_t j = 0; j < dims[1]; ++j) {
                     vals[i][j] = invals[i*dims[1]+j];
                 }
             }
@@ -690,7 +691,7 @@ namespace morph {
         }
 
         //! Templated read_val for bitsets
-        template <size_t N>
+        template <std::size_t N>
         void read_val (const char* path, std::bitset<N>& val)
         {
             unsigned long long int bs_ullong = 0ULL;
@@ -782,7 +783,7 @@ namespace morph {
          * bitset. Note the limit on N here is the size of an unsigned long long int, so
          * that's a bit of a FIXME for the future.
          */
-        template <size_t N>
+        template <std::size_t N>
         void add_val (const char* path, const std::bitset<N>& val)
         {
             unsigned long long int bs_ullong = val.to_ullong();
@@ -810,7 +811,7 @@ namespace morph {
          * values. Unfortunately, this looks very similar to the following template for
          * Container<T, Allocator> instead of std::array
          */
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void add_contained_vals (const char* path, const std::array<T, N>& vals)
         {
             this->process_groups (path);
@@ -1108,8 +1109,8 @@ namespace morph {
         {
             if (vals.empty()) { return; }
             this->process_groups (path);
-            const size_t sz = vals.size();
-            const size_t N = vals[0].size();
+            const std::size_t sz = vals.size();
+            const std::size_t N = vals[0].size();
             for (auto v : vals) {
                 if (v.size() != N) {
                     throw std::runtime_error ("HdfData::add_contained_vals<Container<vvec<T>, Allocator>>: all contained vvecs must be of same size");
@@ -1181,7 +1182,7 @@ namespace morph {
         }
 
         //! add_contained_vals for vector<morph::vec<T, N>>
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void add_contained_vals (const char* path, const std::vector<morph::vec<T, N>>& vals)
         {
             if (vals.empty()) { return; }
@@ -1235,7 +1236,7 @@ namespace morph {
         }
 
         // Code duplication of the above template function for std::vector<morph::vec<T,N>> :(
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void add_contained_vals (const char* path, const morph::vvec<morph::vec<T, N>>& vals)
         {
             if (vals.empty()) { return; }
@@ -1289,7 +1290,7 @@ namespace morph {
         }
 
         //! add_contained_vals for vector<std::array<T, N>>
-        template<typename T, size_t N>
+        template<typename T, std::size_t N>
         void add_contained_vals (const char* path, const std::vector<std::array<T, N>>& vals)
         {
             if (vals.empty()) { return; }

@@ -49,7 +49,7 @@ namespace morph {
 	static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
     };
 
-    //! Traits approach to testing for resize(size_t) method. Can be used to distinguish std::array
+    //! Traits approach to testing for a resize(size_t) method. Can be used to distinguish std::array
     //! from std::vector.
     template<typename T>
     class has_resize_method
