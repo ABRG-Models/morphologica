@@ -269,9 +269,9 @@ namespace morph {
             morph::vec<T, 2> centroid;
             centroid[0] = T{0};
             centroid[1] = T{0};
-            typename morph::vec<T>::size_type psz = points.size();
+            typename std::vector<T>::size_type psz = points.size();
             if (psz == 0U) { return centroid; }
-            for (typename morph::vec<T>::size_type i = 0; i < psz-1; i+=2) {
+            for (typename std::vector<T>::size_type i = 0; i < psz-1; i+=2) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
             }
@@ -289,9 +289,9 @@ namespace morph {
             centroid[0] = T{0};
             centroid[1] = T{0};
             centroid[2] = T{0};
-            typename morph::vec<T>::size_type psz = points.size();
+            typename std::vector<T>::size_type psz = points.size();
             if (psz == 0U) { return centroid; }
-            for (typename morph::vec<T>::size_type i = 0; i < psz-2; i+=3) {
+            for (typename std::vector<T>::size_type i = 0; i < psz-2; i+=3) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
                 centroid[2] += points[i+2];
@@ -915,7 +915,7 @@ namespace morph {
             int n_dots = 0;
             if (minRadius == T{0}) {
                 int nrings = static_cast<int>(std::floor ((maxRadius-minRadius)/d));
-                if (minRadius == T{0}) {
+                if (minRadius == T{0}) { // Should this not be `if (nrings ==0) {` ?
                     nrings++; // cos of centre dot.
                 }
 
