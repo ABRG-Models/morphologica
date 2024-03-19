@@ -375,7 +375,7 @@ namespace morph {
             morph::vvec<T> plusminus (this->D, T{1});
             morph::vvec<T> x_new = x_start * (T{1} + plusminus * this->delta_param);
             // Check that each element of x_new is within the specified bounds.
-            for (size_t i = 0; i < this->D; ++i) {
+            for (unsigned int i = 0; i < this->D; ++i) {
                 if (x_new[i] > this->range_max[i] || x_new[i] < this->range_min[i]) {
                     plusminus[i] = T{-1};
                 }

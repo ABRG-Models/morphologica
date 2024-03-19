@@ -375,7 +375,7 @@ namespace morph {
             nlohmann::json ar;
             if (this->root.contains(arrayname)) { ar = this->root[arrayname]; }
             morph::vvec<T> rtn (ar.size(), T{0});
-            size_t i = 0;
+            typename morph::vvec<T>::size_type i = 0U;
             for (auto el : ar) { rtn[i++] = static_cast<T>(el); }
             return rtn;
         }

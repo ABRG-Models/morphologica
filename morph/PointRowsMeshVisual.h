@@ -138,12 +138,12 @@ namespace morph {
             // position-along-the-curve order.
             GLuint ib = 0; // only 16 bits, 65536 vertices. Not enough!
 
-            size_t r1 = 0;
-            size_t r1_e = 0;
-            size_t r2 = 0;
-            size_t r2_e = 0;
+            std::size_t r1 = 0;
+            std::size_t r1_e = 0;
+            std::size_t r2 = 0;
+            std::size_t r2_e = 0;
 
-            size_t prlen = this->dataCoords->size();
+            std::size_t prlen = this->dataCoords->size();
 
             // pa is this->pa
             float x = (*this->dataCoords)[r1][pa];
@@ -169,8 +169,8 @@ namespace morph {
 
                     // Now iterate r1 and r2 until we get to the end of the two rows.
                     // vtx is r1, r2. Question is: Is other vertex ++r1 or ++r2?
-                    size_t r1n = r1+1;
-                    size_t r2n = r2+1;
+                    std::size_t r1n = r1 + 1U;
+                    std::size_t r2n = r2 + 1U;
 
                     // Increment and make sure we didn't drop off the end
                     if (r1n > r1_e && r2n > r2_e) {
@@ -281,7 +281,7 @@ namespace morph {
 
     private:
         //! Which axis are we perpendicular to?
-        size_t pa = 0;
+        unsigned int pa = 0U;
         //! tube radius
         float radius = 0.05f;
         //! sphere radius

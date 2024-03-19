@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cuchar>
+
 namespace morph {
     namespace  bn {
         /*!
@@ -7,7 +9,7 @@ namespace morph {
          * attribute, type, which client code should use as the correct type for the
          * Genome's array. Each Genome section in the Genome's array has 2^K bits.
          */
-        template <size_t K = 0> struct Genosect {}; // Default should fail to compile
+        template <std::size_t K = 0> struct Genosect {}; // Default should fail to compile
         template<> struct Genosect<1> { typedef unsigned char type; };
         template<> struct Genosect<2> { typedef unsigned char type; };
         template<> struct Genosect<3> { typedef unsigned char type; };

@@ -228,7 +228,8 @@ namespace morph {
             // It is only necessary to bind the vertex array object before rendering
             glBindVertexArray (this->vao);
 
-            for (size_t i = 0; i < quads.size(); ++i) {
+            // We have a max of (2^32)-1 characters. Should be enough.
+            for (unsigned int i = 0U; i < quads.size(); ++i) {
                 // Bind the right texture for the quad.
                 glBindTexture (GL_TEXTURE_2D, this->quad_ids[i]);
                 // This is 'draw a subset of the elements from the vertex array

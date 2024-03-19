@@ -9,6 +9,7 @@
  * Author: Seb James.
  */
 
+#include <cuchar>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>
@@ -21,7 +22,7 @@ namespace morph {
         // @tparam index: The index of the buffer, used in the GLSL
         // @tparam T: The type of the data in the SSBO
         // @tparam N: The number of elements of type T in the SSBO
-        template <unsigned int index, typename T, size_t N> // Could add version template params if necessary, to select correct gl function calls
+        template <unsigned int index, typename T, std::size_t N> // Could add version template params if necessary, to select correct gl function calls
         struct ssbo
         {
             // The name of the buffer, generated with glGenBuffers()

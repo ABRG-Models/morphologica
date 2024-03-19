@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cuchar>
 #include <algorithm>
 #include <morph/bn/Implicant.h>
 
@@ -23,13 +24,13 @@ namespace morph {
             bool pr = true;
             bool fin = true;
             //! Stores results of expression compression
-            std::vector<size_t> M0, M1;
+            std::vector<std::size_t> M0, M1;
             //! Stores results of expression compression
             std::vector<Implicant> primes;
             //! The final complexity value.
             unsigned int cplexity = 0;
             unsigned int outof = 0;
-            size_t ind = 0;
+            std::size_t ind = 0;
 
             // Debugging
             constexpr bool verboseout = false;
@@ -42,7 +43,7 @@ namespace morph {
                 implicants.push_back (Implicant(m, vars));
             }
 
-            int count1s (size_t x)
+            int count1s (std::size_t x)
             {
                 int o = 0;
                 while (x) {
@@ -52,23 +53,23 @@ namespace morph {
                 return o;
             }
 
-            void mul (std::vector<size_t> &a, const std::vector<size_t> &b)
+            void mul (std::vector<std::size_t> &a, const std::vector<std::size_t> &b)
             {
-                std::vector<size_t> v;
-                for (size_t i = 0; i < a.size(); ++i) {
-                    for (size_t j = 0; j < b.size(); ++j) {
+                std::vector<std::size_t> v;
+                for (std::size_t i = 0; i < a.size(); ++i) {
+                    for (std::size_t j = 0; j < b.size(); ++j) {
                         v.push_back(a[i] | b[j]);
                     }
                 }
                 sort (v.begin(), v.end());
                 v.erase (unique (v.begin(), v.end()), v.end());
-                for (size_t i = 0; i < v.size() - 1; ++i) {
-                    for (size_t j = v.size() - 1; j > i ; --j) {
-                        size_t z = v[i] & v[j];
+                for (std::size_t i = 0; i < v.size() - 1; ++i) {
+                    for (std::size_t j = v.size() - 1; j > i ; --j) {
+                        std::size_t z = v[i] & v[j];
                         if ((z & v[i]) == v[i]) {
                             v.erase (v.begin() + j);
                         } else if ((z & v[j]) == v[j]) {
-                            size_t t = v[i];
+                            std::size_t t = v[i];
                             v[i] = v[j];
                             v[j] = t;
                             v.erase(v.begin() + j);
@@ -88,7 +89,7 @@ namespace morph {
 
                 sort (implicants.begin(), implicants.end());
                 if constexpr (verboseout) {
-                    for (size_t i = 0; i < implicants.size(); ++i) {
+                    for (std::size_t i = 0; i < implicants.size(); ++i) {
                         cout << implicants[i].output(pr, fin) << endl;
                     }
                     cout << "-------------------------------------------------------\n";
@@ -96,16 +97,16 @@ namespace morph {
 
                 std::vector<Implicant> aux;
                 while (implicants.size() > 1) {
-                    for (size_t i = 0; i < implicants.size() - 1; ++i) {
-                        for (size_t j = implicants.size() - 1; j > i ; --j) {
+                    for (std::size_t i = 0; i < implicants.size() - 1; ++i) {
+                        for (std::size_t j = implicants.size() - 1; j > i ; --j) {
                             if (implicants[j].bits == implicants[i].bits) {
                                 implicants.erase (implicants.begin() + j);
                             }
                         }
                     }
                     aux.clear();
-                    for (size_t i = 0; i < implicants.size() - 1; ++i) {
-                        for (size_t j = i + 1; j < implicants.size(); ++ j) {
+                    for (std::size_t i = 0; i < implicants.size() - 1; ++i) {
+                        for (std::size_t j = i + 1; j < implicants.size(); ++ j) {
                             if (implicants[j].ones == implicants[i].ones + 1 &&
                                 implicants[j].mask == implicants[i].mask &&
                                 count1s(implicants[i].implicant ^
@@ -122,7 +123,7 @@ namespace morph {
                             }
                         }
                     }
-                    for (size_t i = 0; i < implicants.size(); ++i) {
+                    for (std::size_t i = 0; i < implicants.size(); ++i) {
                         if (!implicants[i].used) {
                             primes.push_back(implicants[i]);
                         }
@@ -130,13 +131,13 @@ namespace morph {
                     implicants = aux;
                     sort (implicants.begin(), implicants.end());
                     if constexpr (verboseout) {
-                        for (size_t i = 0; i < implicants.size(); ++i) {
+                        for (std::size_t i = 0; i < implicants.size(); ++i) {
                             cout << implicants[i].output(pr, fin) << endl;
                         }
                         cout << "-------------------------------------------------------\n";
                     }
                 }
-                for (size_t i = 0; i < implicants.size(); ++i) {
+                for (std::size_t i = 0; i < implicants.size(); ++i) {
                     primes.push_back (implicants[i]);
                 }
                 if constexpr (verboseout) {
@@ -146,14 +147,14 @@ namespace morph {
                 }
                 this->pr = false;
                 bool table[primes.size()][minterms.size()];
-                for (size_t i = 0; i < primes.size(); ++i) {
-                    for (size_t k = 0; k < minterms.size(); ++k) {
+                for (std::size_t i = 0; i < primes.size(); ++i) {
+                    for (std::size_t k = 0; k < minterms.size(); ++k) {
                         table[i][k] = false;
                     }
                 }
-                for (size_t i = 0; i < primes.size(); ++i) {
-                    for (size_t j = 0; j < primes[i].mints.size(); ++j) {
-                        for (size_t k = 0; k < minterms.size(); ++k) {
+                for (std::size_t i = 0; i < primes.size(); ++i) {
+                    for (std::size_t j = 0; j < primes[i].mints.size(); ++j) {
+                        for (std::size_t k = 0; k < minterms.size(); ++k) {
                             if (primes[i].mints[j] == minterms[k]) {
                                 table[i][k] = true;
                             }
@@ -162,30 +163,30 @@ namespace morph {
                 }
                 if constexpr (verboseout) {
                     for (int k = 0; k < 18; ++k) { cout << " "; }
-                    for (size_t k = 0; k < minterms.size(); ++k) {
+                    for (std::size_t k = 0; k < minterms.size(); ++k) {
                         cout << right << setw(2) << minterms[k] << ' ';
                     }
                     cout << endl;
                     for (int k = 0; k < 18; ++k) { cout << " "; }
-                    for (size_t k = 0; k < minterms.size(); ++k) { cout << "---"; }
+                    for (std::size_t k = 0; k < minterms.size(); ++k) { cout << "---"; }
                     cout << endl;
-                    for (size_t i = 0; i < primes.size(); ++i) {
+                    for (std::size_t i = 0; i < primes.size(); ++i) {
                         cout << primes[i].output (pr, fin) << " |";
-                        for (size_t k = 0; k < minterms.size(); ++k) {
+                        for (std::size_t k = 0; k < minterms.size(); ++k) {
                             cout << (table[i][k] ? " X " : " ");
                         }
                         cout << endl;
                     }
                 }
 
-                for (size_t i = 0; i < primes.size(); ++i) {
+                for (std::size_t i = 0; i < primes.size(); ++i) {
                     if (table[i][0]) {
                         M0.push_back(1 << i);
                     }
                 }
-                for (size_t k = 1; k < minterms.size(); ++k) {
+                for (std::size_t k = 1; k < minterms.size(); ++k) {
                     M1.clear();
-                    for (size_t i = 0; i < primes.size(); ++i) {
+                    for (std::size_t i = 0; i < primes.size(); ++i) {
                         if (table[i][k]) {
                             M1.push_back(1 << i);
                         }
@@ -194,7 +195,7 @@ namespace morph {
                 }
                 int min = count1s(M0[0]);
                 this->ind = 0;
-                for (size_t i = 1; i < M0.size(); ++i) {
+                for (std::size_t i = 1; i < M0.size(); ++i) {
                     if (min > count1s(M0[i])) {
                         min = count1s(M0[i]);
                         this->ind = i;
@@ -204,10 +205,10 @@ namespace morph {
                 if constexpr (verboseout) {
                     bool f;
                     cout << "-------------------------------------------------------\n";
-                    for (size_t j = 0; j < M0.size(); ++j) {
+                    for (std::size_t j = 0; j < M0.size(); ++j) {
                         cout << "\tF = ";
                         f = false;
-                        for (size_t i = 0; i < primes.size(); ++i)
+                        for (std::size_t i = 0; i < primes.size(); ++i)
                             if (M0[j] & (1 << i)) {
                                 if (f) { cout << " + "; }
                                 f = true;
@@ -220,7 +221,7 @@ namespace morph {
                     // minimal solution
                     cout << "F = ";
                     f = false;
-                    for (size_t i = 0; i < primes.size(); ++i) {
+                    for (std::size_t i = 0; i < primes.size(); ++i) {
                         if (M0[this->ind] & (1 << i)) {
                             if (f) { cout << " + "; }
                             f = true;
@@ -238,7 +239,7 @@ namespace morph {
 
                 this->outof = 1 << this->vars;
 
-                for (size_t i = 0; i < primes.size(); ++i) {
+                for (std::size_t i = 0; i < primes.size(); ++i) {
                     if (M0[this->ind] & (1 << i)) {
                         this->cplexity++;
                     }
@@ -251,7 +252,7 @@ namespace morph {
             {
                 string s("F = ");
                 bool f = false;
-                for (size_t i = 0; i < primes.size(); ++i) {
+                for (std::size_t i = 0; i < primes.size(); ++i) {
                     if (M0[this->ind] & (1 << i)) {
                         if (f) { s += " + "; }
                         f = true;

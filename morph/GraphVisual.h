@@ -168,7 +168,7 @@ namespace morph {
 
         //! Obtain the curated dataset colours, by index. Static public function to
         //! allow other Visuals to set marker style in the same order as a graph.
-        static constexpr morph::markerstyle datamarkerstyle (size_t data_index)
+        static constexpr morph::markerstyle datamarkerstyle (unsigned int data_index)
         {
             morph::markerstyle rtn = morph::markerstyle::square;
             switch (data_index) {
@@ -189,7 +189,7 @@ namespace morph {
 
         //! Obtain the curated dataset colours, by index. Static public function to
         //! allow other Visuals to colour things in the same order as a graph.
-        static constexpr std::array<float, 3> datacolour (size_t data_index)
+        static constexpr std::array<float, 3> datacolour (unsigned int data_index)
         {
             std::array<float, 3> rtn = morph::colour::gray50;
             switch (data_index) {
@@ -259,7 +259,7 @@ namespace morph {
         }
 
         //! Set defaults on this dataset as if it were for dataset index data_index
-        void setdefaults (size_t data_index)
+        void setdefaults (unsigned int data_index)
         {
             this->markercolour = DatasetStyle::datacolour (data_index);
             // maybe: this->linecolour = DatasetStyle::datacolour (data_index);
@@ -295,7 +295,7 @@ namespace morph {
         //! graphDataCoords. Finish up with a call to completeAppend(). didx is the data
         //! index and counts up from 0. Have to save _abscissa and _ordinate in a local
         //! copy of the data to be able to rescale.
-        void append (const Flt& _abscissa, const Flt& _ordinate, const size_t didx)
+        void append (const Flt& _abscissa, const Flt& _ordinate, const unsigned int didx)
         {
             this->pendingAppended = true;
             // Transfor the data into temporary containers sd and ad
@@ -313,7 +313,7 @@ namespace morph {
             //std::cout << "transformed coords: " << a << ", " << o << std::endl;
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
-            size_t oldsz = this->graphDataCoords[didx]->size();
+            unsigned int oldsz = this->graphDataCoords[didx]->size();
             (this->graphDataCoords[didx])->resize (oldsz+1);
             (*this->graphDataCoords[didx])[oldsz][0] = a;
             (*this->graphDataCoords[didx])[oldsz][1] = o;
@@ -360,8 +360,8 @@ namespace morph {
         //! Clear all the coordinate data for the graph, but leave the containers in place.
         void clear_graph_data()
         {
-            size_t dsize = this->graphDataCoords.size();
-            for (size_t i = 0; i < dsize; ++i) {
+            unsigned int dsize = this->graphDataCoords.size();
+            for (unsigned int i = 0; i < dsize; ++i) {
                 this->graphDataCoords[i]->clear();
             }
             this->reinit();
@@ -371,9 +371,9 @@ namespace morph {
         template <typename Ctnr1, typename Ctnr2>
         std::enable_if_t<morph::is_copyable_container<Ctnr1>::value
                          && morph::is_copyable_container<Ctnr2>::value, void>
-        update (const Ctnr1& _abscissae, const Ctnr2& _data, const size_t data_idx)
+        update (const Ctnr1& _abscissae, const Ctnr2& _data, const unsigned int data_idx)
         {
-            size_t dsize = _data.size();
+            unsigned int dsize = _data.size();
 
             if (_abscissae.size() != dsize) {
                 throw std::runtime_error ("update: size mismatch");
@@ -399,7 +399,7 @@ namespace morph {
 
             // Now sd and ad can be used to construct dataCoords x/y. They are used to
             // set the position of each datum into dataCoords
-            for (size_t i = 0; i < dsize; ++i) {
+            for (unsigned int i = 0; i < dsize; ++i) {
                 (*this->graphDataCoords[data_idx])[i][0] = static_cast<Flt>(ad[i]);
                 (*this->graphDataCoords[data_idx])[i][1] = static_cast<Flt>(sd[i]);
                 (*this->graphDataCoords[data_idx])[i][2] = Flt{0};
@@ -410,7 +410,7 @@ namespace morph {
         }
 
         //! update() overload that accepts vvec of coords
-        void update (const morph::vvec<morph::vec<Flt, 2>>& _coords, const size_t data_idx)
+        void update (const morph::vvec<morph::vec<Flt, 2>>& _coords, const unsigned int data_idx)
         {
             std::vector<Flt> absc (_coords.size(), Flt{0});
             std::vector<Flt> ord (_coords.size(), Flt{0});
@@ -426,7 +426,7 @@ namespace morph {
                    typename T,
                    typename Allocator=std::allocator<T> >
         void update (const Container<T, Allocator>& _abscissae,
-                     const Container<T, Allocator>& _data, std::string datalabel, const size_t data_idx)
+                     const Container<T, Allocator>& _data, std::string datalabel, const unsigned int data_idx)
         {
             if (data_idx >= this->datastyles.size()) {
                 std::cout << "Can't add change data label at graphDataCoords index " << data_idx << std::endl;
@@ -479,7 +479,7 @@ namespace morph {
             DatasetStyle ds(this->policy);
             ds.axisside = axisside;
             if (!name.empty()) { ds.datalabel = name; }
-            size_t data_index = this->graphDataCoords.size();
+            unsigned int data_index = this->graphDataCoords.size();
             this->setstyle (ds, DatasetStyle::datacolour(data_index), DatasetStyle::datamarkerstyle (data_index));
             this->setdata (_abscissae, _data, ds);
         }
@@ -523,8 +523,8 @@ namespace morph {
                 this->ds_ord2 = ds;
             }
 
-            size_t dsize = _data.size();
-            size_t didx = this->graphDataCoords.size();
+            unsigned int dsize = _data.size();
+            unsigned int didx = this->graphDataCoords.size();
 
             // Allocate memory for the new data coords, add the data style info and the
             // starting index for dataCoords
@@ -556,7 +556,7 @@ namespace morph {
 
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
-                for (size_t i = 0; i < dsize; ++i) {
+                for (unsigned int i = 0; i < dsize; ++i) {
                     (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
                     (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
                     (*this->graphDataCoords[didx])[i][2] = Flt{0};
@@ -591,7 +591,7 @@ namespace morph {
             ds.markersize = (this->width - this->width*2*this->dataaxisdist) * (h.binwidth / h.range);
             ds.linewidth = ds.markersize/10.0;
 
-            size_t data_index = this->graphDataCoords.size();
+            unsigned int data_index = this->graphDataCoords.size();
             ds.markercolour = DatasetStyle::datacolour(data_index);
             ds.linecolour = morph::colour::black; // For now.
 
@@ -905,7 +905,7 @@ namespace morph {
 
         //! Stores the length of each entry in graphDataCoords - i.e how many data
         //! points are in each graph curve
-        std::vector<size_t> coords_lengths;
+        std::vector<unsigned int> coords_lengths;
 
         //! Is there pending appended data that needs to be converted into OpenGL shapes?
         bool pendingAppended = false;
@@ -938,16 +938,16 @@ namespace morph {
         bool within_axes_y (morph::vec<float>& dpt) { return (dpt[1] >= 0 && dpt[1] <= this->height); }
 
         //! dsi: data set iterator
-        void drawDataCommon (size_t dsi, size_t coords_start, size_t coords_end, bool appending = false)
+        void drawDataCommon (unsigned int dsi, unsigned int coords_start, unsigned int coords_end, bool appending = false)
         {
             // Draw data markers
             if (this->datastyles[dsi].markerstyle != markerstyle::none) {
                 if (this->datastyles[dsi].markerstyle == markerstyle::bar) {
-                    for (size_t i = coords_start; i < coords_end; ++i) {
+                    for (unsigned int i = coords_start; i < coords_end; ++i) {
                         this->bar ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                     }
                 } else {
-                    for (size_t i = coords_start; i < coords_end; ++i) {
+                    for (unsigned int i = coords_start; i < coords_end; ++i) {
                         if (this->within_axes ((*this->graphDataCoords[dsi])[i])) {
                             this->marker ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                         } // else marker is outside graph axes so don't draw it
@@ -961,7 +961,7 @@ namespace morph {
                 // If appending markers to a dataset, need to add the line preceding the first marker
                 if (appending == true) { if (coords_start != 0) { coords_start -= 1; } }
 
-                for (size_t i = coords_start+1; i < coords_end; ++i) {
+                for (unsigned int i = coords_start+1; i < coords_end; ++i) {
                     // Draw tube from location -1 to location 0.
                     if (this->draw_beyond_axes == true
                         || (this->within_axes ((*this->graphDataCoords[dsi])[i-1])
@@ -1031,10 +1031,10 @@ namespace morph {
         //! Draw markers and lines for data points that are being appended to a graph
         void drawAppendedData()
         {
-            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
+            for (unsigned int dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
                 // Start is old end:
-                size_t coords_start = this->coords_lengths[dsi];
-                size_t coords_end = this->graphDataCoords[dsi]->size();
+                unsigned int coords_start = this->coords_lengths[dsi];
+                unsigned int coords_end = this->graphDataCoords[dsi]->size();
                 this->coords_lengths[dsi] = coords_end;
                 this->drawDataCommon (dsi, coords_start, coords_end, appending_data);
             }
@@ -1043,10 +1043,10 @@ namespace morph {
         //! Draw all markers and lines for datasets in the graph (as stored in graphDataCoords)
         void drawData()
         {
-            size_t coords_start = 0;
+            unsigned int coords_start = 0;
             this->coords_lengths.resize (this->graphDataCoords.size());
-            for (size_t dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
-                size_t coords_end = this->graphDataCoords[dsi]->size();
+            for (unsigned int dsi = 0; dsi < this->graphDataCoords.size(); ++dsi) {
+                unsigned int coords_end = this->graphDataCoords[dsi]->size();
                 // Record coords length for future appending:
                 this->coords_lengths[dsi] = coords_end;
                 this->drawDataCommon (dsi, coords_start, coords_end);
@@ -1056,20 +1056,20 @@ namespace morph {
         //! Draw the graph legend, above the graph, rather than inside it (so much simpler!)
         void drawLegend()
         {
-            size_t num_legends_max = this->graphDataCoords.size();
+            unsigned int num_legends_max = this->graphDataCoords.size();
 
             // Text offset from marker to text
             morph::vec<float> toffset = {this->fontsize, 0.0f, 0.0f};
 
             // To determine the legend layout, will need all the text geometries
             std::vector<morph::TextGeometry> geom;
-            std::map<size_t, std::unique_ptr<morph::VisualTextModel<glver>>> legtexts;
+            std::map<unsigned int, std::unique_ptr<morph::VisualTextModel<glver>>> legtexts;
 
-            morph::vvec<size_t> ds_indices; // dataset indices.
+            morph::vvec<unsigned int> ds_indices; // dataset indices.
 
             float text_advance = 0.0f;
             int num_legends = 0;
-            for (size_t dsi = 0; dsi < num_legends_max; ++dsi) {
+            for (unsigned int dsi = 0; dsi < num_legends_max; ++dsi) {
                 // If no label, then draw no legend. Thus the effective num_legends may be smaller
                 // than num_legends_max.
                 if (this->datastyles[dsi].datalabel.empty()) { continue; }

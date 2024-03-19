@@ -39,45 +39,45 @@ namespace morph {
             this->vertex_push (o + this->edge1,                this->vertexPositions);
             this->vertex_push (o + this->edge3,                this->vertexPositions);
             this->vertex_push (o + this->edge1 + this->edge3,  this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (_n3, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n3, this->vertexNormals); }
             // Top face
             this->vertex_push (o + this->edge3, this->vertexPositions);
             this->vertex_push (o + this->edge1 + this->edge3,               this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge3,               this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge1 + this->edge3, this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (_n1, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n1, this->vertexNormals); }
             // Back face
             this->vertex_push (o + this->edge2 + this->edge3,               this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge1 + this->edge3, this->vertexPositions);
             this->vertex_push (o + this->edge2,                             this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge1,               this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (-_n3, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n3, this->vertexNormals); }
             // Bottom face
             this->vertex_push (o + this->edge2,                this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge1,  this->vertexPositions);
             this->vertex_push (o,                              this->vertexPositions);
             this->vertex_push (o + this->edge1,                this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (-_n1, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n1, this->vertexNormals); }
             // Left face
             this->vertex_push (o + this->edge2,                this->vertexPositions);
             this->vertex_push (o,                              this->vertexPositions);
             this->vertex_push (o + this->edge2 + this->edge3,  this->vertexPositions);
             this->vertex_push (o + this->edge3,                this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (-_n2, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (-_n2, this->vertexNormals); }
             // Right face
             this->vertex_push (o + this->edge1,                             this->vertexPositions);
             this->vertex_push (o + this->edge1 + this->edge2,               this->vertexPositions);
             this->vertex_push (o + this->edge1 + this->edge3,               this->vertexPositions);
             this->vertex_push (o + this->edge1 + this->edge2 + this->edge3, this->vertexPositions);
-            for (size_t i = 0; i < 4; ++i) { this->vertex_push (_n2, this->vertexNormals); }
+            for (unsigned short i = 0U; i < 4U; ++i) { this->vertex_push (_n2, this->vertexNormals); }
 
             // Vertex colours are all the same
-            for (size_t i = 0; i < 24; ++i) {
+            for (unsigned short i = 0U; i < 24U; ++i) {
                 this->vertex_push (this->col, this->vertexColors);
             }
 
             // Indices for 6 faces
-            for (size_t i = 0; i < 6; ++i) {
+            for (unsigned short i = 0U; i < 6U; ++i) {
                 this->indices.push_back (this->idx++);
                 this->indices.push_back (this->idx++);
                 this->indices.push_back (this->idx--);

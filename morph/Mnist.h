@@ -46,7 +46,7 @@
 namespace morph {
 
     //! Mnist images are 28x28=784 pixels
-    constexpr size_t mnlen = 784;
+    constexpr int mnlen = 784;
 
     //! A class to read, and then manage the data of, the Mnist database.
     struct Mnist
@@ -144,7 +144,7 @@ namespace morph {
                 oneimg.copyTo (ii->second);
 
                 morph::vvec<float> ar(nr*nc);
-                size_t i = 0;
+                unsigned int i = 0;
                 for (int r = 0; r < this->nr; ++r) {
                     for (int c = 0; c < this->nc; ++c) {
                         ar[i++] = oneimg.at<float>(r, c);
@@ -170,7 +170,8 @@ namespace morph {
         }
 
         //! Get the number of training examples
-        size_t num_training() { return this->training.size(); }
+        typename std::multimap<unsigned char, cv::Mat>::size_type
+        num_training() { return this->training.size(); }
 
         //! Extract an integer from a character array in \a buf by 're-joining' the 4 bytes together
         int chars_to_int (const char* buf)

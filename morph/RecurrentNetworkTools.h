@@ -39,9 +39,6 @@ namespace morph {
                 return uniqueID;
             }
 
-            //template<typename T, size_t N>
-            //std::vector<T> std::vector(const T (&data)[N]){return std::vector<T>(data,data+N);}
-
             int getArgmax(std::vector<double> q){
                 double maxV = -1e9;
                 int maxI = 0;

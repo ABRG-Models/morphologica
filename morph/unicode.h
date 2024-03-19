@@ -166,7 +166,7 @@ namespace morph {
             // accordingly. Then I only have to have char32_t here.
             char32_t uc = 0;
             int pos = 0; // byte position in uc
-            for (size_t i = 0; i < input.size(); ++i) {
+            for (std::string::size_type i = 0; i < input.size(); ++i) {
                 // Decode UTF-8
                 char c = input[i];
                 if (c & 0x80) {

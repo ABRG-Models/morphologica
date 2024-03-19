@@ -7,6 +7,7 @@
 #include <string>
 #include <ostream>
 #include <array>
+#include <cuchar>
 
 /*!
  * \file Random.h
@@ -135,19 +136,19 @@ namespace morph {
         //! Get 1 random number from the generator
         T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (size_t n)
+        std::vector<T> get (std::size_t n)
         {
             std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
+            for (std::size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n>
+        template<std::size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+            for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         T min() { return this->dist.min(); }
         T max() { return this->dist.max(); }
@@ -218,19 +219,19 @@ namespace morph {
         //! Get 1 random number from the generator
         T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (size_t n)
+        std::vector<T> get (std::size_t n)
         {
             std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
+            for (std::size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n>
+        template<std::size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+            for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
         T min() { return this->dist.min(); }
@@ -305,19 +306,19 @@ namespace morph {
         //! Get 1 random number from the generator
         T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (size_t n)
+        std::vector<T> get (std::size_t n)
         {
             std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
+            for (std::size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n>
+        template<std::size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+            for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         T min() { return this->dist.min(); }
         T max() { return this->dist.max(); }
@@ -387,19 +388,19 @@ namespace morph {
         //! Get 1 random number from the generator
         T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (size_t n)
+        std::vector<T> get (std::size_t n)
         {
             std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
+            for (std::size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n>
+        template<std::size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+            for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         T min() { return this->dist.min(); }
         T max() { return this->dist.max(); }
@@ -468,19 +469,19 @@ namespace morph {
         //! Get 1 random number from the generator
         T get() { return this->dist (this->generator); }
         //! Get n random numbers from the generator
-        std::vector<T> get (size_t n)
+        std::vector<T> get (std::size_t n)
         {
             std::vector<T> rtn (n, T{0});
-            for (size_t i = 0; i < n; ++i) {
+            for (std::size_t i = 0; i < n; ++i) {
                 rtn[i] = this->dist (this->generator);
             }
             return rtn;
         }
         //! Place n random numbers in the array rtn
-        template<size_t n>
+        template<std::size_t n>
         void get (std::array<T, n>& rtn)
         {
-            for (size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
+            for (std::size_t i = 0; i < n; ++i) { rtn[i] = this->dist (this->generator); }
         }
         //! min wrapper
         T min() { return this->dist.min(); }
@@ -512,9 +513,9 @@ namespace morph {
         //! Default constructor gives a string generator that generates 8 HexLowerCase characters
         RandString() : length(8) { this->setupRNG(); }
         //! Construct to generate a string of a particular length \a l, in default HexLowerCase format
-        RandString(const size_t l) : length(l) { this->setupRNG(); }
+        RandString(const unsigned int l) : length(l) { this->setupRNG(); }
         //! Construct with given length \a l and character group \a _cg.
-        RandString(const size_t l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
+        RandString(const unsigned int l, const CharGroup& _cg) : length(l), cg(_cg) { this->setupRNG(); }
         //! Deconstructor cleans up memory
         ~RandString() { if (this->rng != nullptr) { delete this->rng; } }
 
@@ -525,7 +526,7 @@ namespace morph {
             // Initialise a string of the correct length
             std::string s(this->length, ' ');
 
-            for (size_t i = 0; i < this->length; ++i) {
+            for (unsigned int i = 0U; i < this->length; ++i) {
 
                 // Get a random number
                 unsigned short rn = this->rng->get();
@@ -603,7 +604,7 @@ namespace morph {
         }
 
         //! Get a particular length of string - updates RandString::length first
-        std::string get (const size_t l)
+        std::string get (const unsigned int l)
         {
             this->length = l;
             return this->get();
@@ -654,7 +655,7 @@ namespace morph {
         RandUniform<unsigned short>* rng = nullptr;
 
         //! The number of characters to generate
-        size_t length;
+        unsigned int length;
 
         //! The group of characters from which to generate a string
         CharGroup cg = CharGroup::HexLowerCase;

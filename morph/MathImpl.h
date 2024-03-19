@@ -127,7 +127,7 @@ namespace morph {
                     }
                     ++conti;
                 }
-                size_t csz = coords.size();
+                typename Container<T, Allocator>::size_type csz = coords.size();
                 ci = _centroid.begin();
                 while (ci != _centroid.end()) {
                     *ci++ /= static_cast<T_el>(csz);

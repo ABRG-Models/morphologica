@@ -40,7 +40,7 @@ namespace morph {
      * A class implementing a Nelder Mead simplex of points, and the associated methods for
      * manipulating those points on the way to discovering a minimum of a function.
      *
-     * This could be re-written with template <typename T, size_t N> where N is the
+     * This could be re-written with template <typename T, unsigned int N> where N is the
      * dimensionality of the search, and using morph::vec<T, N+1> as the type for
      * vertices.
      */

@@ -37,6 +37,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <cuchar>
 
 // Switches on some changes where I carefully unbind gl buffers after calling
 // glBufferData() and rebind when changing the vertex model. Makes no difference on my
@@ -185,7 +186,7 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             this->clearTexts();
-            this->idx = 0;
+            this->idx = 0U;
             this->reinit_buffers();
         }
 
@@ -198,7 +199,7 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             // NB: Do NOT call clearTexts() here! We're only updating the model itself.
-            this->idx = 0;
+            this->idx = 0U;
             this->initializeVertices();
             this->reinit_buffers();
         }
@@ -214,17 +215,17 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             this->clearTexts();
-            this->idx = 0;
+            this->idx = 0U;
             this->initializeVertices();
             this->reinit_buffers();
         }
 
-        void reserve_vertices (size_t n_vertices)
+        void reserve_vertices (std::size_t n_vertices)
         {
-            this->vertexPositions.reserve (3*n_vertices);
-            this->vertexNormals.reserve (3*n_vertices);
-            this->vertexColors.reserve (3*n_vertices);
-            this->indices.reserve (6*n_vertices);
+            this->vertexPositions.reserve (3U * n_vertices);
+            this->vertexNormals.reserve (3U * n_vertices);
+            this->vertexColors.reserve (3U * n_vertices);
+            this->indices.reserve (6U * n_vertices);
         }
 
         //! A function to call initialiseVertices and postVertexInit after any necessary
@@ -498,15 +499,15 @@ namespace morph {
         std::string translation_str() { return this->mv_offset.str_mat(); }
 
         // Return the number of elements in this->indices
-        size_t indices_size() { return this->indices.size(); }
+        std::size_t indices_size() { return this->indices.size(); }
         float indices_max() { return this->idx_max; }
         float indices_min() { return this->idx_min; }
-        size_t indices_bytes() { return this->indices.size() * sizeof (GLuint); }
+        std::size_t indices_bytes() { return this->indices.size() * sizeof (GLuint); }
         // Return base64 encoded version of indices
         std::string indices_base64()
         {
-            std::vector<std::uint8_t> idx_bytes (this->indices.size()<<2, 0);
-            size_t b = 0;
+            std::vector<std::uint8_t> idx_bytes (this->indices.size() << 2, 0);
+            std::size_t b = 0U;
             for (auto i : this->indices) {
                 idx_bytes[b++] = i & 0xff;
                 idx_bytes[b++] = i >> 8 & 0xff;
@@ -520,7 +521,7 @@ namespace morph {
         void computeVertexMaxMins()
         {
             // Compute index maxmins
-            for (size_t i = 0; i < this->indices.size(); ++i) {
+            for (std::size_t i = 0; i < this->indices.size(); ++i) {
                 idx_max = this->indices[i] > idx_max ? this->indices[i] : idx_max;
                 idx_min = this->indices[i] < idx_min ? this->indices[i] : idx_min;
             }
@@ -531,7 +532,7 @@ namespace morph {
                 throw std::runtime_error ("Expect vertexPositions, Colors and Normals vectors all to have same size");
             }
 
-            for (size_t i = 0; i < this->vertexPositions.size(); i+=3) {
+            for (std::size_t i = 0; i < this->vertexPositions.size(); i+=3) {
                 vpos_maxes[0] =  (vertexPositions[i] > vpos_maxes[0]) ? vertexPositions[i] : vpos_maxes[0];
                 vpos_maxes[1] =  (vertexPositions[i+1] > vpos_maxes[1]) ? vertexPositions[i+1] : vpos_maxes[1];
                 vpos_maxes[2] =  (vertexPositions[i+2] > vpos_maxes[2]) ? vertexPositions[i+2] : vpos_maxes[2];
@@ -554,14 +555,14 @@ namespace morph {
             }
         }
 
-        size_t vpos_size() { return this->vertexPositions.size(); }
+        std::size_t vpos_size() { return this->vertexPositions.size(); }
         std::string vpos_max() { return this->vpos_maxes.str_mat(); }
         std::string vpos_min() { return this->vpos_mins.str_mat(); }
-        size_t vpos_bytes() { return this->vertexPositions.size() * sizeof (float); }
+        std::size_t vpos_bytes() { return this->vertexPositions.size() * sizeof (float); }
         std::string vpos_base64()
         {
-            std::vector<std::uint8_t> _bytes (this->vertexPositions.size()<<2, 0);
-            size_t b = 0;
+            std::vector<std::uint8_t> _bytes (this->vertexPositions.size() << 2, 0);
+            std::size_t b = 0U;
             float_bytes fb;
             for (auto i : this->vertexPositions) {
                 fb.f = i;
@@ -572,14 +573,14 @@ namespace morph {
             }
             return base64::encode (_bytes);
         }
-        size_t vcol_size() { return this->vertexColors.size(); }
+        std::size_t vcol_size() { return this->vertexColors.size(); }
         std::string vcol_max() { return this->vcol_maxes.str_mat(); }
         std::string vcol_min() { return this->vcol_mins.str_mat(); }
-        size_t vcol_bytes() { return this->vertexColors.size() * sizeof (float); }
+        std::size_t vcol_bytes() { return this->vertexColors.size() * sizeof (float); }
         std::string vcol_base64()
         {
-            std::vector<std::uint8_t> _bytes (this->vertexColors.size()<<2, 0);
-            size_t b = 0;
+            std::vector<std::uint8_t> _bytes (this->vertexColors.size() << 2, 0);
+            std::size_t b = 0U;
             float_bytes fb;
             for (auto i : this->vertexColors) {
                 fb.f = i;
@@ -590,14 +591,14 @@ namespace morph {
             }
             return base64::encode (_bytes);
         }
-        size_t vnorm_size() { return this->vertexNormals.size(); }
+        std::size_t vnorm_size() { return this->vertexNormals.size(); }
         std::string vnorm_max() { return this->vnorm_maxes.str_mat(); }
         std::string vnorm_min() { return this->vnorm_mins.str_mat(); }
-        size_t vnorm_bytes() { return this->vertexNormals.size() * sizeof (float); }
+        std::size_t vnorm_bytes() { return this->vertexNormals.size() * sizeof (float); }
         std::string vnorm_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexNormals.size()<<2, 0);
-            size_t b = 0;
+            std::size_t b = 0U;
             float_bytes fb;
             for (auto i : this->vertexNormals) {
                 fb.f = i;
@@ -614,7 +615,7 @@ namespace morph {
         bool twodimensional = false;
 
         //! The current indices index
-        GLuint idx = 0;
+        GLuint idx = 0U;
 
         //! Set scaling in all dimensions
         void setSizeScale (const float scl)
@@ -1099,7 +1100,7 @@ namespace morph {
             this->vertex_push (c3, this->vertexPositions);
             this->vertex_push (c4, this->vertexPositions);
             // Colours/normals
-            for (size_t i = 0; i < 4; ++i) {
+            for (unsigned int i = 0; i < 4U; ++i) {
                 this->vertex_push (col, this->vertexColors);
                 this->vertex_push (v, this->vertexNormals);
             }
@@ -1903,7 +1904,7 @@ namespace morph {
 
             int segments = 12;
             float r = 0.5f * w;
-            size_t startvertices = 0;
+            unsigned int startvertices = 0U;
             if (startcaps) {
                 // Push the central point of the start cap - this is at location vstart
                 this->vertex_push (vstart, this->vertexPositions);
@@ -1941,7 +1942,7 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            size_t endvertices = 0;
+            unsigned int endvertices = 0;
             if (endcaps) {
                 // Push the central point of the end cap - this is at location vend
                 this->vertex_push (vend, this->vertexPositions);
@@ -1966,7 +1967,7 @@ namespace morph {
             // After creating vertices, push all the indices.
 
             if (startcaps) { // prolly startcaps, for flexibility
-                GLuint topcap = idx;
+                GLuint topcap = this->idx;
                 for (int j = 0; j < segments; j++) {
                     int inc1 = 1+j;
                     int inc2 = 1+((j+1)%segments);
@@ -1975,7 +1976,7 @@ namespace morph {
                     this->indices.push_back (topcap+inc1);
                     this->indices.push_back (topcap+inc2);
                 }
-                idx += startvertices;
+                this->idx += startvertices;
             }
 
             //std::cout << "Line tri idxs: " << idx << "," << idx+1 << "," << idx+2 << std::endl;
@@ -1987,7 +1988,7 @@ namespace morph {
             this->indices.push_back (idx+2);
             this->indices.push_back (idx+3);
             // Update idx
-            idx += 4;
+            this->idx += 4;
 
             if (endcaps) {
                 GLuint botcap = idx;
@@ -1999,7 +2000,7 @@ namespace morph {
                     this->indices.push_back (botcap+inc1);
                     this->indices.push_back (botcap+inc2);
                 }
-                idx += endvertices;
+                this->idx += endvertices;
             }
             //std::cout << "end computeFlatLine(Caps): idx = " << idx << std::endl;
         } // end computeFlatLine

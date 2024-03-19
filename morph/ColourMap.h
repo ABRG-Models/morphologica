@@ -1208,7 +1208,7 @@ namespace morph {
         std::array<float,3> magma (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_magma_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_magma_len-1))));
             std::array<float,3> c = {morph::cm_magma[datum_i][0], morph::cm_magma[datum_i][1], morph::cm_magma[datum_i][2]};
             return c;
         }
@@ -1217,7 +1217,7 @@ namespace morph {
         std::array<float,3> inferno (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_inferno_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_inferno_len-1))));
             std::array<float,3> c = {morph::cm_inferno[datum_i][0], morph::cm_inferno[datum_i][1], morph::cm_inferno[datum_i][2]};
             return c;
         }
@@ -1226,7 +1226,7 @@ namespace morph {
         std::array<float,3> plasma (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_plasma_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_plasma_len-1))));
             std::array<float,3> c = {morph::cm_plasma[datum_i][0], morph::cm_plasma[datum_i][1], morph::cm_plasma[datum_i][2]};
             return c;
         }
@@ -1235,7 +1235,7 @@ namespace morph {
         std::array<float,3> viridis (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_viridis_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_viridis_len-1))));
             std::array<float,3> c = {morph::cm_viridis[datum_i][0], morph::cm_viridis[datum_i][1], morph::cm_viridis[datum_i][2]};
             return c;
         }
@@ -1244,7 +1244,7 @@ namespace morph {
         std::array<float,3> cividis (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_cividis_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_cividis_len-1))));
             std::array<float,3> c = {morph::cm_cividis[datum_i][0], morph::cm_cividis[datum_i][1], morph::cm_cividis[datum_i][2]};
             return c;
         }
@@ -1253,7 +1253,7 @@ namespace morph {
         std::array<float,3> twilight (float datum)
         {
             // let's just try the closest colour from the map, with no interpolation
-            size_t datum_i = static_cast<size_t>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
+            unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
             std::array<float,3> c = {morph::cm_twilight[datum_i][0], morph::cm_twilight[datum_i][1], morph::cm_twilight[datum_i][2]};
             return c;
         }

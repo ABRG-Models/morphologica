@@ -15,6 +15,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cmath>
+#include <cuchar>
 #ifdef __ICC__
 # define ARMA_ALLOW_FAKE_GCC 1
 #endif
@@ -193,7 +194,7 @@ namespace morph
 
             // preceding control points.
             morph::vvec<morph::vec<Flt, 2>> prec_ctrl = preceding.getControls();
-            size_t len = prec_ctrl.size();
+            std::size_t len = prec_ctrl.size();
             if (len < 3) { return; }
 
             // va is vector from join to the previous ctrl
@@ -354,9 +355,9 @@ namespace morph
             // Add some more vertices:
             Flt propchange = Flt{0.2};
             Flt propchangeov2 = propchange / Flt{2};
-            for (size_t i = 0; i < v0.size(); ++i) {
+            for (std::size_t i = 0; i < v0.size(); ++i) {
                 morph::vvec<Flt> v;
-                for (size_t j = 0; j<v0.size(); ++j) {
+                for (std::size_t j = 0; j < v0.size(); ++j) {
                     // Perturbate v0[j] a bit and add to vector<Flt>
                     Flt v_j = v0[j];
                     Flt v_1 = (v0[j]*propchange);
@@ -460,13 +461,13 @@ namespace morph
             morph::vvec<Flt> sample_t;
             sample_t.push_back (Flt{0});
             Flt totaldist = Flt{0};
-            for (size_t i = 1; i < points.size(); ++i) {
+            for (std::size_t i = 1U; i < points.size(); ++i) {
                 Flt lindist = (points[i-1]-points[i]).length();
                 sample_t.push_back (lindist);
                 totaldist += lindist;
             }
             morph::vvec<morph::vec<Flt, 2>> curvePoints;
-            for (size_t i = 0; i < sample_t.size(); ++i) {
+            for (std::size_t i = 0U; i < sample_t.size(); ++i) {
                 sample_t[i] /= totaldist;
                 // Have the t parameter value to sample our Bezier curve at now...
                 BezCoord<Flt> bc = this->computePoint (sample_t[i]);
@@ -478,7 +479,7 @@ namespace morph
                 return Flt{-1};
             }
             Flt sos = Flt{0};
-            for (size_t i = 0; i < points.size(); ++i) {
+            for (std::size_t i = 0U; i < points.size(); ++i) {
                 sos += (points[i] - curvePoints[i]).length_sq();
             }
 
@@ -900,7 +901,7 @@ namespace morph
          */
         void setCFromV (const std::vector<Flt>& vf, int r)
         {
-            for (size_t i = 0; i<vf.size(); i+=2) {
+            for (std::size_t i = 0U; i < vf.size(); i+=2) {
                 this->C(r,0) = vf[i];
                 this->C(r,1) = vf[i+1];
                 ++r;
@@ -915,8 +916,7 @@ namespace morph
         {
             std::vector<BezCoord<Flt>> pts = this->computePoints (npoints);
             Flt dist = Flt{0};
-            for (size_t i = 1; i<pts.size(); ++i) {
-                //dist += MathAlgo::distance<Flt> (pts[i-1].getCoord(), pts[i].getCoord());
+            for (std::size_t i = 1U; i < pts.size(); ++i) {
                 dist += (pts[i-1].coord - pts[i].coord).length();
             }
             return dist;

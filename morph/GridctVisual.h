@@ -227,7 +227,7 @@ namespace morph {
 
             morph::vec<float> vtx_0, vtx_1, vtx_2;
 
-            for (size_t ri = 0; ri < this->grid->n; ++ri) {
+            for (I ri = 0; ri < this->grid->n; ++ri) {
 
                 // Use the linear scaled copy of the data, dcopy.
                 datumC  = dcopy[ri];

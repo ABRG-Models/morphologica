@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <cuchar>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +52,7 @@ namespace morph
             this->sz = other.getsize();
             this->data_ = static_cast<char*>(calloc (this->sz, sizeof(char)));
             // Now copy contents of others' data
-            size_t i = 0;
+            std::size_t i = 0;
             while (i < this->sz) {
                 this->data_[i] = other.datachar(i);
                 ++i;
@@ -64,7 +65,7 @@ namespace morph
          * @param i index into @see data_.
          * @return the character at data_[i].
          */
-        char datachar (size_t i) const
+        char datachar (std::size_t i) const
         {
             char c = this->data_[i];
             return c;
@@ -81,7 +82,7 @@ namespace morph
          * @see sz.
          * @return @see sz.
          */
-        size_t getsize() const { return this->sz; }
+        std::size_t getsize() const { return this->sz; }
 
         /*!
          * Reads the file at @param path into @see data_. Allocates
@@ -116,8 +117,8 @@ namespace morph
 
             char* textpos = this->data_;
             std::string line("");
-            size_t llen = 0;   // line length (chars)
-            size_t curpos = 0;
+            std::size_t llen = 0U;   // line length (chars)
+            std::size_t curpos = 0U;
             while (getline (f, line)) {
                 // Restore the newline
                 line += "\n";
@@ -141,7 +142,7 @@ namespace morph
         char* data_;
 
         //! The size in bytes of the character data @data_
-        size_t sz;
+        std::size_t sz;
     };
 
 } // namespace morph

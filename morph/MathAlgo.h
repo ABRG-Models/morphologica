@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <cuchar>
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/range.h>

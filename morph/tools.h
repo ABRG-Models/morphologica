@@ -1825,7 +1825,7 @@ namespace morph
         {
             DIR* d;
             struct dirent *ep;
-            size_t entry_len = 0;
+            std::string::size_type entry_len = 0U;
 
             std::string dirPath (baseDirPath);
             std::string sd (subDirPath);
@@ -1955,7 +1955,7 @@ namespace morph
         {
             DIR* d;
             struct dirent *ep;
-            size_t entry_len = 0;
+            std::string::size_type entry_len = 0U;
 
             if (!(d = opendir (dirPath.c_str()))) {
                 std::string msg = "Failed to open directory " + dirPath;
@@ -1993,7 +1993,7 @@ namespace morph
         {
             DIR* d;
             struct dirent *ep;
-            size_t entry_len = 0;
+            std::string::size_type entry_len = 0U;
 
             std::string dirPath (baseDirPath);
             if (!subDir.empty()) {
@@ -2072,7 +2072,7 @@ namespace morph
         {
             DIR* d;
             struct dirent *ep;
-            size_t entry_len = 0;
+            std::string::size_type entry_len = 0U;
 
             std::string dirPath (baseDirPath);
             if (!subDir.empty()) {
