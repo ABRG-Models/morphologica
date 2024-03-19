@@ -114,7 +114,7 @@ namespace morph {
             morph::vec<T, 2> ms_x = MathAlgo::meansos<Container, T, Allocator> (x);
             morph::vec<T, 2> ms_y = MathAlgo::meansos<Container, T, Allocator> (y);
             T cov = T{0};
-            for (size_t i = 0; i < x.size(); ++i) {
+            for (typename Container<T, Allocator>::size_type i = 0; i < x.size(); ++i) {
                 cov += ((x[i] - ms_x[0]) * (y[i] - ms_y[0]));
             }
             return cov;
@@ -132,7 +132,7 @@ namespace morph {
                 throw std::runtime_error ("covariance: both number arrays to be same size.");
             }
             T cov = T{0};
-            for (size_t i = 0; i < x.size(); ++i) {
+            for (typename Container<T, Allocator>::size_type i = 0; i < x.size(); ++i) {
                 cov += ((x[i] - mean_x) * (y[i] - mean_y));
             }
             return cov;
@@ -157,8 +157,8 @@ namespace morph {
         //! Compute distance from p1 to p2 (ND)
         template<typename T, std::size_t N>
         static T distance (const std::array<T, N> p1, const std::array<T, N> p2) {
-            T sos = static_cast<T>(0);
-            for (size_t i = 0; i < N; ++i) {
+            T sos = T{0};
+            for (std::size_t i = 0; i < N; ++i) {
                 T pdiff = p2[i]-p1[i];
                 sos += pdiff * pdiff;
             }
@@ -169,8 +169,8 @@ namespace morph {
         //! Compute distance^2 from p1 to p2 (ND)
         template<typename T, std::size_t N>
         static T distance_sq (const std::array<T, N> p1, const std::array<T, N> p2) {
-            T sos = static_cast<T>(0);
-            for (size_t i = 0; i < N; ++i) {
+            T sos = T{0};
+            for (std::size_t i = 0; i < N; ++i) {
                 T pdiff = p2[i]-p1[i];
                 sos += pdiff * pdiff;
             }
@@ -249,8 +249,9 @@ namespace morph {
         template<typename T>
         static morph::vec<T, 2> centroid2D (const std::vector<morph::vec<T, 2>> points) {
             morph::vec<T, 2> centroid;
-            centroid[0] = static_cast<T>(0);
-            centroid[1] = static_cast<T>(0);
+            centroid[0] = T{0};
+            centroid[1] = T{0};
+            if (points.size() == 0) { return centroid; }
             for (auto p : points) {
                 centroid[0] += p[0];
                 centroid[1] += p[1];
@@ -265,10 +266,11 @@ namespace morph {
         template<typename T>
         static morph::vec<T, 2> centroid2D (const std::vector<T> points) {
             morph::vec<T, 2> centroid;
-            centroid[0] = static_cast<T>(0);
-            centroid[1] = static_cast<T>(0);
-            size_t psz = points.size();
-            for (size_t i = 0; i < psz-1; i+=2) {
+            centroid[0] = T{0};
+            centroid[1] = T{0};
+            typename morph::vec<T>::size_type psz = points.size();
+            if (psz == 0U) { return centroid; }
+            for (typename morph::vec<T>::size_type i = 0; i < psz-1; i+=2) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
             }
@@ -283,11 +285,12 @@ namespace morph {
         template<typename T>
         static std::array<T,3> centroid3D (const std::vector<T> points) {
             std::array<T,3> centroid;
-            centroid[0] = static_cast<T>(0);
-            centroid[1] = static_cast<T>(0);
-            centroid[2] = static_cast<T>(0);
-            size_t psz = points.size();
-            for (size_t i = 0; i < psz-2; i+=3) {
+            centroid[0] = T{0};
+            centroid[1] = T{0};
+            centroid[2] = T{0};
+            typename morph::vec<T>::size_type psz = points.size();
+            if (psz == 0U) { return centroid; }
+            for (typename morph::vec<T>::size_type i = 0; i < psz-2; i+=3) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
                 centroid[2] += points[i+2];
@@ -302,11 +305,11 @@ namespace morph {
         template<typename T>
         static std::array<T,3> centroid3D (const std::array<T, 12> points) {
             std::array<T,3> centroid;
-            centroid[0] = static_cast<T>(0);
-            centroid[1] = static_cast<T>(0);
-            centroid[2] = static_cast<T>(0);
-            size_t psz = 12;
-            for (size_t i = 0; i < psz-2; i+=3) {
+            centroid[0] = T{0};
+            centroid[1] = T{0};
+            centroid[2] = T{0};
+            typename std::array<T, 12>::size_type psz = 12;
+            for (typename std::array<T, 12>::size_type i = 0; i < psz-2; i+=3) {
                 centroid[0] += points[i];
                 centroid[1] += points[i+1];
                 centroid[2] += points[i+2];
@@ -869,9 +872,7 @@ namespace morph {
         //! radius=@radius with @d between each item's centre?
         template<typename T>
         static int numOnCircle (T radius, T d) {
-            if (radius == static_cast<T>(0.0)) {
-                return 1;
-            }
+            if (radius == T{0}) { return 1; }
             T circum = morph::mathconst<T>::two_pi * radius;
             return static_cast<int>(floor (circum / d));
         }
@@ -880,9 +881,7 @@ namespace morph {
         template<typename T>
         static int numOnCircleArc (T radius, T d, T a) {
             //std::cout << "Called for radius == " << radius << ", d=" << d <<  std::endl;
-            if (radius == static_cast<T>(0.0)) {
-                return 1;
-            }
+            if (radius == T{0}) { return 1; }
             T circum = morph::mathconst<T>::two_pi * radius;
             //std::cout << "circum = " << circum << std::endl;
             T rtn = 0;
@@ -913,9 +912,9 @@ namespace morph {
             // Computation of nrings differs depending on whether we have a dot and nrings, or nrings
             // from minRadius to maxRadius. Herein lies the problem!
             int n_dots = 0;
-            if (minRadius == static_cast<T>(0.0)) {
-                int nrings = (int) floor ((maxRadius-minRadius)/d);
-                if (minRadius == 0.0) {
+            if (minRadius == T{0}) {
+                int nrings = static_cast<int>(std::floor ((maxRadius-minRadius)/d));
+                if (minRadius == T{0}) {
                     nrings++; // cos of centre dot.
                 }
 
@@ -924,7 +923,7 @@ namespace morph {
                 }
             } else {
                 // Annulus
-                int nrings = 1 + (int) floor ((maxRadius-minRadius)/d);
+                int nrings = 1 + static_cast<int>(std::floor ((maxRadius-minRadius)/d));
                 //std::cout << nrings << " rings" << std::endl;
                 for (int r=0; r<nrings; ++r) {
                     n_dots += MathAlgo::numOnCircleArc<T> (minRadius+r*d, d, a);
@@ -939,7 +938,7 @@ namespace morph {
         {
             T _angle = angle_rad;
             // Place _angle in bounds. If <0, then add 2pi. If above 2pi, subtract 2pi.
-            if (_angle < 0.0f) {
+            if (_angle < T{0}) {
                 int multiples = static_cast<int>(std::floor(-_angle / morph::mathconst<T>::two_pi));
                 _angle += morph::mathconst<T>::two_pi + multiples * morph::mathconst<T>::two_pi;
             } else {
@@ -947,7 +946,7 @@ namespace morph {
                 _angle -= multiples * morph::mathconst<T>::two_pi;
             }
             // If angle is indistinguishably close to 2pi, then set it to 0
-            _angle = std::abs(_angle - morph::mathconst<T>::two_pi) < std::numeric_limits<T>::epsilon() ? 0.0f : _angle;
+            _angle = std::abs(_angle - morph::mathconst<T>::two_pi) < std::numeric_limits<T>::epsilon() ? T{0} : _angle;
             return _angle;
         }
 
