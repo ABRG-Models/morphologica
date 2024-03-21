@@ -491,8 +491,7 @@ namespace morph {
          */
         int gi = 0;
         /*!
-         * Index in b direction - positive "NorthEast". In a direction 30 degrees East of North or
-         * 60 degrees North of East.
+         * Index in b direction - positive "NorthWest". In a direction 30 degrees West of North
          */
         int bi = 0;
 
