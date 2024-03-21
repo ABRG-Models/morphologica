@@ -506,6 +506,44 @@ namespace morph {
             return nearest;
         }
 
+        // If possible, get the hex at the given rgb position
+        std::list<Hex>::iterator findHexAt (const morph::vec<int, 3>& rgbpos)
+        {
+            std::list<morph::Hex>::iterator hi = this->hexen.begin(); // First hex in hexen is always 0,0,0
+
+            // +ri is East
+            int inc = rgbpos[0] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[0] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_ne() ? hi->ne : this->hexen.end();
+                } else {
+                    hi = hi->has_nw() ? hi->nw : this->hexen.end();
+                }
+            }
+
+            // gi is NorthEast
+            inc = rgbpos[1] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[1] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_nne() ? hi->nne : this->hexen.end();
+                } else {
+                    hi = hi->has_nsw() ? hi->nsw : this->hexen.end();
+                }
+            }
+
+            // bi is NorthWest
+            inc = rgbpos[2] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[2] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_nnw() ? hi->nnw : this->hexen.end();
+                } else {
+                    hi = hi->has_nse() ? hi->nse : this->hexen.end();
+                }
+            }
+
+            return hi;
+        }
+
         /*!
          * Sets boundary to match the list of hexes passed in as @a pHexes. Note, that
          * unlike void setBoundary (const BezCurvePath& p), this method does not apply
