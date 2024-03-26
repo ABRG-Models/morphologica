@@ -61,10 +61,10 @@ A Visual scene is nothing without some objects inside it. We'll use an example V
 Then before v.keepOpen() you can add a simple VisualModel:
 
 ```c++
-morph::vec<float, 3> pos = { 0.0, 0.0, 0.0 };     // model position in scene
-morph::vec<float, 3> start = { 0, 0, 0 };         // start coordinate of rod (model frame of reference)
-morph::vec<float, 3> end = { 0.25, 0, 0 };        // end coordinate of rod
-morph::vec<float, 3> colour1 = { 1.0, 0.0, 0.0 }; // Colour for the rod
+morph::vec<float, 3> pos = { 0.0f, 0.0f, 0.0f };     // model position in scene
+morph::vec<float, 3> start = { 0.0f, 0.0f, 0.0f };   // start coordinate of rod (model frame of reference)
+morph::vec<float, 3> end = { 0.25f, 0.0f, 0.0f };    // end coordinate of rod
+morph::vec<float, 3> colour1 = { 1.0f, 0.0f, 0.0f }; // Colour for the rod
 // This will return a std::unique_ptr<morph::VisualModel<>> into rvm. VisualModels
 // have to have the gl version template arg.
 auto rvm = std::make_unique<morph::RodVisual<morph::gl::version_4_1>> (pos, start, end, 0.1f, colour1, colour1);
