@@ -47,7 +47,7 @@ int main()
 
         gv->finalize();
 
-        // Add the GraphVisual (as a VisualModel*)
+        // Add the GraphVisual
         auto gvp = v.addVisualModel (gv);
 
         size_t rcount = 0;
