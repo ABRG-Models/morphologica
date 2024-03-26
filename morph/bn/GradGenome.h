@@ -13,6 +13,7 @@
 #include <bitset>
 #include <iostream>
 #include <sstream>
+#include <cuchar>
 #include <immintrin.h>
 #include <morph/tools.h>
 #include <morph/bn/Random.h>
@@ -21,8 +22,8 @@
 namespace morph {
     namespace  bn {
 
-        template <size_t N> struct GradGenome;
-        template <size_t N> std::ostream& operator<< (std::ostream&, const GradGenome<N>&);
+        template <std::size_t N> struct GradGenome;
+        template <std::size_t N> std::ostream& operator<< (std::ostream&, const GradGenome<N>&);
 
         /*!
          * The GradGenome class
@@ -50,7 +51,7 @@ namespace morph {
          * other N genes so there are 2*N*N bits total in the GradGenome and a maximum
          * of 2^(2*N*N) possible values (though degeneracy will reduce this number)
          */
-        template <size_t N=5>
+        template <std::size_t N=5>
         struct GradGenome : public std::array<typename GradGenosect<N>::type, N>
         {
             using genosect_t = typename GradGenosect<N>::type;
@@ -286,7 +287,7 @@ namespace morph {
                 }
 
                 // 3 Convert each as hex into genosect_t things
-                size_t i = 0;
+                std::size_t i = 0;
                 for (auto p : parts) {
                     (*this)[i] = std::stoi (p, 0, 16) & this->genosect_mask;
                     i++;
@@ -325,7 +326,7 @@ namespace morph {
             void zero() { for (unsigned int i = 0; i < N; ++i) { (*this)[i] = 0; } }
 
             //! Genome width
-            static constexpr size_t width = 2 * N * N;
+            static constexpr std::size_t width = 2 * N * N;
 
 
             //! By default, permit a mutated genome to be degenerate - that is, BOTH the
@@ -383,7 +384,7 @@ namespace morph {
             static constexpr bool debug_logic = false;
 
             //! Return true if gene_i climbs the gradient of gene_j
-            bool i_climbs_j (size_t gene_i, size_t gene_j) const
+            bool i_climbs_j (std::size_t gene_i, std::size_t gene_j) const
             {
                 if constexpr (debug_logic) {
                     std::cout << "i="<<gene_i<<" climbs j="<<gene_j<<"?" << std::endl
@@ -392,14 +393,14 @@ namespace morph {
                               << "(*this)[gene_i] & 0x3 << (N-gene_j-1*2) = " << (unsigned int) ((*this)[gene_i] & (0x3 << ((N-gene_j-1)*2))) << std::endl;
                 }
                 // The shift for Gene j within the genosect for Gene i.
-                size_t _shift = (N-gene_j-1) * 2;
+                std::size_t _shift = (N-gene_j-1) * 2;
                 return ((((*this)[gene_i] & (0x3 << _shift)) >> _shift) == 0x2) ? true : false;
             }
 
             //! Return true if gene_i descends the gradient of gene_j
-            bool i_descends_j (size_t gene_i, size_t gene_j) const
+            bool i_descends_j (std::size_t gene_i, std::size_t gene_j) const
             {
-                size_t _shift = (N-gene_j-1) * 2;
+                std::size_t _shift = (N-gene_j-1) * 2;
                 return ((((*this)[gene_i] & (0x3 << _shift)) >> _shift) == 0x1) ? true : false;
             }
 
@@ -407,7 +408,7 @@ namespace morph {
             friend std::ostream& operator<< <N> (std::ostream& os, const GradGenome<N>& v);
         };
 
-        template <size_t N=5>
+        template <std::size_t N=5>
         std::ostream& operator<< (std::ostream& os, const GradGenome<N>& g)
         {
             os << g.str();

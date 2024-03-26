@@ -63,6 +63,7 @@
 #include <memory>
 #include <functional>
 #include <chrono>
+#include <cuchar>
 
 #include <morph/VisualDefaultShaders.h>
 
@@ -703,14 +704,14 @@ namespace morph {
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
             if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
             fout << "{\n  \"scenes\" : [ { \"nodes\" : [ ";
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
             }
             fout << " ] } ],\n";
 
             fout << "  \"nodes\" : [\n";
             // for loop over VisualModels "mesh" : 0, etc
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"mesh\" : " << vmi
                      << ", \"translation\" : " << this->vm[vmi]->translation_str()
                      << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
@@ -719,7 +720,7 @@ namespace morph {
 
             fout << "  \"meshes\" : [\n";
             // for each VisualModel:
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : " << 1+vmi*4
                      << ", \"COLOR_0\" : " << 2+vmi*4
                      << ", \"NORMAL\" : " << 3+vmi*4 << " }, \"indices\" : " << vmi*4 << ", \"material\": 0 } ] }"
@@ -728,7 +729,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"buffers\" : [\n";
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 // indices
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->indices_base64() << "\", "
                      << "\"byteLength\" : " << this->vm[vmi]->indices_bytes() << "},\n";
@@ -746,7 +747,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"bufferViews\" : [\n";
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 // indices
                 fout << "    { ";
                 fout << "\"buffer\" : " << vmi*4 << ", ";
@@ -780,7 +781,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"accessors\" : [\n";
-            for (size_t vmi = 0; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
                 this->vm[vmi]->computeVertexMaxMins();
                 // indices
                 fout << "    { ";

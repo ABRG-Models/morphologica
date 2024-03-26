@@ -24,7 +24,7 @@ namespace base64
         std::uint32_t temp{};
         auto it = input.begin();
 
-        for (std::size_t i = 0; i < input.size() / 3; ++i) {
+        for (std::size_t i = 0; i < input.size() / 3U; ++i) {
             temp  = (*it++) << 16;
             temp += (*it++) << 8;
             temp += (*it++);
@@ -76,7 +76,7 @@ namespace base64
         auto it = input.begin();
 
         while(it < input.end()) {
-            for (std::size_t i = 0; i < 4; ++i) {
+            for (std::size_t i = 0; i < 4U; ++i) {
                 temp <<= 6;
                 if     (*it >= 0x41 && *it <= 0x5A) { temp |= *it - 0x41; }
                 else if(*it >= 0x61 && *it <= 0x7A) { temp |= *it - 0x47; }

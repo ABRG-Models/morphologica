@@ -506,6 +506,44 @@ namespace morph {
             return nearest;
         }
 
+        // If possible, get the hex at the given rgb position
+        std::list<Hex>::iterator findHexAt (const morph::vec<int, 3>& rgbpos)
+        {
+            std::list<morph::Hex>::iterator hi = this->hexen.begin(); // First hex in hexen is always 0,0,0
+
+            // +ri is East
+            int inc = rgbpos[0] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[0] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_ne() ? hi->ne : this->hexen.end();
+                } else {
+                    hi = hi->has_nw() ? hi->nw : this->hexen.end();
+                }
+            }
+
+            // gi is NorthEast
+            inc = rgbpos[1] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[1] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_nne() ? hi->nne : this->hexen.end();
+                } else {
+                    hi = hi->has_nsw() ? hi->nsw : this->hexen.end();
+                }
+            }
+
+            // bi is NorthWest
+            inc = rgbpos[2] > 0 ? 1 : -1;
+            for (int ri = 0; ri != rgbpos[2] && hi != this->hexen.end(); ri+=inc) {
+                if (inc > 0) {
+                    hi = hi->has_nnw() ? hi->nnw : this->hexen.end();
+                } else {
+                    hi = hi->has_nse() ? hi->nse : this->hexen.end();
+                }
+            }
+
+            return hi;
+        }
+
         /*!
          * Sets boundary to match the list of hexes passed in as @a pHexes. Note, that
          * unlike void setBoundary (const BezCurvePath& p), this method does not apply
@@ -1403,7 +1441,7 @@ namespace morph {
 
             morph::vvec<float> expr_resampled(this->num(), 0.0f);
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
-            for (size_t xi = 0; xi < this->d_x.size(); ++xi) {
+            for (typename std::vector<float>::size_type xi = 0U; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
 //#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
@@ -3576,7 +3614,7 @@ namespace morph {
          */
         bool findNextBoundaryNeighbour (std::list<Hex>::iterator& bhi,
                                         std::deque<std::list<Hex>::iterator>& recently_seen,
-                                        size_t n_recents = 2,
+                                        unsigned int n_recents = 2U,
                                         unsigned int bdryFlag = HEX_IS_BOUNDARY,
                                         unsigned int insideFlag = HEX_INSIDE_BOUNDARY) const
         {
@@ -3653,7 +3691,7 @@ namespace morph {
 
             // a deque to hold the 'n_recents' most recently seen boundary hexes.
             std::deque<std::list<morph::Hex>::iterator> recently_seen;
-            size_t n_recents = 16; // 2 should be sufficient for boundaries with double thickness
+            unsigned int n_recents = 16U; // 2 should be sufficient for boundaries with double thickness
             // sections. If problems occur, trying increasing this.
             bool gotnext = this->findNextBoundaryNeighbour (bhi, recently_seen, n_recents, bdryFlag, insideFlag);
             // Loop around boundary, marking inwards in all possible directions from each boundary hex

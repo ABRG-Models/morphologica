@@ -4,10 +4,11 @@
 #include <morph/bn/Genome.h>
 #include <morph/bn/GeneNet.h>
 #include <set>
+#include <cuchar>
 
 namespace morph {
     namespace  bn {
-        template <size_t N=5, size_t K=5>
+        template <std::size_t N=5, std::size_t K=5>
         struct GeneNetDual : public GeneNet<N, K>
         {
             //! initial_pos is always 0...

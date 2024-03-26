@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <cuchar>
 #include <stdexcept>
 #include <morph/vec.h>
 #include <morph/vvec.h>
@@ -283,7 +284,7 @@ namespace morph {
         return dims;
     }
 
-    template <typename T, size_t N>
+    template <typename T, std::size_t N>
     static morph::vec<unsigned int, 2> loadpng (const std::string& filename,
                                                 morph::vvec<morph::vec<T, N>>& image_data,
                                                 const morph::vec<bool,2> flip = {false, false})

@@ -12,6 +12,7 @@
 #include <bitset>
 #include <iostream>
 #include <sstream>
+#include <cuchar>
 #include <immintrin.h>
 #include <morph/tools.h>
 #include <morph/bn/Random.h>
@@ -21,8 +22,8 @@ namespace morph {
     namespace  bn {
 
         // A Genome is (derived from) an array<Genosect<K>::type, N>.
-        template <size_t N, size_t K> struct Genome;
-        template <size_t N, size_t K> std::ostream& operator<< (std::ostream&, const Genome<N, K>&);
+        template <std::size_t N, std::size_t K> struct Genome;
+        template <std::size_t N, std::size_t K> std::ostream& operator<< (std::ostream&, const Genome<N, K>&);
 
         /*!
          * The Genome class
@@ -41,7 +42,7 @@ namespace morph {
          * \tparam K The number of genes which are used to determine the next state of
          * the Boolean gene net. May not be greater than N.
          */
-        template <size_t N=5, size_t K=5>
+        template <std::size_t N=5, std::size_t K=5>
         struct Genome : public std::array<typename Genosect<K>::type, N>
         {
             using genosect_t = typename Genosect<K>::type;
@@ -95,7 +96,7 @@ namespace morph {
                 }
 
                 // 3 Convert each as hex into genosect_t things
-                size_t i = 0;
+                std::size_t i = 0;
                 for (auto p : parts) {
                     (*this)[i] = std::stoi (p, 0, 16) & this->genosect_mask;
                     i++;
@@ -211,7 +212,7 @@ namespace morph {
             }
 
             //! Genome width
-            static constexpr size_t width = N*(1<<K);
+            static constexpr std::size_t width = N*(1<<K);
 
             //! Mutate this genome with bit flip probability p
             void mutate (const float& p)
@@ -238,7 +239,7 @@ namespace morph {
             void mutate (const float& p, std::array<unsigned long long int, N>& flipcount)
             {
                 Random<N,K>::i()->fill_rnums();
-                size_t riter = 0;
+                std::size_t riter = 0;
                 for (unsigned int i = 0; i < N; ++i) {
                     genosect_t gsect = (*this)[i];
                     for (unsigned int j = 0; j < (1<<K); ++j) {
@@ -389,7 +390,7 @@ namespace morph {
             friend std::ostream& operator<< <N, K> (std::ostream& os, const Genome<N, K>& v);
         };
 
-        template <size_t N=5, size_t K=5>
+        template <std::size_t N=5, std::size_t K=5>
         std::ostream& operator<< (std::ostream& os, const Genome<N, K>& g)
         {
             os << g.str();

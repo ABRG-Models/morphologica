@@ -84,15 +84,15 @@ namespace morph {
         }
 
         //! Access elements of the matrix
-        Flt& operator[] (size_t idx) { return this->mat[idx]; }
+        Flt& operator[] (unsigned int idx) { return this->mat[idx]; }
         // note: assume Flt is a built-in type here (safe - Flt will be float or double)
-        const Flt operator[] (size_t idx) const  { return this->mat[idx]; }
+        const Flt operator[] (unsigned int idx) const  { return this->mat[idx]; }
 
         //! Access a given row of the matrix
-        morph::vec<Flt, 3> row (size_t idx) const
+        morph::vec<Flt, 3> row (unsigned int idx) const
         {
-            morph::vec<Flt, 3> r = {0,0,0};
-            if (idx > 2) { return r; }
+            morph::vec<Flt, 3> r = {Flt{0}, Flt{0}, Flt{0}};
+            if (idx > 2U) { return r; }
             r[0] = this->mat[idx];
             r[1] = this->mat[idx+3];
             r[2] = this->mat[idx+6];
@@ -100,11 +100,11 @@ namespace morph {
         }
 
         //! Access a given column of the matrix
-        morph::vec<Flt, 3> col (size_t idx) const
+        morph::vec<Flt, 3> col (unsigned int idx) const
         {
-            morph::vec<Flt, 3> c = {0,0,0};
-            if (idx > 2) { return c; }
-            idx *= 3;
+            morph::vec<Flt, 3> c = {Flt{0}, Flt{0}, Flt{0}};
+            if (idx > 2U) { return c; }
+            idx *= 3U;
             c[0] = this->mat[idx];
             c[1] = this->mat[++idx];
             c[2] = this->mat[++idx];

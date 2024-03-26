@@ -112,7 +112,7 @@ namespace morph {
 
                 // Step 2, feed forward as normal
                 auto c = this->connections.begin();
-                for (size_t i = 0; i < this->connections.size(); ++i) {
+                for (unsigned int i = 0U; i < this->connections.size(); ++i) {
                     c->feedforward();
                     c++;
                 }

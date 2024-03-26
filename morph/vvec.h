@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <functional>
+#include <cuchar>
 #include <morph/Random.h>
 #include <morph/range.h>
 #include <morph/trait_tests.h>
@@ -105,7 +106,7 @@ namespace morph {
         void set_from_onelonger (const std::vector<_S>& v)
         {
             if (v.size() == (this->size()+1)) {
-                for (size_t i = 0; i < this->size(); ++i) {
+                for (std::size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
                 }
             } // else do nothing?
@@ -116,11 +117,11 @@ namespace morph {
          * array, \a v, ignoring the last element of \a v. Used when working with 4D
          * vectors in graphics applications involving 4x4 transform matrices.
          */
-        template <typename _S=S, size_t N>
+        template <typename _S=S, std::size_t N>
         void set_from_onelonger (const std::array<_S, N>& v)
         {
             if ((this->size()+1) == N) {
-                for (size_t i = 0; i < this->size(); ++i) {
+                for (std::size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
                 }
             } // else do nothing?
@@ -129,18 +130,18 @@ namespace morph {
         //! \return a vector with one less dimension - losing the last one.
         vvec<S> less_one_dim () const
         {
-            size_t N = this->size();
+            std::size_t N = this->size();
             vvec<S> rtn(N-1);
-            for (size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N-1; ++i) { rtn[i] = (*this)[i]; }
             return rtn;
         }
 
         //! \return a vector with one additional dimension - setting it to 0.
         vvec<S> plus_one_dim () const
         {
-            size_t N = this->size();
+            std::size_t N = this->size();
             vvec<S> rtn(N+1);
-            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
             rtn[N] = S{0};
             return rtn;
         }
@@ -148,9 +149,9 @@ namespace morph {
         //! Return a vector with one additional dimension - setting it to val.
         vvec<S> plus_one_dim (const S val) const
         {
-            size_t N = this->size();
+            std::size_t N = this->size();
             vvec<S> rtn(N+1);
-            for (size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
+            for (std::size_t i = 0; i < N; ++i) { rtn[i] = (*this)[i]; }
             rtn[N] = val;
             return rtn;
         }
@@ -195,7 +196,7 @@ namespace morph {
         void set_from_onelonger (const vvec<_S>& v)
         {
             if (v.size() == (this->size()+1)) {
-                for (size_t i = 0; i < this->size(); ++i) {
+                for (std::size_t i = 0; i < this->size(); ++i) {
                     (*this)[i] = v[i];
                 }
             } // else do nothing?
@@ -208,11 +209,11 @@ namespace morph {
          * rounding errors.
          */
         template <typename _S=S, typename _S2=S>
-        void linspace (const _S start, const _S2 stop, const size_t num=0)
+        void linspace (const _S start, const _S2 stop, const std::size_t num=0)
         {
             if (num > 0) { this->resize (num); }
             S increment = (static_cast<S>(stop) - static_cast<S>(start)) / (this->size()-1);
-            for (size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
+            for (std::size_t i = 0; i < this->size(); ++i) { (*this)[i] = start + increment * i; }
         }
 
         /*!
@@ -227,8 +228,8 @@ namespace morph {
             // Figure out how many elements given the increment:
             S num = std::ceil((stop - start) / increment);
             if (num > S{0}) {
-                this->resize (static_cast<size_t>(num));
-                for (size_t i = 0; i < static_cast<size_t>(num); ++i) {
+                this->resize (static_cast<std::size_t>(num));
+                for (std::size_t i = 0; i < static_cast<std::size_t>(num); ++i) {
                     (*this)[i] = start + increment*static_cast<S>(i);
                 }
             } // else vector should now be empty, just like Python does it
@@ -426,7 +427,7 @@ namespace morph {
         {
             if (this->size() > 1) {
                 S z_el = (*this)[0];
-                for (size_t i = 1; i < this->size(); ++i) {
+                for (std::size_t i = 1; i < this->size(); ++i) {
                     (*this)[i-1] = (*this)[i];
                 }
                 (*this)[this->size()-1] = z_el;
@@ -447,7 +448,7 @@ namespace morph {
 
             auto _start = this->begin();
             if constexpr (std::numeric_limits<T>::is_signed) {
-                size_t _n = n >= 0 ? n : this->size() + n;
+                std::size_t _n = n >= 0 ? n : this->size() + n;
                 std::advance (_start, _n);
             } else {
                 std::advance (_start, n);
@@ -458,12 +459,12 @@ namespace morph {
         //! If size is even, permute pairs of elements in a rotation. 0->1, 1->0, 2->3, 3->2, etc.
         void rotate_pairs()
         {
-            size_t N = this->size();
+            std::size_t N = this->size();
             if (N%2!=0) {
                 throw std::runtime_error ("vvec size must be even to call morph::vvec::rotate_pairs");
             }
             S tmp_el = S{0};
-            for (size_t i = 0; i < N; i+=2) {
+            for (std::size_t i = 0; i < N; i+=2) {
                 tmp_el = (*this)[i];
                 (*this)[i] = (*this)[i+1];
                 (*this)[i+1] = tmp_el;
@@ -485,7 +486,7 @@ namespace morph {
              * the initialization of the vvec with curly brace initialization.
              *
              * Clearly, this will be the wrong threshold for some cases. Possibly, a
-             * template parameter could set this; so size_t U could indicate the threshold;
+             * template parameter could set this; so std::size_t U could indicate the threshold;
              * 0.001 could be U=-3 (10^-3).
              *
              * Another idea would be to change unitThresh based on the type S. Or use
@@ -623,9 +624,9 @@ namespace morph {
 
         //! \return the index of the longest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t arglongest() const
+        std::size_t arglongest() const
         {
-            size_t idx = 0;
+            std::size_t idx = 0;
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) < std::abs(b)); };
                 auto thelongest = std::max_element (this->begin(), this->end(), abs_compare);
@@ -640,7 +641,7 @@ namespace morph {
 
         // For a vvec of vecs, arglongest() should return then same as argmax()
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t arglongest() const { return this->argmax(); }
+        std::size_t arglongest() const { return this->argmax(); }
 
         //! \return the value of the shortest component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
@@ -665,9 +666,9 @@ namespace morph {
          * of vectors, then return the index of the shortest vector.
          */
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argshortest() const
+        std::size_t argshortest() const
         {
-            size_t idx = 0;
+            std::size_t idx = 0;
             // Check on the type S. If S is a vector thing, then abs_compare needs to be different.
             if constexpr (std::is_scalar<std::decay_t<S>>::value) {
                 auto abs_compare = [](S a, S b) { return (std::abs(a) > std::abs(b)); };
@@ -683,10 +684,10 @@ namespace morph {
 
         //! vvec of vecs version of argshortest
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argshortest() const
+        std::size_t argshortest() const
         {
             auto theshortest = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_gtrthan(b);});
-            size_t idx = (theshortest - this->begin());
+            std::size_t idx = (theshortest - this->begin());
             return idx;
         }
 
@@ -710,19 +711,19 @@ namespace morph {
 
         //! \return the index of the maximum (most positive) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argmax() const
+        std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end());
-            size_t idx = (themax - this->begin());
+            std::size_t idx = (themax - this->begin());
             return idx;
         }
 
         //! vvec of vecs version of argmax returns the index of the maximum length morph::vec
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argmax() const
+        std::size_t argmax() const
         {
             auto themax = std::max_element (this->begin(), this->end(), [](S a, S b){return a.length_lessthan(b);});
-            size_t idx = (themax - this->begin());
+            std::size_t idx = (themax - this->begin());
             return idx;
         }
 
@@ -740,16 +741,16 @@ namespace morph {
 
         //! \return the index of the minimum (smallest or most negative) component of the vector.
         template <typename _S=S, std::enable_if_t<std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argmin() const
+        std::size_t argmin() const
         {
             auto themin = std::min_element (this->begin(), this->end());
-            size_t idx = (themin - this->begin());
+            std::size_t idx = (themin - this->begin());
             return idx;
         }
 
         //! For a vvec of vecs, argmin() is argshortest()
         template <typename _S=S, std::enable_if_t<!std::is_scalar<std::decay_t<_S>>::value, int> = 0 >
-        size_t argmin() const { return this->argshortest(); }
+        std::size_t argmin() const { return this->argshortest(); }
 
         //! \return the min and max values of the vvec, ignoring any not-a-number elements. If you
         //! pass 'true' as the template arg, then you can test for nans, and return the min/max of
@@ -872,9 +873,9 @@ namespace morph {
 
         //! Find first element matching argument
         template <typename _S=S>
-        size_t find_first_of (const _S& val) const
+        std::size_t find_first_of (const _S& val) const
         {
-            size_t i = 0;
+            std::size_t i = 0;
             for (i = 0; i < this->size(); i++) {
                 if ((*this)[i] == val) { break; }
             }
@@ -883,9 +884,9 @@ namespace morph {
 
         //! Find last element matching argument
         template <typename _S=S>
-        size_t find_last_of (const _S& val) const
+        std::size_t find_last_of (const _S& val) const
         {
-            size_t i = 0;
+            std::size_t i = 0;
             for (i = this->size()-1; i >= 0; i--) {
                 if ((*this)[i] == val) { break; }
             }
@@ -894,10 +895,10 @@ namespace morph {
 
         //! Find all elements matching argument, returning a vvec containing the indices.
         template <typename _S=S>
-        morph::vvec<size_t> find (const _S& val) const
+        morph::vvec<std::size_t> find (const _S& val) const
         {
-            morph::vvec<size_t> indices;
-            size_t i = 0;
+            morph::vvec<std::size_t> indices;
+            std::size_t i = 0;
             for (i = 0; i < this->size(); i++) {
                 if ((*this)[i] == val) { indices.push_back(i); }
             }
@@ -1266,7 +1267,7 @@ namespace morph {
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
-            size_t elements = static_cast<size_t>(2*hw) + 1;
+            std::size_t elements = static_cast<std::size_t>(2*hw) + 1;
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
@@ -1277,7 +1278,7 @@ namespace morph {
         {
             morph::vvec<S> filter;
             S hw = std::round(sigma*n_sigma);
-            size_t elements = static_cast<size_t>(2*hw) + 1;
+            std::size_t elements = static_cast<std::size_t>(2*hw) + 1;
             filter.linspace (-hw, hw, elements);
             filter.gauss_inplace (sigma);
             filter /= filter.sum();
@@ -1877,7 +1878,7 @@ namespace morph {
         //! Concatentate the vvec<S>& a to the end of *this.
         void concat (const vvec<S>& a)
         {
-            size_t sz = this->size();
+            std::size_t sz = this->size();
             this->resize (sz + a.size());
             auto iter = this->begin();
             std::advance (iter, sz);

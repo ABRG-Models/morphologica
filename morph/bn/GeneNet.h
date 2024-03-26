@@ -15,6 +15,7 @@
 #include <vector>
 #include <bitset>
 #include <list>
+#include <cuchar>
 #include <math.h>
 #include <immintrin.h> // Using intrinsics for computing Hamming distances
 #include <morph/bn/Genome.h>
@@ -30,7 +31,7 @@ namespace morph {
          * A class to hold information about one network and its comparison
          * with any other networks.
          */
-        template <size_t N=5, size_t K=N>
+        template <std::size_t N=5, std::size_t K=N>
         struct NetInfo
         {
             NetInfo(AllBasins<N,K>& ab_, unsigned int gen, double fitn)
@@ -61,7 +62,7 @@ namespace morph {
         typedef unsigned char state_t;
 
         //! A Boolean gene network class
-        template <size_t N=5, size_t K=5>
+        template <std::size_t N=5, std::size_t K=5>
         struct GeneNet
         {
             using genosect_t = typename Genosect<K>::type;

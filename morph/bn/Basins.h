@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <cuchar>
 
 namespace morph {
     namespace bn {
@@ -164,7 +165,7 @@ namespace morph {
          * Container class to hold several basins of attraction for a particular genome
          * and some information that can be obtained from them.
          */
-        template <size_t N=5, size_t K=N>
+        template <std::size_t N=5, std::size_t K=N>
         struct AllBasins
         {
             AllBasins (const Genome<N,K>& g)

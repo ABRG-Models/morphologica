@@ -40,6 +40,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <cuchar>
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
 #include <morph/vvec.h>
@@ -125,7 +126,7 @@ namespace morph {
                          && morph::is_copyable_container<OContainer>::value, void>
         transform (const Container& data, OContainer& output)
         {
-            size_t dsize = data.size();
+            std::size_t dsize = data.size();
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::transform(): Ensure data.size()==output.size()");
             }
@@ -147,7 +148,7 @@ namespace morph {
                          && morph::is_copyable_container<OContainer>::value, void>
         inverse (const Container& data, OContainer& output)
         {
-            size_t dsize = data.size();
+            std::size_t dsize = data.size();
             if (output.size() != dsize) {
                 throw std::runtime_error ("ScaleImplBase::inverse(): Ensure data.size()==output.size()");
             }
@@ -284,7 +285,7 @@ namespace morph {
             }
             S rtn(datum);
             T_el vec_len = this->vec_length (datum);
-            for (size_t i = 0; i < datum.size(); ++i) {
+            for (std::size_t i = 0; i < datum.size(); ++i) {
                 rtn[i] = static_cast<S_el>(datum[i]) * this->params[0] + this->params[1];
                 S_el el_len = static_cast<S_el>(datum[i]);
                 // Here's the scaling of a component
@@ -341,7 +342,7 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        S_el getParams (size_t idx) { return this->params[idx]; }
+        S_el getParams (unsigned int idx) { return this->params[idx]; }
 
         //! Get all the params
         morph::vvec<S_el> getParams() { return this->params; }
@@ -373,7 +374,7 @@ namespace morph {
         {
             if (this->params.size() < 2) { throw std::runtime_error ("Scaling params not set"); }
             T rtn (datum);
-            size_t i = 0;
+            std::size_t i = 0;
             for (auto el : datum) {
                 rtn[i++] = el - this->params[1] / this->params[0];
             }
@@ -468,7 +469,7 @@ namespace morph {
         //! Getter for params
         //! \param idx The index into #params
         //! \return The specified element of #params
-        S getParams (size_t idx) { return this->params[idx]; }
+        S getParams (unsigned int idx) { return this->params[idx]; }
 
         //! Get all the params
         morph::vvec<S> getParams() { return this->params; }

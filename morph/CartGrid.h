@@ -874,7 +874,7 @@ namespace morph {
 
             std::list<morph::Rect>::iterator lastrect = this->rects.begin();
 #pragma omp parallel for
-            for (size_t xi = 0; xi < cg_polar.num(); ++xi) { // for each output pixel which is an r/phi pair
+            for (unsigned int xi = 0; xi < cg_polar.num(); ++xi) { // for each output pixel which is an r/phi pair
 
                 float r = cg_polar.d_y[xi]; // Linear
                 if (radscale == morph::ScaleFn::Logarithmic) {
@@ -1816,7 +1816,7 @@ namespace morph {
 
             // Build grid, raster style.
             for (int yi = -halfRows; yi <= halfRows; ++yi) {
-                size_t pri = 0;
+                unsigned int pri = 0U;
                 for (int xi = -halfCols; xi <= halfCols; ++xi) {
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
@@ -1887,7 +1887,7 @@ namespace morph {
 
             // Build grid, raster style.
             for (int yi = _yi; yi <= _yf; ++yi) { // for each row
-                size_t pri = 0;
+                unsigned int pri = 0U;
                 for (int xi = _xi; xi <= _xf; ++xi) { // for each element in row
                     this->rects.emplace_back (vi++, this->d, this->v, xi, yi);
 
@@ -2379,7 +2379,7 @@ namespace morph {
          */
         bool findNextBoundaryNeighbour (std::list<Rect>::iterator& bhi,
                                         std::deque<std::list<Rect>::iterator>& recently_seen,
-                                        size_t n_recents = 2,
+                                        unsigned int n_recents = 2U,
                                         unsigned int bdryFlag = RECT_IS_BOUNDARY,
                                         unsigned int insideFlag = RECT_INSIDE_BOUNDARY) const
         {
@@ -2456,7 +2456,7 @@ namespace morph {
 
             // a deque to hold the 'n_recents' most recently seen boundary rects.
             std::deque<std::list<morph::Rect>::iterator> recently_seen;
-            size_t n_recents = 16; // 2 should be sufficient for boundaries with double thickness
+            unsigned int n_recents = 16U; // 2 should be sufficient for boundaries with double thickness
             // sections. If problems occur, trying increasing this.
             bool gotnext = this->findNextBoundaryNeighbour (bhi, recently_seen, n_recents, bdryFlag, insideFlag);
             // Loop around boundary, marking inwards in all possible directions from each boundary rect

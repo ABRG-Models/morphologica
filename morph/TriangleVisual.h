@@ -52,7 +52,7 @@ namespace morph {
             this->vertex_push (c2, this->vertexPositions);
             this->vertex_push (c3, this->vertexPositions);
             // Colours/normals
-            for (size_t i = 0; i < 3; ++i) {
+            for (unsigned int i = 0; i < 3U; ++i) {
                 this->vertex_push (colr, this->vertexColors);
                 this->vertex_push (v, this->vertexNormals);
             }

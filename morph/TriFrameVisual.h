@@ -60,14 +60,14 @@ namespace morph {
             } // else no scaling required - spheres will be one colour
 
             // Draw spheres
-            for (size_t i = 0; i < ncoords; ++i) {
+            for (unsigned int i = 0U; i < ncoords; ++i) {
                 this->computeSphere (this->idx, (*this->dataCoords)[i], this->cm.convert ((*this->scalarData)[i]), sradius);
             }
             // Draw tubes
             std::array<float, 3> clr = {0.3f,0.3f,0.3f};
-            for (size_t i = 0; i < ncoords; ++i) {
+            for (unsigned int i = 0U; i < ncoords; ++i) {
                 morph::vec<float> v1 = (*this->dataCoords)[i];
-                size_t e = (i < (ncoords-1) ? i+1 : 0);
+                unsigned int e = (i < (ncoords-1) ? i+1 : 0);
                 morph::vec<float> v2 = (*this->dataCoords)[e];
                 this->computeTube (this->idx, this->mv_offset+v1, this->mv_offset+v2,
                                    clr, clr, this->radius, this->tseg);

@@ -78,7 +78,7 @@ namespace morph {
             //! Pointer to output layer. Size N.
             morph::vvec<T>* out;
             //! The size (i.e. number of neurons) in out.
-            size_t N = 0;
+            unsigned int N = 0U;
             //! The errors in the input layer of neurons. Size M = m1 + m2 +...
             std::vector<morph::vvec<T>> deltas;
             //! Weights.
@@ -103,17 +103,17 @@ namespace morph {
                     ss << _in->size() << ", ";
                 }
                 ss << "to an output layer, size " << out->size() << "\n";
-                size_t ci = 0;
+                unsigned int ci = 0U;
                 for (auto w : this->ws) {
                     ss << " Input " << ci++ << ": Weights: w" << w << "w (" << w.size() << ")\n";
                 }
-                ci = 0;
+                ci = 0U;
                 for (auto nabla_w : this->nabla_ws) {
                     ss << " Input " << ci++ << ": nabla_w:nw" << nabla_w << "nw (" << nabla_w.size() << ")\n";
                 }
                 ss << " Output Biases: b" << b << "b (" << b.size() << ")\n";
                 ss << " Output nabla_b:nb" << nabla_b << "nb (" << nabla_b.size() << ")\n";
-                ci = 0;
+                ci = 0U;
                 for (auto delta : this->deltas) {
                     ss << " Input " << ci++ << ": delta  :  " << delta << "\n";
                 }
@@ -135,15 +135,15 @@ namespace morph {
                 this->z.zero();
 
                 // Loop over input populations:
-                for (size_t i = 0; i < this->ins.size(); ++i) {
+                for (unsigned int i = 0; i < this->ins.size(); ++i) {
                     // A morph::vvec for a 'part of w'
                     morph::vvec<T>* _in = this->ins[i];
-                    size_t m = _in->size();// Size m[i]
+                    unsigned int m = _in->size();// Size m[i]
                     morph::vvec<T> wpart(m);
                     // Get weights, outputs and biases iterators
                     auto witer = this->ws[i].begin();
                     // Carry out an N sized for loop computing each output
-                    for (size_t j = 0; j < this->N; ++j) { // Each output
+                    for (unsigned int j = 0; j < this->N; ++j) { // Each output
                         // Copy part of weights to wpart (M elements):
                         std::copy (witer, witer+m, wpart.begin());
                         // Compute/accumulate dot product with input
@@ -162,7 +162,7 @@ namespace morph {
             {
                 auto oiter = this->out->begin();
                 auto biter = this->b.begin();
-                for (size_t j = 0; j < this->N; ++j) {
+                for (unsigned int j = 0; j < this->N; ++j) {
                     this->z[j] += *biter++;
                     *oiter++ = T{1} / (T{1} + std::exp(-z[j])); // out = sigmoid(z+bias)
                 }
@@ -175,7 +175,7 @@ namespace morph {
             std::vector<morph::vvec<T>> sigmoid_prime_z_l()
             {
                 std::vector<morph::vvec<T>> rtn (this->ins.size());
-                for (size_t i = 0; i < this->ins.size(); ++i) {
+                for (unsigned int i = 0; i < this->ins.size(); ++i) {
                     rtn[i] = (*ins[i]) * (-(*ins[i])+T{1});
                 }
                 return rtn;
@@ -189,9 +189,9 @@ namespace morph {
             {
                 // For each input in conn_nxt, compare with our output. That will give
                 // us the index to use.
-                size_t idx = 0;
-                size_t idx_max = conn_nxt.ins.size();
-                for (size_t i = 0; i < idx_max; ++i) {
+                unsigned int idx = 0;
+                unsigned int idx_max = conn_nxt.ins.size();
+                for (unsigned int i = 0; i < idx_max; ++i) {
                     if (conn_nxt.ins[i] == this->out) {
                         idx = i;
                         break;
@@ -217,12 +217,12 @@ namespace morph {
                 // we have to do weights * delta_l_nxt to give a morph::vvec<T>
                 // result. This is the equivalent of the matrix multiplication:
                 std::vector<morph::vvec<T>> w_times_deltas(this->ins.size());
-                for (size_t idx = 0; idx < this->ins.size(); ++idx) {
-                    size_t m = this->ins[idx]->size();
+                for (unsigned int idx = 0; idx < this->ins.size(); ++idx) {
+                    unsigned int m = this->ins[idx]->size();
                     w_times_deltas[idx].resize(m);
                     w_times_deltas[idx].zero();
-                    for (size_t i = 0; i < m; ++i) { // Each input
-                        for (size_t j = 0; j < this->N; ++j) { // Each output
+                    for (unsigned int i = 0; i < m; ++i) { // Each input
+                        for (unsigned int j = 0; j < this->N; ++j) { // Each output
                             // For each weight fanning into neuron j in l_nxt, sum up:
                             w_times_deltas[idx][i] += this->ws[idx][i+(m*j)] * delta_l_nxt[j];
                         }
@@ -236,7 +236,7 @@ namespace morph {
                     throw std::runtime_error ("Sizes error (spzl and deltas)");
                 }
 
-                for (size_t idx = 0; idx < this->deltas.size(); ++idx) {
+                for (unsigned int idx = 0; idx < this->deltas.size(); ++idx) {
                     this->deltas[idx] = w_times_deltas[idx] * spzl[idx];
                 }
 
@@ -245,10 +245,10 @@ namespace morph {
 
                 this->nabla_b = delta_l_nxt; // Size is N
 
-                for (size_t idx = 0; idx < this->ins.size(); ++idx) {
-                    size_t m = this->ins[idx]->size();
-                    for (size_t i = 0; i < m; ++i) { // Each input
-                        for (size_t j = 0; j < this->N; ++j) { // Each output
+                for (unsigned int idx = 0; idx < this->ins.size(); ++idx) {
+                    unsigned int m = this->ins[idx]->size();
+                    for (unsigned int i = 0; i < m; ++i) { // Each input
+                        for (unsigned int j = 0; j < this->N; ++j) { // Each output
                             // nabla_w is a_in * delta_out:
                             this->nabla_ws[idx][i+(m*j)] = (*(ins[idx]))[i] * delta_l_nxt[j];
                         }

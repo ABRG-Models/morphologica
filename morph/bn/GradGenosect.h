@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cuchar>
+
 namespace morph {
     namespace  bn {
         //! template metafunction to select size type for a GradGenome's genosect_t
-        template <size_t N> struct GradGenosect {}; // Default should fail to compile
+        template <std::size_t N> struct GradGenosect {}; // Default should fail to compile
         template<> struct GradGenosect<1> { typedef unsigned char type; };
         template<> struct GradGenosect<2> { typedef unsigned char type; };
         template<> struct GradGenosect<3> { typedef unsigned char type; };

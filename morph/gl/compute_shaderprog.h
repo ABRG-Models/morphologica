@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <cuchar>
 #include <morph/gl/version.h>
 #include <morph/gl/util.h>
 #include <morph/vec.h>
@@ -72,7 +73,7 @@ namespace morph {
             }
 
             // Set an array into the OpenGL context
-            template <typename T, size_t N>
+            template <typename T, std::size_t N>
             void set_uniform (const std::string& glsl_varname, const morph::vec<T, N>& value)
             {
                 GLint uloc = glGetUniformLocation (this->prog_id, static_cast<const GLchar*>(glsl_varname.c_str()));
