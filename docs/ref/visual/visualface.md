@@ -4,6 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualface
 layout: page
+nav_order: 3
 ---
 ```c++
 #include <morph/VisualFace.h>

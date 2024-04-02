@@ -4,6 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualcommon
 layout: page
+nav_order: 2
 ---
 ```c++
 #include <morph/VisualCommon.h>

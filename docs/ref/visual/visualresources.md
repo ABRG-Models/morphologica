@@ -4,6 +4,7 @@ parent: Visualization classes
 grand_parent: Reference
 permalink: /ref/visual/visualresources
 layout: page
+nav_order: 1
 ---
 ```c++
 #include <morph/VisualResources.h>
