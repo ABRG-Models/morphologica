@@ -166,10 +166,30 @@ This example is adapted from [tests/testvec_asmapkey](https://github.com/ABRG-Mo
 
 ### Setter functions
 
-These `set_from` functions differ from those in `morph::vec`
+Rather than using implementations of the assignment operators (I did try, but it turned out to be too difficult), `vvec` provides `set_from` functions.
+There is an overload of `set_from` which can assign values to your `vvec` from another container of values and an overload which will assign a single value to every element of your `vvec`.
+
+#### Setting a vvec from another container of values
+
+Note that the `set_from` functions in `vvec` differ from those in `morph::vec`.
+
+If you want to set your vvec values from another container, such as a `std::vector`, then you can use this templated overload:
+
 ```c++
-void set_from (); // Fill me in
+template <typename Container>
+std::enable_if_t<morph::is_copyable_container<Container>::value, void>
+void set_from (const Container& c)
+{
+    this->resize (c.size());
+    std::copy (c.begin(), c.end(), this->begin());
+}
 ```
+
+As long as you pass in a 'copyable container' (which means a `vector`, `array`, `deque`, `vvec`, `vec` or `set`, but *not* a `map`) then this will resize your `vvec` to match the passed in container and then std::copy the values into your `vvec`.
+
+#### Setting all the elements of a vvec to the same value
+
+All of these functions set all the elements of your `vvec` to a single value.
 
 ```c++
 void set_from (const _S& v);
@@ -177,7 +197,9 @@ void zero();
 void set_max();
 void set_lowest();
 ```
-This `set_from` overload fills all elements of the `morph::vvec` with `v`. `zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
+The `set_from` overload fills all elements of the `morph::vvec` with `v`.
+
+`zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
 
 ### Numpy clones
 
