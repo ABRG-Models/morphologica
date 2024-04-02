@@ -169,9 +169,9 @@ This example is adapted from [tests/testvec_asmapkey](https://github.com/ABRG-Mo
 Rather than using implementations of the assignment operators (I did try, but it turned out to be too difficult), `vvec` provides `set_from` functions.
 There is an overload of `set_from` which can assign values to your `vvec` from another container of values and an overload which will assign a single value to every element of your `vvec`.
 
-#### Setting a vvec from another container of values
-
 Note that the `set_from` functions in `vvec` differ from those in `morph::vec`.
+
+#### Setting a vvec from another container of values
 
 If you want to set your vvec values from another container, such as a `std::vector`, then you can use this templated overload:
 
@@ -200,6 +200,25 @@ void set_lowest();
 The `set_from` overload fills all elements of the `morph::vvec` with `v`.
 
 `zero()`, `set_max()` and `set_lowest()` fill all elements with `S{0}`, the maximum possible value for the type and the lowest possible value, respectively.
+
+#### Using the parent class's `assign` method
+
+You can, of course, also use [the `assign()` method](https://en.cppreference.com/w/cpp/container/vector/assign) from `std::vector`:
+
+```c++
+morph::vvec<int> vv = { 0, 0, 0, 0, 0}; // construct with 5 elements
+vv.assign (3, 10);                      // resize vv to 3 elements and assign 10 to each element
+std::cout << vv << std::endl;           // output: (10,10,10)
+```
+
+or
+
+```c++
+std::vector<int> vin = { 1, 2, 3 };
+morph::vvec<int> vv (vin.size());
+vv.assign (vin.begin(), vin.end());
+std::cout << vv << std::endl;           // output: (1,2,3)
+```
 
 ### Numpy clones
 
