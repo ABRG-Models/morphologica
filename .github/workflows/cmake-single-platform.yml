@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.1
 
     - name: Install dependencies
       run: sudo apt-get install libgbm-dev freeglut3-dev libglu1-mesa-dev libxmu-dev libxi-dev libglfw3-dev libfreetype-dev libarmadillo-dev libhdf5-dev
