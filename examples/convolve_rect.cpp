@@ -30,9 +30,10 @@ int main()
     float nonconvolvedSum = data.sum();
 
     // Create a small CartGrid to contain the convolution kernel
-    morph::CartGrid kernel (0.01f, 0.01f, 0.05f, 0.05f);
-
+    //morph::CartGrid kernel (0.01f, 0.01f, 0.05f, 0.05f);
+    morph::CartGrid kernel (0.01f, 0.01f, 0.0f, 0.0f, 5*0.01f-0.01f, 5*0.01f-0.01f);
     kernel.setBoundaryOnOuterEdge();
+
     morph::vvec<float> kdata(kernel.num());
 
     // Put a Gaussian in the kernel
