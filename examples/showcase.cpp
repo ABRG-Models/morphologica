@@ -45,12 +45,12 @@ int main()
      * HexGrid
      */
     {
-        morph::HexGrid hg(0.01f, 3.0f, 0.0f);
+        morph::HexGrid hg(0.06f, 3.0f, 0.0f);
         hg.setCircularBoundary (0.6f);
         // Make some dummy data (a sine wave) to make an interesting surface
         std::vector<float> data(hg.num(), 0.0f);
         for (unsigned int ri=0; ri<hg.num(); ++ri) {
-            data[ri] = 0.05f + 0.05f*std::sin(20.0f*hg.d_x[ri]) * std::sin(10.0f*hg.d_y[ri]) ; // Range 0->1
+            data[ri] = 0.05f + 0.15f*std::sin(10.0f*hg.d_x[ri]) * std::sin(1.8f*hg.d_y[ri]) ; // Range 0->1
         }
         auto hgv = std::make_unique<morph::HexGridVisual<float,morph::gl::version_4_1>>(&hg, morph::vec<float>({-2,-0.5,0}));
         v.bindmodel (hgv);
@@ -63,7 +63,7 @@ int main()
     }
 
     /*
-     * Grid (columns perhaps)
+     * Grid, with column view
      */
     {
         // Create a grid to show in the scene
@@ -78,7 +78,7 @@ int main()
             float y = coord[1];
             data[ri] = 0.02f * std::exp (x) * std::exp (2*(y));
         }
-        morph::vec<float, 3> offset = { -1.0f, -1.0f, 0.0f };
+        morph::vec<float, 3> offset = { -1.1f, -1.0f, 0.0f };
         auto gv = std::make_unique<morph::GridVisual<float>>(&grid, offset);
         v.bindmodel (gv);
         gv->gridVisMode = morph::GridVisMode::Columns;
@@ -100,15 +100,14 @@ int main()
                        morph::GridOrder::bottomleft_to_topright);
         // Load an image
         std::string fn = "../examples/bike256_65.png";
-        morph::vvec<float> image_data_bltr;
-        morph::loadpng (fn, image_data_bltr, morph::vec<bool, 2>({false,true}));
-        morph::vvec<float> image_data_neg = 1.0f - image_data_bltr;
+        morph::vvec<float> image_data;
+        morph::loadpng (fn, image_data, morph::vec<bool, 2>({false,true}));
 
         // Now visualise with a GridVisual
         auto gv2 = std::make_unique<morph::GridVisual<float>>(&g2, morph::vec<float>({0.2,-0.5,0}));
         v.bindmodel (gv2);
         gv2->gridVisMode = morph::GridVisMode::Pixels;
-        gv2->setScalarData (&image_data_bltr);
+        gv2->setScalarData (&image_data);
         gv2->cm.setType (morph::ColourMapType::GreyscaleInv);
         gv2->zScale.setParams (0, 0);
         gv2->addLabel ("morph::GridVisual (flat, pixels)", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
@@ -118,10 +117,10 @@ int main()
         v.bindmodel (gv3);
         gv3->gridVisMode = morph::GridVisMode::Columns;
         gv3->interpolate_colour_sides = true;
-        gv3->setScalarData (&image_data_neg);
-        gv3->cm.setType (morph::ColourMapType::GreyscaleInv);
-        //gv3->zScale.setParams (0, 0);
-        gv3->addLabel ("morph::GridVisual (negative, imaged as columns)", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
+        gv3->setScalarData (&image_data);
+        gv3->cm.setType (morph::ColourMapType::Plasma);
+        gv3->zScale.setParams (0.1, 0); // Reduce height in 'z'
+        gv3->addLabel ("morph::GridVisual (columns)", morph::vec<float>({0,-0.1,0}), morph::TextFeatures(0.05));
         gv3->finalize();
         v.addVisualModel (gv3);
     }
@@ -137,6 +136,7 @@ int main()
     /*
      * QuiverVisual (with axes)
      */
+    // phase diagram of Izykevich neuron?
 
     /*
      * Render the scene on the screen until user quits with 'Ctrl-q'
