@@ -157,8 +157,10 @@ namespace morph {
                     this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, shapesides);
                 }
 
-                // Plus a sphere on the coordinate:
-                this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
+                if (this->show_coordinate_sphere == true) {
+                    // Draw a sphere on the coordinate:
+                    this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
+                }
             }
         }
 
@@ -189,6 +191,9 @@ namespace morph {
 
         // If true, show a marker indicating the location of zero vectors
         bool show_zero_vectors = false;
+
+        // If false then omit the sphere drawn on the coordinate location
+        bool show_coordinate_sphere = true;
 
         // User can choose a colour
         std::array<float, 3> zero_vector_colour = morph::colour::crimson;
