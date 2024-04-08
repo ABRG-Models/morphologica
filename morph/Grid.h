@@ -472,7 +472,7 @@ namespace morph {
                 // abscissae is just the first width values.
                 for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i]; }
             } else {
-                // For column major, we have to skip through
+                // For column major, we have to skip each row
                 for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i*h]; }
             }
             return abscissae;
@@ -485,7 +485,8 @@ namespace morph {
             if (order == GridOrder::bottomleft_to_topright || order == GridOrder::topleft_to_bottomright) {
                 for (I i = I{0}; i < h; ++i) { ordinates[i] = v_y[i*w]; }
             } else {
-                // For column major, ordinates is just the first width values, but attention to direction
+                // For column major, ordinates is just the first height values
+                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_y[i]; }
             }
             return ordinates;
         }
