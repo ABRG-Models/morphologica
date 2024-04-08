@@ -275,12 +275,16 @@ namespace morph {
             // _quivs should have same size as g.n
             if (_quivs.size() != g.n) {
                 std::stringstream ee;
-                ee << "size mismatch. Grid has " << g.n << " elements but there are " << _quivs.size() << " quivers";
+                ee << "Size mismatch. Grid has " << g.n << " elements but there are "
+                   << _quivs.size() << " quivers";
                 throw std::runtime_error (ee.str());
             }
 
-            if (ds.markerstyle != morph::markerstyle::quiver) {
-                throw std::runtime_error ("markerstyle must be morph::markerstyle::quiver for this setdata() overload");
+            if (ds.markerstyle != morph::markerstyle::quiver
+                && ds.markerstyle != morph::markerstyle::quiver_fromcoord
+                && ds.markerstyle != morph::markerstyle::quiver_tocoord) {
+                throw std::runtime_error ("markerstyle must be morph::markerstyle::quiver(_fromcoord/_tocoord)"
+                                          " for this setdata() overload");
             }
 
             // Copy _quivs
@@ -292,8 +296,6 @@ namespace morph {
 
             auto _abscissae = g.get_abscissae();
             auto _data = g.get_ordinates();
-
-            std::cout << "abscissae: " << _abscissae << std::endl;
 
             // From g.v_x and g.v_y we get coordinates. These have to be copied into graphDataCoords
             // with the appropriate scaling.
@@ -310,7 +312,7 @@ namespace morph {
 
             unsigned int dsize = _quivs.size();
             unsigned int didx = this->graphDataCoords.size();
-            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, {0,0,0}));
+            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, { 0.0f, 0.0f, 0.0f }));
             this->datastyles.push_back (ds);
 
             // Compute the ord1_scale and asbcissa_scale for the first added dataset only
@@ -1269,6 +1271,9 @@ namespace morph {
             }
         }
 
+        //! Call before initializeVertices() to scale quiver lengths logarithmically
+        void quiver_setlog() { this->quiver_length_scale.setlog(); }
+
         //! Draw a single quiver at point p with direction/magnitude quiv.
         void quiver (morph::vec<float>& p, morph::vec<Flt, 3>& quiv, const morph::DatasetStyle& style)
         {
@@ -1501,6 +1506,11 @@ namespace morph {
         //! even though 2D quivers are going to be used most. The locations for the quivers for
         //! dataset i are stored in graphDataCoords, like normal points in a non-quiver graph.
         morph::vvec<morph::vec<Flt, 3>> quivers;
+        //! The input vectors are scaled in length to the range [0, 1], which is then modified by the
+        //! user using quiver_length_gain. This scaling can be made logarithmic by calling
+        //! GraphVisual::quiver_setlog() before calling finalize(). The scaling can be ignored by calling
+        //! GraphVisual::quiver_length_scale.compute_autoscale (0, 1); before finalize().
+        morph::Scale<float> quiver_length_scale;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
         //! A copy of the abscissa data values for ord1

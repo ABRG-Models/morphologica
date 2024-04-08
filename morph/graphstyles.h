@@ -25,13 +25,16 @@ namespace morph {
         upoctagon,
         circle,
         bar, // Special. For a bar graph.
-        quiver, // Special. For a quiver plot.
+        quiver, // Special. For a quiver plot. Drawn ON coord.
+        quiver_fromcoord,
+        quiver_tocoord,
         numstyles
     };
 
     //! How does a quiver go? Does it start at the coordinate? If so, it goes 'from'
     //! the coordinate; FromCoord. Does it instead sit on top of the coord (OnCoord)?
-    //! Alternatively, it could go 'to' the coordinate; ToCoord.
+    //! Alternatively, it could go 'to' the coordinate; ToCoord. Used in QuiverVisual.
+    //! This information is absorbed into markerstyle for GraphVisual.
     enum class QuiverGoes
     {
         FromCoord,
