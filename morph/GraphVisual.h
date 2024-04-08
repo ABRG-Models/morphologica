@@ -1277,7 +1277,9 @@ namespace morph {
         //! Draw a single quiver at point p with direction/magnitude quiv.
         void quiver (morph::vec<float>& p, morph::vec<Flt, 3>& quiv, const morph::DatasetStyle& style)
         {
-             // To update the z position of the data, must also add z thickness to p[2]
+            // Now have lots of quiver-specific style in DatasetStyle to help make this function draw lovely quivers!
+
+            // To update the z position of the data, must also add z thickness to p[2]
             p[2] += thickness;
 
             //std::cout << "Plot line from " << p << " to  " << (p+quiv) << std::endl;
