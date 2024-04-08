@@ -472,3 +472,6 @@ endif()
 
 add_executable(testGrid testGrid.cpp)
 add_test(testGrid testGrid)
+
+add_executable(testGrid_getabscissae testGrid_getabscissae.cpp)
+add_test(testGrid_getabscissae testGrid_getabscissae)

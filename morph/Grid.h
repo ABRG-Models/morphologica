@@ -467,13 +467,27 @@ namespace morph {
         //! Return the y coordinates for each row in the Grid
         morph::vvec<C> get_abscissae() const
         {
-            // writeme
+            morph::vvec<C> abscissae (w, C{0});
+            if (order == GridOrder::bottomleft_to_topright || order == GridOrder::topleft_to_bottomright) {
+                // abscissae is just the first width values.
+                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i]; }
+            } else {
+                // For column major, we have to skip through
+                for (I i = I{0}; i < w; ++i) { abscissae[i] = v_x[i*h]; }
+            }
+            return abscissae;
         }
 
         //! Return the x coordinates for each column in the Grid
         morph::vvec<C> get_ordinates() const
         {
-            // writeme
+            morph::vvec<C> ordinates (h, C{0});
+            if (order == GridOrder::bottomleft_to_topright || order == GridOrder::topleft_to_bottomright) {
+                for (I i = I{0}; i < h; ++i) { ordinates[i] = v_y[i*w]; }
+            } else {
+                // For column major, ordinates is just the first width values, but attention to direction
+            }
+            return ordinates;
         }
 
         //! Return the row for the index

@@ -501,7 +501,7 @@ namespace morph {
         }
 
         //! setdata overload that plots quivers on a grid, scaling the grid's coordinates suitably?
-        void setdata (const morph::Grid<unsigned int, Flt>* g, const morph::vvec<morph::vec<Flt, 2>>& _quivs,
+        void setdata (const morph::Grid<unsigned int, Flt>& g, const morph::vvec<morph::vec<Flt, 2>>& _quivs,
                       const DatasetStyle& ds)
         {
             // _quivs should have same size as g.n

@@ -6,6 +6,7 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/QuiverVisual.h>
+#include <morph/Grid.h>
 
 // A simple Izhikevich neuron model class
 struct izhi
@@ -115,6 +116,11 @@ int main()
     iz.vectorfield (qurng, qvrng, quivs);
     std::cout << "quivs size: " << quivs.size() << std::endl;
     // Now plot with a Grid and a GraphVisual? Or initially with a QuiverVisual
+    morph::vec<float, 2> gridspacing = {
+        (-20.0f - (-80.0f)) / (qN-1),
+        (-4.0f - (-16.0f)) / (qN-1)
+    };
+    morph::Grid<unsigned int, float> grid (50, 50, gridspacing);
 
     /*
      * Visualize results
@@ -176,6 +182,9 @@ int main()
     ds.markercolour = morph::colour::springgreen;
     ds.datalabel = "u(v)";
     gp->setdata (v, u, ds);
+
+    ds.datalabel = "quiv";
+    gp->setdata (grid, quivs, ds);
 
     gp->finalize();
     vis.addVisualModel (gp);
