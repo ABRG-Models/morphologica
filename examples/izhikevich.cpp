@@ -120,7 +120,9 @@ int main()
         (-20.0f - (-80.0f)) / (qN-1),
         (-4.0f - (-16.0f)) / (qN-1)
     };
-    morph::Grid<unsigned int, float> grid (50, 50, gridspacing);
+    morph::vec<float, 2> gridzero = { -80.0f, -16.0f };
+    std::cout << "Grid spacing: " << gridspacing << std::endl;
+    morph::Grid<unsigned int, float> grid (50, 50, gridspacing, gridzero);
 
     /*
      * Visualize results
@@ -184,6 +186,7 @@ int main()
     gp->setdata (v, u, ds);
 
     ds.datalabel = "quiv";
+    ds.markerstyle = morph::markerstyle::quiver;
     gp->setdata (grid, quivs, ds);
 
     gp->finalize();

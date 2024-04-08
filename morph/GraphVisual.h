@@ -511,8 +511,21 @@ namespace morph {
                 throw std::runtime_error (ee.str());
             }
 
+            if (ds.markerstyle != morph::markerstyle::quiver) {
+                throw std::runtime_error ("markerstyle must be morph::markerstyle::quiver for this setdata() overload");
+            }
+
+            // Copy _quivs
+            this->quivers.resize (_quivs.size(), { Flt{0}, Flt{0}, Flt{0} });
+            for (unsigned int i = 0; i < _quivs.size(); ++i) {
+                this->quivers[i][0] = _quivs[i][0];
+                this->quivers[i][1] = _quivs[i][1];
+            }
+
             auto _abscissae = g.get_abscissae();
             auto _data = g.get_ordinates();
+
+            std::cout << "abscissae: " << _abscissae << std::endl;
 
             // From g.v_x and g.v_y we get coordinates. These have to be copied into graphDataCoords
             // with the appropriate scaling.
@@ -1008,6 +1021,17 @@ namespace morph {
                     for (unsigned int i = coords_start; i < coords_end; ++i) {
                         this->bar ((*this->graphDataCoords[dsi])[i], this->datastyles[dsi]);
                     }
+                } else if (this->datastyles[dsi].markerstyle == markerstyle::quiver) {
+                    // Check quivers exist
+                    if ((*this->graphDataCoords[dsi]).size() == this->quivers.size()) {
+                        // Loop thru coords drawing a quiver for each
+                        for (unsigned int i = coords_start; i < coords_end; ++i) {
+                            this->quiver ((*this->graphDataCoords[dsi])[i], this->quivers[i], this->datastyles[dsi]);
+                        }
+                    } else {
+                        std::cout << "(*this->graphDataCoords[dsi]).size() = "  << (*this->graphDataCoords[dsi]).size()
+                                  << " does not match quivers size: " << quivers.size() << std::endl;
+                    }
                 } else {
                     for (unsigned int i = coords_start; i < coords_end; ++i) {
                         if (this->within_axes ((*this->graphDataCoords[dsi])[i])) {
@@ -1475,6 +1499,23 @@ namespace morph {
 
                 if (this->axisstyle == axisstyle::boxcross) { this->drawCrossAxes(); }
             }
+        }
+
+        //! Draw a single quiver at point p with direction/magnitude quiv.
+        void quiver (morph::vec<float>& p, morph::vec<Flt, 3>& quiv, const morph::DatasetStyle& style)
+        {
+             // To update the z position of the data, must also add z thickness to p[2]
+            p[2] += thickness;
+
+            //std::cout << "Plot line from " << p << " to  " << (p+quiv) << std::endl;
+            this->computeFlatLineRnd (this->idx,
+                                      p,        // start
+                                      p+(quiv/100.0f),   // end
+                                      this->uz,
+                                      style.linecolour,
+                                      quiv.length()/400.0f, 0.0f, true, false);
+
+            //this->computeFlatQuad (this->idx, p1b, p1, p2, p2b, style.markercolour);
         }
 
         //! Generate vertices for a bar of a bar graph, with p1 and p2 defining the top
