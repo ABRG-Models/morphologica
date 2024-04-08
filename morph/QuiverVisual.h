@@ -14,6 +14,7 @@
 #include <morph/vec.h>
 #include <morph/vvec.h>
 #include <morph/colour.h>
+#include <morph/graphstyles.h>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -21,15 +22,6 @@
 #include <functional>
 
 namespace morph {
-
-    //! How does a quiver go? Does it start at the coordinate? If so, it goes 'from'
-    //! the coordinate; FromCoord. Does it instead sit on top of the coord (OnCoord)?
-    //! Alternatively, it could go 'to' the coordinate; ToCoord.
-    enum class QuiverGoes {
-        FromCoord,
-        ToCoord,
-        OnCoord
-    };
 
     //! A class to make quiver plots
     template <typename Flt, int glver = morph::gl::version_4_1>
