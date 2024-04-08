@@ -464,6 +464,18 @@ namespace morph {
         //! Return the coordinates of the centre of the grid
         morph::vec<C, 2> centre() const { return morph::vec<C, 2>({ xmax() - xmin(), ymax() - ymin() }) * C{0.5}; }
 
+        //! Return the y coordinates for each row in the Grid
+        morph::vvec<C> get_abscissae() const
+        {
+            // writeme
+        }
+
+        //! Return the x coordinates for each column in the Grid
+        morph::vvec<C> get_ordinates() const
+        {
+            // writeme
+        }
+
         //! Return the row for the index
         I row (const I index) const {
             if (this->rowmaj == true) {

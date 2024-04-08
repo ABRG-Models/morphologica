@@ -24,6 +24,7 @@
 #include <morph/colour.h>
 #include <morph/histo.h>
 #include <morph/mathconst.h>
+#include <morph/Grid.h>
 #include <iostream>
 #include <vector>
 #include <deque>
@@ -53,6 +54,7 @@ namespace morph {
         upoctagon,
         circle,
         bar, // Special. For a bar graph.
+        quiver, // Special. For a quiver plot.
         numstyles
     };
 
@@ -496,6 +498,66 @@ namespace morph {
                 ord[i] = _coords[i][1];
             }
             this->setdata (absc, ord, name, axisside);
+        }
+
+        //! setdata overload that plots quivers on a grid, scaling the grid's coordinates suitably?
+        void setdata (const morph::Grid<unsigned int, Flt>* g, const morph::vvec<morph::vec<Flt, 2>>& _quivs,
+                      const DatasetStyle& ds)
+        {
+            // _quivs should have same size as g.n
+            if (_quivs.size() != g.n) {
+                std::stringstream ee;
+                ee << "size mismatch. Grid has " << g.n << " elements but there are " << _quivs.size() << " quivers";
+                throw std::runtime_error (ee.str());
+            }
+
+            auto _abscissae = g.get_abscissae();
+            auto _data = g.get_ordinates();
+
+            // From g.v_x and g.v_y we get coordinates. These have to be copied into graphDataCoords
+            // with the appropriate scaling.
+            // from grid get absc1 and ord1
+            if (ds.axisside == morph::axisside::left) {
+                this->absc1.set_from (_abscissae);
+                this->ord1.set_from (_data);
+                this->ds_ord1 = ds;
+            } else {
+                this->absc2.set_from (_abscissae);
+                this->ord2.set_from (_data);
+                this->ds_ord2 = ds;
+            }
+
+            unsigned int dsize = _quivs.size();
+            unsigned int didx = this->graphDataCoords.size();
+            this->graphDataCoords.push_back (new std::vector<morph::vec<float>>(dsize, {0,0,0}));
+            this->datastyles.push_back (ds);
+
+            // Compute the ord1_scale and asbcissa_scale for the first added dataset only
+            if (ds.axisside == morph::axisside::left) {
+                if (this->ord1_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+            } else {
+                if (this->ord2_scale.ready() == false) { this->compute_scaling (_abscissae, _data, ds.axisside); }
+            }
+
+            if (dsize > 0) {
+                // Transform the coordinate data into temporary containers
+                std::vector<Flt> ad (g.n, Flt{0});
+                std::vector<Flt> sd (g.n, Flt{0});
+                if (ds.axisside == morph::axisside::left) {
+                    this->ord1_scale.transform (g.v_y, sd);
+                } else {
+                    this->ord2_scale.transform (g.v_y, sd);
+                }
+                this->abscissa_scale.transform (g.v_x, ad);
+
+                // Now sd and ad can be used to construct dataCoords x/y. They are used to
+                // set the position of each datum into dataCoords
+                for (unsigned int i = 0; i < dsize; ++i) {
+                    (*this->graphDataCoords[didx])[i][0] = static_cast<Flt>(ad[i]);
+                    (*this->graphDataCoords[didx])[i][1] = static_cast<Flt>(sd[i]);
+                    (*this->graphDataCoords[didx])[i][2] = Flt{0};
+                }
+            }
         }
 
         //! Set a dataset into the graph. Provide abscissa and ordinate and a dataset
@@ -1625,6 +1687,11 @@ namespace morph {
         //! Graph data coordinates. A vector of vectors of pointers to data, with one
         //! pointer for each graph in the model.
         std::vector<std::vector<vec<float>>*> graphDataCoords;
+        //! Quiver data, if used. Limitation: You can ONLY have ONE quiver field per
+        //! GraphVisual. Note that the quivers can point in three dimensions. That's intentional,
+        //! even though 2D quivers are going to be used most. The locations for the quivers for
+        //! dataset i are stored in graphDataCoords, like normal points in a non-quiver graph.
+        morph::vvec<morph::vec<Flt, 3>> quivers;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
         //! A copy of the abscissa data values for ord1
