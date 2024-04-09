@@ -76,6 +76,8 @@ namespace morph {
         }
         //! Allows user to linearly scale the size of the quivers that are plotted.
         float quiver_length_gain = 1.0f;
+        //! Gains for the individual components of the quivers
+        morph::vec<float, 3> quiver_gain = { 1.0f, 1.0f, 1.0f };
         //! Allows user to scale the thickness of the quivers.
         float quiver_thickness_gain = 1.0f;
         //! What proportion of the arrow length should the arrowhead length be?

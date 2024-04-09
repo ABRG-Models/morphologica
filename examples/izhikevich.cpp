@@ -79,6 +79,7 @@ struct izhi
 int main()
 {
     constexpr unsigned int N = 1000;
+    constexpr bool twodee = false;
 
     /*
      * Perform simulation
@@ -145,6 +146,7 @@ int main()
     // Graph membrane voltage vs. time
     auto gv = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-0.5,-0.5,0}));
     vis.bindmodel (gv);
+    gv->twodimensional = twodee;
     gv->setsize (1,0.8);
     gv->xlabel = "t";
     gv->ylabel = "v";
@@ -156,6 +158,7 @@ int main()
     // Graph u(t)
     auto gu = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({-0.5,0.6,0}));
     vis.bindmodel (gu);
+    gu->twodimensional = twodee;
     gu->setsize (1,0.5);
     gu->xlabel = "t";
     gu->ylabel = "u";
@@ -169,6 +172,7 @@ int main()
     ds.showlines = false;
     auto gp = std::make_unique<morph::GraphVisual<float>> (morph::vec<float>({0.9,-0.5,0}));
     vis.bindmodel (gp);
+    gp->twodimensional = twodee;
     gp->setsize (1.6,1.6);
     gp->xlabel = "v";
     gp->ylabel = "u";
@@ -185,8 +189,13 @@ int main()
     ds.datalabel = "u(v)";
     gp->setdata (v, u, ds);
 
+    // Plot quivs within graphvisual
     ds.datalabel = "quiv";
+    ds.quiver_thickness_gain = 0.08f;
+    ds.quiver_gain = { 0.08f, 0.3f, 1.0f };
+    ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
     ds.markerstyle = morph::markerstyle::quiver;
+    gp->quiver_setlog();
     gp->setdata (grid, quivs, ds);
 
     gp->finalize();
@@ -209,7 +218,7 @@ int main()
     auto vmp = std::make_unique<morph::QuiverVisual<float>>(&coords, morph::vec<float>({4.8,1.5,0}),
                                                             &quiv3s, morph::ColourMapType::Jet);
     vis.bindmodel (vmp);
-    vmp->twodimensional = true;
+    vmp->twodimensional = twodee;
     vmp->quiver_length_gain = 0.08f; // Scale the length of the quivers on screen
     vmp->quiver_thickness_gain = 0.05f; // Scale thickness of the quivers
     vmp->qgoes = morph::QuiverGoes::OnCoord;
