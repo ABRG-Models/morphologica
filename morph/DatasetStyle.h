@@ -64,28 +64,24 @@ namespace morph {
         std::bitset<4> quiver_flagset;
         void quiver_flag_defaults()
         {
+            //! If true, use markersize for quiver length. Setting a fixed quiver length can be useful
+            //! to focus on the flow of the field.
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::length_fixed), false);
+            //! If true, use line width for quiver thickness
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::thickness_fixed), false);
+            //! If true, show a marker indicating the location of zero length quivers
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::show_zeros), true);
+            //! If true then show a markersize sphere drawn on the coordinate location
             this->quiver_flagset.set (static_cast<unsigned int>(quiver_flags::marker_sphere), false);
         }
-        //! If true, use markersize for quiver length. Setting a fixed quiver length can be useful
-        //! to focus on the flow of the field.
-        //bool quiver_length_fixed = false;
         //! Allows user to linearly scale the size of the quivers that are plotted.
         float quiver_length_gain = 1.0f;
-        //! If true, use line width for quiver thickness
-        //bool quiver_thickness_fixed = false;
         //! Allows user to scale the thickness of the quivers.
         float quiver_thickness_gain = 1.0f;
         //! What proportion of the arrow length should the arrowhead length be?
         float quiver_arrowhead_prop = 0.25f;
-        //! If true, show a marker indicating the location of zero length quivers
-        //bool quiver_show_zeros = false;
         //! User can choose a colour
         std::array<float, 3> quiver_zero_colour = morph::colour::crimson;
-        //! If true then show a markersize sphere drawn on the coordinate location
-        //bool quiver_marker_sphere = true;
         //! Colourmap for selecting quiver length based colour
         morph::ColourMap<float> quiver_colourmap;
         ///@}
