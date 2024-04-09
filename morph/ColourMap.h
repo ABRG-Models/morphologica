@@ -449,7 +449,7 @@ namespace morph {
 
             return n;
         }
-        int numDatums() { return ColourMap::numDatums (this->type); }
+        int numDatums() const { return ColourMap::numDatums (this->type); }
 
         //! The maximum number for the range of the datum to convert to a colour. 1 for
         //! floating point variables.
@@ -477,7 +477,7 @@ namespace morph {
         }
 
         //! An overload of convert for DuoChrome and HSV ColourMaps
-        std::array<float, 3> convert (T _datum1, T _datum2)
+        std::array<float, 3> convert (T _datum1, T _datum2) const
         {
             if (this->type != ColourMapType::Duochrome && this->type != ColourMapType::HSV) {
                 throw std::runtime_error ("Set ColourMapType to Duochrome or HSV.");
@@ -490,7 +490,7 @@ namespace morph {
         }
 
         //! An overload of convert for HSV ColourMaps only
-        std::array<float, 3> convert_angular (T _angle, T _radius)
+        std::array<float, 3> convert_angular (T _angle, T _radius) const
         {
             if (this->type != ColourMapType::HSV) {
                 throw std::runtime_error ("Set ColourMapType to HSV to use ColourMap::convert_angular().");
@@ -499,7 +499,7 @@ namespace morph {
         }
 
         //! An overload of convert for TriChrome or RGB ColourMaps
-        std::array<float, 3> convert (T _datum1, T _datum2, T _datum3)
+        std::array<float, 3> convert (T _datum1, T _datum2, T _datum3) const
         {
             if (this->type != ColourMapType::Trichrome
                 && this->type != ColourMapType::RGB
@@ -535,7 +535,7 @@ namespace morph {
         }
 
         //! Convert the scalar datum into an RGB (or BGR) colour
-        std::array<float, 3> convert (T _datum)
+        std::array<float, 3> convert (T _datum) const
         {
             float datum = 0.0f;
 
@@ -898,7 +898,7 @@ namespace morph {
         void setHSV (const std::array<float,3> hsv) { this->setHSV (hsv[0],hsv[1],hsv[2]); }
 
         //! Get the hue, in its most saturated form
-        std::array<float, 3> getHueRGB() { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
+        std::array<float, 3> getHueRGB() const { return ColourMap::hsv2rgb (this->hue, 1.0f, 1.0f); }
 
         void setHueRotation (const T rotation_rads)
         {
@@ -1053,7 +1053,7 @@ namespace morph {
          *
          * @returns RGB value in a mono-colour map, with main colour this->hue; varying saturation.
          */
-        std::array<float,3> monochrome (float datum)
+        std::array<float,3> monochrome (float datum) const
         {
             return ColourMap::hsv2rgb (this->hue, datum, 1.0f);
         }
@@ -1063,7 +1063,7 @@ namespace morph {
          *
          * @returns RGB value in a mono-colour map, with main colour this->hue and varying value.
          */
-        std::array<float,3> monoval (float datum)
+        std::array<float,3> monoval (float datum) const
         {
             return ColourMap::hsv2rgb (this->hue, 1.0f, datum);
         }
@@ -1074,7 +1074,7 @@ namespace morph {
          *
          * @returns RGB value in a dual-colour map, with colour this->hue and this->hue2;
          */
-        std::array<float,3> duochrome (float datum1, float datum2)
+        std::array<float,3> duochrome (float datum1, float datum2) const
         {
             std::array<float,3> clr1 = ColourMap::hsv2rgb (this->hue, datum1, datum1);
             std::array<float,3> clr2 = ColourMap::hsv2rgb (this->hue2, datum2, datum2);
@@ -1095,7 +1095,7 @@ namespace morph {
          * @returns RGB value in a tri-colour map, with colour this->hue, this->hue2
          * and this->hue3.
          */
-        std::array<float,3> trichrome (float datum1, float datum2, float datum3)
+        std::array<float,3> trichrome (float datum1, float datum2, float datum3) const
         {
             std::array<float,3> clr1 = ColourMap::hsv2rgb (this->hue, datum1, datum1);
             std::array<float,3> clr2 = ColourMap::hsv2rgb (this->hue2, datum2, datum2);
@@ -1112,7 +1112,7 @@ namespace morph {
          *
          * @returns RGB value in a map, with hue/saturation derived from datum1 and datum2.
          */
-        std::array<float,3> hsv_2d (T datum1, T datum2)
+        std::array<float,3> hsv_2d (T datum1, T datum2) const
         {
             // Convert _datum1 ('x'), _datum2 ('y') into r, phi. Each datum is expected to have a range [0,1]
 
@@ -1136,7 +1136,7 @@ namespace morph {
          * Return the colour from the hsv map with the given angle and radius. Takes
          * hue_rotation and hue_reverse_direction into account.
          */
-        std::array<float,3> hsv_anglerad (T angle_hue, T radius_sat)
+        std::array<float,3> hsv_anglerad (T angle_hue, T radius_sat) const
         {
             T phi_hue = angle_hue + this->hue_rotation;
             phi_hue = phi_hue < T{0} ? phi_hue + morph::mathconst<T>::two_pi : phi_hue;
@@ -1167,7 +1167,7 @@ namespace morph {
         }
 
         //! RGB to monochrome, to display RGB values in monochrome (using this->hue)
-        std::array<float,3> rgb_to_monochrome (float datum1, float datum2, float datum3)
+        std::array<float,3> rgb_to_monochrome (float datum1, float datum2, float datum3) const
         {
             ColourMap::bounds_check_3 (datum1, datum2, datum3);
             // Get monochrome colour for the mean datum
@@ -1176,7 +1176,7 @@ namespace morph {
         }
 
         //! RGB to greyscale, to display RGB values in a greyscale
-        std::array<float,3> rgb_to_greyscale (float datum1, float datum2, float datum3)
+        std::array<float,3> rgb_to_greyscale (float datum1, float datum2, float datum3) const
         {
             ColourMap::bounds_check_3 (datum1, datum2, datum3);
             // Get greyscale colour for the mean datum
@@ -1191,7 +1191,7 @@ namespace morph {
          * brightness gives the map value. Thus, \a datum = 1 gives white and \a datum =
          * 0 gives black.
          */
-        std::array<float,3> greyscale (float datum)
+        std::array<float,3> greyscale (float datum) const
         {
             return ColourMap::hsv2rgb (this->hue, 0.0f, datum);
             // or
@@ -1199,13 +1199,13 @@ namespace morph {
         }
 
         //! A colour map which is a rainbow through the colour space, varying the hue.
-        std::array<float,3> rainbow (float datum)
+        std::array<float,3> rainbow (float datum) const
         {
             return ColourMap::hsv2rgb (datum, 1.0f, 1.0f);
         }
 
         //! A copy of matplotlib's magma colourmap
-        std::array<float,3> magma (float datum)
+        std::array<float,3> magma (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_magma_len-1))));
@@ -1214,7 +1214,7 @@ namespace morph {
         }
 
         //! A copy of matplotlib's inferno colourmap
-        std::array<float,3> inferno (float datum)
+        std::array<float,3> inferno (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_inferno_len-1))));
@@ -1223,7 +1223,7 @@ namespace morph {
         }
 
         //! A copy of matplotlib's plasma colourmap
-        std::array<float,3> plasma (float datum)
+        std::array<float,3> plasma (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_plasma_len-1))));
@@ -1232,7 +1232,7 @@ namespace morph {
         }
 
         //! A copy of matplotlib's viridis colourmap
-        std::array<float,3> viridis (float datum)
+        std::array<float,3> viridis (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_viridis_len-1))));
@@ -1241,7 +1241,7 @@ namespace morph {
         }
 
         //! A copy of matplotlib's cividis colourmap
-        std::array<float,3> cividis (float datum)
+        std::array<float,3> cividis (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_cividis_len-1))));
@@ -1250,7 +1250,7 @@ namespace morph {
         }
 
         //! A copy of matplotlib's twilight colourmap
-        std::array<float,3> twilight (float datum)
+        std::array<float,3> twilight (float datum) const
         {
             // let's just try the closest colour from the map, with no interpolation
             unsigned int datum_i = static_cast<unsigned int>(std::abs (std::round (datum * (float)(morph::cm_twilight_len-1))));
