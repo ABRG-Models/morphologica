@@ -880,10 +880,13 @@ namespace morph {
                             && this->within_axes ((*this->graphDataCoords[dsi])[i]))) {
 
                         if (this->datastyles[dsi].markergap > 0.0f) {
-                            // Draw solid lines between marker points with gaps between line and marker
-                            this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], this->uz,
-                                                   this->datastyles[dsi].linecolour,
-                                                   this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                            auto point_to_point = (*this->graphDataCoords[dsi])[i] - (*this->graphDataCoords[dsi])[i-1];
+                            if (point_to_point.length() > this->datastyles[dsi].markergap * 2.0f) {
+                                // Draw solid lines between marker points with gaps between line and marker
+                                this->computeFlatLine (this->idx, (*this->graphDataCoords[dsi])[i-1], (*this->graphDataCoords[dsi])[i], this->uz,
+                                                       this->datastyles[dsi].linecolour,
+                                                       this->datastyles[dsi].linewidth, this->datastyles[dsi].markergap);
+                            }
                         } else if (appending == true) {
                             // We are appending a line to an existing graph, so compute a single line with rounded ends
                             this->computeFlatLineRnd (this->idx,
