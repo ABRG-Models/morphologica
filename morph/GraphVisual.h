@@ -822,7 +822,7 @@ namespace morph {
                         // Compute the length of each quiver
                         for (unsigned int i = 0; i < nquiv; ++i) {
                             //raw_qlengths[i] = this->quivers[i].length();
-                            userscaled_qlengths[i] = (this->quivers[i] * this->datastyles[dsi].quiver_gain * this->quiver_grid_spacing).length();
+                            userscaled_qlengths[i] = (this->quivers[i] * this->datastyles[dsi].quiver_gain * (Flt{0.5} * this->quiver_grid_spacing)).length();
                         }
                         // Transform the user scaled lengths into a length 0->1, possibly with a log transform
                         this->quiver_length_scale.transform (userscaled_qlengths, renorm_qlengths);
@@ -836,7 +836,7 @@ namespace morph {
                         morph::vvec<Flt> final_qlengths (nquiv, Flt{0});
                         morph::vvec<morph::vec<Flt, 3>> final_quivers (this->quivers);
                         for (unsigned int i = 0; i < nquiv; ++i) {
-                            final_quivers[i] *= this->datastyles[dsi].quiver_gain * this->quiver_grid_spacing * lfactor[i];
+                            final_quivers[i] *= this->datastyles[dsi].quiver_gain * (Flt{0.5} * this->quiver_grid_spacing) * lfactor[i];
                             final_qlengths[i] = final_quivers[i].length();
                         }
                         // Replace any zero lengths with the value of the minimum length to ensure colour range goes from min to max not 0 to max
