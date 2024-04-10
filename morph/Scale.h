@@ -111,12 +111,17 @@ namespace morph {
             std::string _type = this->type == ScaleFn::Linear ? "Linear" : "Logarithmic";
             std::stringstream ss;
             ss << _type << " scaling " << typeid(T).name() << " to " << typeid(S).name()
-               << " with params " << this->params_str();
+               << " as: " << this->transform_str()
+               << ". ready()=" << (this->ready() ? "true" : "false")
+               << ", do_autoscale=" << (this->do_autoscale ? "true" : "false")
+               << ", params=" << this->params_str();
             return ss.str();
         }
 
         //! Output the params vvec as a string
         virtual std::string params_str() const = 0;
+        //! Describe the transformation in a text string
+        virtual std::string transform_str() const = 0;
 
         /*!
          * \brief Transform a container of scalars or vectors.
@@ -325,6 +330,20 @@ namespace morph {
             return rtn;
         }
 
+        //! For clarity, here's a description of the transform function
+        virtual std::string transform_str() const
+        {
+            std::stringstream ss;
+            if (this->type  == ScaleFn::Logarithmic) {
+                ss << "log scaling of vectors is unimplemented";
+            } else if (this->type  == ScaleFn::Linear) {
+                ss << "(elementwise) y[i] = (x[i] - (x[i]/|x|) * " << this->params[1] << ") * " << this->params[0];
+            } else {
+                ss << "unknown scaling type";
+            }
+            return ss.str();
+        }
+
         virtual T inverse_one (const S& datum) const
         {
             T rtn = T{};
@@ -463,6 +482,20 @@ namespace morph {
                 throw std::runtime_error ("Unknown scaling");
             }
             return rtn;
+        }
+
+        //! A description of the transform function
+        virtual std::string transform_str() const
+        {
+            std::stringstream ss;
+            if (this->type  == ScaleFn::Logarithmic) {
+                ss << "y = " << params[0] << " * log(x) + " << params[1];
+            } else if (this->type  == ScaleFn::Linear) {
+                ss << "y = " << params[0] << " * x + " << params[1];
+            } else {
+                ss << "unknown scaling type";
+            }
+            return ss.str();
         }
 
         virtual T inverse_one (const S& datum) const
