@@ -294,8 +294,6 @@ namespace morph {
                 this->quivers[i][1] = _quivs[i][1];
             }
 
-            this->quiver_grid_spacing = g.get_dx().plus_one_dim(Flt{0});
-
             auto _abscissae = g.get_abscissae();
             auto _data = g.get_ordinates();
 
@@ -328,12 +326,17 @@ namespace morph {
                 // Transform the coordinate data into temporary containers
                 std::vector<Flt> ad (g.n, Flt{0});
                 std::vector<Flt> sd (g.n, Flt{0});
+
+                auto _dx = g.get_dx();
                 if (ds.axisside == morph::axisside::left) {
                     this->ord1_scale.transform (g.v_y, sd);
+                    this->quiver_grid_spacing[1] = _dx[1] * this->ord1_scale.getParams(0);
                 } else {
                     this->ord2_scale.transform (g.v_y, sd);
+                    this->quiver_grid_spacing[1] = _dx[1] * this->ord2_scale.getParams(0);
                 }
                 this->abscissa_scale.transform (g.v_x, ad);
+                this->quiver_grid_spacing[0] = _dx[0] * this->abscissa_scale.getParams(0);
 
                 // Now sd and ad can be used to construct dataCoords x/y. They are used to
                 // set the position of each datum into dataCoords
@@ -816,57 +819,23 @@ namespace morph {
                         // Set the colours based on length of the quivers
                         this->quiver_colour_scale.transform (dlengths, lengthcolours);
 
-                        // Find max x, y and z components
+                        // Find max size x, y and z components
                         morph::vec<Flt> max;
                         max.set_lowest();
                         for (auto q : this->quivers) {
-                            max[0] = std::abs(q[0]) > max[0] ? std::abs(q[0]) : max[0];
-                            max[1] = std::abs(q[1]) > max[1] ? std::abs(q[1]) : max[1];
-                            max[2] = std::abs(q[2]) > max[2] ? std::abs(q[2]) : max[2];
+                            for (unsigned char i = 0; i < 3u; ++i) { max[i] = std::abs(q[i]) > max[i] ? std::abs(q[i]) : max[i]; }
                         }
-                        if (max[0] == Flt{0}) { max[0] = Flt{1}; }
-                        if (max[1] == Flt{0}) { max[1] = Flt{1}; }
-                        if (max[2] == Flt{0}) { max[2] = Flt{1}; }
-
-#if 0
-                        // Now scale the lengths (or components?) for their size on screen. Do this with a linear or log scaling.
-                        // (if log) First replace zeros with NaNs so that log transform will work.
-                        if (this->quiver_length_scale.getType() == morph::ScaleFn::Logarithmic) {
-                            dlengths.search_replace (Flt{0}, std::numeric_limits<Flt>::quiet_NaN());
-                        }
-                        // Transform data lengths into "nrmlzedlengths". Default fixed length is 'markersize'
-                        morph::vvec<float> nrmlzedlengths (dlengths.size(), this->datastyles[dsi].markersize);
-                        if (this->datastyles[dsi].quiver_flagset.test (static_cast<unsigned int>(morph::quiver_flags::length_fixed)) == false) {
-                            this->quiver_length_scale.transform (dlengths, nrmlzedlengths);
-                        }
-                        // Find the scaling factor to scale real lengths into screen lengths, which are the
-                        // normalized lengths multiplied by a user-settable quiver_length_gain.
-                        morph::vvec<float> lfactor = nrmlzedlengths/dlengths * this->datastyles[dsi].quiver_length_gain;
-#endif
+                        for (unsigned char i = 0; i < 3u; ++i) { if (max[i] == Flt{0}) { max[i] = Flt{1}; } }
 
                         // Finally loop thru coords, drawing a quiver for each
                         if (coords_end > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
-                        std::cout << "quiver_grid_spacing = " << this->quiver_grid_spacing << std::endl;
                         for (unsigned int i = coords_start; i < coords_end; ++i) {
-                            //morph::vec<Flt, 3> _quiv = (this->quivers[i] * lfactor[i]) * this->datastyles[dsi].quiver_gain; // lengths thing
-                            morph::vec<Flt, 3> _quiv = (this->quivers[i] / max) * this->quiver_grid_spacing;
-                            std::cout << quivers[i] << " maps to _quiv = " << _quiv << std::endl; // Now normalized to 0-1 lengths (per component).
-                                                                                                  // NOW need to scale that to the screen distances
 
-#if 0
-                            // Somewhere use ord1/2scale and abscissa scale transforms? in setdata()?
-                            if (ds.axisside == morph::axisside::left) {
-                                this->ord1_scale.transform (y, ydst);
-                            } else {
-                                this->ord2_scale.transform (y, ydst);
-                            }
-                            this->abscissa_scale.transform (x, xdst);
-#endif
+                            morph::vec<Flt, 3> _quiv = (this->quivers[i] /* / max */) * this->quiver_grid_spacing;
 
                             this->quiver ((*this->graphDataCoords[dsi])[i],
                                           _quiv,
                                           dlengths[i],
-                                          //nrmlzedlengths[i],
                                           lengthcolours[i],
                                           this->datastyles[dsi]);
                         }
@@ -1625,7 +1594,7 @@ namespace morph {
         morph::Scale<float> quiver_length_scale;
         //! Colour scaling for any quivers, which is independent from the length scaling
         morph::Scale<float> quiver_colour_scale;
-        //! The dx from the morph::Grid
+        //! The dx from the morph::Grid, but scaled with abscissa_scale and ord1_scale
         morph::vec<Flt, 3> quiver_grid_spacing;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
