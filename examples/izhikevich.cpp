@@ -192,9 +192,11 @@ int main()
     // Plot quivs within graphvisual
     ds.datalabel = "quiv";
     ds.quiver_thickness_gain = 0.08f;
-    ds.quiver_gain = { 0.08f, 0.3f, 1.0f };
+    ds.quiver_gain = { 0.08f, 0.8f, 1.0f };
     ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
     ds.markerstyle = morph::markerstyle::quiver;
+    ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::show_zeros));
+    ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::marker_sphere));
     gp->quiver_setlog();
     gp->setdata (grid, quivs, ds);
 

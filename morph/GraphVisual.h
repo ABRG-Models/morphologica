@@ -807,37 +807,49 @@ namespace morph {
                     // Check quivers exist and then proceed with code adapted from morph::QuiverVisual
                     unsigned int nquiv = this->quivers.size();
                     if ((*this->graphDataCoords[dsi]).size() == nquiv) {
-                        // Have to derive some scaling info from the quivers first.
-                        morph::vvec<Flt> dlengths (nquiv, Flt{0});
-                        // Record the length of each quiver
-                        for (unsigned int i = 0; i < nquiv; ++i) { dlengths[i] = this->quivers[i].length(); }
-                        // Linearly scale the dlengths to generate colours
-                        morph::vvec<Flt> lengthcolours(dlengths);
-                        // Make sure we can do an autoscale if the scaling was not already set
-                        if (!this->quiver_colour_scale.ready()) { this->quiver_colour_scale.do_autoscale = true; }
-                        if (!this->quiver_length_scale.ready()) { this->quiver_length_scale.do_autoscale = true; }
-                        // Set the colours based on length of the quivers
-                        this->quiver_colour_scale.transform (dlengths, lengthcolours);
 
-                        // Find max size x, y and z components
-                        morph::vec<Flt> max;
-                        max.set_lowest();
-                        for (auto q : this->quivers) {
-                            for (unsigned char i = 0; i < 3u; ++i) { max[i] = std::abs(q[i]) > max[i] ? std::abs(q[i]) : max[i]; }
+                        // Prepare scaling functions
+                        if (!this->quiver_colour_scale.ready()) { this->quiver_colour_scale.do_autoscale = true; }
+                        if (!this->quiver_linear_scale.ready()) { this->quiver_linear_scale.do_autoscale = true; }
+                        if (!this->quiver_length_scale.ready()) { this->quiver_length_scale.do_autoscale = true; }
+
+                        // Have to derive some scaling info from the quivers first.
+                        //morph::vvec<Flt> raw_qlengths (nquiv, Flt{0});           // 'raw' quiver lengths
+                        morph::vvec<Flt> userscaled_qlengths (nquiv, Flt{0});    // 'user-scaled' quiver lengths (may exaggerate one axis)
+                        morph::vvec<Flt> renorm_qlengths (nquiv, Flt{0});        // renormalized user-scaled quiver lengths with linear OR log scaling
+                        morph::vvec<Flt> renorm_linear_qlengths (nquiv, Flt{0}); // renormalized user-scaled quiver lengths with linear scaling
+
+                        // Compute the length of each quiver
+                        for (unsigned int i = 0; i < nquiv; ++i) {
+                            //raw_qlengths[i] = this->quivers[i].length();
+                            userscaled_qlengths[i] = (this->quivers[i] * this->datastyles[dsi].quiver_gain * this->quiver_grid_spacing).length();
                         }
-                        for (unsigned char i = 0; i < 3u; ++i) { if (max[i] == Flt{0}) { max[i] = Flt{1}; } }
+                        // Transform the user scaled lengths into a length 0->1, possibly with a log transform
+                        this->quiver_length_scale.transform (userscaled_qlengths, renorm_qlengths);
+                        // Also create a guaranteed linearly renormalized vvec of lengths
+                        this->quiver_linear_scale.transform (userscaled_qlengths, renorm_linear_qlengths);
+                        // Compute a scaling factor from these to apply to the final quiver lengths
+                        morph::vvec<Flt> lfactor = renorm_qlengths / renorm_linear_qlengths;
+                        for (auto& lf : lfactor) { lf = lf < Flt{0} ? Flt{0} : lf; } // replace any negative factors with 0
+
+                        // 'final' quivers, with scaling applied. From these computed final_qlengths which will give colours
+                        morph::vvec<Flt> final_qlengths (nquiv, Flt{0});
+                        morph::vvec<morph::vec<Flt, 3>> final_quivers (this->quivers);
+                        for (unsigned int i = 0; i < nquiv; ++i) {
+                            final_quivers[i] *= this->datastyles[dsi].quiver_gain * this->quiver_grid_spacing * lfactor[i];
+                            final_qlengths[i] = final_quivers[i].length();
+                        }
+                        // Replace any zero lengths with the value of the minimum length to ensure colour range goes from min to max not 0 to max
+                        Flt fqlmin = final_qlengths.prune_zero().min();
+                        final_qlengths.search_replace (Flt{0}, fqlmin);
+                        // Then scaled the final_qlengths to range [0-1]
+                        morph::vvec<Flt> colour_qlengths (nquiv, Flt{0});
+                        this->quiver_colour_scale.transform (final_qlengths, colour_qlengths);
 
                         // Finally loop thru coords, drawing a quiver for each
                         if (coords_end > nquiv) { throw std::runtime_error ("coords_end is off the end of quivers"); }
                         for (unsigned int i = coords_start; i < coords_end; ++i) {
-
-                            morph::vec<Flt, 3> _quiv = (this->quivers[i] /* / max */) * this->quiver_grid_spacing;
-
-                            this->quiver ((*this->graphDataCoords[dsi])[i],
-                                          _quiv,
-                                          dlengths[i],
-                                          lengthcolours[i],
-                                          this->datastyles[dsi]);
+                            this->quiver ((*this->graphDataCoords[dsi])[i], final_quivers[i], colour_qlengths[i], this->datastyles[dsi]);
                         }
 
                     } else {
@@ -1317,8 +1329,7 @@ namespace morph {
 
         //! Draw a single quiver at point coords_i with direction/magnitude quiv.
         void quiver (morph::vec<float>& coords_i, morph::vec<Flt, 3>& quiv,
-                     const Flt dlength, /*const Flt nrmlzedlength,*/ const Flt lengthcolour,
-                     const morph::DatasetStyle& style)
+                     const Flt lengthcolour, const morph::DatasetStyle& style)
         {
             // To update the z position of the data, must also add z thickness to p[2]
             coords_i[2] += thickness;
@@ -1326,6 +1337,7 @@ namespace morph {
             morph::vec<Flt> halfquiv, half = { Flt{0.5}, Flt{0.5}, Flt{0.5} };
             morph::vec<float> start, end;
 
+            Flt dlength = quiv.length();
             if ((std::isnan(dlength) || dlength == Flt{0})
                 && style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::show_zeros)) == true) {
                 // NaNs denote zero vectors when the lengths have been log scaled.
@@ -1336,7 +1348,6 @@ namespace morph {
                 if (style.markerstyle == morph::markerstyle::quiver_fromcoord) {
                     start = coords_i;
                     std::transform (coords_i.begin(), coords_i.end(), quiv.begin(), end.begin(), std::plus<Flt>());
-
                 } else if (style.markerstyle == morph::markerstyle::quiver_tocoord) {
                     std::transform (coords_i.begin(), coords_i.end(), quiv.begin(), start.begin(), std::minus<Flt>());
                     end = coords_i;
@@ -1592,9 +1603,10 @@ namespace morph {
         //! GraphVisual::quiver_setlog() before calling finalize(). The scaling can be ignored by calling
         //! GraphVisual::quiver_length_scale.compute_autoscale (0, 1); before finalize().
         morph::Scale<float> quiver_length_scale;
-        //! Colour scaling for any quivers, which is independent from the length scaling
+        //! Linear scaling for any quivers, which is independent from the length scaling and can be used for colours
+        morph::Scale<float> quiver_linear_scale;
         morph::Scale<float> quiver_colour_scale;
-        //! The dx from the morph::Grid, but scaled with abscissa_scale and ord1_scale
+        //! The dx from the morph::Grid, but scaled with abscissa_scale and ord1_scale to be in 'VisualModel units'
         morph::vec<Flt, 3> quiver_grid_spacing;
         //! A scaling for the abscissa.
         morph::Scale<Flt> abscissa_scale;
