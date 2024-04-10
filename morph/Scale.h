@@ -334,9 +334,9 @@ namespace morph {
         virtual std::string transform_str() const
         {
             std::stringstream ss;
-            if (this->type  == ScaleFn::Logarithmic) {
+            if (this->type == ScaleFn::Logarithmic) {
                 ss << "log scaling of vectors is unimplemented";
-            } else if (this->type  == ScaleFn::Linear) {
+            } else if (this->type == ScaleFn::Linear && this->params.size() > 1) {
                 ss << "(elementwise) y[i] = (x[i] - (x[i]/|x|) * " << this->params[1] << ") * " << this->params[0];
             } else {
                 ss << "unknown scaling type";
@@ -488,10 +488,10 @@ namespace morph {
         virtual std::string transform_str() const
         {
             std::stringstream ss;
-            if (this->type  == ScaleFn::Logarithmic) {
-                ss << "y = " << params[0] << " * log(x) + " << params[1];
-            } else if (this->type  == ScaleFn::Linear) {
-                ss << "y = " << params[0] << " * x + " << params[1];
+            if (this->type == ScaleFn::Logarithmic && this->params.size() > 1) {
+                ss << "y = " << this->params[0] << " * log(x) + " << this->params[1];
+            } else if (this->type == ScaleFn::Linear && this->params.size() > 1) {
+                ss << "y = " << this->params[0] << " * x + " << this->params[1];
             } else {
                 ss << "unknown scaling type";
             }
