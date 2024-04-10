@@ -1331,9 +1331,6 @@ namespace morph {
         void quiver (morph::vec<float>& coords_i, morph::vec<Flt, 3>& quiv,
                      const Flt lengthcolour, const morph::DatasetStyle& style)
         {
-            // To update the z position of the data, must also add z thickness to p[2]
-            coords_i[2] += thickness;
-
             morph::vec<Flt> halfquiv, half = { Flt{0.5}, Flt{0.5}, Flt{0.5} };
             morph::vec<float> start, end;
 
@@ -1357,12 +1354,10 @@ namespace morph {
                     std::transform (coords_i.begin(), coords_i.end(), halfquiv.begin(), end.begin(), std::plus<Flt>());
                 }
 
-                // How thick to draw the quiver arrows? Can scale by length (default) or keep
-                // constant (set fixed_quiver_thickness > 0)
-                // float len = nrmlzedlength * style.quiver_gain.length() * style.quiver_length_gain;
-
+                // Quiver thickness is either the linewidth (* user-supplied thickness_gain) or a
+                // tenth of the length (* thickness_gain)
                 float quiv_thick = style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::thickness_fixed))
-                ? style.linewidth * style.quiver_thickness_gain : quiv.length() * style.quiver_thickness_gain;
+                ? style.linewidth * style.quiver_thickness_gain : quiv.length() * 0.1f * style.quiver_thickness_gain;
 
                 // The right way to draw an arrow.
                 morph::vec<float> arrow_line = end - start;
@@ -1373,12 +1368,12 @@ namespace morph {
                 this->computeTube (this->idx, start, cone_start, clr, clr, quiv_thick, shapesides);
                 float conelen = (end-cone_start).length();
                 if (arrow_line.length() > conelen) {
-                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick*2.0f, shapesides);
+                    this->computeCone (this->idx, cone_start, end, 0.0f, clr, quiv_thick * style.quiver_conewidth, shapesides);
                 }
 
                 if (style.quiver_flagset.test(static_cast<unsigned int>(morph::quiver_flags::marker_sphere)) == true) {
                     // Draw a sphere on the coordinate:
-                    this->computeSphere (this->idx, coords_i, clr, quiv_thick*2.0f, shapesides/2, shapesides);
+                    this->computeSphere (this->idx, coords_i, clr, quiv_thick * style.quiver_conewidth, shapesides/2, shapesides);
                 }
             }
         }

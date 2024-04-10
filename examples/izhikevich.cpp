@@ -5,7 +5,6 @@
 #include <morph/vvec.h>
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
-#include <morph/QuiverVisual.h>
 #include <morph/Grid.h>
 
 // A simple Izhikevich neuron model class
@@ -109,28 +108,30 @@ int main()
      */
 
     static constexpr size_t qN = 50;
+    constexpr float umin = -15.6f;
+    constexpr float umax = -3.6f;
+    constexpr float vmin = -80.0f;
+    constexpr float vmax = -20.0f;
     morph::vvec<float> qurng; // y axis
     morph::vvec<float> qvrng; // x axis
-    qvrng.linspace (-80.0f, -20.0f, qN);
-    qurng.linspace (-16, -4, qN);
-    morph::vvec<morph::vec<float, 2>> quivs;
-    iz.vectorfield (qurng, qvrng, quivs);
-    std::cout << "quivs size: " << quivs.size() << std::endl;
+    qvrng.linspace (vmin, vmax, qN);
+    qurng.linspace (umin, umax, qN);
+    morph::vvec<morph::vec<float, 2>> du_dv_vecfield;
+    iz.vectorfield (qurng, qvrng, du_dv_vecfield);
     // Now plot with a Grid and a GraphVisual? Or initially with a QuiverVisual
     morph::vec<float, 2> gridspacing = {
-        (-20.0f - (-80.0f)) / (qN-1),
-        (-4.0f - (-16.0f)) / (qN-1)
+        (vmax - vmin) / (qN-1),
+        (umax - umin) / (qN-1)
     };
-    morph::vec<float, 2> gridzero = { -80.0f, -16.0f };
-    std::cout << "Grid spacing: " << gridspacing << std::endl;
-    morph::Grid<unsigned int, float> grid (50, 50, gridspacing, gridzero);
+    morph::vec<float, 2> gridzero = { vmin, umin };
+    morph::Grid<unsigned int, float> grid (qN, qN, gridspacing, gridzero);
 
     /*
      * Visualize results
      */
 
-    morph::Visual vis(1920, 768, "Izhikevich Neuron Model");
-    vis.setSceneTrans (morph::vec<float,3>({-1.80045f, -0.28672f, -3.9f}));
+    morph::Visual vis(1280, 768, "Izhikevich Neuron Model");
+    vis.setSceneTrans (morph::vec<float,3>({-0.877793f, -0.281277f, -3.9f}));
 
     // Time
     morph::vvec<float> t(N, 0.0f);
@@ -177,59 +178,36 @@ int main()
     gp->xlabel = "v";
     gp->ylabel = "u";
 
+    // nullcline for the u variable
     ds.markercolour = morph::colour::crimson;
     ds.datalabel = "u nc";
     gp->setdata (vrng, u_nc, ds);
 
+    // nullcline for the v variable
     ds.markercolour = morph::colour::royalblue;
     ds.datalabel = "v nc";
     gp->setdata (vrng, v_nc, ds);
 
-    ds.markercolour = morph::colour::springgreen;
+    // The evolution of v and u wrt time
+    ds.markercolour = morph::colour::black;
     ds.datalabel = "u(v)";
     gp->setdata (v, u, ds);
 
     // Plot quivs within graphvisual
-    ds.datalabel = "quiv";
-    ds.quiver_thickness_gain = 0.08f;
+    ds.datalabel = "quivs";
+    // Set a linear gain to apply to the quivers...
     ds.quiver_gain = { 0.08f, 0.8f, 1.0f };
-    ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
-    ds.markerstyle = morph::markerstyle::quiver;
-    ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::show_zeros));
-    ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::marker_sphere));
+    // ...and then if the lengths should be log-scaled, call quiver_setlog()
     gp->quiver_setlog();
-    gp->setdata (grid, quivs, ds);
-
+    ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
+    ds.quiver_conewidth = 1.3f;
+    ds.quiver_thickness_gain = 0.6f; // make arrows a bit thinner
+    ds.markerstyle = morph::markerstyle::quiver;
+    //ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::show_zeros));
+    //ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::marker_sphere));
+    gp->setdata (grid, du_dv_vecfield, ds);
     gp->finalize();
     vis.addVisualModel (gp);
-
-    // Plot quivs with a QuiverVisual, just to see them
-    std::vector<morph::vec<float, 3>> coords(quivs.size());
-    for (unsigned int j = 0; j < qurng.size(); ++j) {
-        unsigned int shft = j * qvrng.size();
-        for (unsigned int i = 0; i < qvrng.size(); ++i) {
-            // Note scaling of coord for QuiverVisual:
-            coords[i + shft] = {2.0f*qvrng[i]/80.0f, 2.0f*qurng[j]/16.0f, 0.0f};
-        }
-    }
-    std::vector<morph::vec<float, 3>> quiv3s(quivs.size());
-    for (unsigned int i = 0; i < quivs.size(); ++i) {
-        quiv3s[i][0] = quivs[i][0];
-        quiv3s[i][1] = quivs[i][1] * 10.0f; // arb scaling of du magnitude
-    }
-    auto vmp = std::make_unique<morph::QuiverVisual<float>>(&coords, morph::vec<float>({4.8,1.5,0}),
-                                                            &quiv3s, morph::ColourMapType::Jet);
-    vis.bindmodel (vmp);
-    vmp->twodimensional = twodee;
-    vmp->quiver_length_gain = 0.08f; // Scale the length of the quivers on screen
-    vmp->quiver_thickness_gain = 0.05f; // Scale thickness of the quivers
-    vmp->qgoes = morph::QuiverGoes::OnCoord;
-    vmp->show_coordinate_sphere = false;
-    vmp->shapesides = 12;
-    vmp->colourScale.compute_autoscale (0.01f, 5.0f);
-    vmp->setlog();
-    vmp->finalize();
-    vis.addVisualModel (vmp);
 
     // Keep showing graphs until user exits
     vis.keepOpen();

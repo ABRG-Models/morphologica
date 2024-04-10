@@ -80,8 +80,10 @@ namespace morph {
         morph::vec<float, 3> quiver_gain = { 1.0f, 1.0f, 1.0f };
         //! Allows user to scale the thickness of the quivers.
         float quiver_thickness_gain = 1.0f;
-        //! What proportion of the arrow length should the arrowhead length be?
+        //! What proportion of the arrow length should the arrowhead cone length be?
         float quiver_arrowhead_prop = 0.25f;
+        //! How many times thicker than the quiver width should the arrowhead cone be?
+        float quiver_conewidth = 2.0f;
         //! User can choose a colour
         std::array<float, 3> quiver_zero_colour = morph::colour::crimson;
         //! Colourmap for selecting quiver length based colour
