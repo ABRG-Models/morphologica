@@ -318,7 +318,6 @@ namespace morph {
             S rtn(datum);
             T_el vec_len = this->vec_length (datum);
             for (std::size_t i = 0; i < datum.size(); ++i) {
-                rtn[i] = static_cast<S_el>(datum[i]) * this->params[0] + this->params[1];
                 S_el el_len = static_cast<S_el>(datum[i]);
                 // Here's the scaling of a component
                 rtn[i] = (el_len - (el_len/static_cast<S_el>(vec_len))*this->params[1]) * this->params[0];
