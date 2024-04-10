@@ -1069,6 +1069,20 @@ namespace morph {
             this->swap (pruned);
         }
 
+        //! \return a vvec which is a copy of *this for which zero-valued elements have been removed
+        vvec<S> prune_zero() const
+        {
+            vvec<S> rtn;
+            for (auto& i : *this) { if (i != S{0}) { rtn.push_back(i); } }
+            return rtn;
+        }
+        void prune_zero_inplace()
+        {
+            vvec<S> pruned;
+            for (auto& i : *this) { if (i != S{0}) { pruned.push_back(i); } }
+            this->swap (pruned);
+        }
+
         //! \return a vvec which is a copy of *this for which NaN elements have been removed
         vvec<S> prune_nan() const
         {
