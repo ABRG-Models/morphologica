@@ -87,6 +87,7 @@ int main()
 
     morph::Visual v(1920, 1080, "morphologica showcase");
     v.setSceneTrans (morph::vec<float,3>({1.30124f, -0.730136f, -8.2f}));
+    v.lightingEffects();
 
     /*
      * GraphVisual show-off
@@ -312,8 +313,8 @@ int main()
     ds.quiver_gain = { 0.08f, 0.8f, 1.0f };
     gp->quiver_setlog();
     ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
-    ds.quiver_conewidth = 1.3f;
-    ds.quiver_thickness_gain = 0.6f; // make arrows a bit thinner
+    ds.quiver_conewidth = 1.8f;
+    //ds.quiver_thickness_gain = 0.6f; // make arrows a bit thinner
     ds.markerstyle = morph::markerstyle::quiver;
     gp->setdata (grid, du_dv_vecfield, ds);
     gp->finalize();

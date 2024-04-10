@@ -132,6 +132,7 @@ int main()
 
     morph::Visual vis(1280, 768, "Izhikevich Neuron Model");
     vis.setSceneTrans (morph::vec<float,3>({-0.877793f, -0.281277f, -3.9f}));
+    vis.lightingEffects();
 
     // Time
     morph::vvec<float> t(N, 0.0f);
@@ -200,8 +201,9 @@ int main()
     // ...and then if the lengths should be log-scaled, call quiver_setlog()
     gp->quiver_setlog();
     ds.quiver_colourmap.setType (morph::ColourMapType::Jet);
-    ds.quiver_conewidth = 1.3f;
-    ds.quiver_thickness_gain = 0.6f; // make arrows a bit thinner
+    ds.quiver_conewidth = 1.8f;
+    ds.quiver_arrowhead_prop = 0.35f;
+    ds.quiver_thickness_gain = 1.5f;
     ds.markerstyle = morph::markerstyle::quiver;
     //ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::show_zeros));
     //ds.quiver_flagset.set (static_cast<unsigned int>(morph::quiver_flags::marker_sphere));
