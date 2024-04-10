@@ -41,6 +41,8 @@
 #include <stdexcept>
 #include <cmath>
 #include <cuchar>
+#include <string>
+#include <sstream>
 #include <morph/MathAlgo.h>
 #include <morph/number_type.h>
 #include <morph/vvec.h>
@@ -53,6 +55,10 @@ namespace morph {
         Linear,
         Logarithmic
     };
+
+    // For stream operator
+    template <typename T, typename S> struct ScaleImplBase;
+    template <typename T, typename S> std::ostream& operator<< (std::ostream&, const ScaleImplBase<T, S>&);
 
     /*!
      * \brief Base class for morph::ScaleImpl
@@ -96,6 +102,21 @@ namespace morph {
          * \return the de-scaled datum
          */
         virtual T inverse_one (const S& datum) const = 0;
+
+        /*!
+         * Output a short description of the scaling
+         */
+        virtual std::string str() const
+        {
+            std::string _type = this->type == ScaleFn::Linear ? "Linear" : "Logarithmic";
+            std::stringstream ss;
+            ss << _type << " scaling " << typeid(T).name() << " to " << typeid(S).name()
+               << " with params " << this->params_str();
+            return ss.str();
+        }
+
+        //! Output the params vvec as a string
+        virtual std::string params_str() const = 0;
 
         /*!
          * \brief Transform a container of scalars or vectors.
@@ -235,7 +256,18 @@ namespace morph {
          * could carry out logarithmic (or other) scalings, in addition to linear transforms.
          */
         ScaleFn type = ScaleFn::Linear;
+
+    public:
+        //! Overload the stream output operator
+        friend std::ostream& operator<< <T> (std::ostream& os, const ScaleImplBase<T, S>& scl);
     };
+
+    template <typename T, typename S>
+    std::ostream& operator<< (std::ostream& os, const ScaleImplBase<T, S>& scl)
+    {
+        os << scl.str();
+        return os;
+    }
 
     /*!
      * \brief ScaleImpl for vector \a T
@@ -346,6 +378,9 @@ namespace morph {
 
         //! Get all the params
         morph::vvec<S_el> getParams() { return this->params; }
+
+        //! return string representation of params
+        virtual std::string params_str() const { return this->params.str(); }
 
         //! The Scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }
@@ -473,6 +508,9 @@ namespace morph {
 
         //! Get all the params
         morph::vvec<S> getParams() { return this->params; }
+
+        //! return string representation of params
+        virtual std::string params_str() const { return this->params.str(); }
 
         //! The Scale object is ready if params has size 2.
         bool ready() const { return (this->params.size() > 1); }

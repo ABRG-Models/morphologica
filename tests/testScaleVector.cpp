@@ -46,6 +46,8 @@ int main () {
         cout << ")\n";
     }
 
+    cout << "Stream Scale<vec<float,4>>: " << s2 << endl;
+
     // Test this scaling:
     vector<vec<float, 4>>::const_iterator r2i = result2.end();
     r2i--; // To get to last element in vector

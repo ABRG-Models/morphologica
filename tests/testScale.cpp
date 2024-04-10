@@ -83,6 +83,7 @@ int main () {
         cout << vfi[i]<<"/"<<resulti[i]<<", ";
     }
     cout << endl;
+    cout << "Stream Scale<int, float>: " << si << endl;
     // Test integer scalar scaling
     if (std::abs(resulti.back() - 1.0f) > std::numeric_limits<float>::epsilon()) {
         cout << "Error in integer scalar scaling" << endl;
