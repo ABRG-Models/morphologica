@@ -81,7 +81,8 @@ namespace morph {
     enum class perspective_type
     {
         perspective,
-        orthographic
+        orthographic,
+        cylindrical
     };
 
 #ifndef OWNED_MODE
@@ -395,8 +396,10 @@ namespace morph {
             // Set the perspective
             if (this->ptype == perspective_type::orthographic) {
                 this->setOrthographic();
-            } else {
+            } else if (this->ptype == perspective_type::perspective) {
                 this->setPerspective();
+            } else {
+                // do anything required of other perspective types
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
@@ -619,9 +622,9 @@ namespace morph {
         perspective_type ptype = perspective_type::perspective;
 
         //! Orthographic screen bottom left coordinate (you can change these to encapsulate your models)
-        morph::vec<float, 2> ortho_bl = { -1.0f, -1.0f };
+        morph::vec<float, 2> ortho_bl = { -4.0f, -4.0f };
         //! Orthographic screen top right coordinate
-        morph::vec<float, 2> ortho_tr = { 1.0f, 1.0f };
+        morph::vec<float, 2> ortho_tr = { 4.0f, 4.0f };
 
         //! The background colour; white by default.
         std::array<float, 4> bgcolour = { 1.0f, 1.0f, 1.0f, 0.5f };
