@@ -6,6 +6,7 @@
 #include <morph/Visual.h>
 #include <morph/GraphVisual.h>
 #include <morph/Grid.h>
+#include <morph/Config.h>
 
 // A simple Izhikevich neuron model class
 struct izhi
@@ -16,27 +17,21 @@ struct izhi
     float v = -70.0f;    // 'Membrane voltage'
 
     // Parameters. In 'abc' model statement format.
-    static constexpr float a = 0.03f;
-    static constexpr float b = 0.193f;
-    static constexpr float c = -65.0f;
-    static constexpr float d = 0.05f;
+    float a = 0.03f;
+    float b = 0.193f;
+    float c = -65.0f;
+    float d = 0.05f;
 
-    static constexpr float A = 0.032f;
-    static constexpr float B = 4.0f;
-    static constexpr float C = 113.147f;
+    float A = 0.032f;
+    float B = 4.0f;
+    float C = 113.147f;
 
-    static constexpr float T = 0.4f;
-    static constexpr float SI = 5.0f;
-    static constexpr float vpeak = 30.0f;
-
-    // Derived parameters
-    static constexpr float AT = A * T;
-    static constexpr float BT = B * T;
-    static constexpr float CT = C * T;
-    static constexpr float ToverSI = T/SI;
+    float T = 0.4f;
+    float SI = 5.0f;
+    float vpeak = 30.0f;
 
     // vdot and udot computations
-    float dv (const float _u, const float _v) { return AT * _v * _v + BT * _v + CT - _u * T + I * ToverSI; }
+    float dv (const float _u, const float _v) { return (A*T) * _v * _v + (B*T) * _v + (C*T) - _u * T + I * (T/SI); }
     float du (const float _u, const float _v) { return a * T * (b * _v - _u); }
 
     // Apply one timestep of the differential equations for the model
@@ -77,16 +72,39 @@ struct izhi
 
 int main()
 {
-    constexpr unsigned int N = 1000;
-    constexpr bool twodee = false;
+    constexpr unsigned int N = 1000; // How many steps to run
+    constexpr bool twodee = false;   // Should graphs be 2D only or rotatable?
 
     /*
      * Perform simulation
      */
 
+    // Create class and vars
     morph::vvec<float> u(N, 0.0f);
     morph::vvec<float> v(N, 0.0f);
     izhi iz;
+
+    // Set izhi params from config
+    std::string jsonfile ("../examples/izhikevich.json");
+    morph::Config config(jsonfile);
+    if (config.ready) {
+        // Parameters
+        iz.a = config.getFloat ("a", iz.a);
+        iz.b = config.getFloat ("b", iz.b);
+        iz.c = config.getFloat ("c", iz.c);
+        iz.d = config.getFloat ("d", iz.d);
+        iz.A = config.getFloat ("A", iz.A);
+        iz.B = config.getFloat ("B", iz.B);
+        iz.C = config.getFloat ("C", iz.C);
+        iz.T = config.getFloat ("T", iz.C);
+        iz.SI = config.getFloat ("SI", iz.SI);
+        iz.vpeak = config.getFloat ("vpeak", iz.vpeak);
+        // Initial values of state vars
+        iz.u = config.getFloat ("u0", iz.u);
+        iz.v = config.getFloat ("v0", iz.v);
+    }
+
+    // Run sim
     for (unsigned int i = 0; i < N; ++i) {
         iz.step();
         v[i] = iz.v;
