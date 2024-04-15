@@ -78,6 +78,8 @@ namespace morph {
     template <int glver = morph::gl::version_4_1>
     class VisualModel
     {
+        friend class Visual<glver>;
+
         //! Debug rendering process with cout messages
         static constexpr bool debug_render = false;
 
