@@ -57,6 +57,9 @@
 #include <morph/ColourMap.h>
 #include <morph/tools.h>
 
+// A Grid for a cylindrical view (debug)
+#include <morph/Grid.h>
+
 #include <string>
 #include <array>
 #include <vector>
@@ -371,6 +374,95 @@ namespace morph {
         //! A callback function
         static void callback_render (morph::Visual<glver>* _v) { _v->render(); };
 
+        // The cyl view (public, accessible)
+        morph::Grid<unsigned int, float> cyl_angles;
+        morph::Grid<unsigned int, float> cyl_view;
+        morph::vvec<float> cyl_data;
+        void init_cyl_view()
+        {
+            morph::vec<unsigned int, 2> dims = { 180, 40 };
+            morph::vec<float, 2> d_offset = { -90.0f, -20.0f };
+
+            morph::vec<float, 2> spacing = { 2.0f / 180.0f, 2.0f / 40.0f }; // give -1 -> 1 range
+            morph::vec<float, 2> grid_offset = spacing * d_offset;
+            this->cyl_view.set_grid_params (dims, spacing, grid_offset);
+
+            morph::vec<float, 2> angle_spacing = { 2.0f, 2.0f };
+            morph::vec<float, 2> angle_grid_offset = angle_spacing * d_offset;
+            this->cyl_angles.set_grid_params (dims, angle_spacing, angle_grid_offset);
+
+            this->cyl_data.resize (this->cyl_view.n, 0.0f);
+        }
+        //! Compute a cylindrical perspective debug view. The view is a raster of pixels.
+        void compute_cylindrical_debug()
+        {
+            this->cyl_data.zero();
+            constexpr float heading_offset = morph::mathconst<float>::pi_over_2;
+            for (std::size_t vmi = 0U; vmi < this->vm.size()-1; ++vmi) { // -1 is hack to avoid seeing self in rhombo
+
+                std::cout << "Model " << vmi << " offset is " << this->vm[vmi]->mv_offset << std::endl;
+                //std::cout << "VisualModel scenematrix:\n" << this->vm[vmi]->scenematrix << std::endl;
+                std::cout << "VisualModel model-viewmatrix:\n" << this->vm[vmi]->viewmatrix << std::endl;
+
+                // Compute location on cylinder screen of mv_offset and fill in cyl
+
+                //morph::vec<float, 4> campos = { 0,0,0,0 };
+                //campos = this->vm[vmi]->scenematrix * this->vm[vmi]->viewmatrix * campos;
+                //morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1) - campos;
+                // or just:
+                morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1);
+
+                ray = this->vm[vmi]->scenematrix * this->vm[vmi]->viewmatrix * ray; // this->vm[vmi]->scenematrix
+                morph::vec<float, 3> rho_phi_z; // polar coordinates of ray
+                rho_phi_z[0] = std::sqrt (ray.x() * ray.x() + ray.y() * ray.y());
+                rho_phi_z[1] = std::atan2 (ray.y(), ray.x()) - heading_offset;
+                std::cout << "atan2(" << ray.y() << "," << ray.x() << ") = " << rho_phi_z[1] << std::endl;
+                if (rho_phi_z[1] > morph::mathconst<float>::pi) { rho_phi_z[1] -= morph::mathconst<float>::two_pi; }
+                if (rho_phi_z[1] < -morph::mathconst<float>::pi) { rho_phi_z[1] += morph::mathconst<float>::two_pi; }
+                //std::cout << "two-pi adjusted = " << rho_phi_z[1] << std::endl;
+                rho_phi_z[2] = ray.z();
+
+                // Convert phi into a value between -1 and 1 as the x of our projected position.
+                morph::vec<float, 2> xy = {0,0};
+                xy[0] = -rho_phi_z[1] / morph::mathconst<float>::pi; // minus makes left/right work
+                // theta is angle from xy plane to vertex
+                if (rho_phi_z[0] != 0) {
+                    float theta = std::asin (rho_phi_z[2]/rho_phi_z[0]);
+                    xy[1] = 0.1f * std::tan (theta); // 0.1 is cylinder radius
+
+                    std::cout << "screen coord xy = " << xy << ", cyl_view[0] = " << cyl_view[0] << ", theta = " << theta << std::endl;
+                    // Add to cyl_data
+                    for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
+                        if ((this->cyl_view[i] - xy).length() < 0.05f) {
+                            //std::cout << "o";
+                            this->cyl_data[i] = 1.0f/static_cast<float>(1+vmi);
+                        }
+                    }
+                    //std::cout << "\n";
+
+                } else {
+                    std::cout << "offscreen\n";
+                }
+            }
+
+            //std::cout << "Cyl element (" << this->cyl_view.v_x[i] << ", " << this->cyl_view.v_y[i] << ")\n";
+            // v_x is angle in degrees, v_y is some arbitrary vertical unit.
+            //for (each model) {
+            // Can show projection of model centroid
+
+            // maybe for each vertex
+            //}
+            /* Debug test:
+               if (i > 180*20) {
+               this->cyl_data[i] = 1.0f;
+               } else {
+               this->cyl_data[i] = 0.2f;
+               }
+            */
+
+            //std::cout << "cyl_data: " << cyl_data << std::endl;
+        }
+
         //! Render the scene
         void render()
         {
@@ -398,8 +490,13 @@ namespace morph {
                 this->setOrthographic();
             } else if (this->ptype == perspective_type::perspective) {
                 this->setPerspective();
+            } else if (this->ptype == perspective_type::cylindrical) {
+                // For cyl projection, build a debug
+                // projection, CPU side, to help write the GLSL, which is harder to debug.
+                this->setPerspective();
+                this->compute_cylindrical_debug();
             } else {
-                // do anything required of other perspective types
+                throw std::runtime_error ("Unknown projection");
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
@@ -957,6 +1054,9 @@ namespace morph {
                                                                                  morph::VisualFont::DVSans,
                                                                                  0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
                                                                                  this->title);
+
+            // Debug imposter:
+            this->init_cyl_view();
         }
 
         //! The default z=0 position for HexGridVisual models
