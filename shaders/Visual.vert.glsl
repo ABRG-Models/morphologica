@@ -16,6 +16,12 @@ uniform float alpha;
 //uniform float trimRadius = 1000000; //# uiname=Trim Radius; min=1; max=1000000
 uniform float hfov = 35;            //# uiname=Horizontal field of view; min=5; max=175; scaling=linear
 
+// Parameters of our cylindrical screen
+uniform float cyl_radius = 0.5;
+uniform float cyl_height = 0.5;
+// Camera position
+uniform vec4 campos = vec4(0);
+
 //uniform float minPointSize = 0;
 //uniform float maxPointSize = 600.0;
 // Point size multiplier to get from a width in projected coordinates to the
@@ -24,8 +30,7 @@ uniform float pointPixelScale = 0;
 uniform vec3 cursorPos = vec3(0);
 uniform int fileNumber = 0;
 in float intensity;
-//in vec3 position;
-//in vec3 color;
+
 in int returnNumber;
 in int numberOfReturns;
 in int pointSourceId;
@@ -35,9 +40,9 @@ flat out float modifiedPointRadius;
 flat out float pointScreenSize;
 
 // My original inputs
-layout(location = 0) in vec4 position; // Attrib location 0
-layout(location = 1) in vec4 normalin; // Attrib location 1
-layout(location = 2) in vec3 color;    // Attrib location 2
+layout(location = 0) in vec4 position; // Attrib location 0. vertex position
+layout(location = 1) in vec4 normalin; // Attrib location 1. vertex normal
+layout(location = 2) in vec3 color;    // Attrib location 2. vertex colour
 
 out VERTEX
 {
@@ -48,8 +53,38 @@ out VERTEX
 
 void main (void)
 {
-    vec4 p0 = (v_matrix * m_matrix * position); // may not need all of this
+    // Position of vertex WITHOUT a perspective transformation.
+    vec4 pv = (v_matrix * m_matrix * position);
 
+    // if perspective/orthographic:
+    //gl_Position = (p_matrix * v_matrix * m_matrix * position);
+    // else:
+    vec4 ray = pv - campos;
+    vec3 rho_phi_z; // polar coordinates of ray
+    rho_phi_z[0] = sqrt (ray.x * ray.x + ray.y * ray.y);
+    rho_phi_z[1] = atan (ray.y, ray.x); // care may be required. -pi to pi range.. atan (ray.y/ray.x) returns -pi/2 to pi/2.
+    rho_phi_z[2] = ray.z;
+
+    // Convert phi into a value between -1 and 1 as the x of our projected position.
+    float x_screen = rho_phi_z[1] / 6.283185307; // 2 pi
+    // theta is angle from xy plane to vertex
+    float theta = asin (rho_phi_z[2]/rho_phi_z[0]);
+    float y_screen = cyl_radius * tan (theta);
+
+    gl_PointSize = 10;
+    //gl_Position = vec4(x_screen, 0.5, -1.0, 1.0);
+    gl_Position = (p_matrix * v_matrix * m_matrix * position);
+    //gl_Position[0] = x_screen;
+    //gl_Position[0] = theta; // seems to be unsensible
+
+    //vertex.color = vec4(color, alpha);
+    vertex.color = vec4(1.0, 0.0, 0.0, 1.0); // Hackety hack
+
+    vertex.fragpos = vec3(m_matrix * position); // within-model position of fragment, used for lighting
+    vertex.normal = normalin;
+
+    /*
+    vec4 p0 = (v_matrix * m_matrix * position);
     // Here we do our own cylindrical projection inside the vertex shader.
     // This is the right projection if you're standing at the centre of a
     // circularly curved screen.
@@ -89,8 +124,8 @@ void main (void)
 
     gl_Position = p;
 
-    ///////////////// Original:
     vertex.color = vec4(color, alpha);
     vertex.fragpos = vec3(p);
     vertex.normal = normalin;
+    */
 }
