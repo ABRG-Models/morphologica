@@ -381,13 +381,13 @@ namespace morph {
         // Cylindrical projection radius
         float cyl_proj_r = 0.1f;
         // Height of cyl projection rectangle
-        float cyl_proj_h = 0.29f;
+        float cyl_proj_h = 0.35f;
         void init_cyl_view()
         {
-            morph::vec<unsigned int, 2> dims = { 180, 40 };
-            morph::vec<float, 2> d_offset = { -90.0f, -20.0f };
-
-            morph::vec<float, 2> spacing = { 2.0f / 180.0f, 2.0f / 40.0f }; // give -1 -> 1 range
+            morph::vec<unsigned int, 2> dims = { 360, 360 }; // resolution of grid
+            morph::vec<float, 2> dimsf = dims.as_float();
+            morph::vec<float, 2> d_offset = -dimsf / 2.0f;  // centralize grid
+            morph::vec<float, 2> spacing = { 2.0f / dimsf[0], 2.0f / dimsf[1] }; // gives -1 -> 1 range
             morph::vec<float, 2> grid_offset = spacing * d_offset;
             this->cyl_view.set_grid_params (dims, spacing, grid_offset);
             this->cyl_data.resize (this->cyl_view.n, {0,0,0});
@@ -434,7 +434,7 @@ namespace morph {
                             col = { this->vm[vmi]->vertexColors[0], this->vm[vmi]->vertexColors[1], this->vm[vmi]->vertexColors[2] };
                         }
                         for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
-                            if ((this->cyl_view[i] - xy).length() < 0.08f) {
+                            if ((this->cyl_view[i] - xy).length() < 0.05f) {
                                 this->cyl_data[i] = col;
                             }
                         }
