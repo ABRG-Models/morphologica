@@ -399,7 +399,7 @@ namespace morph {
             constexpr float heading_offset = morph::mathconst<float>::pi_over_2;
 
             // For each VisualModel, compute location on cylinder screen of mv_offset and fill in cyl_data with a blob
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) { // -1 is hack to avoid seeing self in rhombo
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) { // -1 is hack to avoid seeing self in rhombo
                 //morph::vec<float, 4> campos = { 0,0,0,0 };
                 //campos = this->vm[vmi]->scenematrix * this->vm[vmi]->viewmatrix * campos;
                 //morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1) - campos;
@@ -416,10 +416,10 @@ namespace morph {
                 rho_phi_z[2] = ray.z();
 
                 // Convert phi into a value between -1 and 1 as the x of our projected position.
-                morph::vec<float, 2> xy = {0,0};
+                morph::vec<float, 2> xy = { 0.0f, 0.0f };
                 xy[0] = -rho_phi_z[1] / morph::mathconst<float>::pi; // minus sign makes left/right correct sense
                 // theta is angle from xy plane to vertex
-                if (rho_phi_z[0] != 0) {
+                if (rho_phi_z[0] != 0.0f) {
                     float theta = std::asin (rho_phi_z[2]/rho_phi_z[0]);
                     xy[1] = (this->cyl_proj_r * std::tan (theta)) / this->cyl_proj_h;
 
@@ -429,11 +429,11 @@ namespace morph {
                                       << ", cyl xy: " << xy << ", theta: " << theta << std::endl;
                         }
                         // Get colour from the first three vertexColors entries in the VisualModel
-                        morph::vec<float, 3> col = {0,0,0};
-                        if (this->vm[vmi]->vertexColors.size() > 2) {
+                        morph::vec<float, 3> col = { 0.0f, 0.0f, 0.0f };
+                        if (this->vm[vmi]->vertexColors.size() > 2u) {
                             col = { this->vm[vmi]->vertexColors[0], this->vm[vmi]->vertexColors[1], this->vm[vmi]->vertexColors[2] };
                         }
-                        for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
+                        for (unsigned int i = 0u; i < this->cyl_view.n; ++i) {
                             if ((this->cyl_view[i] - xy).length() < 0.05f) {
                                 this->cyl_data[i] = col;
                             }
@@ -480,8 +480,9 @@ namespace morph {
             } else if (this->ptype == perspective_type::cylindrical) {
                 // For cyl projection, build a debug
                 // projection, CPU side, to help write the GLSL, which is harder to debug.
-                this->setPerspective();
-                this->compute_cylindrical_debug();
+                // For debug only:
+                //this->setPerspective();
+                //this->compute_cylindrical_debug();
             } else {
                 throw std::runtime_error ("Unknown projection");
             }

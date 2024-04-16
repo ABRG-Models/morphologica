@@ -6,10 +6,10 @@ int main()
 {
     // Create a scene
     morph::Visual v(1024, 768, "A rhombohedron scene", {0.8,-0.8}, {.1,.1,.1}, 3.0f, 0.02f);
-    v.showCoordArrows = true; // Please show the coord arrows by default
+    v.showCoordArrows = false;
     v.ptype = morph::perspective_type::cylindrical; // compute cyl. projection for this scene
-    v.coordArrowsInScene = true;
-    v.fov = 90;
+    //v.coordArrowsInScene = true;
+    v.fov = 40;
     v.lightingEffects();
 
     // Parameters of the model
