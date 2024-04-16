@@ -38,8 +38,8 @@ namespace morph {
             // GLenum is, in practice, a 32 bit unsigned int. The type appears not to be defined in
             // OpenGL 3.1 ES (though it does appear in 3.2 ES), so here I use unsigned int.
             unsigned int type; // rather than GLenum
-            const char* filename;
-            const char* compiledIn;
+            std::string filename;
+            std::string compiledIn;
             GLuint shader;
         };
 
@@ -47,9 +47,9 @@ namespace morph {
         const bool debug_shaders = true;
 
         //! Read a shader from a file.
-        const GLchar* ReadShader (const char* filename)
+        const GLchar* ReadShader (const std::string& filename)
         {
-            FILE* infile = fopen (filename, "rb");
+            FILE* infile = fopen (filename.c_str(), "rb");
 
             if (!infile) {
                 std::cerr << "Unable to open file '" << filename << "'\n";
@@ -76,11 +76,11 @@ namespace morph {
          * file: allocates some memory, copies the text into the new memory and then
          * returns a GLchar* pointer to the memory.
          */
-        const GLchar* ReadDefaultShader (const char* shadercontent)
+        const GLchar* ReadDefaultShader (const std::string& shadercontent)
         {
-            int len = strlen (shadercontent);
+            int len = shadercontent.size();
             GLchar* source = new GLchar[len+1];
-            memcpy (static_cast<void*>(source), static_cast<const void*>(shadercontent), len);
+            memcpy (static_cast<void*>(source), static_cast<const void*>(shadercontent.c_str()), len);
             source[len] = 0;
             return const_cast<const GLchar*>(source);
         }
@@ -124,9 +124,9 @@ namespace morph {
                 // compile the default version specified in the ShaderInfo
                 const GLchar* source;
                 if constexpr (debug_shaders == true) {
-                    std::cout << "Check file exists for " << std::string(entry.filename) << std::endl;
+                    std::cout << "Check file exists for " << entry.filename << std::endl;
                 }
-                if (morph::Tools::fileExists (std::string(entry.filename))) {
+                if (morph::Tools::fileExists (entry.filename)) {
                     std::cout << "Using " << morph::gl::shader_type_str(entry.type)
                               << " shader from the file " << entry.filename << std::endl;
                     source = morph::gl::ReadShader (entry.filename);

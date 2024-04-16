@@ -10,7 +10,7 @@ int main()
     v.ptype = morph::perspective_type::cylindrical; // compute cyl. projection for this scene
     //v.coordArrowsInScene = true;
     v.fov = 40;
-    v.lightingEffects();
+    v.lightingEffects(false);
 
     // Parameters of the model
     morph::vec<float, 3> offset = { -1,  0,  0 };   // a within-scene offset

@@ -80,7 +80,7 @@
 
 namespace morph {
 
-    //! Whether to render with perspective or orthographic
+    //! Whether to render with perspective or orthographic (or even a cylindrical projection)
     enum class perspective_type
     {
         perspective,
@@ -168,6 +168,7 @@ namespace morph {
             if (this->shaders.gprog) {
                 glDeleteProgram (this->shaders.gprog);
                 this->shaders.gprog = 0;
+                this->active_graphics_shader = 0;
             }
             if (this->shaders.tprog) {
                 glDeleteProgram (this->shaders.tprog);
@@ -467,6 +468,20 @@ namespace morph {
 #else
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
+            if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
+                if (this->active_graphics_shader == 2 || this->active_graphics_shader == 0) {
+                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShaders (this->persp_shader_progs);
+                    this->active_graphics_shader = 1;
+                }
+            } else if (this->ptype == perspective_type::cylindrical) {
+                if (this->active_graphics_shader == 1 || this->active_graphics_shader == 0) {
+                    if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
+                    this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs);
+                    this->active_graphics_shader = 2;
+                }
+            }
+
             glUseProgram (this->shaders.gprog);
 
             // Can't do this in a new thread:
@@ -478,11 +493,7 @@ namespace morph {
             } else if (this->ptype == perspective_type::perspective) {
                 this->setPerspective();
             } else if (this->ptype == perspective_type::cylindrical) {
-                // For cyl projection, build a debug
-                // projection, CPU side, to help write the GLSL, which is harder to debug.
-                // For debug only:
-                //this->setPerspective();
-                //this->compute_cylindrical_debug();
+                // Nothing further to do
             } else {
                 throw std::runtime_error ("Unknown projection");
             }
@@ -613,6 +624,10 @@ namespace morph {
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
         morph::visgl::visual_shaderprogs shaders;
+        int active_graphics_shader = 0; // 1 for perspective, 2 for cyl. 0 for inactive
+        std::vector<morph::gl::ShaderInfo> persp_shader_progs;
+        std::vector<morph::gl::ShaderInfo> cyl_shader_progs;
+        std::vector<morph::gl::ShaderInfo> text_shader_progs;
 
         // These static functions will be set as callbacks in each VisualModel object.
         static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
@@ -979,23 +994,25 @@ namespace morph {
             glfwSwapInterval (0);
 #endif
             // Load up the shaders
-            std::string vshdr = morph::getDefaultVtxShader(glver);
-            std::string fshdr = morph::getDefaultFragShader(glver);
-            std::vector<morph::gl::ShaderInfo> shaders = {
-                {GL_VERTEX_SHADER, "Visual.vert.glsl", vshdr.c_str(), 0 },
-                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", fshdr.c_str(), 0 }
+            this->persp_shader_progs = {
+                {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::getDefaultVtxShader(glver), 0 },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
+            this->shaders.gprog = morph::gl::LoadShaders (this->persp_shader_progs);
+            this->active_graphics_shader = 1;
 
-            this->shaders.gprog = morph::gl::LoadShaders (shaders);
+            // Alternative cylindrical shader for possible later use.
+            this->cyl_shader_progs = {
+                {GL_VERTEX_SHADER, "VisCyl.vert.glsl", morph::getDefaultCylVtxShader(glver), 0 },
+                {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
+            };
 
             // An additional shader is used for text
-            vshdr = morph::getDefaultTextVtxShader(glver);
-            fshdr = morph::getDefaultTextFragShader(glver);
-            std::vector<morph::gl::ShaderInfo> tshaders = {
-                {GL_VERTEX_SHADER, "VisText.vert.glsl", vshdr.c_str(), 0 },
-                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , fshdr.c_str(), 0 }
+            this->text_shader_progs = {
+                {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::getDefaultTextVtxShader(glver), 0 },
+                {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::getDefaultTextFragShader(glver), 0 }
             };
-            this->shaders.tprog = morph::gl::LoadShaders (tshaders);
+            this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs);
 
             // Now client code can set up HexGridVisuals.
             glEnable (GL_DEPTH_TEST);
@@ -1217,6 +1234,7 @@ namespace morph {
                 std::cout << "Ctrl-a: Reset default view\n";
                 std::cout << "Ctrl-o: Reduce field of view\n";
                 std::cout << "Ctrl-p: Increase field of view\n";
+                std::cout << "Ctrl-y: Cycle perspective\n";
                 std::cout << "Ctrl-z: Show the current scenetrans/rotation and save to /tmp/Visual.json\n";
                 std::cout << "Ctrl-u: Reduce zNear cutoff plane\n";
                 std::cout << "Ctrl-i: Increase zNear cutoff plane\n";
@@ -1362,6 +1380,16 @@ namespace morph {
             if (!this->sceneLocked && _key == key::i && (mods & keymod::control) && action == keyaction::press) {
                 this->zNear *= 2;
                 std::cout << "zNear increased to " << this->zNear << std::endl;
+            }
+
+            if (_key == key::y && (mods & keymod::control) && action == keyaction::press) {
+                if (this->ptype == morph::perspective_type::perspective) {
+                    this->ptype = morph::perspective_type::orthographic;
+                } else if (this->ptype == morph::perspective_type::orthographic) {
+                    this->ptype = morph::perspective_type::cylindrical;
+                } else {
+                    this->ptype = morph::perspective_type::perspective;
+                }
             }
 
             this->key_callback_extra (_key, scancode, action, mods);

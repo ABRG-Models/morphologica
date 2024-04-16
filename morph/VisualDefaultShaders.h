@@ -202,4 +202,64 @@ namespace morph {
         return shdr;
     }
 
+    // Cylindrical projection
+    const char* defaultCylShader = "uniform mat4 mvp_matrix;\n"
+    "uniform mat4 vp_matrix;\n"
+    "uniform mat4 m_matrix;\n"
+    "uniform mat4 v_matrix;\n"
+    "uniform mat4 p_matrix;\n"
+    "uniform float alpha;\n"
+    "uniform float cyl_radius = 0.005;\n"
+    "uniform float cyl_height = 0.02;\n"
+    "uniform vec4 campos = vec4(0);\n"
+    "layout(location = 0) in vec4 position;\n"
+    "layout(location = 1) in vec4 normalin;\n"
+    "layout(location = 2) in vec3 color;\n"
+    "out VERTEX\n"
+    "{\n"
+    "    vec4 normal;\n"
+    "    vec4 color;\n"
+    "    vec3 fragpos;\n"
+    "} vertex;\n"
+    "void main()\n"
+    "{\n"
+    "    const float pi = 3.1415927;\n"
+    "    const float two_pi = 6.283185307;\n"
+    "    float heading_offset = 1.570796327;\n"
+    "    float hdelta = heading_offset / 10.0;\n"
+    "    heading_offset = heading_offset - 3.0 * hdelta;\n"
+    "    vec4 pv = (m_matrix * position);\n"
+    "    vec4 ray = pv - campos;\n"
+    "    vec3 rho_phi_z;\n"
+    "    rho_phi_z[0] = sqrt (ray.x * ray.x + ray.y * ray.y);\n"
+    "    rho_phi_z[1] = atan (ray.y, ray.x) - heading_offset;\n"
+    "    if (rho_phi_z[1] > pi) { rho_phi_z[1] = rho_phi_z[1] - two_pi; }\n"
+    "    if (rho_phi_z[1] < -pi) { rho_phi_z[1] = rho_phi_z[1] + two_pi; }\n"
+    "    rho_phi_z[2] = ray.z;\n"
+    "    float x_s = -rho_phi_z[1] / pi;\n"
+    "    float y_s = 0.0;\n"
+    "    if (x_s != 0.0) {\n"
+    "        float theta = asin (rho_phi_z[2] / rho_phi_z[0]);\n"
+    "        y_s = (cyl_radius * tan (theta)) / cyl_height;\n"
+    "        gl_PointSize = 1;\n"
+    "        gl_Position = vec4(x_s, y_s, -1.0, 1.0);\n"
+    "        vertex.color = vec4(color, alpha);\n"
+    "        vertex.fragpos = vec3(m_matrix * position);\n"
+    "        vertex.normal = normalin;\n"
+    "    } else {\n"
+    "        gl_Position = vec4(0.0, 0.0, -100.0, 1.0);\n"
+    "        vertex.color = vec4(color, 0.0);\n"
+    "        vertex.fragpos = vec3(m_matrix * position);\n"
+    "        vertex.normal = normalin;\n"
+    "    }\n"
+    "}\n";
+
+    std::string getDefaultCylVtxShader (const int glver)
+    {
+        std::string shdr;
+        shdr += morph::gl::version::shaderpreamble (glver);
+        shdr += defaultCylShader;
+        return shdr;
+    }
+
 } // namespace morph
