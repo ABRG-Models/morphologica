@@ -375,9 +375,12 @@ namespace morph {
         static void callback_render (morph::Visual<glver>* _v) { _v->render(); };
 
         // The cyl view (public, accessible)
-        morph::Grid<unsigned int, float> cyl_angles;
         morph::Grid<unsigned int, float> cyl_view;
         morph::vvec<morph::vec<float>> cyl_data;
+        // Cylindrical projection radius
+        float cyl_proj_r = 0.1f;
+        // Height of cyl projection rectangle
+        float cyl_proj_h = 0.29f;
         void init_cyl_view()
         {
             morph::vec<unsigned int, 2> dims = { 180, 40 };
@@ -386,11 +389,6 @@ namespace morph {
             morph::vec<float, 2> spacing = { 2.0f / 180.0f, 2.0f / 40.0f }; // give -1 -> 1 range
             morph::vec<float, 2> grid_offset = spacing * d_offset;
             this->cyl_view.set_grid_params (dims, spacing, grid_offset);
-
-            morph::vec<float, 2> angle_spacing = { 2.0f, 2.0f };
-            morph::vec<float, 2> angle_grid_offset = angle_spacing * d_offset;
-            this->cyl_angles.set_grid_params (dims, angle_spacing, angle_grid_offset);
-
             this->cyl_data.resize (this->cyl_view.n, {0,0,0});
         }
         //! Compute a cylindrical perspective debug view. The view is a raster of pixels.
@@ -398,29 +396,22 @@ namespace morph {
         {
             this->cyl_data.zero();
             constexpr float heading_offset = morph::mathconst<float>::pi_over_2;
+
+            // For each VisualModel, compute location on cylinder screen of mv_offset and fill in cyl_data with a blob
             for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) { // -1 is hack to avoid seeing self in rhombo
-
-                //std::cout << "Model " << vmi << " offset is " << this->vm[vmi]->mv_offset << std::endl;
-                //std::cout << "VisualModel scenematrix:\n" << this->vm[vmi]->scenematrix << std::endl;
-                //std::cout << "VisualModel model-viewmatrix:\n" << this->vm[vmi]->viewmatrix << std::endl;
-
-                // Compute location on cylinder screen of mv_offset and fill in cyl
-
                 //morph::vec<float, 4> campos = { 0,0,0,0 };
                 //campos = this->vm[vmi]->scenematrix * this->vm[vmi]->viewmatrix * campos;
                 //morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1) - campos;
                 // or just:
                 morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1);
 
-                ray = /* this->vm[vmi]->scenematrix * */ this->vm[vmi]->viewmatrix * ray; // this->vm[vmi]->scenematrix
+                ray = /* this->vm[vmi]->scenematrix * */ this->vm[vmi]->viewmatrix * ray;
 
                 morph::vec<float, 3> rho_phi_z; // polar coordinates of ray
                 rho_phi_z[0] = std::sqrt (ray.x() * ray.x() + ray.y() * ray.y());
                 rho_phi_z[1] = std::atan2 (ray.y(), ray.x()) - heading_offset;
-                //std::cout << "atan2(" << ray.y() << "," << ray.x() << ") = " << rho_phi_z[1] << std::endl;
                 if (rho_phi_z[1] > morph::mathconst<float>::pi) { rho_phi_z[1] -= morph::mathconst<float>::two_pi; }
                 if (rho_phi_z[1] < -morph::mathconst<float>::pi) { rho_phi_z[1] += morph::mathconst<float>::two_pi; }
-                //std::cout << "two-pi adjusted = " << rho_phi_z[1] << std::endl;
                 rho_phi_z[2] = ray.z();
 
                 // Convert phi into a value between -1 and 1 as the x of our projected position.
@@ -429,41 +420,31 @@ namespace morph {
                 // theta is angle from xy plane to vertex
                 if (rho_phi_z[0] != 0) {
                     float theta = std::asin (rho_phi_z[2]/rho_phi_z[0]);
-                    xy[1] = 0.1f * std::tan (theta); // 0.1 is cylinder radius
+                    xy[1] = (this->cyl_proj_r * std::tan (theta)) / this->cyl_proj_h;
 
-                    //std::cout << "screen coord xy = " << xy << ", cyl_view[0] = " << cyl_view[0] << ", theta = " << theta << std::endl;
+                    if (std::abs(xy[1]) < 1.0f) {
 
-                    // Add to cyl_data
-                    morph::vec<float, 3> col = { this->vm[vmi]->vertexColors[0], this->vm[vmi]->vertexColors[1], this->vm[vmi]->vertexColors[2] };
+                        std::cout << "model["<<vmi<<"] world: " << this->vm[vmi]->mv_offset
+                                  << ", cyl xy: " << xy << ", theta: " << theta << std::endl;
 
-                    for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
-                        if ((this->cyl_view[i] - xy).length() < 0.05f) {
-                            this->cyl_data[i] = col; //1.0f/static_cast<float>(1+vmi); // sets colour
+                        // Get colour from the first three vertexColors entries in the VisualModel
+                        morph::vec<float, 3> col = {0,0,0};
+                        if (this->vm[vmi]->vertexColors.size() > 2) {
+                            col = { this->vm[vmi]->vertexColors[0], this->vm[vmi]->vertexColors[1], this->vm[vmi]->vertexColors[2] };
                         }
+                        for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
+                            if ((this->cyl_view[i] - xy).length() < 0.08f) {
+                                this->cyl_data[i] = col;
+                            }
+                        }
+                    } else {
+                        std::cout << "VisualModel[" << vmi << "] is offscreen (height)\n";
                     }
-                    //std::cout << "\n";
 
                 } else {
-                    std::cout << "offscreen\n";
+                    std::cout << "VisualModel[" << vmi << "] is offscreen\n";
                 }
             }
-
-            //std::cout << "Cyl element (" << this->cyl_view.v_x[i] << ", " << this->cyl_view.v_y[i] << ")\n";
-            // v_x is angle in degrees, v_y is some arbitrary vertical unit.
-            //for (each model) {
-            // Can show projection of model centroid
-
-            // maybe for each vertex
-            //}
-            /* Debug test:
-               if (i > 180*20) {
-               this->cyl_data[i] = 1.0f;
-               } else {
-               this->cyl_data[i] = 0.2f;
-               }
-            */
-
-            //std::cout << "cyl_data: " << cyl_data << std::endl;
         }
 
         //! Render the scene

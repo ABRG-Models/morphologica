@@ -6,15 +6,16 @@
 int main()
 {
     // Create a scene
-    morph::Visual v(1024, 768, "A rhombohedron scene");
+    morph::Visual v(1024, 768, "A rhombohedron scene", {0.8,-0.8}, {.1,.1,.1}, 3.0f, 0.02f);
     v.showCoordArrows = true; // Please show the coord arrows by default
     v.ptype = morph::perspective_type::cylindrical; // compute cyl. projection for this scene
     v.coordArrowsInScene = true;
     v.fov = 90;
     v.lightingEffects();
+    v.releaseContext();
 
     // *Show* cyl. proj of v on v2
-    morph::Visual v2(768, 768, "Cylindrical projection viewer", {0.8,-0.8}, {.05,.05,.1}, 2.0f, 0.01f);
+    morph::Visual v2(768, 768, "Cylindrical projection viewer");
     v2.showCoordArrows = false;
     v2.lightingEffects();
 
@@ -34,7 +35,7 @@ int main()
     rv->finalize();
     v.addVisualModel (rv);
 
-    offset = { 2, 0, 0.1 };
+    offset = { 2, 0, -1.7 };
     auto rv2 = std::make_unique<morph::RhomboVisual<>> (offset, e1, e2, e3, cmap.convert(0.5f));
     v.bindmodel (rv2);
     rv2->finalize();
@@ -58,7 +59,7 @@ int main()
     rv5->finalize();
     v.addVisualModel (rv5);
 
-    offset = { 0, -1.8, 0.7 };
+    offset = { 0, -1.8, 1.7 };
     auto rv6 = std::make_unique<morph::RhomboVisual<>> (offset, e1, e2, e3, cmap.convert(0.1f));
     v.bindmodel (rv6);
     rv6->finalize();
