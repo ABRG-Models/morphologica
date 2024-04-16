@@ -375,6 +375,7 @@ namespace morph {
         static void callback_render (morph::Visual<glver>* _v) { _v->render(); };
 
         // The cyl view (public, accessible)
+        static constexpr bool cyl_debug = false;
         morph::Grid<unsigned int, float> cyl_view;
         morph::vvec<morph::vec<float>> cyl_data;
         // Cylindrical projection radius
@@ -423,10 +424,10 @@ namespace morph {
                     xy[1] = (this->cyl_proj_r * std::tan (theta)) / this->cyl_proj_h;
 
                     if (std::abs(xy[1]) < 1.0f) {
-
-                        std::cout << "model["<<vmi<<"] world: " << this->vm[vmi]->mv_offset
-                                  << ", cyl xy: " << xy << ", theta: " << theta << std::endl;
-
+                        if constexpr (cyl_debug == true) {
+                            std::cout << "model["<<vmi<<"] world: " << this->vm[vmi]->mv_offset
+                                      << ", cyl xy: " << xy << ", theta: " << theta << std::endl;
+                        }
                         // Get colour from the first three vertexColors entries in the VisualModel
                         morph::vec<float, 3> col = {0,0,0};
                         if (this->vm[vmi]->vertexColors.size() > 2) {
@@ -438,11 +439,13 @@ namespace morph {
                             }
                         }
                     } else {
-                        std::cout << "VisualModel[" << vmi << "] is offscreen (height)\n";
+                        if constexpr (cyl_debug == true) {
+                            std::cout << "model[" << vmi << "] is offscreen (height)\n";
+                        }
                     }
 
                 } else {
-                    std::cout << "VisualModel[" << vmi << "] is offscreen\n";
+                    if constexpr (cyl_debug == true) { std::cout << "model[" << vmi << "] is offscreen\n"; }
                 }
             }
         }
