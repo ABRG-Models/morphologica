@@ -377,7 +377,7 @@ namespace morph {
         // The cyl view (public, accessible)
         morph::Grid<unsigned int, float> cyl_angles;
         morph::Grid<unsigned int, float> cyl_view;
-        morph::vvec<float> cyl_data;
+        morph::vvec<morph::vec<float>> cyl_data;
         void init_cyl_view()
         {
             morph::vec<unsigned int, 2> dims = { 180, 40 };
@@ -391,18 +391,18 @@ namespace morph {
             morph::vec<float, 2> angle_grid_offset = angle_spacing * d_offset;
             this->cyl_angles.set_grid_params (dims, angle_spacing, angle_grid_offset);
 
-            this->cyl_data.resize (this->cyl_view.n, 0.0f);
+            this->cyl_data.resize (this->cyl_view.n, {0,0,0});
         }
         //! Compute a cylindrical perspective debug view. The view is a raster of pixels.
         void compute_cylindrical_debug()
         {
             this->cyl_data.zero();
             constexpr float heading_offset = morph::mathconst<float>::pi_over_2;
-            for (std::size_t vmi = 0U; vmi < this->vm.size()-1; ++vmi) { // -1 is hack to avoid seeing self in rhombo
+            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) { // -1 is hack to avoid seeing self in rhombo
 
-                std::cout << "Model " << vmi << " offset is " << this->vm[vmi]->mv_offset << std::endl;
+                //std::cout << "Model " << vmi << " offset is " << this->vm[vmi]->mv_offset << std::endl;
                 //std::cout << "VisualModel scenematrix:\n" << this->vm[vmi]->scenematrix << std::endl;
-                std::cout << "VisualModel model-viewmatrix:\n" << this->vm[vmi]->viewmatrix << std::endl;
+                //std::cout << "VisualModel model-viewmatrix:\n" << this->vm[vmi]->viewmatrix << std::endl;
 
                 // Compute location on cylinder screen of mv_offset and fill in cyl
 
@@ -412,11 +412,12 @@ namespace morph {
                 // or just:
                 morph::vec<float, 4> ray = this->vm[vmi]->mv_offset.plus_one_dim(1);
 
-                ray = this->vm[vmi]->scenematrix * this->vm[vmi]->viewmatrix * ray; // this->vm[vmi]->scenematrix
+                ray = /* this->vm[vmi]->scenematrix * */ this->vm[vmi]->viewmatrix * ray; // this->vm[vmi]->scenematrix
+
                 morph::vec<float, 3> rho_phi_z; // polar coordinates of ray
                 rho_phi_z[0] = std::sqrt (ray.x() * ray.x() + ray.y() * ray.y());
                 rho_phi_z[1] = std::atan2 (ray.y(), ray.x()) - heading_offset;
-                std::cout << "atan2(" << ray.y() << "," << ray.x() << ") = " << rho_phi_z[1] << std::endl;
+                //std::cout << "atan2(" << ray.y() << "," << ray.x() << ") = " << rho_phi_z[1] << std::endl;
                 if (rho_phi_z[1] > morph::mathconst<float>::pi) { rho_phi_z[1] -= morph::mathconst<float>::two_pi; }
                 if (rho_phi_z[1] < -morph::mathconst<float>::pi) { rho_phi_z[1] += morph::mathconst<float>::two_pi; }
                 //std::cout << "two-pi adjusted = " << rho_phi_z[1] << std::endl;
@@ -424,18 +425,20 @@ namespace morph {
 
                 // Convert phi into a value between -1 and 1 as the x of our projected position.
                 morph::vec<float, 2> xy = {0,0};
-                xy[0] = -rho_phi_z[1] / morph::mathconst<float>::pi; // minus makes left/right work
+                xy[0] = -rho_phi_z[1] / morph::mathconst<float>::pi; // minus sign makes left/right correct sense
                 // theta is angle from xy plane to vertex
                 if (rho_phi_z[0] != 0) {
                     float theta = std::asin (rho_phi_z[2]/rho_phi_z[0]);
                     xy[1] = 0.1f * std::tan (theta); // 0.1 is cylinder radius
 
-                    std::cout << "screen coord xy = " << xy << ", cyl_view[0] = " << cyl_view[0] << ", theta = " << theta << std::endl;
+                    //std::cout << "screen coord xy = " << xy << ", cyl_view[0] = " << cyl_view[0] << ", theta = " << theta << std::endl;
+
                     // Add to cyl_data
+                    morph::vec<float, 3> col = { this->vm[vmi]->vertexColors[0], this->vm[vmi]->vertexColors[1], this->vm[vmi]->vertexColors[2] };
+
                     for (unsigned int i = 0; i < this->cyl_view.n; ++i) {
                         if ((this->cyl_view[i] - xy).length() < 0.05f) {
-                            //std::cout << "o";
-                            this->cyl_data[i] = 1.0f/static_cast<float>(1+vmi);
+                            this->cyl_data[i] = col; //1.0f/static_cast<float>(1+vmi); // sets colour
                         }
                     }
                     //std::cout << "\n";
