@@ -27,6 +27,16 @@ namespace morph {
             unsigned int /*GLuint*/ tprog = 0;
         };
 
+        // This defines different graphics shader types, as used in morph::Visual. The essential
+        // difference between the current shaders is that they render different projection types
+        enum class graphics_shader_type
+        {
+            none,         // Unset/unknown graphics shader type
+            projection2d, // both orthographic and perspective projections to a 2D surface
+            cylindrical,  // A cylindrical projection
+            spherical     // not implemented, but we could have a spherical projection
+        };
+
         //! The locations for the position, normal and colour vertex attributes in the
         //! morph::Visual GLSL programs
         enum AttribLocn { posnLoc = 0, normLoc = 1, colLoc = 2, textureLoc = 3 };

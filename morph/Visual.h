@@ -168,7 +168,7 @@ namespace morph {
             if (this->shaders.gprog) {
                 glDeleteProgram (this->shaders.gprog);
                 this->shaders.gprog = 0;
-                this->active_graphics_shader = 0;
+                this->active_gprog = morph::visgl::graphics_shader_type::none;
             }
             if (this->shaders.tprog) {
                 glDeleteProgram (this->shaders.tprog);
@@ -469,16 +469,16 @@ namespace morph {
             const double retinaScale = 1; // Qt has devicePixelRatio() to get retinaScale.
 #endif
             if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
-                if (this->active_graphics_shader == 2 || this->active_graphics_shader == 0) {
+                if (this->active_gprog != morph::visgl::graphics_shader_type::projection2d) {
                     if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
-                    this->shaders.gprog = morph::gl::LoadShaders (this->persp_shader_progs);
-                    this->active_graphics_shader = 1;
+                    this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs);
+                    this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
                 }
             } else if (this->ptype == perspective_type::cylindrical) {
-                if (this->active_graphics_shader == 1 || this->active_graphics_shader == 0) {
+                if (this->active_gprog != morph::visgl::graphics_shader_type::cylindrical) {
                     if (this->shaders.gprog) { glDeleteProgram (this->shaders.gprog); }
                     this->shaders.gprog = morph::gl::LoadShaders (this->cyl_shader_progs);
-                    this->active_graphics_shader = 2;
+                    this->active_gprog = morph::visgl::graphics_shader_type::cylindrical;
                 }
             }
 
@@ -624,9 +624,13 @@ namespace morph {
         //! struct. There's one for graphical objects and a text shader program, which
         //! uses textures to draw text on quads.
         morph::visgl::visual_shaderprogs shaders;
-        int active_graphics_shader = 0; // 1 for perspective, 2 for cyl. 0 for inactive
-        std::vector<morph::gl::ShaderInfo> persp_shader_progs;
+        //! Which shader is active for graphics shading?
+        morph::visgl::graphics_shader_type active_gprog = morph::visgl::graphics_shader_type::none;
+        //! Stores the info required to load the 2D projection shader
+        std::vector<morph::gl::ShaderInfo> proj2d_shader_progs;
+        //! Stores the info required to load the cylindrical projection shader
         std::vector<morph::gl::ShaderInfo> cyl_shader_progs;
+        //! Stores the info required to load the text shader
         std::vector<morph::gl::ShaderInfo> text_shader_progs;
 
         // These static functions will be set as callbacks in each VisualModel object.
@@ -994,33 +998,31 @@ namespace morph {
             glfwSwapInterval (0);
 #endif
             // Load up the shaders
-            this->persp_shader_progs = {
+            this->proj2d_shader_progs = {
                 {GL_VERTEX_SHADER, "Visual.vert.glsl", morph::getDefaultVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
-            this->shaders.gprog = morph::gl::LoadShaders (this->persp_shader_progs);
-            this->active_graphics_shader = 1;
+            this->shaders.gprog = morph::gl::LoadShaders (this->proj2d_shader_progs);
+            this->active_gprog = morph::visgl::graphics_shader_type::projection2d;
 
-            // Alternative cylindrical shader for possible later use.
+            // Alternative cylindrical shader for possible later use. (NB: not loaded immediately)
             this->cyl_shader_progs = {
                 {GL_VERTEX_SHADER, "VisCyl.vert.glsl", morph::getDefaultCylVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "Visual.frag.glsl", morph::getDefaultFragShader(glver), 0 }
             };
 
-            // An additional shader is used for text
+            // A specific text shader is loaded for text rendering
             this->text_shader_progs = {
                 {GL_VERTEX_SHADER, "VisText.vert.glsl", morph::getDefaultTextVtxShader(glver), 0 },
                 {GL_FRAGMENT_SHADER, "VisText.frag.glsl" , morph::getDefaultTextFragShader(glver), 0 }
             };
             this->shaders.tprog = morph::gl::LoadShaders (this->text_shader_progs);
 
-            // Now client code can set up HexGridVisuals.
+            // OpenGL options
             glEnable (GL_DEPTH_TEST);
-
-            // Make it possible to specify alpha. This is correct for text texture rendering too.
             glEnable (GL_BLEND);
             glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable (GL_CULL_FACE); // text example has glEnable(GL_CULL_FACE)
+            glDisable (GL_CULL_FACE);
 
             morph::gl::Util::checkError (__FILE__, __LINE__);
 
