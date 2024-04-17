@@ -44,7 +44,7 @@ namespace morph {
         };
 
         // To enable debugging, set true.
-        const bool debug_shaders = true;
+        const bool debug_shaders = false;
 
         //! Read a shader from a file.
         const GLchar* ReadShader (const std::string& filename)
