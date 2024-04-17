@@ -95,19 +95,16 @@ namespace morph {
     /*!
      * Visual 'scene' class
      *
-     * A class for visualising computational models on an OpenGL screen. Will be
-     * specialised for rendering HexGrids to begin with.
+     * A class for visualising computational models on an OpenGL screen.
      *
-     * Each Visual will have its own GLFW window and is essentially a "scene" containing
-     * a number of objects. One object might be the visualisation of some data expressed
-     * over a HexGrid. It should be possible to translate objects with respect to each
-     * other and also to rotate the entire scene, as well as use keys to generate
-     * particular effects/views.
+     * Each Visual will have its own GLFW window and is essentially a "scene" containing a number of
+     * objects. One object might be the visualisation of some data expressed over a HexGrid. Another
+     * could be a GraphVisual object. The class handles mouse events to allow the user to rotate and
+     * translate the scene, as well as use keys to generate particular effects/views.
      *
-     * It's possible to set the background colour of the scene (Visual::bgcolour), the
-     * location of the objects in the scene (Visual::setSceneTransZ and friends) and the
-     * position and field of view of the 'camera' (Visual::zNear, Visual::zFar and
-     * Visual::fov).
+     * It's possible to set the background colour of the scene (Visual::bgcolour), the location of
+     * the objects in the scene (Visual::setSceneTransZ and friends) and the position and field of
+     * view of the 'camera' (Visual::zNear, Visual::zFar and Visual::fov).
      *
      * \tparam glver The OpenGL version, encoded as a single int (see morph::gl::version)
      */
@@ -560,11 +557,11 @@ namespace morph {
         static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
-        vec<float> light_colour = {1,1,1};
+        vec<float> light_colour = { 1.0f, 1.0f, 1.0f };
         //! Strength of the ambient light
         float ambient_intensity = 1.0f;
         //! Position of a diffuse light source
-        vec<float> diffuse_position = {5,5,15};
+        vec<float> diffuse_position = { 5.0f, 5.0f, 15.0f };
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
 
@@ -577,7 +574,7 @@ namespace morph {
             // Add the depth at which the object lies.  Use forward projection to determine
             // the correct z coordinate for the inverse projection. This assumes only one
             // object.
-            vec<float, 4> point =  { 0.0, 0.0, this->scenetrans.z(), 1.0 };
+            vec<float, 4> point =  { 0.0f, 0.0f, this->scenetrans.z(), 1.0f };
             vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
 
@@ -596,7 +593,7 @@ namespace morph {
         void setPerspective()
         {
             // Calculate aspect ratio
-            float aspect = float(this->window_w) / float(this->window_h ? this->window_h : 1);
+            float aspect = static_cast<float>(this->window_w) / static_cast<float>(this->window_h ? this->window_h : 1);
             // Reset projection
             this->projection.setToIdentity();
             // Set perspective projection
@@ -624,9 +621,9 @@ namespace morph {
          * clipping distance and the field of view of the camera.
          */
 
-        float zNear = 0.001;
-        float zFar = 300.0;
-        float fov = 30.0;
+        float zNear = 0.001f;
+        float zFar = 300.0f;
+        float fov = 30.0f;
 
         //! Set to true to show the coordinate arrows
         bool showCoordArrows = false;
@@ -638,7 +635,7 @@ namespace morph {
         bool showTitle = false;
 
         //! How big should the steps in scene translation be when scrolling?
-        float scenetrans_stepsize = 0.1;
+        float scenetrans_stepsize = 0.1f;
 
         //! If you set this to true, then the mouse movements won't change scenetrans or rotation.
         bool sceneLocked = false;
@@ -667,7 +664,7 @@ namespace morph {
         //! Setter for zDefault. Sub called by Visual::setSceneTransZ().
         void setZDefault (float f)
         {
-            if (f>0.0f) {
+            if (f > 0.0f) {
                 std::cout << "WARNING setZDefault(): Normally, the default z value is negative.\n";
             }
             this->zDefault = f;
@@ -689,7 +686,7 @@ namespace morph {
         //! objects (that is, your morph::VisualModel objects).
         void setSceneTransZ (float _z)
         {
-            if (_z>0.0f) {
+            if (_z > 0.0f) {
                 std::cout << "WARNING setSceneTransZ(): Normally, the default z value is negative.\n";
             }
             this->setZDefault (_z);
@@ -732,14 +729,14 @@ namespace morph {
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
             if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
             fout << "{\n  \"scenes\" : [ { \"nodes\" : [ ";
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
             }
             fout << " ] } ],\n";
 
             fout << "  \"nodes\" : [\n";
             // for loop over VisualModels "mesh" : 0, etc
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"mesh\" : " << vmi
                      << ", \"translation\" : " << this->vm[vmi]->translation_str()
                      << (vmi < this->vm.size()-1 ? " },\n" : " }\n");
@@ -748,7 +745,7 @@ namespace morph {
 
             fout << "  \"meshes\" : [\n";
             // for each VisualModel:
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << "    { \"primitives\" : [ { \"attributes\" : { \"POSITION\" : " << 1+vmi*4
                      << ", \"COLOR_0\" : " << 2+vmi*4
                      << ", \"NORMAL\" : " << 3+vmi*4 << " }, \"indices\" : " << vmi*4 << ", \"material\": 0 } ] }"
@@ -757,7 +754,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"buffers\" : [\n";
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 // indices
                 fout << "    {\"uri\" : \"data:application/octet-stream;base64," << this->vm[vmi]->indices_base64() << "\", "
                      << "\"byteLength\" : " << this->vm[vmi]->indices_bytes() << "},\n";
@@ -775,7 +772,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"bufferViews\" : [\n";
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 // indices
                 fout << "    { ";
                 fout << "\"buffer\" : " << vmi*4 << ", ";
@@ -809,7 +806,7 @@ namespace morph {
             fout << "  ],\n";
 
             fout << "  \"accessors\" : [\n";
-            for (std::size_t vmi = 0U; vmi < this->vm.size(); ++vmi) {
+            for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 this->vm[vmi]->computeVertexMaxMins();
                 // indices
                 fout << "    { ";
@@ -979,9 +976,9 @@ namespace morph {
 
             // Set up the title, which may or may not be rendered
             this->textModel = std::make_unique<VisualTextModel<glver>> (this, this->shaders.tprog,
-                                                                                 morph::VisualFont::DVSans,
-                                                                                 0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
-                                                                                 this->title);
+                                                                        morph::VisualFont::DVSans,
+                                                                        0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
+                                                                        this->title);
         }
 
         //! The default z=0 position for HexGridVisual models
@@ -1000,16 +997,16 @@ namespace morph {
         std::string title = "morph::Visual";
 
         //! The user's 'selected visual model'. For model specific changes to alpha and possibly colour
-        unsigned int selectedVisualModel = 0;
+        unsigned int selectedVisualModel = 0u;
 
     protected:
         //! A little model of the coordinate axes.
         std::unique_ptr<CoordArrows<glver>> coordArrows;
 
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
-        vec<float, 2> coordArrowsOffset = {-0.8f, -0.8f};
+        vec<float, 2> coordArrowsOffset = { -0.8f, -0.8f };
         //! Length of coordinate arrows. Configurable at morph::Visual construction.
-        vec<float> coordArrowsLength = {0.1f, 0.1f, 0.1f};
+        vec<float> coordArrowsLength = { 0.1f, 0.1f, 0.1f };
         //! A factor used to slim (<1) or thicken (>1) the thickness of the axes of the CoordArrows.
         float coordArrowsThickness = 1.0f;
         //! Text size for x,y,z.
@@ -1026,13 +1023,13 @@ namespace morph {
          */
 
         //! Current cursor position
-        vec<float,2> cursorpos = {0.0f, 0.0f};
+        vec<float,2> cursorpos = { 0.0f, 0.0f };
 
         //! Holds the translation coordinates for the current location of the entire scene
-        vec<float> scenetrans = {0.0, 0.0, Z_DEFAULT};
+        vec<float> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        vec<float> scenetrans_default = {0.0, 0.0, Z_DEFAULT};
+        vec<float> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
@@ -1047,10 +1044,10 @@ namespace morph {
         bool translateMode = false;
 
         //! Screen coordinates of the position of the last mouse press
-        vec<float,2> mousePressPosition = {0.0f, 0.0f};
+        vec<float,2> mousePressPosition = { 0.0f, 0.0f };
 
         //! The current rotation axis. World frame?
-        vec<float> rotationAxis = {0.0f, 0.0f, 0.0f};
+        vec<float> rotationAxis = { 0.0f, 0.0f, 0.0f };
 
         //! A rotation quaternion. You could have guessed that, right?
         Quaternion<float> rotation;
@@ -1330,15 +1327,15 @@ namespace morph {
             if (this->rotateMode) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 vec<float, 2> p0_coord = this->mousePressPosition;
-                p0_coord[0] -= this->window_w/2.0;
-                p0_coord[0] /= this->window_w/2.0;
-                p0_coord[1] -= this->window_h/2.0;
-                p0_coord[1] /= this->window_h/2.0;
+                p0_coord[0] -= this->window_w * 0.5f;
+                p0_coord[0] /= this->window_w * 0.5f;
+                p0_coord[1] -= this->window_h * 0.5f;
+                p0_coord[1] /= this->window_h * 0.5f;
                 vec<float, 2> p1_coord = this->cursorpos;
-                p1_coord[0] -= this->window_w/2.0;
-                p1_coord[0] /= this->window_w/2.0;
-                p1_coord[1] -= this->window_h/2.0;
-                p1_coord[1] /= this->window_h/2.0;
+                p1_coord[0] -= this->window_w * 0.5f;
+                p1_coord[0] /= this->window_w * 0.5f;
+                p1_coord[1] -= this->window_h * 0.5f;
+                p1_coord[1] /= this->window_h * 0.5f;
 
                 // DON'T update mousePressPosition until user releases button.
                 // this->mousePressPosition = this->cursorpos;
@@ -1371,7 +1368,7 @@ namespace morph {
 
                 // Rotation axis is perpendicular to the mouse position difference vector
                 // BUT we have to project into the model frame to determine how to rotate the model!
-                float rotamount = mouseMoveWorld.length() * 40.0;
+                float rotamount = mouseMoveWorld.length() * 40.0f;
                 // Calculate new rotation axis as weighted sum
                 this->rotationAxis = (mouseMoveWorld * rotamount);
                 this->rotationAxis.renormalize();
@@ -1392,15 +1389,15 @@ namespace morph {
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 vec<float, 2> p0_coord = this->mousePressPosition;
-                p0_coord[0] -= this->window_w/2.0;
-                p0_coord[0] /= this->window_w/2.0;
-                p0_coord[1] -= this->window_h/2.0;
-                p0_coord[1] /= this->window_h/2.0;
+                p0_coord[0] -= this->window_w * 0.5f;
+                p0_coord[0] /= this->window_w * 0.5f;
+                p0_coord[1] -= this->window_h * 0.5f;
+                p0_coord[1] /= this->window_h * 0.5f;
                 vec<float, 2> p1_coord = this->cursorpos;
-                p1_coord[0] -= this->window_w/2.0;
-                p1_coord[0] /= this->window_w/2.0;
-                p1_coord[1] -= this->window_h/2.0;
-                p1_coord[1] /= this->window_h/2.0;
+                p1_coord[0] -= this->window_w * 0.5f;
+                p1_coord[0] /= this->window_w * 0.5f;
+                p1_coord[1] -= this->window_h * 0.5f;
+                p1_coord[1] /= this->window_h * 0.5f;
 
                 this->mousePressPosition = this->cursorpos;
 
@@ -1420,7 +1417,7 @@ namespace morph {
                 // This computes the difference betwen v0 and v1, the 2 mouse positions in the world
                 mouseMoveWorld[0] = (v1[0]/v1[3]) - (v0[0]/v0[3]);
                 mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);
-                //mouseMoveWorld.z = (v1[2]/v1[3]) - (v0[2]/v0[3]);// unmodified
+                // Note: mouseMoveWorld[2] is unmodified
 
                 // This is "translate the scene" mode. Could also have a "translate one
                 // HexGridVisual" mode, to adjust relative positions.
