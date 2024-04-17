@@ -84,7 +84,7 @@ namespace morph {
     public:
         VisualModel()
         {
-            this->mv_offset = {0.0, 0.0, 0.0};
+            this->mv_offset = { 0.0f, 0.0f, 0.0f };
             this->model_scaling.setToIdentity();
         }
 
@@ -186,7 +186,7 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             this->clearTexts();
-            this->idx = 0U;
+            this->idx = 0u;
             this->reinit_buffers();
         }
 
@@ -199,7 +199,7 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             // NB: Do NOT call clearTexts() here! We're only updating the model itself.
-            this->idx = 0U;
+            this->idx = 0u;
             this->initializeVertices();
             this->reinit_buffers();
         }
@@ -215,17 +215,17 @@ namespace morph {
             this->vertexColors.clear();
             this->indices.clear();
             this->clearTexts();
-            this->idx = 0U;
+            this->idx = 0u;
             this->initializeVertices();
             this->reinit_buffers();
         }
 
         void reserve_vertices (std::size_t n_vertices)
         {
-            this->vertexPositions.reserve (3U * n_vertices);
-            this->vertexNormals.reserve (3U * n_vertices);
-            this->vertexColors.reserve (3U * n_vertices);
-            this->indices.reserve (6U * n_vertices);
+            this->vertexPositions.reserve (3u * n_vertices);
+            this->vertexNormals.reserve (3u * n_vertices);
+            this->vertexColors.reserve (3u * n_vertices);
+            this->indices.reserve (6u * n_vertices);
         }
 
         //! A function to call initialiseVertices and postVertexInit after any necessary
@@ -348,7 +348,7 @@ namespace morph {
                                       const morph::vec<float, 3>& _toffset,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.05,
+                                      const float _fontsize = 0.05f,
                                       const int _fontres = 24)
         {
             morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
@@ -361,7 +361,7 @@ namespace morph {
                                       morph::VisualTextModel<glver>*& tm,
                                       const std::array<float, 3>& _tcolour = morph::colour::black,
                                       const morph::VisualFont _font = morph::VisualFont::DVSans,
-                                      const float _fontsize = 0.05,
+                                      const float _fontsize = 0.05f,
                                       const int _fontres = 24)
         {
             morph::TextFeatures tfeat (_fontsize, _fontres, false, _tcolour, _font);
@@ -507,7 +507,7 @@ namespace morph {
         std::string indices_base64()
         {
             std::vector<std::uint8_t> idx_bytes (this->indices.size() << 2, 0);
-            std::size_t b = 0U;
+            std::size_t b = 0u;
             for (auto i : this->indices) {
                 idx_bytes[b++] = i & 0xff;
                 idx_bytes[b++] = i >> 8 & 0xff;
@@ -521,7 +521,7 @@ namespace morph {
         void computeVertexMaxMins()
         {
             // Compute index maxmins
-            for (std::size_t i = 0; i < this->indices.size(); ++i) {
+            for (std::size_t i = 0u; i < this->indices.size(); ++i) {
                 idx_max = this->indices[i] > idx_max ? this->indices[i] : idx_max;
                 idx_min = this->indices[i] < idx_min ? this->indices[i] : idx_min;
             }
@@ -532,7 +532,7 @@ namespace morph {
                 throw std::runtime_error ("Expect vertexPositions, Colors and Normals vectors all to have same size");
             }
 
-            for (std::size_t i = 0; i < this->vertexPositions.size(); i+=3) {
+            for (std::size_t i = 0u; i < this->vertexPositions.size(); i+=3u) {
                 vpos_maxes[0] =  (vertexPositions[i] > vpos_maxes[0]) ? vertexPositions[i] : vpos_maxes[0];
                 vpos_maxes[1] =  (vertexPositions[i+1] > vpos_maxes[1]) ? vertexPositions[i+1] : vpos_maxes[1];
                 vpos_maxes[2] =  (vertexPositions[i+2] > vpos_maxes[2]) ? vertexPositions[i+2] : vpos_maxes[2];
@@ -562,7 +562,7 @@ namespace morph {
         std::string vpos_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexPositions.size() << 2, 0);
-            std::size_t b = 0U;
+            std::size_t b = 0u;
             float_bytes fb;
             for (auto i : this->vertexPositions) {
                 fb.f = i;
@@ -580,7 +580,7 @@ namespace morph {
         std::string vcol_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexColors.size() << 2, 0);
-            std::size_t b = 0U;
+            std::size_t b = 0u;
             float_bytes fb;
             for (auto i : this->vertexColors) {
                 fb.f = i;
@@ -598,7 +598,7 @@ namespace morph {
         std::string vnorm_base64()
         {
             std::vector<std::uint8_t> _bytes (this->vertexNormals.size()<<2, 0);
-            std::size_t b = 0U;
+            std::size_t b = 0u;
             float_bytes fb;
             for (auto i : this->vertexNormals) {
                 fb.f = i;
@@ -615,7 +615,7 @@ namespace morph {
         bool twodimensional = false;
 
         //! The current indices index
-        GLuint idx = 0U;
+        GLuint idx = 0u;
 
         //! Set scaling in all dimensions
         void setSizeScale (const float scl)
@@ -683,11 +683,11 @@ namespace morph {
         enum VBOPos { posnVBO, normVBO, colVBO, idxVBO, numVBO };
 
         //! A unit vector in the x direction
-        morph::vec<float, 3> ux = {1,0,0};
+        morph::vec<float, 3> ux = { 1.0f, 0.0f, 0.0f };
         //! A unit vector in the y direction
-        morph::vec<float, 3> uy = {0,1,0};
+        morph::vec<float, 3> uy = { 0.0f, 1.0f, 0.0f };
         //! A unit vector in the z direction
-        morph::vec<float, 3> uz = {0,0,1};
+        morph::vec<float, 3> uz = { 0.0f, 0.0f, 1.0f };
 
         /*
          * Compute positions and colours of vertices for the hexes and store in these:
@@ -719,7 +719,7 @@ namespace morph {
         morph::vec<float, 3> vnorm_maxes = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         morph::vec<float, 3> vnorm_mins = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         //! Max value in indices
-        GLuint idx_max = 0;
+        GLuint idx_max = 0u;
         //! Min value in indices.
         GLuint idx_min = std::numeric_limits<GLuint>::max();
 
@@ -734,7 +734,7 @@ namespace morph {
         //! Push three floats onto the vector of floats \a vp
         void vertex_push (const float& x, const float& y, const float& z, std::vector<float>& vp)
         {
-            vec<float> vec = {x, y, z};
+            vec<float> vec = { x, y, z };
             std::copy (vec.begin(), vec.end(), std::back_inserter (vp));
         }
         //! Push array of 3 floats onto the vector of floats \a vp
@@ -856,9 +856,9 @@ namespace morph {
 
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1;
-            GLuint endMiddle = idx + (GLuint)nverts - 1;
-            GLuint endStartIdx = capStartIdx + (3*segments);
+            GLuint capStartIdx = idx + 1u;
+            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint endStartIdx = capStartIdx + (3u * segments);
 
             //std::cout << "start cap" << std::endl;
             for (int j = 0; j < segments-1; j++) {
@@ -1028,9 +1028,9 @@ namespace morph {
 
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1;
-            GLuint endMiddle = idx + (GLuint)nverts - 1;
-            GLuint endStartIdx = capStartIdx + (3*segments);
+            GLuint capStartIdx = idx + 1u;
+            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint endStartIdx = capStartIdx + (3u * segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1100,7 +1100,7 @@ namespace morph {
             this->vertex_push (c3, this->vertexPositions);
             this->vertex_push (c4, this->vertexPositions);
             // Colours/normals
-            for (unsigned int i = 0; i < 4U; ++i) {
+            for (unsigned int i = 0; i < 4u; ++i) {
                 this->vertex_push (col, this->vertexColors);
                 this->vertex_push (v, this->vertexNormals);
             }
@@ -1135,7 +1135,7 @@ namespace morph {
         void computeFlatPoly (GLuint& idx, vec<float> vstart,
                               vec<float> _ux, vec<float> _uy,
                               std::array<float, 3> col,
-                              float r=1.0f, int segments=12, float rotation=0.0f)
+                              float r = 1.0f, int segments = 12, float rotation = 0.0f)
         {
             // v is a face normal
             vec<float> v = _uy.cross(_ux);
@@ -1193,24 +1193,24 @@ namespace morph {
                           float t = 0.1f, int segments = 12)
         {
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
+                float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                 // x and y of inner point
                 float xin = (r-(t*0.5f)) * cos(segment);
                 float yin = (r-(t*0.5f)) * sin(segment);
                 float xout = (r+(t*0.5f)) * cos(segment);
                 float yout = (r+(t*0.5f)) * sin(segment);
                 int segjnext = (j+1) % segments;
-                float segnext = 2 * morph::mathconst<float>::pi * (float) (segjnext) / segments;
+                float segnext = morph::mathconst<float>::two_pi * static_cast<float>(segjnext) / segments;
                 float xin_n = (r-(t*0.5f)) * cos(segnext);
                 float yin_n = (r-(t*0.5f)) * sin(segnext);
                 float xout_n = (r+(t*0.5f)) * cos(segnext);
                 float yout_n = (r+(t*0.5f)) * sin(segnext);
 
                 // Now draw a quad
-                vec<float> c1 = {xin, yin, 0};
-                vec<float> c2 = {xout, yout, 0};
-                vec<float> c3 = {xout_n, yout_n, 0};
-                vec<float> c4 = {xin_n, yin_n, 0};
+                vec<float> c1 = { xin, yin, 0.0f };
+                vec<float> c2 = { xout, yout, 0.0f };
+                vec<float> c3 = { xout_n, yout_n, 0.0f };
+                vec<float> c4 = { xin_n, yin_n, 0.0f };
                 this->computeFlatQuad (idx, ro+c1, ro+c2, ro+c3, ro+c4, rc);
             }
         }
@@ -1233,11 +1233,11 @@ namespace morph {
         {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
-            float rings0 = morph::mathconst<float>::pi * -0.5;
+            float rings0 = -morph::mathconst<float>::pi_over_2;
             float _z0  = sin(rings0);
             float z0  = r * _z0;
             float r0 =  cos(rings0);
-            float rings1 = morph::mathconst<float>::pi * (-0.5 + 1.0f / rings);
+            float rings1 = morph::mathconst<float>::pi * (-0.5f + 1.0f / rings);
             float _z1 = sin(rings1);
             float z1 = r * _z1;
             float r1 = cos(rings1);
@@ -1252,7 +1252,7 @@ namespace morph {
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
+                float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                 float x = cos(segment);
                 float y = sin(segment);
 
@@ -1281,7 +1281,7 @@ namespace morph {
             // Now add the triangles around the rings
             for (int i = 2; i < rings; i++) {
 
-                rings0 = morph::mathconst<float>::pi * (-0.5 + (float) (i) / rings);
+                rings0 = morph::mathconst<float>::pi * (-0.5f + static_cast<float>(i) / rings);
                 _z0  = sin(rings0);
                 z0  = r * _z0;
                 r0 =  cos(rings0);
@@ -1289,7 +1289,7 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
-                    float segment = 2 * morph::mathconst<float>::pi * (float)j / segments;
+                    float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                     float x = cos(segment);
                     float y = sin(segment);
 
@@ -1327,7 +1327,7 @@ namespace morph {
             }
 
             // bottom cap
-            rings0 = morph::mathconst<float>::pi * 0.5;
+            rings0 = morph::mathconst<float>::pi_over_2;
             _z0  = sin(rings0);
             z0  = r * _z0;
             r0 =  cos(rings0);
@@ -1373,11 +1373,11 @@ namespace morph {
         {
             // First cap, draw as a triangle fan, but record indices so that
             // we only need a single call to glDrawElements.
-            float rings0 = morph::mathconst<float>::pi * -0.5;
+            float rings0 = -morph::mathconst<float>::pi_over_2;
             float _z0  = sin(rings0);
             float z0  = r * _z0;
             float r0 =  cos(rings0);
-            float rings1 = morph::mathconst<float>::pi * (-0.5 + 1.0f / rings);
+            float rings1 = morph::mathconst<float>::pi * (-0.5f + 1.0f / rings);
             float _z1 = sin(rings1);
             float z1 = r * _z1;
             float r1 = cos(rings1);
@@ -1392,7 +1392,7 @@ namespace morph {
 
             bool firstseg = true;
             for (int j = 0; j < segments; j++) {
-                float segment = 2 * morph::mathconst<float>::pi * (float) (j) / segments;
+                float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                 float x = cos(segment);
                 float y = sin(segment);
 
@@ -1421,7 +1421,7 @@ namespace morph {
             // Now add the triangles around the rings
             for (int i = 2; i < rings; i++) {
 
-                rings0 = morph::mathconst<float>::pi * (-0.5 + (float) (i) / rings);
+                rings0 = morph::mathconst<float>::pi * (-0.5f + static_cast<float>(i) / rings);
                 _z0  = sin(rings0);
                 z0  = r * _z0;
                 r0 =  cos(rings0);
@@ -1429,7 +1429,7 @@ namespace morph {
                 for (int j = 0; j < segments; j++) {
 
                     // "current" segment
-                    float segment = 2 * morph::mathconst<float>::pi * (float)j / segments;
+                    float segment = morph::mathconst<float>::two_pi * static_cast<float>(j) / segments;
                     float x = cos(segment);
                     float y = sin(segment);
 
@@ -1470,7 +1470,7 @@ namespace morph {
             }
 
             // bottom cap
-            rings0 = morph::mathconst<float>::pi * 0.5;
+            rings0 = morph::mathconst<float>::pi_over_2;
             _z0  = sin(rings0);
             z0  = r * _z0;
             r0 =  cos(rings0);
@@ -1544,7 +1544,7 @@ namespace morph {
 
             // Base ring with normals in direction -v
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 // Subtract the vector which makes this circle
                 c = c + (c * ringoffset);
@@ -1555,7 +1555,7 @@ namespace morph {
 
             // Intermediate ring of vertices around/aligned with the base ring with normals in direction c
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vbase+c, this->vertexPositions);
@@ -1566,7 +1566,7 @@ namespace morph {
 
             // Intermediate ring of vertices around the tip with normals direction c
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::mathconst<float>::two_pi/(float)segments;
+                float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c = inplane * sin(t) * r + v_x_inplane * cos(t) * r;
                 c = c + (c * ringoffset);
                 this->vertex_push (vtip, this->vertexPositions);
@@ -1580,14 +1580,14 @@ namespace morph {
             this->vertex_push (v, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            // Number of vertices = segments*3 + 2.
-            int nverts = segments*3 + 2;
+            // Number of vertices = segments * 3 + 2.
+            int nverts = segments * 3 + 2;
 
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
             GLuint capStartIdx = idx + 1;
             GLuint endMiddle = idx + (GLuint)nverts - 1;
-            GLuint endStartIdx = capStartIdx /*+ segments*/;
+            GLuint endStartIdx = capStartIdx;
 
             // Base of the cone
             for (int j = 0; j < segments-1; j++) {
@@ -1710,7 +1710,7 @@ namespace morph {
             angles[6] = morph::mathconst<float>::two_pi - angles[0];
             angles[7] = angles[6];
             // The normals for the vertices around the line
-            std::array<vec<float>, 8> norms = {vv, uz, uz, -vv, -vv, -uz, -uz, vv};
+            std::array<vec<float>, 8> norms = { vv, uz, uz, -vv, -vv, -uz, -uz, vv };
 
             // Start cap vertices (a triangle fan)
             for (int j = 0; j < segments; j++) {
@@ -1754,9 +1754,9 @@ namespace morph {
 
             // After creating vertices, push all the indices.
             GLuint capMiddle = idx;
-            GLuint capStartIdx = idx + 1;
-            GLuint endMiddle = idx + (GLuint)nverts - 1;
-            GLuint endStartIdx = capStartIdx + (3*segments);
+            GLuint capStartIdx = idx + 1u;
+            GLuint endMiddle = idx + (GLuint)nverts - 1u;
+            GLuint endStartIdx = capStartIdx + (3u * segments);
 
             // Start cap indices
             for (int j = 0; j < segments-1; j++) {
@@ -1832,7 +1832,7 @@ namespace morph {
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = (vv*w*0.5f);
+            vec<float> ww = vv * w * 0.5f;
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
             vec<float> c3 = vend - ww;
@@ -1896,7 +1896,7 @@ namespace morph {
             vv.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = (vv*w*0.5f);
+            vec<float> ww = vv * w * 0.5f;
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
             vec<float> c3 = vend - ww;
@@ -1904,7 +1904,7 @@ namespace morph {
 
             int segments = 12;
             float r = 0.5f * w;
-            unsigned int startvertices = 0U;
+            unsigned int startvertices = 0u;
             if (startcaps) {
                 // Push the central point of the start cap - this is at location vstart
                 this->vertex_push (vstart, this->vertexPositions);
@@ -1915,8 +1915,8 @@ namespace morph {
 
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
-                    float t = j * morph::mathconst<float>::two_pi/(float)segments;
-                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
+                    float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
+                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vstart+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -1942,7 +1942,7 @@ namespace morph {
             this->vertex_push (uz, this->vertexNormals);
             this->vertex_push (col, this->vertexColors);
 
-            unsigned int endvertices = 0;
+            unsigned int endvertices = 0u;
             if (endcaps) {
                 // Push the central point of the end cap - this is at location vend
                 this->vertex_push (vend, this->vertexPositions);
@@ -1953,8 +1953,8 @@ namespace morph {
 
                 // Start cap vertices (a triangle fan)
                 for (int j = 0; j < segments; j++) {
-                    float t = j * morph::mathconst<float>::two_pi/(float)segments;
-                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0 };
+                    float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
+                    morph::vec<float> c = { sin(t) * r, cos(t) * r, 0.0f };
                     this->vertex_push (vend+c, this->vertexPositions);
                     this->vertex_push (uz, this->vertexNormals);
                     this->vertex_push (col, this->vertexColors);
@@ -2035,12 +2035,12 @@ namespace morph {
             vvn.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = ( (vv+vvp)*0.5f * w*0.5f );
+            vec<float> ww = ( (vv+vvp) * 0.5f * w * 0.5f );
 
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
 
-            ww = ( (vv+vvn)*0.5f * w*0.5f );
+            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
 
             vec<float> c3 = vend - ww;
             vec<float> c4 = vend + ww;
@@ -2102,7 +2102,7 @@ namespace morph {
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
 
-            ww = (vv*w*0.5f);
+            ww = vv * w * 0.5f;
 
             vec<float> c3 = vend - ww;
             vec<float> c4 = vend + ww;
@@ -2159,12 +2159,12 @@ namespace morph {
             vvn.renormalize();
 
             // corners of the line, and the start angle is determined from vv and w
-            vec<float> ww = (vv*w*0.5f);
+            vec<float> ww = vv * w * 0.5f;
 
             vec<float> c1 = vstart + ww;
             vec<float> c2 = vstart - ww;
 
-            ww = ( (vv+vvn)*0.5f * w*0.5f );
+            ww = ( (vv+vvn) * 0.5f * w * 0.5f );
 
             vec<float> c3 = vend - ww;
             vec<float> c4 = vend + ww;
@@ -2220,7 +2220,7 @@ namespace morph {
             if (shorten > 0.0f) {
                 vstart = start + v * shorten;
                 vend = end - v * shorten;
-                linelen = v.length() - shorten*2.0f;
+                linelen = v.length() - shorten * 2.0f;
             }
 
             // vv is normal to v and uz
@@ -2235,7 +2235,7 @@ namespace morph {
             while (dashes.length() < linelen) {
 
                 // corners of the line, and the start angle is determined from vv and w
-                vec<float> ww = (vv*w*0.5f);
+                vec<float> ww = vv * w * 0.5f;
                 vec<float> c1 = dash_s + ww;
                 vec<float> c2 = dash_s - ww;
                 vec<float> c3 = dash_e - ww;
@@ -2297,12 +2297,12 @@ namespace morph {
             vec<float> norm_x_inplane = norm.cross(inplane);
 
             float half_lw = linewidth / 2.0f;
-            float r_in = radius-half_lw;
-            float r_out = radius+half_lw;
+            float r_in = radius - half_lw;
+            float r_out = radius + half_lw;
             // Inner ring at radius radius-linewidth/2 with normals in direction norm;
             // Outer ring at radius radius+linewidth/2 with normals also in direction norm
             for (int j = 0; j < segments; j++) {
-                float t = j * morph::mathconst<float>::two_pi/static_cast<float>(segments);
+                float t = j * morph::mathconst<float>::two_pi / static_cast<float>(segments);
                 vec<float> c_in = inplane * sin(t) * r_in + norm_x_inplane * cos(t) * r_in;
                 this->vertex_push (centre+c_in, this->vertexPositions);
                 this->vertex_push (norm, this->vertexNormals);
