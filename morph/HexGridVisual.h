@@ -990,7 +990,7 @@ namespace morph {
                     clr = (*this->vectorData)[hi];
                 } else {
                     // Need to cast:
-                    for (unsigned int i = 0U; i < 3U; ++i) {
+                    for (unsigned int i = 0u; i < 3u; ++i) {
                         clr[i] = static_cast<float>((*this->vectorData)[hi][i]);
                     }
                 }

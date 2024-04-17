@@ -1441,7 +1441,7 @@ namespace morph {
 
             morph::vvec<float> expr_resampled(this->num(), 0.0f);
 #pragma omp parallel for // parallel on this outer loop gives best result (5.8 s vs 7 s)
-            for (typename std::vector<float>::size_type xi = 0U; xi < this->d_x.size(); ++xi) {
+            for (typename std::vector<float>::size_type xi = 0u; xi < this->d_x.size(); ++xi) {
                 float expr = 0.0f;
 //#pragma omp parallel for reduction(+:expr)
                 for (unsigned int i = 0; i < csz; ++i) {
