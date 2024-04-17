@@ -14,7 +14,7 @@ uniform float alpha;
 uniform float cyl_radius = 0.005;
 uniform float cyl_height = 0.02;
 // Camera position
-uniform vec4 campos = vec4(0);
+uniform vec4 cyl_cam_pos = vec4(0);
 
 // My original inputs
 layout(location = 0) in vec4 position; // Attrib location 0. vertex position
@@ -32,13 +32,10 @@ void main (void)
 {
     const float pi = 3.1415927;
     const float two_pi = 6.283185307;
-    float heading_offset = 1.570796327; // pi/2
-    float hdelta = heading_offset / 10.0;
-    heading_offset = heading_offset - 3.0 * hdelta;
-    // Position of vertex WITHOUT a perspective transformation.
-    //vec4 pv = (m_matrix * v_matrix * position);
-    vec4 pv = (m_matrix * position);
-    vec4 ray = pv - campos;
+    const float heading_offset = 1.570796327; // pi/2 but maybe pass in?
+    // Transform vertex position with scene view and model view matrices
+    vec4 pv = (v_matrix * m_matrix * position);
+    vec4 ray = pv - (v_matrix * cyl_cam_pos);
     vec3 rho_phi_z; // polar coordinates of ray
     rho_phi_z[0] = sqrt (ray.x * ray.x + ray.y * ray.y);
     rho_phi_z[1] = atan (ray.y, ray.x) - heading_offset; // glsl atan(y,x) like std::atan2(y,x)
@@ -52,7 +49,7 @@ void main (void)
     if (x_s != 0.0) {
         // theta is angle from xy plane to vertex
         float theta = asin (rho_phi_z[2] / rho_phi_z[0]);
-        y_s = (cyl_radius * tan (theta)) / cyl_height; // Truncated.
+        y_s = (cyl_radius * tan (theta)) / cyl_height;
         gl_PointSize = 1;
         gl_Position = vec4(x_s, y_s, -1.0, 1.0);
         vertex.color = vec4(color, alpha);
@@ -61,7 +58,7 @@ void main (void)
     } else {
         gl_Position = vec4(0.0, 0.0, -100.0, 1.0);
         vertex.color = vec4(color, 0.0);
-        vertex.fragpos = vec3(m_matrix * position); // within-model position of fragment, used for lighting
+        vertex.fragpos = vec3(m_matrix * position);
         vertex.normal = normalin;
     }
 }

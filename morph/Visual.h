@@ -411,15 +411,25 @@ namespace morph {
             } else if (this->ptype == perspective_type::perspective) {
                 this->setPerspective();
             } else if (this->ptype == perspective_type::cylindrical) {
-                // Nothing further to do
+                // Set cylindrical specific uniforms
+                GLint loc_campos = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
+                if (loc_campos != -1) { glUniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
+                GLint loc_cyl_radius = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
+                if (loc_cyl_radius != -1) { glUniform1f (loc_cyl_radius, this->cyl_radius); }
+                GLint loc_cyl_height = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
+                if (loc_cyl_height != -1) { glUniform1f (loc_cyl_height, this->cyl_height); }
+
+
             } else {
                 throw std::runtime_error ("Unknown projection");
             }
 
             // Calculate model view transformation - transforming from "model space" to "worldspace".
             TransformMatrix<float> sceneview;
-            // This line translates from model space to world space.
-            sceneview.translate (this->scenetrans); // send backwards into distance
+            if (this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective) {
+                // This line translates from model space to world space. Avoid in cyl?
+                sceneview.translate (this->scenetrans); // send backwards into distance
+            }
             // And this rotation completes the transition from model to world
             sceneview.rotate (this->rotation);
 
@@ -433,24 +443,16 @@ namespace morph {
             //
             // Ambient light colour
             GLint loc_lightcol = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("light_colour"));
-            if (loc_lightcol != -1) {
-                glUniform3fv (loc_lightcol, 1, this->light_colour.data());
-            }
+            if (loc_lightcol != -1) { glUniform3fv (loc_lightcol, 1, this->light_colour.data()); }
             // Ambient light intensity
             GLint loc_ai = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("ambient_intensity"));
-            if (loc_ai != -1) {
-                glUniform1f (loc_ai, this->ambient_intensity);
-            }
+            if (loc_ai != -1) { glUniform1f (loc_ai, this->ambient_intensity); }
             // Diffuse light position
             GLint loc_dp = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_position"));
-            if (loc_dp != -1) {
-                glUniform3fv (loc_dp, 1, this->diffuse_position.data());
-            }
+            if (loc_dp != -1) { glUniform3fv (loc_dp, 1, this->diffuse_position.data()); }
             // Diffuse light intensity
             GLint loc_di = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("diffuse_intensity"));
-            if (loc_di != -1) {
-                glUniform1f (loc_di, this->diffuse_intensity);
-            }
+            if (loc_di != -1) { glUniform1f (loc_di, this->diffuse_intensity); }
 
             // Switch to text shader program and set the projection matrix
             glUseProgram (this->shaders.tprog);
@@ -464,7 +466,8 @@ namespace morph {
             loc_p = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("p_matrix"));
             if (loc_p != -1) { glUniformMatrix4fv (loc_p, 1, GL_FALSE, this->projection.mat.data()); }
 
-            if (this->showCoordArrows == true) {
+            if ((this->ptype == perspective_type::orthographic || this->ptype == perspective_type::perspective)
+                && this->showCoordArrows == true) {
                 // Ensure coordarrows centre sphere will be visible on BG:
                 this->coordArrows->setColourForBackground (this->bgcolour);
 
@@ -526,15 +529,14 @@ namespace morph {
             // For the depth at which a text object lies, use this->text_z.  Use forward
             // projection to determine the correct z coordinate for the inverse
             // projection.
-            vec<float, 4> point =  { 0.0, 0.0, this->text_z, 1.0 };
+            vec<float, 4> point =  { 0.0f, 0.0f, this->text_z, 1.0f };
             vec<float, 4> pp = this->projection * point;
             float coord_z = pp[2]/pp[3]; // divide by pp[3] is divide by/normalise by 'w'.
             // Construct the point for the location of the text
-            vec<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0 };
+            vec<float, 4> p0 = { p0_coord.x(), p0_coord.y(), coord_z, 1.0f };
             // Inverse project the point
             vec<float, 3> v0;
             v0.set_from (this->invproj * p0);
-            //tm->setSceneTranslation (v0);
             return v0;
         }
 
@@ -546,10 +548,19 @@ namespace morph {
         morph::visgl::graphics_shader_type active_gprog = morph::visgl::graphics_shader_type::none;
         //! Stores the info required to load the 2D projection shader
         std::vector<morph::gl::ShaderInfo> proj2d_shader_progs;
-        //! Stores the info required to load the cylindrical projection shader
-        std::vector<morph::gl::ShaderInfo> cyl_shader_progs;
         //! Stores the info required to load the text shader
         std::vector<morph::gl::ShaderInfo> text_shader_progs;
+
+        //! Stores the info required to load the cylindrical projection shader
+        std::vector<morph::gl::ShaderInfo> cyl_shader_progs;
+        //! Passed to the cyl_shader_progs as a uniform to define the location of the cylindrical projection camera
+        morph::vec<float, 4> cyl_cam_pos = { 0.0f, 0.0f, 0.0f, 1.0f };
+        //! Default cylindrical camera position
+        morph::vec<float, 4> cyl_cam_pos_default = { 0.0f, 0.0f, 0.0f, 1.0f };
+        //! The radius of the 'cylindrical projection screen' around the camera position
+        float cyl_radius = 0.005f;
+        //! The height of the 'cylindrical projection screen'
+        float cyl_height = 0.02f;
 
         // These static functions will be set as callbacks in each VisualModel object.
         static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
@@ -1269,6 +1280,7 @@ namespace morph {
                 std::cout << "Reset to default view\n";
                 // Reset translation
                 this->scenetrans = this->scenetrans_default;
+                this->cyl_cam_pos = this->cyl_cam_pos_default;
                 // Reset rotation
                 Quaternion<float> rt;
                 this->rotation = rt;
@@ -1327,15 +1339,11 @@ namespace morph {
             if (this->rotateMode) {
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 vec<float, 2> p0_coord = this->mousePressPosition;
-                p0_coord[0] -= this->window_w * 0.5f;
-                p0_coord[0] /= this->window_w * 0.5f;
-                p0_coord[1] -= this->window_h * 0.5f;
-                p0_coord[1] /= this->window_h * 0.5f;
+                p0_coord -= this->window_w * 0.5f;
+                p0_coord /= this->window_w * 0.5f;
                 vec<float, 2> p1_coord = this->cursorpos;
-                p1_coord[0] -= this->window_w * 0.5f;
-                p1_coord[0] /= this->window_w * 0.5f;
-                p1_coord[1] -= this->window_h * 0.5f;
-                p1_coord[1] /= this->window_h * 0.5f;
+                p1_coord -= this->window_w * 0.5f;
+                p1_coord /= this->window_w * 0.5f;
 
                 // DON'T update mousePressPosition until user releases button.
                 // this->mousePressPosition = this->cursorpos;
@@ -1389,15 +1397,11 @@ namespace morph {
 
                 // Convert mousepress/cursor positions (in pixels) to the range -1 -> 1:
                 vec<float, 2> p0_coord = this->mousePressPosition;
-                p0_coord[0] -= this->window_w * 0.5f;
-                p0_coord[0] /= this->window_w * 0.5f;
-                p0_coord[1] -= this->window_h * 0.5f;
-                p0_coord[1] /= this->window_h * 0.5f;
+                p0_coord -= this->window_w * 0.5f;
+                p0_coord /= this->window_w * 0.5f;
                 vec<float, 2> p1_coord = this->cursorpos;
-                p1_coord[0] -= this->window_w * 0.5f;
-                p1_coord[0] /= this->window_w * 0.5f;
-                p1_coord[1] -= this->window_h * 0.5f;
-                p1_coord[1] /= this->window_h * 0.5f;
+                p1_coord -= this->window_w * 0.5f;
+                p1_coord /= this->window_w * 0.5f;
 
                 this->mousePressPosition = this->cursorpos;
 
@@ -1419,10 +1423,14 @@ namespace morph {
                 mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);
                 // Note: mouseMoveWorld[2] is unmodified
 
-                // This is "translate the scene" mode. Could also have a "translate one
-                // HexGridVisual" mode, to adjust relative positions.
+                // This "translates the whole scene" (but ignored in cyl shader)
                 this->scenetrans[0] += mouseMoveWorld[0];
                 this->scenetrans[1] -= mouseMoveWorld[1];
+
+                // Also translate our cylindrical camera position (used in cyl shader)
+                this->cyl_cam_pos[0] -= mouseMoveWorld[0];
+                this->cyl_cam_pos[2] += mouseMoveWorld[1];
+
                 needs_render = true; // updates viewproj; uses this->scenetrans
             }
 
@@ -1479,11 +1487,13 @@ namespace morph {
             if (this->sceneLocked) { return false; }
             // x and y can be +/- 1
             this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
+            float scroll_move_y = yoffset * this->scenetrans_stepsize;
             if (this->translateMode) {
-                this->scenetrans[1]/*z really*/ += yoffset * this->scenetrans_stepsize;
-                std::cout << "scenetrans.y = " << this->scenetrans[1] << std::endl;
+                this->scenetrans[1]/*z really*/ += scroll_move_y;
             } else {
-                this->scenetrans[2] += yoffset * this->scenetrans_stepsize;
+                this->scenetrans[2] += scroll_move_y;
+                // Move cyl_cam in z direction
+                this->cyl_cam_pos[1] += scroll_move_y;
             }
             return true; // needs_render
         }
