@@ -68,9 +68,9 @@ namespace morph {
         // Members that are template arguments in morph::Grid. Set only via constructor or setters
 
         //! w Number of elements that the grid is wide
-        I w = I{0};
+        I w = I{1};
         //! h Number of elements that the grid is high
-        I h = I{0};
+        I h = I{1};
         //! dx A two element morph::vec providing the horizontal distance between
         //! horizontally adjacent grid element centres (element 0) and the vertical
         //! distance between vertically adjacent grid element centres (element 1).
@@ -121,9 +121,6 @@ namespace morph {
 
         //! The number of elements in the grid. Public, but don't change it manually.
         I n = w * h;
-
-        //! Default constructor
-        Grid() {}
 
         //! Constructor
         Grid (const I _w, const I _h,
