@@ -139,7 +139,7 @@ namespace morph {
          * size, caEm.
          */
         Visual (int width, int height, const std::string& _title,
-                const morph::vec<float, 2> caOffset, const morph::vec<float> caLength,
+                const morph::vec<float, 2> caOffset, const morph::vec<float, 3> caLength,
                 const float caThickness, const float caEm)
             : window_w(width)
             , window_h(height)
@@ -566,11 +566,11 @@ namespace morph {
         static GLuint get_tprog (morph::Visual<glver>* _v) { return _v->shaders.tprog; };
 
         //! The colour of ambient and diffuse light sources
-        morph::vec<float> light_colour = { 1.0f, 1.0f, 1.0f };
+        morph::vec<float, 3> light_colour = { 1.0f, 1.0f, 1.0f };
         //! Strength of the ambient light
         float ambient_intensity = 1.0f;
         //! Position of a diffuse light source
-        morph::vec<float> diffuse_position = { 5.0f, 5.0f, 15.0f };
+        morph::vec<float, 3> diffuse_position = { 5.0f, 5.0f, 15.0f };
         //! Strength of the diffuse light source
         float diffuse_intensity = 0.0f;
 
@@ -986,7 +986,7 @@ namespace morph {
             // Set up the title, which may or may not be rendered
             this->textModel = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog,
                                                                                morph::VisualFont::DVSans,
-                                                                               0.035f, 64, morph::vec<float>({0.0f, 0.0f, 0.0f}),
+                                                                               0.035f, 64, morph::vec<float, 3>({0.0f, 0.0f, 0.0f}),
                                                                                this->title);
         }
 
@@ -1015,7 +1015,7 @@ namespace morph {
         //! Position coordinate arrows on screen. Configurable at morph::Visual construction.
         morph::vec<float, 2> coordArrowsOffset = { -0.8f, -0.8f };
         //! Length of coordinate arrows. Configurable at morph::Visual construction.
-        morph::vec<float> coordArrowsLength = { 0.1f, 0.1f, 0.1f };
+        morph::vec<float, 3> coordArrowsLength = { 0.1f, 0.1f, 0.1f };
         //! A factor used to slim (<1) or thicken (>1) the thickness of the axes of the CoordArrows.
         float coordArrowsThickness = 1.0f;
         //! Text size for x,y,z.
@@ -1035,10 +1035,10 @@ namespace morph {
         morph::vec<float,2> cursorpos = { 0.0f, 0.0f };
 
         //! Holds the translation coordinates for the current location of the entire scene
-        morph::vec<float> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
+        morph::vec<float, 3> scenetrans = {0.0f, 0.0f, Z_DEFAULT};
 
         //! Default for scenetrans. This is a scene position that can be reverted to, to 'reset the view'.
-        morph::vec<float> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
+        morph::vec<float, 3> scenetrans_default = { 0.0f, 0.0f, Z_DEFAULT };
 
         //! The world depth at which text objects should be rendered
         float text_z = -1.0f;
@@ -1056,7 +1056,7 @@ namespace morph {
         morph::vec<float,2> mousePressPosition = { 0.0f, 0.0f };
 
         //! The current rotation axis. World frame?
-        morph::vec<float> rotationAxis = { 0.0f, 0.0f, 0.0f };
+        morph::vec<float, 3> rotationAxis = { 0.0f, 0.0f, 0.0f };
 
         //! A rotation quaternion. You could have guessed that, right?
         morph::Quaternion<float> rotation;
@@ -1353,7 +1353,7 @@ namespace morph {
             this->cursorpos[0] = static_cast<float>(x);
             this->cursorpos[1] = static_cast<float>(y);
 
-            morph::vec<float> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
+            morph::vec<float, 3> mouseMoveWorld = { 0.0f, 0.0f, 0.0f };
 
             bool needs_render = false;
 
