@@ -732,7 +732,9 @@ namespace morph {
             std::ofstream fout;
             fout.open (gltf_file, std::ios::out|std::ios::trunc);
             if (!fout.is_open()) { throw std::runtime_error ("Visual::savegltf(): Failed to open file for writing"); }
-            fout << "{\n  \"scenes\" : [ { \"nodes\" : [ ";
+            fout << "{\n";
+            fout << "  \"asset\" : { \"generator\" : \"morph::Visual::savegltf()\", \"version\" : \"not specified\" },\n";
+            fout << "  \"scenes\" : [ { \"nodes\" : [ ";
             for (std::size_t vmi = 0u; vmi < this->vm.size(); ++vmi) {
                 fout << vmi << (vmi < this->vm.size()-1 ? ", " : "");
             }
