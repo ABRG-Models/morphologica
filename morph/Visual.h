@@ -1028,7 +1028,7 @@ namespace morph {
         std::vector<std::unique_ptr<morph::VisualTextModel<glver>>> texts;
 
         /*
-         * Variables to manage projection and rotation of the object
+         * Variables to manage projection and rotation of the scene
          */
 
         //! Current cursor position
@@ -1445,11 +1445,11 @@ namespace morph {
                 mouseMoveWorld[1] = (v1[1]/v1[3]) - (v0[1]/v0[3]);
                 // Note: mouseMoveWorld[2] is unmodified
 
-                // This "translates the whole scene" (but ignored in cyl shader)
+                // We "translate the whole scene" - used by 2D projection shaders (ignored by cyl shader)
                 this->scenetrans[0] += mouseMoveWorld[0];
                 this->scenetrans[1] -= mouseMoveWorld[1];
 
-                // Also translate our cylindrical camera position (used in cyl shader)
+                // Also translate our cylindrical camera position (used in cyl shader, ignored in proj. shader)
                 this->cyl_cam_pos[0] -= mouseMoveWorld[0];
                 this->cyl_cam_pos[2] += mouseMoveWorld[1];
 
@@ -1504,30 +1504,37 @@ namespace morph {
             }
         }
 
+        //! When user scrolls, we translate the scene (applies to orthographic/projection) and the
+        //! cyl_cam_pos (applies to cylindrical projection).
         virtual bool scroll_callback (double xoffset, double yoffset)
         {
+            // yoffset non-zero indicates that the most common scroll wheel is changing. If there's
+            // a second scroll wheel, xoffset will be passed non-zero. They'll be 0 or +/- 1.
+
             if (this->sceneLocked) { return false; }
-            // x and y can be +/- 1
+
+            // xoffset does what mouse drag left/right in rotateModMode does. This is to do a left-right scene trans:
             this->scenetrans[0] -= xoffset * this->scenetrans_stepsize;
-            float scroll_move_y = yoffset * this->scenetrans_stepsize;
-            if (this->translateMode) {
-                this->scenetrans[1]/*z really*/ += scroll_move_y;
-            } else {
-                this->scenetrans[2] += scroll_move_y;
-                // Move cyl_cam in z direction
-                this->cyl_cam_pos[1] += scroll_move_y;
-            }
+            this->cyl_cam_pos[0] += xoffset * this->scenetrans_stepsize;
+
+            // yoffset does the 'in-out zooming'
+            morph::vec<float, 4> scroll_move_y = { 0.0f, static_cast<float>(yoffset) * this->scenetrans_stepsize, 0.0f, 1.0f };
+            this->scenetrans[2] += scroll_move_y[1];
+            // Translate scroll_move_y then add it to cyl_cam_pos here
+            morph::TransformMatrix<float> sceneview_rotn;
+            sceneview_rotn.rotate (this->rotation);
+            this->cyl_cam_pos += sceneview_rotn * scroll_move_y;
+
             return true; // needs_render
         }
 
         //! Extra key callback handling, making it easy for client programs to implement their own actions
         virtual void key_callback_extra ([[maybe_unused]] int key, [[maybe_unused]] int scancode,
-                                         [[maybe_unused]] int action, [[maybe_unused]] int mods)
-        {}
+                                         [[maybe_unused]] int action, [[maybe_unused]] int mods) {}
+
         //! Extra mousebutton callback handling, making it easy for client programs to implement their own actions
         virtual void mouse_button_callback_extra ([[maybe_unused]] int button, [[maybe_unused]] int action,
-                                                  [[maybe_unused]] int mods)
-        {}
+                                                  [[maybe_unused]] int mods) {}
 
         //! A callback that client code can set so that it knows when user has signalled to
         //! morph::Visual that it's quit time.
