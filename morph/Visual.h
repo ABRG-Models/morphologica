@@ -411,15 +411,13 @@ namespace morph {
             } else if (this->ptype == perspective_type::perspective) {
                 this->setPerspective();
             } else if (this->ptype == perspective_type::cylindrical) {
-                // Set cylindrical specific uniforms
+                // Set cylindrical-specific uniforms
                 GLint loc_campos = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_cam_pos"));
                 if (loc_campos != -1) { glUniform4fv (loc_campos, 1, this->cyl_cam_pos.data()); }
                 GLint loc_cyl_radius = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_radius"));
                 if (loc_cyl_radius != -1) { glUniform1f (loc_cyl_radius, this->cyl_radius); }
                 GLint loc_cyl_height = glGetUniformLocation (this->shaders.gprog, static_cast<const GLchar*>("cyl_height"));
                 if (loc_cyl_height != -1) { glUniform1f (loc_cyl_height, this->cyl_height); }
-
-
             } else {
                 throw std::runtime_error ("Unknown projection");
             }
@@ -560,7 +558,7 @@ namespace morph {
         //! The radius of the 'cylindrical projection screen' around the camera position
         float cyl_radius = 0.005f;
         //! The height of the 'cylindrical projection screen'
-        float cyl_height = 0.02f;
+        float cyl_height = 0.01f;
 
         // These static functions will be set as callbacks in each VisualModel object.
         static morph::visgl::visual_shaderprogs get_shaderprogs (morph::Visual<glver>* _v) { return _v->shaders; };
@@ -600,7 +598,7 @@ namespace morph {
             this->coordArrows->setViewRotation (this->rotation);
         }
 
-        //! Set perspective based on window width and height
+        //! Set up a perspective projection based on window width and height
         void setPerspective()
         {
             // Calculate aspect ratio
@@ -613,7 +611,7 @@ namespace morph {
             this->invproj = this->projection.invert();
         }
 
-        //! Set perspective for ortho projection
+        //! Set an orthographic projection
         void setOrthographic()
         {
             this->projection.setToIdentity();
@@ -1169,6 +1167,10 @@ namespace morph {
                 std::cout << "F1-F10: Select model index (with shift: toggle hide)\n";
                 std::cout << "Shift-Left: Decrease opacity of selected model\n";
                 std::cout << "Shift-Right: Increase opacity of selected model\n";
+                std::cout << "Shift-Up: Double cyl proj radius\n";
+                std::cout << "Shift-Down: Halve cyl proj radius\n";
+                std::cout << "Ctrl-Up: Double cyl proj height\n";
+                std::cout << "Ctrl-Down: Halve cyl proj height\n";
             }
 
             if (_key == key::l && (mods & keymod::control) && action == keyaction::press) {
@@ -1273,6 +1275,26 @@ namespace morph {
             }
             if (_key == key::right && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::shift)) {
                 if (!this->vm.empty()) { this->vm[this->selectedVisualModel]->incAlpha(); }
+            }
+
+            // Cyl (and possibly spherical) projection radius
+            if (_key == key::up && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::shift)) {
+                this->cyl_radius *= 2.0f;
+                std::cout << "cyl_radius is now " << this->cyl_radius << std::endl;
+            }
+            if (_key == key::down && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::shift)) {
+                this->cyl_radius *= 0.5f;
+                std::cout << "cyl_radius is now " << this->cyl_radius << std::endl;
+            }
+
+            // Cyl projection view height
+            if (_key == key::up && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::control)) {
+                this->cyl_height *= 2.0f;
+                std::cout << "cyl_height is now " << this->cyl_height << std::endl;
+            }
+            if (_key == key::down && (action == keyaction::press || action == keyaction::repeat) && (mods & keymod::control)) {
+                this->cyl_height *= 0.5f;
+                std::cout << "cyl_height is now " << this->cyl_height << std::endl;
             }
 
             // Reset view to default
