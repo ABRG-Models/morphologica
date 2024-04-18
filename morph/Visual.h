@@ -46,6 +46,7 @@
 #include <morph/VisualCommon.h>
 #include <morph/gl/shaders.h> // for ShaderInfo/LoadShaders
 #include <morph/keys.h>
+#include <morph/version.h>
 
 #include <morph/VisualResources.h>
 #include <nlohmann/json.hpp>
@@ -326,6 +327,27 @@ namespace morph {
             this->texts.push_back (std::move(tmup));
             return tm->getTextGeometry();
         }
+
+        //! An addLabel overload that takes a morph::TextFeatures object
+        morph::TextGeometry addLabel (const std::string& _text,
+                                      const morph::vec<float, 3>& _toffset,
+                                      const morph::TextFeatures& tfeatures)
+        {
+            if (this->shaders.tprog == 0) { throw std::runtime_error ("No text shader prog."); }
+            auto tmup = std::make_unique<morph::VisualTextModel<glver>> (this, this->shaders.tprog, tfeatures);
+            if (tfeatures.centre_horz == true) {
+                morph::TextGeometry tg = tmup->getTextGeometry(_text);
+                morph::vec<float, 3> centred_locn = _toffset;
+                centred_locn[0] = -tg.half_width();
+                tmup->setupText (_text, centred_locn, tfeatures.colour);
+            } else {
+                tmup->setupText (_text, _toffset, tfeatures.colour);
+            }
+            morph::VisualTextModel<glver>* tm = tmup.get();
+            this->texts.push_back (std::move(tmup));
+            return tm->getTextGeometry();
+        }
+
 
 #ifndef OWNED_MODE
         /*!
@@ -857,7 +879,7 @@ namespace morph {
 
             fout << "  \"asset\" : {\n"
                  << "    \"generator\" : \"https://github.com/ABRG-Models/morphologica: morph::Visual::savegltf()\",\n"
-                 << "    \"version\" : \"2.0\"\n"
+                 << "    \"version\" : \"" << morph::version_string() << "\"\n"
                  << "  }\n";
             fout << "}\n";
             fout.close();
@@ -914,7 +936,8 @@ namespace morph {
 
             unsigned char* glv = (unsigned char*)glGetString(GL_VERSION);
             std::cout << "morph::Visual<glver=" << morph::gl::version::vstring (glver)
-                      << "> running on OpenGL Version " << glv << std::endl;
+                      << "> version " << morph::version_string()
+                      << " running on OpenGL Version " << glv << std::endl;
 
 #ifndef OWNED_MODE
             // Swap as fast as possible (fixes lag of scene with mouse movements)

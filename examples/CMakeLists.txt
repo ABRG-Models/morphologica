@@ -49,6 +49,12 @@ if(USE_GLEW)
   target_link_libraries(helloworld GLEW::GLEW)
 endif()
 
+add_executable(helloversion helloversion.cpp)
+target_link_libraries(helloversion OpenGL::GL glfw Freetype::Freetype)
+if(USE_GLEW)
+  target_link_libraries(helloversion GLEW::GLEW)
+endif()
+
 add_executable(myvisual myvisual.cpp)
 target_link_libraries(myvisual OpenGL::GL glfw Freetype::Freetype)
 if(USE_GLEW)
